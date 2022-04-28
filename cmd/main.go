@@ -24,20 +24,20 @@ func main() {
 		log.Fatal("You need to specify Apstra URL")
 	}
 
-	url, err := url.Parse(flag.Arg(0))
+	aosUrl, err := url.Parse(flag.Arg(0))
 	if err != nil {
 		log.Fatalf("error parsing url from command line - %v", err)
 	}
-	port, err := strconv.Atoi(url.Port())
+	port, err := strconv.Atoi(aosUrl.Port())
 	if err != nil {
 		log.Fatalf("error parsing port from URL - %v", err)
 	}
 
 	cfg := apstratelemetry.AosClientCfg{
-		Host:   url.Hostname(),
+		Host:   aosUrl.Hostname(),
 		Port:   uint16(port),
-		Scheme: url.Scheme,
-		User:   url.User.Username(),
+		Scheme: aosUrl.Scheme,
+		User:   aosUrl.User.Username(),
 		Pass:   pw,
 	}
 	aosClient, err := apstratelemetry.NewAosClient(cfg)
