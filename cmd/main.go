@@ -1,17 +1,44 @@
 package main
 
 import (
+	"flag"
 	apstratelemetry "github.com/chrismarget-j/apstraTelemetry"
 	"log"
+	"net/url"
+	"os"
+	"strconv"
+)
+
+const (
+	ENV_APSTRA_PW = "APSTRA_PW"
 )
 
 func main() {
+	pw, found := os.LookupEnv(ENV_APSTRA_PW)
+	if !found {
+		log.Fatalf("error environment '%s' is required", ENV_APSTRA_PW)
+	}
+
+	flag.Parse()
+	if flag.NArg() != 1 {
+		log.Fatal("You need to specify Apstra URL")
+	}
+
+	url, err := url.Parse(flag.Arg(0))
+	if err != nil {
+		log.Fatalf("error parsing url from command line - %v", err)
+	}
+	port, err := strconv.Atoi(url.Port())
+	if err != nil {
+		log.Fatalf("error parsing port from URL - %v", err)
+	}
+
 	cfg := apstratelemetry.AosClientCfg{
-		Host:   "66.129.234.206",
-		Port:   uint16(37000),
-		Scheme: "hxxps",
-		User:   "admin",
-		Pass:   "admin",
+		Host:   url.Hostname(),
+		Port:   uint16(port),
+		Scheme: url.Scheme,
+		User:   url.User.Username(),
+		Pass:   pw,
 	}
 	aosClient, err := apstratelemetry.NewAosClient(cfg)
 	if err != nil {
