@@ -68,6 +68,6 @@ func (o *AosClient) UserLogin() (err error) {
 }
 
 func (o AosClient) UserLogout() error {
-	err := o.newPost(o.baseUrl+aosApiUserLogout, nil, []int{200}, nil)
+	err := o.post(o.baseUrl+aosApiUserLogout, nil, []int{200}, nil)
 	return err
 }

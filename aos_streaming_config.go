@@ -61,7 +61,7 @@ type aosCreateStreamingConfigResponse struct {
 func (o AosClient) GetAllStreamingConfigs() ([]*AosStreamingConfig, error) {
 	var agscr AosGetStreamingConfigsResponse
 	url := o.baseUrl + aosApiStreamingConfig
-	err := o.newGet(url, []int{200}, &agscr)
+	err := o.get(url, []int{200}, &agscr)
 	if err != nil {
 		return nil, fmt.Errorf("error calling %s - %v", url, err)
 	}
@@ -75,7 +75,7 @@ func (o AosClient) GetAllStreamingConfigs() ([]*AosStreamingConfig, error) {
 func (o AosClient) GetStreamingConfig(id string) (*AosStreamingConfig, error) {
 	var result AosStreamingConfig
 	url := o.baseUrl + aosApiStreamingConfig + "/" + id
-	err := o.newGet(url, []int{200}, result)
+	err := o.get(url, []int{200}, result)
 	if err != nil {
 		return nil, fmt.Errorf("error calling %s - %v", url, err)
 	}
@@ -90,7 +90,7 @@ func (o AosClient) CreateStreamingConfig(cfg *AosStreamingConfigStreamingEndpoin
 
 	var result aosCreateStreamingConfigResponse
 	url := o.baseUrl + aosApiStreamingConfig
-	err = o.newPost(url, msg, []int{201}, &result)
+	err = o.post(url, msg, []int{201}, &result)
 	if err != nil {
 		return "", fmt.Errorf("error calling %s - %v", url, err)
 
