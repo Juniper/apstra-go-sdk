@@ -29,7 +29,7 @@ func TestAosLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = c.Login()
+	err = c.UserLogin()
 	if err != nil {
 		t.Fatal(err)
 	}

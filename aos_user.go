@@ -2,11 +2,9 @@ package apstraTelemetry
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 )
 
 const (
@@ -14,43 +12,26 @@ const (
 	schemeHttps       = "https"
 	schemeHttpsUnsafe = "hxxps"
 
-	aosApiLogin  = "/api/user/login"
-	aosApiLogout = "/api/user/logout"
+	aosApiUserLogin  = "/api/user/login"
+	aosApiUserLogout = "/api/user/logout"
 )
 
-// AosClientCfg passed to NewAosClient() when instantiating a new AosClient{}
-type AosClientCfg struct {
-	Scheme string
-	Host   string
-	Port   uint16
-	User   string
-	Pass   string
-}
-
-// aosLoginReq payload to the aosApiLogin API endpoint
-type aosLoginReq struct {
+// aosUserLoginRequest payload to the aosApiUserLogin API endpoint
+type aosUserLoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-// aosLoginResp payload returned by the aosApiLogin API endpoint
-type aosLoginResp struct {
+// aosUserLoginResponse payload returned by the aosApiUserLogin API endpoint
+type aosUserLoginResponse struct {
 	Token string `json:"token"`
 	Id    string `json:"id"`
 }
 
-// AosClient interacts with an AOS API server
-type AosClient struct {
-	baseUrl string
-	cfg     *AosClientCfg
-	token   string
-	client  *http.Client
-}
-
-// Login submits credentials to an API server, collects a login token
+// UserLogin submits credentials to an API server, collects a login token
 // todo - need to handle token timeout
-func (o *AosClient) Login() (err error) {
-	msg, err := json.Marshal(aosLoginReq{
+func (o *AosClient) UserLogin() (err error) {
+	msg, err := json.Marshal(aosUserLoginRequest{
 		Username: o.cfg.User,
 		Password: o.cfg.Pass,
 	})
@@ -58,7 +39,7 @@ func (o *AosClient) Login() (err error) {
 		return fmt.Errorf("error marshaling aosLogin object - %v", err)
 	}
 
-	req, err := http.NewRequest("POST", o.baseUrl+aosApiLogin, bytes.NewBuffer(msg))
+	req, err := http.NewRequest("POST", o.baseUrl+aosApiUserLogin, bytes.NewBuffer(msg))
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
@@ -72,13 +53,13 @@ func (o *AosClient) Login() (err error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 201 {
-		return fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 201, resp.StatusCode, aosApiLogin)
+		return fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 201, resp.StatusCode, aosApiUserLogin)
 	}
 
-	var loginResp *aosLoginResp
+	var loginResp *aosUserLoginResponse
 	err = json.NewDecoder(resp.Body).Decode(&loginResp)
 	if err != nil {
-		return fmt.Errorf("error decoding aosLoginResp JSON - %v", err)
+		return fmt.Errorf("error decoding aosUserLoginResponse JSON - %v", err)
 	}
 
 	o.token = loginResp.Token
@@ -86,8 +67,8 @@ func (o *AosClient) Login() (err error) {
 	return nil
 }
 
-func (o AosClient) Logout() error {
-	req, err := http.NewRequest("POST", o.baseUrl+aosApiLogout, nil)
+func (o AosClient) UserLogout() error {
+	req, err := http.NewRequest("POST", o.baseUrl+aosApiUserLogout, nil)
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
@@ -103,34 +84,8 @@ func (o AosClient) Logout() error {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 200, resp.StatusCode, aosApiLogout)
+		return fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 200, resp.StatusCode, aosApiUserLogout)
 	}
 
 	return nil
-}
-
-// NewAosClient creates an AosClient object
-func NewAosClient(cfg AosClientCfg) (*AosClient, error) {
-	tlsConfig := &tls.Config{}
-	var baseUrl string
-	switch cfg.Scheme {
-	case schemeHttp:
-		baseUrl = fmt.Sprintf("%s://%s:%d", schemeHttp, cfg.Host, cfg.Port)
-	case schemeHttps:
-		baseUrl = fmt.Sprintf("%s://%s:%d", schemeHttps, cfg.Host, cfg.Port)
-	case schemeHttpsUnsafe:
-		baseUrl = fmt.Sprintf("%s://%s:%d", schemeHttps, cfg.Host, cfg.Port)
-		tlsConfig.InsecureSkipVerify = true
-	default:
-		return nil, fmt.Errorf("scheme '%s' is not supported", cfg.Scheme)
-	}
-
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
-
-	return &AosClient{cfg: &cfg, baseUrl: baseUrl, client: client}, nil
 }
