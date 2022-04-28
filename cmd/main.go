@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	apstratelemetry "github.com/chrismarget-j/apstraTelemetry"
 	"log"
@@ -49,6 +51,32 @@ func main() {
 	if err != nil {
 		log.Fatalf("error logging in AOS client - %v", err)
 	}
+
+	ver, err := aosClient.GetVersion()
+	if err != nil {
+		log.Fatalf("error getting AOS version - %v", err)
+	}
+
+	sc, err := aosClient.GetAllStreamingConfigs()
+	if err != nil {
+		log.Fatalf("error getting all streaming configs - %v", err)
+	}
+
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetIndent("", "    ")
+
+	err = enc.Encode(ver)
+	if err != nil {
+		log.Fatalf("error encoding data to JSON - %v", err)
+	}
+	log.Println(buf.String())
+
+	err = enc.Encode(sc)
+	if err != nil {
+		log.Fatalf("error encoding data to JSON - %v", err)
+	}
+	log.Println(buf.String())
 
 	err = aosClient.UserLogout()
 	if err != nil {

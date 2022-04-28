@@ -68,24 +68,6 @@ func (o *AosClient) UserLogin() (err error) {
 }
 
 func (o AosClient) UserLogout() error {
-	req, err := http.NewRequest("POST", o.baseUrl+aosApiUserLogout, nil)
-	if err != nil {
-		return fmt.Errorf("error creating http Request - %v", err)
-	}
-	req.Header.Set("Authtoken", o.token)
-
-	resp, err := o.client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error calling http.client.Do - %v", err)
-	}
-	err = resp.Body.Close()
-	if err != nil {
-		return fmt.Errorf("error closing logout http response body - %v", err)
-	}
-
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 200, resp.StatusCode, aosApiUserLogout)
-	}
-
-	return nil
+	err := o.newPost(o.baseUrl+aosApiUserLogout, nil, []int{200}, nil)
+	return err
 }

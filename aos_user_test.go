@@ -5,14 +5,6 @@ import (
 	"testing"
 )
 
-var testCfg1 = AosClientCfg{
-	Host:   "66.129.234.206",
-	Port:   uint16(37000),
-	Scheme: "hxxps",
-	User:   "admin",
-	Pass:   "admin",
-}
-
 func TestNewAosClient(t *testing.T) {
 	c, err := NewAosClient(testCfg1)
 	if err != nil {
@@ -30,6 +22,23 @@ func TestAosLogin(t *testing.T) {
 	}
 
 	err = c.UserLogin()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestAosLogout(t *testing.T) {
+	c, err := NewAosClient(testCfg1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.UserLogin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.UserLogout()
 	if err != nil {
 		t.Fatal(err)
 	}

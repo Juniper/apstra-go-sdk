@@ -22,7 +22,7 @@ type AosStreamingConfig struct {
 	Protocol       string                   `json:"protocol"`
 	Hostname       string                   `json:"hostname"`
 	Id             string                   `json:"id"`
-	Port           uint16                   `json:"Port"`
+	Port           uint16                   `json:"port"`
 }
 
 type AosStreamingConfigStatus struct {
@@ -31,7 +31,7 @@ type AosStreamingConfigStatus struct {
 	Epoch                string                              `json:"epoch"`
 	ConnectionResetCount uint                                `json:"connnectionResetCount"`
 	StreamingEndpoint    AosStreamingConfigStreamingEndpoint `json:"streamingEndpoint"`
-	DnsLog               AosStreamingConfigDnsLog            `json:"dnsLog"`
+	DnsLog               []AosStreamingConfigDnsLog          `json:"dnsLog"`
 	Connected            bool                                `json:"connected"`
 	DisconnectionTime    string                              `json:"disconnectionTime"`
 }
@@ -59,66 +59,27 @@ type aosCreateStreamingConfigResponse struct {
 }
 
 func (o AosClient) GetAllStreamingConfigs() ([]*AosStreamingConfig, error) {
-	req, err := http.NewRequest("GET", o.baseUrl+aosApiStreamingConfig, nil)
+	var agscr AosGetStreamingConfigsResponse
+	url := o.baseUrl + aosApiStreamingConfig
+	err := o.newGet(url, []int{200}, &agscr)
 	if err != nil {
-		return nil, fmt.Errorf("error creating http Request - %v", err)
+		return nil, fmt.Errorf("error calling %s - %v", url, err)
 	}
-	req.Header.Set("Authtoken", o.token)
-
-	resp, err := o.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error calling http.client.Do - %v", err)
+	var result []*AosStreamingConfig
+	for _, i := range agscr.Items {
+		result = append(result, &i)
 	}
-	err = resp.Body.Close()
-	if err != nil {
-		return nil, fmt.Errorf("error closing logout http response body - %v", err)
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 200, resp.StatusCode, aosApiStreamingConfig)
-	}
-
-	var streamingConfigs AosGetStreamingConfigsResponse
-	err = json.NewDecoder(resp.Body).Decode(&streamingConfigs)
-	if err != nil {
-		return nil, fmt.Errorf("error decoding aosGetStreamingConfigs JSON - %v", err)
-	}
-
-	var response []*AosStreamingConfig
-	for _, asc := range streamingConfigs.Items {
-		response = append(response, &asc)
-	}
-
-	return response, nil
+	return result, nil
 }
 
 func (o AosClient) GetStreamingConfig(id string) (*AosStreamingConfig, error) {
-	req, err := http.NewRequest("GET", o.baseUrl+aosApiStreamingConfig+"/"+id, nil)
+	var result AosStreamingConfig
+	url := o.baseUrl + aosApiStreamingConfig + "/" + id
+	err := o.newGet(url, []int{200}, result)
 	if err != nil {
-		return nil, fmt.Errorf("error creating http Request - %v", err)
+		return nil, fmt.Errorf("error calling %s - %v", url, err)
 	}
-	req.Header.Set("Authtoken", o.token)
-
-	resp, err := o.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error calling http.client.Do - %v", err)
-	}
-	err = resp.Body.Close()
-	if err != nil {
-		return nil, fmt.Errorf("error closing logout http response body - %v", err)
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 200, resp.StatusCode, aosApiStreamingConfig+"/"+id)
-	}
-
-	var streamingConfig AosStreamingConfig
-	err = json.NewDecoder(resp.Body).Decode(&streamingConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error decoding aosGetStreamingConfigs JSON - %v", err)
-	}
-
-	return &streamingConfig, nil
+	return &result, nil
 }
 
 func (o AosClient) CreateStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (string, error) {
@@ -127,7 +88,15 @@ func (o AosClient) CreateStreamingConfig(cfg *AosStreamingConfigStreamingEndpoin
 		return "", fmt.Errorf("error marshaling AosStreamingConfigStreamingEndpoint object - %v", err)
 	}
 
-	req, err := http.NewRequest("POST", o.baseUrl+aosApiStreamingConfig, bytes.NewBuffer(msg))
+	var result aosCreateStreamingConfigResponse
+	url := o.baseUrl + aosApiStreamingConfig
+	err = o.newPost(url, msg, []int{201}, &result)
+	if err != nil {
+		return "", fmt.Errorf("error calling %s - %v", url, err)
+
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(msg))
 	if err != nil {
 		return "", fmt.Errorf("error creating http Request - %v", err)
 	}
