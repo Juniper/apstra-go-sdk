@@ -1,14 +1,13 @@
-package apstraTelemetry
+package aosSdk
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"testing"
 )
 
-func aosClientTestClientCfg1() (*AosClientCfg, error) {
+func aosUserTestClient1() (*AosClient, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -33,25 +32,40 @@ func aosClientTestClientCfg1() (*AosClientCfg, error) {
 		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
 
-	return &AosClientCfg{
+	return NewAosClient(&AosClientCfg{
 		Scheme: scheme,
 		Host:   host,
 		Port:   uint16(port),
 		User:   user,
 		Pass:   pass,
-	}, nil
+	})
 }
 
-func TestNewAosClient(t *testing.T) {
-	cfg, err := aosClientTestClientCfg1()
+func TestAosLogin(t *testing.T) {
+	c, err := aosUserTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	client, err := NewAosClient(cfg)
+	err = c.userLogin()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestAosLogout(t *testing.T) {
+	c, err := aosUserTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	log.Println(client.baseUrl)
+	err = c.userLogin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.userLogout()
+	if err != nil {
+		t.Fatal(err)
+	}
 }

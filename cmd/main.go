@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	apstratelemetry "github.com/chrismarget-j/apstraTelemetry"
+	apstratelemetry "github.com/chrismarget-j/apstraTelemetry/aosSdk"
 	"log"
 	"net/url"
 	"os"

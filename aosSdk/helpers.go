@@ -1,4 +1,4 @@
-package apstraTelemetry
+package aosSdk
 
 import (
 	"encoding/json"

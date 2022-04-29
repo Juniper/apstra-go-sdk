@@ -1,7 +1,7 @@
-package apstraTelemetry
+package aosSdk
 
 import (
-	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func aosStreamingConfigTestClient1() (*AosClient, error) {
+func aosVersionTestClient1() (*AosClient, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -43,8 +43,8 @@ func aosStreamingConfigTestClient1() (*AosClient, error) {
 	})
 }
 
-func TestAosClient_GetAllStreamingConfigs(t *testing.T) {
-	client, err := aosStreamingConfigTestClient1()
+func TestGetVersion(t *testing.T) {
+	client, err := aosVersionTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,16 +54,20 @@ func TestAosClient_GetAllStreamingConfigs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	response, err := client.getAllStreamingConfigs()
+	ver, err := client.getVersion()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	var out bytes.Buffer
-	err = pp(response, &out)
+	result, err := json.Marshal(ver)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Println(out.String())
 
+	log.Println(string(result))
+
+	err = client.userLogout()
+	if err != nil {
+		t.Fatal(err)
+	}
 }
