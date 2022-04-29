@@ -10,7 +10,6 @@ Scroll down to `streaming-telemetry-schema-proto`, click `GET`, `Try it out` and
 Render the go code by running the following in the main project directory
 ```shell
 protoc --go_out=.      --go_opt=MaosStreaming/streaming-telemetry.proto=./aosStreaming \
-       --go-grpc_out=. --go-grpc_opt=MaosStreaming/streaming-telemetry.proto=./aosStreaming \
        aosStreaming/streaming-telemetry.proto
 ```
 
