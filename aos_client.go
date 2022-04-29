@@ -36,7 +36,7 @@ type AosClient struct {
 }
 
 // NewAosClient creates an AosClient object
-func NewAosClient(cfg AosClientCfg) (*AosClient, error) {
+func NewAosClient(cfg *AosClientCfg) (*AosClient, error) {
 	tlsConfig := &tls.Config{}
 	var baseUrl string
 	switch cfg.Scheme {
@@ -58,7 +58,7 @@ func NewAosClient(cfg AosClientCfg) (*AosClient, error) {
 		},
 	}
 
-	return &AosClient{cfg: &cfg, baseUrl: baseUrl, client: client}, nil
+	return &AosClient{cfg: cfg, baseUrl: baseUrl, client: client}, nil
 }
 
 func (o AosClient) get(url string, expectedResponseCodes []int, jsonPtr interface{}) error {

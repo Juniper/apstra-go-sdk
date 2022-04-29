@@ -38,7 +38,7 @@ func main() {
 		User:   aosUrl.User.Username(),
 		Pass:   pw,
 	}
-	aosClient, err := apstratelemetry.NewAosClient(cfg)
+	aosClient, err := apstratelemetry.NewAosClient(&cfg)
 	if err != nil {
 		log.Fatalf("error creating new AOS client - %v", err)
 	}

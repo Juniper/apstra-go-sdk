@@ -1,6 +1,10 @@
 package apstraTelemetry
 
-import "strconv"
+import (
+	"encoding/json"
+	"io"
+	"strconv"
+)
 
 func intSliceContains(in []int, t int) bool {
 	for _, i := range in {
@@ -17,4 +21,13 @@ func intSliceToStringSlice(in []int) []string {
 		result = append(result, strconv.Itoa(i))
 	}
 	return result
+}
+
+func pp(in interface{}, out io.Writer) error {
+	enc := json.NewEncoder(out)
+	enc.SetIndent("", "    ")
+	if err := enc.Encode(in); err != nil {
+		return err
+	}
+	return nil
 }

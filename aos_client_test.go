@@ -1,7 +1,6 @@
 package apstraTelemetry
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -9,7 +8,7 @@ import (
 	"testing"
 )
 
-func aosVersionTestClient1() (*AosClient, error) {
+func aosClientTestClientCfg1() (*AosClientCfg, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -34,40 +33,25 @@ func aosVersionTestClient1() (*AosClient, error) {
 		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
 
-	return NewAosClient(&AosClientCfg{
+	return &AosClientCfg{
 		Scheme: scheme,
 		Host:   host,
 		Port:   uint16(port),
 		User:   user,
 		Pass:   pass,
-	})
+	}, nil
 }
 
-func TestGetVersion(t *testing.T) {
-	client, err := aosVersionTestClient1()
+func TestNewAosClient(t *testing.T) {
+	cfg, err := aosClientTestClientCfg1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = client.UserLogin()
+	client, err := NewAosClient(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ver, err := client.GetVersion()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	result, err := json.Marshal(ver)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	log.Println(string(result))
-
-	err = client.UserLogout()
-	if err != nil {
-		t.Fatal(err)
-	}
+	log.Println(client.baseUrl)
 }

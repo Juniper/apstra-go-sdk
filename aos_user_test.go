@@ -1,22 +1,48 @@
 package apstraTelemetry
 
 import (
-	"errors"
+	"fmt"
+	"os"
+	"strconv"
 	"testing"
 )
 
-func TestNewAosClient(t *testing.T) {
-	c, err := NewAosClient(testCfg1)
+func aosUserTestClient1() (*AosClient, error) {
+	user, foundUser := os.LookupEnv(EnvApstraUser)
+	pass, foundPass := os.LookupEnv(EnvApstraPass)
+	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
+	host, foundHost := os.LookupEnv(EnvApstraHost)
+	portstr, foundPort := os.LookupEnv(EnvApstraPort)
+
+	switch {
+	case !foundUser:
+		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraUser)
+	case !foundPass:
+		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraPass)
+	case !foundScheme:
+		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraScheme)
+	case !foundHost:
+		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraHost)
+	case !foundPort:
+		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraPort)
+	}
+
+	port, err := strconv.Atoi(portstr)
 	if err != nil {
-		t.Fatal(err)
+		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
-	if c == nil {
-		t.Fatal(errors.New("NewAosClient returned nil client"))
-	}
+
+	return NewAosClient(&AosClientCfg{
+		Scheme: scheme,
+		Host:   host,
+		Port:   uint16(port),
+		User:   user,
+		Pass:   pass,
+	})
 }
 
 func TestAosLogin(t *testing.T) {
-	c, err := NewAosClient(testCfg1)
+	c, err := aosUserTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +54,7 @@ func TestAosLogin(t *testing.T) {
 }
 
 func TestAosLogout(t *testing.T) {
-	c, err := NewAosClient(testCfg1)
+	c, err := aosUserTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
