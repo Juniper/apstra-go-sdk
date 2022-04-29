@@ -43,7 +43,7 @@ func main() {
 		log.Fatalf("error creating new AOS client - %v", err)
 	}
 
-	err = aosClient.UserLogin()
+	err = aosClient.Login()
 	if err != nil {
 		log.Fatalf("error logging in AOS client - %v", err)
 	}
@@ -74,7 +74,7 @@ func main() {
 	}
 	log.Println(buf.String())
 
-	err = aosClient.UserLogout()
+	err = aosClient.Logout()
 	if err != nil {
 		log.Fatalf("error logging out in AOS client - %v", err)
 	}

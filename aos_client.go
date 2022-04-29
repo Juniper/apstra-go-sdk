@@ -121,3 +121,11 @@ func (o AosClient) post(url string, payload []byte, expectedResponseCodes []int,
 
 	return nil
 }
+
+func (o AosClient) Login() error {
+	return o.userLogin()
+}
+
+func (o AosClient) Logout() error {
+	return o.userLogout()
+}

@@ -49,7 +49,7 @@ func TestAosClient_GetAllStreamingConfigs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = client.UserLogin()
+	err = client.userLogin()
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -28,9 +28,9 @@ type aosUserLoginResponse struct {
 	Id    string `json:"id"`
 }
 
-// UserLogin submits credentials to an API server, collects a login token
+// userLogin submits credentials to an API server, collects a login token
 // todo - need to handle token timeout
-func (o *AosClient) UserLogin() (err error) {
+func (o *AosClient) userLogin() error {
 	msg, err := json.Marshal(aosUserLoginRequest{
 		Username: o.cfg.User,
 		Password: o.cfg.Pass,
@@ -67,7 +67,7 @@ func (o *AosClient) UserLogin() (err error) {
 	return nil
 }
 
-func (o AosClient) UserLogout() error {
+func (o AosClient) userLogout() error {
 	err := o.post(o.baseUrl+aosApiUserLogout, nil, []int{200}, nil)
 	return err
 }
