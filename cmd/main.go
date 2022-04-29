@@ -11,14 +11,10 @@ import (
 	"strconv"
 )
 
-const (
-	ENV_APSTRA_PW = "APSTRA_PW"
-)
-
 func main() {
-	pw, found := os.LookupEnv(ENV_APSTRA_PW)
+	pw, found := os.LookupEnv(apstratelemetry.EnvApstraPass)
 	if !found {
-		log.Fatalf("error environment '%s' is required", ENV_APSTRA_PW)
+		log.Fatalf("error environment '%s' is required", apstratelemetry.EnvApstraPass)
 	}
 
 	flag.Parse()

@@ -10,6 +10,14 @@ import (
 	"time"
 )
 
+const (
+	EnvApstraUser   = "APSTRA_USER"
+	EnvApstraPass   = "APSTRA_PASS"
+	EnvApstraHost   = "APSTRA_HOST"
+	EnvApstraPort   = "APSTRA_PORT"
+	EnvApstraScheme = "APSTRA_SCHEME"
+)
+
 // AosClientCfg passed to NewAosClient() when instantiating a new AosClient{}
 type AosClientCfg struct {
 	Scheme string
