@@ -54,7 +54,7 @@ func TestAosClient_GetAllStreamingConfigs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	response, err := client.GetAllStreamingConfigs()
+	response, err := client.getAllStreamingConfigs()
 	if err != nil {
 		t.Fatal(err)
 	}

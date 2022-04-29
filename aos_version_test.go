@@ -54,7 +54,7 @@ func TestGetVersion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ver, err := client.GetVersion()
+	ver, err := client.getVersion()
 	if err != nil {
 		t.Fatal(err)
 	}

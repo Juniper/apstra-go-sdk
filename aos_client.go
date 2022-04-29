@@ -129,3 +129,11 @@ func (o AosClient) Login() error {
 func (o AosClient) Logout() error {
 	return o.userLogout()
 }
+
+func (o AosClient) GetStreamingConfigs() ([]*AosStreamingConfig, error) {
+	return o.getAllStreamingConfigs()
+}
+
+func (o AosClient) GetVersion() (*AosVersionResponse, error) {
+	return o.getVersion()
+}

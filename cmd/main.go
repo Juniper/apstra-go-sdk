@@ -53,7 +53,7 @@ func main() {
 		log.Fatalf("error getting AOS version - %v", err)
 	}
 
-	sc, err := aosClient.GetAllStreamingConfigs()
+	sc, err := aosClient.GetStreamingConfigs()
 	if err != nil {
 		log.Fatalf("error getting all streaming configs - %v", err)
 	}

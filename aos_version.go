@@ -15,7 +15,7 @@ type AosVersionResponse struct {
 	Minor   string `json:"minor"`
 }
 
-func (o AosClient) GetVersion() (*AosVersionResponse, error) {
+func (o AosClient) getVersion() (*AosVersionResponse, error) {
 	var versionResponse AosVersionResponse
 	url := o.baseUrl + aosApiVersion
 	err := o.get(url, []int{200}, &versionResponse)

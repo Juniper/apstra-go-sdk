@@ -58,7 +58,7 @@ type aosCreateStreamingConfigResponse struct {
 	Id string `json:"id"`
 }
 
-func (o AosClient) GetAllStreamingConfigs() ([]*AosStreamingConfig, error) {
+func (o AosClient) getAllStreamingConfigs() ([]*AosStreamingConfig, error) {
 	var agscr AosGetStreamingConfigsResponse
 	url := o.baseUrl + aosApiStreamingConfig
 	err := o.get(url, []int{200}, &agscr)
@@ -72,7 +72,7 @@ func (o AosClient) GetAllStreamingConfigs() ([]*AosStreamingConfig, error) {
 	return result, nil
 }
 
-func (o AosClient) GetStreamingConfig(id string) (*AosStreamingConfig, error) {
+func (o AosClient) getStreamingConfig(id string) (*AosStreamingConfig, error) {
 	var result AosStreamingConfig
 	url := o.baseUrl + aosApiStreamingConfig + "/" + id
 	err := o.get(url, []int{200}, result)
@@ -82,7 +82,7 @@ func (o AosClient) GetStreamingConfig(id string) (*AosStreamingConfig, error) {
 	return &result, nil
 }
 
-func (o AosClient) CreateStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (string, error) {
+func (o AosClient) createStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (string, error) {
 	msg, err := json.Marshal(cfg)
 	if err != nil {
 		return "", fmt.Errorf("error marshaling AosStreamingConfigStreamingEndpoint object - %v", err)
