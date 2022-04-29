@@ -1,5 +1,10 @@
 package apstraTelemetry
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 const (
 	aosApiVersionsPrefix = "/api/versions/"
 	aosApiVersionsAosdi  = aosApiVersionsPrefix + "aosdi"
@@ -67,4 +72,86 @@ type aosApiVersionsNodeResponse struct {
 type aosApiVersionsServerResponse struct {
 	Version       string `json:"version"`
 	BuildDateTime string `json:"build_datetime"`
+}
+
+func (o AosClient) getVersionsAosdi() (*aosApiVersionsAosdiResponse, error) {
+	var response aosApiVersionsAosdiResponse
+	url := aosApiVersionsAosdi
+	err := o.get(url, []int{200}, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
+	}
+	return &response, nil
+}
+
+func (o AosClient) getVersionsApi() (*aosApiVersionsApiResponse, error) {
+	var response aosApiVersionsApiResponse
+	url := aosApiVersionsApi
+	err := o.get(url, []int{200}, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
+	}
+	return &response, nil
+}
+
+func (o AosClient) getVersionsBuild() (*aosApiVersionsBuildResponse, error) {
+	var response aosApiVersionsBuildResponse
+	url := aosApiVersionsApi
+	err := o.get(url, []int{200}, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
+	}
+	return &response, nil
+}
+
+func (o AosClient) postVersionsDevice(request *aosApiVersionsDeviceRequest) (*aosApiVersionsDeviceResponse, error) {
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling aosApiVersionsDeviceRequest object - %v", err)
+	}
+	var response aosApiVersionsDeviceResponse
+	url := aosApiVersionsDevice
+	err = o.post(url, payload, []int{200}, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
+	}
+	return &response, nil
+}
+
+func (o AosClient) postVersionsIba(request *aosApiVersionsIbaRequest) (*aosApiVersionsIbaResponse, error) {
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling aosApiVersionsDeviceRequest object - %v", err)
+	}
+	var response aosApiVersionsIbaResponse
+	url := aosApiVersionsIba
+	err = o.post(url, payload, []int{200}, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
+	}
+	return &response, nil
+}
+
+func (o AosClient) postVersionsNode(request *aosApiVersionsNodeRequest) (*aosApiVersionsNodeResponse, error) {
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling aosApiVersionsDeviceRequest object - %v", err)
+	}
+	var response aosApiVersionsNodeResponse
+	url := aosApiVersionsIba
+	err = o.post(url, payload, []int{200}, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
+	}
+	return &response, nil
+}
+
+func (o AosClient) getVersionsServer() (*aosApiVersionsServerResponse, error) {
+	var response aosApiVersionsServerResponse
+	url := aosApiVersionsIba
+	err := o.get(url, []int{200}, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
+	}
+	return &response, nil
 }

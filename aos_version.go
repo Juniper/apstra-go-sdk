@@ -17,9 +17,10 @@ type AosVersionResponse struct {
 
 func (o AosClient) GetVersion() (*AosVersionResponse, error) {
 	var versionResponse AosVersionResponse
-	err := o.get(o.baseUrl+aosApiVersion, []int{200}, &versionResponse)
+	url := o.baseUrl + aosApiVersion
+	err := o.get(url, []int{200}, &versionResponse)
 	if err != nil {
-		return nil, fmt.Errorf("error calling AosClient.get() - %v", err)
+		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
 	}
 	return &versionResponse, nil
 }
