@@ -1,13 +1,18 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	aosSdk "github.com/chrismarget-j/apstraTelemetry/aosSdk"
 	"log"
+	"net"
 	"os"
+	"os/signal"
 	"strconv"
+)
+
+const (
+	envApstraStreamHost = "APSTRA_STREAM_HOST"
+	envApstraStreamPort = "APSTRA_STREAM_PORT"
 )
 
 func aosClientClientCfg() (*aosSdk.AosClientCfg, error) {
@@ -44,53 +49,83 @@ func aosClientClientCfg() (*aosSdk.AosClientCfg, error) {
 	}, nil
 }
 
-func main() {
+func client() (*aosSdk.AosClient, error) {
 	cfg, err := aosClientClientCfg()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("error getting client config - %v", err)
 	}
 
 	aosClient, err := aosSdk.NewAosClient(cfg)
 	if err != nil {
-		log.Fatalf("error creating new AOS client - %v", err)
+		return nil, fmt.Errorf("error creating client - %v", err)
 	}
 
 	err = aosClient.Login()
 	if err != nil {
-		log.Fatalf("error logging in AOS client - %v", err)
+		return nil, fmt.Errorf("error logging in AOS client - %v", err)
 	}
 
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	enc.SetIndent("", "    ")
+	return aosClient, nil
+}
 
-	// get version
-	ver, err := aosClient.GetVersion()
-	if err != nil {
-		log.Fatalf("error getting AOS version - %v", err)
+func listener() (net.Listener, error) {
+	streamPort, found := os.LookupEnv(envApstraStreamPort)
+	if !found {
+		return nil, fmt.Errorf("environment variable '%s' not found", envApstraStreamPort)
 	}
-	err = enc.Encode(ver)
+	return net.Listen("tcp", ":"+streamPort)
+}
+
+//func connHandler(conn net.Conn, errChan chan<- error) {
+//	msgLenBuf := make([]byte, 2)
+//	buf := bytes.Buffer{}
+//	conn.Read(msgLenBuf)
+//}
+
+func main() {
+	quitChan := make(chan os.Signal)
+	signal.Notify(quitChan, os.Interrupt, os.Kill)
+
+	client, err := client()
 	if err != nil {
-		log.Fatalf("error encoding data to JSON - %v", err)
+		log.Fatal(err)
 	}
+
+	listener, err := listener()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer listener.Close()
+
+	//go func() {
+	//	for {
+	//		cxn, err := listener.Accept()
+	//		if err != nil {
+	//			log.Fatalf("socket accept error - %v", err)
+	//		}
+	//	}
+	//}()
+
+	<-quitChan
+	os.Exit(0)
 
 	// get streaming configs
-	sc, err := aosClient.GetStreamingConfigs()
-	if err != nil {
-		log.Fatalf("error getting all streaming configs - %v", err)
-	}
-	err = enc.Encode(sc)
-	if err != nil {
-		log.Fatalf("error encoding data to JSON - %v", err)
-	}
+	//sc, err := aosClient.GetStreamingConfigs()
+	//if err != nil {
+	//	log.Fatalf("error getting all streaming configs - %v", err)
+	//}
+	//err = enc.Encode(sc)
+	//if err != nil {
+	//	log.Fatalf("error encoding data to JSON - %v", err)
+	//}
 
-	err = aosClient.Logout()
+	err = client.Logout()
 	if err != nil {
 		log.Fatalf("error logging out in AOS client - %v", err)
 	}
 
 	// print the buffer
-	log.Println(buf.String())
+	//log.Println(buf.String())
 
 	//s := grpc.NewServer()
 	//aosST.
