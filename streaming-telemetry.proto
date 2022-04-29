@@ -1,0 +1,676 @@
+// Copyright (c) 2016 Apstrktr, Inc.  All rights reserved.
+// Apstrktr, Inc. Confidential and Proprietary.
+
+syntax = "proto2";
+
+package aos.streaming;
+
+enum DeviceState {
+  DEVICE_STATE_IS_ACTIVE = 1;
+  DEVICE_STATE_IS_READY = 2;
+  DEVICE_STATE_IS_NOCOMMS = 3;
+  DEVICE_STATE_IS_MAINT = 4;
+  DEVICE_STATE_IS_REBOOTING = 5;
+  DEVICE_STATE_OOS_STOCKED = 6;
+  DEVICE_STATE_OOS_QUARANTINED = 7;
+  DEVICE_STATE_OOS_READY = 8;
+  DEVICE_STATE_OOS_NOCOMMS = 9;
+  DEVICE_STATE_OOS_DECOMM = 10;
+  DEVICE_STATE_OOS_MAINT = 11;
+  DEVICE_STATE_OOS_REBOOTING = 12;
+  DEVICE_STATE_ERROR = 13;
+}
+
+message DeviceStateEvent {
+  required DeviceState state = 1;
+}
+
+enum Feature {
+  FEATURE_UNKNOWN = 0;
+  FEATURE_LO0 = 1;
+  FEATURE_FABRIC = 2;
+  FEATURE_LEAF_SERVER = 3;
+  FEATURE_L3EDGE = 4;
+  FEATURE_L2EDGE = 5;
+  FEATURE_SPINE_LEAF = 6;
+  FEATURE_FABRIC_SPINE = 7;
+  FEATURE_EXTERNAL_ROUTER = 8;
+  FEATURE_TO_EXTERNAL_ROUTER = 9;
+  FEATURE_LEAF_L3_SERVER = 10;
+  FEATURE_LEAF_L2_SERVER = 11;
+  FEATURE_LEAF = 12;
+  FEATURE_SPINE = 13;
+  FEATURE_L3_SERVER = 14;
+  FEATURE_L2_SERVER = 15;
+  FEATURE_SERVER = 16;
+  FEATURE_PEER = 17;
+  FEATURE_LEAF_PEER_LINK = 18;
+  FEATURE_LEAF_PAIR = 19;
+  FEATURE_LEAF_PAIR_L2_SERVER = 20;
+  FEATURE_UNUSED = 21;
+}
+
+enum StreamingType {
+  STREAMING_TYPE_PERFMON = 0;
+  STREAMING_TYPE_EVENTS = 1;
+  STREAMING_TYPE_ALERTS = 2;
+}
+
+enum StreamingProtocol {
+  STREAMING_PROTOCOL_PROTOBUF_OVER_TCP = 0;
+}
+
+enum StreamingStatus {
+  STREAMING_STATUS_UP = 0;
+  STREAMING_STATUS_DOWN = 1;
+}
+
+enum StreamingSequencingMode {
+  STREAMING_UNSEQUENCED = 0;
+  STREAMING_SEQUENCED = 1;
+}
+
+message TrafficEvent {
+  oneof source {
+    Feature node_role = 1;
+    Feature port_role = 2;
+    string port = 3;
+    string node = 4;
+    bool pod = 5;
+  }
+
+  required uint32 interval_seconds = 6;
+  required string measurement_name = 7;
+  required AggregationType aggregation_type = 8;
+
+  oneof delta {
+    int32 delta_percentage = 9;
+    int64 delta_nonnormalized = 10;
+  }
+}
+
+message StreamingEvent {
+  required string aos_server = 1; // hostname of AOS-server
+  required StreamingType  streaming_type = 2;
+  required StreamingProtocol protocol = 3;
+  required StreamingStatus status = 4;
+  optional StreamingSequencingMode sequencing_mode = 5;
+}
+
+message CablePeerEvent {
+  required string lcl_device_id = 1;
+  required string lcl_hostname = 2;
+  required string lcl_ifname = 3;
+  required string rmt_hostname = 4;
+  required string rmt_ifname = 5;
+  required string rmt_sysdescr = 6;
+}
+
+message BGPNeighborEvent {
+  required string lcl_hostname = 1;
+  required string lcl_ipaddr = 2;
+  required uint32 lcl_asn = 3;
+  required BgpSessionState state = 4;
+  required string rmt_ipaddr = 5;
+  required uint32 rmt_asn = 6;
+  required string vrf_name = 7;
+  required BgpSessionAddressFamily addr_family = 8;
+}
+
+enum BgpSessionAddressFamily {
+  IPV4 = 0;
+  IPV6 = 1;
+  EVPN = 2;
+}
+
+enum LinkStatus {
+  LINK_UP = 0;
+  LINK_DOWN = 1;
+  LINK_UNKNOWN = 2;
+  LINK_MISSING = 3;
+}
+
+message LinkStatusEvent {
+  required string hostname = 1;
+  required string ifname = 2;
+  required LinkStatus state = 3;
+}
+
+enum MacState {
+  MAC_ADD = 0;
+  MAC_DELETE = 1;
+  MAC_MOVE = 2;
+}
+
+message MacEvent {
+  required string macaddress = 1;
+  required string intfname = 2;
+  required uint32 vlan = 3;
+  required MacState state = 4;
+}
+
+enum ArpState {
+  ARP_ADD = 0;
+  ARP_DELETE = 1;
+}
+
+message ArpEvent {
+  required string ipaddress = 1;
+  required string mac = 2;
+  required string intfname = 3;
+  required ArpState state = 4;
+  required string vrfname = 5;
+}
+
+message LagEvent {
+  required string hostname = 1;
+  required string lagname = 2;
+  required uint32 interfacesupcount = 3;
+  repeated string interfacesup = 4;
+}
+
+enum MlagDomainState {
+  MLAG_UNKNOWN = 0;
+  MLAG_MISSING = 1;
+  MLAG_DISABLED = 2;
+  MLAG_INACTIVE = 3;
+  MLAG_ACTIVE = 4;
+}
+
+enum MlagIntfState {
+  MLAG_INTF_UNKNOWN = 0;
+  MLAG_INTF_MISSING = 1;
+  MLAG_INTF_DISABLED = 2;
+  MLAG_INTF_CONFIGURED = 3;
+  MLAG_INTF_INACTIVE = 4;
+  MLAG_INTF_ACTIVE_PARTIAL = 5;
+  MLAG_INTF_ACTIVE_FULL = 6;
+}
+
+message MlagEvent {
+  required string domain_id = 1;
+  required MlagDomainState domain_state = 2;
+  required string intfname = 3;
+  required MlagIntfState intf_state = 4;
+}
+
+message ExtensibleServiceEvent {
+  required string key = 1;
+  required string value = 2;
+}
+
+message RouteEvent {
+  required string dest_network = 1;
+  required RouteEntryStatus status = 2;
+  required string hostname = 3;
+}
+
+enum RouteState {
+  ROUTE_ADD = 0;
+  ROUTE_DELETE = 1;
+}
+
+message EvpnType3RouteEvent {
+  required RouteState state = 1;
+  required string system_id = 2;
+  required uint32 vni = 3;
+  required string next_hop = 4;
+  required string rd = 5;
+  required string rt = 6;
+}
+
+message ActiveFloodlistEvent {
+  required RouteState state = 1;
+  required string system_id = 2;
+  required uint32 vni = 3;
+  required string vtep = 4;
+}
+
+message EvpnType5RouteEvent {
+  required RouteState state = 1;
+  required string system_id = 2;
+  required string af = 3;
+  required string subnet = 4;
+  required string next_hop = 5;
+  required string rd = 6;
+  required string rt = 7;
+}
+
+message Event {
+  required string id = 1; // uuid
+  oneof data {
+    DeviceStateEvent device_state = 2;
+    StreamingEvent streaming = 3;
+    CablePeerEvent cable_peer = 4;
+    BGPNeighborEvent bgp_neighbor = 5;
+    LinkStatusEvent link_status = 6;
+    TrafficEvent traffic = 7;
+    MacEvent mac_state = 8;
+    ArpEvent arp_state = 9;
+    LagEvent lag_state = 10;
+    MlagEvent mlag_state = 11;
+    ExtensibleServiceEvent extensible_event = 12;
+    RouteEvent route_state = 13;
+  }
+}
+
+enum AlertSeverity {
+  ALERT_LOW = 0;
+  ALERT_MEDIUM = 1;
+  ALERT_HIGH = 2;
+  ALERT_CRITICAL = 3;
+}
+
+message HostnameAlert {
+  required string expected_hostname = 1;
+  required string actual_hostname = 2;
+}
+
+message ConfigDeviationAlert {
+}
+
+enum RouteEntryStatus {
+  ROUTE_ENTRY_STATUS_UNKNOWN = 0;
+  ROUTE_ENTRY_STATUS_UP = 1;
+  ROUTE_ENTRY_STATUS_PARTIAL = 2;
+  ROUTE_ENTRY_STATUS_MISSING = 3;
+}
+
+enum NextHopStatus {
+  NEXT_HOP_STATUS_UNKNOWN = 0;
+  NEXT_HOP_STATUS_UP = 1;
+  NEXT_HOP_STATUS_MISSING = 2;
+}
+
+enum RouteType {
+  ROUTE_TYPE_UNKNOWN = 0;
+  ROUTE_TYPE_DIRECT = 1;
+  ROUTE_TYPE_BGP = 2;
+  ROUTE_TYPE_STAT = 3;
+}
+
+message LivenessAlert {
+  repeated string expected_agents = 1;
+  repeated string actual_agents = 2;
+  required bool alive = 3;
+}
+
+message ExtensibleAlert {
+  required string key = 1;
+  required string expected = 2;
+  required string actual = 3;
+}
+
+enum DeploymentStatus {
+  DEPLOYMENT_STATUS_INPROGRESS = 0;
+  DEPLOYMENT_STATUS_SUCCEEDED = 1;
+  DEPLOYMENT_STATUS_FAILED = 2;
+}
+
+message DeploymentAlert {
+  required DeploymentStatus expected_deployment_status = 1;
+  required DeploymentStatus actual_deployment_status = 2;
+}
+
+message BlueprintRenderingAlert {
+  repeated string failed_systems = 1;
+}
+
+message RouteAlert {
+  required string ip = 1;
+
+  required RouteEntryStatus expected_dest_status = 2;
+  required RouteEntryStatus actual_dest_status = 3;
+}
+
+message LagAlert {
+  required string hostname = 1;
+  required string lagname = 2;
+
+  required uint32 expected_ifup_count = 5;
+  required uint32 actual_ifup_count = 6;
+
+  repeated string expected_interfaces_up = 7;
+  repeated string actual_interfaces_up = 8;
+}
+
+enum StreamingAlertReason {
+  STREAMING_ALERT_REASON_FAILED_CONNECTION = 0;
+  STREAMING_ALERT_REASON_TIMEOUT = 1;
+  STREAMING_ALERT_REASON_DNS_FAILURE = 2;
+  STREAMING_ALERT_REASON_WRITE_TIMEOUT = 3;
+}
+
+message StreamingAlert {
+  required string aos_server = 1; // hostname of AOS-server
+  required StreamingType streaming_type = 2;
+  required StreamingProtocol protocol = 3;
+  required StreamingAlertReason reason = 4;
+  optional StreamingSequencingMode sequencing_mode = 5;
+}
+
+message CablePeerMismatchAlert {
+  required string lcl_hostname = 1;
+  required string lcl_ifname = 2;
+  required string exp_hostname = 4;
+  required string exp_ifname = 5;
+  required string rmt_hostname = 6;
+  required string rmt_ifname = 7;
+  required string rmt_sysdescr = 8;
+}
+
+enum BgpSessionState {
+  BGP_SESSION_UP = 0;
+  BGP_SESSION_DOWN = 1;
+  BGP_SESSION_MISSING = 2;
+  BGP_SESSION_UNKNOWN = 3;
+}
+
+message BGPNeighborMismatchAlert {
+  required string lcl_hostname = 1;
+  required string lcl_ipaddr = 2;
+  required uint32 lcl_asn = 3;
+  required string rmt_ipaddr = 4;
+  required uint32 rmt_asn = 5;
+  required BgpSessionState expected_state = 6;
+  required BgpSessionState actual_state   = 7;
+  required string rmt_name = 8;
+  required string vrf_name = 9;
+  required BgpSessionAddressFamily addr_family = 10;
+
+}
+
+message InterfaceLinkStatusMismatchAlert {
+  required string hostname = 1;
+  required string ifname = 2;
+  required LinkStatus expected_ifstatus = 3;
+  required LinkStatus actual_ifstatus = 4;
+}
+
+enum AggregationType {
+  AGGREGATION_TYPE_MAX = 1;
+  AGGREGATION_TYPE_MIN = 2;
+  AGGREGATION_TYPE_SUM = 3;
+  AGGREGATION_TYPE_AVG = 4;
+  AGGREGATION_TYPE_STD = 5;
+}
+
+enum HeadroomType {
+  HEADROOM_TYPE_MAX = 1;
+  HEADROOM_TYPE_MIN = 2;
+}
+
+message CountersAlert {
+  oneof id {
+    Feature node_role = 1;
+    Feature port_role = 2;
+    string port = 3;
+    string node = 4;
+    bool pod = 5;
+  }
+  required string measurement_name = 6;
+  required uint32 interval_seconds = 7;
+  required AggregationType aggregation_type = 8;
+}
+
+message KeyValuePair {
+  required string key = 1;
+  required string value = 2;
+}
+
+message ProbeAlert {
+  optional int64 expected_int = 2;
+  optional int64 actual_int = 3;
+  optional double expected_float = 4;
+  optional double actual_float = 5;
+  optional string expected_discrete_state = 6;
+  optional string actual_discrete_state = 7;
+  required string probe_id = 8;
+  required string stage_name = 9;
+  repeated KeyValuePair key_value_pairs = 10;
+  required string item_id = 11;
+  optional string expected_text = 12;
+  optional string actual_text = 13;
+  optional string probe_label = 14;
+  optional int64 expected_int_max = 15;
+  optional double expected_float_max = 16;
+}
+
+message ConfigMismatchAlert {
+  required string blueprint_id = 1;
+  required string collector_id = 2;
+}
+
+message HeadroomAlert {
+  required string node_a = 1;
+  required string node_b = 2;
+  required uint32 interval_seconds = 3;
+  required HeadroomType headroom_type = 4;
+}
+
+message MacAlert {
+  required string macaddress = 1;
+  required string intfname = 2;
+  required uint32 vlan = 3;
+  required uint32 movecount = 4;
+  required double actual_move_interval = 5;
+  required double expected_max_interval = 6;
+}
+
+message ArpAlert {
+  required string ipaddress = 1;
+  required string mac = 2;
+  required string intfname = 3;
+}
+
+message MlagAlert {
+  required string hostname = 1;
+  required string domain_id = 2;
+  required uint32 mlag_id = 3;
+  required MlagDomainState expected_domain_state = 4;
+  required MlagDomainState actual_domain_state = 5;
+  required string ifname = 6;
+  required MlagIntfState expected_intf_state = 7;
+  required MlagIntfState actual_intf_state = 8;
+  required string peer_link = 9;
+  required string peer_link_status = 10;
+  required string expected_peer_link_status = 11;
+}
+
+message TestAlert {
+  required uint64 test_int = 1;
+}
+
+message InterfaceCounters {
+  required uint64 tx_unicast_packets = 1;
+  required uint64 tx_broadcast_packets = 2;
+  required uint64 tx_multicast_packets = 3;
+  required uint64 tx_bytes = 4;
+  required uint64 rx_unicast_packets = 5;
+  required uint64 rx_broadcast_packets = 6;
+  required uint64 rx_multicast_packets = 7;
+  required uint64 rx_bytes = 8;
+
+  required uint64 tx_error_packets = 9;
+  required uint64 tx_discard_packets = 10;
+  required uint64 rx_error_packets = 11;
+  required uint64 rx_discard_packets = 12;
+  required uint64 alignment_errors = 13;
+  required uint64 fcs_errors = 14;
+  required uint64 symbol_errors = 15;
+  required uint64 runts = 16;
+  required uint64 giants = 17;
+
+  optional uint64 delta_seconds = 18 [default = 5];
+}
+
+message SystemInfo {
+  required float cpu_user = 1;
+  required float cpu_system = 2;
+  required float cpu_idle = 3;
+  required uint64 memory_used = 4;
+  required uint64 memory_total = 5;
+}
+
+message ProcessInfo {
+  required string process_name = 1;
+  required float cpu_user = 2;
+  required float cpu_system = 3;
+  required uint64 memory_used = 4;
+}
+
+message FileInfo {
+  required string file_name = 1;
+  required uint64 file_size = 2;
+}
+
+message SysResourceCounters {
+  optional SystemInfo system_info= 1;
+  repeated ProcessInfo process_info = 2;
+  repeated FileInfo file_info = 3;
+}
+
+message Tag {
+  required string name = 5;
+  oneof value {
+    int64 int64_value = 1;
+    float float_value = 2;
+    string string_value = 3;
+  }
+}
+
+message Field {
+  required string name = 5;
+  oneof value {
+    int64 int64_value = 1;
+    float float_value = 2;
+    string string_value = 3;
+  }
+}
+
+message ProbeProperty {
+  required string name = 5;
+  // Value contains json encoded data
+  required string value = 6;
+}
+
+message InterfaceCountersUtilization {
+  required uint64 tx_utilization = 1;
+  required uint64 rx_utilization = 2;
+  required uint64 tx_unicast_pps = 3;
+  required uint64 tx_broadcast_pps = 4;
+  required uint64 tx_multicast_pps = 5;
+  required uint64 tx_bps = 6;
+  required uint64 tx_error_pps = 7;
+  required uint64 tx_discard_pps = 8;
+  required uint64 rx_unicast_pps = 9;
+  required uint64 rx_broadcast_pps = 10;
+  required uint64 rx_multicast_pps = 11;
+  required uint64 rx_bps = 12;
+  required uint64 rx_error_pps = 13;
+  required uint64 rx_discard_pps = 14;
+  required uint64 alignment_errors_per_second = 15;
+  required uint64 fcs_errors_per_second = 16;
+  required uint64 symbol_errors_per_second = 17;
+  required uint64 runts_per_second = 18;
+  required uint64 giants_per_second = 19;
+}
+
+message SystemInterfaceUtilization {
+  required uint32 aggregate_tx_bps = 1;
+  required uint32 aggregate_rx_bps = 2;
+  required uint32 max_ifc_tx_utilization = 3;
+  required uint32 max_ifc_rx_utilization = 4;
+  required uint32 aggregate_tx_utilization = 5;
+  required uint32 aggregate_rx_utilization = 6;
+}
+
+message ProbeMessage {
+  repeated ProbeProperty property = 1;
+  oneof value {
+    int64 int64_value = 2;
+    float float_value = 3;
+    string string_value = 4;
+    EvpnType3RouteEvent evpn_type3_route_state = 9;
+    EvpnType5RouteEvent evpn_type5_route_state = 10;
+    InterfaceCountersUtilization interface_counters_utilization = 11;
+    SystemInterfaceUtilization system_interface_utilization = 12;
+    ActiveFloodlistEvent active_floodlist = 13;
+  }
+  required string probe_id = 5;
+  required string stage_name = 6;
+  required string blueprint_id = 7;
+  required string item_id = 8;
+  optional string probe_label = 14;
+}
+
+message GenericPerfmonMessage {
+  repeated Tag tags = 1;
+  repeated Field fields = 2;
+}
+
+message ProbeData {
+  repeated Tag tags = 1;
+  repeated Field fields = 2;
+}
+
+message PerfMon {
+  oneof data {
+    InterfaceCounters interface_counters = 1;
+    SysResourceCounters system_resource_counters = 2;
+    GenericPerfmonMessage generic = 4;
+    ProbeMessage probe_message = 5;
+  }
+  optional float time_delta = 3;
+}
+
+message Alert {
+  required AlertSeverity severity = 1;
+  required uint64 first_seen = 2; // in microseconds since the epoch
+  required string id = 3; // uuid
+  required bool raised = 4; // true if raised, false if cleared
+  oneof data {
+    ConfigDeviationAlert config_deviation_alert = 5;
+    StreamingAlert streaming_alert = 6;
+    CablePeerMismatchAlert cable_peer_mismatch_alert = 7;
+    BGPNeighborMismatchAlert bgp_neighbor_mismatch_alert = 8;
+    InterfaceLinkStatusMismatchAlert interface_link_status_mismatch_alert = 9;
+    HostnameAlert hostname_alert = 10;
+    RouteAlert route_alert = 11;
+    LivenessAlert liveness_alert = 12;
+    DeploymentAlert deployment_alert = 13;
+    BlueprintRenderingAlert blueprint_rendering_alert = 14;
+    CountersAlert counters_alert = 15;
+    MacAlert mac_alert = 16;
+    ArpAlert arp_alert = 17;
+    // TODO(Rajeev): Headroom alert is obsoleted. The alert has to be removed
+    // the next time backward compatibility breaking changes are made.
+    HeadroomAlert headroom_alert = 18;
+    LagAlert lag_alert = 19;
+    MlagAlert mlag_alert = 20;
+    ProbeAlert probe_alert = 21;
+    ConfigMismatchAlert config_mismatch_alert = 22;
+    ExtensibleAlert extensible_alert = 23;
+    TestAlert test_alert=1000;
+  }
+}
+
+message AosMessage {
+  required uint64 timestamp = 1; // in microseconds since the epoch
+  required string origin_name = 2; // originating entity name
+  optional string origin_hostname = 6;
+  optional string origin_role = 7;
+  optional string blueprint_label = 8;
+
+  oneof data {
+    Alert alert = 3;
+    Event event = 4;
+    PerfMon perf_mon = 5;
+  }
+}
+
+message AosSequencedMessage {
+  optional uint64 seq_num = 1;
+  // space for preceding fields
+  optional bytes aos_proto = 15; // serialized AosMessage
+}
