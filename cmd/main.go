@@ -3,42 +3,54 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
-	apstratelemetry "github.com/chrismarget-j/apstraTelemetry/aosSdk"
+	"fmt"
+	aosSdk "github.com/chrismarget-j/apstraTelemetry/aosSdk"
 	"log"
-	"net/url"
 	"os"
 	"strconv"
 )
 
-func main() {
-	pw, found := os.LookupEnv(apstratelemetry.EnvApstraPass)
-	if !found {
-		log.Fatalf("error environment '%s' is required", apstratelemetry.EnvApstraPass)
+func aosClientClientCfg() (*aosSdk.AosClientCfg, error) {
+	user, foundUser := os.LookupEnv(aosSdk.EnvApstraUser)
+	pass, foundPass := os.LookupEnv(aosSdk.EnvApstraPass)
+	scheme, foundScheme := os.LookupEnv(aosSdk.EnvApstraScheme)
+	host, foundHost := os.LookupEnv(aosSdk.EnvApstraHost)
+	portstr, foundPort := os.LookupEnv(aosSdk.EnvApstraPort)
+
+	switch {
+	case !foundUser:
+		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraUser)
+	case !foundPass:
+		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPass)
+	case !foundScheme:
+		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraScheme)
+	case !foundHost:
+		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraHost)
+	case !foundPort:
+		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPort)
 	}
 
-	flag.Parse()
-	if flag.NArg() != 1 {
-		log.Fatal("You need to specify Apstra URL")
-	}
-
-	aosUrl, err := url.Parse(flag.Arg(0))
+	port, err := strconv.Atoi(portstr)
 	if err != nil {
-		log.Fatalf("error parsing url from command line - %v", err)
-	}
-	port, err := strconv.Atoi(aosUrl.Port())
-	if err != nil {
-		log.Fatalf("error parsing port from URL - %v", err)
+		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
 
-	cfg := apstratelemetry.AosClientCfg{
-		Host:   aosUrl.Hostname(),
+	return &aosSdk.AosClientCfg{
+		Scheme: scheme,
+		Host:   host,
 		Port:   uint16(port),
-		Scheme: aosUrl.Scheme,
-		User:   aosUrl.User.Username(),
-		Pass:   pw,
+		User:   user,
+		Pass:   pass,
+	}, nil
+}
+
+func main() {
+	cfg, err := aosClientClientCfg()
+	if err != nil {
+		log.Fatal(err)
 	}
-	aosClient, err := apstratelemetry.NewAosClient(&cfg)
+
+	aosClient, err := aosSdk.NewAosClient(cfg)
 	if err != nil {
 		log.Fatalf("error creating new AOS client - %v", err)
 	}
@@ -48,34 +60,38 @@ func main() {
 		log.Fatalf("error logging in AOS client - %v", err)
 	}
 
-	ver, err := aosClient.GetVersion()
-	if err != nil {
-		log.Fatalf("error getting AOS version - %v", err)
-	}
-
-	sc, err := aosClient.GetStreamingConfigs()
-	if err != nil {
-		log.Fatalf("error getting all streaming configs - %v", err)
-	}
-
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.SetIndent("", "    ")
 
+	// get version
+	ver, err := aosClient.GetVersion()
+	if err != nil {
+		log.Fatalf("error getting AOS version - %v", err)
+	}
 	err = enc.Encode(ver)
 	if err != nil {
 		log.Fatalf("error encoding data to JSON - %v", err)
 	}
-	log.Println(buf.String())
 
+	// get streaming configs
+	sc, err := aosClient.GetStreamingConfigs()
+	if err != nil {
+		log.Fatalf("error getting all streaming configs - %v", err)
+	}
 	err = enc.Encode(sc)
 	if err != nil {
 		log.Fatalf("error encoding data to JSON - %v", err)
 	}
-	log.Println(buf.String())
 
 	err = aosClient.Logout()
 	if err != nil {
 		log.Fatalf("error logging out in AOS client - %v", err)
 	}
+
+	// print the buffer
+	log.Println(buf.String())
+
+	//s := grpc.NewServer()
+	//aosST.
 }

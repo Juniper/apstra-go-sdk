@@ -9,7 +9,66 @@ import (
 
 const (
 	aosApiStreamingConfig = "/api/streaming-config"
+
+	AosApiStreamingConfigSequencingTypeUnknown AosApiStreamingConfigSequencingType = iota
+	AosApiStreamingConfigSequencingTypeSequenced
+	AosApiStreamingConfigSequencingTypeUnsequenced
+
+	AosApiStreamingConfigMessageTypeUnknown AosApiStreamingConfigMessageType = iota
+	AosApiStreamingConfigMessageTypeAlerts
+	AosApiStreamingConfigMessageTypeEvents
+	AosApiStreamingConfigMessageTypePerfmon
+
+	AosApiStreamingConfigProtocolTypeUnknown AosApiStreamingConfigProtocol = iota
+	AosApiStreamingConfigProtocolTypeProtoBufTcp
 )
+
+type AosApiStreamingConfigId string
+
+type AosApiStreamingConfigSequencingType int
+
+func (o AosApiStreamingConfigSequencingType) String() string {
+	switch o {
+	case AosApiStreamingConfigSequencingTypeUnknown:
+		return "unknown"
+	case AosApiStreamingConfigSequencingTypeSequenced:
+		return "sequenced"
+	case AosApiStreamingConfigSequencingTypeUnsequenced:
+		return "unsequenced"
+	default:
+		return fmt.Sprintf("sequencing type %d has no string value", o)
+	}
+}
+
+type AosApiStreamingConfigMessageType int
+
+func (o AosApiStreamingConfigMessageType) String() string {
+	switch o {
+	case AosApiStreamingConfigMessageTypeUnknown:
+		return "unknown"
+	case AosApiStreamingConfigMessageTypeAlerts:
+		return "alerts"
+	case AosApiStreamingConfigMessageTypeEvents:
+		return "events"
+	case AosApiStreamingConfigMessageTypePerfmon:
+		return "perfmon"
+	default:
+		return fmt.Sprintf("message type %d has no string value", o)
+	}
+}
+
+type AosApiStreamingConfigProtocol int
+
+func (o AosApiStreamingConfigProtocol) String() string {
+	switch o {
+	case AosApiStreamingConfigProtocolTypeUnknown:
+		return "unknown"
+	case AosApiStreamingConfigProtocolTypeProtoBufTcp:
+		return "protoBufOverTcp"
+	default:
+		return fmt.Sprintf("message type %d has no string value", o)
+	}
+}
 
 type AosGetStreamingConfigsResponse struct {
 	Items []AosStreamingConfig `json:"items"`
@@ -82,43 +141,71 @@ func (o AosClient) getStreamingConfig(id string) (*AosStreamingConfig, error) {
 	return &result, nil
 }
 
-func (o AosClient) createStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (string, error) {
+func (o AosClient) postStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (*aosCreateStreamingConfigResponse, error) {
 	msg, err := json.Marshal(cfg)
 	if err != nil {
-		return "", fmt.Errorf("error marshaling AosStreamingConfigStreamingEndpoint object - %v", err)
+		return nil, fmt.Errorf("error marshaling AosStreamingConfigStreamingEndpoint object - %v", err)
 	}
+
+	//todo: use post method here
 
 	var result aosCreateStreamingConfigResponse
 	url := o.baseUrl + aosApiStreamingConfig
 	err = o.post(url, msg, []int{201}, &result)
 	if err != nil {
-		return "", fmt.Errorf("error calling %s - %v", url, err)
+		return nil, fmt.Errorf("error calling %s - %v", url, err)
 
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(msg))
 	if err != nil {
-		return "", fmt.Errorf("error creating http Request - %v", err)
+		return nil, fmt.Errorf("error creating http Request - %v", err)
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authtoken", o.token)
+	req.Header.Set("Authtoken", o.login.Token)
 
 	resp, err := o.client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("error calling http.client.Do - %v", err)
+		return nil, fmt.Errorf("error calling http.client.Do - %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 201 {
-		return "", fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 201, resp.StatusCode, aosApiStreamingConfig)
+		return nil, fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 201, resp.StatusCode, aosApiStreamingConfig)
 	}
 
 	var createStreamingConfigResp *aosCreateStreamingConfigResponse
 	err = json.NewDecoder(resp.Body).Decode(&createStreamingConfigResp)
 	if err != nil {
-		return "", fmt.Errorf("error decoding aosCreateStreamingConfigResponse JSON - %v", err)
+		return nil, fmt.Errorf("error decoding aosCreateStreamingConfigResponse JSON - %v", err)
 	}
 
-	return createStreamingConfigResp.Id, nil
+	return createStreamingConfigResp, nil
+}
+
+type NewStreamingReceiverIn struct {
+	StreamType     AosApiStreamingConfigSequencingType
+	MessageType    AosApiStreamingConfigMessageType
+	SequencingMode AosApiStreamingConfigSequencingType
+	Protocol       AosApiStreamingConfigProtocol
+	Hostname       string
+	Port           uint16
+}
+
+func (o AosClient) NewStreamingReceiver(in *NewStreamingReceiverIn) (*AosApiStreamingConfigId, error) {
+	cfg := AosStreamingConfigStreamingEndpoint{
+		StreamingType:  in.StreamType.String(),
+		SequencingMode: in.SequencingMode.String(),
+		Protocol:       in.Protocol.String(),
+		Hostname:       in.Hostname,
+		Port:           in.Port,
+	}
+	response, err := o.postStreamingConfig(&cfg)
+	if err != nil {
+		return nil, fmt.Errorf("error creating NewStreamingReceiver - %v", err)
+	}
+
+	id := AosApiStreamingConfigId(response.Id)
+	return &id, nil
 }

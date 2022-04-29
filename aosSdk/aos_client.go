@@ -29,10 +29,11 @@ type AosClientCfg struct {
 
 // AosClient interacts with an AOS API server
 type AosClient struct {
-	baseUrl string
-	cfg     *AosClientCfg
-	token   string
-	client  *http.Client
+	baseUrl   string
+	cfg       *AosClientCfg
+	login     *aosUserLoginResponse
+	loginTime time.Time
+	client    *http.Client
 }
 
 // NewAosClient creates an AosClient object
@@ -58,11 +59,11 @@ func NewAosClient(cfg *AosClientCfg) (*AosClient, error) {
 		},
 	}
 
-	return &AosClient{cfg: cfg, baseUrl: baseUrl, client: client}, nil
+	return &AosClient{cfg: cfg, baseUrl: baseUrl, client: client, login: &aosUserLoginResponse{}}, nil
 }
 
 func (o AosClient) get(url string, expectedResponseCodes []int, jsonPtr interface{}) error {
-	if o.token == "" {
+	if o.login.Token == "" {
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
@@ -71,7 +72,7 @@ func (o AosClient) get(url string, expectedResponseCodes []int, jsonPtr interfac
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authtoken", o.token)
+	req.Header.Set("Authtoken", o.login.Token)
 
 	resp, err := o.client.Do(req)
 	if err != nil {
@@ -91,8 +92,8 @@ func (o AosClient) get(url string, expectedResponseCodes []int, jsonPtr interfac
 	return nil
 }
 
-func (o AosClient) post(url string, payload []byte, expectedResponseCodes []int, jsonPtr interface{}) error {
-	if o.token == "" {
+func (o *AosClient) post(url string, payload []byte, expectedResponseCodes []int, jsonPtr interface{}) error {
+	if o.login.Token == "" && url != o.baseUrl+aosApiUserLogin {
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
@@ -101,7 +102,7 @@ func (o AosClient) post(url string, payload []byte, expectedResponseCodes []int,
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authtoken", o.token)
+	req.Header.Set("Authtoken", o.login.Token)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := o.client.Do(req)

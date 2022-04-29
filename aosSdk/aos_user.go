@@ -1,10 +1,9 @@
 package aosSdk
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"time"
 )
 
 const (
@@ -16,13 +15,13 @@ const (
 	aosApiUserLogout = "/api/user/logout"
 )
 
-// aosUserLoginRequest payload to the aosApiUserLogin API endpoint
+// aosUserLoginRequest token to the aosApiUserLogin API endpoint
 type aosUserLoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-// aosUserLoginResponse payload returned by the aosApiUserLogin API endpoint
+// aosUserLoginResponse token returned by the aosApiUserLogin API endpoint
 type aosUserLoginResponse struct {
 	Token string `json:"token"`
 	Id    string `json:"id"`
@@ -39,30 +38,13 @@ func (o *AosClient) userLogin() error {
 		return fmt.Errorf("error marshaling aosLogin object - %v", err)
 	}
 
-	req, err := http.NewRequest("POST", o.baseUrl+aosApiUserLogin, bytes.NewBuffer(msg))
+	url := o.baseUrl + aosApiUserLogin
+	err = o.post(url, msg, []int{201}, o.login)
 	if err != nil {
-		return fmt.Errorf("error creating http Request - %v", err)
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := o.client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error calling http.client.Do - %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 201 {
-		return fmt.Errorf("http response code is not '%d' got '%d' at '%s'", 201, resp.StatusCode, aosApiUserLogin)
+		return fmt.Errorf("error calling '%s' - %v", url, err)
 	}
 
-	var loginResp *aosUserLoginResponse
-	err = json.NewDecoder(resp.Body).Decode(&loginResp)
-	if err != nil {
-		return fmt.Errorf("error decoding aosUserLoginResponse JSON - %v", err)
-	}
-
-	o.token = loginResp.Token
+	o.loginTime = time.Now()
 
 	return nil
 }
