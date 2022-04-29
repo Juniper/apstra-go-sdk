@@ -122,7 +122,7 @@ func (o AosClient) post(url string, payload []byte, expectedResponseCodes []int,
 	return nil
 }
 
-func (o AosClient) Login() error {
+func (o *AosClient) Login() error {
 	return o.userLogin()
 }
 
