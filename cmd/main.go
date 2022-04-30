@@ -4,7 +4,6 @@ import (
 	"fmt"
 	aosSdk "github.com/chrismarget-j/apstraTelemetry/aosSdk"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"strconv"
@@ -15,97 +14,135 @@ const (
 	envApstraStreamPort = "APSTRA_STREAM_PORT"
 )
 
-func aosClientClientCfg() (*aosSdk.AosClientCfg, error) {
-	user, foundUser := os.LookupEnv(aosSdk.EnvApstraUser)
-	pass, foundPass := os.LookupEnv(aosSdk.EnvApstraPass)
-	scheme, foundScheme := os.LookupEnv(aosSdk.EnvApstraScheme)
-	host, foundHost := os.LookupEnv(aosSdk.EnvApstraHost)
-	portstr, foundPort := os.LookupEnv(aosSdk.EnvApstraPort)
+// getConfigIn includes details for the clientCfg (AOS API
+// location+credentials) the required streamingConfig (AOS API configuration to
+// point events at our collector) and streamTarget (our listener for AOS
+// protobuf messages)
+type getConfigIn struct {
+	clientCfg       *aosSdk.AosClientCfg          // AOS API client
+	streamingConfig *aosSdk.NewStreamingConfigCfg // Specifies target to AOS API
+	streamTarget    *aosSdk.AosStreamTargetCfg    // Our protobuf stream listener
+}
+
+func getConfig(in getConfigIn) error {
+	aosScheme, foundAosScheme := os.LookupEnv(aosSdk.EnvApstraScheme)
+	aosUser, foundAosUser := os.LookupEnv(aosSdk.EnvApstraUser)
+	aosPass, foundAosPass := os.LookupEnv(aosSdk.EnvApstraPass)
+	aosHost, foundAosHost := os.LookupEnv(aosSdk.EnvApstraHost)
+	aosPort, foundAosPort := os.LookupEnv(aosSdk.EnvApstraPort)
+	recHost, foundRecHost := os.LookupEnv(envApstraStreamHost)
+	recPort, foundRecPort := os.LookupEnv(envApstraStreamPort)
 
 	switch {
-	case !foundUser:
-		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraUser)
-	case !foundPass:
-		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPass)
-	case !foundScheme:
-		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraScheme)
-	case !foundHost:
-		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraHost)
-	case !foundPort:
-		return nil, fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPort)
+	case !foundAosScheme:
+		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraScheme)
+	case !foundAosUser:
+		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraUser)
+	case !foundAosPass:
+		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPass)
+	case !foundAosHost:
+		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraHost)
+	case !foundAosPort:
+		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPort)
+	case !foundRecHost:
+		return fmt.Errorf("environment variable '%s' not found", envApstraStreamHost)
+	case !foundRecPort:
+		return fmt.Errorf("environment variable '%s' not found", envApstraStreamPort)
 	}
 
-	port, err := strconv.Atoi(portstr)
+	aosPortInt, err := strconv.Atoi(aosPort)
 	if err != nil {
-		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
+		return fmt.Errorf("error converting '%s' to integer - %v", aosPort, err)
 	}
 
-	return &aosSdk.AosClientCfg{
-		Scheme: scheme,
-		Host:   host,
-		Port:   uint16(port),
-		User:   user,
-		Pass:   pass,
-	}, nil
+	recPortInt, err := strconv.Atoi(recPort)
+	if err != nil {
+		return fmt.Errorf("error converting '%s' to integer - %v", recPort, err)
+	}
+
+	in.clientCfg.Scheme = aosScheme
+	in.clientCfg.Host = aosHost
+	in.clientCfg.Port = uint16(aosPortInt)
+	in.clientCfg.User = aosUser
+	in.clientCfg.Pass = aosPass
+
+	in.streamingConfig.StreamingType = aosSdk.StreamingConfigStreamingTypeAlerts
+	in.streamingConfig.Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
+	in.streamingConfig.SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
+	in.streamingConfig.Hostname = recHost
+	in.streamingConfig.Port = uint16(recPortInt)
+
+	in.streamTarget.StreamingType = aosSdk.StreamingConfigStreamingTypeAlerts
+	in.streamTarget.Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
+	in.streamTarget.SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
+	in.streamTarget.Port = uint16(recPortInt)
+
+	return nil
 }
-
-func client() (*aosSdk.AosClient, error) {
-	cfg, err := aosClientClientCfg()
-	if err != nil {
-		return nil, fmt.Errorf("error getting client config - %v", err)
-	}
-
-	aosClient, err := aosSdk.NewAosClient(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error creating client - %v", err)
-	}
-
-	err = aosClient.Login()
-	if err != nil {
-		return nil, fmt.Errorf("error logging in AOS client - %v", err)
-	}
-
-	return aosClient, nil
-}
-
-func listener() (net.Listener, error) {
-	streamPort, found := os.LookupEnv(envApstraStreamPort)
-	if !found {
-		return nil, fmt.Errorf("environment variable '%s' not found", envApstraStreamPort)
-	}
-	return net.Listen("tcp", ":"+streamPort)
-}
-
-//func connHandler(conn net.Conn, errChan chan<- error) {
-//	msgLenBuf := make([]byte, 2)
-//	buf := bytes.Buffer{}
-//	conn.Read(msgLenBuf)
-//}
 
 func main() {
+	// handle interrupts
 	quitChan := make(chan os.Signal)
 	signal.Notify(quitChan, os.Interrupt, os.Kill)
 
-	client, err := client()
+	// configuration
+	clientCfg := aosSdk.AosClientCfg{}
+	streamingConfig := aosSdk.NewStreamingConfigCfg{}
+	streamTargetConfig := aosSdk.AosStreamTargetCfg{}
+	err := getConfig(getConfigIn{
+		clientCfg:       &clientCfg,
+		streamingConfig: &streamingConfig,
+		streamTarget:    &streamTargetConfig,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	listener, err := listener()
+	// create AOS client
+	c, err := aosSdk.NewAosClient(&clientCfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer listener.Close()
 
-	//go func() {
-	//	for {
-	//		cxn, err := listener.Accept()
-	//		if err != nil {
-	//			log.Fatalf("socket accept error - %v", err)
-	//		}
-	//	}
-	//}()
+	// login
+	err = c.Login()
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	// create AOS stream target service
+	streamTarget, err := aosSdk.NewStreamTarget(&streamTargetConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// start AOS stream target service
+	msgChan, errChan, err := streamTarget.Start()
+
+	// tell AOS about our stream target (create a StreamingConfig)
+	streamConfigId, err := c.NewStreamingConfig(&streamingConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Stream target registered with AOS API - ID: %s", string(*streamConfigId))
+
+MAINLOOP:
+	for {
+		select {
+		// interrupt (ctrl-c or whatever)
+		case <-quitChan:
+			break MAINLOOP
+		// aosStreamTarget has a message
+		case msg := <-msgChan:
+			log.Println(msg)
+		// aosStreamTarget has an error
+		case err := <-errChan:
+			log.Fatal(err)
+		}
+	}
+
+	streamTarget.Stop()
 	<-quitChan
 	os.Exit(0)
 
@@ -119,9 +156,9 @@ func main() {
 	//	log.Fatalf("error encoding data to JSON - %v", err)
 	//}
 
-	err = client.Logout()
+	err = c.Logout()
 	if err != nil {
-		log.Fatalf("error logging out in AOS client - %v", err)
+		log.Fatalf("error logging out in AOS aosClient - %v", err)
 	}
 
 	// print the buffer
