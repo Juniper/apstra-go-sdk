@@ -41,11 +41,14 @@ type Client struct {
 
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
-	// todo make use of passed TLS config
+	// todo force caller to supply non-nil tlsconfig
+	// todo move hxxps insecure bs out of this library
 	if cfg.Ctx == nil {
 		cfg.Ctx = context.TODO()
 	}
-	tlsConfig := &tls.Config{}
+	if cfg.TlsConfig == nil {
+		cfg.TlsConfig = &tls.Config{}
+	}
 	var baseUrl string
 	switch cfg.Scheme {
 	case schemeHttp:
@@ -54,7 +57,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		baseUrl = fmt.Sprintf("%s://%s:%d", schemeHttps, cfg.Host, cfg.Port)
 	case schemeHttpsUnsafe:
 		baseUrl = fmt.Sprintf("%s://%s:%d", schemeHttps, cfg.Host, cfg.Port)
-		tlsConfig.InsecureSkipVerify = true
+		cfg.TlsConfig.InsecureSkipVerify = true
 	default:
 		return nil, fmt.Errorf("scheme '%s' is not supported", cfg.Scheme)
 	}
@@ -62,7 +65,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			TLSClientConfig: tlsConfig,
+			TLSClientConfig: cfg.TlsConfig,
 		},
 	}
 
