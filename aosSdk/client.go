@@ -127,12 +127,12 @@ func (o *Client) post(url string, payload []byte, expectedResponseCodes []int, j
 }
 
 // todo: need smarter handling of response codes, errors, errors in response body
-func (o *Client) delete(url string, payload []byte, expectedResponseCodes []int, jsonPtr interface{}) error {
+func (o *Client) delete(url string, expectedResponseCodes []int) error {
 	if o.login.Token == "" {
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
-	req, err := http.NewRequestWithContext(o.cfg.Ctx, "DELETE", url, bytes.NewBuffer(payload))
+	req, err := http.NewRequestWithContext(o.cfg.Ctx, "DELETE", url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
@@ -150,10 +150,6 @@ func (o *Client) delete(url string, payload []byte, expectedResponseCodes []int,
 		dump, _ := httputil.DumpResponse(resp, true)
 		return fmt.Errorf("unexpected http response code '%d' (permitted: '%s') at '%s' (http dump follows)\n%s",
 			resp.StatusCode, strings.Join(intSliceToStringSlice(expectedResponseCodes), ","), url, string(dump))
-	}
-
-	if jsonPtr != nil {
-		return json.NewDecoder(resp.Body).Decode(jsonPtr)
 	}
 
 	return nil
