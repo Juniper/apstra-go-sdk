@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -20,11 +21,13 @@ const (
 
 // ClientCfg passed to NewClient() when instantiating a new Client{}
 type ClientCfg struct {
-	Scheme string
-	Host   string
-	Port   uint16
-	User   string
-	Pass   string
+	Scheme    string
+	Host      string
+	Port      uint16
+	User      string
+	Pass      string
+	TlsConfig *tls.Config
+	Ctx       context.Context
 }
 
 // Client interacts with an AOS API server
@@ -38,6 +41,10 @@ type Client struct {
 
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
+	// todo make use of passed TLS config
+	if cfg.Ctx == nil {
+		cfg.Ctx = context.TODO()
+	}
 	tlsConfig := &tls.Config{}
 	var baseUrl string
 	switch cfg.Scheme {
@@ -55,7 +62,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: tlsConfig,
 		},
 	}
 
@@ -67,7 +74,7 @@ func (o Client) get(url string, expectedResponseCodes []int, jsonPtr interface{}
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(o.cfg.Ctx, "GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
@@ -97,7 +104,7 @@ func (o *Client) post(url string, payload []byte, expectedResponseCodes []int, j
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	req, err := http.NewRequestWithContext(o.cfg.Ctx, "POST", url, bytes.NewBuffer(payload))
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
