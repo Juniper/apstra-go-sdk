@@ -115,18 +115,14 @@ type createStreamingConfigResponse struct {
 	Id string `json:"id"`
 }
 
-func (o Client) getAllStreamingConfigs() ([]*AosGetStreamingConfigResponse, error) {
-	var agscr AosGetStreamingConfigsResponse
+func (o Client) getAllStreamingConfigs() ([]AosGetStreamingConfigResponse, error) {
+	var result AosGetStreamingConfigsResponse
 	url := o.baseUrl + apiUrlStreamingConfig
-	err := o.get(url, []int{200}, &agscr)
+	err := o.get(url, []int{200}, &result)
 	if err != nil {
 		return nil, fmt.Errorf("error calling %s - %v", url, err)
 	}
-	var result []*AosGetStreamingConfigResponse
-	for _, i := range agscr.Items {
-		result = append(result, &i)
-	}
-	return result, nil
+	return result.Items, nil
 }
 
 func (o Client) getStreamingConfig(id string) (*AosGetStreamingConfigResponse, error) {

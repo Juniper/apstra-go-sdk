@@ -138,7 +138,7 @@ func (o Client) Logout() error {
 	return o.userLogout()
 }
 
-func (o Client) GetStreamingConfigs() ([]*AosGetStreamingConfigResponse, error) {
+func (o Client) GetStreamingConfigs() ([]AosGetStreamingConfigResponse, error) {
 	return o.getAllStreamingConfigs()
 }
 
