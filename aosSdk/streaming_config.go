@@ -20,13 +20,20 @@ const (
 	StreamingConfigProtocolUnknown AosApiStreamingConfigProtocol = iota
 	StreamingConfigProtocolProtoBufOverTcp
 
-	ErrStringStreamingConfigExists = "Entity already exists"
+	ErrStringStreamingConfigExists   = "Entity already exists"
+	ErrStringStreamingConfigNotFound = "streaming config not found"
 )
 
 type ErrStreamingConfigExists struct{}
 
 func (o *ErrStreamingConfigExists) Error() string {
 	return ErrStringStreamingConfigExists
+}
+
+type ErrStreamingConfigNotFound struct{}
+
+func (o ErrStreamingConfigNotFound) Error() string {
+	return ErrStringStreamingConfigNotFound
 }
 
 type StreamingConfigId string
@@ -182,6 +189,13 @@ func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, e
 
 	id := StreamingConfigId(response.Id)
 	return id, nil
+}
+
+// DeleteStreamingConfig removes the specified StreamingConfig (Streaming
+// Receiver) on the Aos server.
+func (o Client) DeleteStreamingConfig(id StreamingConfigId) error {
+	url := o.baseUrl + apiUrlStreamingConfig + "/" + string(id)
+	return o.delete(url, []int{202})
 }
 
 // GetStreamingConfigIDByCfg checks current StreamingConfigs (Streaming

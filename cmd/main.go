@@ -186,6 +186,21 @@ MAINLOOP:
 		}
 	}
 
+	err = c.DeleteStreamingConfig(streamId1)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = c.DeleteStreamingConfig(streamId2)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = c.DeleteStreamingConfig(streamId3)
+	if err != nil {
+		log.Println(err)
+	}
+
 	//streamTarget.Stop()
 	os.Exit(0)
 
