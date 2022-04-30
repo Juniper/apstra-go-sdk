@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	"crypto/tls"
 	"fmt"
 	aosSdk "github.com/chrismarget-j/apstraTelemetry/aosSdk"
 	"log"
@@ -31,8 +31,8 @@ func getConfig(in getConfigIn) error {
 	aosPass, foundAosPass := os.LookupEnv(aosSdk.EnvApstraPass)
 	aosHost, foundAosHost := os.LookupEnv(aosSdk.EnvApstraHost)
 	aosPort, foundAosPort := os.LookupEnv(aosSdk.EnvApstraPort)
-	recHost, foundRecHost := os.LookupEnv(envApstraStreamHost)
-	recPort, foundRecPort := os.LookupEnv(envApstraStreamPort)
+	//recHost, foundRecHost := os.LookupEnv(envApstraStreamHost)
+	//recPort, foundRecPort := os.LookupEnv(envApstraStreamPort)
 
 	switch {
 	case !foundAosScheme:
@@ -45,10 +45,10 @@ func getConfig(in getConfigIn) error {
 		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraHost)
 	case !foundAosPort:
 		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPort)
-	case !foundRecHost:
-		return fmt.Errorf("environment variable '%s' not found", envApstraStreamHost)
-	case !foundRecPort:
-		return fmt.Errorf("environment variable '%s' not found", envApstraStreamPort)
+		//case !foundRecHost:
+		//	return fmt.Errorf("environment variable '%s' not found", envApstraStreamHost)
+		//case !foundRecPort:
+		//	return fmt.Errorf("environment variable '%s' not found", envApstraStreamPort)
 	}
 
 	aosPortInt, err := strconv.Atoi(aosPort)
@@ -56,28 +56,28 @@ func getConfig(in getConfigIn) error {
 		return fmt.Errorf("error converting '%s' to integer - %v", aosPort, err)
 	}
 
-	recPortInt, err := strconv.Atoi(recPort)
-	if err != nil {
-		return fmt.Errorf("error converting '%s' to integer - %v", recPort, err)
-	}
+	//recPortInt, err := strconv.Atoi(recPort)
+	//if err != nil {
+	//	return fmt.Errorf("error converting '%s' to integer - %v", recPort, err)
+	//}
 
 	in.clientCfg.Scheme = aosScheme
 	in.clientCfg.Host = aosHost
 	in.clientCfg.Port = uint16(aosPortInt)
 	in.clientCfg.User = aosUser
 	in.clientCfg.Pass = aosPass
-	in.clientCfg.Ctx = context.TODO()
+	in.clientCfg.TlsConfig = &tls.Config{InsecureSkipVerify: true}
 
 	in.streamingConfig.StreamingType = aosSdk.StreamingConfigStreamingTypeAlerts
 	in.streamingConfig.Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
 	in.streamingConfig.SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
-	in.streamingConfig.Hostname = recHost
-	in.streamingConfig.Port = uint16(recPortInt)
+	//in.streamingConfig.Hostname = recHost
+	//in.streamingConfig.Port = uint16(recPortInt)
 
 	in.streamTarget.StreamingType = aosSdk.StreamingConfigStreamingTypeAlerts
 	in.streamTarget.Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
-	in.streamTarget.SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
-	in.streamTarget.Port = uint16(recPortInt)
+	//in.streamTarget.SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
+	//in.streamTarget.Port = uint16(recPortInt)
 
 	return nil
 }
@@ -87,10 +87,12 @@ func main() {
 	quitChan := make(chan os.Signal)
 	signal.Notify(quitChan, os.Interrupt, os.Kill)
 
-	// configuration
+	// configuration objects
 	clientCfg := aosSdk.ClientCfg{}                   // config for interacting with AOS API
-	streamingConfig := aosSdk.NewStreamingConfigCfg{} // config for pointing event stream at our target
+	streamingConfig := aosSdk.StreamingConfigCfg{}    // config for pointing event stream at our target
 	streamTargetConfig := aosSdk.AosStreamTargetCfg{} // config for our event stream target
+
+	// populate configuration objects using local function
 	err := getConfig(getConfigIn{
 		clientCfg:       &clientCfg,
 		streamingConfig: &streamingConfig,
@@ -101,12 +103,12 @@ func main() {
 	}
 
 	// create AOS client
-	c, err := aosSdk.NewClient(&clientCfg)
+	c, err := aosSdk.NewClient(clientCfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// login
+	// fetch AOS auth token
 	err = c.Login()
 	if err != nil {
 		log.Fatal(err)
@@ -130,17 +132,43 @@ func main() {
 	//
 	//log.Printf("Stream target registered with AOS API - ID: %s", string(*streamConfigId))
 
-	streamId1, err := c.NewStreamingConfig(&aosSdk.NewStreamingConfigCfg{
+	streamId1, err := c.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
 		StreamingType:  aosSdk.StreamingConfigStreamingTypePerfmon,
 		SequencingMode: aosSdk.StreamingConfigSequencingModeSequenced,
 		Protocol:       aosSdk.StreamingConfigProtocolProtoBufOverTcp,
-		Hostname:       "1.1.1.1",
-		Port:           1000,
+		Hostname:       "one.one.one.one",
+		Port:           1111,
 	})
 	if err != nil {
 		log.Println(err)
 	} else {
-		log.Println(*streamId1)
+		log.Println(streamId1)
+	}
+
+	streamId2, err := c.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
+		StreamingType:  aosSdk.StreamingConfigStreamingTypePerfmon,
+		SequencingMode: aosSdk.StreamingConfigSequencingModeSequenced,
+		Protocol:       aosSdk.StreamingConfigProtocolProtoBufOverTcp,
+		Hostname:       "1.1.1.1",
+		Port:           1111,
+	})
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println(streamId2)
+	}
+
+	streamId3, err := c.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
+		StreamingType:  aosSdk.StreamingConfigStreamingTypePerfmon,
+		SequencingMode: aosSdk.StreamingConfigSequencingModeSequenced,
+		Protocol:       aosSdk.StreamingConfigProtocolProtoBufOverTcp,
+		Hostname:       "1.0.0.1",
+		Port:           1111,
+	})
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println(streamId3)
 	}
 
 MAINLOOP:
