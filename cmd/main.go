@@ -20,9 +20,9 @@ const (
 // point events at our collector) and streamTarget (our listener for AOS
 // protobuf messages)
 type getConfigIn struct {
-	clientCfg       *aosSdk.ClientCfg             // AOS API client
-	streamingConfig *aosSdk.NewStreamingConfigCfg // Specifies target to AOS API
-	streamTarget    *aosSdk.AosStreamTargetCfg    // Our protobuf stream listener
+	clientCfg       *aosSdk.ClientCfg          // AOS API client
+	streamingConfig *aosSdk.StreamingConfigCfg // Specifies target to AOS API
+	streamTarget    *aosSdk.AosStreamTargetCfg // Our protobuf stream listener
 }
 
 func getConfig(in getConfigIn) error {
