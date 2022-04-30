@@ -19,7 +19,15 @@ const (
 
 	StreamingConfigProtocolUnknown AosApiStreamingConfigProtocol = iota
 	StreamingConfigProtocolProtoBufOverTcp
+
+	ErrStringStreamingConfigExists = "Entity already exists"
 )
+
+type ErrStreamingConfigExists struct{}
+
+func (o *ErrStreamingConfigExists) Error() string {
+	return ErrStringStreamingConfigExists
+}
 
 type StreamingConfigId string
 
@@ -68,18 +76,18 @@ func (o AosApiStreamingConfigProtocol) String() string {
 	}
 }
 
-type AosGetStreamingConfigsResponse struct {
-	Items []AosGetStreamingConfigResponse `json:"items"`
+type GetStreamingConfigsResponse struct {
+	Items []GetStreamingConfigResponse `json:"items"`
 }
 
-type AosGetStreamingConfigResponse struct {
-	Status         AosStreamingConfigStatus `json:"status"`
-	StreamingType  string                   `json:"streaming_type"`
-	SequencingMode string                   `json:"sequencing_mode"`
-	Protocol       string                   `json:"protocol"`
-	Hostname       string                   `json:"hostname"`
-	Id             string                   `json:"id"`
-	Port           uint16                   `json:"port"`
+type GetStreamingConfigResponse struct {
+	Status         AosStreamingConfigStatus           `json:"status"`
+	StreamingType  AosApiStreamingConfigStreamingType `json:"streaming_type"`
+	SequencingMode StreamingConfigSequencingMode      `json:"sequencing_mode"`
+	Protocol       AosApiStreamingConfigProtocol      `json:"protocol"`
+	Hostname       string                             `json:"hostname"`
+	Id             StreamingConfigId                  `json:"id"`
+	Port           uint16                             `json:"port"`
 }
 
 type AosStreamingConfigStatus struct {
@@ -112,11 +120,12 @@ type AosStreamingConfigDnsLog struct {
 }
 
 type createStreamingConfigResponse struct {
-	Id string `json:"id"`
+	Id     string `json:"id"`
+	Errors string `json:"errors"`
 }
 
-func (o Client) getAllStreamingConfigs() ([]AosGetStreamingConfigResponse, error) {
-	var result AosGetStreamingConfigsResponse
+func (o Client) getAllStreamingConfigs() ([]GetStreamingConfigResponse, error) {
+	var result GetStreamingConfigsResponse
 	url := o.baseUrl + apiUrlStreamingConfig
 	err := o.get(url, []int{200}, &result)
 	if err != nil {
@@ -125,8 +134,8 @@ func (o Client) getAllStreamingConfigs() ([]AosGetStreamingConfigResponse, error
 	return result.Items, nil
 }
 
-func (o Client) getStreamingConfig(id string) (*AosGetStreamingConfigResponse, error) {
-	var result AosGetStreamingConfigResponse
+func (o Client) getStreamingConfig(id string) (*GetStreamingConfigResponse, error) {
+	var result GetStreamingConfigResponse
 	url := o.baseUrl + apiUrlStreamingConfig + "/" + id
 	err := o.get(url, []int{200}, result)
 	if err != nil {
@@ -143,10 +152,15 @@ func (o Client) postStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (*
 
 	var result createStreamingConfigResponse
 	url := o.baseUrl + apiUrlStreamingConfig
-	err = o.post(url, msg, []int{201}, &result)
+	err = o.post(url, msg, []int{201, 409}, &result)
 	if err != nil {
 		return nil, fmt.Errorf("error calling %s - %v", url, err)
-
+	}
+	if result.Errors == ErrStringStreamingConfigExists {
+		return nil, &ErrStreamingConfigExists{}
+	}
+	if result.Errors != "" {
+		return nil, fmt.Errorf("server error calling %s - %v", url, result.Errors)
 	}
 
 	return &result, nil
@@ -160,7 +174,7 @@ type NewStreamingConfigCfg struct {
 	Port           uint16
 }
 
-func (o Client) NewStreamingConfig(in *NewStreamingConfigCfg) (*StreamingConfigId, error) {
+func (o Client) NewStreamingConfig(in *NewStreamingConfigCfg) (StreamingConfigId, error) {
 	cfg := AosStreamingConfigStreamingEndpoint{
 		StreamingType:  in.StreamingType.String(),
 		SequencingMode: in.SequencingMode.String(),
@@ -170,9 +184,22 @@ func (o Client) NewStreamingConfig(in *NewStreamingConfigCfg) (*StreamingConfigI
 	}
 	response, err := o.postStreamingConfig(&cfg)
 	if err != nil {
-		return nil, fmt.Errorf("error in NewStreamingConfig - %v", err)
+		return "", fmt.Errorf("error in NewStreamingConfig - %v", err)
 	}
 
 	id := StreamingConfigId(response.Id)
-	return &id, nil
+	return id, nil
+}
+
+func (o Client) GetStreamingConfigByParams(in *NewStreamingConfigCfg) (StreamingConfigId, error) {
+	allSC, err := o.GetStreamingConfigs()
+	if err != nil {
+		return "", fmt.Errorf("error getting streaming configs - %v", err)
+	}
+	for _, sc := range allSC {
+		if in.Hostname == sc.Hostname && in.Port == sc.Port && in.StreamingType.String() == sc.StreamingType.String() {
+			return sc.Id, nil
+		}
+	}
+	return "", nil
 }

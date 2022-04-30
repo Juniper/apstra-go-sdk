@@ -88,9 +88,9 @@ func main() {
 	signal.Notify(quitChan, os.Interrupt, os.Kill)
 
 	// configuration
-	clientCfg := aosSdk.ClientCfg{}
-	streamingConfig := aosSdk.NewStreamingConfigCfg{}
-	streamTargetConfig := aosSdk.AosStreamTargetCfg{}
+	clientCfg := aosSdk.ClientCfg{}                   // config for interacting with AOS API
+	streamingConfig := aosSdk.NewStreamingConfigCfg{} // config for pointing event stream at our target
+	streamTargetConfig := aosSdk.AosStreamTargetCfg{} // config for our event stream target
 	err := getConfig(getConfigIn{
 		clientCfg:       &clientCfg,
 		streamingConfig: &streamingConfig,
@@ -111,23 +111,37 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer c.Logout()
 
-	// create AOS stream target service
-	streamTarget, err := aosSdk.NewStreamTarget(&streamTargetConfig)
+	//// create AOS stream target service
+	//streamTarget, err := aosSdk.NewStreamTarget(&streamTargetConfig)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//// start AOS stream target service
+	//msgChan, errChan, err := streamTarget.Start()
+
+	//// tell AOS about our stream target (create a StreamingConfig)
+	//streamConfigId, err := c.NewStreamingConfig(&streamingConfig)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//log.Printf("Stream target registered with AOS API - ID: %s", string(*streamConfigId))
+
+	streamId1, err := c.NewStreamingConfig(&aosSdk.NewStreamingConfigCfg{
+		StreamingType:  aosSdk.StreamingConfigStreamingTypePerfmon,
+		SequencingMode: aosSdk.StreamingConfigSequencingModeSequenced,
+		Protocol:       aosSdk.StreamingConfigProtocolProtoBufOverTcp,
+		Hostname:       "1.1.1.1",
+		Port:           1000,
+	})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+	} else {
+		log.Println(*streamId1)
 	}
-
-	// start AOS stream target service
-	msgChan, errChan, err := streamTarget.Start()
-
-	// tell AOS about our stream target (create a StreamingConfig)
-	streamConfigId, err := c.NewStreamingConfig(&streamingConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Stream target registered with AOS API - ID: %s", string(*streamConfigId))
 
 MAINLOOP:
 	for {
@@ -135,17 +149,16 @@ MAINLOOP:
 		// interrupt (ctrl-c or whatever)
 		case <-quitChan:
 			break MAINLOOP
-		// aosStreamTarget has a message
-		case msg := <-msgChan:
-			log.Println(msg)
-		// aosStreamTarget has an error
-		case err := <-errChan:
-			log.Fatal(err)
+			//// aosStreamTarget has a message
+			//case msg := <-msgChan:
+			//	log.Println(msg)
+			//// aosStreamTarget has an error
+			//case err := <-errChan:
+			//	log.Fatal(err)
 		}
 	}
 
-	streamTarget.Stop()
-	<-quitChan
+	//streamTarget.Stop()
 	os.Exit(0)
 
 	// get streaming configs
@@ -157,11 +170,6 @@ MAINLOOP:
 	//if err != nil {
 	//	log.Fatalf("error encoding data to JSON - %v", err)
 	//}
-
-	err = c.Logout()
-	if err != nil {
-		log.Fatalf("error logging out in AOS aosClient - %v", err)
-	}
 
 	// print the buffer
 	//log.Println(buf.String())

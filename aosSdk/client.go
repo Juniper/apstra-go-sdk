@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 	"time"
 )
@@ -90,8 +91,9 @@ func (o Client) get(url string, expectedResponseCodes []int, jsonPtr interface{}
 	defer resp.Body.Close()
 
 	if !intSliceContains(expectedResponseCodes, resp.StatusCode) {
-		return fmt.Errorf("unexpected http response code '%d' (permitted: '%s') at '%s'",
-			resp.StatusCode, strings.Join(intSliceToStringSlice(expectedResponseCodes), ","), url)
+		dump, _ := httputil.DumpResponse(resp, true)
+		return fmt.Errorf("unexpected http response code '%d' (permitted: '%s') at '%s' (http dump follows)\n%s",
+			resp.StatusCode, strings.Join(intSliceToStringSlice(expectedResponseCodes), ","), url, string(dump))
 	}
 
 	if jsonPtr != nil {
@@ -121,8 +123,9 @@ func (o *Client) post(url string, payload []byte, expectedResponseCodes []int, j
 	defer resp.Body.Close()
 
 	if !intSliceContains(expectedResponseCodes, resp.StatusCode) {
-		return fmt.Errorf("unexpected http response code '%d' (permitted: '%s') at '%s'",
-			resp.StatusCode, strings.Join(intSliceToStringSlice(expectedResponseCodes), ","), url)
+		dump, _ := httputil.DumpResponse(resp, true)
+		return fmt.Errorf("unexpected http response code '%d' (permitted: '%s') at '%s' (http dump follows)\n%s",
+			resp.StatusCode, strings.Join(intSliceToStringSlice(expectedResponseCodes), ","), url, string(dump))
 	}
 
 	if jsonPtr != nil {
@@ -140,7 +143,7 @@ func (o Client) Logout() error {
 	return o.userLogout()
 }
 
-func (o Client) GetStreamingConfigs() ([]AosGetStreamingConfigResponse, error) {
+func (o Client) GetStreamingConfigs() ([]GetStreamingConfigResponse, error) {
 	return o.getAllStreamingConfigs()
 }
 
