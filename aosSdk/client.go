@@ -72,6 +72,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, login: &userLoginResponse{}}, nil
 }
 
+// todo: need smarter handling of response codes, errors, errors in response body
 func (o Client) get(url string, expectedResponseCodes []int, jsonPtr interface{}) error {
 	if o.login.Token == "" {
 		return fmt.Errorf("cannot interact with AOS API without token")
@@ -103,6 +104,7 @@ func (o Client) get(url string, expectedResponseCodes []int, jsonPtr interface{}
 	return nil
 }
 
+// todo: need smarter handling of response codes, errors, errors in response body
 func (o *Client) post(url string, payload []byte, expectedResponseCodes []int, jsonPtr interface{}) error {
 	if o.login.Token == "" && url != o.baseUrl+apiUrlUserLogin {
 		return fmt.Errorf("cannot interact with AOS API without token")
