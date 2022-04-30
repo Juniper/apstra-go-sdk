@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	aosSdk "github.com/chrismarget-j/apstraTelemetry/aosSdk"
 	"log"
@@ -65,6 +66,7 @@ func getConfig(in getConfigIn) error {
 	in.clientCfg.Port = uint16(aosPortInt)
 	in.clientCfg.User = aosUser
 	in.clientCfg.Pass = aosPass
+	in.clientCfg.Ctx = context.TODO()
 
 	in.streamingConfig.StreamingType = aosSdk.StreamingConfigStreamingTypeAlerts
 	in.streamingConfig.Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp

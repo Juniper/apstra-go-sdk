@@ -41,10 +41,9 @@ type Client struct {
 
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
-	// todo force caller to supply non-nil tlsconfig
 	// todo move hxxps insecure bs out of this library
 	if cfg.Ctx == nil {
-		cfg.Ctx = context.TODO()
+		return nil, fmt.Errorf("refusing to create client without context")
 	}
 	if cfg.TlsConfig == nil {
 		cfg.TlsConfig = &tls.Config{}
