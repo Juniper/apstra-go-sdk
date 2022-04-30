@@ -166,6 +166,7 @@ func (o Client) postStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (*
 	return &result, nil
 }
 
+// NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the AOS server.
 func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, error) {
 	cfg := AosStreamingConfigStreamingEndpoint{
 		StreamingType:  in.StreamingType.String(),
@@ -183,15 +184,35 @@ func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, e
 	return id, nil
 }
 
-func (o Client) GetStreamingConfigByParams(in *StreamingConfigCfg) (StreamingConfigId, error) {
-	allSC, err := o.GetStreamingConfigs()
+// GetStreamingConfigIDByCfg checks current StreamingConfigs (Streaming
+// Receivers) against the supplied StreamingConfigCfg. If the stream seems
+// to already exist on the AOS server, the returned StreamingConfigId will be
+// populated. If not found, it will be empty.
+func (o Client) GetStreamingConfigIDByCfg(in *StreamingConfigCfg) (StreamingConfigId, error) {
+	all, err := o.GetStreamingConfigs()
 	if err != nil {
 		return "", fmt.Errorf("error getting streaming configs - %v", err)
 	}
-	for _, sc := range allSC {
-		if in.Hostname == sc.Hostname && in.Port == sc.Port && in.StreamingType.String() == sc.StreamingType.String() {
+	for _, sc := range all {
+		if CompareStreamingConfigs(&sc, in) {
 			return sc.Id, nil
 		}
 	}
 	return "", nil
+}
+
+// CompareStreamingConfigs returns true if the supplied StreamingConfigCfg
+// objects are likely to be recognized as a collision
+// (ErrStringStreamingConfigExists) by the AOS API.
+func CompareStreamingConfigs(a *StreamingConfigCfg, b *StreamingConfigCfg) bool {
+	if a.Hostname != b.Hostname {
+		return false
+	}
+	if a.Port != b.Port {
+		return false
+	}
+	if a.StreamingType != b.StreamingType {
+		return false
+	}
+	return true
 }
