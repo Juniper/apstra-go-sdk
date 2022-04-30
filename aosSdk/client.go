@@ -41,35 +41,24 @@ type Client struct {
 }
 
 // NewClient creates a Client object
-func NewClient(cfg *ClientCfg) (*Client, error) {
-	// todo move hxxps insecure bs out of this library
+func NewClient(cfg ClientCfg) (*Client, error) {
 	if cfg.Ctx == nil {
-		return nil, fmt.Errorf("refusing to create client without context")
+		cfg.Ctx = context.TODO()
 	}
+
 	if cfg.TlsConfig == nil {
 		cfg.TlsConfig = &tls.Config{}
 	}
-	var baseUrl string
-	switch cfg.Scheme {
-	case schemeHttp:
-		baseUrl = fmt.Sprintf("%s://%s:%d", schemeHttp, cfg.Host, cfg.Port)
-	case schemeHttps:
-		baseUrl = fmt.Sprintf("%s://%s:%d", schemeHttps, cfg.Host, cfg.Port)
-	case schemeHttpsUnsafe:
-		baseUrl = fmt.Sprintf("%s://%s:%d", schemeHttps, cfg.Host, cfg.Port)
-		cfg.TlsConfig.InsecureSkipVerify = true
-	default:
-		return nil, fmt.Errorf("scheme '%s' is not supported", cfg.Scheme)
-	}
+
+	baseUrl := fmt.Sprintf("%s://%s:%d", cfg.Scheme, cfg.Host, cfg.Port)
 
 	client := &http.Client{
-		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
 			TLSClientConfig: cfg.TlsConfig,
 		},
 	}
 
-	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, login: &userLoginResponse{}}, nil
+	return &Client{cfg: &cfg, baseUrl: baseUrl, client: client, login: &userLoginResponse{}}, nil
 }
 
 // todo: need smarter handling of response codes, errors, errors in response body
