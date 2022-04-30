@@ -96,7 +96,7 @@ func (o Client) getVersionsApi() (*versionsApiResponse, error) {
 
 func (o Client) getVersionsBuild() (*versionsBuildResponse, error) {
 	var response versionsBuildResponse
-	url := apiUrlVersionsApi
+	url := apiUrlVersionsBuild
 	err := o.get(url, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
@@ -138,7 +138,7 @@ func (o Client) postVersionsNode(request *versionsNodeRequest) (*versionsNodeRes
 		return nil, fmt.Errorf("error marshaling versionsDeviceRequest object - %v", err)
 	}
 	var response versionsNodeResponse
-	url := apiUrlVersionsIba
+	url := apiUrlVersionsNode
 	err = o.post(url, payload, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
@@ -148,7 +148,7 @@ func (o Client) postVersionsNode(request *versionsNodeRequest) (*versionsNodeRes
 
 func (o Client) getVersionsServer() (*versionsServerResponse, error) {
 	var response versionsServerResponse
-	url := apiUrlVersionsIba
+	url := apiUrlVersionsServer
 	err := o.get(url, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
