@@ -18,8 +18,8 @@ const (
 	EnvApstraScheme = "APSTRA_SCHEME"
 )
 
-// AosClientCfg passed to NewAosClient() when instantiating a new AosClient{}
-type AosClientCfg struct {
+// ClientCfg passed to NewClient() when instantiating a new Client{}
+type ClientCfg struct {
 	Scheme string
 	Host   string
 	Port   uint16
@@ -27,17 +27,17 @@ type AosClientCfg struct {
 	Pass   string
 }
 
-// AosClient interacts with an AOS API server
-type AosClient struct {
+// Client interacts with an AOS API server
+type Client struct {
 	baseUrl   string
-	cfg       *AosClientCfg
-	login     *aosUserLoginResponse
+	cfg       *ClientCfg
+	login     *userLoginResponse
 	loginTime time.Time
 	client    *http.Client
 }
 
-// NewAosClient creates an AosClient object
-func NewAosClient(cfg *AosClientCfg) (*AosClient, error) {
+// NewClient creates a Client object
+func NewClient(cfg *ClientCfg) (*Client, error) {
 	tlsConfig := &tls.Config{}
 	var baseUrl string
 	switch cfg.Scheme {
@@ -59,10 +59,10 @@ func NewAosClient(cfg *AosClientCfg) (*AosClient, error) {
 		},
 	}
 
-	return &AosClient{cfg: cfg, baseUrl: baseUrl, client: client, login: &aosUserLoginResponse{}}, nil
+	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, login: &userLoginResponse{}}, nil
 }
 
-func (o AosClient) get(url string, expectedResponseCodes []int, jsonPtr interface{}) error {
+func (o Client) get(url string, expectedResponseCodes []int, jsonPtr interface{}) error {
 	if o.login.Token == "" {
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
@@ -92,8 +92,8 @@ func (o AosClient) get(url string, expectedResponseCodes []int, jsonPtr interfac
 	return nil
 }
 
-func (o *AosClient) post(url string, payload []byte, expectedResponseCodes []int, jsonPtr interface{}) error {
-	if o.login.Token == "" && url != o.baseUrl+aosApiUserLogin {
+func (o *Client) post(url string, payload []byte, expectedResponseCodes []int, jsonPtr interface{}) error {
+	if o.login.Token == "" && url != o.baseUrl+apiUrlUserLogin {
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
@@ -123,18 +123,18 @@ func (o *AosClient) post(url string, payload []byte, expectedResponseCodes []int
 	return nil
 }
 
-func (o *AosClient) Login() error {
+func (o *Client) Login() error {
 	return o.userLogin()
 }
 
-func (o AosClient) Logout() error {
+func (o Client) Logout() error {
 	return o.userLogout()
 }
 
-func (o AosClient) GetStreamingConfigs() ([]*AosGetStreamingConfigResponse, error) {
+func (o Client) GetStreamingConfigs() ([]*AosGetStreamingConfigResponse, error) {
 	return o.getAllStreamingConfigs()
 }
 
-func (o AosClient) GetVersion() (*AosVersionResponse, error) {
+func (o Client) GetVersion() (*VersionResponse, error) {
 	return o.getVersion()
 }

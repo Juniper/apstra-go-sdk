@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	StreamingConfigApiUrl = "/api/streaming-config"
+	apiUrlStreamingConfig = "/api/streaming-config"
 
 	StreamingConfigSequencingModeUnknown StreamingConfigSequencingMode = iota
 	StreamingConfigSequencingModeSequenced
@@ -111,13 +111,13 @@ type AosStreamingConfigDnsLog struct {
 	Message string `json:"message"`
 }
 
-type aosCreateStreamingConfigResponse struct {
+type createStreamingConfigResponse struct {
 	Id string `json:"id"`
 }
 
-func (o AosClient) getAllStreamingConfigs() ([]*AosGetStreamingConfigResponse, error) {
+func (o Client) getAllStreamingConfigs() ([]*AosGetStreamingConfigResponse, error) {
 	var agscr AosGetStreamingConfigsResponse
-	url := o.baseUrl + StreamingConfigApiUrl
+	url := o.baseUrl + apiUrlStreamingConfig
 	err := o.get(url, []int{200}, &agscr)
 	if err != nil {
 		return nil, fmt.Errorf("error calling %s - %v", url, err)
@@ -129,9 +129,9 @@ func (o AosClient) getAllStreamingConfigs() ([]*AosGetStreamingConfigResponse, e
 	return result, nil
 }
 
-func (o AosClient) getStreamingConfig(id string) (*AosGetStreamingConfigResponse, error) {
+func (o Client) getStreamingConfig(id string) (*AosGetStreamingConfigResponse, error) {
 	var result AosGetStreamingConfigResponse
-	url := o.baseUrl + StreamingConfigApiUrl + "/" + id
+	url := o.baseUrl + apiUrlStreamingConfig + "/" + id
 	err := o.get(url, []int{200}, result)
 	if err != nil {
 		return nil, fmt.Errorf("error calling %s - %v", url, err)
@@ -139,14 +139,14 @@ func (o AosClient) getStreamingConfig(id string) (*AosGetStreamingConfigResponse
 	return &result, nil
 }
 
-func (o AosClient) postStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (*aosCreateStreamingConfigResponse, error) {
+func (o Client) postStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (*createStreamingConfigResponse, error) {
 	msg, err := json.Marshal(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling AosStreamingConfigStreamingEndpoint object - %v", err)
 	}
 
-	var result aosCreateStreamingConfigResponse
-	url := o.baseUrl + StreamingConfigApiUrl
+	var result createStreamingConfigResponse
+	url := o.baseUrl + apiUrlStreamingConfig
 	err = o.post(url, msg, []int{201}, &result)
 	if err != nil {
 		return nil, fmt.Errorf("error calling %s - %v", url, err)
@@ -164,7 +164,7 @@ type NewStreamingConfigCfg struct {
 	Port           uint16
 }
 
-func (o AosClient) NewStreamingConfig(in *NewStreamingConfigCfg) (*StreamingConfigId, error) {
+func (o Client) NewStreamingConfig(in *NewStreamingConfigCfg) (*StreamingConfigId, error) {
 	cfg := AosStreamingConfigStreamingEndpoint{
 		StreamingType:  in.StreamingType.String(),
 		SequencingMode: in.SequencingMode.String(),

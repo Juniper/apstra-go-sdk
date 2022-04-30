@@ -1,7 +1,7 @@
 package aosSdk
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func aosVersionTestClient1() (*AosClient, error) {
+func aosStreamingConfigTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -34,7 +34,7 @@ func aosVersionTestClient1() (*AosClient, error) {
 		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
 
-	return NewAosClient(&AosClientCfg{
+	return NewClient(&ClientCfg{
 		Scheme: scheme,
 		Host:   host,
 		Port:   uint16(port),
@@ -43,8 +43,8 @@ func aosVersionTestClient1() (*AosClient, error) {
 	})
 }
 
-func TestGetVersion(t *testing.T) {
-	client, err := aosVersionTestClient1()
+func TestAosClient_GetAllStreamingConfigs(t *testing.T) {
+	client, err := aosStreamingConfigTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,20 +54,16 @@ func TestGetVersion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ver, err := client.getVersion()
+	response, err := client.getAllStreamingConfigs()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result, err := json.Marshal(ver)
+	var out bytes.Buffer
+	err = pp(response, &out)
 	if err != nil {
 		t.Fatal(err)
 	}
+	log.Println(out.String())
 
-	log.Println(string(result))
-
-	err = client.userLogout()
-	if err != nil {
-		t.Fatal(err)
-	}
 }

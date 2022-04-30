@@ -1,6 +1,7 @@
 package aosSdk
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -8,7 +9,7 @@ import (
 	"testing"
 )
 
-func aosClientTestClientCfg1() (*AosClientCfg, error) {
+func aosVersionTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -33,25 +34,40 @@ func aosClientTestClientCfg1() (*AosClientCfg, error) {
 		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
 
-	return &AosClientCfg{
+	return NewClient(&ClientCfg{
 		Scheme: scheme,
 		Host:   host,
 		Port:   uint16(port),
 		User:   user,
 		Pass:   pass,
-	}, nil
+	})
 }
 
-func TestNewAosClient(t *testing.T) {
-	cfg, err := aosClientTestClientCfg1()
+func TestGetVersion(t *testing.T) {
+	client, err := aosVersionTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	client, err := NewAosClient(cfg)
+	err = client.userLogin()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	log.Println(client.baseUrl)
+	ver, err := client.getVersion()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := json.Marshal(ver)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println(string(result))
+
+	err = client.userLogout()
+	if err != nil {
+		t.Fatal(err)
+	}
 }

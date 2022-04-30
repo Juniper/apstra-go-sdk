@@ -1,15 +1,13 @@
 package aosSdk
 
 import (
-	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"testing"
 )
 
-func aosStreamingConfigTestClient1() (*AosClient, error) {
+func aosUserTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -34,7 +32,7 @@ func aosStreamingConfigTestClient1() (*AosClient, error) {
 		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
 
-	return NewAosClient(&AosClientCfg{
+	return NewClient(&ClientCfg{
 		Scheme: scheme,
 		Host:   host,
 		Port:   uint16(port),
@@ -43,27 +41,31 @@ func aosStreamingConfigTestClient1() (*AosClient, error) {
 	})
 }
 
-func TestAosClient_GetAllStreamingConfigs(t *testing.T) {
-	client, err := aosStreamingConfigTestClient1()
+func TestAosLogin(t *testing.T) {
+	c, err := aosUserTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = client.userLogin()
+	err = c.userLogin()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestAosLogout(t *testing.T) {
+	c, err := aosUserTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	response, err := client.getAllStreamingConfigs()
+	err = c.userLogin()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	var out bytes.Buffer
-	err = pp(response, &out)
+	err = c.userLogout()
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Println(out.String())
-
 }

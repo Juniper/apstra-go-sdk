@@ -11,34 +11,34 @@ const (
 	schemeHttps       = "https"
 	schemeHttpsUnsafe = "hxxps"
 
-	aosApiUserLogin  = "/api/user/login"
-	aosApiUserLogout = "/api/user/logout"
+	apiUrlUserLogin  = "/api/user/login"
+	apiUrlUserLogout = "/api/user/logout"
 )
 
-// aosUserLoginRequest token to the aosApiUserLogin API endpoint
-type aosUserLoginRequest struct {
+// userLoginRequest token to the apiUrlUserLogin API endpoint
+type userLoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-// aosUserLoginResponse token returned by the aosApiUserLogin API endpoint
-type aosUserLoginResponse struct {
+// userLoginResponse token returned by the apiUrlUserLogin API endpoint
+type userLoginResponse struct {
 	Token string `json:"token"`
 	Id    string `json:"id"`
 }
 
 // userLogin submits credentials to an API server, collects a login token
 // todo - need to handle token timeout
-func (o *AosClient) userLogin() error {
-	msg, err := json.Marshal(aosUserLoginRequest{
+func (o *Client) userLogin() error {
+	msg, err := json.Marshal(userLoginRequest{
 		Username: o.cfg.User,
 		Password: o.cfg.Pass,
 	})
 	if err != nil {
-		return fmt.Errorf("error marshaling aosLogin object - %v", err)
+		return fmt.Errorf("error marshaling userLoginRequest object - %v", err)
 	}
 
-	url := o.baseUrl + aosApiUserLogin
+	url := o.baseUrl + apiUrlUserLogin
 	err = o.post(url, msg, []int{201}, o.login)
 	if err != nil {
 		return fmt.Errorf("error calling '%s' - %v", url, err)
@@ -49,7 +49,7 @@ func (o *AosClient) userLogin() error {
 	return nil
 }
 
-func (o AosClient) userLogout() error {
-	err := o.post(o.baseUrl+aosApiUserLogout, nil, []int{200}, nil)
+func (o Client) userLogout() error {
+	err := o.post(o.baseUrl+apiUrlUserLogout, nil, []int{200}, nil)
 	return err
 }

@@ -19,7 +19,7 @@ const (
 // point events at our collector) and streamTarget (our listener for AOS
 // protobuf messages)
 type getConfigIn struct {
-	clientCfg       *aosSdk.AosClientCfg          // AOS API client
+	clientCfg       *aosSdk.ClientCfg             // AOS API client
 	streamingConfig *aosSdk.NewStreamingConfigCfg // Specifies target to AOS API
 	streamTarget    *aosSdk.AosStreamTargetCfg    // Our protobuf stream listener
 }
@@ -86,7 +86,7 @@ func main() {
 	signal.Notify(quitChan, os.Interrupt, os.Kill)
 
 	// configuration
-	clientCfg := aosSdk.AosClientCfg{}
+	clientCfg := aosSdk.ClientCfg{}
 	streamingConfig := aosSdk.NewStreamingConfigCfg{}
 	streamTargetConfig := aosSdk.AosStreamTargetCfg{}
 	err := getConfig(getConfigIn{
@@ -99,7 +99,7 @@ func main() {
 	}
 
 	// create AOS client
-	c, err := aosSdk.NewAosClient(&clientCfg)
+	c, err := aosSdk.NewClient(&clientCfg)
 	if err != nil {
 		log.Fatal(err)
 	}

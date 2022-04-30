@@ -6,77 +6,77 @@ import (
 )
 
 const (
-	aosApiVersionsPrefix = "/api/versions/"
-	aosApiVersionsAosdi  = aosApiVersionsPrefix + "aosdi"
-	aosApiVersionsApi    = aosApiVersionsPrefix + "api"
-	aosApiVersionsBuild  = aosApiVersionsPrefix + "build"
-	aosApiVersionsDevice = aosApiVersionsPrefix + "device"
-	aosApiVersionsIba    = aosApiVersionsPrefix + "iba"
-	aosApiVersionsNode   = aosApiVersionsPrefix + "node"
-	aosApiVersionsServer = aosApiVersionsPrefix + "server"
+	apiUrlVersionsPrefix = "/api/versions/"
+	apiUrlVersionsAosdi  = apiUrlVersionsPrefix + "aosdi"
+	apiUrlVersionsApi    = apiUrlVersionsPrefix + "api"
+	apiUrlVersionsBuild  = apiUrlVersionsPrefix + "build"
+	apiUrlVersionsDevice = apiUrlVersionsPrefix + "device"
+	apiUrlVersionsIba    = apiUrlVersionsPrefix + "iba"
+	apiUrlVersionsNode   = apiUrlVersionsPrefix + "node"
+	apiUrlVersionsServer = apiUrlVersionsPrefix + "server"
 )
 
-type aosApiVersionsAosdiResponse struct {
+type versionsAosdiResponse struct {
 	Version       string `json:"version"`
 	BuildDateTime string `json:"build_datetime"`
 }
 
-type aosApiVersionsApiResponse struct {
+type versionsApiResponse struct {
 	Major   string `json:"major"`
 	Version string `json:"version"`
 	Build   string `json:"build"`
 	Minor   string `json:"minor"`
 }
 
-type aosApiVersionsBuildResponse struct {
+type versionsBuildResponse struct {
 	Version       string `json:"version"`
 	BuildDateTime string `json:"build_datetime"`
 }
 
-type aosApiVersionsDeviceRequest struct {
+type versionsDeviceRequest struct {
 	SerialNumber string `json:"serial_number"`
 	Version      string `json:"version"`
 	Platform     string `json:"platform"`
 }
 
-type aosApiVersionsDeviceResponse struct {
+type versionsDeviceResponse struct {
 	Status       string `json:"status"`
 	Url          string `json:"url"`
 	RetryTimeout int    `json:"retry_timeout"`
 	Cksum        string `json:"cksum"`
 }
 
-type aosApiVersionsIbaRequest struct {
+type versionsIbaRequest struct {
 	Version  string `json:"version""`
 	SystemId string `json:"system_id""`
 }
 
-type aosApiVersionsIbaResponse struct {
+type versionsIbaResponse struct {
 	Status       string `json:"status"`
 	Url          string `json:"url"`
 	RetryTimeout int    `json:"retry_timeout"`
 	Cksum        string `json:"cksum"`
 }
 
-type aosApiVersionsNodeRequest struct {
+type versionsNodeRequest struct {
 	IpAddress string `json:"ip_address"`
 	Version   string `json:"version"`
 	SystemId  string `json:"system_id"`
 }
 
-type aosApiVersionsNodeResponse struct {
+type versionsNodeResponse struct {
 	Status       string `json:"status"`
 	RetryTimeout int    `json:"retry_timeout"`
 }
 
-type aosApiVersionsServerResponse struct {
+type versionsServerResponse struct {
 	Version       string `json:"version"`
 	BuildDateTime string `json:"build_datetime"`
 }
 
-func (o AosClient) getVersionsAosdi() (*aosApiVersionsAosdiResponse, error) {
-	var response aosApiVersionsAosdiResponse
-	url := aosApiVersionsAosdi
+func (o Client) getVersionsAosdi() (*versionsAosdiResponse, error) {
+	var response versionsAosdiResponse
+	url := apiUrlVersionsAosdi
 	err := o.get(url, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
@@ -84,9 +84,9 @@ func (o AosClient) getVersionsAosdi() (*aosApiVersionsAosdiResponse, error) {
 	return &response, nil
 }
 
-func (o AosClient) getVersionsApi() (*aosApiVersionsApiResponse, error) {
-	var response aosApiVersionsApiResponse
-	url := aosApiVersionsApi
+func (o Client) getVersionsApi() (*versionsApiResponse, error) {
+	var response versionsApiResponse
+	url := apiUrlVersionsApi
 	err := o.get(url, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
@@ -94,9 +94,9 @@ func (o AosClient) getVersionsApi() (*aosApiVersionsApiResponse, error) {
 	return &response, nil
 }
 
-func (o AosClient) getVersionsBuild() (*aosApiVersionsBuildResponse, error) {
-	var response aosApiVersionsBuildResponse
-	url := aosApiVersionsApi
+func (o Client) getVersionsBuild() (*versionsBuildResponse, error) {
+	var response versionsBuildResponse
+	url := apiUrlVersionsApi
 	err := o.get(url, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
@@ -104,13 +104,13 @@ func (o AosClient) getVersionsBuild() (*aosApiVersionsBuildResponse, error) {
 	return &response, nil
 }
 
-func (o AosClient) postVersionsDevice(request *aosApiVersionsDeviceRequest) (*aosApiVersionsDeviceResponse, error) {
+func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDeviceResponse, error) {
 	payload, err := json.Marshal(request)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling aosApiVersionsDeviceRequest object - %v", err)
+		return nil, fmt.Errorf("error marshaling versionsDeviceRequest object - %v", err)
 	}
-	var response aosApiVersionsDeviceResponse
-	url := aosApiVersionsDevice
+	var response versionsDeviceResponse
+	url := apiUrlVersionsDevice
 	err = o.post(url, payload, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
@@ -118,13 +118,13 @@ func (o AosClient) postVersionsDevice(request *aosApiVersionsDeviceRequest) (*ao
 	return &response, nil
 }
 
-func (o AosClient) postVersionsIba(request *aosApiVersionsIbaRequest) (*aosApiVersionsIbaResponse, error) {
+func (o Client) postVersionsIba(request *versionsIbaRequest) (*versionsIbaResponse, error) {
 	payload, err := json.Marshal(request)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling aosApiVersionsDeviceRequest object - %v", err)
+		return nil, fmt.Errorf("error marshaling versionsDeviceRequest object - %v", err)
 	}
-	var response aosApiVersionsIbaResponse
-	url := aosApiVersionsIba
+	var response versionsIbaResponse
+	url := apiUrlVersionsIba
 	err = o.post(url, payload, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
@@ -132,13 +132,13 @@ func (o AosClient) postVersionsIba(request *aosApiVersionsIbaRequest) (*aosApiVe
 	return &response, nil
 }
 
-func (o AosClient) postVersionsNode(request *aosApiVersionsNodeRequest) (*aosApiVersionsNodeResponse, error) {
+func (o Client) postVersionsNode(request *versionsNodeRequest) (*versionsNodeResponse, error) {
 	payload, err := json.Marshal(request)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling aosApiVersionsDeviceRequest object - %v", err)
+		return nil, fmt.Errorf("error marshaling versionsDeviceRequest object - %v", err)
 	}
-	var response aosApiVersionsNodeResponse
-	url := aosApiVersionsIba
+	var response versionsNodeResponse
+	url := apiUrlVersionsIba
 	err = o.post(url, payload, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
@@ -146,9 +146,9 @@ func (o AosClient) postVersionsNode(request *aosApiVersionsNodeRequest) (*aosApi
 	return &response, nil
 }
 
-func (o AosClient) getVersionsServer() (*aosApiVersionsServerResponse, error) {
-	var response aosApiVersionsServerResponse
-	url := aosApiVersionsIba
+func (o Client) getVersionsServer() (*versionsServerResponse, error) {
+	var response versionsServerResponse
+	url := apiUrlVersionsIba
 	err := o.get(url, []int{200}, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
