@@ -140,7 +140,7 @@ func (o AosStreamTarget) Stop() {
 }
 
 // receive loops until the listener shuts down, handing off connections from the
-// AOS server to instances of handleMessages().
+// AOS server to instances of handleClientConn().
 func (o *AosStreamTarget) receive(nl net.Listener) {
 	// loop accepting new connections
 	for {
@@ -154,7 +154,8 @@ func (o *AosStreamTarget) receive(nl net.Listener) {
 			continue
 		}
 
-		go handleMessages(conn, o.msgChan, o.errChan)
+		// todo: waitgroup.add() here
+		go handleClientConn(conn, o.msgChan, o.errChan)
 	}
 }
 
