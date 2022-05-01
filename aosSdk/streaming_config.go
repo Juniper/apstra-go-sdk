@@ -12,12 +12,12 @@ const (
 	StreamingConfigSequencingModeSequenced
 	StreamingConfigSequencingModeUnsequenced
 
-	StreamingConfigStreamingTypeUnknown AosApiStreamingConfigStreamingType = iota
+	StreamingConfigStreamingTypeUnknown StreamingConfigStreamingType = iota
 	StreamingConfigStreamingTypeAlerts
 	StreamingConfigStreamingTypeEvents
 	StreamingConfigStreamingTypePerfmon
 
-	StreamingConfigProtocolUnknown AosApiStreamingConfigProtocol = iota
+	StreamingConfigProtocolUnknown StreamingConfigProtocol = iota
 	StreamingConfigProtocolProtoBufOverTcp
 
 	ErrStringStreamingConfigExists   = "Entity already exists"
@@ -53,9 +53,9 @@ func (o StreamingConfigSequencingMode) String() string {
 	}
 }
 
-type AosApiStreamingConfigStreamingType int
+type StreamingConfigStreamingType int
 
-func (o AosApiStreamingConfigStreamingType) String() string {
+func (o StreamingConfigStreamingType) String() string {
 	switch o {
 	case StreamingConfigStreamingTypeUnknown:
 		return "unknown"
@@ -70,9 +70,9 @@ func (o AosApiStreamingConfigStreamingType) String() string {
 	}
 }
 
-type AosApiStreamingConfigProtocol int
+type StreamingConfigProtocol int
 
-func (o AosApiStreamingConfigProtocol) String() string {
+func (o StreamingConfigProtocol) String() string {
 	switch o {
 	case StreamingConfigProtocolUnknown:
 		return "unknown"
@@ -88,32 +88,32 @@ type getStreamingConfigsResponse struct {
 }
 
 type StreamingConfigCfg struct {
-	Status         AosStreamingConfigStatus           `json:"status"`
-	StreamingType  AosApiStreamingConfigStreamingType `json:"streaming_type"`
-	SequencingMode StreamingConfigSequencingMode      `json:"sequencing_mode"`
-	Protocol       AosApiStreamingConfigProtocol      `json:"protocol"`
-	Hostname       string                             `json:"hostname"`
-	Id             StreamingConfigId                  `json:"id"`
-	Port           uint16                             `json:"port"`
+	Status         StreamingConfigStatus         `json:"status"`
+	StreamingType  StreamingConfigStreamingType  `json:"streaming_type"`
+	SequencingMode StreamingConfigSequencingMode `json:"sequencing_mode"`
+	Protocol       StreamingConfigProtocol       `json:"protocol"`
+	Hostname       string                        `json:"hostname"`
+	Id             StreamingConfigId             `json:"id"`
+	Port           uint16                        `json:"port"`
 }
 
-type AosStreamingConfigStatus struct {
-	ConnectionLog        AosStreamingConfigConnectionLog     `json:"connectionLog"`
-	ConnectionTime       string                              `json:"connectionTime"`
-	Epoch                string                              `json:"epoch"`
-	ConnectionResetCount uint                                `json:"connnectionResetCount"`
-	StreamingEndpoint    AosStreamingConfigStreamingEndpoint `json:"streamingEndpoint"`
-	DnsLog               []AosStreamingConfigDnsLog          `json:"dnsLog"`
-	Connected            bool                                `json:"connected"`
-	DisconnectionTime    string                              `json:"disconnectionTime"`
+type StreamingConfigStatus struct {
+	ConnectionLog        StreamingConfigConnectionLog     `json:"connectionLog"`
+	ConnectionTime       string                           `json:"connectionTime"`
+	Epoch                string                           `json:"epoch"`
+	ConnectionResetCount uint                             `json:"connnectionResetCount"`
+	StreamingEndpoint    StreamingConfigStreamingEndpoint `json:"streamingEndpoint"`
+	DnsLog               []StreamingConfigDnsLog          `json:"dnsLog"`
+	Connected            bool                             `json:"connected"`
+	DisconnectionTime    string                           `json:"disconnectionTime"`
 }
 
-type AosStreamingConfigConnectionLog struct {
+type StreamingConfigConnectionLog struct {
 	Date    string `json:"date"'`
 	Message string `json:"message"`
 }
 
-type AosStreamingConfigStreamingEndpoint struct {
+type StreamingConfigStreamingEndpoint struct {
 	StreamingType  string `json:"streaming_type"`
 	SequencingMode string `json:"sequencing_mode"`
 	Protocol       string `json:"protocol"`
@@ -121,7 +121,7 @@ type AosStreamingConfigStreamingEndpoint struct {
 	Port           uint16 `json:"port"`
 }
 
-type AosStreamingConfigDnsLog struct {
+type StreamingConfigDnsLog struct {
 	Date    string `json:"date"`
 	Message string `json:"message"`
 }
@@ -151,10 +151,10 @@ func (o Client) getStreamingConfig(id string) (*StreamingConfigCfg, error) {
 	return &result, nil
 }
 
-func (o Client) postStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (*createStreamingConfigResponse, error) {
+func (o Client) postStreamingConfig(cfg *StreamingConfigStreamingEndpoint) (*createStreamingConfigResponse, error) {
 	msg, err := json.Marshal(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling AosStreamingConfigStreamingEndpoint object - %v", err)
+		return nil, fmt.Errorf("error marshaling StreamingConfigStreamingEndpoint object - %v", err)
 	}
 
 	var result createStreamingConfigResponse
@@ -175,7 +175,7 @@ func (o Client) postStreamingConfig(cfg *AosStreamingConfigStreamingEndpoint) (*
 
 // NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the AOS server.
 func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, error) {
-	cfg := AosStreamingConfigStreamingEndpoint{
+	cfg := StreamingConfigStreamingEndpoint{
 		StreamingType:  in.StreamingType.String(),
 		SequencingMode: in.SequencingMode.String(),
 		Protocol:       in.Protocol.String(),

@@ -22,7 +22,7 @@ const (
 // protobuf messages)
 type getConfigIn struct {
 	clientCfg       *aosSdk.ClientCfg           // AOS API client config
-	streamTarget    []aosSdk.AosStreamTargetCfg // Our protobuf stream listener
+	streamTarget    []aosSdk.StreamTargetCfg    // Our protobuf stream listener
 	streamingConfig []aosSdk.StreamingConfigCfg // Tell AOS API about our stream listener
 }
 
@@ -70,14 +70,14 @@ func getConfig(in getConfigIn) error {
 	in.clientCfg.TlsConfig = tls.Config{InsecureSkipVerify: true} // todo: something less shameful
 
 	for i := range in.streamTarget {
-		in.streamTarget[i].StreamingType = aosSdk.AosApiStreamingConfigStreamingType(aosSdk.StreamingConfigStreamingTypeUnknown + 1)
+		in.streamTarget[i].StreamingType = aosSdk.StreamingConfigStreamingType(aosSdk.StreamingConfigStreamingTypeUnknown + 1)
 		in.streamTarget[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
 		in.streamTarget[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
 		in.streamTarget[i].Port = uint16(recPortInt + i)
 	}
 
 	for i := range in.streamingConfig {
-		in.streamingConfig[i].StreamingType = aosSdk.AosApiStreamingConfigStreamingType(aosSdk.StreamingConfigStreamingTypeUnknown + 1)
+		in.streamingConfig[i].StreamingType = aosSdk.StreamingConfigStreamingType(aosSdk.StreamingConfigStreamingTypeUnknown + 1)
 		in.streamingConfig[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
 		in.streamingConfig[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
 		in.streamingConfig[i].Hostname = recHost
@@ -93,9 +93,9 @@ func main() {
 	signal.Notify(quitChan, os.Interrupt, os.Kill)
 
 	// configuration objects
-	clientCfg := aosSdk.ClientCfg{}                             // config for interacting with AOS API
-	streamingConfigs := make([]aosSdk.StreamingConfigCfg, 3)    // config for pointing event stream at our target
-	streamTargetConfigs := make([]aosSdk.AosStreamTargetCfg, 3) // config for our event stream target
+	clientCfg := aosSdk.ClientCfg{}                          // config for interacting with AOS API
+	streamingConfigs := make([]aosSdk.StreamingConfigCfg, 3) // config for pointing event stream at our target
+	streamTargetConfigs := make([]aosSdk.StreamTargetCfg, 3) // config for our event stream target
 
 	// populate configuration objects using local function
 	err := getConfig(getConfigIn{
@@ -120,7 +120,7 @@ func main() {
 	}
 	defer c.Logout()
 
-	var streamTargets []aosSdk.AosStreamTarget
+	var streamTargets []aosSdk.StreamTarget
 	var msgChans []<-chan *aosStreaming.AosMessage
 	var errChans []<-chan error
 	for i := range streamTargetConfigs {

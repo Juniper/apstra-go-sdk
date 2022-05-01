@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func aosStreamingConfigTestClient1() (*Client, error) {
+func streamingConfigTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -43,8 +43,8 @@ func aosStreamingConfigTestClient1() (*Client, error) {
 	})
 }
 
-func TestAosClient_GetAllStreamingConfigs(t *testing.T) {
-	client, err := aosStreamingConfigTestClient1()
+func TestClient_GetAllStreamingConfigs(t *testing.T) {
+	client, err := streamingConfigTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}

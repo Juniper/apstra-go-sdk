@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func aosClientTestClientCfg1() (*ClientCfg, error) {
+func clientTestClientCfg1() (*ClientCfg, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -42,8 +42,8 @@ func aosClientTestClientCfg1() (*ClientCfg, error) {
 	}, nil
 }
 
-func TestNewAosClient(t *testing.T) {
-	cfg, err := aosClientTestClientCfg1()
+func TestNewClient(t *testing.T) {
+	cfg, err := clientTestClientCfg1()
 	if err != nil {
 		t.Fatal(err)
 	}

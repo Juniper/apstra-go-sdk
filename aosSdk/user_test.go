@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func aosUserTestClient1() (*Client, error) {
+func userTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -32,7 +32,7 @@ func aosUserTestClient1() (*Client, error) {
 		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
 
-	return NewClient(&ClientCfg{
+	return NewClient(ClientCfg{
 		Scheme: scheme,
 		Host:   host,
 		Port:   uint16(port),
@@ -41,8 +41,8 @@ func aosUserTestClient1() (*Client, error) {
 	})
 }
 
-func TestAosLogin(t *testing.T) {
-	c, err := aosUserTestClient1()
+func TestLogin(t *testing.T) {
+	c, err := userTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,8 +53,8 @@ func TestAosLogin(t *testing.T) {
 	}
 }
 
-func TestAosLogout(t *testing.T) {
-	c, err := aosUserTestClient1()
+func TestLogout(t *testing.T) {
+	c, err := userTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
