@@ -85,12 +85,10 @@ func NewStreamTarget(cfg *AosStreamTargetCfg) (*AosStreamTarget, error) {
 		stopChan:  make(chan struct{}),
 		msgChan:   make(chan *aosStreaming.AosMessage),
 		tlsConfig: tlsConfig,
-		port:      cfg.Port,
 	}, nil
 }
 
 // AosStreamTarget is a listener for AOS streaming objects
-// todo: this thing should have a waitgroup to keep track of each accept() func
 type AosStreamTarget struct {
 	tlsConfig *tls.Config
 	nl        net.Listener
