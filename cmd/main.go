@@ -69,16 +69,16 @@ func getConfig(in getConfigIn) error {
 	in.clientCfg.TlsConfig = tls.Config{InsecureSkipVerify: true} // todo: something less shameful
 
 	for i := range in.streamTarget {
-		in.streamTarget[i].StreamingType = aosSdk.StreamingConfigStreamingType(aosSdk.StreamingConfigStreamingTypeUnknown + 1)
+		in.streamTarget[i].StreamingType = aosSdk.StreamingConfigStreamingType(1 + int(aosSdk.StreamingConfigStreamingTypeUnknown) + i)
 		in.streamTarget[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
-		in.streamTarget[i].SequencingMode = aosSdk.StreamingConfigSequencingModeUnsequenced
+		in.streamTarget[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
 		in.streamTarget[i].Port = uint16(recPortInt + i)
 	}
 
 	for i := range in.streamingConfig {
-		in.streamingConfig[i].StreamingType = aosSdk.StreamingConfigStreamingType(aosSdk.StreamingConfigStreamingTypeUnknown + 1)
+		in.streamingConfig[i].StreamingType = aosSdk.StreamingConfigStreamingType(1 + int(aosSdk.StreamingConfigStreamingTypeUnknown) + i)
 		in.streamingConfig[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
-		in.streamingConfig[i].SequencingMode = aosSdk.StreamingConfigSequencingModeUnsequenced
+		in.streamingConfig[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
 		in.streamingConfig[i].Hostname = recHost
 		in.streamingConfig[i].Port = uint16(recPortInt + i)
 	}
@@ -124,17 +124,13 @@ func main() {
 	errChan := make(chan error)
 
 	var streamTargets []aosSdk.StreamTarget
-	//var msgChans []<-chan *aosStreaming.AosMessage
-	//var errChans []<-chan error
 	for i := range streamTargetConfigs {
 		// create each AOS stream target service
 		st, err := aosSdk.NewStreamTarget(streamTargetConfigs[i])
 		if err != nil {
 			log.Fatal(err)
 		}
-		streamTargets = append(streamTargets,
-
-			*st)
+		streamTargets = append(streamTargets, *st)
 
 		// start each AOS stream target service
 		mc, ec, err := st.Start()
@@ -166,7 +162,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("Stream target registered with AOS API - ID: %s", string(id))
+		log.Printf("%s %s stream target registered with AOS API (%s)",
+			streamingConfigs[i].SequencingMode,
+			streamTargetConfigs[i].StreamingType,
+			id)
 		streamingConfigIds = append(streamingConfigIds, id)
 	}
 
