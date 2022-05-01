@@ -40,7 +40,7 @@ type AosStreamTargetCfg struct {
 // NewStreamTarget creates a AosStreamTarget (socket listener) either with TLS
 // support (when both x509Cert and privkey are supplied) or using bare TCP
 // (when either x509Cert or privkey are nil)
-func NewStreamTarget(cfg *AosStreamTargetCfg) (*AosStreamTarget, error) {
+func NewStreamTarget(cfg AosStreamTargetCfg) (*AosStreamTarget, error) {
 	var tlsConfig *tls.Config
 
 	if cfg.Certificate != nil && cfg.Key != nil {
@@ -81,6 +81,7 @@ func NewStreamTarget(cfg *AosStreamTargetCfg) (*AosStreamTarget, error) {
 	}
 
 	return &AosStreamTarget{
+		cfg:       &cfg,
 		errChan:   make(chan error),
 		stopChan:  make(chan struct{}),
 		msgChan:   make(chan *aosStreaming.AosMessage),
@@ -95,8 +96,8 @@ type AosStreamTarget struct {
 	stopChan  chan struct{}
 	errChan   chan error
 	msgChan   chan *aosStreaming.AosMessage
-	port      uint16
 	clientWG  sync.WaitGroup
+	cfg       *AosStreamTargetCfg
 	//sessions    map[int]*Session
 	//sessChMap   map[chan *Session]struct{}
 	//sessChMutex *sync.Mutex
@@ -109,7 +110,7 @@ type AosStreamTarget struct {
 func (o AosStreamTarget) Start() (msgChan <-chan *aosStreaming.AosMessage, errChan <-chan error, err error) {
 	var nl net.Listener
 
-	laddr := ":" + strconv.Itoa(int(o.port))
+	laddr := ":" + strconv.Itoa(int(o.cfg.Port))
 	if o.tlsConfig != nil {
 		nl, err = tls.Listen(network, laddr, o.tlsConfig)
 	} else {
