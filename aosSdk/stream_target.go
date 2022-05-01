@@ -147,6 +147,11 @@ func (o *StreamTarget) Start() (msgChan <-chan *StreamingMessage, errChan <-chan
 	return o.msgChan, o.errChan, nil
 }
 
+// todo write this function!
+func (o *StreamTarget) Register(client *Client) error {
+	return nil
+}
+
 // Stop shuts down the receiver
 func (o *StreamTarget) Stop() {
 	close(o.stopChan) // signal exit to client conn handlers
