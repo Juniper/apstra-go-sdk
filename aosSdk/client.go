@@ -24,16 +24,15 @@ const (
 
 // ClientCfg passed to NewClient() when instantiating a new Client{}
 type ClientCfg struct {
-	Scheme         string
-	Host           string
-	Port           uint16
-	User           string
-	Pass           string
-	TlsConfig      tls.Config
-	Ctx            context.Context
-	Timeout        time.Duration
-	ctxTimeoutFunc func()
-	ctxCancelFunc  func()
+	Scheme    string
+	Host      string
+	Port      uint16
+	User      string
+	Pass      string
+	TlsConfig tls.Config
+	Ctx       context.Context
+	Timeout   time.Duration
+	cancel    func()
 }
 
 // Client interacts with an AOS API server
@@ -53,11 +52,9 @@ func NewClient(cfg ClientCfg) (*Client, error) {
 	if cfg.Timeout == 0 {
 		cfg.Timeout = defaultTimeout // default timeout
 	}
-	ctxTimeout, ctxTimeoutFunc := context.WithTimeout(cfg.Ctx, cfg.Timeout)
-	ctxCancel, ctxCancelFunc := context.WithCancel(ctxTimeout)
+	ctxCancel, cancel := context.WithCancel(cfg.Ctx)
 	cfg.Ctx = ctxCancel
-	cfg.ctxCancelFunc = ctxCancelFunc
-	cfg.ctxTimeoutFunc = ctxTimeoutFunc
+	cfg.cancel = cancel
 
 	baseUrl := fmt.Sprintf("%s://%s:%d", cfg.Scheme, cfg.Host, cfg.Port)
 
@@ -76,7 +73,9 @@ func (o Client) get(url string, expectedResponseCodes []int, jsonPtr interface{}
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
-	req, err := http.NewRequestWithContext(o.cfg.Ctx, "GET", url, nil)
+	ctx, cancel := context.WithTimeout(o.cfg.Ctx, o.cfg.Timeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
@@ -108,7 +107,9 @@ func (o *Client) post(url string, payload []byte, expectedResponseCodes []int, j
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
-	req, err := http.NewRequestWithContext(o.cfg.Ctx, "POST", url, bytes.NewBuffer(payload))
+	ctx, cancel := context.WithTimeout(o.cfg.Ctx, o.cfg.Timeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
@@ -141,7 +142,9 @@ func (o *Client) delete(url string, expectedResponseCodes []int) error {
 		return fmt.Errorf("cannot interact with AOS API without token")
 	}
 
-	req, err := http.NewRequestWithContext(o.cfg.Ctx, "DELETE", url, nil)
+	ctx, cancel := context.WithTimeout(o.cfg.Ctx, o.cfg.Timeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}

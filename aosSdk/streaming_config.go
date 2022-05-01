@@ -66,7 +66,7 @@ func (o AosApiStreamingConfigStreamingType) String() string {
 	case StreamingConfigStreamingTypePerfmon:
 		return "perfmon"
 	default:
-		return fmt.Sprintf("message type %d has no string value", o)
+		return fmt.Sprintf("streaming type %d has no string value", o)
 	}
 }
 
