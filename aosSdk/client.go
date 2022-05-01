@@ -18,17 +18,22 @@ const (
 	EnvApstraHost   = "APSTRA_HOST"
 	EnvApstraPort   = "APSTRA_PORT"
 	EnvApstraScheme = "APSTRA_SCHEME"
+
+	defaultTimeout = 10 * time.Second
 )
 
 // ClientCfg passed to NewClient() when instantiating a new Client{}
 type ClientCfg struct {
-	Scheme    string
-	Host      string
-	Port      uint16
-	User      string
-	Pass      string
-	TlsConfig *tls.Config
-	Ctx       context.Context
+	Scheme         string
+	Host           string
+	Port           uint16
+	User           string
+	Pass           string
+	TlsConfig      tls.Config
+	Ctx            context.Context
+	Timeout        time.Duration
+	ctxTimeoutFunc func()
+	ctxCancelFunc  func()
 }
 
 // Client interacts with an AOS API server
@@ -43,18 +48,22 @@ type Client struct {
 // NewClient creates a Client object
 func NewClient(cfg ClientCfg) (*Client, error) {
 	if cfg.Ctx == nil {
-		cfg.Ctx = context.TODO()
+		cfg.Ctx = context.TODO() // default context
 	}
-
-	if cfg.TlsConfig == nil {
-		cfg.TlsConfig = &tls.Config{}
+	if cfg.Timeout == 0 {
+		cfg.Timeout = defaultTimeout // default timeout
 	}
+	ctxTimeout, ctxTimeoutFunc := context.WithTimeout(cfg.Ctx, cfg.Timeout)
+	ctxCancel, ctxCancelFunc := context.WithCancel(ctxTimeout)
+	cfg.Ctx = ctxCancel
+	cfg.ctxCancelFunc = ctxCancelFunc
+	cfg.ctxTimeoutFunc = ctxTimeoutFunc
 
 	baseUrl := fmt.Sprintf("%s://%s:%d", cfg.Scheme, cfg.Host, cfg.Port)
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: cfg.TlsConfig,
+			TLSClientConfig: &cfg.TlsConfig,
 		},
 	}
 

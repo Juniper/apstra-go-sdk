@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	aosSdk "github.com/chrismarget-j/apstraTelemetry/aosSdk"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 )
 
 const (
@@ -67,6 +69,8 @@ func getConfig(in getConfigIn) error {
 	in.clientCfg.User = aosUser
 	in.clientCfg.Pass = aosPass
 	in.clientCfg.TlsConfig = &tls.Config{InsecureSkipVerify: true}
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	in.clientCfg.Ctx = ctx
 
 	in.streamingConfig.StreamingType = aosSdk.StreamingConfigStreamingTypeAlerts
 	in.streamingConfig.Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
