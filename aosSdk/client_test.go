@@ -48,7 +48,7 @@ func TestNewClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := NewClient(cfg)
+	client, err := NewClient(*cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
