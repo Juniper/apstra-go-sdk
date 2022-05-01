@@ -16,13 +16,13 @@ const (
 )
 
 // getConfigIn includes details for the clientCfg (AOS API
-// location+credentials) the required streamingConfig (AOS API configuration to
-// point events at our collector) and streamTarget (our listener for AOS
+// location+credentials) the required streamingConfigCfg (AOS API configuration to
+// point events at our collector) and streamTargetCfg (our listener for AOS
 // protobuf messages)
 type getConfigIn struct {
-	clientCfg       *aosSdk.ClientCfg           // AOS API client config
-	streamTarget    []aosSdk.StreamTargetCfg    // Our protobuf stream listener
-	streamingConfig []aosSdk.StreamingConfigCfg // Tell AOS API about our stream listener
+	clientCfg          *aosSdk.ClientCfg           // AOS API client config
+	streamTargetCfg    []aosSdk.StreamTargetCfg    // Our protobuf stream listener
+	streamingConfigCfg []aosSdk.StreamingConfigCfg // Tell AOS API about our stream listener
 }
 
 func getConfig(in getConfigIn) error {
@@ -68,19 +68,19 @@ func getConfig(in getConfigIn) error {
 	in.clientCfg.Pass = aosPass
 	in.clientCfg.TlsConfig = tls.Config{InsecureSkipVerify: true} // todo: something less shameful
 
-	for i := range in.streamTarget {
-		in.streamTarget[i].StreamingType = aosSdk.StreamingConfigStreamingType(1 + int(aosSdk.StreamingConfigStreamingTypeUnknown) + i)
-		in.streamTarget[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
-		in.streamTarget[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
-		in.streamTarget[i].Port = uint16(recPortInt + i)
+	for i := range in.streamTargetCfg {
+		in.streamTargetCfg[i].StreamingType = aosSdk.StreamingConfigStreamingType(1 + int(aosSdk.StreamingConfigStreamingTypeUnknown) + i)
+		in.streamTargetCfg[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
+		in.streamTargetCfg[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
+		in.streamTargetCfg[i].Port = uint16(recPortInt + i)
 	}
 
-	for i := range in.streamingConfig {
-		in.streamingConfig[i].StreamingType = aosSdk.StreamingConfigStreamingType(1 + int(aosSdk.StreamingConfigStreamingTypeUnknown) + i)
-		in.streamingConfig[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
-		in.streamingConfig[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
-		in.streamingConfig[i].Hostname = recHost
-		in.streamingConfig[i].Port = uint16(recPortInt + i)
+	for i := range in.streamingConfigCfg {
+		in.streamingConfigCfg[i].StreamingType = aosSdk.StreamingConfigStreamingType(1 + int(aosSdk.StreamingConfigStreamingTypeUnknown) + i)
+		in.streamingConfigCfg[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
+		in.streamingConfigCfg[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
+		in.streamingConfigCfg[i].Hostname = recHost
+		in.streamingConfigCfg[i].Port = uint16(recPortInt + i)
 	}
 
 	return nil
@@ -98,9 +98,9 @@ func main() {
 
 	// populate configuration objects using local function
 	err := getConfig(getConfigIn{
-		clientCfg:       &clientCfg,
-		streamingConfig: streamingConfigs,
-		streamTarget:    streamTargetConfigs,
+		clientCfg:          &clientCfg,
+		streamingConfigCfg: streamingConfigs,
+		streamTargetCfg:    streamTargetConfigs,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -123,17 +123,22 @@ func main() {
 	msgChan := make(chan *aosSdk.StreamingMessage)
 	errChan := make(chan error)
 
-	var streamTargets []aosSdk.StreamTarget
+	var streamTargets []*aosSdk.StreamTarget
 	for i := range streamTargetConfigs {
 		// create each AOS stream target service
 		st, err := aosSdk.NewStreamTarget(streamTargetConfigs[i])
 		if err != nil {
 			log.Fatal(err)
 		}
-		streamTargets = append(streamTargets, *st)
 
-		// start each AOS stream target service
+		// start this AOS stream target service
 		mc, ec, err := st.Start()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// register this AOS stream target as a streaming config / receiver
+		err = st.Register(c, &streamingConfigs[i])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -151,23 +156,25 @@ func main() {
 				out <- <-in
 			}
 		}(ec, errChan)
+
+		streamTargets = append(streamTargets, st)
 		//msgChans = append(msgChans, msgChan)
 		//errChans = append(errChans, errChan)
 	}
 
-	// tell AOS about our stream targets (create StreamingConfig objects)
-	var streamingConfigIds []aosSdk.StreamingConfigId
-	for i := range streamingConfigs {
-		id, err := c.NewStreamingConfig(&streamingConfigs[i])
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("%s %s stream target registered with AOS API (%s)",
-			streamingConfigs[i].SequencingMode,
-			streamTargetConfigs[i].StreamingType,
-			id)
-		streamingConfigIds = append(streamingConfigIds, id)
-	}
+	//// tell AOS about our stream targets (create StreamingConfig objects)
+	//var streamingConfigIds []aosSdk.StreamingConfigId
+	//for i := range streamingConfigs {
+	//	id, err := c.NewStreamingConfig(&streamingConfigs[i])
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	log.Printf("%s %s stream target registered with AOS API (%s)",
+	//		streamingConfigs[i].SequencingMode,
+	//		streamTargetConfigs[i].StreamingType,
+	//		id)
+	//	streamingConfigIds = append(streamingConfigIds, id)
+	//}
 
 	//streamId1, err := c.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
 	//	StreamingType:  aosSdk.StreamingConfigStreamingTypePerfmon,
@@ -230,13 +237,20 @@ MAINLOOP:
 		}
 	}
 
-	for _, id := range streamingConfigIds {
-		log.Printf("deleting stream id %s\n", id)
-		err := c.DeleteStreamingConfig(id)
+	for _, st := range streamTargets {
+		err = st.Unregister()
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 		}
 	}
+
+	//for _, id := range streamingConfigIds {
+	//	log.Printf("deleting stream id %s\n", id)
+	//	err := c.DeleteStreamingConfig(id)
+	//	if err != nil {
+	//		log.Println(err)
+	//	}
+	//}
 
 	//err = c.DeleteStreamingConfig(streamId1)
 	//if err != nil {
@@ -253,7 +267,7 @@ MAINLOOP:
 	//	log.Println(err)
 	//}
 
-	//streamTarget.Stop()
+	//streamTargetCfg.Stop()
 	os.Exit(0)
 
 	// get streaming configs

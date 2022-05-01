@@ -8,6 +8,7 @@ import (
 	"crypto/x509"
 	"encoding/binary"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"io"
@@ -101,16 +102,16 @@ func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
 
 // StreamTarget is a listener for AOS streaming objects
 type StreamTarget struct {
-	tlsConfig *tls.Config
-	nl        net.Listener
-	stopChan  chan struct{}
-	errChan   chan error
-	msgChan   chan *StreamingMessage
-	clientWG  sync.WaitGroup
-	cfg       *StreamTargetCfg
-	//sessions    map[int]*Session
-	//sessChMap   map[chan *Session]struct{}
-	//sessChMutex *sync.Mutex
+	tlsConfig *tls.Config            // if we're a TLS listener
+	nl        net.Listener           // clients (aos server) connect here
+	stopChan  chan struct{}          // close to rip everythign down
+	errChan   chan error             // client handlers pass errors here
+	msgChan   chan *StreamingMessage // client handlers pass messages here
+	clientWG  sync.WaitGroup         // keeps track of client handlers
+	cfg       *StreamTargetCfg       // submitted by caller
+	aosIP     *net.IP                // for filtering incoming connections
+	strmCfgId StreamingConfigId      // AOS streaming ID, populated by Register
+	client    *Client                // populated by Register, we hang onto it for Unregister
 }
 
 // Start loops forever handling new connections from the AOS streaming service
@@ -145,11 +146,6 @@ func (o *StreamTarget) Start() (msgChan <-chan *StreamingMessage, errChan <-chan
 	}()
 
 	return o.msgChan, o.errChan, nil
-}
-
-// todo write this function!
-func (o *StreamTarget) Register(client *Client) error {
-	return nil
 }
 
 // Stop shuts down the receiver
@@ -258,4 +254,33 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 		Message:        &msgOut, // pointer to inner message
 		SequenceNum:    seqPtr,  // pointer to sequence number (nil if unsequenced)
 	}, err
+}
+
+// Register registers this StreamTarget as a streaming config / receiver on the
+// AOS server.
+func (o *StreamTarget) Register(client *Client, cfg *StreamingConfigCfg) error {
+	id, err := client.NewStreamingConfig(cfg)
+	if err != nil {
+		return fmt.Errorf("error in Register() - %v", err)
+	}
+	o.strmCfgId = id
+	o.client = client
+	return nil
+}
+
+// UnRegister deletes the streaming config /receiver associated with this
+// StreamTarget from the AOS server.
+func (o *StreamTarget) Unregister() error {
+	if o.strmCfgId == "" {
+		return errors.New("no stream id for this StreamTarget, cannot UnRegister")
+	}
+
+	err := o.client.DeleteStreamingConfig(o.strmCfgId)
+	if err != nil {
+		return err
+	}
+
+	o.strmCfgId = ""
+
+	return nil
 }
