@@ -85,6 +85,7 @@ func NewStreamTarget(cfg *AosStreamTargetCfg) (*AosStreamTarget, error) {
 		stopChan:  make(chan struct{}),
 		msgChan:   make(chan *aosStreaming.AosMessage),
 		tlsConfig: tlsConfig,
+		port:      cfg.Port,
 	}, nil
 }
 
