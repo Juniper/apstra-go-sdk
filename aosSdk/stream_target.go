@@ -14,6 +14,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/chrismarget-j/apstraTelemetry/aosStreaming"
 )
@@ -96,6 +97,7 @@ type AosStreamTarget struct {
 	errChan   chan error
 	msgChan   chan *aosStreaming.AosMessage
 	port      uint16
+	clientWG  sync.WaitGroup
 	//sessions    map[int]*Session
 	//sessChMap   map[chan *Session]struct{}
 	//sessChMutex *sync.Mutex
@@ -118,25 +120,29 @@ func (o AosStreamTarget) Start() (msgChan <-chan *aosStreaming.AosMessage, errCh
 		return nil, nil, err
 	}
 
-	// loop accepting incoming connections
-	go o.receive(nl)
+	go o.receive(nl) // loop accepting incoming connections
 
 	// this should stop everything.
 	// todo: find out if this works the way i think it does
 	go func() {
-		<-o.stopChan
-		nl.Close()
-		close(o.stopChan)
-		close(o.errChan)
+		<-o.stopChan      // wait for Stop() to close stopChan
+		err := nl.Close() // close socket listener
+		if err != nil {
+			o.errChan <- err
+		}
+		o.clientWG.Wait() // wait for client conn handlers to exit
+		close(o.errChan)  // close errChan to signal to Stop() that we're done
 	}()
 
 	return o.msgChan, o.errChan, nil
 }
 
 // Stop shuts down the receiver
-// todo: block on waitgroup while each accept() func shuts down
 func (o AosStreamTarget) Stop() {
-	close(o.stopChan)
+	close(o.stopChan) // signal exit to client conn handlers
+	o.clientWG.Wait() // wait for client conn handlers to exit
+	for _ = range o.errChan {
+	} // We're done when err channel gets closed
 }
 
 // receive loops until the listener shuts down, handing off connections from the
@@ -146,6 +152,7 @@ func (o *AosStreamTarget) receive(nl net.Listener) {
 	for {
 		conn, err := nl.Accept()
 		if err != nil {
+			// function ends on closure of listener nl
 			if strings.HasSuffix(err.Error(), errConnClosed) {
 				o.errChan <- err
 				return
@@ -154,8 +161,12 @@ func (o *AosStreamTarget) receive(nl net.Listener) {
 			continue
 		}
 
-		// todo: waitgroup.add() here
-		go handleClientConn(conn, o.msgChan, o.errChan)
+		o.clientWG.Add(1)
+		go o.handleClientConn(conn, o.msgChan, o.errChan)
+		go func() {
+			<-o.stopChan
+			conn.Close()
+		}()
 	}
 }
 
@@ -179,8 +190,8 @@ func msgLenFromConn(conn net.Conn) (uint16, error) {
 	return binary.BigEndian.Uint16(msgLenHdr), nil
 }
 
-func handleClientConn(conn net.Conn, msgChan chan<- *aosStreaming.AosMessage, errChan chan<- error) {
-	// todo: defer waitgroup.done() here
+func (o AosStreamTarget) handleClientConn(conn net.Conn, msgChan chan<- *aosStreaming.AosMessage, errChan chan<- error) {
+	defer o.clientWG.Done()
 	defer conn.Close()
 
 	for {
