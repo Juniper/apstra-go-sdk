@@ -42,8 +42,10 @@ type StreamTargetCfg struct {
 // StreamingConfigSequencingModeUnsequenced channels. In the latter case, 'seq'
 // will always be nil.
 type StreamingMessage struct {
-	Msg *aosStreaming.AosMessage
-	Seq *uint64
+	SequencingMode StreamingConfigSequencingMode
+	StreamingType  StreamingConfigStreamingType
+	Message        *aosStreaming.AosMessage
+	SequenceNum    *uint64
 }
 
 // NewStreamTarget creates a StreamTarget (socket listener) either with TLS
@@ -246,7 +248,9 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 
 	err := proto.Unmarshal(in, &msgOut) // extract inner message
 	return &StreamingMessage{
-		Msg: &msgOut, // pointer to inner message
-		Seq: seqPtr,  // pointer to sequence number (nil if unsequenced)
+		StreamingType:  o.cfg.StreamingType,
+		SequencingMode: o.cfg.SequencingMode,
+		Message:        &msgOut, // pointer to inner message
+		SequenceNum:    seqPtr,  // pointer to sequence number (nil if unsequenced)
 	}, err
 }

@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	aosSdk "github.com/chrismarget-j/apstraTelemetry/aosSdk"
-	"github.com/chrismarget-j/apstraTelemetry/aosStreaming"
 	"log"
 	"os"
 	"os/signal"
@@ -72,14 +71,14 @@ func getConfig(in getConfigIn) error {
 	for i := range in.streamTarget {
 		in.streamTarget[i].StreamingType = aosSdk.StreamingConfigStreamingType(aosSdk.StreamingConfigStreamingTypeUnknown + 1)
 		in.streamTarget[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
-		in.streamTarget[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
+		in.streamTarget[i].SequencingMode = aosSdk.StreamingConfigSequencingModeUnsequenced
 		in.streamTarget[i].Port = uint16(recPortInt + i)
 	}
 
 	for i := range in.streamingConfig {
 		in.streamingConfig[i].StreamingType = aosSdk.StreamingConfigStreamingType(aosSdk.StreamingConfigStreamingTypeUnknown + 1)
 		in.streamingConfig[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
-		in.streamingConfig[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
+		in.streamingConfig[i].SequencingMode = aosSdk.StreamingConfigSequencingModeUnsequenced
 		in.streamingConfig[i].Hostname = recHost
 		in.streamingConfig[i].Port = uint16(recPortInt + i)
 	}
@@ -120,24 +119,44 @@ func main() {
 	}
 	defer c.Logout()
 
+	// create aggregator channels where we'll get messages from all target services
+	msgChan := make(chan *aosSdk.StreamingMessage)
+	errChan := make(chan error)
+
 	var streamTargets []aosSdk.StreamTarget
-	var msgChans []<-chan *aosStreaming.AosMessage
-	var errChans []<-chan error
+	//var msgChans []<-chan *aosStreaming.AosMessage
+	//var errChans []<-chan error
 	for i := range streamTargetConfigs {
 		// create each AOS stream target service
 		st, err := aosSdk.NewStreamTarget(streamTargetConfigs[i])
 		if err != nil {
 			log.Fatal(err)
 		}
-		streamTargets = append(streamTargets, *st)
+		streamTargets = append(streamTargets,
+
+			*st)
 
 		// start each AOS stream target service
-		msgChan, errChan, err := st.Start()
+		mc, ec, err := st.Start()
 		if err != nil {
 			log.Fatal(err)
 		}
-		msgChans = append(msgChans, msgChan)
-		errChans = append(errChans, errChan)
+
+		// copy messages from this target's message channel to aggregated message channel
+		go func(in <-chan *aosSdk.StreamingMessage, out chan<- *aosSdk.StreamingMessage) {
+			for {
+				out <- <-in
+			}
+		}(mc, msgChan)
+
+		// copy errors from this target's error channel to aggregated error channel
+		go func(in <-chan error, out chan<- error) {
+			for {
+				out <- <-in
+			}
+		}(ec, errChan)
+		//msgChans = append(msgChans, msgChan)
+		//errChans = append(errChans, errChan)
 	}
 
 	// tell AOS about our stream targets (create StreamingConfig objects)
@@ -196,12 +215,19 @@ MAINLOOP:
 		// interrupt (ctrl-c or whatever)
 		case <-quitChan:
 			break MAINLOOP
-			//// aosStreamTarget has a message
-			//case msg := <-msgChan:
-			//	log.Println(msg)
-			//// aosStreamTarget has an error
-			//case err := <-errChan:
-			//	log.Fatal(err)
+		// aosStreamTarget has a message
+		case msg := <-msgChan:
+			var seqNumStr string
+			switch msg.SequencingMode {
+			case aosSdk.StreamingConfigSequencingModeSequenced:
+				seqNumStr = strconv.Itoa(int(*msg.SequenceNum))
+			case aosSdk.StreamingConfigSequencingModeUnsequenced:
+				seqNumStr = "N/A"
+			}
+			log.Printf("%s / %s / message number %s / %s\n", msg.StreamingType, msg.SequencingMode, seqNumStr, msg.Message)
+		// aosStreamTarget has an error
+		case err := <-errChan:
+			log.Fatal(err)
 		}
 	}
 
