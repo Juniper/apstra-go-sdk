@@ -105,17 +105,14 @@ func (o Client) getVersionsBuild() (*versionsBuildResponse, error) {
 }
 
 func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDeviceResponse, error) {
-	payload, err := json.Marshal(request)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling versionsDeviceRequest object - %v", err)
-	}
 	var response versionsDeviceResponse
-	url := apiUrlVersionsDevice
-	err = o.post(url, payload, []int{200}, &response)
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
-	}
-	return &response, nil
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodPost,
+		url:           apiUrlVersionsDevice,
+		toServerPtr:   request,
+		fromServerPtr: nil,
+	})
+	return &response, err
 }
 
 func (o Client) postVersionsIba(request *versionsIbaRequest) (*versionsIbaResponse, error) {
@@ -148,10 +145,13 @@ func (o Client) postVersionsNode(request *versionsNodeRequest) (*versionsNodeRes
 
 func (o Client) getVersionsServer() (*versionsServerResponse, error) {
 	var response versionsServerResponse
-	url := apiUrlVersionsServer
-	err := o.get(url, []int{200}, &response)
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlVersionsServer,
+		fromServerPtr: &response,
+	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
+		return nil, fmt.Errorf("error calling '%s' - %v", apiUrlVersionsServer, err)
 	}
 	return &response, nil
 }

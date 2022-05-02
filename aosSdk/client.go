@@ -115,7 +115,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	var err error
 	var body []byte
 
-	if o.login.Token == "" && in.url != o.baseUrl+apiUrlUserLogin {
+	if o.login.Token == "" && in.url != apiUrlUserLogin {
 		return errors.New("cannot interact with AOS API without token")
 	}
 
@@ -132,7 +132,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	defer cancel()
 
 	// create request
-	req, err := http.NewRequestWithContext(ctx, string(in.method), in.url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, string(in.method), o.baseUrl+in.url, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
@@ -255,7 +255,7 @@ func (o *Client) post(url string, payload []byte, expectedResponseCodes []int, j
 func (o *Client) Login() error {
 	err := o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
-		url:    o.baseUrl + apiUrlUserLogin,
+		url:    apiUrlUserLogin,
 		toServerPtr: &userLoginRequest{
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
@@ -281,7 +281,7 @@ func (o *Client) Login() error {
 func (o Client) Logout() error {
 	return o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
-		url:    o.baseUrl + apiUrlUserLogout,
+		url:    apiUrlUserLogout,
 	})
 }
 

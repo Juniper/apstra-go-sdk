@@ -196,7 +196,7 @@ func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, e
 func (o Client) DeleteStreamingConfig(id StreamingConfigId) error {
 	return o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
-		url:    o.baseUrl + apiUrlStreamingConfig + "/" + string(id),
+		url:    apiUrlStreamingConfig + "/" + string(id),
 	})
 }
 
