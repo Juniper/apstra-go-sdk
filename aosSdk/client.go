@@ -44,12 +44,12 @@ type ClientCfg struct {
 
 // Client interacts with an AOS API server
 type Client struct {
-	baseUrl   string
-	cfg       *ClientCfg
-	login     *userLoginResponse // remove this? token now in defHdrs and session ID does nothing
-	loginTime time.Time
-	client    *http.Client
-	defHdrs   []aosHttpHeader // todo: maybe this should be a dictionary?
+	baseUrl     string
+	cfg         *ClientCfg
+	login       *userLoginResponse // remove this? token now in httpHeaders and session ID does nothing
+	loginTime   time.Time
+	client      *http.Client
+	httpHeaders []aosHttpHeader // todo: maybe this should be a dictionary?
 }
 
 // NewClient creates a Client object
@@ -79,7 +79,7 @@ func NewClient(cfg *ClientCfg) *Client {
 		},
 	}
 
-	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, defHdrs: defHdrs, login: &userLoginResponse{}}
+	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: defHdrs, login: &userLoginResponse{}}
 }
 
 type aosHttpHeader struct {
@@ -135,12 +135,12 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		return fmt.Errorf("error creating http Request - %v", err)
 	}
 
-	// set request headers
+	// set request httpHeaders
 	if in.toServerPtr != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	for i := range o.defHdrs {
-		req.Header.Set(o.defHdrs[i].key, o.defHdrs[i].val)
+	for i := range o.httpHeaders {
+		req.Header.Set(o.httpHeaders[i].key, o.httpHeaders[i].val)
 	}
 
 	// talk to the server
@@ -148,6 +148,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	if err != nil {
 		return fmt.Errorf("error calling http.client.Do - %v", err)
 	}
+	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
 	// response not okay?
@@ -195,10 +196,10 @@ func (o *Client) Login() error {
 		return fmt.Errorf("error in Login - %v", err)
 	}
 
-	// stash auth token in client's default set of aos http headers
-	// todo: multiple calls to Login() will cause many Authtoken headers to be saved
+	// stash auth token in client's default set of aos http httpHeaders
+	// todo: multiple calls to Login() will cause many Authtoken httpHeaders to be saved
 	//  convert to a dictionary or seek/destroy duplicates here
-	o.defHdrs = append(o.defHdrs, aosHttpHeader{
+	o.httpHeaders = append(o.httpHeaders, aosHttpHeader{
 		key: "Authtoken",
 		val: o.login.Token,
 	})
