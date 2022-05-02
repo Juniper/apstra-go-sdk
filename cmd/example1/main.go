@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/chrismarget-j/apstraTelemetry/aosSdk"
+	"github.com/chrismarget-j/apstraTelemetry/aosStreamTarget"
 )
 
 const (
@@ -21,9 +22,9 @@ const (
 // point events at our collector) and streamTargetCfg (our listener for AOS
 // protobuf messages)
 type getConfigIn struct {
-	clientCfg          *aosSdk.ClientCfg           // AOS API client config
-	streamTargetCfg    []aosSdk.StreamTargetCfg    // Our protobuf stream listener
-	streamingConfigCfg []aosSdk.StreamingConfigCfg // Tell AOS API about our stream listener
+	clientCfg          *aosSdk.ClientCfg                 // AOS API client config
+	streamTargetCfg    []aosStreamTarget.StreamTargetCfg // Our protobuf stream listener
+	streamingConfigCfg []aosSdk.StreamingConfigCfg       // Tell AOS API about our stream listener
 }
 
 func getConfig(in getConfigIn) error {
@@ -93,9 +94,9 @@ func main() {
 	signal.Notify(quitChan, os.Interrupt, os.Kill)
 
 	// configuration objects
-	clientCfg := aosSdk.ClientCfg{}                          // config for interacting with AOS API
-	streamingConfigs := make([]aosSdk.StreamingConfigCfg, 3) // config for pointing event stream at our target
-	streamTargetConfigs := make([]aosSdk.StreamTargetCfg, 3) // config for our event stream target
+	clientCfg := aosSdk.ClientCfg{}                                   // config for interacting with AOS API
+	streamingConfigs := make([]aosSdk.StreamingConfigCfg, 3)          // config for pointing event stream at our target
+	streamTargetConfigs := make([]aosStreamTarget.StreamTargetCfg, 3) // config for our event stream target
 
 	// populate configuration objects using local function
 	err := getConfig(getConfigIn{
@@ -121,13 +122,13 @@ func main() {
 	defer c.Logout()
 
 	// create aggregator channels where we'll get messages from all target services
-	msgChan := make(chan *aosSdk.StreamingMessage)
+	msgChan := make(chan *aosStreamTarget.StreamingMessage)
 	errChan := make(chan error)
 
-	var streamTargets []*aosSdk.StreamTarget
+	var streamTargets []*aosStreamTarget.StreamTarget
 	for i := range streamTargetConfigs {
 		// create each AOS stream target service
-		st, err := aosSdk.NewStreamTarget(streamTargetConfigs[i])
+		st, err := aosStreamTarget.NewStreamTarget(streamTargetConfigs[i])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -145,7 +146,7 @@ func main() {
 		}
 
 		// copy messages from this target's message channel to aggregated message channel
-		go func(in <-chan *aosSdk.StreamingMessage, out chan<- *aosSdk.StreamingMessage) {
+		go func(in <-chan *aosStreamTarget.StreamingMessage, out chan<- *aosStreamTarget.StreamingMessage) {
 			for {
 				out <- <-in
 			}

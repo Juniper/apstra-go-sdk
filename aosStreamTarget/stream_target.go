@@ -1,4 +1,4 @@
-package aosSdk
+package aosStreamTarget
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/chrismarget-j/apstraTelemetry/aosSdk"
 	"google.golang.org/protobuf/proto"
 	"io"
 	"net"
@@ -32,9 +33,9 @@ const (
 type StreamTargetCfg struct {
 	Certificate    *x509.Certificate
 	Key            *rsa.PrivateKey
-	SequencingMode StreamingConfigSequencingMode
-	StreamingType  StreamingConfigStreamingType
-	Protocol       StreamingConfigProtocol
+	SequencingMode aosSdk.StreamingConfigSequencingMode
+	StreamingType  aosSdk.StreamingConfigStreamingType
+	Protocol       aosSdk.StreamingConfigProtocol
 	Port           uint16
 }
 
@@ -43,8 +44,8 @@ type StreamTargetCfg struct {
 // StreamingConfigSequencingModeUnsequenced channels. In the latter case, 'seq'
 // will always be nil.
 type StreamingMessage struct {
-	SequencingMode StreamingConfigSequencingMode
-	StreamingType  StreamingConfigStreamingType
+	SequencingMode aosSdk.StreamingConfigSequencingMode
+	StreamingType  aosSdk.StreamingConfigStreamingType
 	Message        *aosStreaming.AosMessage
 	SequenceNum    *uint64
 }
@@ -102,16 +103,16 @@ func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
 
 // StreamTarget is a listener for AOS streaming objects
 type StreamTarget struct {
-	tlsConfig *tls.Config            // if we're a TLS listener
-	nl        net.Listener           // clients (aos server) connect here
-	stopChan  chan struct{}          // close to rip everythign down
-	errChan   chan error             // client handlers pass errors here
-	msgChan   chan *StreamingMessage // client handlers pass messages here
-	clientWG  sync.WaitGroup         // keeps track of client handlers
-	cfg       *StreamTargetCfg       // submitted by caller
-	aosIP     *net.IP                // for filtering incoming connections
-	strmCfgId StreamingConfigId      // AOS streaming ID, populated by Register
-	client    *Client                // populated by Register, we hang onto it for Unregister
+	tlsConfig *tls.Config              // if we're a TLS listener
+	nl        net.Listener             // clients (aos server) connect here
+	stopChan  chan struct{}            // close to rip everythign down
+	errChan   chan error               // client handlers pass errors here
+	msgChan   chan *StreamingMessage   // client handlers pass messages here
+	clientWG  sync.WaitGroup           // keeps track of client handlers
+	cfg       *StreamTargetCfg         // submitted by caller
+	aosIP     *net.IP                  // for filtering incoming connections
+	strmCfgId aosSdk.StreamingConfigId // AOS streaming ID, populated by Register
+	client    *aosSdk.Client           // populated by Register, we hang onto it for Unregister
 }
 
 // Start loops forever handling new connections from the AOS streaming service
@@ -243,7 +244,7 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 	var seqPtr *uint64
 
 	// extract AosMessage from AosSequencedMessage wrapper if configured for StreamingConfigSequencingModeSequenced
-	if o.cfg.SequencingMode == StreamingConfigSequencingModeSequenced {
+	if o.cfg.SequencingMode == aosSdk.StreamingConfigSequencingModeSequenced {
 		var seqMsg aosStreaming.AosSequencedMessage // outer wrapper structure
 		err := proto.Unmarshal(in, &seqMsg)         // unwrap inner message
 		if err != nil {
@@ -265,7 +266,7 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 
 // Register registers this StreamTarget as a streaming config / receiver on the
 // AOS server.
-func (o *StreamTarget) Register(client *Client, cfg *StreamingConfigCfg) error {
+func (o *StreamTarget) Register(client *aosSdk.Client, cfg *aosSdk.StreamingConfigCfg) error {
 	id, err := client.NewStreamingConfig(cfg)
 	if err != nil {
 		return fmt.Errorf("error in Register() - %v", err)
