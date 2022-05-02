@@ -1,9 +1,5 @@
 package aosSdk
 
-import (
-	"fmt"
-)
-
 const (
 	apiUrlVersion = "/api/version"
 )
@@ -16,11 +12,11 @@ type VersionResponse struct {
 }
 
 func (o Client) getVersion() (*VersionResponse, error) {
-	var versionResponse VersionResponse
-	url := o.baseUrl + apiUrlVersion
-	err := o.get(url, []int{200}, &versionResponse)
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
-	}
-	return &versionResponse, nil
+	var response VersionResponse
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlVersion,
+		fromServerPtr: &response,
+	})
+	return &response, err
 }
