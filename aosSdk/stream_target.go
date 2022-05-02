@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	sizeOfAosMessageLenHdr = 2
+	sizeOfAosMessageLenHdr = 2 // Apstra 'protoBufOverTcp' streaming includes a 16-bit length w/each protobuf
 	network                = "tcp4"
 	errConnClosed          = "use of closed network connection"
 )
@@ -121,19 +121,21 @@ type StreamTarget struct {
 func (o *StreamTarget) Start() (msgChan <-chan *StreamingMessage, errChan <-chan error, err error) {
 	var nl net.Listener
 
-	laddr := ":" + strconv.Itoa(int(o.cfg.Port))
+	laddr := ":" + strconv.Itoa(int(o.cfg.Port)) // something like ":6000" (a port number)
 	if o.tlsConfig != nil {
-		nl, err = tls.Listen(network, laddr, o.tlsConfig)
+		nl, err = tls.Listen(network, laddr, o.tlsConfig) // if we're doing TLS
 	} else {
-		nl, err = net.Listen(network, laddr)
+		nl, err = net.Listen(network, laddr) // if we're doing raw TCP
 	}
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("error starting listener - %v", err)
 	}
 
-	go o.receive(nl) // loop accepting incoming connections
+	// loop accepting incoming connections
+	// this will stop when nl.Close() gets called
+	go o.receive(nl)
 
-	// this should stop everything.
+	// anonymous shutdown go func kicks in when stopChan is closed
 	// todo: find out if this works the way i think it does
 	go func() {
 		<-o.stopChan      // wait for Stop() to close stopChan
@@ -156,26 +158,30 @@ func (o *StreamTarget) Stop() {
 	} // We're done when err channel gets closed
 }
 
-// receive loops until the listener shuts down, handing off connections from the
+// receive loops until the listener gets closed, handing off connections from the
 // AOS server to instances of handleClientConn().
 func (o *StreamTarget) receive(nl net.Listener) {
 	// loop accepting new connections
 	for {
-		conn, err := nl.Accept()
+		conn, err := nl.Accept() // block here waiting for inbound client
 		if err != nil {
-			// function ends on closure of listener nl
+			// nl got closed (graceful shutdown) or we've encountered an error
 			if strings.HasSuffix(err.Error(), errConnClosed) {
-				o.errChan <- err
-				return
+				o.errChan <- err // this is a graceful close, but send the error along anyway
+				return           // that's all folks
+			} else {
+				o.errChan <- err // real error. fire into the channel
 			}
-			o.errChan <- err
-			continue
+			continue // go collect the next client
 		}
 
-		o.clientWG.Add(1)
-		go o.handleClientConn(conn, o.msgChan, o.errChan)
+		o.clientWG.Add(1)                                 // defered close in handleClientConn
+		go o.handleClientConn(conn, o.msgChan, o.errChan) // read messages from the socket
+
+		// close this Conn when triggered by stopChan
 		go func() {
 			<-o.stopChan
+			// noinspection GoUnhandledErrorResult
 			conn.Close()
 		}()
 	}
@@ -202,8 +208,9 @@ func msgLenFromConn(conn net.Conn) (uint16, error) {
 }
 
 func (o *StreamTarget) handleClientConn(conn net.Conn, msgChan chan<- *StreamingMessage, errChan chan<- error) {
-	defer o.clientWG.Done()
+	// noinspection GoUnhandledErrorResult
 	defer conn.Close()
+	defer o.clientWG.Done()
 
 	for {
 		msgLen, err := msgLenFromConn(conn)
