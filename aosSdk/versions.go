@@ -1,7 +1,6 @@
 package aosSdk
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -47,8 +46,8 @@ type versionsDeviceResponse struct {
 }
 
 type versionsIbaRequest struct {
-	Version  string `json:"version""`
-	SystemId string `json:"system_id""`
+	Version  string `json:"version"`
+	SystemId string `json:"system_id"`
 }
 
 type versionsIbaResponse struct {
@@ -116,7 +115,7 @@ func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDev
 }
 
 func (o Client) postVersionsIba(request *versionsIbaRequest) (*versionsIbaResponse, error) {
-	var response versionsIbaResponse{}
+	var response versionsIbaResponse
 	err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
 		url:           apiUrlVersionsIba,
