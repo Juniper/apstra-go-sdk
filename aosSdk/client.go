@@ -8,8 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
-	"strings"
 	"time"
 )
 
@@ -181,41 +179,6 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 
 	// decode response body into the caller-specified structure
 	return json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
-}
-
-// todo: need smarter handling of response codes, errors, errors in response body
-func (o *Client) post(url string, payload []byte, expectedResponseCodes []int, jsonPtr interface{}) error {
-	if o.login.Token == "" && url != o.baseUrl+apiUrlUserLogin {
-		return fmt.Errorf("cannot interact with AOS API without token")
-	}
-
-	ctx, cancel := context.WithTimeout(o.cfg.Ctx, o.cfg.Timeout)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
-	if err != nil {
-		return fmt.Errorf("error creating http Request - %v", err)
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authtoken", o.login.Token)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := o.client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error calling http.client.Do - %v", err)
-	}
-	defer resp.Body.Close()
-
-	if !intSliceContains(expectedResponseCodes, resp.StatusCode) {
-		dump, _ := httputil.DumpResponse(resp, true)
-		return fmt.Errorf("unexpected http response code '%d' (permitted: '%s') at '%s' (http dump follows)\n%s",
-			resp.StatusCode, strings.Join(intSliceToStringSlice(expectedResponseCodes), ","), url, string(dump))
-	}
-
-	if jsonPtr != nil {
-		return json.NewDecoder(resp.Body).Decode(jsonPtr)
-	}
-
-	return nil
 }
 
 func (o *Client) Login() error {
