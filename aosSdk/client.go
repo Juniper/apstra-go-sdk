@@ -49,7 +49,7 @@ type Client struct {
 	login     *userLoginResponse // remove this? token now in defHdrs and session ID does nothing
 	loginTime time.Time
 	client    *http.Client
-	defHdrs   []aosHttpHeader
+	defHdrs   []aosHttpHeader // todo: maybe this should be a dictionary?
 }
 
 // NewClient creates a Client object
@@ -196,6 +196,8 @@ func (o *Client) Login() error {
 	}
 
 	// stash auth token in client's default set of aos http headers
+	// todo: multiple calls to Login() will cause many Authtoken headers to be saved
+	//  convert to a dictionary or seek/destroy duplicates here
 	o.defHdrs = append(o.defHdrs, aosHttpHeader{
 		key: "Authtoken",
 		val: o.login.Token,

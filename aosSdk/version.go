@@ -13,10 +13,9 @@ type VersionResponse struct {
 
 func (o Client) getVersion() (*VersionResponse, error) {
 	var response VersionResponse
-	err := o.talkToAos(&talkToAosIn{
+	return &response, o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlVersion,
 		fromServerPtr: &response,
 	})
-	return &response, err
 }
