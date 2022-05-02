@@ -106,10 +106,9 @@ func (o Client) getVersionsBuild() (*versionsBuildResponse, error) {
 func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDeviceResponse, error) {
 	var response versionsDeviceResponse
 	err := o.talkToAos(&talkToAosIn{
-		method:        httpMethodPost,
-		url:           apiUrlVersionsDevice,
-		toServerPtr:   request,
-		fromServerPtr: nil,
+		method:      httpMethodPost,
+		url:         apiUrlVersionsDevice,
+		toServerPtr: request,
 	})
 	return &response, err
 }

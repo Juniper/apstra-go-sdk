@@ -137,14 +137,12 @@ func (o Client) getStreamingConfig(id StreamingConfigId) (*StreamingConfigCfg, e
 
 func (o Client) postStreamingConfig(cfg *StreamingConfigStreamingEndpoint) (*createStreamingConfigResponse, error) {
 	var result createStreamingConfigResponse
-	err := o.talkToAos(&talkToAosIn{
+	return &result, o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
 		url:           apiUrlStreamingConfig,
 		toServerPtr:   cfg,
-		fromServerPtr: result,
+		fromServerPtr: &result,
 	})
-
-	return &result, err
 }
 
 // NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the AOS server.
