@@ -98,7 +98,7 @@ type StreamingConfigCfg struct {
 }
 
 type StreamingConfigStatus struct {
-	ConnectionLog        StreamingConfigConnectionLog     `json:"connectionLog"`
+	ConnectionLog        []StreamingConfigConnectionLog   `json:"connectionLog"`
 	ConnectionTime       string                           `json:"connectionTime"`
 	Epoch                string                           `json:"epoch"`
 	ConnectionResetCount uint                             `json:"connnectionResetCount"`
