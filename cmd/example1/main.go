@@ -109,10 +109,7 @@ func main() {
 
 	// create AOS client
 	// noinspection GoVetCopyLock
-	c, err := aosSdk.NewClient(clientCfg)
-	if err != nil {
-		log.Fatal(err)
-	}
+	c := aosSdk.NewClient(clientCfg)
 
 	// fetch AOS auth token
 	err = c.Login()

@@ -45,7 +45,7 @@ type Client struct {
 }
 
 // NewClient creates a Client object
-func NewClient(cfg ClientCfg) (*Client, error) {
+func NewClient(cfg ClientCfg) *Client {
 	if cfg.Ctx == nil {
 		cfg.Ctx = context.TODO() // default context
 	}
@@ -64,7 +64,7 @@ func NewClient(cfg ClientCfg) (*Client, error) {
 		},
 	}
 
-	return &Client{cfg: &cfg, baseUrl: baseUrl, client: client, login: &userLoginResponse{}}, nil
+	return &Client{cfg: &cfg, baseUrl: baseUrl, client: client, login: &userLoginResponse{}}
 }
 
 // todo: need smarter handling of response codes, errors, errors in response body

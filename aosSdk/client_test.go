@@ -48,10 +48,6 @@ func TestNewClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := NewClient(*cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	client := NewClient(*cfg)
 	log.Println(client.baseUrl)
 }
