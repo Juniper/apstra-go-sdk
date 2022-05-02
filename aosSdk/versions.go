@@ -76,32 +76,32 @@ type versionsServerResponse struct {
 
 func (o Client) getVersionsAosdi() (*versionsAosdiResponse, error) {
 	var response versionsAosdiResponse
-	url := apiUrlVersionsAosdi
-	err := o.get(url, []int{200}, &response)
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
-	}
-	return &response, nil
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlVersionsAosdi,
+		fromServerPtr: &response,
+	})
+	return &response, err
 }
 
 func (o Client) getVersionsApi() (*versionsApiResponse, error) {
 	var response versionsApiResponse
-	url := apiUrlVersionsApi
-	err := o.get(url, []int{200}, &response)
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
-	}
-	return &response, nil
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlVersionsApi,
+		fromServerPtr: &response,
+	})
+	return &response, err
 }
 
 func (o Client) getVersionsBuild() (*versionsBuildResponse, error) {
 	var response versionsBuildResponse
-	url := apiUrlVersionsBuild
-	err := o.get(url, []int{200}, &response)
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
-	}
-	return &response, nil
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlVersionsBuild,
+		fromServerPtr: &response,
+	})
+	return &response, err
 }
 
 func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDeviceResponse, error) {
