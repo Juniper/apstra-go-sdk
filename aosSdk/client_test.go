@@ -48,6 +48,6 @@ func TestNewClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client := NewClient(*cfg)
+	client := NewClient(cfg)
 	log.Println(client.baseUrl)
 }

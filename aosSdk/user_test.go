@@ -33,7 +33,7 @@ func userTestClient1() (*Client, error) {
 		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
 	}
 
-	return NewClient(ClientCfg{
+	return NewClient(&ClientCfg{
 		Scheme:    scheme,
 		Host:      host,
 		Port:      uint16(port),

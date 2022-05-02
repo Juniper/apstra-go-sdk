@@ -53,7 +53,7 @@ type Client struct {
 }
 
 // NewClient creates a Client object
-func NewClient(cfg ClientCfg) *Client {
+func NewClient(cfg *ClientCfg) *Client {
 	if cfg.Ctx == nil {
 		cfg.Ctx = context.TODO() // default context
 	}
@@ -79,7 +79,7 @@ func NewClient(cfg ClientCfg) *Client {
 		},
 	}
 
-	return &Client{cfg: &cfg, baseUrl: baseUrl, client: client, defHdrs: defHdrs, login: &userLoginResponse{}}
+	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, defHdrs: defHdrs, login: &userLoginResponse{}}
 }
 
 type aosHttpHeader struct {

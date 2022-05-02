@@ -51,7 +51,7 @@ func TestGetVersionsServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client := NewClient(*cfg)
+	client := NewClient(cfg)
 	err = client.Login()
 	if err != nil {
 		t.Fatal(err)
