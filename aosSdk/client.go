@@ -182,3 +182,7 @@ func (o Client) GetStreamingConfigs() ([]StreamingConfigCfg, error) {
 func (o Client) GetVersion() (*VersionResponse, error) {
 	return o.getVersion()
 }
+
+func (o Client) SessionId() string {
+	return o.login.Id
+}
