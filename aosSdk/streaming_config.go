@@ -1,7 +1,6 @@
 package aosSdk
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -19,22 +18,7 @@ const (
 
 	StreamingConfigProtocolUnknown StreamingConfigProtocol = iota
 	StreamingConfigProtocolProtoBufOverTcp
-
-	ErrStringStreamingConfigExists   = "Entity already exists"
-	ErrStringStreamingConfigNotFound = "streaming config not found"
 )
-
-type ErrStreamingConfigExists struct{}
-
-func (o *ErrStreamingConfigExists) Error() string {
-	return ErrStringStreamingConfigExists
-}
-
-type ErrStreamingConfigNotFound struct{}
-
-func (o ErrStreamingConfigNotFound) Error() string {
-	return ErrStringStreamingConfigNotFound
-}
 
 type StreamingConfigId string
 
@@ -109,7 +93,7 @@ type StreamingConfigStatus struct {
 }
 
 type StreamingConfigConnectionLog struct {
-	Date    string `json:"date"'`
+	Date    string `json:"date"`
 	Message string `json:"message"`
 }
 
@@ -127,8 +111,7 @@ type StreamingConfigDnsLog struct {
 }
 
 type createStreamingConfigResponse struct {
-	Id     string `json:"id"`
-	Errors string `json:"errors"`
+	Id string `json:"id"`
 }
 
 func (o Client) getAllStreamingConfigs() ([]StreamingConfigCfg, error) {
@@ -141,36 +124,26 @@ func (o Client) getAllStreamingConfigs() ([]StreamingConfigCfg, error) {
 	return result.Items, nil
 }
 
-func (o Client) getStreamingConfig(id string) (*StreamingConfigCfg, error) {
+func (o Client) getStreamingConfig(id StreamingConfigId) (*StreamingConfigCfg, error) {
 	var result StreamingConfigCfg
-	url := o.baseUrl + apiUrlStreamingConfig + "/" + id
-	err := o.get(url, []int{200}, result)
-	if err != nil {
-		return nil, fmt.Errorf("error calling %s - %v", url, err)
-	}
-	return &result, nil
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlStreamingConfig + "/" + string(id),
+		fromServerPtr: &result,
+	})
+	return &result, err
 }
 
 func (o Client) postStreamingConfig(cfg *StreamingConfigStreamingEndpoint) (*createStreamingConfigResponse, error) {
-	msg, err := json.Marshal(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling StreamingConfigStreamingEndpoint object - %v", err)
-	}
-
 	var result createStreamingConfigResponse
-	url := o.baseUrl + apiUrlStreamingConfig
-	err = o.post(url, msg, []int{201, 409}, &result)
-	if err != nil {
-		return nil, fmt.Errorf("error calling %s - %v", url, err)
-	}
-	if result.Errors == ErrStringStreamingConfigExists {
-		return nil, &ErrStreamingConfigExists{}
-	}
-	if result.Errors != "" {
-		return nil, fmt.Errorf("server error calling %s - %v", url, result.Errors)
-	}
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodPost,
+		url:           apiUrlStreamingConfig,
+		toServerPtr:   cfg,
+		fromServerPtr: result,
+	})
 
-	return &result, nil
+	return &result, err
 }
 
 // NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the AOS server.
