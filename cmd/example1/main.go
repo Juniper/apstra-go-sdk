@@ -3,11 +3,12 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	aosSdk "github.com/chrismarget-j/apstraTelemetry/aosSdk"
 	"log"
 	"os"
 	"os/signal"
 	"strconv"
+
+	"github.com/chrismarget-j/apstraTelemetry/aosSdk"
 )
 
 const (
@@ -107,6 +108,7 @@ func main() {
 	}
 
 	// create AOS client
+	// noinspection GoVetCopyLock
 	c, err := aosSdk.NewClient(clientCfg)
 	if err != nil {
 		log.Fatal(err)
@@ -117,6 +119,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// noinspection GoUnhandledErrorResult
 	defer c.Logout()
 
 	// create aggregator channels where we'll get messages from all target services
@@ -215,12 +219,12 @@ func main() {
 	//	log.Println(streamId3)
 	//}
 
-MAINLOOP:
+MainLoop:
 	for {
 		select {
 		// interrupt (ctrl-c or whatever)
 		case <-quitChan:
-			break MAINLOOP
+			break MainLoop
 		// aosStreamTarget has a message
 		case msg := <-msgChan:
 			var seqNumStr string
