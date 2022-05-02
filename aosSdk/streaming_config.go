@@ -116,12 +116,13 @@ type createStreamingConfigResponse struct {
 
 func (o Client) getAllStreamingConfigs() ([]StreamingConfigCfg, error) {
 	var result getStreamingConfigsResponse
-	url := o.baseUrl + apiUrlStreamingConfig
-	err := o.get(url, []int{200}, &result)
-	if err != nil {
-		return nil, fmt.Errorf("error calling %s - %v", url, err)
-	}
-	return result.Items, nil
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlStreamingConfig,
+		toServerPtr:   nil,
+		fromServerPtr: &result,
+	})
+	return result.Items, err
 }
 
 func (o Client) getStreamingConfig(id StreamingConfigId) (*StreamingConfigCfg, error) {
