@@ -26,7 +26,7 @@ const (
 
 	httpMethodGet    = httpMethod("GET")
 	httpMethodPost   = httpMethod("POST")
-	httpMethodDelete = httpMethod("DELTE")
+	httpMethodDelete = httpMethod("DELETE")
 )
 
 type httpMethod string

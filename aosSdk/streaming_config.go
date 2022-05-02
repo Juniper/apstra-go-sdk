@@ -194,8 +194,10 @@ func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, e
 // DeleteStreamingConfig removes the specified StreamingConfig (Streaming
 // Receiver) on the Aos server.
 func (o Client) DeleteStreamingConfig(id StreamingConfigId) error {
-	url := o.baseUrl + apiUrlStreamingConfig + "/" + string(id)
-	return o.delete(url, []int{202})
+	return o.talkToAos(&talkToAosIn{
+		method: httpMethodDelete,
+		url:    o.baseUrl + apiUrlStreamingConfig + "/" + string(id),
+	})
 }
 
 // GetStreamingConfigIDByCfg checks current StreamingConfigs (Streaming
