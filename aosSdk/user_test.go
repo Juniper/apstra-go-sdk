@@ -49,7 +49,7 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = c.userLogin()
+	err = c.Login()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,12 +61,12 @@ func TestLogout(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = c.userLogin()
+	err = c.Login()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = c.userLogout()
+	err = c.Logout()
 	if err != nil {
 		t.Fatal(err)
 	}

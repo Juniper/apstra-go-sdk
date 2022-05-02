@@ -57,7 +57,7 @@ func TestClient_GetAllStreamingConfigs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = client.userLogin()
+	err = client.Login()
 	if err != nil {
 		t.Fatal(err)
 	}

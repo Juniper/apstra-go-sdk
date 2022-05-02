@@ -48,7 +48,7 @@ type ClientCfg struct {
 type Client struct {
 	baseUrl   string
 	cfg       *ClientCfg
-	login     *userLoginResponse
+	login     *userLoginResponse // remove this? token now in defHdrs and session ID does nothing
 	loginTime time.Time
 	client    *http.Client
 	defHdrs   []aosHttpHeader
@@ -284,11 +284,36 @@ func (o *Client) delete(url string, expectedResponseCodes []int) error {
 }
 
 func (o *Client) Login() error {
-	return o.userLogin()
+	err := o.talkToAos(&talkToAosIn{
+		method: httpMethodPost,
+		url:    o.baseUrl + apiUrlUserLogin,
+		toServerPtr: &userLoginRequest{
+			Username: o.cfg.User,
+			Password: o.cfg.Pass,
+		},
+		fromServerPtr: o.login,
+	})
+	if err != nil {
+		return fmt.Errorf("error in Login - %v", err)
+	}
+
+	// stash auth token in client's default set of aos http headers
+	o.defHdrs = append(o.defHdrs, aosHttpHeader{
+		key: "Authtoken",
+		val: o.login.Token,
+	})
+
+	// save login time for future token refresh function
+	o.loginTime = time.Now()
+
+	return nil
 }
 
 func (o Client) Logout() error {
-	return o.userLogout()
+	return o.talkToAos(&talkToAosIn{
+		method: httpMethodPost,
+		url:    o.baseUrl + apiUrlUserLogout,
+	})
 }
 
 func (o Client) GetStreamingConfigs() ([]StreamingConfigCfg, error) {

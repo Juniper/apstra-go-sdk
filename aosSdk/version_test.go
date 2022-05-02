@@ -49,7 +49,7 @@ func TestGetVersion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = client.userLogin()
+	err = client.Login()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestGetVersion(t *testing.T) {
 
 	log.Println(string(result))
 
-	err = client.userLogout()
+	err = client.Logout()
 	if err != nil {
 		t.Fatal(err)
 	}
