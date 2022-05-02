@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -20,7 +21,15 @@ const (
 	EnvApstraScheme = "APSTRA_SCHEME"
 
 	defaultTimeout = 10 * time.Second
+
+	errResponseLimit = 4096
+
+	httpMethodGet    = httpMethod("GET")
+	httpMethodPost   = httpMethod("POST")
+	httpMethodDelete = httpMethod("DELTE")
 )
+
+type httpMethod string
 
 // ClientCfg passed to NewClient() when instantiating a new Client{}
 type ClientCfg struct {
@@ -42,6 +51,7 @@ type Client struct {
 	login     *userLoginResponse
 	loginTime time.Time
 	client    *http.Client
+	defHdrs   []aosHttpHeader
 }
 
 // NewClient creates a Client object
@@ -64,13 +74,119 @@ func NewClient(cfg ClientCfg) *Client {
 		},
 	}
 
-	return &Client{cfg: &cfg, baseUrl: baseUrl, client: client, login: &userLoginResponse{}}
+	defHdrs := []aosHttpHeader{
+		{
+			key: "Accept",
+			val: "application/json",
+		},
+	}
+
+	return &Client{cfg: &cfg, baseUrl: baseUrl, client: client, defHdrs: defHdrs, login: &userLoginResponse{}}
+}
+
+type aosHttpHeader struct {
+	key string
+	val string
+}
+
+type talkToAosIn struct {
+	method        httpMethod
+	url           string
+	toServerPtr   interface{}
+	fromServerPtr interface{}
+}
+
+type talkToAosErr struct {
+	url        string
+	request    *http.Request
+	response   *bytes.Buffer
+	error      string
+	statusCode int
+}
+
+func (o talkToAosErr) Error() string {
+	if o.error == "" {
+		return fmt.Sprintf("http response code %d at %s", o.statusCode, o.url)
+	}
+	return o.error
+}
+
+func (o Client) talkToAos(in *talkToAosIn) error {
+	var err error
+	var body []byte
+
+	if o.login.Token == "" && in.url != o.baseUrl+apiUrlUserLogin {
+		return errors.New("cannot interact with AOS API without token")
+	}
+
+	// are we sending data to the server?
+	if in.toServerPtr != nil {
+		body, err = json.Marshal(in.toServerPtr)
+		if err != nil {
+			return fmt.Errorf("error marshaling payload in talkToAos - %v", err)
+		}
+	}
+
+	// wrap context with timeout
+	ctx, cancel := context.WithTimeout(o.cfg.Ctx, o.cfg.Timeout)
+	defer cancel()
+
+	// create request
+	req, err := http.NewRequestWithContext(ctx, string(in.method), in.url, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("error creating http Request - %v", err)
+	}
+
+	// set request headers
+	if in.toServerPtr != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	for i := range o.defHdrs {
+		req.Header.Set(o.defHdrs[i].key, o.defHdrs[i].val)
+	}
+
+	// talk to the server
+	resp, err := o.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error calling http.client.Do - %v", err)
+	}
+	defer resp.Body.Close()
+
+	// response not okay?
+	if resp.StatusCode/100 != 2 {
+		// trim authentication token from request
+		req.Header.Del("Authtoken")
+
+		// limit response details for URLs known to deal in credentials
+		if in.url != apiUrlUserLogin {
+			return talkToAosErr{
+				url:        in.url,
+				statusCode: resp.StatusCode,
+			}
+		}
+
+		// big error response for "safe" URLs
+		return talkToAosErr{
+			url:        in.url,
+			request:    req,
+			response:   bytes.NewBuffer(make([]byte, errResponseLimit)),
+			statusCode: resp.StatusCode,
+		}
+	}
+
+	// caller not expecting any response?
+	if in.fromServerPtr == nil {
+		return nil
+	}
+
+	// decode response body into the caller-specified structure
+	return json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
 }
 
 // todo: need smarter handling of response codes, errors, errors in response body
 func (o Client) get(url string, expectedResponseCodes []int, jsonPtr interface{}) error {
 	if o.login.Token == "" {
-		return fmt.Errorf("cannot interact with AOS API without token")
+		return errors.New("cannot interact with AOS API without token")
 	}
 
 	ctx, cancel := context.WithTimeout(o.cfg.Ctx, o.cfg.Timeout)
