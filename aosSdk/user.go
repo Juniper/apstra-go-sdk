@@ -7,10 +7,6 @@ import (
 )
 
 const (
-	schemeHttp        = "http"
-	schemeHttps       = "https"
-	schemeHttpsUnsafe = "hxxps"
-
 	apiUrlUserLogin  = "/api/user/login"
 	apiUrlUserLogout = "/api/user/logout"
 )
