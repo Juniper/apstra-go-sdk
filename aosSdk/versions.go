@@ -116,31 +116,25 @@ func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDev
 }
 
 func (o Client) postVersionsIba(request *versionsIbaRequest) (*versionsIbaResponse, error) {
-	payload, err := json.Marshal(request)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling versionsDeviceRequest object - %v", err)
-	}
-	var response versionsIbaResponse
-	url := apiUrlVersionsIba
-	err = o.post(url, payload, []int{200}, &response)
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
-	}
-	return &response, nil
+	var response versionsIbaResponse{}
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodPost,
+		url:           apiUrlVersionsIba,
+		toServerPtr:   request,
+		fromServerPtr: &response,
+	})
+	return &response, err
 }
 
 func (o Client) postVersionsNode(request *versionsNodeRequest) (*versionsNodeResponse, error) {
-	payload, err := json.Marshal(request)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling versionsDeviceRequest object - %v", err)
-	}
 	var response versionsNodeResponse
-	url := apiUrlVersionsNode
-	err = o.post(url, payload, []int{200}, &response)
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' - %v", url, err)
-	}
-	return &response, nil
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodPost,
+		url:           apiUrlVersionsNode,
+		toServerPtr:   request,
+		fromServerPtr: &response,
+	})
+	return &response, err
 }
 
 func (o Client) getVersionsServer() (*versionsServerResponse, error) {
