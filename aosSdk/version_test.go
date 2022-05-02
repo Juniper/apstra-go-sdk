@@ -40,7 +40,7 @@ func aosVersionTestClient1() (*Client, error) {
 		Port:   uint16(port),
 		User:   user,
 		Pass:   pass,
-	})
+	}), nil
 }
 
 func TestGetVersion(t *testing.T) {

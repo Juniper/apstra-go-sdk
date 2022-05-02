@@ -38,7 +38,7 @@ func userTestClient1() (*Client, error) {
 		Port:   uint16(port),
 		User:   user,
 		Pass:   pass,
-	})
+	}), nil
 }
 
 func TestLogin(t *testing.T) {

@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"os"
@@ -35,12 +36,19 @@ func streamingConfigTestClient1() (*Client, error) {
 	}
 
 	return NewClient(ClientCfg{
-		Scheme: scheme,
-		Host:   host,
-		Port:   uint16(port),
-		User:   user,
-		Pass:   pass,
-	})
+		Scheme:    scheme,
+		Host:      host,
+		Port:      uint16(port),
+		User:      user,
+		Pass:      pass,
+		TlsConfig: tls.Config{InsecureSkipVerify: true},
+	}), nil
+}
+
+func TestThing(t *testing.T) {
+	var mySCST StreamingConfigStreamingType
+	log.Println(mySCST)
+
 }
 
 func TestClient_GetAllStreamingConfigs(t *testing.T) {
