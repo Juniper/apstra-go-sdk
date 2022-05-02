@@ -1,6 +1,7 @@
 package aosSdk
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -50,4 +51,11 @@ func TestNewClient(t *testing.T) {
 
 	client := NewClient(*cfg)
 	log.Println(client.baseUrl)
+}
+
+func TestThing2(t *testing.T) {
+	log.Println(299 / 100)
+	var body []byte
+	thing := bytes.NewBuffer(body)
+	log.Println(thing)
 }
