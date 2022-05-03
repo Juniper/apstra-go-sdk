@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -35,18 +34,6 @@ func pp(in interface{}, out io.Writer) error {
 		return err
 	}
 	return nil
-}
-
-// ourIpForPeer returns a *net.IP representing the local interface selected by
-// the system for talking to the passed *net.IP. The returned value might also
-// be the best choice for that peer to reach us.
-func ourIpForPeer(us *net.IP) (*net.IP, error) {
-	c, err := net.Dial("udp4", us.String()+":1")
-	if err != nil {
-		return nil, err
-	}
-
-	return &c.LocalAddr().(*net.UDPAddr).IP, c.Close()
 }
 
 type jwt struct {
