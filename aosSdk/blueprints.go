@@ -1,5 +1,9 @@
 package aosSdk
 
+const (
+	apiUrlBlueprints = "/api/blueprints"
+)
+
 type BlueprintStatus string
 
 type AdditionalProp struct {
@@ -73,4 +77,13 @@ type BlueprintData struct {
 	Nodes          BlueprintNodes          `json:"nodes"`
 	Id             string                  `json:"id"`
 	SourceVersions BlueprintSourceVersions `json:"source_versions"`
+}
+
+func (o Client) GetBlueprints() (*GetBlueprintsResult, error) {
+	var result GetBlueprintsResult
+	return &result, o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlBlueprints,
+		fromServerPtr: &result,
+	})
 }
