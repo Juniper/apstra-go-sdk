@@ -242,3 +242,8 @@ func (o Client) GetStreamingConfigs() ([]StreamingConfigCfg, error) {
 func (o Client) GetVersion() (*VersionResponse, error) {
 	return o.getVersion()
 }
+
+// ServerName returns the name of the AOS server this client has been configured to use
+func (o Client) ServerName() string {
+	return o.cfg.Host
+}
