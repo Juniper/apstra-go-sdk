@@ -31,12 +31,13 @@ const (
 // StreamTarget with NewStreamTarget. If Cert or Key are nil, the
 // StreamTarget will use bare TCP rather than TLS.
 type StreamTargetCfg struct {
-	Certificate    *x509.Certificate
-	Key            *rsa.PrivateKey
-	SequencingMode aosSdk.StreamingConfigSequencingMode
-	StreamingType  aosSdk.StreamingConfigStreamingType
-	Protocol       aosSdk.StreamingConfigProtocol
-	Port           uint16
+	Certificate       *x509.Certificate
+	Key               *rsa.PrivateKey
+	SequencingMode    aosSdk.StreamingConfigSequencingMode
+	StreamingType     aosSdk.StreamingConfigStreamingType
+	Protocol          aosSdk.StreamingConfigProtocol
+	Port              uint16
+	AosTargetHostname string
 }
 
 // StreamingMessage is a wrapper structure for messages delivered by both
@@ -265,18 +266,41 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 }
 
 // Register registers this StreamTarget as a streaming config / receiver on the
-// AOS server.
-func (o *StreamTarget) Register(client *aosSdk.Client, cfg *aosSdk.StreamingConfigCfg) error {
-	id, err := client.NewStreamingConfig(cfg)
+// AOS server. If o.cfg.AosTargetHostname is non-empty, that value will be told
+// to AOS when configuring the streaming config / receiver. If it's empty, we
+// attempt to determine the local IP nearest to the AOS server, use that value
+// (as a string)
+func (o *StreamTarget) Register(client *aosSdk.Client) error {
+	// figure out what the AOS server should call us (string: IP or DNS name)
+	var aosTargetHostname string
+	switch o.cfg.AosTargetHostname {
+	case "": // no value supplied - find a local IP
+		ourIp, err := ourIpForPeer(net.ParseIP(client.ServerName()))
+		if err != nil {
+			return fmt.Errorf("error determinging local IP for AOS '%s' streaming config - %v", client.ServerName(), err)
+		}
+		aosTargetHostname = ourIp.String()
+	default: // use whatever is in our configuration
+		aosTargetHostname = o.cfg.AosTargetHostname
+	}
+
+	// Register this target with Apstra
+	id, err := client.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
+		StreamingType:  o.cfg.StreamingType,
+		SequencingMode: o.cfg.SequencingMode,
+		Protocol:       o.cfg.Protocol,
+		Hostname:       aosTargetHostname,
+		Port:           o.cfg.Port,
+	})
 	if err != nil {
 		return fmt.Errorf("error in Register() - %v", err)
 	}
-	o.strmCfgId = id
-	o.client = client
+	o.strmCfgId = id  // save the streamingConfig ID returned by Apstra
+	o.client = client // hang onto the client pointer for use in Unregister()
 	return nil
 }
 
-// UnRegister deletes the streaming config /receiver associated with this
+// Unregister deletes the streaming config / receiver associated with this
 // StreamTarget from the AOS server.
 func (o *StreamTarget) Unregister() error {
 	if o.strmCfgId == "" {
