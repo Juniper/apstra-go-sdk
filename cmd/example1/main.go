@@ -112,12 +112,6 @@ func main() {
 	// noinspection GoVetCopyLock
 	c := aosSdk.NewClient(&clientCfg)
 
-	// fetch AOS auth token
-	err = c.Login()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// noinspection GoUnhandledErrorResult
 	defer c.Logout()
 
