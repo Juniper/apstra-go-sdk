@@ -150,6 +150,27 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		// trim authentication token from request
 		req.Header.Del("Authtoken")
 
+		// Auth fail?
+		if resp.StatusCode == 401 {
+			// Auth fail at login API is fatal
+			if in.url == apiUrlUserLogin {
+				return talkToAosErr{
+					url:        in.url,
+					statusCode: resp.StatusCode,
+					error:      fmt.Sprintf("HTTP %d at %s - check username/password", resp.StatusCode, apiUrlUserLogin),
+				}
+			}
+
+			// Try logging in
+			err := o.Login()
+			if err != nil {
+				return err
+			}
+
+			// Try the request again
+			return o.talkToAos(in)
+		}
+
 		// limit response details for URLs known to deal in credentials
 		if in.url == apiUrlUserLogin {
 			return talkToAosErr{
