@@ -151,7 +151,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		req.Header.Del("Authtoken")
 
 		// limit response details for URLs known to deal in credentials
-		if in.url != apiUrlUserLogin {
+		if in.url == apiUrlUserLogin {
 			return talkToAosErr{
 				url:        in.url,
 				statusCode: resp.StatusCode,
