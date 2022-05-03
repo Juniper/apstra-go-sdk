@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -46,10 +45,9 @@ type ClientCfg struct {
 type Client struct {
 	baseUrl     string
 	cfg         *ClientCfg
-	login       *userLoginResponse // remove this? token now in httpHeaders and session ID does nothing
-	loginTime   time.Time
 	client      *http.Client
 	httpHeaders []aosHttpHeader // todo: maybe this should be a dictionary?
+	token       *jwt
 }
 
 // NewClient creates a Client object
@@ -79,7 +77,7 @@ func NewClient(cfg *ClientCfg) *Client {
 		},
 	}
 
-	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: defHdrs, login: &userLoginResponse{}}
+	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: defHdrs}
 }
 
 type aosHttpHeader struct {
@@ -112,10 +110,6 @@ func (o talkToAosErr) Error() string {
 func (o Client) talkToAos(in *talkToAosIn) error {
 	var err error
 	var body []byte
-
-	if o.login.Token == "" && in.url != apiUrlUserLogin {
-		return errors.New("cannot interact with AOS API without token")
-	}
 
 	// are we sending data to the server?
 	if in.toServerPtr != nil {
@@ -183,6 +177,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 }
 
 func (o *Client) Login() error {
+	var response userLoginResponse
 	err := o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
 		url:    apiUrlUserLogin,
@@ -190,10 +185,15 @@ func (o *Client) Login() error {
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
 		},
-		fromServerPtr: o.login,
+		fromServerPtr: &response,
 	})
 	if err != nil {
-		return fmt.Errorf("error in Login - %v", err)
+		return fmt.Errorf("error talking to AOS in Login - %v", err)
+	}
+
+	o.token, err = newJwt(response.Token)
+	if err != nil {
+		return fmt.Errorf("error parsing JWT in Login - %v", err)
 	}
 
 	// stash auth token in client's default set of aos http httpHeaders
@@ -201,11 +201,8 @@ func (o *Client) Login() error {
 	//  convert to a dictionary or seek/destroy duplicates here
 	o.httpHeaders = append(o.httpHeaders, aosHttpHeader{
 		key: "Authtoken",
-		val: o.login.Token,
+		val: o.token.Raw(),
 	})
-
-	// save login time for future token refresh function
-	o.loginTime = time.Now()
 
 	return nil
 }
@@ -223,8 +220,4 @@ func (o Client) GetStreamingConfigs() ([]StreamingConfigCfg, error) {
 
 func (o Client) GetVersion() (*VersionResponse, error) {
 	return o.getVersion()
-}
-
-func (o Client) SessionId() string {
-	return o.login.Id
 }
