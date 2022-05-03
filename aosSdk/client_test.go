@@ -1,6 +1,7 @@
 package aosSdk
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"os"
@@ -34,11 +35,12 @@ func clientTestClientCfg1() (*ClientCfg, error) {
 	}
 
 	return &ClientCfg{
-		Scheme: scheme,
-		Host:   host,
-		Port:   uint16(port),
-		User:   user,
-		Pass:   pass,
+		Scheme:    scheme,
+		Host:      host,
+		Port:      uint16(port),
+		User:      user,
+		Pass:      pass,
+		TlsConfig: tls.Config{InsecureSkipVerify: true},
 	}, nil
 }
 
