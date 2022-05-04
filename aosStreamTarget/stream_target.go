@@ -125,9 +125,9 @@ func (o *StreamTarget) Start() (msgChan <-chan *StreamingMessage, errChan <-chan
 
 	laddr := ":" + strconv.Itoa(int(o.cfg.Port)) // something like ":6000" (a port number)
 	if o.tlsConfig != nil {
-		nl, err = tls.Listen(network, laddr, o.tlsConfig) // if we're doing TLS
+		nl, err = tls.Listen(network, laddr, o.tlsConfig) // if we're doing TLS (tls.listener)
 	} else {
-		nl, err = net.Listen(network, laddr) // if we're doing raw TCP
+		nl, err = net.Listen(network, laddr) // if we're doing raw TCP (net.TCPListener)
 	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("error starting listener - %w", err)

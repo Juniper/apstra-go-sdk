@@ -90,19 +90,19 @@ type talkToAosIn struct {
 	url           string
 	toServerPtr   interface{}
 	fromServerPtr interface{}
+	doNotLogin    bool
 }
 
 type talkToAosErr struct {
-	url        string
-	request    *http.Request
-	response   *bytes.Buffer
-	error      string
-	statusCode int
+	url      string
+	request  *http.Request
+	response *http.Response
+	error    string
 }
 
 func (o talkToAosErr) Error() string {
 	if o.error == "" {
-		return fmt.Sprintf("http response code %d at %s", o.statusCode, o.url)
+		return fmt.Sprintf("http response code %d at %s", o.response.StatusCode, o.url)
 	}
 	return o.error
 }
@@ -115,7 +115,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	if in.toServerPtr != nil {
 		body, err = json.Marshal(in.toServerPtr)
 		if err != nil {
-			return fmt.Errorf("error marshaling payload in talkToAos - %w", err)
+			return fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
 		}
 	}
 
@@ -126,7 +126,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	// create request
 	req, err := http.NewRequestWithContext(ctx, string(in.method), o.baseUrl+in.url, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("error creating http Request - %w", err)
+		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
 
 	// set request httpHeaders
@@ -139,53 +139,58 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 
 	// talk to the server
 	resp, err := o.client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error calling http.client.Do - %w", err)
+	// trim authentication token from request - Do() has been called - get this out of the way quickly
+	req.Header.Del("Authtoken")
+	if err != nil { // check error from req.Do()
+		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
 	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
 	// response not okay?
 	if resp.StatusCode/100 != 2 {
-		// trim authentication token from request
-		req.Header.Del("Authtoken")
 
 		// Auth fail?
 		if resp.StatusCode == 401 {
-			// Auth fail at login API is fatal
+			// Auth fail at login API is fatal for this transaction
 			if in.url == apiUrlUserLogin {
 				return talkToAosErr{
-					url:        in.url,
-					statusCode: resp.StatusCode,
-					error:      fmt.Sprintf("HTTP %d at %s - check username/password", resp.StatusCode, apiUrlUserLogin),
+					url:   in.url,
+					error: fmt.Sprintf("HTTP %d at %s - check username/password", resp.StatusCode, apiUrlUserLogin),
+				}
+			}
+
+			// Auth fail with "doNotLogin == true" is fatal for this transaction
+			if in.doNotLogin {
+				return talkToAosErr{
+					url:      in.url,
+					request:  req,
+					response: resp,
+					error:    fmt.Sprintf("got HTTP %d at '%s' and doNotLogin is %t", resp.StatusCode, in.url, in.doNotLogin),
 				}
 			}
 
 			// Try logging in
 			err := o.Login()
 			if err != nil {
-				return err
+				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
 			}
 
 			// Try the request again
-			// todo - could this loop forever?
+			in.doNotLogin = true
 			return o.talkToAos(in)
 		}
 
 		// limit response details for URLs known to deal in credentials
-		if in.url == apiUrlUserLogin {
+		switch in.url {
+		case apiUrlUserLogin: // both request and response are sensitive
+			return talkToAosErr{url: in.url}
+		default: // all other URLs are presumed "safe" secrets-wise  // todo: really?
 			return talkToAosErr{
-				url:        in.url,
-				statusCode: resp.StatusCode,
+				url:      in.url,
+				request:  req,
+				response: resp,
 			}
-		}
-
-		// big error response for "safe" URLs
-		return talkToAosErr{
-			url:        in.url,
-			request:    req,
-			response:   bytes.NewBuffer(make([]byte, errResponseLimit)),
-			statusCode: resp.StatusCode,
 		}
 	}
 
