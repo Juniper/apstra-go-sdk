@@ -168,6 +168,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 			}
 
 			// Try the request again
+			// todo - could this loop forever?
 			return o.talkToAos(in)
 		}
 

@@ -75,14 +75,7 @@ func getConfig(in getConfigIn) error {
 		in.streamTargetCfg[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
 		in.streamTargetCfg[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
 		in.streamTargetCfg[i].Port = uint16(recPortInt + i)
-	}
-
-	for i := range in.streamingConfigCfg {
-		in.streamingConfigCfg[i].StreamingType = aosSdk.StreamingConfigStreamingType(1 + int(aosSdk.StreamingConfigStreamingTypeUnknown) + i)
-		in.streamingConfigCfg[i].Protocol = aosSdk.StreamingConfigProtocolProtoBufOverTcp
-		in.streamingConfigCfg[i].SequencingMode = aosSdk.StreamingConfigSequencingModeSequenced
-		in.streamingConfigCfg[i].Hostname = recHost
-		in.streamingConfigCfg[i].Port = uint16(recPortInt + i)
+		in.streamTargetCfg[i].AosTargetHostname = recHost
 	}
 
 	return nil
@@ -134,7 +127,7 @@ func main() {
 		}
 
 		// register this AOS stream target as a streaming config / receiver
-		err = st.Register(c, &streamingConfigs[i])
+		err = st.Register(c)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -210,6 +203,10 @@ func main() {
 	//} else {
 	//	log.Println(streamId3)
 	//}
+	err = c.Login()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 MainLoop:
 	for {
