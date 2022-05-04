@@ -30,7 +30,7 @@ func userTestClient1() (*Client, error) {
 
 	port, err := strconv.Atoi(portstr)
 	if err != nil {
-		return nil, fmt.Errorf("error converting '%s' to integer - %v", portstr, err)
+		return nil, fmt.Errorf("error converting '%s' to integer - %w", portstr, err)
 	}
 
 	return NewClient(&ClientCfg{

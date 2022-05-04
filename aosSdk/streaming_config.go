@@ -154,7 +154,7 @@ func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, e
 	}
 	response, err := o.postStreamingConfig(&cfg)
 	if err != nil {
-		return "", fmt.Errorf("error in NewStreamingConfig - %v", err)
+		return "", fmt.Errorf("error in NewStreamingConfig - %w", err)
 	}
 
 	id := StreamingConfigId(response.Id)
@@ -177,7 +177,7 @@ func (o Client) DeleteStreamingConfig(id StreamingConfigId) error {
 func (o Client) GetStreamingConfigIDByCfg(in *StreamingConfigCfg) (StreamingConfigId, error) {
 	all, err := o.GetStreamingConfigs()
 	if err != nil {
-		return "", fmt.Errorf("error getting streaming configs - %v", err)
+		return "", fmt.Errorf("error getting streaming configs - %w", err)
 	}
 	for _, sc := range all {
 		if CompareStreamingConfigs(&sc, in) {

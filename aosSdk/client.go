@@ -115,7 +115,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	if in.toServerPtr != nil {
 		body, err = json.Marshal(in.toServerPtr)
 		if err != nil {
-			return fmt.Errorf("error marshaling payload in talkToAos - %v", err)
+			return fmt.Errorf("error marshaling payload in talkToAos - %w", err)
 		}
 	}
 
@@ -126,7 +126,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	// create request
 	req, err := http.NewRequestWithContext(ctx, string(in.method), o.baseUrl+in.url, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("error creating http Request - %v", err)
+		return fmt.Errorf("error creating http Request - %w", err)
 	}
 
 	// set request httpHeaders
@@ -140,7 +140,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	// talk to the server
 	resp, err := o.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("error calling http.client.Do - %v", err)
+		return fmt.Errorf("error calling http.client.Do - %w", err)
 	}
 	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
@@ -210,12 +210,12 @@ func (o *Client) Login() error {
 		fromServerPtr: &response,
 	})
 	if err != nil {
-		return fmt.Errorf("error talking to AOS in Login - %v", err)
+		return fmt.Errorf("error talking to AOS in Login - %w", err)
 	}
 
 	o.token, err = newJwt(response.Token)
 	if err != nil {
-		return fmt.Errorf("error parsing JWT in Login - %v", err)
+		return fmt.Errorf("error parsing JWT in Login - %w", err)
 	}
 
 	// stash auth token in client's default set of aos http httpHeaders

@@ -55,12 +55,12 @@ func getConfig(in getConfigIn) error {
 
 	aosPortInt, err := strconv.Atoi(aosPort)
 	if err != nil {
-		return fmt.Errorf("error converting '%s' to integer - %v", aosPort, err)
+		return fmt.Errorf("error converting '%s' to integer - %w", aosPort, err)
 	}
 
 	recPortInt, err := strconv.Atoi(recPort)
 	if err != nil {
-		return fmt.Errorf("error converting '%s' to integer - %v", recPort, err)
+		return fmt.Errorf("error converting '%s' to integer - %w", recPort, err)
 	}
 
 	in.clientCfg.Scheme = aosScheme
@@ -266,11 +266,11 @@ MainLoop:
 	// get streaming configs
 	//sc, err := aosClient.GetStreamingConfigs()
 	//if err != nil {
-	//	log.Fatalf("error getting all streaming configs - %v", err)
+	//	log.Fatalf("error getting all streaming configs - %w", err)
 	//}
 	//err = enc.Encode(sc)
 	//if err != nil {
-	//	log.Fatalf("error encoding data to JSON - %v", err)
+	//	log.Fatalf("error encoding data to JSON - %w", err)
 	//}
 
 	// print the buffer

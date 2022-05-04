@@ -63,20 +63,20 @@ func (o *jwt) decode() error {
 
 	headerJson, err := decodePart(parts[0])
 	if err != nil {
-		return fmt.Errorf("error decoding jwt header - %v", err)
+		return fmt.Errorf("error decoding jwt header - %w", err)
 	}
 	err = json.Unmarshal(headerJson, &o.header)
 	if err != nil {
-		return fmt.Errorf("error unmarshaling jwt header - %v", err)
+		return fmt.Errorf("error unmarshaling jwt header - %w", err)
 	}
 
 	payloadJson, err := decodePart(parts[1])
 	if err != nil {
-		return fmt.Errorf("error decoding jwt payload - %v", err)
+		return fmt.Errorf("error decoding jwt payload - %w", err)
 	}
 	err = json.Unmarshal(payloadJson, &o.payload)
 	if err != nil {
-		return fmt.Errorf("error unmarshaling jwt payload - %v", err)
+		return fmt.Errorf("error unmarshaling jwt payload - %w", err)
 	}
 
 	o.signature, err = decodePart(parts[2])

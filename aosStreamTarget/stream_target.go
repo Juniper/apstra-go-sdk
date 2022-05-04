@@ -69,7 +69,7 @@ func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
 			Bytes: cfg.Certificate.Raw,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to pem encode certificate block - %v", err)
+			return nil, fmt.Errorf("failed to pem encode certificate block - %w", err)
 		}
 
 		privateKeyBlock := bytes.NewBuffer(nil)
@@ -78,12 +78,12 @@ func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
 			Bytes: x509.MarshalPKCS1PrivateKey(cfg.Key),
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to pem encode private key block - %v", err)
+			return nil, fmt.Errorf("failed to pem encode private key block - %w", err)
 		}
 
 		tlsCert, err := tls.X509KeyPair(certBlock.Bytes(), privateKeyBlock.Bytes())
 		if err != nil {
-			return nil, fmt.Errorf("error parsing tls.Certificate object from cert and key - %v", err)
+			return nil, fmt.Errorf("error parsing tls.Certificate object from cert and key - %w", err)
 		}
 
 		tlsConfig = &tls.Config{
@@ -130,7 +130,7 @@ func (o *StreamTarget) Start() (msgChan <-chan *StreamingMessage, errChan <-chan
 		nl, err = net.Listen(network, laddr) // if we're doing raw TCP
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf("error starting listener - %v", err)
+		return nil, nil, fmt.Errorf("error starting listener - %w", err)
 	}
 
 	// loop accepting incoming connections
@@ -277,7 +277,7 @@ func (o *StreamTarget) Register(client *aosSdk.Client) error {
 	case "": // no value supplied - find a local IP
 		ourIp, err := ourIpForPeer(net.ParseIP(client.ServerName()))
 		if err != nil {
-			return fmt.Errorf("error determinging local IP for AOS '%s' streaming config - %v", client.ServerName(), err)
+			return fmt.Errorf("error determinging local IP for AOS '%s' streaming config - %w", client.ServerName(), err)
 		}
 		aosTargetHostname = ourIp.String()
 	default: // use whatever is in our configuration
@@ -293,7 +293,7 @@ func (o *StreamTarget) Register(client *aosSdk.Client) error {
 		Port:           o.cfg.Port,
 	})
 	if err != nil {
-		return fmt.Errorf("error in Register() - %v", err)
+		return fmt.Errorf("error in Register() - %w", err)
 	}
 	o.strmCfgId = id  // save the streamingConfig ID returned by Apstra
 	o.client = client // hang onto the client pointer for use in Unregister()
