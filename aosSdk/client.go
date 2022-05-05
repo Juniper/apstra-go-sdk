@@ -6,7 +6,9 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -24,6 +26,8 @@ const (
 	httpMethodGet    = httpMethod("GET")
 	httpMethodPost   = httpMethod("POST")
 	httpMethodDelete = httpMethod("DELETE")
+
+	aosAuthHeader = "Authtoken"
 )
 
 type httpMethod string
@@ -93,27 +97,37 @@ type talkToAosIn struct {
 	doNotLogin    bool
 }
 
+// talkToAosErr implements error{} and carries around http.Request and
+// http.Response object pointers. Error() method produces a string like
+// "<error> - http response <status> at url <url>".
+// todo: methods like ErrorCRIT() and ErrorWARN()
 type talkToAosErr struct {
-	url      string
 	request  *http.Request
 	response *http.Response
 	error    string
 }
 
 func (o talkToAosErr) Error() string {
-	if o.error == "" {
-		return fmt.Sprintf("http response code %d at %s", o.response.StatusCode, o.url)
+	url := "nil"
+	if o.request != nil {
+		url = o.request.URL.String()
 	}
-	return o.error
+
+	status := "nil"
+	if o.response != nil {
+		status = o.response.Status
+	}
+
+	return fmt.Sprintf("%s - http response '%s' at '%s'", o.error, status, url)
 }
 
 func (o Client) talkToAos(in *talkToAosIn) error {
 	var err error
-	var body []byte
+	var requestBody []byte
 
 	// are we sending data to the server?
 	if in.toServerPtr != nil {
-		body, err = json.Marshal(in.toServerPtr)
+		requestBody, err = json.Marshal(in.toServerPtr)
 		if err != nil {
 			return fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
 		}
@@ -124,7 +138,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	defer cancel()
 
 	// create request
-	req, err := http.NewRequestWithContext(ctx, string(in.method), o.baseUrl+in.url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, string(in.method), o.baseUrl+in.url, bytes.NewReader(requestBody))
 	if err != nil {
 		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
@@ -140,7 +154,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	// talk to the server
 	resp, err := o.client.Do(req)
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
-	req.Header.Del("Authtoken")
+	req.Header.Del(aosAuthHeader)
 	if err != nil { // check error from req.Do()
 		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
@@ -154,20 +168,16 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		if resp.StatusCode == 401 {
 			// Auth fail at login API is fatal for this transaction
 			if in.url == apiUrlUserLogin {
-				return talkToAosErr{
-					url:   in.url,
-					error: fmt.Sprintf("HTTP %d at %s - check username/password", resp.StatusCode, apiUrlUserLogin),
-				}
+				return newTalkToAosErr(req, requestBody, resp,
+					fmt.Sprintf("http %d at '%s' - check username/password",
+						resp.StatusCode, in.url))
 			}
 
 			// Auth fail with "doNotLogin == true" is fatal for this transaction
 			if in.doNotLogin {
-				return talkToAosErr{
-					url:      in.url,
-					request:  req,
-					response: resp,
-					error:    fmt.Sprintf("got HTTP %d at '%s' and doNotLogin is %t", resp.StatusCode, in.url, in.doNotLogin),
-				}
+				return newTalkToAosErr(req, requestBody, resp,
+					fmt.Sprintf("http %d at '%s' and doNotLogin is %t",
+						resp.StatusCode, in.url, in.doNotLogin))
 			}
 
 			// Try logging in
@@ -179,19 +189,9 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 			// Try the request again
 			in.doNotLogin = true
 			return o.talkToAos(in)
-		}
+		} // 401
 
-		// limit response details for URLs known to deal in credentials
-		switch in.url {
-		case apiUrlUserLogin: // both request and response are sensitive
-			return talkToAosErr{url: in.url}
-		default: // all other URLs are presumed "safe" secrets-wise  // todo: really?
-			return talkToAosErr{
-				url:      in.url,
-				request:  req,
-				response: resp,
-			}
-		}
+		return newTalkToAosErr(req, requestBody, resp, "")
 	}
 
 	// caller not expecting any response?
@@ -201,6 +201,47 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 
 	// decode response body into the caller-specified structure
 	return json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
+}
+
+// newTalkToAosErr returns a talkToAosErr. It's intended to be called after the
+// http.Request has been executed with Do(), so the request body has already
+// been "spent" by Read(). We'll fill it back in. The response body is likely to
+// be closed by a 'defer body.Close()' somewhere, so we'll replace that as well,
+// up to some reasonable limit (don't try to buffer gigabytes of data from the
+// webserver).
+func newTalkToAosErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) talkToAosErr {
+	url := req.URL.String()
+	// don't include secret in error
+	req.Header.Del(aosAuthHeader)
+
+	// redact request body for sensitive URLs
+	switch url {
+	case apiUrlUserLogin:
+		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", url)))
+	default:
+		rehydratedRequest := bytes.NewBuffer(reqBody)
+		req.Body = io.NopCloser(rehydratedRequest)
+	}
+
+	// redact response body for sensitive URLs
+	switch url {
+	case apiUrlUserLogin:
+		_ = resp.Body.Close() // close the real network socket
+		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", url)))
+	default:
+		// prepare a stunt double response body for the one that's likely attached to a network
+		// socket, and likely to be closed by a `defer` somewhere
+		rehydratedResponse := &bytes.Buffer{}
+		_, _ = io.CopyN(rehydratedResponse, resp.Body, errResponseLimit) // size limit
+		_ = resp.Body.Close()                                            // close the real network socket
+		resp.Body = io.NopCloser(rehydratedResponse)                     // replace the original body
+	}
+
+	return talkToAosErr{
+		request:  req,
+		response: resp,
+		error:    errMsg,
+	}
 }
 
 func (o *Client) Login() error {
@@ -227,7 +268,7 @@ func (o *Client) Login() error {
 	// todo: multiple calls to Login() will cause many Authtoken httpHeaders to be saved
 	//  convert to a dictionary or seek/destroy duplicates here
 	o.httpHeaders = append(o.httpHeaders, aosHttpHeader{
-		key: "Authtoken",
+		key: aosAuthHeader,
 		val: o.token.Raw(),
 	})
 
