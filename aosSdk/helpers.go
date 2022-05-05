@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -123,4 +124,16 @@ func newJwt(in string) (*jwt, error) {
 
 func (o jwt) expires() time.Time {
 	return time.Unix(o.payload.Exp, 0)
+}
+
+// ourIpForPeer returns a *net.IP representing the local interface selected by
+// the system for talking to the passed *net.IP. The returned value might also
+// be the best choice for that peer to reach us.
+func ourIpForPeer(them net.IP) (*net.IP, error) {
+	c, err := net.Dial("udp4", them.String()+":1")
+	if err != nil {
+		return nil, err
+	}
+
+	return &c.LocalAddr().(*net.UDPAddr).IP, c.Close()
 }

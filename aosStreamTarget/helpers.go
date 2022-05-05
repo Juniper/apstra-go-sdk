@@ -30,8 +30,8 @@ func keyLogWriter() (io.Writer, error) {
 // ourIpForPeer returns a *net.IP representing the local interface selected by
 // the system for talking to the passed *net.IP. The returned value might also
 // be the best choice for that peer to reach us.
-func ourIpForPeer(us net.IP) (*net.IP, error) {
-	c, err := net.Dial("udp4", us.String()+":1")
+func ourIpForPeer(them net.IP) (*net.IP, error) {
+	c, err := net.Dial("udp4", them.String()+":1")
 	if err != nil {
 		return nil, err
 	}
