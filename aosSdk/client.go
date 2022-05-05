@@ -50,7 +50,7 @@ type Client struct {
 	baseUrl     string
 	cfg         *ClientCfg
 	client      *http.Client
-	httpHeaders []aosHttpHeader // todo: maybe this should be a dictionary?
+	httpHeaders map[string]string
 	token       *jwt
 }
 
@@ -74,19 +74,7 @@ func NewClient(cfg *ClientCfg) *Client {
 		},
 	}
 
-	defHdrs := []aosHttpHeader{
-		{
-			key: "Accept",
-			val: "application/json",
-		},
-	}
-
-	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: defHdrs}
-}
-
-type aosHttpHeader struct {
-	key string
-	val string
+	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: map[string]string{"Accept": "application/json"}}
 }
 
 type talkToAosIn struct {
@@ -147,8 +135,8 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	if in.toServerPtr != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	for i := range o.httpHeaders {
-		req.Header.Set(o.httpHeaders[i].key, o.httpHeaders[i].val)
+	for k, v := range o.httpHeaders {
+		req.Header.Set(k, v)
 	}
 
 	// talk to the server
@@ -265,12 +253,7 @@ func (o *Client) Login() error {
 	}
 
 	// stash auth token in client's default set of aos http httpHeaders
-	// todo: multiple calls to Login() will cause many Authtoken httpHeaders to be saved
-	//  convert to a dictionary or seek/destroy duplicates here
-	o.httpHeaders = append(o.httpHeaders, aosHttpHeader{
-		key: aosAuthHeader,
-		val: o.token.Raw(),
-	})
+	o.httpHeaders[aosAuthHeader] = o.token.Raw()
 
 	return nil
 }
