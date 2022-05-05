@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	keyLogFile = ".aosStream.keys"
+	keyLogFile = ".aosStreamTarget.keys"
 )
 
 func keyLogWriter() (io.Writer, error) {
