@@ -45,12 +45,6 @@ func streamingConfigTestClient1() (*Client, error) {
 	}), nil
 }
 
-func TestThing(t *testing.T) {
-	var mySCST StreamingConfigStreamingType
-	log.Println(mySCST)
-
-}
-
 func TestClient_GetAllStreamingConfigs(t *testing.T) {
 	client, err := streamingConfigTestClient1()
 	if err != nil {
