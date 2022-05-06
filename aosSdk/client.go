@@ -1,27 +1,32 @@
 package aosSdk
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 )
 
 const (
-	EnvApstraUser   = "APSTRA_USER"
-	EnvApstraPass   = "APSTRA_PASS"
-	EnvApstraHost   = "APSTRA_HOST"
-	EnvApstraPort   = "APSTRA_PORT"
-	EnvApstraScheme = "APSTRA_SCHEME"
+	EnvApstraUser          = "APSTRA_USER"
+	EnvApstraPass          = "APSTRA_PASS"
+	EnvApstraHost          = "APSTRA_HOST"
+	EnvApstraPort          = "APSTRA_PORT"
+	EnvApstraScheme        = "APSTRA_SCHEME"
+	EnvApstraApiKeyLogFile = "APSTRA_API_TLS_KEYFILE"
 
 	defaultTimeout = 10 * time.Second
 
-	errResponseLimit = 4096
+	errResponseLimit     = 4096
+	taskIdResponeBufSize = 256
 
 	httpMethodGet    = httpMethod("GET")
 	httpMethodPost   = httpMethod("POST")
@@ -43,6 +48,19 @@ type ClientCfg struct {
 	Ctx       context.Context
 	Timeout   time.Duration
 	cancel    func()
+}
+
+type TaskId struct {
+	TaskId string `json:"task_id"`
+}
+
+func (o TaskId) String() string {
+	return o.TaskId
+}
+
+func (o TaskId) Json() (string, error) {
+	s, err := json.Marshal(&o)
+	return string(s), err
 }
 
 // Client interacts with an AOS API server
@@ -177,7 +195,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 			// Try the request again
 			in.doNotLogin = true
 			return o.talkToAos(in)
-		} // 401
+		} // HTTP 401
 
 		return newTalkToAosErr(req, requestBody, resp, "")
 	}
