@@ -60,6 +60,19 @@ func (o TaskId) Json() (string, error) {
 	return string(s), err
 }
 
+type ObjectId struct {
+	ObjectId string `json:"id"`
+}
+
+func (o ObjectId) String() string {
+	return o.ObjectId
+}
+
+func (o ObjectId) Json() (string, error) {
+	s, err := json.Marshal(&o)
+	return string(s), err
+}
+
 // Client interacts with an AOS API server
 type Client struct {
 	baseUrl     string
