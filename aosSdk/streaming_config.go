@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	apiUrlStreamingConfig = "/api/streaming-config"
+	apiUrlStreamingConfig       = "/api/streaming-config"
+	apiUrlStreamingConfigPrefix = apiUrlStreamingConfig + "/"
 
 	StreamingConfigSequencingModeUnknown StreamingConfigSequencingMode = iota
 	StreamingConfigSequencingModeSequenced
@@ -19,8 +20,6 @@ const (
 	StreamingConfigProtocolUnknown StreamingConfigProtocol = iota
 	StreamingConfigProtocolProtoBufOverTcp
 )
-
-type StreamingConfigId string
 
 type StreamingConfigSequencingMode int
 
@@ -77,7 +76,7 @@ type StreamingConfigCfg struct {
 	SequencingMode StreamingConfigSequencingMode `json:"sequencing_mode"`
 	Protocol       StreamingConfigProtocol       `json:"protocol"`
 	Hostname       string                        `json:"hostname"`
-	Id             StreamingConfigId             `json:"id"`
+	Id             ObjectId                      `json:"id"`
 	Port           uint16                        `json:"port"`
 }
 
@@ -111,31 +110,41 @@ type StreamingConfigDnsLog struct {
 }
 
 type createStreamingConfigResponse struct {
-	Id string `json:"id"`
+	Id ObjectId `json:"id"`
 }
 
-func (o Client) getAllStreamingConfigs() ([]StreamingConfigCfg, error) {
-	var result getStreamingConfigsResponse
-	return result.Items, o.talkToAos(&talkToAosIn{
+func (o Client) getAllStreamingConfigIds() ([]ObjectId, error) {
+	var gscr getStreamingConfigsResponse
+	err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlStreamingConfig,
 		toServerPtr:   nil,
-		fromServerPtr: &result,
+		fromServerPtr: &gscr,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result []ObjectId
+	for _, i := range gscr.Items {
+		result = append(result, i.Id)
+	}
+
+	return result, nil
 }
 
-func (o Client) getStreamingConfig(id StreamingConfigId) (*StreamingConfigCfg, error) {
+func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigCfg, error) {
 	var result StreamingConfigCfg
 	return &result, o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           apiUrlStreamingConfig + "/" + string(id),
+		url:           apiUrlStreamingConfigPrefix + string(id),
 		fromServerPtr: &result,
 	})
 }
 
-func (o Client) postStreamingConfig(cfg *StreamingConfigStreamingEndpoint) (*createStreamingConfigResponse, error) {
+func (o Client) postStreamingConfig(cfg *StreamingConfigStreamingEndpoint) (ObjectId, error) {
 	var result createStreamingConfigResponse
-	return &result, o.talkToAos(&talkToAosIn{
+	return result.Id, o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
 		url:           apiUrlStreamingConfig,
 		toServerPtr:   cfg,
@@ -144,7 +153,7 @@ func (o Client) postStreamingConfig(cfg *StreamingConfigStreamingEndpoint) (*cre
 }
 
 // NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the AOS server.
-func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, error) {
+func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (ObjectId, error) {
 	cfg := StreamingConfigStreamingEndpoint{
 		StreamingType:  in.StreamingType.String(),
 		SequencingMode: in.SequencingMode.String(),
@@ -152,40 +161,35 @@ func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (StreamingConfigId, e
 		Hostname:       in.Hostname,
 		Port:           in.Port,
 	}
-	response, err := o.postStreamingConfig(&cfg)
-	if err != nil {
-		return "", fmt.Errorf("error in NewStreamingConfig - %w", err)
-	}
-
-	id := StreamingConfigId(response.Id)
-	return id, nil
+	return o.postStreamingConfig(&cfg)
 }
 
 // DeleteStreamingConfig removes the specified StreamingConfig (Streaming
 // Receiver) on the Aos server.
-func (o Client) DeleteStreamingConfig(id StreamingConfigId) error {
+func (o Client) DeleteStreamingConfig(id ObjectId) error {
 	return o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
 		url:    apiUrlStreamingConfig + "/" + string(id),
 	})
 }
 
-// GetStreamingConfigIDByCfg checks current StreamingConfigs (Streaming
-// Receivers) against the supplied StreamingConfigCfg. If the stream seems
-// to already exist on the AOS server, the returned StreamingConfigId will be
-// populated. If not found, it will be empty.
-func (o Client) GetStreamingConfigIDByCfg(in *StreamingConfigCfg) (StreamingConfigId, error) {
-	all, err := o.GetStreamingConfigs()
-	if err != nil {
-		return "", fmt.Errorf("error getting streaming configs - %w", err)
-	}
-	for _, sc := range all {
-		if CompareStreamingConfigs(&sc, in) {
-			return sc.Id, nil
-		}
-	}
-	return "", nil
-}
+// todo restore this function
+//// GetStreamingConfigIDByCfg checks current StreamingConfigs (Streaming
+//// Receivers) against the supplied StreamingConfigCfg. If the stream seems
+//// to already exist on the AOS server, the returned ObjectId will be
+//// populated. If not found, it will be empty.
+//func (o Client) GetStreamingConfigIDByCfg(in *StreamingConfigCfg) (ObjectId, error) {
+//	all, err := o.GetStreamingConfigs()
+//	if err != nil {
+//		return "", fmt.Errorf("error getting streaming configs - %w", err)
+//	}
+//	for _, sc := range all {
+//		if CompareStreamingConfigs(&sc, in) {
+//			return sc.Id, nil
+//		}
+//	}
+//	return "", nil
+//}
 
 // CompareStreamingConfigs returns true if the supplied StreamingConfigCfg
 // objects are likely to be recognized as a collision

@@ -1,14 +1,11 @@
 package aosSdk
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -47,31 +44,17 @@ type ClientCfg struct {
 	cancel    func()
 }
 
+// TaskId data structure is returned by Apstra for *some* operations, when the
+// URL Query String includes `async=full`
 type TaskId struct {
 	TaskId string `json:"task_id"`
 }
 
-func (o TaskId) String() string {
-	return o.TaskId
-}
+func (o TaskId) String() string        { return o.TaskId }
+func (o TaskId) Json() ([]byte, error) { return json.Marshal(&o) }
 
-func (o TaskId) Json() (string, error) {
-	s, err := json.Marshal(&o)
-	return string(s), err
-}
-
-type ObjectId struct {
-	ObjectId string `json:"id"`
-}
-
-func (o ObjectId) String() string {
-	return o.ObjectId
-}
-
-func (o ObjectId) Json() (string, error) {
-	s, err := json.Marshal(&o)
-	return string(s), err
-}
+// ObjectId known to Apstra for various objects/resources
+type ObjectId string
 
 // Client interacts with an AOS API server
 type Client struct {
@@ -79,7 +62,6 @@ type Client struct {
 	cfg         *ClientCfg
 	client      *http.Client
 	httpHeaders map[string]string
-	token       *jwt
 }
 
 // NewClient creates a Client object
@@ -105,162 +87,20 @@ func NewClient(cfg *ClientCfg) *Client {
 	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: map[string]string{"Accept": "application/json"}}
 }
 
-type talkToAosIn struct {
-	method        httpMethod
-	url           string
-	toServerPtr   interface{}
-	fromServerPtr interface{}
-	doNotLogin    bool
+// ServerName returns the name of the AOS server this client has been configured to use
+func (o Client) ServerName() string {
+	return o.cfg.Host
 }
 
-// talkToAosErr implements error{} and carries around http.Request and
-// http.Response object pointers. Error() method produces a string like
-// "<error> - http response <status> at url <url>".
-// todo: methods like ErrorCRIT() and ErrorWARN()
-type talkToAosErr struct {
-	request  *http.Request
-	response *http.Response
-	error    string
-}
-
-func (o talkToAosErr) Error() string {
-	url := "nil"
-	if o.request != nil {
-		url = o.request.URL.String()
-	}
-
-	status := "nil"
-	if o.response != nil {
-		status = o.response.Status
-	}
-
-	return fmt.Sprintf("%s - http response '%s' at '%s'", o.error, status, url)
-}
-
-func (o Client) talkToAos(in *talkToAosIn) error {
-	var err error
-	var requestBody []byte
-
-	// are we sending data to the server?
-	if in.toServerPtr != nil {
-		requestBody, err = json.Marshal(in.toServerPtr)
-		if err != nil {
-			return fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
-		}
-	}
-
-	// wrap context with timeout
-	ctx, cancel := context.WithTimeout(o.cfg.Ctx, o.cfg.Timeout)
-	defer cancel()
-
-	// create request
-	req, err := http.NewRequestWithContext(ctx, string(in.method), o.baseUrl+in.url, bytes.NewReader(requestBody))
-	if err != nil {
-		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
-	}
-
-	// set request httpHeaders
-	if in.toServerPtr != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	for k, v := range o.httpHeaders {
-		req.Header.Set(k, v)
-	}
-
-	// talk to the server
-	resp, err := o.client.Do(req)
-	// trim authentication token from request - Do() has been called - get this out of the way quickly
-	req.Header.Del(aosAuthHeader)
-	if err != nil { // check error from req.Do()
-		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
-	}
-	// noinspection GoUnhandledErrorResult
-	defer resp.Body.Close()
-
-	// response not okay?
-	if resp.StatusCode/100 != 2 {
-
-		// Auth fail?
-		if resp.StatusCode == 401 {
-			// Auth fail at login API is fatal for this transaction
-			if in.url == apiUrlUserLogin {
-				return newTalkToAosErr(req, requestBody, resp,
-					fmt.Sprintf("http %d at '%s' - check username/password",
-						resp.StatusCode, in.url))
-			}
-
-			// Auth fail with "doNotLogin == true" is fatal for this transaction
-			if in.doNotLogin {
-				return newTalkToAosErr(req, requestBody, resp,
-					fmt.Sprintf("http %d at '%s' and doNotLogin is %t",
-						resp.StatusCode, in.url, in.doNotLogin))
-			}
-
-			// Try logging in
-			err := o.Login()
-			if err != nil {
-				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
-			}
-
-			// Try the request again
-			in.doNotLogin = true
-			return o.talkToAos(in)
-		} // HTTP 401
-
-		return newTalkToAosErr(req, requestBody, resp, "")
-	}
-
-	// caller not expecting any response?
-	if in.fromServerPtr == nil {
-		return nil
-	}
-
-	// decode response body into the caller-specified structure
-	return json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
-}
-
-// newTalkToAosErr returns a talkToAosErr. It's intended to be called after the
-// http.Request has been executed with Do(), so the request body has already
-// been "spent" by Read(). We'll fill it back in. The response body is likely to
-// be closed by a 'defer body.Close()' somewhere, so we'll replace that as well,
-// up to some reasonable limit (don't try to buffer gigabytes of data from the
-// webserver).
-func newTalkToAosErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) talkToAosErr {
-	url := req.URL.String()
-	// don't include secret in error
-	req.Header.Del(aosAuthHeader)
-
-	// redact request body for sensitive URLs
-	switch url {
-	case apiUrlUserLogin:
-		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", url)))
-	default:
-		rehydratedRequest := bytes.NewBuffer(reqBody)
-		req.Body = io.NopCloser(rehydratedRequest)
-	}
-
-	// redact response body for sensitive URLs
-	switch url {
-	case apiUrlUserLogin:
-		_ = resp.Body.Close() // close the real network socket
-		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", url)))
-	default:
-		// prepare a stunt double response body for the one that's likely attached to a network
-		// socket, and likely to be closed by a `defer` somewhere
-		rehydratedResponse := &bytes.Buffer{}
-		_, _ = io.CopyN(rehydratedResponse, resp.Body, errResponseLimit) // size limit
-		_ = resp.Body.Close()                                            // close the real network socket
-		resp.Body = io.NopCloser(rehydratedResponse)                     // replace the original body
-	}
-
-	return talkToAosErr{
-		request:  req,
-		response: resp,
-		error:    errMsg,
-	}
-}
-
+// Login submits username and password from the ClientCfg (Client.cfg) to the
+// Apstra API, retrieves an authorization token. It is optional. If the client
+// is not already logged in, Apstra will send HTTP 401. The client will log
+// itself in and resubmit the request.
 func (o *Client) Login() error {
+	return o.login()
+}
+
+func (o *Client) login() error {
 	var response userLoginResponse
 	err := o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
@@ -275,33 +115,42 @@ func (o *Client) Login() error {
 		return fmt.Errorf("error talking to AOS in Login - %w", err)
 	}
 
-	o.token, err = newJwt(response.Token)
-	if err != nil {
-		return fmt.Errorf("error parsing JWT in Login - %w", err)
-	}
-
 	// stash auth token in client's default set of aos http httpHeaders
-	o.httpHeaders[aosAuthHeader] = o.token.Raw()
+	o.httpHeaders[aosAuthHeader] = response.Token
 
 	return nil
 }
 
+// Logout invalidates the Apstra API token held by Client
 func (o Client) Logout() error {
-	return o.talkToAos(&talkToAosIn{
+	return o.logout()
+}
+
+func (o Client) logout() error {
+	err := o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
 		url:    apiUrlUserLogout,
 	})
+	if err != nil {
+		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, err)
+	}
+	delete(o.httpHeaders, aosAuthHeader)
+	return nil
 }
 
-func (o Client) GetStreamingConfigs() ([]StreamingConfigCfg, error) {
-	return o.getAllStreamingConfigs()
-}
+// functions below here are implemented in other files.
 
-func (o Client) GetVersion() (*VersionResponse, error) {
-	return o.getVersion()
-}
+// todo restore this function
+//// GetStreamingConfigs calls GET against apiUrlStreamingConfig, returns a slice
+//// of ObjectId representing currently configured Apstra streaming
+//// configs / receivers
+//func (o Client) GetStreamingConfigs() ([]StreamingConfigCfg, error) {
+//	return o.getAllStreamingConfigIds()
+//}
 
-// ServerName returns the name of the AOS server this client has been configured to use
-func (o Client) ServerName() string {
-	return o.cfg.Host
-}
+// todo restore this function
+//// GetVersion calls apiUrlVersion, returns the Apstra server version as a
+//// VersionResponse
+//func (o Client) GetVersion() (*VersionResponse, error) {
+//	return o.getVersion()
+//}

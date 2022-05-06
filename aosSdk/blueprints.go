@@ -79,11 +79,12 @@ type BlueprintData struct {
 	SourceVersions BlueprintSourceVersions `json:"source_versions"`
 }
 
-func (o Client) GetBlueprints() (*GetBlueprintsResult, error) {
-	var result GetBlueprintsResult
-	return &result, o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           apiUrlBlueprints,
-		fromServerPtr: &result,
-	})
-}
+// todo restore this function
+//func (o Client) GetBlueprints() (*GetBlueprintsResult, error) {
+//	var result GetBlueprintsResult
+//	return &result, o.talkToAos(&talkToAosIn{
+//		method:        httpMethodGet,
+//		url:           apiUrlBlueprints,
+//		fromServerPtr: &result,
+//	})
+//}

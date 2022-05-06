@@ -104,16 +104,16 @@ func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
 
 // StreamTarget is a listener for AOS streaming objects
 type StreamTarget struct {
-	tlsConfig *tls.Config              // if we're a TLS listener
-	nl        net.Listener             // clients (aos server) connect here
-	stopChan  chan struct{}            // close to rip everythign down
-	errChan   chan error               // client handlers pass errors here
-	msgChan   chan *StreamingMessage   // client handlers pass messages here
-	clientWG  sync.WaitGroup           // keeps track of client handlers
-	cfg       *StreamTargetCfg         // submitted by caller
-	aosIP     *net.IP                  // for filtering incoming connections
-	strmCfgId aosSdk.StreamingConfigId // AOS streaming ID, populated by Register
-	client    *aosSdk.Client           // populated by Register, we hang onto it for Unregister
+	tlsConfig *tls.Config            // if we're a TLS listener
+	nl        net.Listener           // clients (aos server) connect here
+	stopChan  chan struct{}          // close to rip everythign down
+	errChan   chan error             // client handlers pass errors here
+	msgChan   chan *StreamingMessage // client handlers pass messages here
+	clientWG  sync.WaitGroup         // keeps track of client handlers
+	cfg       *StreamTargetCfg       // submitted by caller
+	aosIP     *net.IP                // for filtering incoming connections
+	strmCfgId aosSdk.ObjectId        // AOS streaming ID, populated by Register
+	client    *aosSdk.Client         // populated by Register, we hang onto it for Unregister
 }
 
 // Start loops forever handling new connections from the AOS streaming service
