@@ -1,15 +1,12 @@
 package aosSdk
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
