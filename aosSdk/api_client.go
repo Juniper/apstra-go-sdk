@@ -196,3 +196,12 @@ func (o Client) DeleteStreamingConfig(id ObjectId) error {
 //func (o Client) GetVersion() (*VersionResponse, error) {
 //	return o.getVersion()
 //}
+
+// CreateRoutingZone creates an Apstra Routing Zone / Security Zone / VRF
+func (o Client) CreateRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
+	return o.createRoutingZone(cfg)
+}
+
+func (o Client) DeleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
+	return o.deleteRoutingZone(blueprintId, zoneId)
+}

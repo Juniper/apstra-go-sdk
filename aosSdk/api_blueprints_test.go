@@ -86,7 +86,7 @@ func TestCreateRoutingZone(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	result, err := client.CreateRoutingZone("db10754a-610e-475b-9baa-4c85f82282e8", &CreateRoutingZoneCfg{
+	result, err := client.createRoutingZone("db10754a-610e-475b-9baa-4c85f82282e8", &CreateRoutingZoneCfg{
 		SzType:  "evpn",
 		VrfName: "test",
 		Label:   "test_label",
