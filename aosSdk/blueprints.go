@@ -1,7 +1,9 @@
 package aosSdk
 
 const (
-	apiUrlBlueprints = "/api/blueprints"
+	apiUrlBlueprints        = "/api/blueprints"
+	apiUrlRoutingZonePrefix = apiUrlBlueprints + "/"
+	apiUrlRoutingZoneSuffix = "/security-zones/"
 )
 
 type BlueprintStatus string
@@ -88,3 +90,50 @@ type BlueprintData struct {
 //		fromServerPtr: &result,
 //	})
 //}
+
+type RtPolicy struct {
+	// todo
+	//ImportRTs interface{} `json:"import_RTs"`
+	//ExportRTs interface{} `json:"export_RTs"`
+}
+
+type CreateRoutingZoneCfg struct {
+	SzType          string   `json:"sz_type,omitempty"`
+	RoutingPolicyId string   `json:"routing_policy_id,omitempty"`
+	RtPolicy        RtPolicy `json:"rt_policy,omitempty"`
+	VrfName         string   `json:"vrf_name,omitempty"`
+	Label           string   `json:"label,omitempty"`
+}
+
+type GetRoutingZoneResult struct {
+	VniId           int      `json:"vni_id"`
+	SzType          string   `json:"sz_type"`
+	RoutingPolicyId string   `json:"routing_policy_id"`
+	Label           string   `json:"label"`
+	VrfName         string   `json:"vrf_name"`
+	RtPolicy        RtPolicy `json:"rt_policy"`
+	RouteTarget     string   `json:"route_target"`
+	Id              string   `json:"id"`
+	VlanId          int      `json:"vlan_id"`
+}
+
+type getAllRoutingZonesResult struct {
+	Items map[string]GetRoutingZoneResult
+}
+
+func (o Client) CreateRoutingZone(blueprintId string, cfg *CreateRoutingZoneCfg) (*GetRoutingZoneResult, error) {
+	result := &GetRoutingZoneResult{}
+	return result, o.talkToAos(&talkToAosIn{
+		method:        httpMethodPost,
+		url:           apiUrlRoutingZonePrefix + blueprintId + apiUrlRoutingZoneSuffix,
+		toServerPtr:   cfg,
+		fromServerPtr: result,
+	})
+}
+
+func (o Client) DeleteRoutingZone(blueprintId string, zoneId string) error {
+	return o.talkToAos(&talkToAosIn{
+		method: httpMethodDelete,
+		url:    apiUrlRoutingZonePrefix + blueprintId + apiUrlRoutingZonePrefix + zoneId,
+	})
+}
