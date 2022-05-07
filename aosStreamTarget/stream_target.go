@@ -22,6 +22,9 @@ import (
 )
 
 const (
+	EnvApstraStreamHost     = "APSTRA_STREAM_HOST"
+	EnvApstraStreamBasePort = "APSTRA_STREAM_BASE_PORT"
+
 	sizeOfAosMessageLenHdr = 2 // Apstra 'protoBufOverTcp' streaming includes a 16-bit length w/each protobuf
 	network                = "tcp4"
 	errConnClosed          = "use of closed network connection"
@@ -33,9 +36,9 @@ const (
 type StreamTargetCfg struct {
 	Certificate       *x509.Certificate
 	Key               *rsa.PrivateKey
-	SequencingMode    aosSdk.StreamingConfigSequencingMode
-	StreamingType     aosSdk.StreamingConfigStreamingType
-	Protocol          aosSdk.StreamingConfigProtocol
+	SequencingMode    string
+	StreamingType     string
+	Protocol          string
 	Port              uint16
 	AosTargetHostname string
 }
@@ -45,8 +48,8 @@ type StreamTargetCfg struct {
 // StreamingConfigSequencingModeUnsequenced channels. In the latter case, 'seq'
 // will always be nil.
 type StreamingMessage struct {
-	SequencingMode aosSdk.StreamingConfigSequencingMode
-	StreamingType  aosSdk.StreamingConfigStreamingType
+	SequencingMode string
+	StreamingType  string
 	Message        *aosStreaming.AosMessage
 	SequenceNum    *uint64
 }
@@ -54,7 +57,7 @@ type StreamingMessage struct {
 // NewStreamTarget creates a StreamTarget (socket listener) either with TLS
 // support (when both x509Cert and privkey are supplied) or using bare TCP
 // (when either x509Cert or privkey are nil)
-func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
+func NewStreamTarget(cfg *StreamTargetCfg) (*StreamTarget, error) {
 	var tlsConfig *tls.Config
 
 	if cfg.Certificate != nil && cfg.Key != nil {
@@ -94,7 +97,7 @@ func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
 	}
 
 	return &StreamTarget{
-		cfg:       &cfg,
+		cfg:       cfg,
 		errChan:   make(chan error),
 		stopChan:  make(chan struct{}),
 		msgChan:   make(chan *StreamingMessage),
@@ -285,7 +288,7 @@ func (o *StreamTarget) Register(client *aosSdk.Client) error {
 	}
 
 	// Register this target with Apstra
-	id, err := client.NewStreamingConfig(&aosSdk.StreamingConfigInfo{
+	id, err := client.NewStreamingConfig(&aosSdk.StreamingConfigParams{
 		StreamingType:  o.cfg.StreamingType,
 		SequencingMode: o.cfg.SequencingMode,
 		Protocol:       o.cfg.Protocol,

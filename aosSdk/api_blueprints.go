@@ -1,95 +1,124 @@
 package aosSdk
 
+import "time"
+
 const (
 	apiUrlBlueprints        = "/api/blueprints"
 	apiUrlRoutingZonePrefix = apiUrlBlueprints + "/"
 	apiUrlRoutingZoneSuffix = "/security-zones/"
+	apiUrlBlueprintsPrefix  = apiUrlBlueprints + "/"
 )
 
-type BlueprintStatus string
-
-type AdditionalProp struct {
-	NumSucceeded int `json:"num_succeeded"`
-	NumFailed    int `json:"num_failed"`
-	NumPending   int `json:"num_pending"`
+// getBlueprintsResult is returned by Apstra in response to
+// 'GET apiUrlBlueprints'
+type getBlueprintsResult struct {
+	Items []struct {
+		Status           string `json:"status"`
+		Version          int    `json:"version"`
+		Design           string `json:"design"`
+		DeploymentStatus struct {
+			AdditionalProp1 struct {
+				NumSucceeded int `json:"num_succeeded"`
+				NumFailed    int `json:"num_failed"`
+				NumPending   int `json:"num_pending"`
+			} `json:"additionalProp1"`
+			AdditionalProp2 struct {
+				NumSucceeded int `json:"num_succeeded"`
+				NumFailed    int `json:"num_failed"`
+				NumPending   int `json:"num_pending"`
+			} `json:"additionalProp2"`
+			AdditionalProp3 struct {
+				NumSucceeded int `json:"num_succeeded"`
+				NumFailed    int `json:"num_failed"`
+				NumPending   int `json:"num_pending"`
+			} `json:"additionalProp3"`
+		} `json:"deployment_status"`
+		AnomalyCounts struct {
+			AdditionalProp1 int `json:"additionalProp1"`
+			AdditionalProp2 int `json:"additionalProp2"`
+			AdditionalProp3 int `json:"additionalProp3"`
+		} `json:"anomaly_counts"`
+		Id             ObjectId  `json:"id"`
+		LastModifiedAt time.Time `json:"last_modified_at"`
+		Label          string    `json:"label"`
+	} `json:"items"`
 }
 
-type DeploymentStatus struct {
-	AdditionalProp1 AdditionalProp `json:"additionalProp1"`
-	AdditionalProp2 AdditionalProp `json:"additionalProp2"`
-	AdditionalProp3 AdditionalProp `json:"additionalProp3"`
+// GetBlueprintResponse is returned by Apstra in response to
+// 'GET apiUrlBlueprintsPrefix + <id>'
+type GetBlueprintResponse struct {
+	Relationships struct {
+		AdditionalProp1 struct {
+			SourceId string `json:"source_id"`
+			TargetId string `json:"target_id"`
+			Type     string `json:"type"`
+			Id       string `json:"id"`
+		} `json:"additionalProp1"`
+		AdditionalProp2 struct {
+			SourceId string `json:"source_id"`
+			TargetId string `json:"target_id"`
+			Type     string `json:"type"`
+			Id       string `json:"id"`
+		} `json:"additionalProp2"`
+		AdditionalProp3 struct {
+			SourceId string `json:"source_id"`
+			TargetId string `json:"target_id"`
+			Type     string `json:"type"`
+			Id       string `json:"id"`
+		} `json:"additionalProp3"`
+	} `json:"relationships"`
+	Version        int       `json:"version"`
+	Design         string    `json:"design"`
+	LastModifiedAt time.Time `json:"last_modified_at"`
+	Nodes          struct {
+		AdditionalProp1 struct {
+			Type string `json:"type"`
+			Id   string `json:"id"`
+		} `json:"additionalProp1"`
+		AdditionalProp2 struct {
+			Type string `json:"type"`
+			Id   string `json:"id"`
+		} `json:"additionalProp2"`
+		AdditionalProp3 struct {
+			Type string `json:"type"`
+			Id   string `json:"id"`
+		} `json:"additionalProp3"`
+	} `json:"nodes"`
+	Id             string `json:"id"`
+	SourceVersions struct {
+		AdditionalProp1 int `json:"additionalProp1"`
+		AdditionalProp2 int `json:"additionalProp2"`
+		AdditionalProp3 int `json:"additionalProp3"`
+	} `json:"source_versions"`
+	Label string `json:"label"`
 }
 
-type AnomalyCounts struct {
-	AdditionalProp1 int `json:"additionalProp1"`
-	AdditionalProp2 int `json:"additionalProp2"`
-	AdditionalProp3 int `json:"additionalProp3"`
+// getAllBlueprintIds returns the Ids of all blueprints
+func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
+	var response getBlueprintsResult
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlBlueprints,
+		fromServerPtr: &response,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var result []ObjectId
+	for _, item := range response.Items {
+		result = append(result, item.Id)
+	}
+	return result, nil
 }
 
-type Blueprint struct {
-	Status           BlueprintStatus  `json:"status"`
-	Version          int              `json:"version"`
-	Design           string           `json:"design"`
-	DeploymentStatus DeploymentStatus `json:"deployment_status"`
-	AnomalyCounts    AnomalyCounts    `json:"anomaly_counts"`
-	Id               string           `json:"id"`
-	LastModifiedAt   string           `json:"last_modified_at"`
-	Label            string           `json:"label"`
+func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
+	var response GetBlueprintResponse
+	return &response, o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           apiUrlBlueprintsPrefix + string(in),
+		fromServerPtr: &response,
+	})
 }
-
-type GetBlueprintsResult struct {
-	Items []Blueprint `json:"items"`
-}
-
-type BlueprintRelationships struct {
-	AdditionalProp1 BlueprintRelationship `json:"additionalProp1"`
-	AdditionalProp2 BlueprintRelationship `json:"additionalProp2"`
-	AdditionalProp3 BlueprintRelationship `json:"additionalProp3"`
-}
-
-type BlueprintRelationship struct {
-	SourceId string `json:"source_id"`
-	TargetId string `json:"target_id"`
-	Type     string `json:"type"`
-	Id       string `json:"id"`
-}
-
-type BlueprintNodes struct {
-	AdditionalProp1 BlueprintNode `json:"additionalProp1"`
-	AdditionalProp2 BlueprintNode `json:"additionalProp2"`
-	AdditionalProp3 BlueprintNode `json:"additionalProp3"`
-}
-
-type BlueprintNode struct {
-	Type string `json:"type"`
-	Id   string `json:"id"`
-}
-
-type BlueprintSourceVersions struct {
-	AdditionalProp1 int `json:"additionalProp1"`
-	AdditionalProp2 int `json:"additionalProp2"`
-	AdditionalProp3 int `json:"additionalProp3"`
-}
-
-type BlueprintData struct {
-	Relationships  BlueprintRelationships  `json:"relationships"`
-	Version        int                     `json:"version"`
-	Design         string                  `json:"design"`
-	LastModifiedAt string                  `json:"last_modified_at"`
-	Nodes          BlueprintNodes          `json:"nodes"`
-	Id             string                  `json:"id"`
-	SourceVersions BlueprintSourceVersions `json:"source_versions"`
-}
-
-// todo restore this function
-//func (o Client) GetBlueprints() (*GetBlueprintsResult, error) {
-//	var result GetBlueprintsResult
-//	return &result, o.talkToAos(&talkToAosIn{
-//		method:        httpMethodGet,
-//		url:           apiUrlBlueprints,
-//		fromServerPtr: &result,
-//	})
-//}
 
 type RtPolicy struct {
 	// todo
