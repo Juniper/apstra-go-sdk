@@ -22,6 +22,9 @@ import (
 )
 
 const (
+	EnvApstraStreamHost     = "APSTRA_STREAM_HOST"
+	EnvApstraStreamBasePort = "APSTRA_STREAM_BASE_PORT"
+
 	sizeOfAosMessageLenHdr = 2 // Apstra 'protoBufOverTcp' streaming includes a 16-bit length w/each protobuf
 	network                = "tcp4"
 	errConnClosed          = "use of closed network connection"
