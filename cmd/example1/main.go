@@ -24,7 +24,7 @@ const (
 type getConfigIn struct {
 	clientCfg          *aosSdk.ClientCfg                 // AOS API client config
 	streamTargetCfg    []aosStreamTarget.StreamTargetCfg // Our protobuf stream listener
-	streamingConfigCfg []aosSdk.StreamingConfigCfg       // Tell AOS API about our stream listener
+	streamingConfigCfg []aosSdk.StreamingConfigInfo      // Tell AOS API about our stream listener
 }
 
 func getConfig(in getConfigIn) error {
@@ -88,7 +88,7 @@ func main() {
 
 	// configuration objects
 	clientCfg := aosSdk.ClientCfg{}                                   // config for interacting with AOS API
-	streamingConfigs := make([]aosSdk.StreamingConfigCfg, 3)          // config for pointing event stream at our target
+	streamingConfigs := make([]aosSdk.StreamingConfigInfo, 3)         // config for pointing event stream at our target
 	streamTargetConfigs := make([]aosStreamTarget.StreamTargetCfg, 3) // config for our event stream target
 
 	// populate configuration objects using local function
@@ -165,7 +165,7 @@ func main() {
 	//	streamingConfigIds = append(streamingConfigIds, id)
 	//}
 
-	//streamId1, err := c.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
+	//streamId1, err := c.NewStreamingConfig(&aosSdk.StreamingConfigInfo{
 	//	StreamingType:  aosSdk.StreamingConfigStreamingTypePerfmon,
 	//	SequencingMode: aosSdk.StreamingConfigSequencingModeSequenced,
 	//	Protocol:       aosSdk.StreamingConfigProtocolProtoBufOverTcp,
@@ -178,7 +178,7 @@ func main() {
 	//	log.Println(streamId1)
 	//}
 
-	//streamId2, err := c.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
+	//streamId2, err := c.NewStreamingConfig(&aosSdk.StreamingConfigInfo{
 	//	StreamingType:  aosSdk.StreamingConfigStreamingTypePerfmon,
 	//	SequencingMode: aosSdk.StreamingConfigSequencingModeSequenced,
 	//	Protocol:       aosSdk.StreamingConfigProtocolProtoBufOverTcp,
@@ -191,7 +191,7 @@ func main() {
 	//	log.Println(streamId2)
 	//}
 
-	//streamId3, err := c.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
+	//streamId3, err := c.NewStreamingConfig(&aosSdk.StreamingConfigInfo{
 	//	StreamingType:  aosSdk.StreamingConfigStreamingTypePerfmon,
 	//	SequencingMode: aosSdk.StreamingConfigSequencingModeSequenced,
 	//	Protocol:       aosSdk.StreamingConfigProtocolProtoBufOverTcp,

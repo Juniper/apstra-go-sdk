@@ -7,18 +7,24 @@ import (
 const (
 	apiUrlStreamingConfig       = "/api/streaming-config"
 	apiUrlStreamingConfigPrefix = apiUrlStreamingConfig + "/"
+	iotaStringTypesMax          = 50
+)
 
+const (
 	StreamingConfigSequencingModeUnknown StreamingConfigSequencingMode = iota
 	StreamingConfigSequencingModeSequenced
 	StreamingConfigSequencingModeUnsequenced
+	StreamingConfigSequencingModeNotFound = "sequencing type %d has no string value"
 
 	StreamingConfigStreamingTypeUnknown StreamingConfigStreamingType = iota
 	StreamingConfigStreamingTypeAlerts
 	StreamingConfigStreamingTypeEvents
 	StreamingConfigStreamingTypePerfmon
+	StreamingConfigStreamingTypeNotFound = "streaming type %d has no string value"
 
 	StreamingConfigProtocolUnknown StreamingConfigProtocol = iota
 	StreamingConfigProtocolProtoBufOverTcp
+	StreamingConfigProtocolNotFound = "protocol %d has no string value"
 )
 
 type StreamingConfigSequencingMode int
@@ -32,8 +38,20 @@ func (o StreamingConfigSequencingMode) String() string {
 	case StreamingConfigSequencingModeUnsequenced:
 		return "unsequenced"
 	default:
-		return fmt.Sprintf("sequencing type %d has no string value", o)
+		return fmt.Sprintf(StreamingConfigSequencingModeNotFound, o)
 	}
+}
+
+func StreamingConfigSequencingModeFromString(in string) StreamingConfigSequencingMode {
+	for i := StreamingConfigSequencingModeUnknown; i <= StreamingConfigSequencingModeUnknown+iotaStringTypesMax; i++ {
+		switch {
+		case i.String() == in:
+			return i
+		case i.String() == fmt.Sprintf(StreamingConfigSequencingModeNotFound, i):
+			return StreamingConfigSequencingModeUnknown
+		}
+	}
+	return StreamingConfigSequencingModeUnknown
 }
 
 type StreamingConfigStreamingType int
@@ -49,8 +67,20 @@ func (o StreamingConfigStreamingType) String() string {
 	case StreamingConfigStreamingTypePerfmon:
 		return "perfmon"
 	default:
-		return fmt.Sprintf("streaming type %d has no string value", o)
+		return fmt.Sprintf(StreamingConfigStreamingTypeNotFound, o)
 	}
+}
+
+func StreamingConfigStreamingTypeFromString(in string) StreamingConfigStreamingType {
+	for i := StreamingConfigStreamingTypeUnknown; i <= StreamingConfigStreamingTypeUnknown+iotaStringTypesMax; i++ {
+		switch {
+		case i.String() == in:
+			return i
+		case i.String() == fmt.Sprintf(StreamingConfigStreamingTypeNotFound, i):
+			return StreamingConfigStreamingTypeUnknown
+		}
+	}
+	return StreamingConfigStreamingTypeUnknown
 }
 
 type StreamingConfigProtocol int
@@ -62,15 +92,29 @@ func (o StreamingConfigProtocol) String() string {
 	case StreamingConfigProtocolProtoBufOverTcp:
 		return "protoBufOverTcp"
 	default:
-		return fmt.Sprintf("message type %d has no string value", o)
+		return fmt.Sprintf(StreamingConfigProtocolNotFound, o)
 	}
 }
 
-type getStreamingConfigsResponse struct {
-	Items []StreamingConfigCfg `json:"items"`
+func StreamingConfigProtocolFromString(in string) StreamingConfigProtocol {
+	for i := StreamingConfigProtocolUnknown; i <= StreamingConfigProtocolUnknown+iotaStringTypesMax; i++ {
+		switch {
+		case i.String() == in:
+			return i
+		case i.String() == fmt.Sprintf(StreamingConfigProtocolNotFound, i):
+			return StreamingConfigProtocolUnknown
+		}
+	}
+	return StreamingConfigProtocolUnknown
 }
 
-type StreamingConfigCfg struct {
+type getStreamingConfigsResponse struct {
+	Items []StreamingConfigInfo `json:"items"`
+}
+
+// StreamingConfigInfo is returned by Apstra in response to
+// 'GET apiUrlStreamingConfig/{id}'
+type StreamingConfigInfo struct {
 	Status         StreamingConfigStatus         `json:"status"`
 	StreamingType  StreamingConfigStreamingType  `json:"streaming_type"`
 	SequencingMode StreamingConfigSequencingMode `json:"sequencing_mode"`
@@ -80,23 +124,26 @@ type StreamingConfigCfg struct {
 	Port           uint16                        `json:"port"`
 }
 
+// StreamingConfigStatus is a member of StreamingConfigInfo which is returned by
+// Apstra in response to 'GET apiUrlStreamingConfig/{id}'
 type StreamingConfigStatus struct {
-	ConnectionLog        []StreamingConfigConnectionLog   `json:"connectionLog"`
-	ConnectionTime       string                           `json:"connectionTime"`
-	Epoch                string                           `json:"epoch"`
-	ConnectionResetCount uint                             `json:"connnectionResetCount"`
-	StreamingEndpoint    StreamingConfigStreamingEndpoint `json:"streamingEndpoint"`
-	DnsLog               []StreamingConfigDnsLog          `json:"dnsLog"`
-	Connected            bool                             `json:"connected"`
-	DisconnectionTime    string                           `json:"disconnectionTime"`
+	ConnectionLog        []StreamingConfigConnectionLog `json:"connectionLog"`
+	ConnectionTime       string                         `json:"connectionTime"`
+	Epoch                string                         `json:"epoch"`
+	ConnectionResetCount uint                           `json:"connnectionResetCount"`
+	StreamingEndpoint    StreamingConfigParams          `json:"streamingEndpoint"`
+	DnsLog               []StreamingConfigDnsLog        `json:"dnsLog"`
+	Connected            bool                           `json:"connected"`
+	DisconnectionTime    string                         `json:"disconnectionTime"`
 }
 
+// StreamingConfigConnectionLog is a member of StreamingConfigStatus-StreamingConfigInfo>
 type StreamingConfigConnectionLog struct {
 	Date    string `json:"date"`
 	Message string `json:"message"`
 }
 
-type StreamingConfigStreamingEndpoint struct {
+type StreamingConfigParams struct {
 	StreamingType  string `json:"streaming_type"`
 	SequencingMode string `json:"sequencing_mode"`
 	Protocol       string `json:"protocol"`
@@ -133,8 +180,8 @@ func (o Client) getAllStreamingConfigIds() ([]ObjectId, error) {
 	return result, nil
 }
 
-func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigCfg, error) {
-	var result StreamingConfigCfg
+func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
+	var result StreamingConfigInfo
 	return &result, o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlStreamingConfigPrefix + string(id),
@@ -142,7 +189,7 @@ func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigCfg, error) {
 	})
 }
 
-func (o Client) postStreamingConfig(cfg *StreamingConfigStreamingEndpoint) (ObjectId, error) {
+func (o Client) postStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error) {
 	var result createStreamingConfigResponse
 	return result.Id, o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
@@ -153,8 +200,8 @@ func (o Client) postStreamingConfig(cfg *StreamingConfigStreamingEndpoint) (Obje
 }
 
 // NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the AOS server.
-func (o Client) NewStreamingConfig(in *StreamingConfigCfg) (ObjectId, error) {
-	cfg := StreamingConfigStreamingEndpoint{
+func (o Client) NewStreamingConfig(in *StreamingConfigInfo) (ObjectId, error) {
+	cfg := StreamingConfigParams{
 		StreamingType:  in.StreamingType.String(),
 		SequencingMode: in.SequencingMode.String(),
 		Protocol:       in.Protocol.String(),
@@ -175,10 +222,10 @@ func (o Client) DeleteStreamingConfig(id ObjectId) error {
 
 // todo restore this function
 //// GetStreamingConfigIDByCfg checks current StreamingConfigs (Streaming
-//// Receivers) against the supplied StreamingConfigCfg. If the stream seems
+//// Receivers) against the supplied StreamingConfigInfo. If the stream seems
 //// to already exist on the AOS server, the returned ObjectId will be
 //// populated. If not found, it will be empty.
-//func (o Client) GetStreamingConfigIDByCfg(in *StreamingConfigCfg) (ObjectId, error) {
+//func (o Client) GetStreamingConfigIDByCfg(in *StreamingConfigInfo) (ObjectId, error) {
 //	all, err := o.GetStreamingConfigs()
 //	if err != nil {
 //		return "", fmt.Errorf("error getting streaming configs - %w", err)
@@ -191,10 +238,10 @@ func (o Client) DeleteStreamingConfig(id ObjectId) error {
 //	return "", nil
 //}
 
-// CompareStreamingConfigs returns true if the supplied StreamingConfigCfg
+// CompareStreamingConfigs returns true if the supplied StreamingConfigInfo
 // objects are likely to be recognized as a collision
 // (ErrStringStreamingConfigExists) by the AOS API.
-func CompareStreamingConfigs(a *StreamingConfigCfg, b *StreamingConfigCfg) bool {
+func CompareStreamingConfigs(a *StreamingConfigInfo, b *StreamingConfigInfo) bool {
 	if a.Hostname != b.Hostname {
 		return false
 	}

@@ -144,7 +144,7 @@ func (o Client) logout() error {
 //// GetStreamingConfigs calls GET against apiUrlStreamingConfig, returns a slice
 //// of ObjectId representing currently configured Apstra streaming
 //// configs / receivers
-//func (o Client) GetStreamingConfigs() ([]StreamingConfigCfg, error) {
+//func (o Client) GetStreamingConfigs() ([]StreamingConfigInfo, error) {
 //	return o.getAllStreamingConfigIds()
 //}
 

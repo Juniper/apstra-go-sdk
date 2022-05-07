@@ -285,7 +285,7 @@ func (o *StreamTarget) Register(client *aosSdk.Client) error {
 	}
 
 	// Register this target with Apstra
-	id, err := client.NewStreamingConfig(&aosSdk.StreamingConfigCfg{
+	id, err := client.NewStreamingConfig(&aosSdk.StreamingConfigInfo{
 		StreamingType:  o.cfg.StreamingType,
 		SequencingMode: o.cfg.SequencingMode,
 		Protocol:       o.cfg.Protocol,
