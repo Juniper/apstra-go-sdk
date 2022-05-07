@@ -44,14 +44,14 @@ type ClientCfg struct {
 	cancel    func()
 }
 
-// TaskId data structure is returned by Apstra for *some* operations, when the
-// URL Query String includes `async=full`
-type TaskId struct {
-	TaskId string `json:"task_id"`
-}
+// TaskId represents outstanding tasks on an Apstra server
+type TaskId string
 
-func (o TaskId) String() string        { return o.TaskId }
-func (o TaskId) Json() ([]byte, error) { return json.Marshal(&o) }
+// taskIdResponse data structure is returned by Apstra for *some* operations, when the
+// URL Query String includes `async=full`
+type taskIdResponse struct {
+	TaskId TaskId `json:"task_id"`
+}
 
 // objectIdResponse is returned by various calls which create an Apstra object
 type objectIdResponse struct {
@@ -97,9 +97,9 @@ func (o Client) ServerName() string {
 	return o.cfg.Host
 }
 
-func parseBytesAsTaskId(peek []byte, result *TaskId) bool {
+func parseBytesAsTaskId(peek []byte, result *taskIdResponse) bool {
 	err := json.Unmarshal(peek, result)
-	// wild assumption: every error means "peek doesn't look like a TaskId".
+	// wild assumption: every error means "peek doesn't look like a taskIdResponse".
 	// there is no error which indicates a problem of any other type.
 	if err != nil { // unmarshal fail
 		return false

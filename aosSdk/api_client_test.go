@@ -86,7 +86,7 @@ func TestParseBytesAsTaskId(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		result := &TaskId{}
+		result := &taskIdResponse{}
 		ok := parseBytesAsTaskId(td, result)
 		if ok != expected[i] {
 			t.Fatalf("test data '%s' produced '%t', expected '%t'", string(td), ok, expected[i])
