@@ -57,7 +57,7 @@ type StreamingMessage struct {
 // NewStreamTarget creates a StreamTarget (socket listener) either with TLS
 // support (when both x509Cert and privkey are supplied) or using bare TCP
 // (when either x509Cert or privkey are nil)
-func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
+func NewStreamTarget(cfg *StreamTargetCfg) (*StreamTarget, error) {
 	var tlsConfig *tls.Config
 
 	if cfg.Certificate != nil && cfg.Key != nil {
@@ -97,7 +97,7 @@ func NewStreamTarget(cfg StreamTargetCfg) (*StreamTarget, error) {
 	}
 
 	return &StreamTarget{
-		cfg:       &cfg,
+		cfg:       cfg,
 		errChan:   make(chan error),
 		stopChan:  make(chan struct{}),
 		msgChan:   make(chan *StreamingMessage),
