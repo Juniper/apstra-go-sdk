@@ -3,7 +3,6 @@ package aosSdk
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -95,17 +94,6 @@ func NewClient(cfg *ClientCfg) *Client {
 // ServerName returns the name of the AOS server this client has been configured to use
 func (o Client) ServerName() string {
 	return o.cfg.Host
-}
-
-func parseBytesAsTaskId(peek []byte, result *taskIdResponse) bool {
-	err := json.Unmarshal(peek, result)
-	// wild assumption: every error means "peek doesn't look like a taskIdResponse".
-	// there is no error which indicates a problem of any other type.
-	if err != nil { // unmarshal fail
-		return false
-	} else { // good unmarshal, but what about the contents?
-		return result.TaskId != ""
-	}
 }
 
 // Login submits username and password from the ClientCfg (Client.cfg) to the

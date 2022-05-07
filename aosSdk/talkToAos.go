@@ -165,3 +165,14 @@ func newTalkToAosErr(req *http.Request, reqBody []byte, resp *http.Response, err
 		error:    errMsg,
 	}
 }
+
+func parseBytesAsTaskId(peek []byte, result *taskIdResponse) bool {
+	err := json.Unmarshal(peek, result)
+	// wild assumption: every error means "peek doesn't look like a taskIdResponse".
+	// there is no error which indicates a problem of any other type.
+	if err != nil { // unmarshal fail
+		return false
+	} else { // good unmarshal, but what about the contents?
+		return result.TaskId != ""
+	}
+}
