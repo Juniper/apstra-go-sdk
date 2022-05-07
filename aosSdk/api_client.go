@@ -97,6 +97,17 @@ func (o Client) ServerName() string {
 	return o.cfg.Host
 }
 
+func parseBytesAsTaskId(peek []byte, result *TaskId) bool {
+	err := json.Unmarshal(peek, result)
+	// wild assumption: every error means "peek doesn't look like a TaskId".
+	// there is no error which indicates a problem of any other type.
+	if err != nil { // unmarshal fail
+		return false
+	} else { // good unmarshal, but what about the contents?
+		return result.TaskId != ""
+	}
+}
+
 // Login submits username and password from the ClientCfg (Client.cfg) to the
 // Apstra API, retrieves an authorization token. It is optional. If the client
 // is not already logged in, Apstra will send HTTP 401. The client will log
@@ -185,3 +196,12 @@ func (o Client) DeleteStreamingConfig(id ObjectId) error {
 //func (o Client) GetVersion() (*VersionResponse, error) {
 //	return o.getVersion()
 //}
+
+// CreateRoutingZone creates an Apstra Routing Zone / Security Zone / VRF
+func (o Client) CreateRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
+	return o.createRoutingZone(cfg)
+}
+
+func (o Client) DeleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
+	return o.deleteRoutingZone(blueprintId, zoneId)
+}

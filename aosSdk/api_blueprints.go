@@ -3,13 +3,15 @@ package aosSdk
 import "time"
 
 const (
-	apiUrlBlueprints       = "/api/blueprints"
-	apiUrlBlueprintsPrefix = apiUrlBlueprints + "/"
+	apiUrlBlueprints        = "/api/blueprints"
+	apiUrlRoutingZonePrefix = apiUrlBlueprints + "/"
+	apiUrlRoutingZoneSuffix = "/security-zones/"
+	apiUrlBlueprintsPrefix  = apiUrlBlueprints + "/"
 )
 
-// getBlueprintsResult is returned by Apstra in response to
+// getBlueprintsResponse is returned by Apstra in response to
 // 'GET apiUrlBlueprints'
-type getBlueprintsResult struct {
+type getBlueprintsResponse struct {
 	Items []struct {
 		Status           string `json:"status"`
 		Version          int    `json:"version"`
@@ -93,7 +95,7 @@ type GetBlueprintResponse struct {
 
 // getAllBlueprintIds returns the Ids of all blueprints
 func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
-	var response getBlueprintsResult
+	var response getBlueprintsResponse
 	err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlBlueprints,
@@ -115,5 +117,76 @@ func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
 		method:        httpMethodGet,
 		url:           apiUrlBlueprintsPrefix + string(in),
 		fromServerPtr: &response,
+	})
+}
+
+type RtPolicy struct {
+	// todo
+	//ImportRTs interface{} `json:"import_RTs"`
+	//ExportRTs interface{} `json:"export_RTs"`
+}
+
+// createRoutingZoneRequest doesn't appear in swagger, but shows up in Ryan Booth's
+// postman collection:
+//   https://www.getpostman.com/collections/6ad3bd003d83e4cba47b
+// It's sent to {{aos_server_api}}/blueprints/{{blueprint_id}}/security-zones/
+// via POST
+type createRoutingZoneRequest struct {
+	SzType          string   `json:"sz_type,omitempty"`
+	RoutingPolicyId string   `json:"routing_policy_id,omitempty"`
+	RtPolicy        RtPolicy `json:"rt_policy,omitempty"`
+	VrfName         string   `json:"vrf_name,omitempty"`
+	Label           string   `json:"label,omitempty"`
+}
+
+// CreateRoutingZoneCfg is the public version of createRoutingZoneRequest. The
+// difference being that it includes the BlueprintId, which is required in the
+// URL path when calling the API
+type CreateRoutingZoneCfg struct {
+	SzType          string
+	RoutingPolicyId string
+	RtPolicy        RtPolicy
+	VrfName         string
+	Label           string
+	BlueprintId     ObjectId
+}
+
+type GetRoutingZoneResult struct {
+	VniId           int      `json:"vni_id"`
+	SzType          string   `json:"sz_type"`
+	RoutingPolicyId string   `json:"routing_policy_id"`
+	Label           string   `json:"label"`
+	VrfName         string   `json:"vrf_name"`
+	RtPolicy        RtPolicy `json:"rt_policy"`
+	RouteTarget     string   `json:"route_target"`
+	Id              string   `json:"id"`
+	VlanId          int      `json:"vlan_id"`
+}
+
+func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
+	result := &GetRoutingZoneResult{}
+	toServer := &createRoutingZoneRequest{
+		SzType:          cfg.SzType,
+		RoutingPolicyId: cfg.RoutingPolicyId,
+		RtPolicy:        cfg.RtPolicy,
+		VrfName:         cfg.VrfName,
+		Label:           cfg.Label,
+	}
+	err := o.talkToAos(&talkToAosIn{
+		method:        httpMethodPost,
+		url:           apiUrlRoutingZonePrefix + string(cfg.BlueprintId) + apiUrlRoutingZoneSuffix,
+		toServerPtr:   toServer,
+		fromServerPtr: result,
+	})
+	if err != nil {
+		return "", err
+	}
+	return ObjectId(result.Id), nil
+}
+
+func (o Client) deleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
+	return o.talkToAos(&talkToAosIn{
+		method: httpMethodDelete,
+		url:    apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZonePrefix + string(zoneId),
 	})
 }

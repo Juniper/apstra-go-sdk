@@ -9,19 +9,8 @@ import (
 	"strconv"
 )
 
-const (
-	keyLogFile = ".aosSdk.keys"
-)
-
-func keyLogWriter() (io.Writer, error) {
-	keyLogDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-
-	keyLogFile := filepath.Join(keyLogDir, keyLogFile)
-
-	err = os.MkdirAll(filepath.Dir(keyLogFile), os.FileMode(0644))
+func keyLogWriter(keyLogFile string) (io.Writer, error) {
+	err := os.MkdirAll(filepath.Dir(keyLogFile), os.FileMode(0644))
 	if err != nil {
 		return nil, err
 	}
