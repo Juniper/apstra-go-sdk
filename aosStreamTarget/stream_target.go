@@ -33,9 +33,9 @@ const (
 type StreamTargetCfg struct {
 	Certificate       *x509.Certificate
 	Key               *rsa.PrivateKey
-	SequencingMode    aosSdk.StreamingConfigSequencingMode
-	StreamingType     aosSdk.StreamingConfigStreamingType
-	Protocol          aosSdk.StreamingConfigProtocol
+	SequencingMode    string
+	StreamingType     string
+	Protocol          string
 	Port              uint16
 	AosTargetHostname string
 }
@@ -45,8 +45,8 @@ type StreamTargetCfg struct {
 // StreamingConfigSequencingModeUnsequenced channels. In the latter case, 'seq'
 // will always be nil.
 type StreamingMessage struct {
-	SequencingMode aosSdk.StreamingConfigSequencingMode
-	StreamingType  aosSdk.StreamingConfigStreamingType
+	SequencingMode string
+	StreamingType  string
 	Message        *aosStreaming.AosMessage
 	SequenceNum    *uint64
 }
@@ -285,7 +285,7 @@ func (o *StreamTarget) Register(client *aosSdk.Client) error {
 	}
 
 	// Register this target with Apstra
-	id, err := client.NewStreamingConfig(&aosSdk.StreamingConfigInfo{
+	id, err := client.NewStreamingConfig(&aosSdk.StreamingConfigParams{
 		StreamingType:  o.cfg.StreamingType,
 		SequencingMode: o.cfg.SequencingMode,
 		Protocol:       o.cfg.Protocol,

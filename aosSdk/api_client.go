@@ -53,6 +53,11 @@ type TaskId struct {
 func (o TaskId) String() string        { return o.TaskId }
 func (o TaskId) Json() ([]byte, error) { return json.Marshal(&o) }
 
+// objectIdResponse is returned by various calls which create an Apstra object
+type objectIdResponse struct {
+	Id ObjectId `json:"id"`
+}
+
 // ObjectId known to Apstra for various objects/resources
 type ObjectId string
 
@@ -140,13 +145,39 @@ func (o Client) logout() error {
 
 // functions below here are implemented in other files.
 
-// todo restore this function
-//// GetStreamingConfigs calls GET against apiUrlStreamingConfig, returns a slice
-//// of ObjectId representing currently configured Apstra streaming
-//// configs / receivers
-//func (o Client) GetStreamingConfigs() ([]StreamingConfigInfo, error) {
-//	return o.getAllStreamingConfigIds()
-//}
+// GetAllBlueprintIds returns a slice of IDs representing all blueprints
+func (o Client) GetAllBlueprintIds() ([]ObjectId, error) {
+	return o.getAllBlueprintIds()
+}
+
+// GetBlueprint returns *GetBlueprintResponse detailing the requested blueprint
+func (o Client) GetBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
+	return o.getBlueprint(in)
+}
+
+// GetAllStreamingConfigIds returns a slice of ObjectId representing
+// currently configured Apstra streaming configs / receivers
+func (o Client) GetAllStreamingConfigIds() ([]ObjectId, error) {
+	return o.getAllStreamingConfigIds()
+}
+
+// GetStreamingConfig returns a slice of *StreamingConfigInfo representing
+// the requested Apstra streaming configs / receivers
+func (o Client) GetStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
+	return o.getStreamingConfig(id)
+}
+
+// NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the
+// Apstra server.
+func (o Client) NewStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error) {
+	return o.newStreamingConfig(cfg)
+}
+
+// DeleteStreamingConfig deletes the specified streaming config / receiver from
+// the Apstra server configuration.
+func (o Client) DeleteStreamingConfig(id ObjectId) error {
+	return o.deleteStreamingConfig(id)
+}
 
 // todo restore this function
 //// GetVersion calls apiUrlVersion, returns the Apstra server version as a
