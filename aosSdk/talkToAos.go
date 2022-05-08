@@ -1,13 +1,19 @@
 package aosSdk
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"strings"
+)
+
+const (
+	peekSizeForApstraTaskIdRespone = math.MaxUint8
 )
 
 // talkToAosIn is the input structure for the Client.talkToAos() function
@@ -19,6 +25,11 @@ type talkToAosIn struct {
 	doNotLogin    bool
 }
 
+// talkToAos talks to the Apstra server using in.method. If in.toServerPtr is
+// not nil, it JSON-encodes that data structure and sends it. In case the
+// in.fromServerPtr is not nil, the HTTP response body is checked to see if it's
+// a taskIdResponse, in which case the TaskId is returned. Otherwise, the data
+// structure at in.fromServerPtr is populated from the HTTP response body.
 func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	var err error
 	var requestBody []byte
@@ -92,13 +103,25 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 		return "", newTalkToAosErr(req, requestBody, resp, "")
 	}
 
-	// caller not expecting any response?
+	// caller not expecting any response? //todo - we only look for task id if a response structure is specified. think about this more.
 	if in.fromServerPtr == nil {
 		return "", nil
 	}
 
-	// decode response body into the caller-specified structure
-	return "", json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
+	// caller is expecting a response, but we don't know if Apstra will return
+	// the desired data structure, or a taskIdResponse.
+	var tidr taskIdResponse
+	ok, err := peekParseResponseBodyAsTaskId(resp, &tidr)
+	if err != nil {
+		return "", newTalkToAosErr(req, requestBody, resp, "")
+	}
+	if ok {
+		// we got a task ID, instead of the expected response object
+		return tidr.TaskId, nil
+	} else {
+		// no task ID, decode response body into the caller-specified structure
+		return "", json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
+	}
 }
 
 // talkToAosErr implements error{} and carries around http.Request and
@@ -166,13 +189,20 @@ func newTalkToAosErr(req *http.Request, reqBody []byte, resp *http.Response, err
 	}
 }
 
-func parseBytesAsTaskId(peek []byte, result *taskIdResponse) bool {
-	err := json.Unmarshal(peek, result)
-	// wild assumption: every error means "peek doesn't look like a taskIdResponse".
-	// there is no error which indicates a problem of any other type.
-	if err != nil { // unmarshal fail
-		return false
+func peekParseResponseBodyAsTaskId(resp *http.Response, result *taskIdResponse) (bool, error) {
+	peekAbleBodyReader := bufio.NewReader(resp.Body)
+	resp.Body = io.NopCloser(peekAbleBodyReader)
+	peek, err := peekAbleBodyReader.Peek(peekSizeForApstraTaskIdRespone)
+	if err != nil && err != io.EOF {
+		return false, fmt.Errorf("error peeking into http response body - %w", err)
+	}
+	err = json.Unmarshal(peek, result)
+	// wild assumption:
+	//   Every error means "peek data doesn't look like a taskIdResponse".
+	//   There is no error which indicates a problem of any other type.
+	if err != nil {
+		return false, nil // no error; 'false' b/c unmarshal TaskId failed
 	} else { // good unmarshal, but what about the contents?
-		return result.TaskId != ""
+		return result.TaskId != "", nil // no error; bool depends on string match
 	}
 }
