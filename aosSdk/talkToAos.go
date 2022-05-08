@@ -19,7 +19,7 @@ type talkToAosIn struct {
 	doNotLogin    bool
 }
 
-func (o Client) talkToAos(in *talkToAosIn) error {
+func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	var err error
 	var requestBody []byte
 
@@ -27,7 +27,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	if in.toServerPtr != nil {
 		requestBody, err = json.Marshal(in.toServerPtr)
 		if err != nil {
-			return fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
+			return "", fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
 		}
 	}
 
@@ -38,7 +38,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	// create request
 	req, err := http.NewRequestWithContext(ctx, string(in.method), o.baseUrl+in.url, bytes.NewReader(requestBody))
 	if err != nil {
-		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
+		return "", fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
 
 	// set request httpHeaders
@@ -54,7 +54,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
 	req.Header.Del(aosAuthHeader)
 	if err != nil { // check error from req.Do()
-		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
+		return "", fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
 	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
@@ -66,14 +66,14 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		if resp.StatusCode == 401 {
 			// Auth fail at login API is fatal for this transaction
 			if in.url == apiUrlUserLogin {
-				return newTalkToAosErr(req, requestBody, resp,
+				return "", newTalkToAosErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' - check username/password",
 						resp.StatusCode, in.url))
 			}
 
 			// Auth fail with "doNotLogin == true" is fatal for this transaction
 			if in.doNotLogin {
-				return newTalkToAosErr(req, requestBody, resp,
+				return "", newTalkToAosErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' and doNotLogin is %t",
 						resp.StatusCode, in.url, in.doNotLogin))
 			}
@@ -81,7 +81,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 			// Try logging in
 			err := o.login()
 			if err != nil {
-				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
+				return "", fmt.Errorf("error attempting login after initial AuthFail - %w", err)
 			}
 
 			// Try the request again
@@ -89,16 +89,16 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 			return o.talkToAos(in)
 		} // HTTP 401
 
-		return newTalkToAosErr(req, requestBody, resp, "")
+		return "", newTalkToAosErr(req, requestBody, resp, "")
 	}
 
 	// caller not expecting any response?
 	if in.fromServerPtr == nil {
-		return nil
+		return "", nil
 	}
 
 	// decode response body into the caller-specified structure
-	return json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
+	return "", json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
 }
 
 // talkToAosErr implements error{} and carries around http.Request and

@@ -71,65 +71,72 @@ type versionsServerResponse struct {
 
 func (o Client) getVersionsAosdi() (*versionsAosdiResponse, error) {
 	var response versionsAosdiResponse
-	return &response, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlVersionsAosdi,
 		fromServerPtr: &response,
 	})
+	return &response, err
 }
 
 func (o Client) getVersionsApi() (*versionsApiResponse, error) {
 	var response versionsApiResponse
-	return &response, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlVersionsApi,
 		fromServerPtr: &response,
 	})
+	return &response, err
 }
 
 func (o Client) getVersionsBuild() (*versionsBuildResponse, error) {
 	var response versionsBuildResponse
-	return &response, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlVersionsBuild,
 		fromServerPtr: &response,
 	})
+	return &response, err
 }
 
 func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDeviceResponse, error) {
 	var response versionsDeviceResponse
-	return &response, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:      httpMethodPost,
 		url:         apiUrlVersionsDevice,
 		toServerPtr: request,
 	})
+	return &response, err
 }
 
 func (o Client) postVersionsIba(request *versionsIbaRequest) (*versionsIbaResponse, error) {
 	var response versionsIbaResponse
-	return &response, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
 		url:           apiUrlVersionsIba,
 		toServerPtr:   request,
 		fromServerPtr: &response,
 	})
+	return &response, err
 }
 
 func (o Client) postVersionsNode(request *versionsNodeRequest) (*versionsNodeResponse, error) {
 	var response versionsNodeResponse
-	return &response, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
 		url:           apiUrlVersionsNode,
 		toServerPtr:   request,
 		fromServerPtr: &response,
 	})
+	return &response, err
 }
 
 func (o Client) getVersionsServer() (*versionsServerResponse, error) {
 	var response versionsServerResponse
-	return &response, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlVersionsServer,
 		fromServerPtr: &response,
 	})
+	return &response, err
 }

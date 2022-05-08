@@ -106,7 +106,7 @@ func (o *Client) Login() error {
 
 func (o *Client) login() error {
 	var response userLoginResponse
-	err := o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
 		url:    apiUrlUserLogin,
 		toServerPtr: &userLoginRequest{
@@ -131,7 +131,7 @@ func (o Client) Logout() error {
 }
 
 func (o Client) logout() error {
-	err := o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
 		url:    apiUrlUserLogout,
 	})

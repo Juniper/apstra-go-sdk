@@ -64,7 +64,7 @@ type StreamingConfigParams struct {
 
 func (o Client) getAllStreamingConfigs() ([]StreamingConfigInfo, error) {
 	var gscr getStreamingConfigsResponse
-	err := o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlStreamingConfig,
 		toServerPtr:   nil,
@@ -97,16 +97,17 @@ func (o Client) getAllStreamingConfigIds() ([]ObjectId, error) {
 
 func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
 	var result StreamingConfigInfo
-	return &result, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlStreamingConfigPrefix + string(id),
 		fromServerPtr: &result,
 	})
+	return &result, err
 }
 
 func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error) {
 	var result objectIdResponse
-	err := o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
 		url:           apiUrlStreamingConfig,
 		toServerPtr:   cfg,
@@ -119,10 +120,11 @@ func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error)
 }
 
 func (o Client) deleteStreamingConfig(id ObjectId) error {
-	return o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
 		url:    apiUrlStreamingConfig + "/" + string(id),
 	})
+	return err
 }
 
 // GetStreamingConfigIDByCfg checks current StreamingConfigs (Streaming

@@ -96,7 +96,7 @@ type GetBlueprintResponse struct {
 // getAllBlueprintIds returns the Ids of all blueprints
 func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
 	var response getBlueprintsResponse
-	err := o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlBlueprints,
 		fromServerPtr: &response,
@@ -113,11 +113,12 @@ func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
 
 func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
 	var response GetBlueprintResponse
-	return &response, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlBlueprintsPrefix + string(in),
 		fromServerPtr: &response,
 	})
+	return &response, err
 }
 
 type RtPolicy struct {
@@ -172,7 +173,7 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 		VrfName:         cfg.VrfName,
 		Label:           cfg.Label,
 	}
-	err := o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
 		url:           apiUrlRoutingZonePrefix + string(cfg.BlueprintId) + apiUrlRoutingZoneSuffix,
 		toServerPtr:   toServer,
@@ -185,8 +186,9 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 }
 
 func (o Client) deleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
-	return o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
 		url:    apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZonePrefix + string(zoneId),
 	})
+	return err
 }

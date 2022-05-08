@@ -17,9 +17,10 @@ type GetTelemetryServiceMappingResult struct {
 
 func (o Client) GetTelemetryServicesDeviceMapping() (*GetTelemetryServiceMappingResult, error) {
 	var result GetTelemetryServiceMappingResult
-	return &result, o.talkToAos(&talkToAosIn{
+	_, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
 		url:           apiUrlTelemetryServices,
 		fromServerPtr: &result,
 	})
+	return &result, err
 }
