@@ -42,7 +42,7 @@ func telemetryServicesTestClient1() (*Client, error) {
 		User:      user,
 		Pass:      pass,
 		TlsConfig: tls.Config{InsecureSkipVerify: true},
-	}), nil
+	})
 }
 
 func TestGetTelemetryServicesDeviceMapping(t *testing.T) {

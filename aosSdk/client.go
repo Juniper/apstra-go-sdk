@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -62,14 +63,14 @@ type ObjectId string
 
 // Client interacts with an AOS API server
 type Client struct {
-	baseUrl     string
+	baseUrl     *url.URL
 	cfg         *ClientCfg
 	client      *http.Client
 	httpHeaders map[string]string
 }
 
 // NewClient creates a Client object
-func NewClient(cfg *ClientCfg) *Client {
+func NewClient(cfg *ClientCfg) (*Client, error) {
 	if cfg.Ctx == nil {
 		cfg.Ctx = context.TODO() // default context
 	}
@@ -80,7 +81,11 @@ func NewClient(cfg *ClientCfg) *Client {
 	cfg.Ctx = ctxCancel
 	cfg.cancel = cancel
 
-	baseUrl := fmt.Sprintf("%s://%s:%d", cfg.Scheme, cfg.Host, cfg.Port)
+	baseUrlString := fmt.Sprintf("%s://%s:%d", cfg.Scheme, cfg.Host, cfg.Port)
+	baseUrl, err := url.Parse(baseUrlString)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", baseUrlString, err)
+	}
 
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -88,7 +93,7 @@ func NewClient(cfg *ClientCfg) *Client {
 		},
 	}
 
-	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: map[string]string{"Accept": "application/json"}}
+	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: map[string]string{"Accept": "application/json"}}, nil
 }
 
 // ServerName returns the name of the AOS server this client has been configured to use
@@ -105,10 +110,14 @@ func (o *Client) Login() error {
 }
 
 func (o *Client) login() error {
+	url, err := url.Parse(apiUrlUserLogin)
+	if err != nil {
+		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogin, err)
+	}
 	var response userLoginResponse
-	_, err := o.talkToAos(&talkToAosIn{
+	_, err = o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
-		url:    apiUrlUserLogin,
+		url:    url,
 		toServerPtr: &userLoginRequest{
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
@@ -131,9 +140,13 @@ func (o Client) Logout() error {
 }
 
 func (o Client) logout() error {
-	_, err := o.talkToAos(&talkToAosIn{
+	url, err := url.Parse(apiUrlUserLogout)
+	if err != nil {
+		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogout, err)
+	}
+	_, err = o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
-		url:    apiUrlUserLogout,
+		url:    url,
 	})
 	if err != nil {
 		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, err)

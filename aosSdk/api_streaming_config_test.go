@@ -42,7 +42,7 @@ func streamingConfigTestClient1() (*Client, error) {
 		User:      user,
 		Pass:      pass,
 		TlsConfig: tls.Config{InsecureSkipVerify: true},
-	}), nil
+	})
 }
 
 func TestClient_GetAllStreamingConfigs(t *testing.T) {

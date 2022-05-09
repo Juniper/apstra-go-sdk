@@ -112,12 +112,12 @@ func (o *taskMonitor) run() {
 	}
 }
 
-func (o Client) GetTaskByBlueprintIdAndTaskId(blueprintId string, taskId string) (*GetTaskResponse, error) {
-	response := GetTaskResponse{}
-	_, err := o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           apiUrlTaskPrefix + blueprintId + apiUrlTaskSuffix + taskId,
-		fromServerPtr: &response,
-	})
-	return &response, err
-}
+//func (o Client) GetTaskByBlueprintIdAndTaskId(blueprintId string, taskId string) (*GetTaskResponse, error) {
+//	response := GetTaskResponse{}
+//	_, err := o.talkToAos(&talkToAosIn{
+//		method:        httpMethodGet,
+//		url:           apiUrlTaskPrefix + blueprintId + apiUrlTaskSuffix + taskId,
+//		fromServerPtr: &response,
+//	})
+//	return &response, err
+//}

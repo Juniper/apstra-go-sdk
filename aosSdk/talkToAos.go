@@ -9,17 +9,20 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 const (
 	peekSizeForApstraTaskIdRespone = math.MaxUint8
+	apstraApiAsyncParamKey         = "async"
+	apstraApiAsyncParamValFull     = "full"
 )
 
 // talkToAosIn is the input structure for the Client.talkToAos() function
 type talkToAosIn struct {
 	method        httpMethod
-	url           string
+	url           *url.URL
 	toServerPtr   interface{}
 	fromServerPtr interface{}
 	doNotLogin    bool
@@ -34,6 +37,12 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	var err error
 	var requestBody []byte
 
+	// create URL
+	url, err := url.Parse(o.baseUrl.String() + in.url.String()) //schema://host:port + /path/to?key=val
+	if err != nil {
+		return "", fmt.Errorf("error parsing url '%w' - %w", o.baseUrl.String()+in.url.String(), err)
+	}
+
 	// are we sending data to the server?
 	if in.toServerPtr != nil {
 		requestBody, err = json.Marshal(in.toServerPtr)
@@ -47,7 +56,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	defer cancel()
 
 	// create request
-	req, err := http.NewRequestWithContext(ctx, string(in.method), o.baseUrl+in.url, bytes.NewReader(requestBody))
+	req, err := http.NewRequestWithContext(ctx, string(in.method), url.String(), bytes.NewReader(requestBody))
 	if err != nil {
 		return "", fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
@@ -76,7 +85,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 		// Auth fail?
 		if resp.StatusCode == 401 {
 			// Auth fail at login API is fatal for this transaction
-			if in.url == apiUrlUserLogin {
+			if in.url.String() == apiUrlUserLogin {
 				return "", newTalkToAosErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' - check username/password",
 						resp.StatusCode, in.url))

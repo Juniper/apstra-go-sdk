@@ -42,7 +42,7 @@ func aosVersionTestClient1() (*Client, error) {
 		User:      user,
 		Pass:      pass,
 		TlsConfig: tls.Config{InsecureSkipVerify: true},
-	}), nil
+	})
 }
 
 func TestGetVersion(t *testing.T) {

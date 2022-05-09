@@ -1,6 +1,9 @@
 package aosSdk
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+)
 
 const (
 	apiUrlStreamingConfig       = "/api/streaming-config"
@@ -63,10 +66,14 @@ type StreamingConfigParams struct {
 }
 
 func (o Client) getAllStreamingConfigs() ([]StreamingConfigInfo, error) {
+	url, err := url.Parse(apiUrlStreamingConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
+	}
 	var gscr getStreamingConfigsResponse
-	_, err := o.talkToAos(&talkToAosIn{
+	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           apiUrlStreamingConfig,
+		url:           url,
 		toServerPtr:   nil,
 		fromServerPtr: &gscr,
 	})
@@ -96,20 +103,28 @@ func (o Client) getAllStreamingConfigIds() ([]ObjectId, error) {
 }
 
 func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
+	url, err := url.Parse(apiUrlStreamingConfig + string(id))
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+string(id), err)
+	}
 	var result StreamingConfigInfo
-	_, err := o.talkToAos(&talkToAosIn{
+	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           apiUrlStreamingConfigPrefix + string(id),
+		url:           url,
 		fromServerPtr: &result,
 	})
 	return &result, err
 }
 
 func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error) {
+	url, err := url.Parse(apiUrlStreamingConfig)
+	if err != nil {
+		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
+	}
 	var result objectIdResponse
-	_, err := o.talkToAos(&talkToAosIn{
+	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
-		url:           apiUrlStreamingConfig,
+		url:           url,
 		toServerPtr:   cfg,
 		fromServerPtr: &result,
 	})
@@ -120,9 +135,13 @@ func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error)
 }
 
 func (o Client) deleteStreamingConfig(id ObjectId) error {
-	_, err := o.talkToAos(&talkToAosIn{
+	url, err := url.Parse(apiUrlStreamingConfig + "/" + string(id))
+	if err != nil {
+		return fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+"/"+string(id), err)
+	}
+	_, err = o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
-		url:    apiUrlStreamingConfig + "/" + string(id),
+		url:    url,
 	})
 	return err
 }

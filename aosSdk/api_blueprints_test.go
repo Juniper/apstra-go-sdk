@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"strconv"
 	"testing"
@@ -58,17 +59,17 @@ func blueprintsTestClient1() (*Client, error) {
 		Pass:      pass,
 		TlsConfig: tls.Config{InsecureSkipVerify: true, KeyLogWriter: kl},
 		Timeout:   5 * time.Minute,
-	}), nil
+	})
 }
 
-func TestGetBlueprints(t *testing.T) {
+func TestGetAllBlueprintIds(t *testing.T) {
 	client, err := blueprintsTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer client.Logout()
 
-	blueprints, err := client.GetBlueprints()
+	blueprints, err := client.GetAllBlueprintIds()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,13 +87,22 @@ func TestCreateRoutingZone(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	result, err := client.createRoutingZone("db10754a-610e-475b-9baa-4c85f82282e8", &CreateRoutingZoneCfg{
-		SzType:  "evpn",
-		VrfName: "test",
-		Label:   "test_label",
+	result, err := client.createRoutingZone(&CreateRoutingZoneCfg{
+		SzType:      "evpn",
+		VrfName:     "test",
+		Label:       "label-test",
+		BlueprintId: "db10754a-610e-475b-9baa-4c85f82282e8",
 	})
 
 	buf := bytes.Buffer{}
 	pp(result, &buf)
 	log.Print(buf.String())
+}
+
+func TestThing(t *testing.T) {
+	url, err := url.Parse("/api/foo")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(url.String())
 }

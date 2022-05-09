@@ -1,6 +1,10 @@
 package aosSdk
 
-import "time"
+import (
+	"fmt"
+	"net/url"
+	"time"
+)
 
 const (
 	apiUrlBlueprints        = "/api/blueprints"
@@ -95,10 +99,14 @@ type GetBlueprintResponse struct {
 
 // getAllBlueprintIds returns the Ids of all blueprints
 func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
+	url, err := url.Parse(apiUrlBlueprints)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints, err)
+	}
 	var response getBlueprintsResponse
-	_, err := o.talkToAos(&talkToAosIn{
+	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           apiUrlBlueprints,
+		url:           url,
 		fromServerPtr: &response,
 	})
 	if err != nil {
@@ -112,10 +120,14 @@ func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
 }
 
 func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
+	url, err := url.Parse(apiUrlBlueprintsPrefix + string(in))
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints+string(in), err)
+	}
 	var response GetBlueprintResponse
-	_, err := o.talkToAos(&talkToAosIn{
+	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           apiUrlBlueprintsPrefix + string(in),
+		url:           url,
 		fromServerPtr: &response,
 	})
 	return &response, err
@@ -165,6 +177,10 @@ type GetRoutingZoneResult struct {
 }
 
 func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
+	url, err := url.Parse(apiUrlRoutingZonePrefix + string(cfg.BlueprintId) + apiUrlRoutingZoneSuffix)
+	if err != nil {
+		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(cfg.BlueprintId)+apiUrlRoutingZoneSuffix, err)
+	}
 	result := &GetRoutingZoneResult{}
 	toServer := &createRoutingZoneRequest{
 		SzType:          cfg.SzType,
@@ -173,9 +189,9 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 		VrfName:         cfg.VrfName,
 		Label:           cfg.Label,
 	}
-	_, err := o.talkToAos(&talkToAosIn{
+	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
-		url:           apiUrlRoutingZonePrefix + string(cfg.BlueprintId) + apiUrlRoutingZoneSuffix,
+		url:           url,
 		toServerPtr:   toServer,
 		fromServerPtr: result,
 	})
@@ -186,9 +202,13 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 }
 
 func (o Client) deleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
-	_, err := o.talkToAos(&talkToAosIn{
+	url, err := url.Parse(apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix + string(zoneId))
+	if err != nil {
+		return fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(blueprintId)+apiUrlRoutingZoneSuffix+string(zoneId), err)
+	}
+	_, err = o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
-		url:    apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZonePrefix + string(zoneId),
+		url:    url,
 	})
 	return err
 }

@@ -1,5 +1,10 @@
 package aosSdk
 
+import (
+	"fmt"
+	"net/url"
+)
+
 const (
 	apiUrlTelemetryServices = "/api/telemetry/services"
 )
@@ -16,10 +21,14 @@ type GetTelemetryServiceMappingResult struct {
 }
 
 func (o Client) GetTelemetryServicesDeviceMapping() (*GetTelemetryServiceMappingResult, error) {
+	url, err := url.Parse(apiUrlTelemetryServices)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlTelemetryServices, err)
+	}
 	var result GetTelemetryServiceMappingResult
-	_, err := o.talkToAos(&talkToAosIn{
+	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           apiUrlTelemetryServices,
+		url:           url,
 		fromServerPtr: &result,
 	})
 	return &result, err
