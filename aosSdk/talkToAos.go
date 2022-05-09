@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	apstraApiAsyncParamKey         = "async"
-	apstraApiAsyncParamValFull     = "full"
-	errResponseLimit               = 4096
-	peekSizeForApstraTaskIdRespone = math.MaxUint8
+	apstraApiAsyncParamKey          = "async"
+	apstraApiAsyncParamValFull      = "full"
+	errResponseLimit                = 4096
+	peekSizeForApstraTaskIdResponse = math.MaxUint8
 )
 
 // talkToAosIn is the input structure for the Client.talkToAos() function
@@ -127,14 +127,14 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 
 	// caller is expecting a response, but we don't know if Apstra will return
 	// the desired data structure, or a taskIdResponse.
-	var tidr taskIdResponse
-	ok, err := peekParseResponseBodyAsTaskId(resp, &tidr)
+	var tIdR taskIdResponse
+	ok, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
 	if err != nil {
 		return "", newTalkToAosErr(req, requestBody, resp, "")
 	}
 	if ok {
 		// we got a task ID, instead of the expected response object
-		return tidr.TaskId, nil
+		return tIdR.TaskId, nil
 	} else {
 		// no task ID, decode response body into the caller-specified structure
 		return "", json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
@@ -209,7 +209,7 @@ func newTalkToAosErr(req *http.Request, reqBody []byte, resp *http.Response, err
 func peekParseResponseBodyAsTaskId(resp *http.Response, result *taskIdResponse) (bool, error) {
 	peekAbleBodyReader := bufio.NewReader(resp.Body)
 	resp.Body = io.NopCloser(peekAbleBodyReader)
-	peek, err := peekAbleBodyReader.Peek(peekSizeForApstraTaskIdRespone)
+	peek, err := peekAbleBodyReader.Peek(peekSizeForApstraTaskIdResponse)
 	if err != nil && err != io.EOF {
 		return false, fmt.Errorf("error peeking into http response body - %w", err)
 	}
