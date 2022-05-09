@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"sync"
 	"time"
@@ -128,7 +129,7 @@ func newTaskMonitor(c *Client) *taskMonitor {
 		client:        c,
 		taskInChan:    make(chan task),
 		mapBpIdToTask: make(map[ObjectId][]task),
-		errChan:       make(chan error),
+		errChan:       c.cfg.errChan,
 	}
 	return &monitor
 }
@@ -176,7 +177,13 @@ BlueprintLoop:
 		// get task result info from Apstra
 		apstraTaskInfo, err := o.client.getBlueprintTasksStatus(bpId)
 		if err != nil {
-			o.errChan <- fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
+			err = fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
+			// todo: not happy with this error handling
+			if o.errChan != nil {
+				o.errChan <- err
+			} else {
+				log.Println(err)
+			}
 		}
 		o.checkTasksInBlueprint(bpId, apstraTaskInfo)
 		// this was going to happen anyway, but being explicit allows me
@@ -258,7 +265,13 @@ BlueprintLoop:
 		// get task result info from Apstra
 		apstraTaskInfo, err := o.client.getBlueprintTasksStatus(bpId)
 		if err != nil {
-			o.errChan <- fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
+			err = fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
+			// todo: not happy with this error handling
+			if o.errChan != nil {
+				o.errChan <- err
+			} else {
+				log.Println(err)
+			}
 		}
 
 	TaskLoop:

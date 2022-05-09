@@ -39,6 +39,7 @@ type ClientCfg struct {
 	Ctx       context.Context
 	Timeout   time.Duration
 	cancel    func()
+	errChan   chan<- error
 }
 
 // TaskId represents outstanding tasks on an Apstra server
