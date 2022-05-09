@@ -21,14 +21,14 @@ type GetTelemetryServiceMappingResult struct {
 }
 
 func (o Client) GetTelemetryServicesDeviceMapping() (*GetTelemetryServiceMappingResult, error) {
-	url, err := url.Parse(apiUrlTelemetryServices)
+	aosUrl, err := url.Parse(apiUrlTelemetryServices)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlTelemetryServices, err)
 	}
 	var result GetTelemetryServiceMappingResult
 	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           url,
+		url:           aosUrl,
 		fromServerPtr: &result,
 	})
 	return &result, err

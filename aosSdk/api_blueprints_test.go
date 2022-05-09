@@ -100,9 +100,9 @@ func TestCreateRoutingZone(t *testing.T) {
 }
 
 func TestThing(t *testing.T) {
-	url, err := url.Parse("/api/foo")
+	aosUrl, err := url.Parse("/api/foo")
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(url.String())
+	log.Println(aosUrl.String())
 }

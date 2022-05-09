@@ -66,14 +66,14 @@ type StreamingConfigParams struct {
 }
 
 func (o Client) getAllStreamingConfigs() ([]StreamingConfigInfo, error) {
-	url, err := url.Parse(apiUrlStreamingConfig)
+	aosUrl, err := url.Parse(apiUrlStreamingConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
 	}
 	var gscr getStreamingConfigsResponse
 	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           url,
+		url:           aosUrl,
 		toServerPtr:   nil,
 		fromServerPtr: &gscr,
 	})
@@ -103,28 +103,28 @@ func (o Client) getAllStreamingConfigIds() ([]ObjectId, error) {
 }
 
 func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
-	url, err := url.Parse(apiUrlStreamingConfig + string(id))
+	aosUrl, err := url.Parse(apiUrlStreamingConfig + string(id))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+string(id), err)
 	}
 	var result StreamingConfigInfo
 	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           url,
+		url:           aosUrl,
 		fromServerPtr: &result,
 	})
 	return &result, err
 }
 
 func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error) {
-	url, err := url.Parse(apiUrlStreamingConfig)
+	aosUrl, err := url.Parse(apiUrlStreamingConfig)
 	if err != nil {
 		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
 	}
 	var result objectIdResponse
 	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
-		url:           url,
+		url:           aosUrl,
 		toServerPtr:   cfg,
 		fromServerPtr: &result,
 	})
@@ -135,13 +135,13 @@ func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error)
 }
 
 func (o Client) deleteStreamingConfig(id ObjectId) error {
-	url, err := url.Parse(apiUrlStreamingConfig + "/" + string(id))
+	aosUrl, err := url.Parse(apiUrlStreamingConfig + "/" + string(id))
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+"/"+string(id), err)
 	}
 	_, err = o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
-		url:    url,
+		url:    aosUrl,
 	})
 	return err
 }

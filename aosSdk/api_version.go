@@ -17,14 +17,14 @@ type VersionResponse struct {
 }
 
 func (o Client) getVersion() (*VersionResponse, error) {
-	url, err := url.Parse(apiUrlVersion)
+	aosUrl, err := url.Parse(apiUrlVersion)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
 	}
 	var response VersionResponse
 	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           url,
+		url:           aosUrl,
 		fromServerPtr: &response,
 	})
 	return &response, err

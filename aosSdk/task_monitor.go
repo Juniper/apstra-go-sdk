@@ -337,7 +337,7 @@ BlueprintLoop:
 //}
 
 func (o Client) getBlueprintTasksStatus(bpid ObjectId) (map[TaskId]string, error) {
-	url, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix)
+	aosUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w",
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix, err)
@@ -345,7 +345,7 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId) (map[TaskId]string, error
 	response := &allTasksResponse{}
 	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           url,
+		url:           aosUrl,
 		toServerPtr:   nil,
 		fromServerPtr: response,
 		doNotLogin:    false,
@@ -368,7 +368,7 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId) (map[TaskId]string, error
 }
 
 func (o Client) getBlueprintTaskStatusById(bpid ObjectId, tid TaskId) (*getTaskResponse, error) {
-	url, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix + string(tid))
+	aosUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix + string(tid))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w",
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix+string(tid), err)
@@ -376,7 +376,7 @@ func (o Client) getBlueprintTaskStatusById(bpid ObjectId, tid TaskId) (*getTaskR
 	result := &getTaskResponse{}
 	_, err = o.talkToAos(&talkToAosIn{
 		method:        httpMethodGet,
-		url:           url,
+		url:           aosUrl,
 		toServerPtr:   nil,
 		fromServerPtr: result,
 		doNotLogin:    false,
