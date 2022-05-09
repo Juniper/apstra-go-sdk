@@ -134,7 +134,8 @@ func newTaskMonitor(c *Client) *taskMonitor {
 }
 
 func (o *taskMonitor) start(quit <-chan struct{}) {
-	o.taskInChan = make(chan task)
+	log.Println("task monitor start")
+	o.taskInChan = o.client.taskMonChan
 	o.errChan = o.client.cfg.errChan
 	o.tmQuit = quit
 	go o.run()
@@ -147,11 +148,15 @@ func (o *taskMonitor) run() {
 
 	// main loop
 	for {
+		log.Println("main loop")
 		select {
 		// timer event
 		case <-timer.C:
-
+			log.Println("timer")
+			go o.check()
+			timer.Reset(taskMonPollInterval)
 		case newTask := <-o.taskInChan: // new task event
+			log.Println("new task")
 			o.bpIdLock.Lock()
 			if _, found := o.mapBpIdToTask[newTask.bluePrintId]; found {
 				// existing blueprint, append new task to the slice
@@ -163,6 +168,8 @@ func (o *taskMonitor) run() {
 				o.mapBpIdToTask[newTask.bluePrintId] = []task{newTask}
 			}
 			o.bpIdLock.Unlock()
+			timer.Stop()
+			timer.Reset(taskMonFirstCheckDelay)
 		case <-o.tmQuit: // program exit
 			return
 		}

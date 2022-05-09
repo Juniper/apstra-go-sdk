@@ -66,7 +66,7 @@ type Client struct {
 	httpClient  *http.Client
 	httpHeaders map[string]string // default set of http headers
 	tmQuit      chan struct{}     // task monitor exit trigger
-	taskMonChan chan<- task       // send tasks for monitoring here
+	taskMonChan chan task         // send tasks for monitoring here
 }
 
 // NewClient creates a Client object

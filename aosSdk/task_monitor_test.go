@@ -91,3 +91,17 @@ func TestBufIoReaderStuff(t *testing.T) {
 	}
 	log.Printf("got %d bytes from unbuffered reader: %s\n", j, buf.String())
 }
+
+func TestChanClose(t *testing.T) {
+	testChan := make(chan struct{})
+	select {
+	case <-testChan:
+		log.Println("read from testChan")
+	default:
+	}
+	log.Println("closing testChan")
+	close(testChan)
+	log.Println("closing testChan again")
+	close(testChan)
+	log.Println("closed testChan twice")
+}

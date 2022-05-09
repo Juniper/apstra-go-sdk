@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"time"
 )
@@ -189,7 +190,7 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 		VrfName:         cfg.VrfName,
 		Label:           cfg.Label,
 	}
-	_, err = o.talkToAos(&talkToAosIn{
+	pendingTask, err := o.talkToAos(&talkToAosIn{
 		method:        httpMethodPost,
 		url:           aosUrl,
 		toServerPtr:   toServer,
@@ -198,6 +199,32 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if pendingTask != "" {
+		log.Println("woot! pending task!")
+		// task status update channel (how we'll learn the task is complete
+		tsuc := make(chan taskStatus)
+
+		log.Println("tsuc: ", tsuc)
+		// requst the task be monitored
+		o.taskMonChan <- task{
+			bluePrintId: cfg.BlueprintId,
+			taskId:      pendingTask,
+			resultChan:  tsuc,
+		}
+		log.Println("waiting for tsuc")
+
+		ts := <-tsuc
+		if ts.err != nil {
+			return "", fmt.Errorf("error via task status monitor channel - %w", err)
+		}
+		if ts.status != taskStatusSuccess {
+			return "", fmt.Errorf("got task status '%s' via status monitor channel, not '%s'",
+				ts.status, taskStatusSuccess)
+		}
+		return ts.id, nil
+	}
+
 	return ObjectId(result.Id), nil
 }
 
