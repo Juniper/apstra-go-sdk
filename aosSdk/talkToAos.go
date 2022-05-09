@@ -79,11 +79,13 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 
 	// talk to the server
 	resp, err := o.httpClient.Do(req)
+
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
 	req.Header.Del(aosAuthHeader)
 	if err != nil { // check error from req.Do()
 		return "", fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
+
 	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
@@ -120,7 +122,8 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 		return "", newTalkToAosErr(req, requestBody, resp, "")
 	}
 
-	// caller not expecting any response? //todo - we only look for task id if a response structure is specified. think about this more.
+	// caller not expecting any response?
+	// todo - we only look for task id if a response structure is specified. think about this more.
 	if in.fromServerPtr == nil {
 		return "", nil
 	}
