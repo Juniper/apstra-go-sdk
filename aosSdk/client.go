@@ -66,6 +66,7 @@ type Client struct {
 	httpClient  *http.Client
 	httpHeaders map[string]string // default set of http headers
 	tmQuit      chan struct{}     // task monitor exit trigger
+	taskMonChan chan<- task       // send tasks for monitoring here
 }
 
 // NewClient creates a Client object
@@ -86,19 +87,23 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", baseUrlString, err)
 	}
 
-	client := &http.Client{
+	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &cfg.TlsConfig,
 		},
 	}
 
-	return &Client{
+	aosClient := &Client{
 		cfg:         cfg,
 		baseUrl:     baseUrl,
-		httpClient:  client,
+		httpClient:  httpClient,
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		tmQuit:      make(chan struct{}),
-	}, nil
+		taskMonChan: make(chan task),
+	}
+
+	newTaskMonitor(aosClient).start(aosClient.tmQuit)
+	return aosClient, nil
 }
 
 // ServerName returns the name of the AOS server this client has been configured to use

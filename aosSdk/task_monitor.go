@@ -122,19 +122,21 @@ type taskMonitor struct {
 	errChan       chan<- error        // error feedback to main loop
 	bpIdLock      sync.Mutex
 	taskIdLock    sync.Mutex
+	tmQuit        <-chan struct{}
 }
 
 func newTaskMonitor(c *Client) *taskMonitor {
 	monitor := taskMonitor{
 		client:        c,
-		taskInChan:    make(chan task),
 		mapBpIdToTask: make(map[ObjectId][]task),
-		errChan:       c.cfg.errChan,
 	}
 	return &monitor
 }
 
-func (o *taskMonitor) start() {
+func (o *taskMonitor) start(quit <-chan struct{}) {
+	o.taskInChan = make(chan task)
+	o.errChan = o.client.cfg.errChan
+	o.tmQuit = quit
 	go o.run()
 }
 
@@ -149,8 +151,7 @@ func (o *taskMonitor) run() {
 		// timer event
 		case <-timer.C:
 
-		// new task event
-		case newTask := <-o.taskInChan:
+		case newTask := <-o.taskInChan: // new task event
 			o.bpIdLock.Lock()
 			if _, found := o.mapBpIdToTask[newTask.bluePrintId]; found {
 				// existing blueprint, append new task to the slice
@@ -162,8 +163,7 @@ func (o *taskMonitor) run() {
 				o.mapBpIdToTask[newTask.bluePrintId] = []task{newTask}
 			}
 			o.bpIdLock.Unlock()
-		// program exit
-		case <-o.client.tmQuit:
+		case <-o.tmQuit: // program exit
 			return
 		}
 	}
