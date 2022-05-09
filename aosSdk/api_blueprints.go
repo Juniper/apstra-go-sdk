@@ -8,9 +8,9 @@ import (
 
 const (
 	apiUrlBlueprints        = "/api/blueprints"
-	apiUrlRoutingZonePrefix = apiUrlBlueprints + "/"
-	apiUrlRoutingZoneSuffix = "/security-zones/"
 	apiUrlBlueprintsPrefix  = apiUrlBlueprints + "/"
+	apiUrlRoutingZonePrefix = apiUrlBlueprintsPrefix
+	apiUrlRoutingZoneSuffix = "/security-zones/"
 )
 
 // getBlueprintsResponse is returned by Apstra in response to

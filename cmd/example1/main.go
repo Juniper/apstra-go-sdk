@@ -140,7 +140,10 @@ func main() {
 
 	// create AOS client
 	// noinspection GoVetCopyLock
-	c := aosSdk.NewClient(cfg.clientCfg)
+	c, err := aosSdk.NewClient(cfg.clientCfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// noinspection GoUnhandledErrorResult
 	defer c.Logout()

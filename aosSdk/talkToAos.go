@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	peekSizeForApstraTaskIdRespone = math.MaxUint8
 	apstraApiAsyncParamKey         = "async"
 	apstraApiAsyncParamValFull     = "full"
+	errResponseLimit               = 4096
+	peekSizeForApstraTaskIdRespone = math.MaxUint8
 )
 
 // talkToAosIn is the input structure for the Client.talkToAos() function
@@ -38,9 +39,16 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	var requestBody []byte
 
 	// create URL
-	url, err := url.Parse(o.baseUrl.String() + in.url.String()) //schema://host:port + /path/to?key=val
+	aosUrl, err := url.Parse(o.baseUrl.String() + in.url.String()) //schema://host:port + /path/to?key=val
 	if err != nil {
-		return "", fmt.Errorf("error parsing url '%w' - %w", o.baseUrl.String()+in.url.String(), err)
+		return "", fmt.Errorf("error parsing url '%s' - %w", o.baseUrl.String()+in.url.String(), err)
+	}
+
+	// set async parameter if not already set
+	if !aosUrl.Query().Has(apstraApiAsyncParamKey) {
+		params := aosUrl.Query()
+		params.Add(apstraApiAsyncParamKey, apstraApiAsyncParamValFull)
+		aosUrl.RawQuery = params.Encode()
 	}
 
 	// are we sending data to the server?
@@ -56,7 +64,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	defer cancel()
 
 	// create request
-	req, err := http.NewRequestWithContext(ctx, string(in.method), url.String(), bytes.NewReader(requestBody))
+	req, err := http.NewRequestWithContext(ctx, string(in.method), aosUrl.String(), bytes.NewReader(requestBody))
 	if err != nil {
 		return "", fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
@@ -70,7 +78,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	}
 
 	// talk to the server
-	resp, err := o.client.Do(req)
+	resp, err := o.httpClient.Do(req)
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
 	req.Header.Del(aosAuthHeader)
 	if err != nil { // check error from req.Do()
@@ -144,9 +152,9 @@ type talkToAosErr struct {
 }
 
 func (o talkToAosErr) Error() string {
-	url := "nil"
+	aosUrl := "nil"
 	if o.request != nil {
-		url = o.request.URL.String()
+		aosUrl = o.request.URL.String()
 	}
 
 	status := "nil"
@@ -154,7 +162,7 @@ func (o talkToAosErr) Error() string {
 		status = o.response.Status
 	}
 
-	return fmt.Sprintf("%s - http response '%s' at '%s'", o.error, status, url)
+	return fmt.Sprintf("%s - http response '%s' at '%s'", o.error, status, aosUrl)
 }
 
 // newTalkToAosErr returns a talkToAosErr. It's intended to be called after the
@@ -164,24 +172,24 @@ func (o talkToAosErr) Error() string {
 // up to some reasonable limit (don't try to buffer gigabytes of data from the
 // webserver).
 func newTalkToAosErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) talkToAosErr {
-	url := req.URL.String()
+	aosUrl := req.URL.String()
 	// don't include secret in error
 	req.Header.Del(aosAuthHeader)
 
 	// redact request body for sensitive URLs
-	switch url {
+	switch aosUrl {
 	case apiUrlUserLogin:
-		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", url)))
+		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", aosUrl)))
 	default:
 		rehydratedRequest := bytes.NewBuffer(reqBody)
 		req.Body = io.NopCloser(rehydratedRequest)
 	}
 
 	// redact response body for sensitive URLs
-	switch url {
+	switch aosUrl {
 	case apiUrlUserLogin:
 		_ = resp.Body.Close() // close the real network socket
-		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", url)))
+		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", aosUrl)))
 	default:
 		// prepare a stunt double response body for the one that's likely attached to a network
 		// socket, and likely to be closed by a `defer` somewhere

@@ -19,9 +19,6 @@ const (
 
 	defaultTimeout = 10 * time.Second
 
-	errResponseLimit     = 4096
-	taskIdResponeBufSize = 256
-
 	httpMethodGet    = httpMethod("GET")
 	httpMethodPost   = httpMethod("POST")
 	httpMethodDelete = httpMethod("DELETE")
@@ -65,8 +62,9 @@ type ObjectId string
 type Client struct {
 	baseUrl     *url.URL
 	cfg         *ClientCfg
-	client      *http.Client
-	httpHeaders map[string]string
+	httpClient  *http.Client
+	httpHeaders map[string]string // default set of http headers
+	tmQuit      chan struct{}     // task monitor exit trigger
 }
 
 // NewClient creates a Client object
@@ -93,7 +91,13 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		},
 	}
 
-	return &Client{cfg: cfg, baseUrl: baseUrl, client: client, httpHeaders: map[string]string{"Accept": "application/json"}}, nil
+	return &Client{
+		cfg:         cfg,
+		baseUrl:     baseUrl,
+		httpClient:  client,
+		httpHeaders: map[string]string{"Accept": "application/json"},
+		tmQuit:      make(chan struct{}),
+	}, nil
 }
 
 // ServerName returns the name of the AOS server this client has been configured to use
@@ -110,14 +114,14 @@ func (o *Client) Login() error {
 }
 
 func (o *Client) login() error {
-	url, err := url.Parse(apiUrlUserLogin)
+	aosUrl, err := url.Parse(apiUrlUserLogin)
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogin, err)
 	}
 	var response userLoginResponse
 	_, err = o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
-		url:    url,
+		url:    aosUrl,
 		toServerPtr: &userLoginRequest{
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
@@ -140,13 +144,15 @@ func (o Client) Logout() error {
 }
 
 func (o Client) logout() error {
-	url, err := url.Parse(apiUrlUserLogout)
+	defer close(o.tmQuit) // shut down the task monitor gothread
+
+	aosUrl, err := url.Parse(apiUrlUserLogout)
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogout, err)
 	}
 	_, err = o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
-		url:    url,
+		url:    aosUrl,
 	})
 	if err != nil {
 		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, err)
