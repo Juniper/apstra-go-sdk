@@ -2,7 +2,6 @@ package aosSdk
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"time"
 )
@@ -201,18 +200,15 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 	}
 
 	if pendingTask != "" {
-		log.Println("woot! pending task!")
 		// task status update channel (how we'll learn the task is complete
 		tsuc := make(chan taskStatus)
 
-		log.Println("tsuc: ", tsuc)
 		// requst the task be monitored
 		o.taskMonChan <- task{
 			bluePrintId: cfg.BlueprintId,
 			taskId:      pendingTask,
 			resultChan:  tsuc,
 		}
-		log.Println("waiting for tsuc")
 
 		ts := <-tsuc
 		if ts.err != nil {

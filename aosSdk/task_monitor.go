@@ -13,7 +13,7 @@ const (
 	apiUrlTasksSuffix = "/tasks/"
 
 	taskMonFirstCheckDelay = 100 * time.Millisecond
-	taskMonPollInterval    = 5 * time.Second
+	taskMonPollInterval    = 500 * time.Millisecond
 
 	taskStatusOngoing = "in_progress"
 	taskStatusInit    = "init"
@@ -118,23 +118,24 @@ type taskMonitor struct {
 	client        *Client             // for making Apstra API calls
 	mapBpIdToTask map[ObjectId][]task // monitor these outstanding tasks
 	taskInChan    <-chan task         // for learning about new tasks
-	timer         time.Timer          // triggers check()
+	timer         *time.Timer         // triggers check()
 	errChan       chan<- error        // error feedback to main loop
-	bpIdLock      sync.Mutex
-	taskIdLock    sync.Mutex
+	bpIdLock      sync.Mutex          // control access to mapBpIdToTask
+	taskIdLock    sync.Mutex          // control access to task slices within mapBpIdToTask
 	tmQuit        <-chan struct{}
 }
 
 func newTaskMonitor(c *Client) *taskMonitor {
 	monitor := taskMonitor{
+		timer:         time.NewTimer(0),
 		client:        c,
 		mapBpIdToTask: make(map[ObjectId][]task),
 	}
+	<-monitor.timer.C
 	return &monitor
 }
 
 func (o *taskMonitor) start(quit <-chan struct{}) {
-	log.Println("task monitor start")
 	o.taskInChan = o.client.taskMonChan
 	o.errChan = o.client.cfg.errChan
 	o.tmQuit = quit
@@ -142,21 +143,15 @@ func (o *taskMonitor) start(quit <-chan struct{}) {
 }
 
 func (o *taskMonitor) run() {
-	// create a timer which fires NOW; trash its first event
-	timer := time.NewTimer(0)
-	<-timer.C
-
 	// main loop
 	for {
-		log.Println("main loop")
 		select {
 		// timer event
-		case <-timer.C:
-			log.Println("timer")
+		case <-o.timer.C:
 			go o.check()
-			timer.Reset(taskMonPollInterval)
 		case newTask := <-o.taskInChan: // new task event
-			log.Println("new task")
+			o.timer.Stop()
+			o.timer.Stop()
 			o.bpIdLock.Lock()
 			if _, found := o.mapBpIdToTask[newTask.bluePrintId]; found {
 				// existing blueprint, append new task to the slice
@@ -168,8 +163,7 @@ func (o *taskMonitor) run() {
 				o.mapBpIdToTask[newTask.bluePrintId] = []task{newTask}
 			}
 			o.bpIdLock.Unlock()
-			timer.Stop()
-			timer.Reset(taskMonFirstCheckDelay)
+			o.timer.Reset(taskMonFirstCheckDelay)
 		case <-o.tmQuit: // program exit
 			return
 		}
@@ -197,6 +191,14 @@ BlueprintLoop:
 		// to retain the loop label, which is pretty.
 		continue BlueprintLoop
 	} // BlueprintLoop
+
+	// after processing all monitored tasks, one or more per-blueprint lists might be empty.
+	for bpId := range o.mapBpIdToTask {
+		if len(o.mapBpIdToTask[bpId]) == 0 {
+			delete(o.mapBpIdToTask, bpId)
+		}
+	}
+
 	o.bpIdLock.Unlock()
 }
 
@@ -256,95 +258,95 @@ TaskLoop:
 		o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
 	} // TaskLoo
 	o.taskIdLock.Unlock()
-
-	// after processing all monitored tasks, the per-blueprint list might be empty.
-	o.bpIdLock.Lock()
-	if len(o.mapBpIdToTask[bpId]) == 0 {
-		delete(o.mapBpIdToTask, bpId)
-	}
-	o.bpIdLock.Unlock()
 }
 
 func (o *taskMonitor) check() {
-BlueprintLoop:
-	// loop over blueprints known to have outstanding tasks
-	for bpId := range o.mapBpIdToTask {
-		// get task result info from Apstra
-		apstraTaskInfo, err := o.client.getBlueprintTasksStatus(bpId)
-		if err != nil {
-			err = fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
-			// todo: not happy with this error handling
-			if o.errChan != nil {
-				o.errChan <- err
-			} else {
-				log.Println(err)
-			}
-		}
-
-	TaskLoop:
-		// loop over outstanding tasks associated with this blueprint
-		for i, monitoredTask := range o.mapBpIdToTask[bpId] {
-			mtid := monitoredTask.taskId     // monitored task Id
-			mtrc := monitoredTask.resultChan // monitored task result chan
-			// make sure Apstra response includes our taskId
-			if _, found := apstraTaskInfo[mtid]; !found {
-				// Apstra response doesn't have our task Id:
-				//   error, delete it from the slice, next task
-				mtrc <- taskStatus{
-					err: fmt.Errorf("blueprint '%s' task '%s' unknown to Apstra server", bpId, mtid),
-				}
-				o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
-				continue TaskLoop
-			}
-
-			// What did Apstra say about our taskId?
-			var result taskStatus
-			switch apstraTaskInfo[mtid] {
-			case taskStatusInit:
-				continue TaskLoop // still working; skip to next task
-			case taskStatusOngoing:
-				continue TaskLoop // still working; skip to next task
-			case taskStatusFail: // done; fallthrough
-			case taskStatusSuccess: // done; fallthrough
-			case taskStatusTimeout: // done; fallthrough
-			default: // something unexpected
-				// Unexpected task status response from Apstra:
-				//   error, delete it from the slice, next task
-				mtrc <- taskStatus{
-					err: fmt.Errorf("blueprint '%s' task '%s' status unexpected: %s", bpId, mtid, apstraTaskInfo[mtid]),
-				}
-				o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
-				continue TaskLoop
-			}
-
-			// if we got here, we're able to return a recognized and conclusive
-			// task status result to the caller. Fetch the full details from Apstra.
-			taskInfo, err := o.client.getBlueprintTaskStatusById(bpId, mtid)
-			if err != nil {
-				mtrc <- taskStatus{
-					err: fmt.Errorf("error in getBlueprintTaskStatusById - %w", err),
-				}
-			}
-
-			// send task completion info to the caller
-			result.status = taskInfo.Status
-			result.id = taskInfo.DetailedStatus.ApiResponse.Id
-			mtrc <- result
-
-			// remove this task from the list of monitored tasks
-			o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
-		} // TaskLoop
-
-		// after processing all monitored tasks, the per-blueprint list might be empty.
-		if len(o.mapBpIdToTask[bpId]) == 0 {
-			delete(o.mapBpIdToTask, bpId)
-		}
-
-		// this was going to happen anyway, but being explicit allows me
-		// to retain the loop label, which is pretty.
-		continue BlueprintLoop
-	} // BlueprintLoop
+	o.checkBlueprints()
+	if len(o.mapBpIdToTask) > 0 {
+		o.timer.Reset(taskMonPollInterval)
+	}
 }
+
+//func (o *taskMonitor) check() {
+//BlueprintLoop:
+//	// loop over blueprints known to have outstanding tasks
+//	for bpId := range o.mapBpIdToTask {
+//		// get task result info from Apstra
+//		apstraTaskInfo, err := o.client.getBlueprintTasksStatus(bpId)
+//		if err != nil {
+//			err = fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
+//			// todo: not happy with this error handling
+//			if o.errChan != nil {
+//				o.errChan <- err
+//			} else {
+//				log.Println(err)
+//			}
+//		}
+//
+//	TaskLoop:
+//		// loop over outstanding tasks associated with this blueprint
+//		for i, monitoredTask := range o.mapBpIdToTask[bpId] {
+//			mtid := monitoredTask.taskId     // monitored task Id
+//			mtrc := monitoredTask.resultChan // monitored task result chan
+//			// make sure Apstra response includes our taskId
+//			if _, found := apstraTaskInfo[mtid]; !found {
+//				// Apstra response doesn't have our task Id:
+//				//   error, delete it from the slice, next task
+//				mtrc <- taskStatus{
+//					err: fmt.Errorf("blueprint '%s' task '%s' unknown to Apstra server", bpId, mtid),
+//				}
+//				o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
+//				continue TaskLoop
+//			}
+//
+//			// What did Apstra say about our taskId?
+//			var result taskStatus
+//			switch apstraTaskInfo[mtid] {
+//			case taskStatusInit:
+//				continue TaskLoop // still working; skip to next task
+//			case taskStatusOngoing:
+//				continue TaskLoop // still working; skip to next task
+//			case taskStatusFail: // done; fallthrough
+//			case taskStatusSuccess: // done; fallthrough
+//			case taskStatusTimeout: // done; fallthrough
+//			default: // something unexpected
+//				// Unexpected task status response from Apstra:
+//				//   error, delete it from the slice, next task
+//				mtrc <- taskStatus{
+//					err: fmt.Errorf("blueprint '%s' task '%s' status unexpected: %s", bpId, mtid, apstraTaskInfo[mtid]),
+//				}
+//				o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
+//				continue TaskLoop
+//			}
+//
+//			// if we got here, we're able to return a recognized and conclusive
+//			// task status result to the caller. Fetch the full details from Apstra.
+//			taskInfo, err := o.client.getBlueprintTaskStatusById(bpId, mtid)
+//			if err != nil {
+//				mtrc <- taskStatus{
+//					err: fmt.Errorf("error in getBlueprintTaskStatusById - %w", err),
+//				}
+//			}
+//
+//			// send task completion info to the caller
+//			result.status = taskInfo.Status
+//			result.id = taskInfo.DetailedStatus.ApiResponse.Id
+//			mtrc <- result
+//
+//			// remove this task from the list of monitored tasks
+//			o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
+//		} // TaskLoop
+//
+//		// after processing all monitored tasks, the per-blueprint list might be empty.
+//		if len(o.mapBpIdToTask[bpId]) == 0 {
+//			delete(o.mapBpIdToTask, bpId)
+//		}
+//
+//		// this was going to happen anyway, but being explicit allows me
+//		// to retain the loop label, which is pretty.
+//		continue BlueprintLoop
+//	} // BlueprintLoop
+//}
 
 //func (o Client) GetTaskByBlueprintIdAndTaskId(blueprintId string, taskId string) (*GetTaskResponse, error) {
 //	response := GetTaskResponse{}
