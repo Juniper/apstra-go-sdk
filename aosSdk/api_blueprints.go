@@ -99,6 +99,19 @@ type GetBlueprintResponse struct {
 
 // getAllBlueprintIds returns the Ids of all blueprints
 func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
+	response, err := o.getBluePrints()
+	if err != nil {
+		return nil, fmt.Errorf("error calling getBluePrints - %w", err)
+	}
+
+	var result []ObjectId
+	for _, item := range response.Items {
+		result = append(result, item.Id)
+	}
+	return result, nil
+}
+
+func (o Client) getBluePrints() (*getBlueprintsResponse, error) {
 	aosUrl, err := url.Parse(apiUrlBlueprints)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints, err)
@@ -112,11 +125,7 @@ func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
 	if err != nil {
 		return nil, err
 	}
-	var result []ObjectId
-	for _, item := range response.Items {
-		result = append(result, item.Id)
-	}
-	return result, nil
+	return &response, nil
 }
 
 func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
