@@ -164,15 +164,19 @@ type CreateRoutingZoneCfg struct {
 	BlueprintId     ObjectId
 }
 
-type GetRoutingZoneResult struct {
+type getAllSecurityZonesResponse struct {
+	Items map[string]SecurityZone
+}
+
+type SecurityZone struct {
 	VniId           int      `json:"vni_id"`
 	SzType          string   `json:"sz_type"`
-	RoutingPolicyId string   `json:"routing_policy_id"`
+	RoutingPolicyId ObjectId `json:"routing_policy_id"`
 	Label           string   `json:"label"`
 	VrfName         string   `json:"vrf_name"`
 	RtPolicy        RtPolicy `json:"rt_policy"`
 	RouteTarget     string   `json:"route_target"`
-	Id              string   `json:"id"`
+	Id              ObjectId `json:"id"`
 	VlanId          int      `json:"vlan_id"`
 }
 
@@ -181,7 +185,7 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 	if err != nil {
 		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(cfg.BlueprintId)+apiUrlRoutingZoneSuffix, err)
 	}
-	result := &GetRoutingZoneResult{}
+	result := &SecurityZone{}
 	toServer := &createRoutingZoneRequest{
 		SzType:          cfg.SzType,
 		RoutingPolicyId: cfg.RoutingPolicyId,
@@ -221,7 +225,47 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 		return ts.id, nil
 	}
 
-	return ObjectId(result.Id), nil
+	return result.Id, nil
+}
+func (o Client) getSecurityZone(blueprintId ObjectId, zone ObjectId) (*SecurityZone, error) {
+	urlString := apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix + string(zone)
+	aosUrl, err := url.Parse(urlString)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlString, err)
+	}
+	result := &SecurityZone{}
+	_, err = o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           aosUrl,
+		toServerPtr:   nil,
+		fromServerPtr: result,
+		doNotLogin:    false,
+	})
+	return result, nil
+}
+
+func (o Client) getAllSecurityZones(blueprintId ObjectId) ([]SecurityZone, error) {
+	urlString := apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix
+	aosUrl, err := url.Parse(urlString)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlString, err)
+	}
+	response := &getAllSecurityZonesResponse{}
+	_, err = o.talkToAos(&talkToAosIn{
+		method:        httpMethodGet,
+		url:           aosUrl,
+		toServerPtr:   nil,
+		fromServerPtr: response,
+		doNotLogin:    false,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var result []SecurityZone
+	for _, v := range response.Items {
+		result = append(result, v)
+	}
+	return result, nil
 }
 
 func (o Client) deleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
