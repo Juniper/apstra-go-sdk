@@ -236,7 +236,7 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 
 	return result.Id, nil
 }
-func (o Client) getSecurityZone(blueprintId ObjectId, zone ObjectId) (*SecurityZone, error) {
+func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZone, error) {
 	urlString := apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix + string(zone)
 	aosUrl, err := url.Parse(urlString)
 	if err != nil {
@@ -253,7 +253,7 @@ func (o Client) getSecurityZone(blueprintId ObjectId, zone ObjectId) (*SecurityZ
 	return result, nil
 }
 
-func (o Client) getAllSecurityZones(blueprintId ObjectId) ([]SecurityZone, error) {
+func (o Client) getAllRoutingZones(blueprintId ObjectId) ([]SecurityZone, error) {
 	urlString := apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix
 	aosUrl, err := url.Parse(urlString)
 	if err != nil {

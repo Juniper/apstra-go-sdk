@@ -218,3 +218,7 @@ func (o Client) CreateRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 func (o Client) DeleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
 	return o.deleteRoutingZone(blueprintId, zoneId)
 }
+
+func (o Client) GetRoutingZones(blueprintId ObjectId) ([]SecurityZone, error) {
+	return o.getAllRoutingZones(blueprintId)
+}
