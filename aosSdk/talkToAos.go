@@ -16,22 +16,23 @@ import (
 const (
 	apstraApiAsyncParamKey          = "async"
 	apstraApiAsyncParamValFull      = "full"
-	apstraApiAsyncParamValPartial   = "partial"
+	apstraApiAsyncParamValPartial   = "partial" // default?
 	errResponseLimit                = 4096
 	peekSizeForApstraTaskIdResponse = math.MaxUint8
 )
 
 // talkToAosIn is the input structure for the Client.talkToAos() function
 type talkToAosIn struct {
-	method        httpMethod
-	url           *url.URL
-	apiInput      interface{}
-	apiResponse   interface{}
-	doNotLogin    bool
-	unsyncronized bool
+	method         httpMethod  // how to talk to Apstra
+	url            *url.URL    // where to talk to Aptstra (as little as /path/to/thing ok)
+	apiInput       interface{} // if non-nil we'll JSON encode this prior to sending it
+	apiResponse    interface{} // if non-nil we'll JSON decode Apstra response here
+	doNotLogin     bool        // when set, Client will not attempt login (we set for anti-recursion)
+	unsynchronized bool        // default behavior is to send apstraApiAsyncParamValFull, block until task completion
 }
 
-// craftUrl combines o.baseUrl with in.url, and returned to the caller.
+// craftUrl combines o.baseUrl (probably "http://host:port") with in.url
+// (probably "/api/something/something", might have a query string).
 // The assumption is that o.baseUrl contains the scheme, host (host+port) and
 // leading path components, while `in` (talkToAosIn) is responsible for the
 // path to the specific API endpoint and any required query parameters.
@@ -48,7 +49,7 @@ func (o Client) craftUrl(in *talkToAosIn) *url.URL {
 
 	result.Path = o.baseUrl.Path + in.url.Path // path is cumulative, baseUrl can be empty
 
-	if !in.unsyncronized {
+	if !in.unsynchronized {
 		params := result.Query()
 		params.Set(apstraApiAsyncParamKey, apstraApiAsyncParamValFull)
 		result.RawQuery = params.Encode()

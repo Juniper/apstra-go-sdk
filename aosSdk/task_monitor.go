@@ -23,9 +23,9 @@ const (
 	taskStatusTimeout = "timeout"
 )
 
-// allTasksResponse is sent by Apstra in response to GET at
+// getAllTasksResponse is sent by Apstra in response to GET at
 // 'apiUrlTaskPrefix + blueprintId + apiUrlTaskSuffix'
-type allTasksResponse struct {
+type getAllTasksResponse struct {
 	Items []struct {
 		Status      string `json:"status"`
 		BeginAt     string `json:"begin_at"`
@@ -91,14 +91,14 @@ type getTaskResponse struct {
 	Id                  TaskId `json:"id"`
 }
 
-// taskMonitorTaskDetail uniquely identifies an Apstra task which can be tracked
+// taskMontiorMonReq uniquely identifies an Apstra task which can be tracked
 // using the // /api/blueprint/<id>/tasks and /api/blueprint/<id>/tasks/<id> API
 // endpoints.
 // This structure is submitted by a caller using taskMonitor.taskInChan. When
 // the task is no longer outstanding (success, timeout, failed), taskMonitor
 // responds via responseChan with the complete getTaskResponse structure received
 // from Apstra (or any errors encountered along the way)
-type taskMonitorTaskDetail struct {
+type taskMontiorMonReq struct {
 	bluePrintId  ObjectId              // task API calls must reference a blueprint
 	taskId       TaskId                // tracks the task
 	responseChan chan taskCompleteInfo // talk here when the task is complete
@@ -117,26 +117,28 @@ type taskCompleteInfo struct {
 // via taskInChan, closes the task's `done` channel when it detects apstra
 // has completed the task.
 type taskMonitor struct {
-	client        *Client                              // for making Apstra API calls
-	mapBpIdToTask map[ObjectId][]taskMonitorTaskDetail // monitor these outstanding tasks
-	taskInChan    <-chan taskMonitorTaskDetail         // for learning about new tasks
-	timer         *time.Timer                          // triggers check()
-	errChan       chan<- error                         // error feedback to main loop
-	bpIdLock      sync.Mutex                           // control access to mapBpIdToTask
-	taskIdLock    sync.Mutex                           // control access to task slices within mapBpIdToTask
+	client        *Client                          // for making Apstra API calls
+	mapBpIdToTask map[ObjectId][]taskMontiorMonReq // monitor these outstanding tasks
+	taskInChan    <-chan taskMontiorMonReq         // for learning about new tasks
+	timer         *time.Timer                      // triggers check()
+	errChan       chan<- error                     // error feedback to main loop
+	bpIdLock      sync.Mutex                       // control access to mapBpIdToTask
+	taskIdLock    sync.Mutex                       // control access to task slices within mapBpIdToTask
 	tmQuit        <-chan struct{}
 }
 
+// newTaskMonitor creates a new taskMonitor, but does not start it.
 func newTaskMonitor(c *Client) *taskMonitor {
 	monitor := taskMonitor{
 		timer:         time.NewTimer(0),
 		client:        c,
-		mapBpIdToTask: make(map[ObjectId][]taskMonitorTaskDetail),
+		mapBpIdToTask: make(map[ObjectId][]taskMontiorMonReq),
 	}
 	<-monitor.timer.C
 	return &monitor
 }
 
+// start causes the taskMonitor to run
 func (o *taskMonitor) start(quit <-chan struct{}) {
 	o.taskInChan = o.client.taskMonChan
 	o.errChan = o.client.cfg.errChan
@@ -144,6 +146,7 @@ func (o *taskMonitor) start(quit <-chan struct{}) {
 	go o.run()
 }
 
+// run is the main taskMonitor loop
 func (o *taskMonitor) run() {
 	// main loop
 	for {
@@ -152,8 +155,7 @@ func (o *taskMonitor) run() {
 		case <-o.timer.C:
 			go o.check()
 		case newTask := <-o.taskInChan: // new task event
-			o.timer.Stop()
-			o.timer.Stop()
+			o.timer.Stop() // timer may be about to fire, but we're already running
 			o.bpIdLock.Lock()
 			if _, found := o.mapBpIdToTask[newTask.bluePrintId]; found {
 				// existing blueprint, append new task to the slice
@@ -162,7 +164,7 @@ func (o *taskMonitor) run() {
 				o.taskIdLock.Unlock()
 			} else {
 				// new blueprint, create the task slice
-				o.mapBpIdToTask[newTask.bluePrintId] = []taskMonitorTaskDetail{newTask}
+				o.mapBpIdToTask[newTask.bluePrintId] = []taskMontiorMonReq{newTask}
 			}
 			o.bpIdLock.Unlock()
 			o.timer.Reset(taskMonFirstCheckDelay)
@@ -209,7 +211,6 @@ BlueprintLoop:
 }
 
 func (o *taskMonitor) checkTasksInBlueprint(bpId ObjectId, apstraTaskInfo map[TaskId]string) {
-	// todo: add filter using task IDs
 	o.taskIdLock.Lock()
 TaskLoop:
 	// loop over outstanding tasks associated with this blueprint
@@ -246,7 +247,6 @@ TaskLoop:
 			continue TaskLoop
 		}
 
-		// todo: insert new respond() function here
 		// if we got here, we're able to return a recognized and conclusive
 		// task status result to the caller. Fetch the full details from Apstra.
 		taskInfo, err := o.client.getBlueprintTaskStatusById(bpId, mtid)
@@ -261,6 +261,10 @@ TaskLoop:
 	o.taskIdLock.Unlock()
 }
 
+// check
+//   invokes checkBlueprints
+//             invokes checkTasksInBlueprint
+//   resets timer (maybe)
 func (o *taskMonitor) check() {
 	o.checkBlueprints()
 	if len(o.mapBpIdToTask) > 0 {
@@ -285,7 +289,7 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map
 		return nil, fmt.Errorf("error parsing url '%s' - %w",
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix, err)
 	}
-	response := &allTasksResponse{}
+	response := &getAllTasksResponse{}
 	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
@@ -294,7 +298,7 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map
 		doNotLogin:  false,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error getting allTasksResponse for blueprint '%s' - %w", bpid, err)
+		return nil, fmt.Errorf("error getting getAllTasksResponse for blueprint '%s' - %w", bpid, err)
 	}
 
 	result := make(map[TaskId]string)
@@ -317,29 +321,24 @@ func (o Client) getBlueprintTaskStatusById(bpid ObjectId, tid TaskId) (*getTaskR
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix+string(tid), err)
 	}
 	result := &getTaskResponse{}
-	err = o.talkToAos(&talkToAosIn{
+	return result, o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
 		apiResponse: result,
 		doNotLogin:  false,
 	})
-	if err != nil {
-		return nil, fmt.Errorf("error getting getTaskResponse for blueprint '%s', id '%s' - %w", bpid, tid, err)
-	}
-
-	return result, nil
 }
 
 func blueprintIdFromUrl(in *url.URL) (ObjectId, error) {
 	split1 := strings.Split(in.String(), apiUrlBlueprintsPrefix)
 	if len(split1) != 2 {
-		return "", fmt.Errorf("failed to extract blueprint ID from URL '%s'", in.String())
+		return "", fmt.Errorf("failed to extract blueprint ID from URL '%s' at step 1", in.String())
 	}
 
 	split2 := strings.Split(split1[1], apiUrlPathDelim)
 	if len(split1) == 0 {
-		return "", fmt.Errorf("failed to extract blueprint ID from URL '%s'", in.String())
+		return "", fmt.Errorf("failed to extract blueprint ID from URL '%s' at step 2", in.String())
 	}
 
 	return ObjectId(split2[0]), nil
@@ -347,12 +346,12 @@ func blueprintIdFromUrl(in *url.URL) (ObjectId, error) {
 
 // waitForTaskCompletion interacts with the taskMonitor, returns the Apstra API
 // *getTaskResponse
-func waitForTaskCompletion(bId ObjectId, tId TaskId, mon chan taskMonitorTaskDetail) (*getTaskResponse, error) {
+func waitForTaskCompletion(bId ObjectId, tId TaskId, mon chan taskMontiorMonReq) (*getTaskResponse, error) {
 	// task status update channel (how we'll learn the task is complete
 	monReply := make(chan taskCompleteInfo) // Task Complete Info Channel
 
 	// submit our task to the task monitor
-	mon <- taskMonitorTaskDetail{
+	mon <- taskMontiorMonReq{
 		bluePrintId:  bId,
 		taskId:       tId,
 		responseChan: monReply,

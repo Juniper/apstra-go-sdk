@@ -21,11 +21,10 @@ func (o Client) getVersion() (*VersionResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
 	}
-	var response VersionResponse
-	err = o.talkToAos(&talkToAosIn{
+	response := &VersionResponse{}
+	return response, o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
-		apiResponse: &response,
+		apiResponse: response,
 	})
-	return &response, err
 }

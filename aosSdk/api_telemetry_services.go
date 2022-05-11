@@ -25,11 +25,10 @@ func (o Client) GetTelemetryServicesDeviceMapping() (*GetTelemetryServiceMapping
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlTelemetryServices, err)
 	}
-	var result GetTelemetryServiceMappingResult
-	err = o.talkToAos(&talkToAosIn{
+	result := &GetTelemetryServiceMappingResult{}
+	return result, o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
-		apiResponse: &result,
+		apiResponse: result,
 	})
-	return &result, err
 }

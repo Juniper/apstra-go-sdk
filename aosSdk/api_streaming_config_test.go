@@ -1,10 +1,8 @@
 package aosSdk
 
 import (
-	"bytes"
 	"crypto/tls"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"testing"
@@ -55,17 +53,4 @@ func TestClient_GetAllStreamingConfigs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	response, err := client.getAllStreamingConfigIds()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var out bytes.Buffer
-	err = pp(response, &out)
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Println(out.String())
-
 }

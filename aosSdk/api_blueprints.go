@@ -117,16 +117,12 @@ func (o Client) getBluePrints() (*getBlueprintsResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints, err)
 	}
-	var response getBlueprintsResponse
-	err = o.talkToAos(&talkToAosIn{
+	response := &getBlueprintsResponse{}
+	return response, o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
-		apiResponse: &response,
+		apiResponse: response,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return &response, nil
 }
 
 func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
@@ -134,17 +130,16 @@ func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints+string(in), err)
 	}
-	var response GetBlueprintResponse
-	err = o.talkToAos(&talkToAosIn{
+	response := &GetBlueprintResponse{}
+	return response, o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
-		apiResponse: &response,
+		apiResponse: response,
 	})
-	return &response, err
 }
 
 type RtPolicy struct {
-	// todo
+	// todo: what's an RtPolicy?
 	//ImportRTs interface{} `json:"import_RTs"`
 	//ExportRTs interface{} `json:"export_RTs"`
 }
@@ -195,7 +190,6 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (*objectIdResponse,
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(cfg.BlueprintId)+apiUrlRoutingZoneSuffix, err)
 	}
-	result := &objectIdResponse{}
 	toServer := &createRoutingZoneRequest{
 		SzType:          cfg.SzType,
 		RoutingPolicyId: cfg.RoutingPolicyId,
@@ -203,17 +197,13 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (*objectIdResponse,
 		VrfName:         cfg.VrfName,
 		Label:           cfg.Label,
 	}
-	err = o.talkToAos(&talkToAosIn{
+	result := &objectIdResponse{}
+	return result, o.talkToAos(&talkToAosIn{
 		method:      httpMethodPost,
 		url:         aosUrl,
 		apiInput:    toServer,
 		apiResponse: result,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
 }
 func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZone, error) {
 	urlString := apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix + string(zone)
@@ -222,14 +212,13 @@ func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZo
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlString, err)
 	}
 	result := &SecurityZone{}
-	err = o.talkToAos(&talkToAosIn{
+	return result, o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
 		apiResponse: result,
 		doNotLogin:  false,
 	})
-	return result, nil
 }
 
 func (o Client) getAllRoutingZones(blueprintId ObjectId) ([]SecurityZone, error) {
@@ -261,9 +250,8 @@ func (o Client) deleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(blueprintId)+apiUrlRoutingZoneSuffix+string(zoneId), err)
 	}
-	err = o.talkToAos(&talkToAosIn{
+	return o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
 		url:    aosUrl,
 	})
-	return err
 }

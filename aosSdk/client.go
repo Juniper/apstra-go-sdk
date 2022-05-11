@@ -64,9 +64,9 @@ type Client struct {
 	baseUrl     *url.URL
 	cfg         *ClientCfg
 	httpClient  *http.Client
-	httpHeaders map[string]string          // default set of http headers
-	tmQuit      chan struct{}              // task monitor exit trigger
-	taskMonChan chan taskMonitorTaskDetail // send tasks for monitoring here
+	httpHeaders map[string]string      // default set of http headers
+	tmQuit      chan struct{}          // task monitor exit trigger
+	taskMonChan chan taskMontiorMonReq // send tasks for monitoring here
 }
 
 // NewClient creates a Client object
@@ -99,12 +99,14 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		httpClient:  httpClient,
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		tmQuit:      make(chan struct{}),
-		taskMonChan: make(chan taskMonitorTaskDetail),
+		taskMonChan: make(chan taskMontiorMonReq),
 	}
 
 	newTaskMonitor(aosClient).start(aosClient.tmQuit)
 	return aosClient, nil
 }
+
+// todo: add context input to all public Client methods
 
 // ServerName returns the name of the AOS server this client has been configured to use
 func (o Client) ServerName() string {
@@ -124,7 +126,7 @@ func (o *Client) login() error {
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogin, err)
 	}
-	var response userLoginResponse
+	response := &userLoginResponse{}
 	err = o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
 		url:    aosUrl,
@@ -132,7 +134,7 @@ func (o *Client) login() error {
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
 		},
-		apiResponse: &response,
+		apiResponse: response,
 	})
 	if err != nil {
 		return fmt.Errorf("error talking to AOS in Login - %w", err)
@@ -179,12 +181,6 @@ func (o Client) GetBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
 	return o.getBlueprint(in)
 }
 
-// GetAllStreamingConfigIds returns a slice of ObjectId representing
-// currently configured Apstra streaming configs / receivers
-func (o Client) GetAllStreamingConfigIds() ([]ObjectId, error) {
-	return o.getAllStreamingConfigIds()
-}
-
 // GetStreamingConfig returns a slice of *StreamingConfigInfo representing
 // the requested Apstra streaming configs / receivers
 func (o Client) GetStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
@@ -194,7 +190,8 @@ func (o Client) GetStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
 // NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the
 // Apstra server.
 func (o Client) NewStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error) {
-	return o.newStreamingConfig(cfg)
+	response, err := o.newStreamingConfig(cfg)
+	return response.Id, err
 }
 
 // DeleteStreamingConfig deletes the specified streaming config / receiver from
@@ -219,10 +216,13 @@ func (o Client) CreateRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 	return response.Id, nil
 }
 
+// DeleteRoutingZone deletes an Apstra Routing Zone / Security Zone / VRF
 func (o Client) DeleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
 	return o.deleteRoutingZone(blueprintId, zoneId)
 }
 
+// GetRoutingZones returns all Apstra Routing Zones / Security Zones / VRFs
+// associated with the specified blueprint
 func (o Client) GetRoutingZones(blueprintId ObjectId) ([]SecurityZone, error) {
 	return o.getAllRoutingZones(blueprintId)
 }
