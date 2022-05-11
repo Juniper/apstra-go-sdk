@@ -72,10 +72,10 @@ func (o Client) getAllStreamingConfigs() ([]StreamingConfigInfo, error) {
 	}
 	var gscr getStreamingConfigsResponse
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           aosUrl,
-		toServerPtr:   nil,
-		fromServerPtr: &gscr,
+		method:      httpMethodGet,
+		url:         aosUrl,
+		apiInput:    nil,
+		apiResponse: &gscr,
 	})
 	if err != nil {
 		return nil, err
@@ -109,9 +109,9 @@ func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
 	}
 	var result StreamingConfigInfo
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           aosUrl,
-		fromServerPtr: &result,
+		method:      httpMethodGet,
+		url:         aosUrl,
+		apiResponse: &result,
 	})
 	return &result, err
 }
@@ -123,10 +123,10 @@ func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error)
 	}
 	var result objectIdResponse
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodPost,
-		url:           aosUrl,
-		toServerPtr:   cfg,
-		fromServerPtr: &result,
+		method:      httpMethodPost,
+		url:         aosUrl,
+		apiInput:    cfg,
+		apiResponse: &result,
 	})
 	if err != nil {
 		return "", err

@@ -23,9 +23,9 @@ func (o Client) getVersion() (*VersionResponse, error) {
 	}
 	var response VersionResponse
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           aosUrl,
-		fromServerPtr: &response,
+		method:      httpMethodGet,
+		url:         aosUrl,
+		apiResponse: &response,
 	})
 	return &response, err
 }

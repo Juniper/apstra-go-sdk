@@ -27,9 +27,9 @@ func (o Client) GetTelemetryServicesDeviceMapping() (*GetTelemetryServiceMapping
 	}
 	var result GetTelemetryServiceMappingResult
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           aosUrl,
-		fromServerPtr: &result,
+		method:      httpMethodGet,
+		url:         aosUrl,
+		apiResponse: &result,
 	})
 	return &result, err
 }

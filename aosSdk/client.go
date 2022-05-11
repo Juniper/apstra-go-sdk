@@ -64,9 +64,9 @@ type Client struct {
 	baseUrl     *url.URL
 	cfg         *ClientCfg
 	httpClient  *http.Client
-	httpHeaders map[string]string // default set of http headers
-	tmQuit      chan struct{}     // task monitor exit trigger
-	taskMonChan chan task         // send tasks for monitoring here
+	httpHeaders map[string]string          // default set of http headers
+	tmQuit      chan struct{}              // task monitor exit trigger
+	taskMonChan chan taskMonitorTaskDetail // send tasks for monitoring here
 }
 
 // NewClient creates a Client object
@@ -99,7 +99,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		httpClient:  httpClient,
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		tmQuit:      make(chan struct{}),
-		taskMonChan: make(chan task),
+		taskMonChan: make(chan taskMonitorTaskDetail),
 	}
 
 	newTaskMonitor(aosClient).start(aosClient.tmQuit)
@@ -128,11 +128,11 @@ func (o *Client) login() error {
 	_, err = o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
 		url:    aosUrl,
-		toServerPtr: &userLoginRequest{
+		apiInput: &userLoginRequest{
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
 		},
-		fromServerPtr: &response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return fmt.Errorf("error talking to AOS in Login - %w", err)
@@ -212,7 +212,11 @@ func (o Client) DeleteStreamingConfig(id ObjectId) error {
 
 // CreateRoutingZone creates an Apstra Routing Zone / Security Zone / VRF
 func (o Client) CreateRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
-	return o.createRoutingZone(cfg)
+	response, err := o.createRoutingZone(cfg)
+	if err != nil {
+		return "", err
+	}
+	return response.Id, nil
 }
 
 func (o Client) DeleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {

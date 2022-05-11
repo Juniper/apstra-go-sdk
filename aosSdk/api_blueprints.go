@@ -8,7 +8,8 @@ import (
 
 const (
 	apiUrlBlueprints        = "/api/blueprints"
-	apiUrlBlueprintsPrefix  = apiUrlBlueprints + "/"
+	apiUrlPathDelim         = "/"
+	apiUrlBlueprintsPrefix  = apiUrlBlueprints + apiUrlPathDelim
 	apiUrlRoutingZonePrefix = apiUrlBlueprintsPrefix
 	apiUrlRoutingZoneSuffix = "/security-zones/"
 )
@@ -118,9 +119,9 @@ func (o Client) getBluePrints() (*getBlueprintsResponse, error) {
 	}
 	var response getBlueprintsResponse
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           aosUrl,
-		fromServerPtr: &response,
+		method:      httpMethodGet,
+		url:         aosUrl,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, err
@@ -135,9 +136,9 @@ func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
 	}
 	var response GetBlueprintResponse
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           aosUrl,
-		fromServerPtr: &response,
+		method:      httpMethodGet,
+		url:         aosUrl,
+		apiResponse: &response,
 	})
 	return &response, err
 }
@@ -189,12 +190,12 @@ type SecurityZone struct {
 	VlanId          int      `json:"vlan_id"`
 }
 
-func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
+func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (*objectIdResponse, error) {
 	aosUrl, err := url.Parse(apiUrlRoutingZonePrefix + string(cfg.BlueprintId) + apiUrlRoutingZoneSuffix)
 	if err != nil {
-		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(cfg.BlueprintId)+apiUrlRoutingZoneSuffix, err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(cfg.BlueprintId)+apiUrlRoutingZoneSuffix, err)
 	}
-	result := &SecurityZone{}
+	result := &objectIdResponse{}
 	toServer := &createRoutingZoneRequest{
 		SzType:          cfg.SzType,
 		RoutingPolicyId: cfg.RoutingPolicyId,
@@ -202,39 +203,17 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 		VrfName:         cfg.VrfName,
 		Label:           cfg.Label,
 	}
-	pendingTask, err := o.talkToAos(&talkToAosIn{
-		method:        httpMethodPost,
-		url:           aosUrl,
-		toServerPtr:   toServer,
-		fromServerPtr: result,
+	_, err = o.talkToAos(&talkToAosIn{
+		method:      httpMethodPost,
+		url:         aosUrl,
+		apiInput:    toServer,
+		apiResponse: result,
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if pendingTask != "" {
-		// task status update channel (how we'll learn the task is complete
-		tsuc := make(chan taskStatus)
-
-		// requst the task be monitored
-		o.taskMonChan <- task{
-			bluePrintId: cfg.BlueprintId,
-			taskId:      pendingTask,
-			resultChan:  tsuc,
-		}
-
-		ts := <-tsuc
-		if ts.err != nil {
-			return "", fmt.Errorf("error via task status monitor channel - %w", err)
-		}
-		if ts.status != taskStatusSuccess {
-			return "", fmt.Errorf("got task status '%s' via status monitor channel, not '%s'",
-				ts.status, taskStatusSuccess)
-		}
-		return ts.id, nil
-	}
-
-	return result.Id, nil
+	return result, nil
 }
 func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZone, error) {
 	urlString := apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix + string(zone)
@@ -244,11 +223,11 @@ func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZo
 	}
 	result := &SecurityZone{}
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           aosUrl,
-		toServerPtr:   nil,
-		fromServerPtr: result,
-		doNotLogin:    false,
+		method:      httpMethodGet,
+		url:         aosUrl,
+		apiInput:    nil,
+		apiResponse: result,
+		doNotLogin:  false,
 	})
 	return result, nil
 }
@@ -261,11 +240,11 @@ func (o Client) getAllRoutingZones(blueprintId ObjectId) ([]SecurityZone, error)
 	}
 	response := &getAllSecurityZonesResponse{}
 	_, err = o.talkToAos(&talkToAosIn{
-		method:        httpMethodGet,
-		url:           aosUrl,
-		toServerPtr:   nil,
-		fromServerPtr: response,
-		doNotLogin:    false,
+		method:      httpMethodGet,
+		url:         aosUrl,
+		apiInput:    nil,
+		apiResponse: response,
+		doNotLogin:  false,
 	})
 	if err != nil {
 		return nil, err

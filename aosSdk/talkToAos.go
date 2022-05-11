@@ -16,6 +16,7 @@ import (
 const (
 	apstraApiAsyncParamKey          = "async"
 	apstraApiAsyncParamValFull      = "full"
+	apstraApiAsyncParamValPartial   = "partial"
 	errResponseLimit                = 4096
 	peekSizeForApstraTaskIdResponse = math.MaxUint8
 )
@@ -24,36 +25,53 @@ const (
 type talkToAosIn struct {
 	method        httpMethod
 	url           *url.URL
-	toServerPtr   interface{}
-	fromServerPtr interface{}
+	apiInput      interface{}
+	apiResponse   interface{}
 	doNotLogin    bool
+	unsyncronized bool
 }
 
-// talkToAos talks to the Apstra server using in.method. If in.toServerPtr is
+// craftUrl combines o.baseUrl with in.url, and returned to the caller.
+// The assumption is that o.baseUrl contains the scheme, host (host+port) and
+// leading path components, while `in` (talkToAosIn) is responsible for the
+// path to the specific API endpoint and any required query parameters.
+// When `in.unsychronized` is false (the default), Apstra's 'async=full' query
+// string parameter is added to the returned result.
+func (o Client) craftUrl(in *talkToAosIn) *url.URL {
+	result := in.url
+	if result.Scheme == "" {
+		result.Scheme = o.baseUrl.Scheme // copy baseUrl scheme
+	}
+	if result.Host == "" {
+		result.Host = o.baseUrl.Host // copy baseUrl host
+	}
+
+	result.Path = o.baseUrl.Path + in.url.Path // path is cumulative, baseUrl can be empty
+
+	if !in.unsyncronized {
+		params := result.Query()
+		params.Set(apstraApiAsyncParamKey, apstraApiAsyncParamValFull)
+		result.RawQuery = params.Encode()
+	}
+
+	return result
+}
+
+// talkToAos talks to the Apstra server using in.method. If in.apiInput is
 // not nil, it JSON-encodes that data structure and sends it. In case the
-// in.fromServerPtr is not nil, the HTTP response body is checked to see if it's
+// in.apiResponse is not nil, the HTTP response body is checked to see if it's
 // a taskIdResponse, in which case the TaskId is returned. Otherwise, the data
-// structure at in.fromServerPtr is populated from the HTTP response body.
+// structure at in.apiResponse is populated from the HTTP response body.
 func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	var err error
 	var requestBody []byte
 
 	// create URL
-	aosUrl, err := url.Parse(o.baseUrl.String() + in.url.String()) //schema://host:port + /path/to?key=val
-	if err != nil {
-		return "", fmt.Errorf("error parsing url '%s' - %w", o.baseUrl.String()+in.url.String(), err)
-	}
-
-	// set async parameter if not already set
-	if !aosUrl.Query().Has(apstraApiAsyncParamKey) {
-		params := aosUrl.Query()
-		params.Add(apstraApiAsyncParamKey, apstraApiAsyncParamValFull)
-		aosUrl.RawQuery = params.Encode()
-	}
+	aosUrl := o.craftUrl(in)
 
 	// are we sending data to the server?
-	if in.toServerPtr != nil {
-		requestBody, err = json.Marshal(in.toServerPtr)
+	if in.apiInput != nil {
+		requestBody, err = json.Marshal(in.apiInput)
 		if err != nil {
 			return "", fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
 		}
@@ -70,7 +88,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	}
 
 	// set request httpHeaders
-	if in.toServerPtr != nil {
+	if in.apiInput != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	for k, v := range o.httpHeaders {
@@ -123,8 +141,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	}
 
 	// caller not expecting any response?
-	// todo - we only look for task id if a response structure is specified. think about this more.
-	if in.fromServerPtr == nil {
+	if in.apiResponse == nil {
 		return "", nil
 	}
 
@@ -135,13 +152,52 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	if err != nil {
 		return "", newTalkToAosErr(req, requestBody, resp, "")
 	}
-	if ok {
-		// we got a task ID, instead of the expected response object
-		return tIdR.TaskId, nil
-	} else {
+	if !ok {
 		// no task ID, decode response body into the caller-specified structure
-		return "", json.NewDecoder(resp.Body).Decode(in.fromServerPtr)
+		return "", json.NewDecoder(resp.Body).Decode(in.apiResponse)
 	}
+
+	// we got a task ID, instead of the expected response object
+	bpId, err := blueprintIdFromUrl(aosUrl)
+	taskResponse, err := o.waitForTaskCompletion(bpId, tIdR.TaskId)
+	if err != nil {
+		return "", fmt.Errorf("error in task monitor - %w\n API result:\n", err)
+	}
+
+	// taskResponse.DetailedStatus.ApiResponse is an interface{} b/c the json structure
+	// is unpredictable. in.apiResponse is also an interface{} (a pointer to whatever
+	// structure the caller expects). There's probably a better way to move this data
+	// than Marshal/Unmarshal, but that's a problem for later.
+	apiResponse, err := json.Marshal(taskResponse.DetailedStatus.ApiResponse)
+	if err != nil {
+		return "", fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
+	}
+	err = json.Unmarshal(apiResponse, in.apiResponse)
+	if err != nil {
+		return "", fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
+	}
+
+	//return tIdR.TaskId, err // todo eliminate taskId return altogether
+	return "", err
+}
+
+// todo: why is this a method on Client? Maybe just pass the taskMonChan?
+// waitForTaskCompletion interacts with the taskMonitor, returns the Apstra API
+// *getTaskResponse
+func (o Client) waitForTaskCompletion(bId ObjectId, tId TaskId) (*getTaskResponse, error) {
+	// task status update channel (how we'll learn the task is complete
+	tcic := make(chan taskCompleteInfo) // Task Complete Info Channel
+
+	// submit our task to the task monitor
+	o.taskMonChan <- taskMonitorTaskDetail{
+		bluePrintId:  bId,
+		taskId:       tId,
+		responseChan: tcic,
+	}
+
+	tci := <-tcic
+	return tci.status, tci.err
+
 }
 
 // talkToAosErr implements error{} and carries around http.Request and
