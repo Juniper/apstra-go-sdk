@@ -329,3 +329,21 @@ func blueprintIdFromUrl(in *url.URL) (ObjectId, error) {
 
 	return ObjectId(split2[0]), nil
 }
+
+// waitForTaskCompletion interacts with the taskMonitor, returns the Apstra API
+// *getTaskResponse
+func waitForTaskCompletion(bId ObjectId, tId TaskId, mon chan taskMonitorTaskDetail) (*getTaskResponse, error) {
+	// task status update channel (how we'll learn the task is complete
+	monReply := make(chan taskCompleteInfo) // Task Complete Info Channel
+
+	// submit our task to the task monitor
+	mon <- taskMonitorTaskDetail{
+		bluePrintId:  bId,
+		taskId:       tId,
+		responseChan: monReply,
+	}
+
+	tci := <-monReply
+	return tci.status, tci.err
+
+}

@@ -157,7 +157,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 
 	// we got a task ID, instead of the expected response object
 	bpId, err := blueprintIdFromUrl(aosUrl)
-	taskResponse, err := o.waitForTaskCompletion(bpId, tIdR.TaskId)
+	taskResponse, err := waitForTaskCompletion(bpId, tIdR.TaskId, o.taskMonChan)
 	if err != nil {
 		return fmt.Errorf("error in task monitor - %w\n API result:\n", err)
 	}
@@ -176,25 +176,6 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	}
 
 	return err
-}
-
-// todo: why is this a method on Client? Maybe just pass the taskMonChan?
-// waitForTaskCompletion interacts with the taskMonitor, returns the Apstra API
-// *getTaskResponse
-func (o Client) waitForTaskCompletion(bId ObjectId, tId TaskId) (*getTaskResponse, error) {
-	// task status update channel (how we'll learn the task is complete
-	tcic := make(chan taskCompleteInfo) // Task Complete Info Channel
-
-	// submit our task to the task monitor
-	o.taskMonChan <- taskMonitorTaskDetail{
-		bluePrintId:  bId,
-		taskId:       tId,
-		responseChan: tcic,
-	}
-
-	tci := <-tcic
-	return tci.status, tci.err
-
 }
 
 // talkToAosErr implements error{} and carries around http.Request and
