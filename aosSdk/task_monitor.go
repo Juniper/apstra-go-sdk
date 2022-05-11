@@ -177,8 +177,12 @@ func (o *taskMonitor) checkBlueprints() {
 	o.bpIdLock.Lock()
 BlueprintLoop:
 	for bpId := range o.mapBpIdToTask {
+		var taskIdList []TaskId
+		for i := range o.mapBpIdToTask[bpId] {
+			taskIdList = append(taskIdList, o.mapBpIdToTask[bpId][i].taskId)
+		}
 		// get task result info from Apstra
-		apstraTaskInfo, err := o.client.getBlueprintTasksStatus(bpId)
+		apstraTaskInfo, err := o.client.getBlueprintTasksStatus(bpId, taskIdList)
 		if err != nil {
 			err = fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
 			// todo: not happy with this error handling
@@ -264,8 +268,19 @@ func (o *taskMonitor) check() {
 	}
 }
 
-func (o Client) getBlueprintTasksStatus(bpid ObjectId) (map[TaskId]string, error) {
+// taskListToFilterExpr returns the supplied []ObjectId as a string prepped for
+// Apstra's API response filter. Something like: "id in ['abc','def']
+func taskListToFilterExpr(in []TaskId) string {
+	var quotedList []string
+	for i := range in {
+		quotedList = append(quotedList, "'"+string(in[i])+"'")
+	}
+	return "id in [" + strings.Join(quotedList, ",") + "]"
+}
+
+func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map[TaskId]string, error) {
 	aosUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix)
+	aosUrl.RawQuery = url.Values{"filter": []string{taskListToFilterExpr(taskIdList)}}.Encode()
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w",
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix, err)
