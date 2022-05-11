@@ -175,7 +175,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		return fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
 	}
 
-	return err
+	return nil
 }
 
 // talkToAosErr implements error{} and carries around http.Request and
