@@ -125,7 +125,7 @@ func (o *Client) login() error {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogin, err)
 	}
 	var response userLoginResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
 		url:    aosUrl,
 		apiInput: &userLoginRequest{
@@ -156,7 +156,7 @@ func (o Client) logout() error {
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogout, err)
 	}
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method: httpMethodPost,
 		url:    aosUrl,
 	})

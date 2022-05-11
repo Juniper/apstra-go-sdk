@@ -71,7 +71,7 @@ func (o Client) getAllStreamingConfigs() ([]StreamingConfigInfo, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
 	}
 	var gscr getStreamingConfigsResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
@@ -108,7 +108,7 @@ func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+string(id), err)
 	}
 	var result StreamingConfigInfo
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiResponse: &result,
@@ -122,7 +122,7 @@ func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error)
 		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
 	}
 	var result objectIdResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodPost,
 		url:         aosUrl,
 		apiInput:    cfg,
@@ -139,7 +139,7 @@ func (o Client) deleteStreamingConfig(id ObjectId) error {
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+"/"+string(id), err)
 	}
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
 		url:    aosUrl,
 	})

@@ -80,7 +80,7 @@ func (o Client) getVersionsAosdi() (*versionsAosdiResponse, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsAosdi, err)
 	}
 	var response versionsAosdiResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiResponse: &response,
@@ -94,7 +94,7 @@ func (o Client) getVersionsApi() (*versionsApiResponse, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsApi, err)
 	}
 	var response versionsApiResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiResponse: &response,
@@ -108,7 +108,7 @@ func (o Client) getVersionsBuild() (*versionsBuildResponse, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsBuild, err)
 	}
 	var response versionsBuildResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiResponse: &response,
@@ -122,7 +122,7 @@ func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDev
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsDevice, err)
 	}
 	var response versionsDeviceResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:   httpMethodPost,
 		url:      aosUrl,
 		apiInput: request,
@@ -136,7 +136,7 @@ func (o Client) postVersionsIba(request *versionsIbaRequest) (*versionsIbaRespon
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsIba, err)
 	}
 	var response versionsIbaResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodPost,
 		url:         aosUrl,
 		apiInput:    request,
@@ -151,7 +151,7 @@ func (o Client) postVersionsNode(request *versionsNodeRequest) (*versionsNodeRes
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsNode, err)
 	}
 	var response versionsNodeResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodPost,
 		url:         aosUrl,
 		apiInput:    request,
@@ -166,7 +166,7 @@ func (o Client) getVersionsServer() (*versionsServerResponse, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsServer, err)
 	}
 	var response versionsServerResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiResponse: &response,

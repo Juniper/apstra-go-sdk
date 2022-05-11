@@ -264,97 +264,6 @@ func (o *taskMonitor) check() {
 	}
 }
 
-//func (o *taskMonitor) check() {
-//BlueprintLoop:
-//	// loop over blueprints known to have outstanding tasks
-//	for bpId := range o.mapBpIdToTask {
-//		// get task result info from Apstra
-//		apstraTaskInfo, err := o.client.getBlueprintTasksStatus(bpId)
-//		if err != nil {
-//			err = fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
-//			// todo: not happy with this error handling
-//			if o.errChan != nil {
-//				o.errChan <- err
-//			} else {
-//				log.Println(err)
-//			}
-//		}
-//
-//	TaskLoop:
-//		// loop over outstanding tasks associated with this blueprint
-//		for i, monitoredTask := range o.mapBpIdToTask[bpId] {
-//			mtid := monitoredTask.taskId     // monitored task Id
-//			mtrc := monitoredTask.responseChan // monitored task result chan
-//			// make sure Apstra response includes our taskId
-//			if _, found := apstraTaskInfo[mtid]; !found {
-//				// Apstra response doesn't have our task Id:
-//				//   error, delete it from the slice, next task
-//				mtrc <- taskCompleteInfo{
-//					err: fmt.Errorf("blueprint '%s' task '%s' unknown to Apstra server", bpId, mtid),
-//				}
-//				o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
-//				continue TaskLoop
-//			}
-//
-//			// What did Apstra say about our taskId?
-//			var result taskCompleteInfo
-//			switch apstraTaskInfo[mtid] {
-//			case taskStatusInit:
-//				continue TaskLoop // still working; skip to next task
-//			case taskStatusOngoing:
-//				continue TaskLoop // still working; skip to next task
-//			case taskStatusFail: // done; fallthrough
-//			case taskStatusSuccess: // done; fallthrough
-//			case taskStatusTimeout: // done; fallthrough
-//			default: // something unexpected
-//				// Unexpected task status response from Apstra:
-//				//   error, delete it from the slice, next task
-//				mtrc <- taskCompleteInfo{
-//					err: fmt.Errorf("blueprint '%s' task '%s' status unexpected: %s", bpId, mtid, apstraTaskInfo[mtid]),
-//				}
-//				o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
-//				continue TaskLoop
-//			}
-//
-//			// if we got here, we're able to return a recognized and conclusive
-//			// task status result to the caller. Fetch the full details from Apstra.
-//			taskInfo, err := o.client.getBlueprintTaskStatusById(bpId, mtid)
-//			if err != nil {
-//				mtrc <- taskCompleteInfo{
-//					err: fmt.Errorf("error in getBlueprintTaskStatusById - %w", err),
-//				}
-//			}
-//
-//			// send task completion info to the caller
-//			result.status = taskInfo.Status
-//			result.id = taskInfo.DetailedStatus.ApiResponse.Id
-//			mtrc <- result
-//
-//			// remove this task from the list of monitored tasks
-//			o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
-//		} // TaskLoop
-//
-//		// after processing all monitored tasks, the per-blueprint list might be empty.
-//		if len(o.mapBpIdToTask[bpId]) == 0 {
-//			delete(o.mapBpIdToTask, bpId)
-//		}
-//
-//		// this was going to happen anyway, but being explicit allows me
-//		// to retain the loop label, which is pretty.
-//		continue BlueprintLoop
-//	} // BlueprintLoop
-//}
-
-//func (o Client) GetTaskByBlueprintIdAndTaskId(blueprintId string, taskId string) (*GetTaskResponse, error) {
-//	response := GetTaskResponse{}
-//	_, err := o.talkToAos(&talkToAosIn{
-//		method:        httpMethodGet,
-//		url:           apiUrlTaskPrefix + blueprintId + apiUrlTaskSuffix + taskId,
-//		apiResponse: &response,
-//	})
-//	return &response, err
-//}
-
 func (o Client) getBlueprintTasksStatus(bpid ObjectId) (map[TaskId]string, error) {
 	aosUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix)
 	if err != nil {
@@ -362,7 +271,7 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId) (map[TaskId]string, error
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix, err)
 	}
 	response := &allTasksResponse{}
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
@@ -393,7 +302,7 @@ func (o Client) getBlueprintTaskStatusById(bpid ObjectId, tid TaskId) (*getTaskR
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix+string(tid), err)
 	}
 	result := &getTaskResponse{}
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiInput:    nil,

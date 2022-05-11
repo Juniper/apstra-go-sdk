@@ -59,10 +59,8 @@ func (o Client) craftUrl(in *talkToAosIn) *url.URL {
 
 // talkToAos talks to the Apstra server using in.method. If in.apiInput is
 // not nil, it JSON-encodes that data structure and sends it. In case the
-// in.apiResponse is not nil, the HTTP response body is checked to see if it's
-// a taskIdResponse, in which case the TaskId is returned. Otherwise, the data
-// structure at in.apiResponse is populated from the HTTP response body.
-func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
+// in.apiResponse is not nil, the server response is extracted into it.
+func (o Client) talkToAos(in *talkToAosIn) error {
 	var err error
 	var requestBody []byte
 
@@ -73,7 +71,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	if in.apiInput != nil {
 		requestBody, err = json.Marshal(in.apiInput)
 		if err != nil {
-			return "", fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
+			return fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
 		}
 	}
 
@@ -84,7 +82,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	// create request
 	req, err := http.NewRequestWithContext(ctx, string(in.method), aosUrl.String(), bytes.NewReader(requestBody))
 	if err != nil {
-		return "", fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
+		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
 
 	// set request httpHeaders
@@ -101,7 +99,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
 	req.Header.Del(aosAuthHeader)
 	if err != nil { // check error from req.Do()
-		return "", fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
+		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
 
 	// noinspection GoUnhandledErrorResult
@@ -114,14 +112,14 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 		if resp.StatusCode == 401 {
 			// Auth fail at login API is fatal for this transaction
 			if in.url.String() == apiUrlUserLogin {
-				return "", newTalkToAosErr(req, requestBody, resp,
+				return newTalkToAosErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' - check username/password",
 						resp.StatusCode, in.url))
 			}
 
 			// Auth fail with "doNotLogin == true" is fatal for this transaction
 			if in.doNotLogin {
-				return "", newTalkToAosErr(req, requestBody, resp,
+				return newTalkToAosErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' and doNotLogin is %t",
 						resp.StatusCode, in.url, in.doNotLogin))
 			}
@@ -129,7 +127,7 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 			// Try logging in
 			err := o.login()
 			if err != nil {
-				return "", fmt.Errorf("error attempting login after initial AuthFail - %w", err)
+				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
 			}
 
 			// Try the request again
@@ -137,12 +135,12 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 			return o.talkToAos(in)
 		} // HTTP 401
 
-		return "", newTalkToAosErr(req, requestBody, resp, "")
+		return newTalkToAosErr(req, requestBody, resp, "")
 	}
 
 	// caller not expecting any response?
 	if in.apiResponse == nil {
-		return "", nil
+		return nil
 	}
 
 	// caller is expecting a response, but we don't know if Apstra will return
@@ -150,18 +148,18 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	var tIdR taskIdResponse
 	ok, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
 	if err != nil {
-		return "", newTalkToAosErr(req, requestBody, resp, "")
+		return newTalkToAosErr(req, requestBody, resp, "")
 	}
 	if !ok {
 		// no task ID, decode response body into the caller-specified structure
-		return "", json.NewDecoder(resp.Body).Decode(in.apiResponse)
+		return json.NewDecoder(resp.Body).Decode(in.apiResponse)
 	}
 
 	// we got a task ID, instead of the expected response object
 	bpId, err := blueprintIdFromUrl(aosUrl)
 	taskResponse, err := o.waitForTaskCompletion(bpId, tIdR.TaskId)
 	if err != nil {
-		return "", fmt.Errorf("error in task monitor - %w\n API result:\n", err)
+		return fmt.Errorf("error in task monitor - %w\n API result:\n", err)
 	}
 
 	// taskResponse.DetailedStatus.ApiResponse is an interface{} b/c the json structure
@@ -170,15 +168,15 @@ func (o Client) talkToAos(in *talkToAosIn) (TaskId, error) {
 	// than Marshal/Unmarshal, but that's a problem for later.
 	apiResponse, err := json.Marshal(taskResponse.DetailedStatus.ApiResponse)
 	if err != nil {
-		return "", fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
+		return fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
 	}
 	err = json.Unmarshal(apiResponse, in.apiResponse)
 	if err != nil {
-		return "", fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
+		return fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
 	}
 
 	//return tIdR.TaskId, err // todo eliminate taskId return altogether
-	return "", err
+	return err
 }
 
 // todo: why is this a method on Client? Maybe just pass the taskMonChan?

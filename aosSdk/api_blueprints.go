@@ -118,7 +118,7 @@ func (o Client) getBluePrints() (*getBlueprintsResponse, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints, err)
 	}
 	var response getBlueprintsResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiResponse: &response,
@@ -135,7 +135,7 @@ func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints+string(in), err)
 	}
 	var response GetBlueprintResponse
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiResponse: &response,
@@ -203,7 +203,7 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (*objectIdResponse,
 		VrfName:         cfg.VrfName,
 		Label:           cfg.Label,
 	}
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodPost,
 		url:         aosUrl,
 		apiInput:    toServer,
@@ -222,7 +222,7 @@ func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZo
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlString, err)
 	}
 	result := &SecurityZone{}
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
@@ -239,7 +239,7 @@ func (o Client) getAllRoutingZones(blueprintId ObjectId) ([]SecurityZone, error)
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlString, err)
 	}
 	response := &getAllSecurityZonesResponse{}
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method:      httpMethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
@@ -261,7 +261,7 @@ func (o Client) deleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(blueprintId)+apiUrlRoutingZoneSuffix+string(zoneId), err)
 	}
-	_, err = o.talkToAos(&talkToAosIn{
+	err = o.talkToAos(&talkToAosIn{
 		method: httpMethodDelete,
 		url:    aosUrl,
 	})

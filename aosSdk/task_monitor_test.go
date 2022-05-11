@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func taskMonitorConfigTestClient1() (*Client, error) {
@@ -104,4 +106,47 @@ func TestChanClose(t *testing.T) {
 	log.Println("closing testChan again")
 	close(testChan)
 	log.Println("closed testChan twice")
+}
+
+func TestBlueprintIdFromUrl(t *testing.T) {
+	testBpId := ObjectId("lkasdlfaj")
+	test := "https://host:443" + apiUrlBlueprintsPrefix + testBpId + apiUrlPathDelim + apiUrlRoutingZoneSuffix
+	url, err := url.Parse(string(test))
+	if err != nil {
+		log.Fatal(err)
+	}
+	resultBpId, err := blueprintIdFromUrl(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if testBpId != resultBpId {
+		log.Fatalf("expected '%s', got '%s'", testBpId, resultBpId)
+	}
+}
+
+func TestCopyToPointer(t *testing.T) {
+	type mystruct struct {
+		s string
+		i int
+	}
+
+	s1 := mystruct{
+		s: "hello",
+		i: 1,
+	}
+
+	s2 := &mystruct{}
+
+	*s2 = s1
+
+	log.Println("s1: ", s1)
+	log.Println("s2: ", s2)
+
+	ps1 := &s1
+	ps2 := s2
+
+	_ = ps1
+	_ = ps2
+	time.Sleep(time.Hour)
+
 }
