@@ -175,7 +175,6 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		return fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
 	}
 
-	//return tIdR.TaskId, err // todo eliminate taskId return altogether
 	return err
 }
 
