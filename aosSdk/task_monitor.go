@@ -133,6 +133,8 @@ func newTaskMonitor(c *Client) *taskMonitor {
 		timer:         time.NewTimer(0),
 		client:        c,
 		mapBpIdToTask: make(map[ObjectId][]taskMonitorMonReq),
+		taskInChan:    c.taskMonChan,
+		errChan:       c.cfg.errChan,
 	}
 	<-monitor.timer.C
 	return &monitor
@@ -140,8 +142,6 @@ func newTaskMonitor(c *Client) *taskMonitor {
 
 // start causes the taskMonitor to run
 func (o *taskMonitor) start(quit <-chan struct{}) {
-	o.taskInChan = o.client.taskMonChan //todo assignments move to newTaskMonthing
-	o.errChan = o.client.cfg.errChan
 	o.tmQuit = quit
 	go o.run()
 }
