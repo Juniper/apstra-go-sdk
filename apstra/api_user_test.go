@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"os"
@@ -39,7 +40,7 @@ func userTestClient1() (*Client, error) {
 		Port:      uint16(port),
 		User:      user,
 		Pass:      pass,
-		TlsConfig: tls.Config{InsecureSkipVerify: true},
+		TlsConfig: &tls.Config{InsecureSkipVerify: true},
 	})
 }
 
@@ -49,7 +50,7 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = c.Login()
+	err = c.Login(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,12 +62,12 @@ func TestLogout(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = c.Login()
+	err = c.Login(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = c.Logout()
+	err = c.Logout(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}

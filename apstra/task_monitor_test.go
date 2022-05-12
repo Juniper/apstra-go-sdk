@@ -47,7 +47,7 @@ func taskMonitorConfigTestClient1() (*Client, error) {
 		Port:      uint16(port),
 		User:      user,
 		Pass:      pass,
-		TlsConfig: tls.Config{InsecureSkipVerify: true},
+		TlsConfig: &tls.Config{InsecureSkipVerify: true},
 	})
 }
 

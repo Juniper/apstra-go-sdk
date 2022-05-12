@@ -53,7 +53,7 @@ func clientTestClient() (*Client, error) {
 		Port:      uint16(port),
 		User:      user,
 		Pass:      pass,
-		TlsConfig: tls.Config{InsecureSkipVerify: true, KeyLogWriter: kl},
+		TlsConfig: &tls.Config{InsecureSkipVerify: true, KeyLogWriter: kl},
 	})
 }
 

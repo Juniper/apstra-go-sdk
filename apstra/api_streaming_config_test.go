@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"os"
@@ -39,7 +40,7 @@ func streamingConfigTestClient1() (*Client, error) {
 		Port:      uint16(port),
 		User:      user,
 		Pass:      pass,
-		TlsConfig: tls.Config{InsecureSkipVerify: true},
+		TlsConfig: &tls.Config{InsecureSkipVerify: true},
 	})
 }
 
@@ -49,7 +50,7 @@ func TestClient_GetAllStreamingConfigs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = client.Login()
+	err = client.Login(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}

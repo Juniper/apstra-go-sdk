@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -67,9 +68,9 @@ func TestGetAllBlueprintIds(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.Logout()
+	defer client.Logout(context.TODO())
 
-	blueprints, err := client.GetAllBlueprintIds()
+	blueprints, err := client.GetAllBlueprintIds(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +88,7 @@ func TestCreateRoutingZone(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	result, err := client.createRoutingZone(&CreateRoutingZoneCfg{
+	result, err := client.createRoutingZone(context.TODO(), &CreateRoutingZoneCfg{
 		SzType:      "evpn",
 		VrfName:     "test",
 		Label:       "label-test",

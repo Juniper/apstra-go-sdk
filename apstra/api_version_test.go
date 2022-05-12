@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -51,12 +52,7 @@ func TestGetVersion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = client.Login()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ver, err := client.getVersion()
+	ver, err := client.getVersion(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +64,7 @@ func TestGetVersion(t *testing.T) {
 
 	log.Println(string(result))
 
-	err = client.Logout()
+	err = client.Logout(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}

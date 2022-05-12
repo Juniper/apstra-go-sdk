@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"log"
@@ -41,7 +42,7 @@ func telemetryServicesTestClient1() (*Client, error) {
 		Port:      uint16(port),
 		User:      user,
 		Pass:      pass,
-		TlsConfig: tls.Config{InsecureSkipVerify: true},
+		TlsConfig: &tls.Config{InsecureSkipVerify: true},
 	})
 }
 
@@ -50,13 +51,13 @@ func TestGetTelemetryServicesDeviceMapping(t *testing.T) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = client.Login()
+	err = client.Login(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.Logout()
+	defer client.Logout(context.TODO())
 
-	result, err := client.GetTelemetryServicesDeviceMapping()
+	result, err := client.GetTelemetryServicesDeviceMapping(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
