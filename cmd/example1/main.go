@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -146,7 +147,7 @@ func main() {
 	}
 
 	// noinspection GoUnhandledErrorResult
-	defer c.Logout()
+	defer c.Logout(context.TODO())
 
 	// create aggregator channels where we'll get messages from all target services
 	msgChan := make(chan *apstraStreamTarget.StreamingMessage)
@@ -167,7 +168,7 @@ func main() {
 		}
 
 		// register this AOS stream target as a streaming config / receiver
-		err = st.Register(c)
+		err = st.Register(context.TODO(), c)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -187,11 +188,6 @@ func main() {
 		}(ec, errChan)
 
 		streamTargets = append(streamTargets, st)
-	}
-
-	err = c.Login()
-	if err != nil {
-		log.Fatal(err)
 	}
 
 MainLoop:
@@ -217,7 +213,7 @@ MainLoop:
 	}
 
 	for _, st := range streamTargets {
-		err = st.Unregister()
+		err = st.Unregister(context.TODO())
 		if err != nil {
 			log.Fatal(err)
 		}
