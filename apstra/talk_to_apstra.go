@@ -119,7 +119,7 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		// Auth fail?
 		if resp.StatusCode == 401 {
 			// Auth fail at login API is fatal for this transaction
-			if in.url.String() == apiUrlUserLogin {
+			if in.url.Path == apiUrlUserLogin {
 				return newTalkToApstraErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' - check username/password",
 						resp.StatusCode, in.url))
@@ -133,7 +133,7 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 			}
 
 			// Try logging in
-			err := o.login(ctx) //todo: this thing should set doNotLogin when invoking talkToApstra
+			err := o.login(ctx)
 			if err != nil {
 				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
 			}

@@ -123,6 +123,7 @@ func (o *Client) login(ctx context.Context) error {
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
 		},
+		doNotLogin:  true,
 		apiResponse: response,
 	})
 	if err != nil {
