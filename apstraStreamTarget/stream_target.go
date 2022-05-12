@@ -2,6 +2,7 @@ package apstraStreamTarget
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -273,7 +274,7 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 // to AOS when configuring the streaming config / receiver. If it's empty, we
 // attempt to determine the local IP nearest to the AOS server, use that value
 // (as a string)
-func (o *StreamTarget) Register(client *apstra.Client) error {
+func (o *StreamTarget) Register(ctx context.Context, client *apstra.Client) error {
 	// figure out what the AOS server should call us (string: IP or DNS name)
 	var apstraTargetHostname string
 	switch o.cfg.AosTargetHostname {
@@ -288,7 +289,7 @@ func (o *StreamTarget) Register(client *apstra.Client) error {
 	}
 
 	// Register this target with Apstra
-	id, err := client.NewStreamingConfig(&apstra.StreamingConfigParams{
+	id, err := client.NewStreamingConfig(ctx, &apstra.StreamingConfigParams{
 		StreamingType:  o.cfg.StreamingType,
 		SequencingMode: o.cfg.SequencingMode,
 		Protocol:       o.cfg.Protocol,
@@ -305,12 +306,12 @@ func (o *StreamTarget) Register(client *apstra.Client) error {
 
 // Unregister deletes the streaming config / receiver associated with this
 // StreamTarget from the AOS server.
-func (o *StreamTarget) Unregister() error {
+func (o *StreamTarget) Unregister(ctx context.Context) error {
 	if o.strmCfgId == "" {
 		return errors.New("no stream id for this StreamTarget, cannot UnRegister")
 	}
 
-	err := o.client.DeleteStreamingConfig(o.strmCfgId)
+	err := o.client.DeleteStreamingConfig(ctx, o.strmCfgId)
 	if err != nil {
 		return err
 	}
