@@ -1,6 +1,7 @@
 package aosSdk
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -82,8 +83,8 @@ type getTaskResponse struct {
 	UserName       string `json:"user_name"`
 	CreatedAt      string `json:"created_at"`
 	DetailedStatus struct {
-		ApiResponse            interface{} `json:"api_response"`
-		ConfigBlueprintVersion int         `json:"config_blueprint_version"`
+		ApiResponse            json.RawMessage `json:"api_response"`
+		ConfigBlueprintVersion int             `json:"config_blueprint_version"`
 	} `json:"detailed_status"`
 	ConfigLastUpdatedAt string `json:"config_last_updated_at"`
 	UserIp              string `json:"user_ip"`
@@ -343,16 +344,17 @@ func blueprintIdFromUrl(in *url.URL) (ObjectId, error) {
 // *getTaskResponse
 func waitForTaskCompletion(bId ObjectId, tId TaskId, mon chan taskMonitorMonReq) (*getTaskResponse, error) {
 	// task status update channel (how we'll learn the task is complete
-	monReply := make(chan taskCompleteInfo) // Task Complete Info Channel
+	reply := make(chan taskCompleteInfo, 1) // Task Complete Info Channel
+	defer close(reply)                      // todo move this to the guy who writes
 
 	// submit our task to the task monitor
 	mon <- taskMonitorMonReq{
 		bluePrintId:  bId,
 		taskId:       tId,
-		responseChan: monReply,
+		responseChan: reply,
 	}
 
-	tci := <-monReply
+	tci := <-reply
 	return tci.status, tci.err
 
 }

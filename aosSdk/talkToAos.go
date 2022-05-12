@@ -166,20 +166,9 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		return fmt.Errorf("error in task monitor - %w\n API result:\n", err)
 	}
 
-	// taskResponse.DetailedStatus.ApiResponse is an interface{} b/c the json structure
-	// is unpredictable. in.apiResponse is also an interface{} (a pointer to whatever
-	// structure the caller expects). There's probably a better way to move this data
-	// than Marshal/Unmarshal, but that's a problem for later.
-	apiResponse, err := json.Marshal(taskResponse.DetailedStatus.ApiResponse)
-	if err != nil {
-		return fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
-	}
-	err = json.Unmarshal(apiResponse, in.apiResponse)
-	if err != nil {
-		return fmt.Errorf("error marshaling ApiResponse within task query - %w", err)
-	}
+	// todo: sensible comment
+	return json.Unmarshal(taskResponse.DetailedStatus.ApiResponse, in.apiResponse)
 
-	return nil
 }
 
 // talkToAosErr implements error{} and carries around http.Request and
