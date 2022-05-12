@@ -122,8 +122,7 @@ type taskMonitor struct {
 	taskInChan    <-chan taskMontiorMonReq         // for learning about new tasks
 	timer         *time.Timer                      // triggers check()
 	errChan       chan<- error                     // error feedback to main loop
-	bpIdLock      sync.Mutex                       // control access to mapBpIdToTask
-	taskIdLock    sync.Mutex                       // control access to task slices within mapBpIdToTask
+	lock          sync.Mutex                       // control access to mapBpIdToTask
 	tmQuit        <-chan struct{}
 }
 
@@ -156,17 +155,15 @@ func (o *taskMonitor) run() {
 			go o.check()
 		case newTask := <-o.taskInChan: // new task event
 			o.timer.Stop() // timer may be about to fire, but we're already running
-			o.bpIdLock.Lock()
+			o.lock.Lock()
 			if _, found := o.mapBpIdToTask[newTask.bluePrintId]; found {
 				// existing blueprint, append new task to the slice
-				o.taskIdLock.Lock()
 				o.mapBpIdToTask[newTask.bluePrintId] = append(o.mapBpIdToTask[newTask.bluePrintId], newTask)
-				o.taskIdLock.Unlock()
 			} else {
 				// new blueprint, create the task slice
 				o.mapBpIdToTask[newTask.bluePrintId] = []taskMontiorMonReq{newTask}
 			}
-			o.bpIdLock.Unlock()
+			o.lock.Unlock()
 			o.timer.Reset(taskMonFirstCheckDelay)
 		case <-o.tmQuit: // program exit
 			return
@@ -176,7 +173,6 @@ func (o *taskMonitor) run() {
 
 func (o *taskMonitor) checkBlueprints() {
 	// loop over blueprints known to have outstanding tasks
-	o.bpIdLock.Lock()
 BlueprintLoop:
 	for bpId := range o.mapBpIdToTask {
 		var taskIdList []TaskId
@@ -258,7 +254,6 @@ TaskLoop:
 		// remove this task from the list of monitored tasks
 		o.mapBpIdToTask[bpId] = append(o.mapBpIdToTask[bpId][:i], o.mapBpIdToTask[bpId][i+1:]...)
 	} // TaskLoop
-	o.taskIdLock.Unlock()
 }
 
 // check
@@ -266,14 +261,17 @@ TaskLoop:
 //             invokes checkTasksInBlueprint
 //   resets timer (maybe)
 func (o *taskMonitor) check() {
+	//todo blueprint lock should wrap this whole function?
+	o.lock.Lock()
 	o.checkBlueprints()
 	if len(o.mapBpIdToTask) > 0 {
 		o.timer.Reset(taskMonPollInterval)
 	}
+	o.lock.Unlock()
 }
 
 // taskListToFilterExpr returns the supplied []ObjectId as a string prepped for
-// Apstra's API response filter. Something like: "id in ['abc','def']
+// Apstra's API response filter. Something like: "id in ['abc','def']"
 func taskListToFilterExpr(in []TaskId) string {
 	var quotedList []string
 	for i := range in {
