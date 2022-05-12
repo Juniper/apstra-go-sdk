@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -21,13 +22,13 @@ type GetTelemetryServiceMappingResult struct {
 	EnablingError []TelemetryServiceMapping `json:"enabling_error"`
 }
 
-func (o Client) GetTelemetryServicesDeviceMapping() (*GetTelemetryServiceMappingResult, error) {
+func (o Client) GetTelemetryServicesDeviceMapping(ctx context.Context) (*GetTelemetryServiceMappingResult, error) {
 	apstraUrl, err := url.Parse(apiUrlTelemetryServices)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlTelemetryServices, err)
 	}
 	result := &GetTelemetryServiceMappingResult{}
-	return result, o.talkToApstra(&talkToApstraIn{
+	return result, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: result,

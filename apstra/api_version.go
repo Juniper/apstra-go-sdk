@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -17,13 +18,13 @@ type VersionResponse struct {
 	Minor   string `json:"minor"`
 }
 
-func (o Client) getVersion() (*VersionResponse, error) {
+func (o Client) getVersion(ctx context.Context) (*VersionResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersion)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
 	}
 	response := &VersionResponse{}
-	return response, o.talkToApstra(&talkToApstraIn{
+	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,

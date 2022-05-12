@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -100,8 +101,8 @@ type GetBlueprintResponse struct {
 }
 
 // getAllBlueprintIds returns the Ids of all blueprints
-func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
-	response, err := o.getBluePrints()
+func (o Client) getAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
+	response, err := o.getBluePrints(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error calling getBluePrints - %w", err)
 	}
@@ -113,26 +114,26 @@ func (o Client) getAllBlueprintIds() ([]ObjectId, error) {
 	return result, nil
 }
 
-func (o Client) getBluePrints() (*getBlueprintsResponse, error) {
+func (o Client) getBluePrints(ctx context.Context) (*getBlueprintsResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlBlueprints)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints, err)
 	}
 	response := &getBlueprintsResponse{}
-	return response, o.talkToApstra(&talkToApstraIn{
+	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,
 	})
 }
 
-func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
+func (o Client) getBlueprint(ctx context.Context, in ObjectId) (*GetBlueprintResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlBlueprintsPrefix + string(in))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlBlueprints+string(in), err)
 	}
 	response := &GetBlueprintResponse{}
-	return response, o.talkToApstra(&talkToApstraIn{
+	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,
@@ -186,7 +187,7 @@ type SecurityZone struct {
 	VlanId          int      `json:"vlan_id"`
 }
 
-func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (*objectIdResponse, error) {
+func (o Client) createRoutingZone(ctx context.Context, cfg *CreateRoutingZoneCfg) (*objectIdResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlRoutingZonePrefix + string(cfg.BlueprintId) + apiUrlRoutingZoneSuffix)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(cfg.BlueprintId)+apiUrlRoutingZoneSuffix, err)
@@ -199,21 +200,21 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (*objectIdResponse,
 		Label:           cfg.Label,
 	}
 	result := &objectIdResponse{}
-	return result, o.talkToApstra(&talkToApstraIn{
+	return result, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		url:         apstraUrl,
 		apiInput:    toServer,
 		apiResponse: result,
 	})
 }
-func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZone, error) {
+func (o Client) getRoutingZone(ctx context.Context, blueprintId ObjectId, zone ObjectId) (*SecurityZone, error) {
 	urlString := apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix + string(zone)
 	apstraUrl, err := url.Parse(urlString)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlString, err)
 	}
 	result := &SecurityZone{}
-	return result, o.talkToApstra(&talkToApstraIn{
+	return result, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiInput:    nil,
@@ -222,14 +223,14 @@ func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZo
 	})
 }
 
-func (o Client) getAllRoutingZones(blueprintId ObjectId) ([]SecurityZone, error) {
+func (o Client) getAllRoutingZones(ctx context.Context, blueprintId ObjectId) ([]SecurityZone, error) {
 	urlString := apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix
 	apstraUrl, err := url.Parse(urlString)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlString, err)
 	}
 	response := &getAllSecurityZonesResponse{}
-	err = o.talkToApstra(&talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiInput:    nil,
@@ -246,12 +247,12 @@ func (o Client) getAllRoutingZones(blueprintId ObjectId) ([]SecurityZone, error)
 	return result, nil
 }
 
-func (o Client) deleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
+func (o Client) deleteRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) error {
 	apstraUrl, err := url.Parse(apiUrlRoutingZonePrefix + string(blueprintId) + apiUrlRoutingZoneSuffix + string(zoneId))
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(blueprintId)+apiUrlRoutingZoneSuffix+string(zoneId), err)
 	}
-	return o.talkToApstra(&talkToApstraIn{
+	return o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		url:    apstraUrl,
 	})

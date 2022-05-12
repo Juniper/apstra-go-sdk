@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -135,7 +136,7 @@ func newTaskMonitor(c *Client) *taskMonitor {
 		timer:                time.NewTimer(0),
 		client:               c,
 		taskInChan:           c.taskMonChan,
-		errChan:              c.cfg.errChan,
+		errChan:              c.cfg.ErrChan,
 		mapBpIdToSliceTaskId: make(map[ObjectId][]TaskId),
 		mapTaskIdToChan:      make(map[TaskId]chan<- *taskCompleteInfo),
 	}
@@ -196,7 +197,7 @@ func (o *taskMonitor) checkBlueprints() {
 BlueprintLoop:
 	for bpId, taskIdList := range o.mapBpIdToSliceTaskId {
 		// get task result info from Apstra
-		taskIdToStatus, err := o.client.getBlueprintTasksStatus(bpId, taskIdList)
+		taskIdToStatus, err := o.client.getBlueprintTasksStatus(o.client.ctx, bpId, taskIdList)
 		if err != nil {
 			err = fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
 			// todo: not happy with this error handling
@@ -259,7 +260,7 @@ TaskLoop:
 
 		// if we got here, we're able to return a recognized and conclusive
 		// task status result to the caller. Fetch the full details from Apstra.
-		taskInfo, err := o.client.getBlueprintTaskStatusById(bpId, taskId)
+		taskInfo, err := o.client.getBlueprintTaskStatusById(o.client.ctx, bpId, taskId)
 		o.mapTaskIdToChan[taskId] <- &taskCompleteInfo{
 			status: taskInfo,
 			err:    err,
@@ -296,7 +297,7 @@ func taskListToFilterExpr(in []TaskId) string {
 
 // getBlueprintTasksStatus returns a map of TaskId to status (strings like
 // "succeeded", "init", etc...)
-func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map[TaskId]string, error) {
+func (o Client) getBlueprintTasksStatus(ctx context.Context, bpid ObjectId, taskIdList []TaskId) (map[TaskId]string, error) {
 	apstraUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix)
 	apstraUrl.RawQuery = url.Values{"filter": []string{taskListToFilterExpr(taskIdList)}}.Encode()
 	if err != nil {
@@ -304,7 +305,7 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix, err)
 	}
 	response := &getAllTasksResponse{}
-	err = o.talkToApstra(&talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiInput:    nil,
@@ -314,9 +315,6 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map
 	if err != nil {
 		return nil, fmt.Errorf("error getting getAllTasksResponse for blueprint '%s' - %w", bpid, err)
 	}
-
-	// todo: compare the submitted taskIdList against the server's response.
-	//  what if we're trying to track tasks the server doesn't know about?
 
 	result := make(map[TaskId]string)
 	for _, i := range response.Items {
@@ -331,14 +329,14 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map
 	return result, nil
 }
 
-func (o Client) getBlueprintTaskStatusById(bpid ObjectId, tid TaskId) (*getTaskResponse, error) {
+func (o Client) getBlueprintTaskStatusById(ctx context.Context, bpid ObjectId, tid TaskId) (*getTaskResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix + string(tid))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w",
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix+string(tid), err)
 	}
 	result := &getTaskResponse{}
-	return result, o.talkToApstra(&talkToApstraIn{
+	return result, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiInput:    nil,

@@ -61,9 +61,12 @@ func (o Client) craftUrl(in *talkToApstraIn) *url.URL {
 // talkToApstra talks to the Apstra server using in.method. If in.apiInput is
 // not nil, it JSON-encodes that data structure and sends it. In case the
 // in.apiResponse is not nil, the server response is extracted into it.
-func (o Client) talkToApstra(in *talkToApstraIn) error {
+func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	var err error
 	var requestBody []byte
+	if ctx == nil {
+		ctx = context.TODO()
+	}
 
 	// create URL
 	apstraUrl := o.craftUrl(in)
@@ -76,17 +79,19 @@ func (o Client) talkToApstra(in *talkToApstraIn) error {
 		}
 	}
 
-	// wrap context with timeout
-	ctx, cancel := context.WithTimeout(o.cfg.Ctx, o.cfg.Timeout)
-	defer cancel()
+	// wrap supplied context with timeout (maybe)
+	_, contextHasDeadline := ctx.Deadline()
+	if o.cfg.Timeout != 0 && !contextHasDeadline {
+		var cancel func()
+		ctx, cancel = context.WithTimeout(ctx, o.cfg.Timeout)
+		defer cancel()
+	}
 
 	// create request
 	req, err := http.NewRequestWithContext(ctx, string(in.method), apstraUrl.String(), bytes.NewReader(requestBody))
 	if err != nil {
 		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
-
-	// todo: constant http.MethodGET (etc...)
 
 	// set request httpHeaders
 	if in.apiInput != nil {
@@ -128,14 +133,14 @@ func (o Client) talkToApstra(in *talkToApstraIn) error {
 			}
 
 			// Try logging in
-			err := o.login() //todo: this thing should set doNotLogin when invoking talkToApstra
+			err := o.login(ctx) //todo: this thing should set doNotLogin when invoking talkToApstra
 			if err != nil {
 				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
 			}
 
 			// Try the request again
 			in.doNotLogin = true
-			return o.talkToApstra(in)
+			return o.talkToApstra(ctx, in)
 		} // HTTP 401
 
 		return newTalkToApstraErr(req, requestBody, resp, "")

@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -66,13 +67,13 @@ type StreamingConfigParams struct {
 	Port           uint16 `json:"port"`
 }
 
-func (o Client) getAllStreamingConfigs() ([]StreamingConfigInfo, error) {
+func (o Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigInfo, error) {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
 	}
 	gscr := &getStreamingConfigsResponse{}
-	err = o.talkToApstra(&talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiInput:    nil,
@@ -90,26 +91,26 @@ func (o Client) getAllStreamingConfigs() ([]StreamingConfigInfo, error) {
 	return result, nil
 }
 
-func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
+func (o Client) getStreamingConfig(ctx context.Context, id ObjectId) (*StreamingConfigInfo, error) {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig + string(id))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+string(id), err)
 	}
 	result := &StreamingConfigInfo{}
-	return result, o.talkToApstra(&talkToApstraIn{
+	return result, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: result,
 	})
 }
 
-func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (*objectIdResponse, error) {
+func (o Client) newStreamingConfig(ctx context.Context, cfg *StreamingConfigParams) (*objectIdResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
 	}
 	result := &objectIdResponse{}
-	return result, o.talkToApstra(&talkToApstraIn{
+	return result, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		url:         apstraUrl,
 		apiInput:    cfg,
@@ -117,12 +118,12 @@ func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (*objectIdRespons
 	})
 }
 
-func (o Client) deleteStreamingConfig(id ObjectId) error {
+func (o Client) deleteStreamingConfig(ctx context.Context, id ObjectId) error {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig + "/" + string(id))
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+"/"+string(id), err)
 	}
-	return o.talkToApstra(&talkToApstraIn{
+	return o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		url:    apstraUrl,
 	})
@@ -132,8 +133,8 @@ func (o Client) deleteStreamingConfig(id ObjectId) error {
 // Receivers) against the supplied StreamingConfigInfo. If the stream seems
 // to already exist on the AOS server, the returned ObjectId will be
 // populated. If not found, it will be empty.
-func (o Client) GetStreamingConfigIDByCfg(in *StreamingConfigParams) (ObjectId, error) {
-	all, err := o.getAllStreamingConfigs()
+func (o Client) GetStreamingConfigIDByCfg(ctx context.Context, in *StreamingConfigParams) (ObjectId, error) {
+	all, err := o.getAllStreamingConfigs(ctx)
 	if err != nil {
 		return "", fmt.Errorf("error getting streaming configs - %w", err)
 	}

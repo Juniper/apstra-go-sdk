@@ -24,16 +24,15 @@ const (
 
 // ClientCfg passed to NewClient() when instantiating a new Client{}
 type ClientCfg struct {
-	Scheme    string
-	Host      string
-	Port      uint16
-	User      string
-	Pass      string
-	TlsConfig *tls.Config
-	Ctx       context.Context
-	Timeout   time.Duration
-	cancel    func()
-	errChan   chan<- error
+	Scheme    string          // "https", probably
+	Host      string          // "apstra.company.com" or "192.168.10.10"
+	Port      uint16          // 443, maybe? omit for default httpClient behavior"
+	User      string          // Apstra API/UI username
+	Pass      string          // Apstra API/UI password
+	TlsConfig *tls.Config     // optional, used with https transactions
+	Timeout   time.Duration   // when non-zero, http transactions will be wrapped with a timeout context
+	ErrChan   chan<- error    // async client errors (apstra task polling, etc) sent here
+	ctx       context.Context // used for async operations (apstra task polling, etc)
 }
 
 // TaskId represents outstanding tasks on an Apstra server
@@ -61,20 +60,11 @@ type Client struct {
 	httpHeaders map[string]string       // default set of http headers
 	tmQuit      chan struct{}           // task monitor exit trigger
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
+	ctx         context.Context         // copied from ClientCfg, for async operations
 }
 
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
-	if cfg.Ctx == nil {
-		cfg.Ctx = context.TODO() // default context
-	}
-	if cfg.Timeout == 0 { // todo: not this, just don't wrap with timeoutCtx when zero
-		cfg.Timeout = defaultTimeout // default timeout
-	}
-	ctxCancel, cancel := context.WithCancel(cfg.Ctx)
-	cfg.Ctx = ctxCancel
-	cfg.cancel = cancel
-
 	baseUrlString := fmt.Sprintf("%s://%s:%d", cfg.Scheme, cfg.Host, cfg.Port)
 	baseUrl, err := url.Parse(baseUrlString)
 	if err != nil {
@@ -87,6 +77,12 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		},
 	}
 
+	var ctx context.Context
+	if cfg.ctx == nil {
+		ctx = context.TODO()
+	} else {
+		ctx = cfg.ctx
+	}
 	c := &Client{
 		cfg:         cfg,
 		baseUrl:     baseUrl,
@@ -94,13 +90,12 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
+		ctx:         ctx,
 	}
 
 	newTaskMonitor(c).start(c.tmQuit)
 	return c, nil
 }
-
-// todo: add context input to all public Client methods
 
 // ServerName returns the name of the AOS server this client has been configured to use
 func (o Client) ServerName() string {
@@ -111,17 +106,17 @@ func (o Client) ServerName() string {
 // Apstra API, retrieves an authorization token. It is optional. If the client
 // is not already logged in, Apstra will send HTTP 401. The client will log
 // itself in and resubmit the request.
-func (o *Client) Login() error {
-	return o.login()
+func (o *Client) Login(ctx context.Context) error {
+	return o.login(ctx)
 }
 
-func (o *Client) login() error {
+func (o *Client) login(ctx context.Context) error {
 	apstraUrl, err := url.Parse(apiUrlUserLogin)
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogin, err)
 	}
 	response := &userLoginResponse{}
-	err = o.talkToApstra(&talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPost,
 		url:    apstraUrl,
 		apiInput: &userLoginRequest{
@@ -141,18 +136,18 @@ func (o *Client) login() error {
 }
 
 // Logout invalidates the Apstra API token held by Client
-func (o Client) Logout() error {
-	return o.logout()
+func (o Client) Logout(ctx context.Context) error {
+	return o.logout(ctx)
 }
 
-func (o Client) logout() error {
+func (o Client) logout(ctx context.Context) error {
 	defer close(o.tmQuit) // shut down the task monitor gothread
 
 	apstraUrl, err := url.Parse(apiUrlUserLogout)
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogout, err)
 	}
-	err = o.talkToApstra(&talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPost,
 		url:    apstraUrl,
 	})
@@ -166,32 +161,32 @@ func (o Client) logout() error {
 // functions below here are implemented in other files.
 
 // GetAllBlueprintIds returns a slice of IDs representing all blueprints
-func (o Client) GetAllBlueprintIds() ([]ObjectId, error) {
-	return o.getAllBlueprintIds()
+func (o Client) GetAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
+	return o.getAllBlueprintIds(ctx)
 }
 
 // GetBlueprint returns *GetBlueprintResponse detailing the requested blueprint
-func (o Client) GetBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
-	return o.getBlueprint(in)
+func (o Client) GetBlueprint(ctx context.Context, in ObjectId) (*GetBlueprintResponse, error) {
+	return o.getBlueprint(ctx, in)
 }
 
 // GetStreamingConfig returns a slice of *StreamingConfigInfo representing
 // the requested Apstra streaming configs / receivers
-func (o Client) GetStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
-	return o.getStreamingConfig(id)
+func (o Client) GetStreamingConfig(ctx context.Context, id ObjectId) (*StreamingConfigInfo, error) {
+	return o.getStreamingConfig(ctx, id)
 }
 
 // NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the
 // Apstra server.
-func (o Client) NewStreamingConfig(cfg *StreamingConfigParams) (ObjectId, error) {
-	response, err := o.newStreamingConfig(cfg)
+func (o Client) NewStreamingConfig(ctx context.Context, cfg *StreamingConfigParams) (ObjectId, error) {
+	response, err := o.newStreamingConfig(ctx, cfg)
 	return response.Id, err
 }
 
 // DeleteStreamingConfig deletes the specified streaming config / receiver from
 // the Apstra server configuration.
-func (o Client) DeleteStreamingConfig(id ObjectId) error {
-	return o.deleteStreamingConfig(id)
+func (o Client) DeleteStreamingConfig(ctx context.Context, id ObjectId) error {
+	return o.deleteStreamingConfig(ctx, id)
 }
 
 // todo restore this function
@@ -202,8 +197,8 @@ func (o Client) DeleteStreamingConfig(id ObjectId) error {
 //}
 
 // CreateRoutingZone creates an Apstra Routing Zone / Security Zone / VRF
-func (o Client) CreateRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
-	response, err := o.createRoutingZone(cfg)
+func (o Client) CreateRoutingZone(ctx context.Context, cfg *CreateRoutingZoneCfg) (ObjectId, error) {
+	response, err := o.createRoutingZone(ctx, cfg)
 	if err != nil {
 		return "", err
 	}
@@ -211,12 +206,12 @@ func (o Client) CreateRoutingZone(cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 }
 
 // DeleteRoutingZone deletes an Apstra Routing Zone / Security Zone / VRF
-func (o Client) DeleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
-	return o.deleteRoutingZone(blueprintId, zoneId)
+func (o Client) DeleteRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) error {
+	return o.deleteRoutingZone(ctx, blueprintId, zoneId)
 }
 
 // GetRoutingZones returns all Apstra Routing Zones / Security Zones / VRFs
 // associated with the specified blueprint
-func (o Client) GetRoutingZones(blueprintId ObjectId) ([]SecurityZone, error) {
-	return o.getAllRoutingZones(blueprintId)
+func (o Client) GetRoutingZones(ctx context.Context, blueprintId ObjectId) ([]SecurityZone, error) {
+	return o.getAllRoutingZones(ctx, blueprintId)
 }
