@@ -35,7 +35,7 @@ type ClientCfg struct {
 	Port      uint16
 	User      string
 	Pass      string
-	TlsConfig *tls.Config //todo needs to be a pointer
+	TlsConfig *tls.Config
 	Ctx       context.Context
 	Timeout   time.Duration
 	cancel    func()
