@@ -1,4 +1,4 @@
-package aosStreamTarget
+package apstraStreamTarget
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/chrismarget-j/apstraTelemetry/aosSdk"
+	"github.com/chrismarget-j/apstraTelemetry/apstra"
 	"google.golang.org/protobuf/proto"
 	"io"
 	"net"
@@ -18,7 +18,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/chrismarget-j/apstraTelemetry/aosStreaming"
+	"github.com/chrismarget-j/apstraTelemetry/apstraStreaming"
 )
 
 const (
@@ -50,7 +50,7 @@ type StreamTargetCfg struct {
 type StreamingMessage struct {
 	SequencingMode string
 	StreamingType  string
-	Message        *aosStreaming.AosMessage
+	Message        *apstraStreaming.AosMessage
 	SequenceNum    *uint64
 }
 
@@ -108,15 +108,15 @@ func NewStreamTarget(cfg *StreamTargetCfg) (*StreamTarget, error) {
 // StreamTarget is a listener for AOS streaming objects
 type StreamTarget struct {
 	tlsConfig *tls.Config            // if we're a TLS listener
-	nl        net.Listener           // clients (aos server) connect here
+	nl        net.Listener           // clients (apstra server) connect here
 	stopChan  chan struct{}          // close to rip everythign down
 	errChan   chan error             // client handlers pass errors here
 	msgChan   chan *StreamingMessage // client handlers pass messages here
 	clientWG  sync.WaitGroup         // keeps track of client handlers
 	cfg       *StreamTargetCfg       // submitted by caller
-	aosIP     *net.IP                // for filtering incoming connections
-	strmCfgId aosSdk.ObjectId        // AOS streaming ID, populated by Register
-	client    *aosSdk.Client         // populated by Register, we hang onto it for Unregister
+	apstraIP  *net.IP                // for filtering incoming connections
+	strmCfgId apstra.ObjectId        // AOS streaming ID, populated by Register
+	client    *apstra.Client         // populated by Register, we hang onto it for Unregister
 }
 
 // Start loops forever handling new connections from the AOS streaming service
@@ -244,13 +244,13 @@ func (o *StreamTarget) handleClientConn(conn net.Conn, msgChan chan<- *Streaming
 }
 
 func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
-	var msgOut aosStreaming.AosMessage
+	var msgOut apstraStreaming.AosMessage
 	var seqPtr *uint64
 
 	// extract AosMessage from AosSequencedMessage wrapper if configured for StreamingConfigSequencingModeSequenced
-	if o.cfg.SequencingMode == aosSdk.StreamingConfigSequencingModeSequenced {
-		var seqMsg aosStreaming.AosSequencedMessage // outer wrapper structure
-		err := proto.Unmarshal(in, &seqMsg)         // unwrap inner message
+	if o.cfg.SequencingMode == apstra.StreamingConfigSequencingModeSequenced {
+		var seqMsg apstraStreaming.AosSequencedMessage // outer wrapper structure
+		err := proto.Unmarshal(in, &seqMsg)            // unwrap inner message
 		if err != nil {
 			return nil, err
 		}
@@ -273,26 +273,26 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 // to AOS when configuring the streaming config / receiver. If it's empty, we
 // attempt to determine the local IP nearest to the AOS server, use that value
 // (as a string)
-func (o *StreamTarget) Register(client *aosSdk.Client) error {
+func (o *StreamTarget) Register(client *apstra.Client) error {
 	// figure out what the AOS server should call us (string: IP or DNS name)
-	var aosTargetHostname string
+	var apstraTargetHostname string
 	switch o.cfg.AosTargetHostname {
 	case "": // no value supplied - find a local IP
 		ourIp, err := ourIpForPeer(net.ParseIP(client.ServerName()))
 		if err != nil {
 			return fmt.Errorf("error determinging local IP for AOS '%s' streaming config - %w", client.ServerName(), err)
 		}
-		aosTargetHostname = ourIp.String()
+		apstraTargetHostname = ourIp.String()
 	default: // use whatever is in our configuration
-		aosTargetHostname = o.cfg.AosTargetHostname
+		apstraTargetHostname = o.cfg.AosTargetHostname
 	}
 
 	// Register this target with Apstra
-	id, err := client.NewStreamingConfig(&aosSdk.StreamingConfigParams{
+	id, err := client.NewStreamingConfig(&apstra.StreamingConfigParams{
 		StreamingType:  o.cfg.StreamingType,
 		SequencingMode: o.cfg.SequencingMode,
 		Protocol:       o.cfg.Protocol,
-		Hostname:       aosTargetHostname,
+		Hostname:       apstraTargetHostname,
 		Port:           o.cfg.Port,
 	})
 	if err != nil {

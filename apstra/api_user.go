@@ -1,4 +1,4 @@
-package aosSdk
+package apstra
 
 const (
 	apiUrlUserLogin  = "/api/user/login"

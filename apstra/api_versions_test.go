@@ -1,8 +1,8 @@
-package aosSdk
+package apstra
 
 import (
-	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func telemetryServicesTestClient1() (*Client, error) {
+func clientTestVersionsCfg1() (*ClientCfg, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -35,36 +35,41 @@ func telemetryServicesTestClient1() (*Client, error) {
 		return nil, fmt.Errorf("error converting '%s' to integer - %w", portstr, err)
 	}
 
-	return NewClient(&ClientCfg{
+	return &ClientCfg{
 		Scheme:    scheme,
 		Host:      host,
 		Port:      uint16(port),
 		User:      user,
 		Pass:      pass,
-		TlsConfig: tls.Config{InsecureSkipVerify: true},
-	})
+		TlsConfig: &tls.Config{InsecureSkipVerify: true},
+	}, nil
 }
 
-func TestGetTelemetryServicesDeviceMapping(t *testing.T) {
-	client, err := telemetryServicesTestClient1()
+func TestGetVersionsServer(t *testing.T) {
+	cfg, err := clientTestVersionsCfg1()
 	if err != nil {
-		log.Fatalln(err)
+		t.Fatal(err)
 	}
+
+	client, err := NewClient(cfg)
 	err = client.Login()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer client.Logout()
 
-	result, err := client.GetTelemetryServicesDeviceMapping()
+	response, err := client.getVersionsServer()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	buf := bytes.NewBuffer([]byte{})
-	err = pp(result, buf)
+	body, err := json.Marshal(response)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Println(buf.String())
+
+	log.Println(string(body))
 }

@@ -1,4 +1,4 @@
-package aosSdk
+package apstra
 
 import (
 	"encoding/json"
@@ -297,16 +297,16 @@ func taskListToFilterExpr(in []TaskId) string {
 // getBlueprintTasksStatus returns a map of TaskId to status (strings like
 // "succeeded", "init", etc...)
 func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map[TaskId]string, error) {
-	aosUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix)
-	aosUrl.RawQuery = url.Values{"filter": []string{taskListToFilterExpr(taskIdList)}}.Encode()
+	apstraUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix)
+	apstraUrl.RawQuery = url.Values{"filter": []string{taskListToFilterExpr(taskIdList)}}.Encode()
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w",
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix, err)
 	}
 	response := &getAllTasksResponse{}
-	err = o.talkToAos(&talkToAosIn{
+	err = o.talkToApstra(&talkToApstraIn{
 		method:      http.MethodGet,
-		url:         aosUrl,
+		url:         apstraUrl,
 		apiInput:    nil,
 		apiResponse: response,
 		doNotLogin:  false,
@@ -332,15 +332,15 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map
 }
 
 func (o Client) getBlueprintTaskStatusById(bpid ObjectId, tid TaskId) (*getTaskResponse, error) {
-	aosUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix + string(tid))
+	apstraUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix + string(tid))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w",
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix+string(tid), err)
 	}
 	result := &getTaskResponse{}
-	return result, o.talkToAos(&talkToAosIn{
+	return result, o.talkToApstra(&talkToApstraIn{
 		method:      http.MethodGet,
-		url:         aosUrl,
+		url:         apstraUrl,
 		apiInput:    nil,
 		apiResponse: result,
 		doNotLogin:  false,

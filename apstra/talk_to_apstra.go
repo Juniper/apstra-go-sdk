@@ -1,4 +1,4 @@
-package aosSdk
+package apstra
 
 import (
 	"bufio"
@@ -21,8 +21,8 @@ const (
 	peekSizeForApstraTaskIdResponse = math.MaxUint8
 )
 
-// talkToAosIn is the input structure for the Client.talkToAos() function
-type talkToAosIn struct {
+// talkToApstraIn is the input structure for the Client.talkToApstra() function
+type talkToApstraIn struct {
 	method         string      // how to talk to Apstra
 	url            *url.URL    // where to talk to Aptstra (as little as /path/to/thing ok)
 	apiInput       interface{} // if non-nil we'll JSON encode this prior to sending it
@@ -34,11 +34,11 @@ type talkToAosIn struct {
 // craftUrl combines o.baseUrl (probably "http://host:port") with in.url
 // (probably "/api/something/something", might have a query string).
 // The assumption is that o.baseUrl contains the scheme, host (host+port) and
-// leading path components, while `in` (talkToAosIn) is responsible for the
+// leading path components, while `in` (talkToApstraIn) is responsible for the
 // path to the specific API endpoint and any required query parameters.
 // When `in.unsychronized` is false (the default), Apstra's 'async=full' query
 // string parameter is added to the returned result.
-func (o Client) craftUrl(in *talkToAosIn) *url.URL {
+func (o Client) craftUrl(in *talkToApstraIn) *url.URL {
 	result := in.url
 	if result.Scheme == "" {
 		result.Scheme = o.baseUrl.Scheme // copy baseUrl scheme
@@ -58,21 +58,21 @@ func (o Client) craftUrl(in *talkToAosIn) *url.URL {
 	return result
 }
 
-// talkToAos talks to the Apstra server using in.method. If in.apiInput is
+// talkToApstra talks to the Apstra server using in.method. If in.apiInput is
 // not nil, it JSON-encodes that data structure and sends it. In case the
 // in.apiResponse is not nil, the server response is extracted into it.
-func (o Client) talkToAos(in *talkToAosIn) error {
+func (o Client) talkToApstra(in *talkToApstraIn) error {
 	var err error
 	var requestBody []byte
 
 	// create URL
-	aosUrl := o.craftUrl(in)
+	apstraUrl := o.craftUrl(in)
 
 	// are we sending data to the server?
 	if in.apiInput != nil {
 		requestBody, err = json.Marshal(in.apiInput)
 		if err != nil {
-			return fmt.Errorf("error marshaling payload in talkToAos for url '%s' - %w", in.url, err)
+			return fmt.Errorf("error marshaling payload in talkToApstra for url '%s' - %w", in.url, err)
 		}
 	}
 
@@ -81,7 +81,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	defer cancel()
 
 	// create request
-	req, err := http.NewRequestWithContext(ctx, string(in.method), aosUrl.String(), bytes.NewReader(requestBody))
+	req, err := http.NewRequestWithContext(ctx, string(in.method), apstraUrl.String(), bytes.NewReader(requestBody))
 	if err != nil {
 		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
@@ -100,7 +100,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	resp, err := o.httpClient.Do(req)
 
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
-	req.Header.Del(aosAuthHeader)
+	req.Header.Del(apstraAuthHeader)
 	if err != nil { // check error from req.Do()
 		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
@@ -115,30 +115,30 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		if resp.StatusCode == 401 {
 			// Auth fail at login API is fatal for this transaction
 			if in.url.String() == apiUrlUserLogin {
-				return newTalkToAosErr(req, requestBody, resp,
+				return newTalkToApstraErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' - check username/password",
 						resp.StatusCode, in.url))
 			}
 
 			// Auth fail with "doNotLogin == true" is fatal for this transaction
 			if in.doNotLogin {
-				return newTalkToAosErr(req, requestBody, resp,
+				return newTalkToApstraErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' and doNotLogin is %t",
 						resp.StatusCode, in.url, in.doNotLogin))
 			}
 
 			// Try logging in
-			err := o.login() //todo: this thing should set doNotLogin when invoking talkToAos
+			err := o.login() //todo: this thing should set doNotLogin when invoking talkToApstra
 			if err != nil {
 				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
 			}
 
 			// Try the request again
 			in.doNotLogin = true
-			return o.talkToAos(in)
+			return o.talkToApstra(in)
 		} // HTTP 401
 
-		return newTalkToAosErr(req, requestBody, resp, "")
+		return newTalkToApstraErr(req, requestBody, resp, "")
 	}
 
 	// caller not expecting any response?
@@ -151,7 +151,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	var tIdR taskIdResponse
 	ok, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
 	if err != nil {
-		return newTalkToAosErr(req, requestBody, resp, "")
+		return newTalkToApstraErr(req, requestBody, resp, "")
 	}
 	if !ok {
 		// no task ID, decode response body into the caller-specified structure
@@ -159,7 +159,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 	}
 
 	// we got a task ID, instead of the expected response object
-	bpId, err := blueprintIdFromUrl(aosUrl)
+	bpId, err := blueprintIdFromUrl(apstraUrl)
 	//todo: test this error dummy
 	taskResponse, err := waitForTaskCompletion(bpId, tIdR.TaskId, o.taskMonChan)
 	if err != nil {
@@ -171,20 +171,20 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 
 }
 
-// talkToAosErr implements error{} and carries around http.Request and
+// talkToApstraErr implements error{} and carries around http.Request and
 // http.Response object pointers. Error() method produces a string like
 // "<error> - http response <status> at url <url>".
 // todo: methods like ErrorCRIT() and ErrorWARN()
-type talkToAosErr struct {
+type talkToApstraErr struct {
 	request  *http.Request
 	response *http.Response
 	error    string
 }
 
-func (o talkToAosErr) Error() string {
-	aosUrl := "nil"
+func (o talkToApstraErr) Error() string {
+	apstraUrl := "nil"
 	if o.request != nil {
-		aosUrl = o.request.URL.String()
+		apstraUrl = o.request.URL.String()
 	}
 
 	status := "nil"
@@ -192,34 +192,34 @@ func (o talkToAosErr) Error() string {
 		status = o.response.Status
 	}
 
-	return fmt.Sprintf("%s - http response '%s' at '%s'", o.error, status, aosUrl)
+	return fmt.Sprintf("%s - http response '%s' at '%s'", o.error, status, apstraUrl)
 }
 
-// newTalkToAosErr returns a talkToAosErr. It's intended to be called after the
+// newTalkToApstraErr returns a talkToApstraErr. It's intended to be called after the
 // http.Request has been executed with Do(), so the request body has already
 // been "spent" by Read(). We'll fill it back in. The response body is likely to
 // be closed by a 'defer body.Close()' somewhere, so we'll replace that as well,
 // up to some reasonable limit (don't try to buffer gigabytes of data from the
 // webserver).
-func newTalkToAosErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) talkToAosErr {
-	aosUrl := req.URL.String()
+func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) talkToApstraErr {
+	apstraUrl := req.URL.String()
 	// don't include secret in error
-	req.Header.Del(aosAuthHeader)
+	req.Header.Del(apstraAuthHeader)
 
 	// redact request body for sensitive URLs
-	switch aosUrl {
+	switch apstraUrl {
 	case apiUrlUserLogin:
-		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", aosUrl)))
+		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", apstraUrl)))
 	default:
 		rehydratedRequest := bytes.NewBuffer(reqBody)
 		req.Body = io.NopCloser(rehydratedRequest)
 	}
 
 	// redact response body for sensitive URLs
-	switch aosUrl {
+	switch apstraUrl {
 	case apiUrlUserLogin:
 		_ = resp.Body.Close() // close the real network socket
-		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", aosUrl)))
+		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", apstraUrl)))
 	default:
 		// prepare a stunt double response body for the one that's likely attached to a network
 		// socket, and likely to be closed by a `defer` somewhere
@@ -229,7 +229,7 @@ func newTalkToAosErr(req *http.Request, reqBody []byte, resp *http.Response, err
 		resp.Body = io.NopCloser(rehydratedResponse)                     // replace the original body
 	}
 
-	return talkToAosErr{
+	return talkToApstraErr{
 		request:  req,
 		response: resp,
 		error:    errMsg,

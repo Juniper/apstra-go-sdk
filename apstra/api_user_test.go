@@ -1,4 +1,4 @@
-package aosSdk
+package apstra
 
 import (
 	"crypto/tls"

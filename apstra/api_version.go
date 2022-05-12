@@ -1,4 +1,4 @@
-package aosSdk
+package apstra
 
 import (
 	"fmt"
@@ -18,14 +18,14 @@ type VersionResponse struct {
 }
 
 func (o Client) getVersion() (*VersionResponse, error) {
-	aosUrl, err := url.Parse(apiUrlVersion)
+	apstraUrl, err := url.Parse(apiUrlVersion)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
 	}
 	response := &VersionResponse{}
-	return response, o.talkToAos(&talkToAosIn{
+	return response, o.talkToApstra(&talkToApstraIn{
 		method:      http.MethodGet,
-		url:         aosUrl,
+		url:         apstraUrl,
 		apiResponse: response,
 	})
 }

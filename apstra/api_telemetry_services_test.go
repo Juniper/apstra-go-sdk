@@ -1,8 +1,8 @@
-package aosSdk
+package apstra
 
 import (
+	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func aosVersionTestClient1() (*Client, error) {
+func telemetryServicesTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -45,31 +45,26 @@ func aosVersionTestClient1() (*Client, error) {
 	})
 }
 
-func TestGetVersion(t *testing.T) {
-	client, err := aosVersionTestClient1()
+func TestGetTelemetryServicesDeviceMapping(t *testing.T) {
+	client, err := telemetryServicesTestClient1()
 	if err != nil {
-		t.Fatal(err)
+		log.Fatalln(err)
 	}
-
 	err = client.Login()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.Logout()
 
-	ver, err := client.getVersion()
+	result, err := client.GetTelemetryServicesDeviceMapping()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result, err := json.Marshal(ver)
+	buf := bytes.NewBuffer([]byte{})
+	err = pp(result, buf)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	log.Println(string(result))
-
-	err = client.Logout()
-	if err != nil {
-		t.Fatal(err)
-	}
+	log.Println(buf.String())
 }

@@ -5,9 +5,9 @@
 // versions:
 // 	protoc-gen-go v1.26.0
 // 	protoc        v3.19.4
-// source: aosStreaming/streaming-telemetry.proto
+// source: apstraStreaming/streaming-telemetry.proto
 
-package aosStreaming
+package apstraStreaming
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

@@ -1,26 +1,21 @@
-package aosSdk
+package apstra
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/url"
 	"os"
 	"strconv"
 	"testing"
-	"time"
 )
 
-func blueprintsTestClient1() (*Client, error) {
+func apstraVersionTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
 	host, foundHost := os.LookupEnv(EnvApstraHost)
 	portstr, foundPort := os.LookupEnv(EnvApstraPort)
-	keyLogFile, foundKeyLogFile := os.LookupEnv(EnvApstraApiKeyLogFile)
 
 	switch {
 	case !foundUser:
@@ -35,17 +30,6 @@ func blueprintsTestClient1() (*Client, error) {
 		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraPort)
 	}
 
-	var kl io.Writer
-	var err error
-	if foundKeyLogFile {
-		kl, err = keyLogWriter(keyLogFile)
-		if err != nil {
-			return nil, fmt.Errorf("error creating keyLogWriter - %w", err)
-		}
-	} else {
-		kl = nil
-	}
-
 	port, err := strconv.Atoi(portstr)
 	if err != nil {
 		return nil, fmt.Errorf("error converting '%s' to integer - %w", portstr, err)
@@ -57,52 +41,35 @@ func blueprintsTestClient1() (*Client, error) {
 		Port:      uint16(port),
 		User:      user,
 		Pass:      pass,
-		TlsConfig: tls.Config{InsecureSkipVerify: true, KeyLogWriter: kl},
-		Timeout:   5 * time.Minute,
+		TlsConfig: &tls.Config{InsecureSkipVerify: true},
 	})
 }
 
-func TestGetAllBlueprintIds(t *testing.T) {
-	client, err := blueprintsTestClient1()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer client.Logout()
-
-	blueprints, err := client.GetAllBlueprintIds()
+func TestGetVersion(t *testing.T) {
+	client, err := apstraVersionTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result, err := json.Marshal(blueprints)
+	err = client.Login()
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	ver, err := client.getVersion()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := json.Marshal(ver)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	log.Println(string(result))
-}
 
-func TestCreateRoutingZone(t *testing.T) {
-	client, err := blueprintsTestClient1()
+	err = client.Logout()
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
-
-	result, err := client.createRoutingZone(&CreateRoutingZoneCfg{
-		SzType:      "evpn",
-		VrfName:     "test",
-		Label:       "label-test",
-		BlueprintId: "db10754a-610e-475b-9baa-4c85f82282e8",
-	})
-
-	buf := bytes.Buffer{}
-	pp(result, &buf)
-	log.Print(buf.String())
-}
-
-func TestThing(t *testing.T) {
-	aosUrl, err := url.Parse("/api/foo")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(aosUrl.String())
 }

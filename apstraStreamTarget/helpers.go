@@ -1,4 +1,4 @@
-package aosStreamTarget
+package apstraStreamTarget
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	keyLogFile = ".aosStreamTarget.keys"
+	keyLogFile = ".apstraStreamTarget.keys"
 )
 
 func keyLogWriter() (io.Writer, error) {

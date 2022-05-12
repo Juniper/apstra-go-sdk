@@ -1,4 +1,4 @@
-package aosSdk
+package apstra
 
 import (
 	"context"
@@ -19,7 +19,7 @@ const (
 
 	defaultTimeout = 10 * time.Second
 
-	aosAuthHeader = "Authtoken"
+	apstraAuthHeader = "Authtoken"
 )
 
 // ClientCfg passed to NewClient() when instantiating a new Client{}
@@ -87,7 +87,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		},
 	}
 
-	aosClient := &Client{
+	c := &Client{
 		cfg:         cfg,
 		baseUrl:     baseUrl,
 		httpClient:  httpClient,
@@ -96,8 +96,8 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		taskMonChan: make(chan *taskMonitorMonReq),
 	}
 
-	newTaskMonitor(aosClient).start(aosClient.tmQuit)
-	return aosClient, nil
+	newTaskMonitor(c).start(c.tmQuit)
+	return c, nil
 }
 
 // todo: add context input to all public Client methods
@@ -116,14 +116,14 @@ func (o *Client) Login() error {
 }
 
 func (o *Client) login() error {
-	aosUrl, err := url.Parse(apiUrlUserLogin)
+	apstraUrl, err := url.Parse(apiUrlUserLogin)
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogin, err)
 	}
 	response := &userLoginResponse{}
-	err = o.talkToAos(&talkToAosIn{
+	err = o.talkToApstra(&talkToApstraIn{
 		method: http.MethodPost,
-		url:    aosUrl,
+		url:    apstraUrl,
 		apiInput: &userLoginRequest{
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
@@ -134,8 +134,8 @@ func (o *Client) login() error {
 		return fmt.Errorf("error talking to AOS in Login - %w", err)
 	}
 
-	// stash auth token in client's default set of aos http httpHeaders
-	o.httpHeaders[aosAuthHeader] = response.Token
+	// stash auth token in client's default set of apstra http httpHeaders
+	o.httpHeaders[apstraAuthHeader] = response.Token
 
 	return nil
 }
@@ -148,18 +148,18 @@ func (o Client) Logout() error {
 func (o Client) logout() error {
 	defer close(o.tmQuit) // shut down the task monitor gothread
 
-	aosUrl, err := url.Parse(apiUrlUserLogout)
+	apstraUrl, err := url.Parse(apiUrlUserLogout)
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogout, err)
 	}
-	err = o.talkToAos(&talkToAosIn{
+	err = o.talkToApstra(&talkToApstraIn{
 		method: http.MethodPost,
-		url:    aosUrl,
+		url:    apstraUrl,
 	})
 	if err != nil {
 		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, err)
 	}
-	delete(o.httpHeaders, aosAuthHeader)
+	delete(o.httpHeaders, apstraAuthHeader)
 	return nil
 }
 

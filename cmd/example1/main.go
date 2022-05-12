@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/chrismarget-j/apstraTelemetry/aosSdk"
-	"github.com/chrismarget-j/apstraTelemetry/aosStreamTarget"
+	"github.com/chrismarget-j/apstraTelemetry/apstra"
+	"github.com/chrismarget-j/apstraTelemetry/apstraStreamTarget"
 )
 
 // getConfigIn includes details for the clientCfg (AOS API
@@ -19,9 +19,9 @@ import (
 // point events at our collector) and streamTargetCfg (our listener for AOS
 // protobuf messages)
 type getConfigIn struct {
-	clientCfg             *aosSdk.ClientCfg                 // AOS API client config
-	streamTargetCfg       []aosStreamTarget.StreamTargetCfg // Our protobuf stream listener
-	streamingConfigParams []aosSdk.StreamingConfigParams    // Tell AOS API about our stream listener
+	clientCfg             *apstra.ClientCfg                    // AOS API client config
+	streamTargetCfg       []apstraStreamTarget.StreamTargetCfg // Our protobuf stream listener
+	streamingConfigParams []apstra.StreamingConfigParams       // Tell AOS API about our stream listener
 }
 
 func keyLogWriter() (io.Writer, error) {
@@ -41,29 +41,29 @@ func keyLogWriter() (io.Writer, error) {
 }
 
 func getConfig(in *getConfigIn) error {
-	aosScheme, foundAosScheme := os.LookupEnv(aosSdk.EnvApstraScheme)
-	aosUser, foundAosUser := os.LookupEnv(aosSdk.EnvApstraUser)
-	aosPass, foundAosPass := os.LookupEnv(aosSdk.EnvApstraPass)
-	aosHost, foundAosHost := os.LookupEnv(aosSdk.EnvApstraHost)
-	aosPort, foundAosPort := os.LookupEnv(aosSdk.EnvApstraPort)
-	recHost, foundRecHost := os.LookupEnv(aosStreamTarget.EnvApstraStreamHost)
-	recPort, foundRecPort := os.LookupEnv(aosStreamTarget.EnvApstraStreamBasePort)
+	aosScheme, foundAosScheme := os.LookupEnv(apstra.EnvApstraScheme)
+	aosUser, foundAosUser := os.LookupEnv(apstra.EnvApstraUser)
+	aosPass, foundAosPass := os.LookupEnv(apstra.EnvApstraPass)
+	aosHost, foundAosHost := os.LookupEnv(apstra.EnvApstraHost)
+	aosPort, foundAosPort := os.LookupEnv(apstra.EnvApstraPort)
+	recHost, foundRecHost := os.LookupEnv(apstraStreamTarget.EnvApstraStreamHost)
+	recPort, foundRecPort := os.LookupEnv(apstraStreamTarget.EnvApstraStreamBasePort)
 
 	switch {
 	case !foundAosScheme:
-		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraScheme)
+		return fmt.Errorf("environment variable '%s' not found", apstra.EnvApstraScheme)
 	case !foundAosUser:
-		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraUser)
+		return fmt.Errorf("environment variable '%s' not found", apstra.EnvApstraUser)
 	case !foundAosPass:
-		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPass)
+		return fmt.Errorf("environment variable '%s' not found", apstra.EnvApstraPass)
 	case !foundAosHost:
-		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraHost)
+		return fmt.Errorf("environment variable '%s' not found", apstra.EnvApstraHost)
 	case !foundAosPort:
-		return fmt.Errorf("environment variable '%s' not found", aosSdk.EnvApstraPort)
+		return fmt.Errorf("environment variable '%s' not found", apstra.EnvApstraPort)
 	case !foundRecHost:
-		return fmt.Errorf("environment variable '%s' not found", aosStreamTarget.EnvApstraStreamHost)
+		return fmt.Errorf("environment variable '%s' not found", apstraStreamTarget.EnvApstraStreamHost)
 	case !foundRecPort:
-		return fmt.Errorf("environment variable '%s' not found", aosStreamTarget.EnvApstraStreamBasePort)
+		return fmt.Errorf("environment variable '%s' not found", apstraStreamTarget.EnvApstraStreamBasePort)
 	}
 
 	aosPortInt, err := strconv.Atoi(aosPort)
@@ -86,29 +86,29 @@ func getConfig(in *getConfigIn) error {
 	in.clientCfg.Port = uint16(aosPortInt)
 	in.clientCfg.User = aosUser
 	in.clientCfg.Pass = aosPass
-	in.clientCfg.TlsConfig = tls.Config{
+	in.clientCfg.TlsConfig = &tls.Config{
 		InsecureSkipVerify: true, // todo: something less shameful
 		KeyLogWriter:       klw,
 	}
 
 	for i, streamType := range []string{
-		aosSdk.StreamingConfigStreamingTypeAlerts,
-		aosSdk.StreamingConfigStreamingTypeEvents,
-		aosSdk.StreamingConfigStreamingTypePerfmon,
+		apstra.StreamingConfigStreamingTypeAlerts,
+		apstra.StreamingConfigStreamingTypeEvents,
+		apstra.StreamingConfigStreamingTypePerfmon,
 	} {
-		stc := aosStreamTarget.StreamTargetCfg{
+		stc := apstraStreamTarget.StreamTargetCfg{
 			StreamingType:     streamType,
-			SequencingMode:    aosSdk.StreamingConfigSequencingModeSequenced,
-			Protocol:          aosSdk.StreamingConfigProtocolProtoBufOverTcp,
+			SequencingMode:    apstra.StreamingConfigSequencingModeSequenced,
+			Protocol:          apstra.StreamingConfigProtocolProtoBufOverTcp,
 			AosTargetHostname: recHost,
 			Port:              uint16(i + recPortInt),
 		}
 		in.streamTargetCfg = append(in.streamTargetCfg, stc)
 
-		scp := aosSdk.StreamingConfigParams{
+		scp := apstra.StreamingConfigParams{
 			StreamingType:  streamType,
-			SequencingMode: aosSdk.StreamingConfigProtocolProtoBufOverTcp,
-			Protocol:       aosSdk.StreamingConfigSequencingModeSequenced,
+			SequencingMode: apstra.StreamingConfigProtocolProtoBufOverTcp,
+			Protocol:       apstra.StreamingConfigSequencingModeSequenced,
 			Port:           uint16(i + recPortInt),
 		}
 		in.streamingConfigParams = append(in.streamingConfigParams, scp)
@@ -125,11 +125,11 @@ func main() {
 	// configuration objects
 	//clientCfg := aosSdk.ClientCfg{}                           // config for interacting with AOS API
 	//var streamingConfigs []aosSdk.StreamingConfigParams       // config for pointing event stream at our target
-	//var streamTargetConfigs []aosStreamTarget.StreamTargetCfg // config for our event stream target
+	//var streamTargetConfigs []apstraStreamTarget.StreamTargetCfg // config for our event stream target
 	cfg := getConfigIn{
-		clientCfg:             &aosSdk.ClientCfg{},
-		streamingConfigParams: []aosSdk.StreamingConfigParams{},
-		streamTargetCfg:       []aosStreamTarget.StreamTargetCfg{},
+		clientCfg:             &apstra.ClientCfg{},
+		streamingConfigParams: []apstra.StreamingConfigParams{},
+		streamTargetCfg:       []apstraStreamTarget.StreamTargetCfg{},
 	}
 
 	// populate configuration objects using local function
@@ -140,7 +140,7 @@ func main() {
 
 	// create AOS client
 	// noinspection GoVetCopyLock
-	c, err := aosSdk.NewClient(cfg.clientCfg)
+	c, err := apstra.NewClient(cfg.clientCfg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -149,13 +149,13 @@ func main() {
 	defer c.Logout()
 
 	// create aggregator channels where we'll get messages from all target services
-	msgChan := make(chan *aosStreamTarget.StreamingMessage)
+	msgChan := make(chan *apstraStreamTarget.StreamingMessage)
 	errChan := make(chan error)
 
-	var streamTargets []*aosStreamTarget.StreamTarget
+	var streamTargets []*apstraStreamTarget.StreamTarget
 	for i := range cfg.streamTargetCfg {
 		// create each AOS stream target service
-		st, err := aosStreamTarget.NewStreamTarget(&cfg.streamTargetCfg[i])
+		st, err := apstraStreamTarget.NewStreamTarget(&cfg.streamTargetCfg[i])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -173,7 +173,7 @@ func main() {
 		}
 
 		// copy messages from this target's message channel to aggregated message channel
-		go func(in <-chan *aosStreamTarget.StreamingMessage, out chan<- *aosStreamTarget.StreamingMessage) {
+		go func(in <-chan *apstraStreamTarget.StreamingMessage, out chan<- *apstraStreamTarget.StreamingMessage) {
 			for {
 				out <- <-in
 			}
@@ -200,17 +200,17 @@ MainLoop:
 		// interrupt (ctrl-c or whatever)
 		case <-quitChan:
 			break MainLoop
-		// aosStreamTarget has a message
+		// apstraStreamTarget has a message
 		case msg := <-msgChan:
 			var seqNumStr string
 			switch msg.SequencingMode {
-			case aosSdk.StreamingConfigSequencingModeSequenced:
+			case apstra.StreamingConfigSequencingModeSequenced:
 				seqNumStr = strconv.Itoa(int(*msg.SequenceNum))
-			case aosSdk.StreamingConfigSequencingModeUnsequenced:
+			case apstra.StreamingConfigSequencingModeUnsequenced:
 				seqNumStr = "N/A"
 			}
 			log.Printf("%s / %s / message number %s / %s\n", msg.StreamingType, msg.SequencingMode, seqNumStr, msg.Message)
-		// aosStreamTarget has an error
+		// apstraStreamTarget has an error
 		case err := <-errChan:
 			log.Fatal(err)
 		}

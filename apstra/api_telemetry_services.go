@@ -1,4 +1,4 @@
-package aosSdk
+package apstra
 
 import (
 	"fmt"
@@ -22,14 +22,14 @@ type GetTelemetryServiceMappingResult struct {
 }
 
 func (o Client) GetTelemetryServicesDeviceMapping() (*GetTelemetryServiceMappingResult, error) {
-	aosUrl, err := url.Parse(apiUrlTelemetryServices)
+	apstraUrl, err := url.Parse(apiUrlTelemetryServices)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlTelemetryServices, err)
 	}
 	result := &GetTelemetryServiceMappingResult{}
-	return result, o.talkToAos(&talkToAosIn{
+	return result, o.talkToApstra(&talkToApstraIn{
 		method:      http.MethodGet,
-		url:         aosUrl,
+		url:         apstraUrl,
 		apiResponse: result,
 	})
 }
