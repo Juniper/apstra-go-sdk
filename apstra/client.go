@@ -189,12 +189,11 @@ func (o Client) DeleteStreamingConfig(ctx context.Context, id ObjectId) error {
 	return o.deleteStreamingConfig(ctx, id)
 }
 
-// todo restore this function
-//// GetVersion calls apiUrlVersion, returns the Apstra server version as a
-//// VersionResponse
-//func (o Client) GetVersion() (*VersionResponse, error) {
-//	return o.getVersion()
-//}
+// GetVersion calls apiUrlVersion, returns the Apstra server version as a
+// VersionResponse
+func (o Client) GetVersion(ctx context.Context) (*VersionResponse, error) {
+	return o.getVersion(ctx)
+}
 
 // CreateRoutingZone creates an Apstra Routing Zone / Security Zone / VRF
 func (o Client) CreateRoutingZone(ctx context.Context, cfg *CreateRoutingZoneCfg) (ObjectId, error) {
