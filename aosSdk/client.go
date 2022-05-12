@@ -19,14 +19,8 @@ const (
 
 	defaultTimeout = 10 * time.Second
 
-	httpMethodGet    = httpMethod("GET")
-	httpMethodPost   = httpMethod("POST")
-	httpMethodDelete = httpMethod("DELETE")
-
 	aosAuthHeader = "Authtoken"
 )
-
-type httpMethod string
 
 // ClientCfg passed to NewClient() when instantiating a new Client{}
 type ClientCfg struct {
@@ -128,7 +122,7 @@ func (o *Client) login() error {
 	}
 	response := &userLoginResponse{}
 	err = o.talkToAos(&talkToAosIn{
-		method: httpMethodPost,
+		method: http.MethodPost,
 		url:    aosUrl,
 		apiInput: &userLoginRequest{
 			Username: o.cfg.User,
@@ -159,7 +153,7 @@ func (o Client) logout() error {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogout, err)
 	}
 	err = o.talkToAos(&talkToAosIn{
-		method: httpMethodPost,
+		method: http.MethodPost,
 		url:    aosUrl,
 	})
 	if err != nil {

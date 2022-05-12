@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 )
 
@@ -27,7 +28,7 @@ func (o Client) GetTelemetryServicesDeviceMapping() (*GetTelemetryServiceMapping
 	}
 	result := &GetTelemetryServiceMappingResult{}
 	return result, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: result,
 	})

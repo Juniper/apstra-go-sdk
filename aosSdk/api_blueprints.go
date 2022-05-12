@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"time"
 )
@@ -119,7 +120,7 @@ func (o Client) getBluePrints() (*getBlueprintsResponse, error) {
 	}
 	response := &getBlueprintsResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: response,
 	})
@@ -132,7 +133,7 @@ func (o Client) getBlueprint(in ObjectId) (*GetBlueprintResponse, error) {
 	}
 	response := &GetBlueprintResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: response,
 	})
@@ -199,7 +200,7 @@ func (o Client) createRoutingZone(cfg *CreateRoutingZoneCfg) (*objectIdResponse,
 	}
 	result := &objectIdResponse{}
 	return result, o.talkToAos(&talkToAosIn{
-		method:      httpMethodPost,
+		method:      http.MethodPost,
 		url:         aosUrl,
 		apiInput:    toServer,
 		apiResponse: result,
@@ -213,7 +214,7 @@ func (o Client) getRoutingZone(blueprintId ObjectId, zone ObjectId) (*SecurityZo
 	}
 	result := &SecurityZone{}
 	return result, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
 		apiResponse: result,
@@ -229,7 +230,7 @@ func (o Client) getAllRoutingZones(blueprintId ObjectId) ([]SecurityZone, error)
 	}
 	response := &getAllSecurityZonesResponse{}
 	err = o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
 		apiResponse: response,
@@ -251,7 +252,7 @@ func (o Client) deleteRoutingZone(blueprintId ObjectId, zoneId ObjectId) error {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlRoutingZonePrefix+string(blueprintId)+apiUrlRoutingZoneSuffix+string(zoneId), err)
 	}
 	return o.talkToAos(&talkToAosIn{
-		method: httpMethodDelete,
+		method: http.MethodDelete,
 		url:    aosUrl,
 	})
 }

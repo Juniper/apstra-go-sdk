@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 )
 
@@ -81,7 +82,7 @@ func (o Client) getVersionsAosdi() (*versionsAosdiResponse, error) {
 	}
 	response := &versionsAosdiResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: response,
 	})
@@ -94,7 +95,7 @@ func (o Client) getVersionsApi() (*versionsApiResponse, error) {
 	}
 	response := &versionsApiResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: response,
 	})
@@ -107,7 +108,7 @@ func (o Client) getVersionsBuild() (*versionsBuildResponse, error) {
 	}
 	response := &versionsBuildResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: response,
 	})
@@ -120,7 +121,7 @@ func (o Client) postVersionsDevice(request *versionsDeviceRequest) (*versionsDev
 	}
 	response := &versionsDeviceResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodPost,
+		method:      http.MethodPost,
 		url:         aosUrl,
 		apiInput:    request,
 		apiResponse: response,
@@ -134,7 +135,7 @@ func (o Client) postVersionsIba(request *versionsIbaRequest) (*versionsIbaRespon
 	}
 	response := &versionsIbaResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodPost,
+		method:      http.MethodPost,
 		url:         aosUrl,
 		apiInput:    request,
 		apiResponse: response,
@@ -148,7 +149,7 @@ func (o Client) postVersionsNode(request *versionsNodeRequest) (*versionsNodeRes
 	}
 	response := &versionsNodeResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodPost,
+		method:      http.MethodPost,
 		url:         aosUrl,
 		apiInput:    request,
 		apiResponse: response,
@@ -162,7 +163,7 @@ func (o Client) getVersionsServer() (*versionsServerResponse, error) {
 	}
 	response := &versionsServerResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: response,
 	})

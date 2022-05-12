@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 )
 
@@ -72,7 +73,7 @@ func (o Client) getAllStreamingConfigs() ([]StreamingConfigInfo, error) {
 	}
 	gscr := &getStreamingConfigsResponse{}
 	err = o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
 		apiResponse: gscr,
@@ -96,7 +97,7 @@ func (o Client) getStreamingConfig(id ObjectId) (*StreamingConfigInfo, error) {
 	}
 	result := &StreamingConfigInfo{}
 	return result, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: result,
 	})
@@ -109,7 +110,7 @@ func (o Client) newStreamingConfig(cfg *StreamingConfigParams) (*objectIdRespons
 	}
 	result := &objectIdResponse{}
 	return result, o.talkToAos(&talkToAosIn{
-		method:      httpMethodPost,
+		method:      http.MethodPost,
 		url:         aosUrl,
 		apiInput:    cfg,
 		apiResponse: result,
@@ -122,7 +123,7 @@ func (o Client) deleteStreamingConfig(id ObjectId) error {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+"/"+string(id), err)
 	}
 	return o.talkToAos(&talkToAosIn{
-		method: httpMethodDelete,
+		method: http.MethodDelete,
 		url:    aosUrl,
 	})
 }

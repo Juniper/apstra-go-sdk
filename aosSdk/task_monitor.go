@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync"
@@ -304,7 +305,7 @@ func (o Client) getBlueprintTasksStatus(bpid ObjectId, taskIdList []TaskId) (map
 	}
 	response := &getAllTasksResponse{}
 	err = o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
 		apiResponse: response,
@@ -338,7 +339,7 @@ func (o Client) getBlueprintTaskStatusById(bpid ObjectId, tid TaskId) (*getTaskR
 	}
 	result := &getTaskResponse{}
 	return result, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiInput:    nil,
 		apiResponse: result,

@@ -2,6 +2,7 @@ package aosSdk
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 )
 
@@ -23,7 +24,7 @@ func (o Client) getVersion() (*VersionResponse, error) {
 	}
 	response := &VersionResponse{}
 	return response, o.talkToAos(&talkToAosIn{
-		method:      httpMethodGet,
+		method:      http.MethodGet,
 		url:         aosUrl,
 		apiResponse: response,
 	})

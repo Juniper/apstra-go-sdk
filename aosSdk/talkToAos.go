@@ -23,7 +23,7 @@ const (
 
 // talkToAosIn is the input structure for the Client.talkToAos() function
 type talkToAosIn struct {
-	method         httpMethod  // how to talk to Apstra
+	method         string      // how to talk to Apstra
 	url            *url.URL    // where to talk to Aptstra (as little as /path/to/thing ok)
 	apiInput       interface{} // if non-nil we'll JSON encode this prior to sending it
 	apiResponse    interface{} // if non-nil we'll JSON decode Apstra response here
