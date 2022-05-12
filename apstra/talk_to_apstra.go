@@ -160,13 +160,19 @@ func (o Client) talkToApstra(in *talkToApstraIn) error {
 
 	// we got a task ID, instead of the expected response object
 	bpId, err := blueprintIdFromUrl(apstraUrl)
-	//todo: test this error dummy
+	if err != nil {
+		return fmt.Errorf("error parsing blueprint ID from URL '%s' - %w", apstraUrl.String(), err)
+	}
+
+	// get (wait for) full detailed response on the outstanding task ID
 	taskResponse, err := waitForTaskCompletion(bpId, tIdR.TaskId, o.taskMonChan)
 	if err != nil {
 		return fmt.Errorf("error in task monitor - %w\n API result:\n", err)
 	}
 
-	// todo: sensible comment
+	// the getTaskResponse data structure is only partially unmarshaled because
+	// it's impossible to know exactly what'll be in there. Extract it now into
+	// whatever in.apiResponse (interface{} controlled by the caller) is.
 	return json.Unmarshal(taskResponse.DetailedStatus.ApiResponse, in.apiResponse)
 
 }
