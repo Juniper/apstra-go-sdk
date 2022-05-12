@@ -35,7 +35,7 @@ type ClientCfg struct {
 	Port      uint16
 	User      string
 	Pass      string
-	TlsConfig tls.Config //todo needs to be a pointer
+	TlsConfig *tls.Config //todo needs to be a pointer
 	Ctx       context.Context
 	Timeout   time.Duration
 	cancel    func()
@@ -89,7 +89,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 
 	httpClient := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &cfg.TlsConfig,
+			TLSClientConfig: cfg.TlsConfig,
 		},
 	}
 
