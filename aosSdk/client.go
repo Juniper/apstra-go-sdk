@@ -66,7 +66,7 @@ type Client struct {
 	httpClient  *http.Client
 	httpHeaders map[string]string      // default set of http headers
 	tmQuit      chan struct{}          // task monitor exit trigger
-	taskMonChan chan taskMontiorMonReq // send tasks for monitoring here
+	taskMonChan chan taskMonitorMonReq // send tasks for monitoring here
 }
 
 // NewClient creates a Client object
@@ -99,7 +99,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		httpClient:  httpClient,
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		tmQuit:      make(chan struct{}),
-		taskMonChan: make(chan taskMontiorMonReq),
+		taskMonChan: make(chan taskMonitorMonReq),
 	}
 
 	newTaskMonitor(aosClient).start(aosClient.tmQuit)
