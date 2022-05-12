@@ -274,9 +274,7 @@ TaskLoop:
 // check
 //   invokes checkBlueprints
 //             invokes checkTasksInBlueprint
-//   resets timer (maybe)
 func (o *taskMonitor) check() {
-	//todo blueprint lock should wrap this whole function?
 	o.lock.Lock()
 	o.checkBlueprints()
 	if len(o.mapBpIdToSliceTaskId) > 0 {
