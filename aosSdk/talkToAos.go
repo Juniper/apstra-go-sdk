@@ -86,6 +86,8 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
 
+	// todo: constant http.MethodGET (etc...)
+
 	// set request httpHeaders
 	if in.apiInput != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -126,7 +128,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 			}
 
 			// Try logging in
-			err := o.login()
+			err := o.login() //todo: this thing should set doNotLogin when invoking talkToAos
 			if err != nil {
 				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
 			}
@@ -158,6 +160,7 @@ func (o Client) talkToAos(in *talkToAosIn) error {
 
 	// we got a task ID, instead of the expected response object
 	bpId, err := blueprintIdFromUrl(aosUrl)
+	//todo: test this error dummy
 	taskResponse, err := waitForTaskCompletion(bpId, tIdR.TaskId, o.taskMonChan)
 	if err != nil {
 		return fmt.Errorf("error in task monitor - %w\n API result:\n", err)

@@ -35,7 +35,7 @@ type ClientCfg struct {
 	Port      uint16
 	User      string
 	Pass      string
-	TlsConfig tls.Config
+	TlsConfig tls.Config //todo needs to be a pointer
 	Ctx       context.Context
 	Timeout   time.Duration
 	cancel    func()
@@ -74,7 +74,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	if cfg.Ctx == nil {
 		cfg.Ctx = context.TODO() // default context
 	}
-	if cfg.Timeout == 0 {
+	if cfg.Timeout == 0 { // todo: not this, just don't wrap with timeoutCtx when zero
 		cfg.Timeout = defaultTimeout // default timeout
 	}
 	ctxCancel, cancel := context.WithCancel(cfg.Ctx)

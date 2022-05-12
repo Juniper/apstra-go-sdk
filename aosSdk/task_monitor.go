@@ -139,7 +139,7 @@ func newTaskMonitor(c *Client) *taskMonitor {
 
 // start causes the taskMonitor to run
 func (o *taskMonitor) start(quit <-chan struct{}) {
-	o.taskInChan = o.client.taskMonChan
+	o.taskInChan = o.client.taskMonChan //todo assignments move to newTaskMonthing
 	o.errChan = o.client.cfg.errChan
 	o.tmQuit = quit
 	go o.run()
@@ -174,9 +174,9 @@ func (o *taskMonitor) run() {
 func (o *taskMonitor) checkBlueprints() {
 	// loop over blueprints known to have outstanding tasks
 BlueprintLoop:
-	for bpId := range o.mapBpIdToTask {
+	for bpId := range o.mapBpIdToTask { //todo use k,v here
 		var taskIdList []TaskId
-		for i := range o.mapBpIdToTask[bpId] {
+		for i := range o.mapBpIdToTask[bpId] { //todo this is awful, pick apart incoming request on arrival
 			taskIdList = append(taskIdList, o.mapBpIdToTask[bpId][i].taskId)
 		}
 		// get task result info from Apstra
@@ -189,30 +189,27 @@ BlueprintLoop:
 			} else {
 				log.Println(err)
 			}
+			continue BlueprintLoop
 		}
 		o.checkTasksInBlueprint(bpId, apstraTaskInfo)
-		// this was going to happen anyway, but being explicit allows me
-		// to retain the loop label, which is pretty.
-		continue BlueprintLoop
 	} // BlueprintLoop
 
-	// after processing all monitored tasks, one or more per-blueprint lists might be empty.
+	// after processing all monitored tasks, one or more
+	// per-blueprint lists might be empty. Delete them.
 	for bpId := range o.mapBpIdToTask {
 		if len(o.mapBpIdToTask[bpId]) == 0 {
 			delete(o.mapBpIdToTask, bpId)
 		}
 	}
-
-	o.bpIdLock.Unlock()
 }
 
+// checkTasksInBlueprint takes a blueprint ID and a [TaskId]status (string)
 func (o *taskMonitor) checkTasksInBlueprint(bpId ObjectId, apstraTaskInfo map[TaskId]string) {
-	o.taskIdLock.Lock()
 TaskLoop:
 	// loop over outstanding tasks associated with this blueprint
 	for i, monitoredTask := range o.mapBpIdToTask[bpId] {
-		mtid := monitoredTask.taskId       // monitored task Id
-		mtrc := monitoredTask.responseChan // monitored task result chan
+		mtid := monitoredTask.taskId       // monitored task Id //todo: why change these names?
+		mtrc := monitoredTask.responseChan // monitored task result chan //todo: why change these names?
 		// make sure Apstra response includes our taskId
 		if _, found := apstraTaskInfo[mtid]; !found {
 			// Apstra response doesn't have our task Id:
