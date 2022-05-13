@@ -12,8 +12,8 @@ import (
 // keyLogWriter takes an environment variable which might name a logfile for
 // exporting TLS session keys. If so, it returns an io.Writer to be used for
 // that purpose.
-func keyLogWriter(envFileName string) (io.Writer, error) {
-	keyLogFile, foundKeyLogFile := os.LookupEnv(envFileName)
+func keyLogWriter(keyLogEnv string) (io.Writer, error) {
+	keyLogFile, foundKeyLogFile := os.LookupEnv(keyLogEnv)
 	if !foundKeyLogFile {
 		return nil, nil
 	}

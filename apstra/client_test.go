@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"log"
@@ -9,7 +10,7 @@ import (
 	"testing"
 )
 
-func newTestClient() (*Client, error) {
+func newLiveTestClient() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -49,13 +50,22 @@ func newTestClient() (*Client, error) {
 	})
 }
 
-func TestNewClient(t *testing.T) {
-	client, err := newTestClient()
+func TestLoginLogout(t *testing.T) {
+	client, err := newLiveTestClient()
+	//client, err := newMockTestClient()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	log.Println(client.baseUrl)
+	err = client.Login(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.Logout(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 //func TestParseBytesAsTaskId(t *testing.T) {

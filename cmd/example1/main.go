@@ -4,11 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strconv"
 
 	"github.com/chrismarget-j/apstraTelemetry/apstra"
@@ -22,22 +20,6 @@ type getConfigIn struct {
 	clientCfg             *apstra.ClientCfg              // AOS API client config
 	streamTargetCfg       []apstra.StreamTargetCfg       // Our protobuf stream listener
 	streamingConfigParams []apstra.StreamingConfigParams // Tell AOS API about our stream listener
-}
-
-func keyLogWriter() (io.Writer, error) {
-	keyLogDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-
-	keyLogFile := filepath.Join(keyLogDir, ".example1.log")
-
-	err = os.MkdirAll(filepath.Dir(keyLogFile), os.FileMode(0644))
-	if err != nil {
-		return nil, err
-	}
-
-	return os.OpenFile(keyLogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 }
 
 func getConfig(in *getConfigIn) error {
@@ -76,11 +58,6 @@ func getConfig(in *getConfigIn) error {
 		return fmt.Errorf("error converting '%s' to integer - %w", recPort, err)
 	}
 
-	klw, err := keyLogWriter()
-	if err != nil {
-		return err
-	}
-
 	in.clientCfg.Scheme = aosScheme
 	in.clientCfg.Host = aosHost
 	in.clientCfg.Port = uint16(aosPortInt)
@@ -88,7 +65,6 @@ func getConfig(in *getConfigIn) error {
 	in.clientCfg.Pass = aosPass
 	in.clientCfg.TlsConfig = &tls.Config{
 		InsecureSkipVerify: true, // todo: something less shameful
-		KeyLogWriter:       klw,
 	}
 
 	for i, streamType := range []string{

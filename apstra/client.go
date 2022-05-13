@@ -15,10 +15,10 @@ const (
 	EnvApstraHost             = "APSTRA_HOST"
 	EnvApstraPort             = "APSTRA_PORT"
 	EnvApstraScheme           = "APSTRA_SCHEME"
-	EnvApstraApiKeyLogFile    = "APSTRA_API_TLS_KEYFILE"
-	EnvApstraStreamKeyLogFile = "APSTRA_API_TLS_KEYFILE"
+	EnvApstraApiKeyLogFile    = "APSTRA_API_TLS_LOGFILE"
+	EnvApstraStreamKeyLogFile = "APSTRA_STREAM_TLS_LOGFILE"
 
-	defaultTimeout = 10 * time.Second
+	defaultTimeout = 10 * time.Second // todo: why isn't this used?
 
 	apstraAuthHeader = "Authtoken"
 )
@@ -75,6 +75,14 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", baseUrlString, err)
 	}
+
+	klw, err := keyLogWriter(EnvApstraApiKeyLogFile)
+	if err != nil {
+		return nil, fmt.Errorf("error prepping TLS key log from env var '%s' - %w", EnvApstraApiKeyLogFile, err)
+	}
+
+	tlsCfg := cfg.TlsConfig
+	tlsCfg.KeyLogWriter = klw
 
 	httpClient := &http.Client{
 		Transport: &http.Transport{
