@@ -3,7 +3,6 @@ package apstra
 import (
 	"crypto/tls"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strconv"
@@ -16,7 +15,6 @@ func clientTestClient() (*Client, error) {
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
 	host, foundHost := os.LookupEnv(EnvApstraHost)
 	portStr, foundPort := os.LookupEnv(EnvApstraPort)
-	keyLogFile, foundkeyLogFile := os.LookupEnv(EnvApstraApiKeyLogFile)
 
 	switch {
 	case !foundUser:
@@ -31,15 +29,9 @@ func clientTestClient() (*Client, error) {
 		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraPort)
 	}
 
-	var kl io.Writer
-	var err error
-	if foundkeyLogFile {
-		kl, err = keyLogWriter(keyLogFile)
-		if err != nil {
-			return nil, fmt.Errorf("error creating keyLogWriter - %w", err)
-		}
-	} else {
-		kl = nil
+	kl, err := keyLogWriter(EnvApstraApiKeyLogFile)
+	if err != nil {
+		return nil, fmt.Errorf("error creating keyLogWriter - %w", err)
 	}
 
 	port, err := strconv.Atoi(portStr)
