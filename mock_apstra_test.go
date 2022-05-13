@@ -57,10 +57,10 @@ func (o *mockApstraApi) handleLogin(req *http.Request) (*http.Response, error) {
 		return nil, fmt.Errorf("error bad authentication in mockApstraApi.handleLogin() '%s:%s' vs. '%s:%s",
 			in.Username, in.Password, o.username, o.password)
 	}
-	o.authToken = randString(20)
+	o.authToken = randJwt()
 	outBody, err := json.Marshal(userLoginResponse{
 		Token: o.authToken,
-		Id:    randString(10),
+		Id:    randId(),
 	})
 
 	return &http.Response{
