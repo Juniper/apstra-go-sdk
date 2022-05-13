@@ -145,8 +145,8 @@ func newTaskMonitor(c *Client) *taskMonitor {
 }
 
 // start causes the taskMonitor to run
-func (o *taskMonitor) start(quit <-chan struct{}) {
-	o.tmQuit = quit
+func (o *taskMonitor) start() {
+	o.tmQuit = o.client.tmQuit
 	go o.run()
 }
 

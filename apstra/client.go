@@ -94,7 +94,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		ctx:         ctx,
 	}
 
-	newTaskMonitor(c).start(c.tmQuit)
+	newTaskMonitor(c).start()
 	return c, nil
 }
 
