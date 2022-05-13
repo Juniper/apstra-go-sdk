@@ -23,6 +23,10 @@ const (
 	apstraAuthHeader = "Authtoken"
 )
 
+type apstraHttpClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
 // ClientCfg passed to NewClient() when instantiating a new Client{}
 type ClientCfg struct {
 	Scheme    string          // "https", probably
@@ -57,7 +61,7 @@ type ObjectId string
 type Client struct {
 	baseUrl     *url.URL
 	cfg         *ClientCfg
-	httpClient  *http.Client
+	httpClient  apstraHttpClient
 	httpHeaders map[string]string       // default set of http headers
 	tmQuit      chan struct{}           // task monitor exit trigger
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
