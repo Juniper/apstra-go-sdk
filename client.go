@@ -115,6 +115,8 @@ func (o Client) ServerName() string {
 	return o.cfg.Host
 }
 
+func (o Client) Test() {}
+
 // Login submits username and password from the ClientCfg (Client.cfg) to the
 // Apstra API, retrieves an authorization token. It is optional. If the client
 // is not already logged in, Apstra will send HTTP 401. The client will log
