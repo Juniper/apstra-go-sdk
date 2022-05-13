@@ -1,4 +1,4 @@
-module github.com/chrismarget-j/apstraTelemetry
+module github.com/chrismarget-j/goapstra
 
 go 1.17
 
