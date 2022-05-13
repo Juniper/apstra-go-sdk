@@ -1,4 +1,4 @@
-package apstra
+package goapstra
 
 import (
 	"encoding/json"

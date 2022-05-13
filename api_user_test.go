@@ -1,4 +1,4 @@
-package apstra
+package goapstra
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func streamingConfigTestClient1() (*Client, error) {
+func userTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -44,13 +44,30 @@ func streamingConfigTestClient1() (*Client, error) {
 	})
 }
 
-func TestClient_GetAllStreamingConfigs(t *testing.T) {
-	client, err := streamingConfigTestClient1()
+func TestLogin(t *testing.T) {
+	c, err := userTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = client.Login(context.TODO())
+	err = c.Login(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestLogout(t *testing.T) {
+	c, err := userTestClient1()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.Login(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.Logout(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}

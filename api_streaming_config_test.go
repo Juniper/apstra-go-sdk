@@ -1,17 +1,15 @@
-package apstra
+package goapstra
 
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"testing"
 )
 
-func apstraVersionTestClient1() (*Client, error) {
+func streamingConfigTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -46,25 +44,13 @@ func apstraVersionTestClient1() (*Client, error) {
 	})
 }
 
-func TestGetVersion(t *testing.T) {
-	client, err := apstraVersionTestClient1()
+func TestClient_GetAllStreamingConfigs(t *testing.T) {
+	client, err := streamingConfigTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ver, err := client.getVersion(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	result, err := json.Marshal(ver)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	log.Println(string(result))
-
-	err = client.Logout(context.TODO())
+	err = client.Login(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}

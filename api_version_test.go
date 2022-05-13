@@ -1,15 +1,17 @@
-package apstra
+package goapstra
 
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"testing"
 )
 
-func userTestClient1() (*Client, error) {
+func apstraVersionTestClient1() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -44,30 +46,25 @@ func userTestClient1() (*Client, error) {
 	})
 }
 
-func TestLogin(t *testing.T) {
-	c, err := userTestClient1()
+func TestGetVersion(t *testing.T) {
+	client, err := apstraVersionTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = c.Login(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestLogout(t *testing.T) {
-	c, err := userTestClient1()
+	ver, err := client.getVersion(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = c.Login(context.TODO())
+	result, err := json.Marshal(ver)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = c.Logout(context.TODO())
+	log.Println(string(result))
+
+	err = client.Logout(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
