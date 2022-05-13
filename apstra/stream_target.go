@@ -1,4 +1,4 @@
-package apstraStreamTarget
+package apstra
 
 import (
 	"bytes"
@@ -11,7 +11,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/chrismarget-j/apstraTelemetry/apstra"
 	"google.golang.org/protobuf/proto"
 	"io"
 	"net"
@@ -61,12 +60,12 @@ type StreamingMessage struct {
 func NewStreamTarget(cfg *StreamTargetCfg) (*StreamTarget, error) {
 	var tlsConfig *tls.Config
 
-	if cfg.Certificate != nil && cfg.Key != nil {
-		keyLog, err := keyLogWriter()
-		if err != nil {
-			return nil, err
-		}
+	keyLog, err := keyLogWriter(EnvApstraStreamKeyLogFile)
+	if err != nil {
+		return nil, err
+	}
 
+	if cfg.Certificate != nil && cfg.Key != nil {
 		certBlock := bytes.NewBuffer(nil)
 		err = pem.Encode(certBlock, &pem.Block{
 			Type:  "CERTIFICATE",
@@ -116,8 +115,8 @@ type StreamTarget struct {
 	clientWG  sync.WaitGroup         // keeps track of client handlers
 	cfg       *StreamTargetCfg       // submitted by caller
 	apstraIP  *net.IP                // for filtering incoming connections
-	strmCfgId apstra.ObjectId        // AOS streaming ID, populated by Register
-	client    *apstra.Client         // populated by Register, we hang onto it for Unregister
+	strmCfgId ObjectId               // AOS streaming ID, populated by Register
+	client    *Client                // populated by Register, we hang onto it for Unregister
 }
 
 // Start loops forever handling new connections from the AOS streaming service
@@ -249,7 +248,7 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 	var seqPtr *uint64
 
 	// extract AosMessage from AosSequencedMessage wrapper if configured for StreamingConfigSequencingModeSequenced
-	if o.cfg.SequencingMode == apstra.StreamingConfigSequencingModeSequenced {
+	if o.cfg.SequencingMode == StreamingConfigSequencingModeSequenced {
 		var seqMsg apstraStreaming.AosSequencedMessage // outer wrapper structure
 		err := proto.Unmarshal(in, &seqMsg)            // unwrap inner message
 		if err != nil {
@@ -274,7 +273,7 @@ func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
 // to AOS when configuring the streaming config / receiver. If it's empty, we
 // attempt to determine the local IP nearest to the AOS server, use that value
 // (as a string)
-func (o *StreamTarget) Register(ctx context.Context, client *apstra.Client) error {
+func (o *StreamTarget) Register(ctx context.Context, client *Client) error {
 	// figure out what the AOS server should call us (string: IP or DNS name)
 	var apstraTargetHostname string
 	switch o.cfg.AosTargetHostname {
@@ -289,7 +288,7 @@ func (o *StreamTarget) Register(ctx context.Context, client *apstra.Client) erro
 	}
 
 	// Register this target with Apstra
-	id, err := client.NewStreamingConfig(ctx, &apstra.StreamingConfigParams{
+	id, err := client.NewStreamingConfig(ctx, &StreamingConfigParams{
 		StreamingType:  o.cfg.StreamingType,
 		SequencingMode: o.cfg.SequencingMode,
 		Protocol:       o.cfg.Protocol,

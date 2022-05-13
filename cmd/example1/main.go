@@ -12,7 +12,6 @@ import (
 	"strconv"
 
 	"github.com/chrismarget-j/apstraTelemetry/apstra"
-	"github.com/chrismarget-j/apstraTelemetry/apstraStreamTarget"
 )
 
 // getConfigIn includes details for the clientCfg (AOS API
@@ -20,9 +19,9 @@ import (
 // point events at our collector) and streamTargetCfg (our listener for AOS
 // protobuf messages)
 type getConfigIn struct {
-	clientCfg             *apstra.ClientCfg                    // AOS API client config
-	streamTargetCfg       []apstraStreamTarget.StreamTargetCfg // Our protobuf stream listener
-	streamingConfigParams []apstra.StreamingConfigParams       // Tell AOS API about our stream listener
+	clientCfg             *apstra.ClientCfg              // AOS API client config
+	streamTargetCfg       []apstra.StreamTargetCfg       // Our protobuf stream listener
+	streamingConfigParams []apstra.StreamingConfigParams // Tell AOS API about our stream listener
 }
 
 func keyLogWriter() (io.Writer, error) {
@@ -47,8 +46,8 @@ func getConfig(in *getConfigIn) error {
 	aosPass, foundAosPass := os.LookupEnv(apstra.EnvApstraPass)
 	aosHost, foundAosHost := os.LookupEnv(apstra.EnvApstraHost)
 	aosPort, foundAosPort := os.LookupEnv(apstra.EnvApstraPort)
-	recHost, foundRecHost := os.LookupEnv(apstraStreamTarget.EnvApstraStreamHost)
-	recPort, foundRecPort := os.LookupEnv(apstraStreamTarget.EnvApstraStreamBasePort)
+	recHost, foundRecHost := os.LookupEnv(apstra.EnvApstraStreamHost)
+	recPort, foundRecPort := os.LookupEnv(apstra.EnvApstraStreamBasePort)
 
 	switch {
 	case !foundAosScheme:
@@ -62,9 +61,9 @@ func getConfig(in *getConfigIn) error {
 	case !foundAosPort:
 		return fmt.Errorf("environment variable '%s' not found", apstra.EnvApstraPort)
 	case !foundRecHost:
-		return fmt.Errorf("environment variable '%s' not found", apstraStreamTarget.EnvApstraStreamHost)
+		return fmt.Errorf("environment variable '%s' not found", apstra.EnvApstraStreamHost)
 	case !foundRecPort:
-		return fmt.Errorf("environment variable '%s' not found", apstraStreamTarget.EnvApstraStreamBasePort)
+		return fmt.Errorf("environment variable '%s' not found", apstra.EnvApstraStreamBasePort)
 	}
 
 	aosPortInt, err := strconv.Atoi(aosPort)
@@ -97,7 +96,7 @@ func getConfig(in *getConfigIn) error {
 		apstra.StreamingConfigStreamingTypeEvents,
 		apstra.StreamingConfigStreamingTypePerfmon,
 	} {
-		stc := apstraStreamTarget.StreamTargetCfg{
+		stc := apstra.StreamTargetCfg{
 			StreamingType:     streamType,
 			SequencingMode:    apstra.StreamingConfigSequencingModeSequenced,
 			Protocol:          apstra.StreamingConfigProtocolProtoBufOverTcp,
@@ -130,7 +129,7 @@ func main() {
 	cfg := getConfigIn{
 		clientCfg:             &apstra.ClientCfg{},
 		streamingConfigParams: []apstra.StreamingConfigParams{},
-		streamTargetCfg:       []apstraStreamTarget.StreamTargetCfg{},
+		streamTargetCfg:       []apstra.StreamTargetCfg{},
 	}
 
 	// populate configuration objects using local function
@@ -150,13 +149,13 @@ func main() {
 	defer c.Logout(context.TODO())
 
 	// create aggregator channels where we'll get messages from all target services
-	msgChan := make(chan *apstraStreamTarget.StreamingMessage)
+	msgChan := make(chan *apstra.StreamingMessage)
 	errChan := make(chan error)
 
-	var streamTargets []*apstraStreamTarget.StreamTarget
+	var streamTargets []*apstra.StreamTarget
 	for i := range cfg.streamTargetCfg {
 		// create each AOS stream target service
-		st, err := apstraStreamTarget.NewStreamTarget(&cfg.streamTargetCfg[i])
+		st, err := apstra.NewStreamTarget(&cfg.streamTargetCfg[i])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -174,7 +173,7 @@ func main() {
 		}
 
 		// copy messages from this target's message channel to aggregated message channel
-		go func(in <-chan *apstraStreamTarget.StreamingMessage, out chan<- *apstraStreamTarget.StreamingMessage) {
+		go func(in <-chan *apstra.StreamingMessage, out chan<- *apstra.StreamingMessage) {
 			for {
 				out <- <-in
 			}

@@ -9,12 +9,19 @@ import (
 	"strconv"
 )
 
-func keyLogWriter(keyLogFile string) (io.Writer, error) {
-	err := os.MkdirAll(filepath.Dir(keyLogFile), os.FileMode(0644))
+// keyLogWriter takes an environment variable which might name a logfile for
+// exporting TLS session keys. If so, it returns an io.Writer to be used for
+// that purpose.
+func keyLogWriter(envFileName string) (io.Writer, error) {
+	keyLogFile, foundKeyLogFile := os.LookupEnv(envFileName)
+	if !foundKeyLogFile {
+		return nil, nil
+	}
+
+	err := os.MkdirAll(filepath.Dir(keyLogFile), os.FileMode(0600))
 	if err != nil {
 		return nil, err
 	}
-
 	return os.OpenFile(keyLogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 }
 

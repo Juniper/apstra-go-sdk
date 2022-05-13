@@ -10,12 +10,13 @@ import (
 )
 
 const (
-	EnvApstraUser          = "APSTRA_USER"
-	EnvApstraPass          = "APSTRA_PASS"
-	EnvApstraHost          = "APSTRA_HOST"
-	EnvApstraPort          = "APSTRA_PORT"
-	EnvApstraScheme        = "APSTRA_SCHEME"
-	EnvApstraApiKeyLogFile = "APSTRA_API_TLS_KEYFILE"
+	EnvApstraUser             = "APSTRA_USER"
+	EnvApstraPass             = "APSTRA_PASS"
+	EnvApstraHost             = "APSTRA_HOST"
+	EnvApstraPort             = "APSTRA_PORT"
+	EnvApstraScheme           = "APSTRA_SCHEME"
+	EnvApstraApiKeyLogFile    = "APSTRA_API_TLS_KEYFILE"
+	EnvApstraStreamKeyLogFile = "APSTRA_API_TLS_KEYFILE"
 
 	defaultTimeout = 10 * time.Second
 

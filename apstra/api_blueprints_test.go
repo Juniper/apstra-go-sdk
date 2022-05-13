@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/url"
 	"os"
@@ -21,7 +20,6 @@ func blueprintsTestClient1() (*Client, error) {
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
 	host, foundHost := os.LookupEnv(EnvApstraHost)
 	portstr, foundPort := os.LookupEnv(EnvApstraPort)
-	keyLogFile, foundKeyLogFile := os.LookupEnv(EnvApstraApiKeyLogFile)
 
 	switch {
 	case !foundUser:
@@ -36,15 +34,9 @@ func blueprintsTestClient1() (*Client, error) {
 		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraPort)
 	}
 
-	var kl io.Writer
-	var err error
-	if foundKeyLogFile {
-		kl, err = keyLogWriter(keyLogFile)
-		if err != nil {
-			return nil, fmt.Errorf("error creating keyLogWriter - %w", err)
-		}
-	} else {
-		kl = nil
+	kl, err := keyLogWriter(EnvApstraApiKeyLogFile)
+	if err != nil {
+		return nil, fmt.Errorf("error creating keyLogWriter - %w", err)
 	}
 
 	port, err := strconv.Atoi(portstr)
