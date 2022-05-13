@@ -9,10 +9,6 @@ Scroll down to `streaming-telemetry-schema-proto`, click `GET`, `Try it out` and
 
 Render the go code by running the following in the main project directory
 ```shell
-protoc --go_out=.      --go_opt=MaosStreaming/streaming-telemetry.proto=./apstraStreaming \
-       apstraStreaming/streaming-telemetry.proto
+protoc --go_out=.      --go_opt=Mapstra/streaming-telemetry.proto=./apstra \
+       apstra/streaming-telemetry.proto
 ```
-
-protoc --go_out=. --go_opt=paths=source_relative \
---go-grpc_out=. --go-grpc_opt=paths=source_relative \
-aosStreaming/streaming-telemetry.proto

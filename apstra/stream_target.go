@@ -17,8 +17,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/chrismarget-j/apstraTelemetry/apstraStreaming"
 )
 
 const (
@@ -50,7 +48,7 @@ type StreamTargetCfg struct {
 type StreamingMessage struct {
 	SequencingMode string
 	StreamingType  string
-	Message        *apstraStreaming.AosMessage
+	Message        *AosMessage
 	SequenceNum    *uint64
 }
 
@@ -244,13 +242,13 @@ func (o *StreamTarget) handleClientConn(conn net.Conn, msgChan chan<- *Streaming
 }
 
 func (o *StreamTarget) msgFromBytes(in []byte) (*StreamingMessage, error) {
-	var msgOut apstraStreaming.AosMessage
+	var msgOut AosMessage
 	var seqPtr *uint64
 
 	// extract AosMessage from AosSequencedMessage wrapper if configured for StreamingConfigSequencingModeSequenced
 	if o.cfg.SequencingMode == StreamingConfigSequencingModeSequenced {
-		var seqMsg apstraStreaming.AosSequencedMessage // outer wrapper structure
-		err := proto.Unmarshal(in, &seqMsg)            // unwrap inner message
+		var seqMsg AosSequencedMessage      // outer wrapper structure
+		err := proto.Unmarshal(in, &seqMsg) // unwrap inner message
 		if err != nil {
 			return nil, err
 		}
