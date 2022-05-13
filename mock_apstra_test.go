@@ -11,6 +11,9 @@ import (
 
 func newMockTestClient() (*Client, error) {
 	c, err := newLiveTestClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 	c.httpClient = &mockApstraApi{
 		username: "admin",
 		password: "admin",
@@ -27,7 +30,7 @@ type mockApstraApi struct {
 	authToken string
 }
 
-func (o mockApstraApi) Do(req *http.Request) (*http.Response, error) {
+func (o *mockApstraApi) Do(req *http.Request) (*http.Response, error) {
 	switch req.URL.Path {
 	case apiUrlUserLogin:
 		return o.handleLogin(req)
@@ -38,7 +41,7 @@ func (o mockApstraApi) Do(req *http.Request) (*http.Response, error) {
 	}
 }
 
-func (o mockApstraApi) handleLogin(req *http.Request) (*http.Response, error) {
+func (o *mockApstraApi) handleLogin(req *http.Request) (*http.Response, error) {
 	inBody, err := io.ReadAll(req.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading request body in mockApstraApi.handleLogin() - %w", err)
@@ -69,8 +72,10 @@ func (o mockApstraApi) handleLogin(req *http.Request) (*http.Response, error) {
 func (o mockApstraApi) handleLogout(req *http.Request) (*http.Response, error) {
 	for _, val := range req.Header.Values(apstraAuthHeader) {
 		if val == o.authToken {
+			o.authToken = ""
 			return &http.Response{
 				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(bytes.NewReader(nil)),
 			}, nil
 		}
 	}

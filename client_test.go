@@ -10,6 +10,14 @@ import (
 	"testing"
 )
 
+func newTestClient() (*Client, error) {
+	_, err := os.Stat("/tmp/live")
+	if err != nil {
+		return newMockTestClient()
+	}
+	return newLiveTestClient()
+}
+
 func newLiveTestClient() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
@@ -51,8 +59,7 @@ func newLiveTestClient() (*Client, error) {
 }
 
 func TestLoginLogout(t *testing.T) {
-	client, err := newLiveTestClient()
-	//client, err := newMockTestClient()
+	client, err := newTestClient()
 	if err != nil {
 		t.Fatal(err)
 	}
