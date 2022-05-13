@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func clientTestClient() (*Client, error) {
+func newTestClient() (*Client, error) {
 	user, foundUser := os.LookupEnv(EnvApstraUser)
 	pass, foundPass := os.LookupEnv(EnvApstraPass)
 	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
@@ -50,7 +50,7 @@ func clientTestClient() (*Client, error) {
 }
 
 func TestNewClient(t *testing.T) {
-	client, err := clientTestClient()
+	client, err := newTestClient()
 	if err != nil {
 		t.Fatal(err)
 	}
