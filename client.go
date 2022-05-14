@@ -76,13 +76,14 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", baseUrlString, err)
 	}
 
-	klw, err := keyLogWriter(EnvApstraApiKeyLogFile)
-	if err != nil {
-		return nil, fmt.Errorf("error prepping TLS key log from env var '%s' - %w", EnvApstraApiKeyLogFile, err)
-	}
-
 	tlsCfg := cfg.TlsConfig
-	tlsCfg.KeyLogWriter = klw
+	if tlsCfg != nil {
+		klw, err := keyLogWriter(EnvApstraApiKeyLogFile)
+		if err != nil {
+			return nil, fmt.Errorf("error prepping TLS key log from env var '%s' - %w", EnvApstraApiKeyLogFile, err)
+		}
+		tlsCfg.KeyLogWriter = klw
+	}
 
 	httpClient := &http.Client{
 		Transport: &http.Transport{
