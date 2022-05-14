@@ -9,118 +9,74 @@ import (
 
 const (
 	metricDbBlueprintPayloadTodo = `{"items":[
-        {
-          "application": "iba",
+        { "application": "iba",
           "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/d6ffca4d-ba91-4833-bf43-714bc0c5b665",
-          "name": "imbalanced_system_count_out_of_range"
-        },
-        {
-          "application": "iba",
+          "name": "imbalanced_system_count_out_of_range" },
+        { "application": "iba",
           "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/4eb11184-4b32-4106-8e90-edb312042683",
-          "name": "System Interface Counters"
-        },
-        {
-          "application": "iba",
+          "name": "System Interface Counters" },
+        { "application": "iba",
           "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/4eb11184-4b32-4106-8e90-edb312042683",
-          "name": "Average Interface Counters"
-        },
-        {
-          "application": "iba",
+          "name": "Average Interface Counters" },
+        { "application": "iba",
           "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/d6ffca4d-ba91-4833-bf43-714bc0c5b665",
-          "name": "leaf_fab_int_tx_avg"
-        },
-        {
-          "application": "iba",
+          "name": "leaf_fab_int_tx_avg" },
+        { "application": "iba",
           "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/d6ffca4d-ba91-4833-bf43-714bc0c5b665",
-          "name": "std_dev_percentage"
-        },
-        {
-          "application": "iba",
+          "name": "std_dev_percentage" },
+        { "application": "iba",
           "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/d6ffca4d-ba91-4833-bf43-714bc0c5b665",
-          "name": "system_imbalance"
-        }
+          "name": "system_imbalance" }
     ]}`
 	mockGetMetricdbPayload = `{"items":[
-        {
-          "application": "cluster_health_info",
+        { "application": "cluster_health_info",
           "namespace": "agent",
-          "name": "health_aggr_3600"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "health_aggr_3600" },
+        { "application": "cluster_health_info",
           "namespace": "file_registry",
-          "name": "file_aggr_3600"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "file_aggr_3600" },
+        { "application": "cluster_health_info",
           "namespace": "file_registry",
-          "name": "directory_aggr_3600"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "directory_aggr_3600" },
+        { "application": "cluster_health_info",
           "namespace": "agent",
-          "name": "health"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "health" },
+        { "application": "cluster_health_info",
           "namespace": "agent",
-          "name": "utilization"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "utilization" },
+        { "application": "cluster_health_info",
           "namespace": "node",
-          "name": "utilization_aggr_3600"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "utilization_aggr_3600" },
+        { "application": "cluster_health_info",
           "namespace": "node",
-          "name": "disk_utilization_aggr_3600"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "disk_utilization_aggr_3600" },
+        { "application": "cluster_health_info",
           "namespace": "container",
-          "name": "utilization"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "utilization" },
+        { "application": "cluster_health_info",
           "namespace": "node",
-          "name": "utilization"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "utilization" },
+        { "application": "cluster_health_info",
           "namespace": "file_registry",
-          "name": "directory"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "directory" },
+        { "application": "cluster_health_info",
           "namespace": "node",
-          "name": "disk_utilization"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "disk_utilization" },
+        { "application": "cluster_health_info",
           "namespace": "file_registry",
-          "name": "file"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "file" },
+        { "application": "cluster_health_info",
           "namespace": "container",
-          "name": "utilization_aggr_3600"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "utilization_aggr_3600" },
+        { "application": "cluster_health_info",
           "namespace": "agent",
-          "name": "utilization_aggr_3600"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "utilization_aggr_3600" },
+        { "application": "cluster_health_info",
           "namespace": "container",
-          "name": "file_usage_aggr_3600"
-        },
-        {
-          "application": "cluster_health_info",
+          "name": "file_usage_aggr_3600" },
+        { "application": "cluster_health_info",
           "namespace": "container",
-          "name": "file_usage"
-        }
+          "name": "file_usage" }
     ]}`
 )
 
