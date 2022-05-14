@@ -1,0 +1,42 @@
+#
+# Non-private environment included right here:
+#
+export APSTRA_SCHEME="https"
+export APSTRA_USER="admin"
+export APSTRA_API_TLS_LOGFILE="~/.apstra.keylog"
+export APSTRA_STREAM_TLS_LOGFILE="~/.apstra.keylog"
+
+#
+# Private environment stuff (hosts, ports, passwords) which doesn't belong in
+# this repo must be learned from a .apstra_env file in this directory
+#
+# That file should look like:
+#   export APSTRA_HOST=""             # hostname/IP of apstra host
+#   export APSTRA_PORT=""             # port number of apstra ui/api service
+#   export APSTRA_PASS=""             # apstra admin user password
+#   export APSTRA_STREAM_HOST=""      # hostname/IP of apstra streaming receiver
+#   export APSTRA_STREAM_BASE_PORT="" # first port to use when configuring apstra streaming receivers
+#
+APSTRA_ENV_FILE="$(dirname $(readlink -f $0))/.apstra_env"
+if [ ! -e "$APSTRA_ENV_FILE" ]
+then
+  echo "$APSTRA_ENV_FILE not found"
+  exit 1
+fi
+
+source $APSTRA_ENV_FILE
+
+echo "********************************************************************************************"
+echo "* Use the following string in IDE test/build configurations and configuration templates *"
+echo "********************************************************************************************"
+echo -n "APSTRA_SCHEME=$APSTRA_SCHEME;"
+echo -n "APSTRA_USER=$APSTRA_USER;"
+echo -n "APSTRA_PASS=$APSTRA_PASS;"
+echo -n "APSTRA_HOST=$APSTRA_HOST;"
+echo -n "APSTRA_PORT=$APSTRA_PORT;"
+echo -n "APSTRA_API_TLS_LOGFILE=$APSTRA_API_TLS_LOGFILE;"
+echo -n "APSTRA_STREAM_HOST=$APSTRA_STREAM_HOST;"
+echo -n "APSTRA_STREAM_BASE_PORT=$APSTRA_STREAM_BASE_PORT;"
+echo -n "APSTRA_STREAM_TLS_LOGFILE=$APSTRA_STREAM_TLS_LOGFILE;"
+echo ""
+echo ""
