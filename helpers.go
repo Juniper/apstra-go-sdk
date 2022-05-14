@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -30,23 +29,6 @@ func keyLogWriter(keyLogEnv string) (io.WriteCloser, error) {
 		return nil, err
 	}
 	return os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-}
-
-func intSliceContains(in []int, t int) bool {
-	for _, i := range in {
-		if i == t {
-			return true
-		}
-	}
-	return false
-}
-
-func intSliceToStringSlice(in []int) []string {
-	var result []string
-	for _, i := range in {
-		result = append(result, strconv.Itoa(i))
-	}
-	return result
 }
 
 func pp(in interface{}, out io.Writer) error {
