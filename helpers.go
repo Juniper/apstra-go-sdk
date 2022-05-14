@@ -3,6 +3,7 @@ package goapstra
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net"
 	"os"
 	"path/filepath"
@@ -24,6 +25,7 @@ func keyLogWriter(keyLogEnv string) (io.Writer, error) {
 		dirname, _ := os.UserHomeDir()
 		fileName = filepath.Join(dirname, fileName[2:])
 	}
+	log.Println(fileName)
 
 	err := os.MkdirAll(filepath.Dir(fileName), os.FileMode(0600))
 	if err != nil {
