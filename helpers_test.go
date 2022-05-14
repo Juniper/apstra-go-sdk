@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"os"
 	"path/filepath"
 	"testing"
@@ -84,5 +85,25 @@ func TestKeyLogWriter(t *testing.T) {
 
 	if string(result) != data {
 		t.Fatal("data read and written do not match")
+	}
+}
+
+func TestOurIpForPeer(t *testing.T) {
+	test := net.ParseIP("127.0.0.1")
+	expected := net.ParseIP("127.0.0.1")
+	result, err := ourIpForPeer(test)
+	if err != nil {
+		t.Fatal(err)
+	}
+	switch {
+	case test.String() == "<nil>":
+		t.Fatal("test is '<nil>'")
+	case expected.String() == "<nil>":
+		t.Fatal("expected is '<nil>'")
+	case result.String() == "<nil>":
+		t.Fatal("result is '<nil>'")
+	}
+	if expected.String() != result.String() {
+		t.Fatalf("expected %s, got %s", expected.String(), result.String())
 	}
 }
