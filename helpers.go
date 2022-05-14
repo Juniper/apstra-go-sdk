@@ -7,22 +7,29 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // keyLogWriter takes an environment variable which might name a logfile for
 // exporting TLS session keys. If so, it returns an io.Writer to be used for
 // that purpose.
 func keyLogWriter(keyLogEnv string) (io.Writer, error) {
-	keyLogFile, foundKeyLogFile := os.LookupEnv(keyLogEnv)
+	fileName, foundKeyLogFile := os.LookupEnv(keyLogEnv)
 	if !foundKeyLogFile {
 		return nil, nil
 	}
 
-	err := os.MkdirAll(filepath.Dir(keyLogFile), os.FileMode(0600))
+	// expand ~ style home directory
+	if strings.HasPrefix(fileName, "~/") {
+		dirname, _ := os.UserHomeDir()
+		fileName = filepath.Join(dirname, fileName[2:])
+	}
+
+	err := os.MkdirAll(filepath.Dir(fileName), os.FileMode(0600))
 	if err != nil {
 		return nil, err
 	}
-	return os.OpenFile(keyLogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	return os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 }
 
 func intSliceContains(in []int, t int) bool {
