@@ -18,7 +18,7 @@ const (
 	EnvApstraApiKeyLogFile    = "APSTRA_API_TLS_LOGFILE"
 	EnvApstraStreamKeyLogFile = "APSTRA_STREAM_TLS_LOGFILE"
 
-	defaultTimeout = 10 * time.Second // todo: why isn't this used?
+	defaultTimeout = 10 * time.Second
 
 	apstraAuthHeader = "Authtoken"
 )
@@ -35,7 +35,7 @@ type ClientCfg struct {
 	User      string          // Apstra API/UI username
 	Pass      string          // Apstra API/UI password
 	TlsConfig *tls.Config     // optional, used with https transactions
-	Timeout   time.Duration   // when non-zero, http transactions will be wrapped with a timeout context
+	Timeout   time.Duration   // <0 = infinite; 0 = defaultTimeout; >0 = this value is used
 	ErrChan   chan<- error    // async client errors (apstra task polling, etc) sent here
 	ctx       context.Context // used for async operations (apstra task polling, etc)
 }

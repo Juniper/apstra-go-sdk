@@ -81,10 +81,18 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	// wrap supplied context with timeout (maybe)
 	_, contextHasDeadline := ctx.Deadline()
-	if o.cfg.Timeout != 0 && !contextHasDeadline {
-		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, o.cfg.Timeout)
-		defer cancel()
+	if !contextHasDeadline { // maybe this context already has a deadline?
+		switch {
+		case o.cfg.Timeout < 0: // negative Timeout is no timeout interval (infinite)
+		case o.cfg.Timeout == 0: // Timeout of zero means use the interval passed in ClientCfg
+			var cancel func()
+			ctx, cancel = context.WithTimeout(ctx, defaultTimeout)
+			defer cancel()
+		case o.cfg.Timeout > 0: // positive Timeout means use this value
+			var cancel func()
+			ctx, cancel = context.WithTimeout(ctx, o.cfg.Timeout)
+			defer cancel()
+		}
 	}
 
 	// create request
