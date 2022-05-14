@@ -11,28 +11,31 @@ import (
 	"testing"
 )
 
-func getTestClients() (map[string]*Client, error) {
-	result := make(map[string]*Client)
+func getTestClientsAndMockAPIs() (map[string]*Client, map[string]*mockApstraApi, error) {
+	clientResult := make(map[string]*Client)
+	apiResult := make(map[string]*mockApstraApi)
 
 	if useLiveClient() {
 		log.Println("generating a live client")
 		c, err := newLiveTestClient()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		result["live"] = c
+		clientResult["live"] = c
+		apiResult["live"] = nil
 	}
 
 	if useMockClient() {
 		log.Println("generating a mock client")
-		c, err := newMockTestClient()
+		c, api, err := newMockTestClient()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		result["mock"] = c
+		clientResult["mock"] = c
+		apiResult["mock"] = api
 	}
 
-	return result, nil
+	return clientResult, apiResult, nil
 }
 
 func useLiveClient() bool {
@@ -91,44 +94,72 @@ func newLiveTestClient() (*Client, error) {
 	})
 }
 
-func newMockTestClient() (*Client, error) {
+func newMockTestClient() (*Client, *mockApstraApi, error) {
 	c, err := NewClient(&ClientCfg{
 		Scheme: "mock",
 		Host:   "mock",
 		Port:   uint16(0),
-		User:   "mockUser",
-		Pass:   "mockPass",
+		User:   mockApstraUser,
+		Pass:   mockApstraPass,
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	c.httpClient = &mockApstraApi{
-		username: "mockUser",
-		password: "mockPass",
+	mockApi, err := newMockApstraApi(mockApstraPass)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return c, err
+	c.httpClient = mockApi
+
+	return c, mockApi, nil
 }
 
 func TestLoginLogout(t *testing.T) {
-	clients, err := getTestClients()
+	clients, _, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	log.Printf("testing with %d clients", len(clients))
 
-	for t, c := range clients {
-		log.Printf("testing Login() with %s client", t)
+	for ctype, c := range clients {
+		log.Printf("testing Login() with %s client", ctype)
 		err = c.Login(context.TODO())
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("testing Logout() with %s client", t)
+
+		log.Printf("testing Logout() with %s client", ctype)
 		err = c.Logout(context.TODO())
 		if err != nil {
 			log.Fatal(err)
+		}
+	}
+}
+
+func TestLoginLogoutAuthFail(t *testing.T) {
+	clients, _, err := getTestClientsAndMockAPIs()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("testing with %d clients", len(clients))
+
+	for clientName, client := range clients {
+		log.Printf("testing for Login() fail with %s client", clientName)
+		client.cfg.Pass = randString(10, "hex")
+		err := client.Login(context.TODO())
+		if err == nil {
+			log.Fatal(fmt.Errorf("tried logging in with bad password, did not get errror"))
+		}
+
+		log.Printf("testing for Logout() fail with %s client", clientName)
+		client.httpHeaders[apstraAuthHeader] = randJwt()
+		err = client.Logout(context.TODO())
+		if err == nil {
+			log.Fatal(fmt.Errorf("tried logging in with bad password, did not get errror"))
 		}
 	}
 }
