@@ -5,24 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
-
-func newMockTestClient() (*Client, error) {
-	c, err := newLiveTestClient()
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.httpClient = &mockApstraApi{
-		username: "admin",
-		password: "admin",
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	return c, err
-}
 
 type mockApstraApi struct {
 	username  string

@@ -3,6 +3,7 @@ package goapstra
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -10,12 +11,44 @@ import (
 	"testing"
 )
 
-func newTestClient() (*Client, error) {
-	_, err := os.Stat("/tmp/live")
-	if err != nil {
-		return newMockTestClient()
+func getTestClients() (map[string]*Client, error) {
+	result := make(map[string]*Client)
+
+	if useLiveClient() {
+		log.Println("generating a live client")
+		c, err := newLiveTestClient()
+		if err != nil {
+			return nil, err
+		}
+		result["live"] = c
 	}
-	return newLiveTestClient()
+
+	if useMockClient() {
+		log.Println("generating a mock client")
+		c, err := newMockTestClient()
+		if err != nil {
+			return nil, err
+		}
+		result["mock"] = c
+	}
+
+	return result, nil
+}
+
+func useLiveClient() bool {
+	_, err := os.Stat("/tmp/live")
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return true
+}
+
+func useMockClient() bool {
+	_, err := os.Stat("/tmp/nomock")
+	if errors.Is(err, os.ErrNotExist) {
+		return true
+	}
+	return false
 }
 
 func newLiveTestClient() (*Client, error) {
@@ -58,20 +91,45 @@ func newLiveTestClient() (*Client, error) {
 	})
 }
 
+func newMockTestClient() (*Client, error) {
+	c, err := NewClient(&ClientCfg{
+		Scheme: "mock",
+		Host:   "mock",
+		Port:   uint16(0),
+		User:   "mockUser",
+		Pass:   "mockPass",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	c.httpClient = &mockApstraApi{
+		username: "mockUser",
+		password: "mockPass",
+	}
+
+	return c, err
+}
+
 func TestLoginLogout(t *testing.T) {
-	client, err := newTestClient()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = client.Login(context.TODO())
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Printf("testing with %d clients", len(clients))
 
-	err = client.Logout(context.TODO())
-	if err != nil {
-		log.Fatal(err)
+	for t, c := range clients {
+		log.Printf("testing Login() with %s client", t)
+		err = c.Login(context.TODO())
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("testing Logout() with %s client", t)
+		err = c.Logout(context.TODO())
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
