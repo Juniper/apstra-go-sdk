@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
@@ -78,11 +79,17 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 
 	tlsCfg := cfg.TlsConfig
 	if tlsCfg != nil {
+		if tlsCfg.InsecureSkipVerify {
+			debugStr(1, "TLS certificate verification disabled")
+		}
 		klw, err := keyLogWriter(EnvApstraApiKeyLogFile)
 		if err != nil {
 			return nil, fmt.Errorf("error prepping TLS key log from env var '%s' - %w", EnvApstraApiKeyLogFile, err)
 		}
 		tlsCfg.KeyLogWriter = klw
+		if klw != nil {
+			debugStr(1, fmt.Sprintf("TLS session keys being logged to %s", os.Getenv(EnvApstraApiKeyLogFile)))
+		}
 	}
 
 	httpClient := &http.Client{
@@ -106,6 +113,8 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		taskMonChan: make(chan *taskMonitorMonReq),
 		ctx:         ctx,
 	}
+
+	debugStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
 
 	newTaskMonitor(c).start()
 	return c, nil
