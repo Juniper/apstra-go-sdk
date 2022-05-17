@@ -1,26 +1,34 @@
-package cluster_health_info
+package api_metricdb_app
 
-import "time"
-
-const (
-	ClusterHealthInfo   = "cluster_health_info"
-	CHIHealthAggr3600   = "health_aggr_3600"    // namespace: "agent"
-	CHIFilehAggr3600    = "file_aggr_3600"      // namespace: "file_registry"
-	CHIDirAggr3600      = "directory_aggr_3600" // namespace: "file_registry"
-	CHIHealth           = "health"              // namespace:
-	CHIUtil             = "utilization"
-	CHIUtilAggr3600     = "utilization_aggr_3600"
-	CHIDiskUtilAggr3600 = "disk_utilization_aggr_3600"
-	x                   = "utilization"
+import (
+	"time"
 )
 
-/*
-   "application": "cluster_health_info",
-   "namespace": "agent",
-   "name": "health_aggr_3600",
-*/
+const (
+	CHINamespaceAgent     = "agent"
+	CHINamespaceContainer = "container"
+	CHINamespaceFileReg   = "file_registry"
+	CHINamespaceNode      = "node"
 
-type agentUtilization struct {
+	CHINameHealth    = "health"
+	CHINameUtil      = "utilization"
+	CHINameFileUsage = "file_usage"
+	CHINameDir       = "directory"
+	CHINameDisk      = "file"
+	CHINameDiskUtil  = "disk_utilization"
+)
+
+// AgentHealth is returned by Apstra in response to POSTs
+// to ApiUrlMetricdbQuery with metricDbQuery like one of:
+//   { "application": "cluster_health_info", "namespace": "agent", "name": "health" },
+//   { "application": "cluster_health_info", "namespace": "agent", "name": "health_aggr_3600" },
+type AgentHealth struct{} // never seen one of these yet
+
+// AgentUtilization is returned by Apstra in response to POSTs
+// to ApiUrlMetricdbQuery with metricDbQuery like one of:
+//   { "application": "cluster_health_info", "namespace": "agent", "name": "utilization" },
+//   { "application": "cluster_health_info", "namespace": "agent", "name": "utilization_aggr_3600" },
+type AgentUtilization struct {
 	Node      string    `json:"node"`
 	Container string    `json:"container"`
 	Timestamp time.Time `json:"timestamp"`
@@ -29,7 +37,23 @@ type agentUtilization struct {
 	Cpu       int       `json:"cpu"`
 }
 
-type containerUtilization struct {
+// ContainerFileUsage is returned by Apstra in response to POSTs
+// to ApiUrlMetricdbQuery with metricDbQuery like one of:
+//   { "application": "cluster_health_info", "namespace": "container", "name": "file_usage" }
+//   { "application": "cluster_health_info", "namespace": "container", "name": "file_usage_aggr_3600" },
+type ContainerFileUsage struct {
+	Node      string    `json:"node"`
+	FileName  string    `json:"file_name"`
+	Container string    `json:"container"`
+	Timestamp time.Time `json:"timestamp"`
+	Size      int       `json:"size"`
+}
+
+// ContainerUtilization is returned by Apstra in response to POSTs
+// to ApiUrlMetricdbQuery with metricDbQuery like one of:
+//   { "application": "cluster_health_info", "namespace": "container", "name": "utilization" },
+//   { "application": "cluster_health_info", "namespace": "container", "name": "utilization_aggr_3600" },
+type ContainerUtilization struct {
 	Node               string    `json:"node"`
 	Container          string    `json:"container"`
 	Timestamp          time.Time `json:"timestamp"`
@@ -38,26 +62,54 @@ type containerUtilization struct {
 	Cpu                int       `json:"cpu"`
 }
 
+// FileRegistryDirectory is returned by Apstra in response to POSTs
+// to ApiUrlMetricdbQuery with metricDbQuery like one of:
+//   { "application": "cluster_health_info", "namespace": "file_registry", "name": "directory" },
+//   { "application": "cluster_health_info", "namespace": "file_registry", "name": "directory_aggr_3600" },
+type FileRegistryDirectory struct {
+	Node          string    `json:"node"`
+	Timestamp     time.Time `json:"timestamp"`
+	Size          int       `json:"size"`
+	DirectoryPath string    `json:"directory_path"`
+}
+
+// FileRegistryFile is returned by Apstra in response to POSTs
+// to ApiUrlMetricdbQuery with metricDbQuery like one of
+//   { "application": "cluster_health_info", "namespace": "file_registry", "name": "file" },
+//   { "application": "cluster_health_info", "namespace": "file_registry", "name": "file_aggr_3600" },
+type FileRegistryFile struct {
+	Node      string    `json:"node"`
+	Timestamp time.Time `json:"timestamp"`
+	FilePath  string    `json:"file_path"`
+	Size      int       `json:"size"`
+}
+
+// NodeDiskUtilization is returned by Apstra in response to POSTs
+// to ApiUrlMetricdbQuery with metricDbQuery like one of:
+//   { "application": "cluster_health_info", "namespace": "node", "name": "disk_utilization" },
+//   { "application": "cluster_health_info", "namespace": "node", "name": "disk_utilization_aggr_3600" },
+type NodeDiskUtilization struct {
+	Node      string    `json:"node"`
+	Timestamp time.Time `json:"timestamp"`
+	Partition string    `json:"partition"`
+	Size      int       `json:"size"`
+}
+
+// NodeUtilization is returned by Apstra in response to POSTs
+// to ApiUrlMetricdbQuery with metricDbQuery like one of:
+//   { "application": "cluster_health_info", "namespace": "node", "name": "utilization" },
+//   { "application": "cluster_health_info", "namespace": "node", "name": "utilization_aggr_3600" },
+type NodeUtilization struct {
+	Node      string    `json:"node"`
+	Timestamp time.Time `json:"timestamp"`
+	Cpu       int       `json:"cpu"`
+	Memory    int64     `json:"memory"`
+}
+
 /*
-    { "application": "cluster_health_info", "namespace": "agent", "name": "health" },
-    { "application": "cluster_health_info", "namespace": "agent", "name": "health_aggr_3600" },
-    { "application": "cluster_health_info", "namespace": "agent", "name": "utilization" },
-    { "application": "cluster_health_info", "namespace": "agent", "name": "utilization_aggr_3600" },
 
-    { "application": "cluster_health_info", "namespace": "container", "name": "file_usage" }
-    { "application": "cluster_health_info", "namespace": "container", "name": "file_usage_aggr_3600" },
-    { "application": "cluster_health_info", "namespace": "container", "name": "utilization" },
-    { "application": "cluster_health_info", "namespace": "container", "name": "utilization_aggr_3600" },
 
-    { "application": "cluster_health_info", "namespace": "file_registry", "name": "directory" },
-    { "application": "cluster_health_info", "namespace": "file_registry", "name": "directory_aggr_3600" },
-    { "application": "cluster_health_info", "namespace": "file_registry", "name": "file" },
-    { "application": "cluster_health_info", "namespace": "file_registry", "name": "file_aggr_3600" },
 
-    { "application": "cluster_health_info", "namespace": "node", "name": "disk_utilization" },
-    { "application": "cluster_health_info", "namespace": "node", "name": "disk_utilization_aggr_3600" },
-    { "application": "cluster_health_info", "namespace": "node", "name": "utilization" },
-    { "application": "cluster_health_info", "namespace": "node", "name": "utilization_aggr_3600" },
 
     { "application": "iba", "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/4eb11184-4b32-4106-8e90-edb312042683", "name": "System Interface Counters" },
     { "application": "iba", "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/4eb11184-4b32-4106-8e90-edb312042683", "name": "Average Interface Counters" },
@@ -141,24 +193,24 @@ type containerUtilization struct {
       "node": "AosController",
       "timestamp": "2022-05-14T20:12:07.378641Z",
       "size": 79455693,
-      "directory_path": "/var/lib/aos/metricdb/cluster_health_info"
+      "directory_path": "/var/lib/aos/metricdb_apps/cluster_health_info"
 
     { "application": "cluster_health_info", "namespace": "file_registry", "name": "directory_aggr_3600" },
       "node": "AosController",
       "timestamp": "2022-05-14T20:44:10.302570Z",
       "size": 79606735,
-      "directory_path": "/var/lib/aos/metricdb/cluster_health_info"
+      "directory_path": "/var/lib/aos/metricdb_apps/cluster_health_info"
 
     { "application": "cluster_health_info", "namespace": "file_registry", "name": "file" },
       "node": "AosController",
       "timestamp": "2022-05-14T20:12:07.378885Z",
-      "file_path": "/var/lib/aos/metricdb/cluster_health_info/node/disk_utilization/disk_utilization-189-2022-05-12--16-45-55.616443.tel",
+      "file_path": "/var/lib/aos/metricdb_apps/cluster_health_info/node/disk_utilization/disk_utilization-189-2022-05-12--16-45-55.616443.tel",
       "size": 50893
 
     { "application": "cluster_health_info", "namespace": "file_registry", "name": "file_aggr_3600" },
       "node": "AosController",
       "timestamp": "2022-05-14T20:44:10.273072Z",
-      "file_path": "/var/lib/aos/metricdb/cluster_health_info/node/disk_utilization/disk_utilization-189-2022-05-12--16-45-55.616443.tel",
+      "file_path": "/var/lib/aos/metricdb_apps/cluster_health_info/node/disk_utilization/disk_utilization-189-2022-05-12--16-45-55.616443.tel",
       "size": 50893
 
     { "application": "cluster_health_info", "namespace": "node", "name": "disk_utilization" },
@@ -231,18 +283,3 @@ type containerUtilization struct {
 
 
 */
-
-// healthAggr3600 are the []Items response when calling apiUrlMetricQuery with
-// metricDbQuery{
-//		Application ApplicationClusterHealthInfo
-//	 	Name        AppClusterHealthInfoHealthAggr3600
-// }
-type healthAggr3600 interface{} // unknown
-
-// fileAggr3600 are the []Items response when calling apiUrlMetricQuery with
-// metricDbQuery{
-//		Application ApplicationClusterHealthInfo
-//	 	Name        ClusterHealthInfoHealthAggr3600
-// }
-type fileAggr3600 struct {
-}

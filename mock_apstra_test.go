@@ -14,10 +14,10 @@ const (
 )
 
 type mockApstraApi struct {
-	username  string
-	password  string
-	authToken string
-	metricDb  metricdbResponse
+	username       string
+	password       string
+	authToken      string
+	metricdbMetric metricdbMetricResponse
 }
 
 func newMockApstraApi(password string) (*mockApstraApi, error) {
@@ -109,7 +109,7 @@ authLoop:
 		}, nil
 	}
 
-	outBody, err := json.Marshal(o.metricDb)
+	outBody, err := json.Marshal(o.metricdbMetric)
 	if err != nil {
 		return nil, err
 	}
