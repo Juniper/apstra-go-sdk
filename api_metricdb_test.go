@@ -153,3 +153,35 @@ func TestGetMetricdb(t *testing.T) {
 		debugStr(2, buf.String())
 	}
 }
+
+func TestUseAggregation(t *testing.T) {
+	type testData struct {
+		testString string
+		expectBool bool
+		expectName string
+		expectSecs int
+	}
+
+	var td []testData
+	td = append(td, testData{testString: "foo"})
+	td = append(td, testData{testString: "foo_aggr_"})
+	td = append(td, testData{testString: "_aggr_3600"})
+	td = append(td, testData{testString: "foo_aggr_-3600"})
+	td = append(td, testData{testString: "foo_aggr_3600", expectBool: true, expectName: "foo", expectSecs: 3600})
+
+	for i := range td {
+		useAgg, name, secs, err := useAggregation(td[i].testString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if useAgg != td[i].expectBool {
+			t.Fatalf("'%s' expected '%t', got '%t'", td[i].testString, td[i].expectBool, useAgg)
+		}
+		if secs != td[i].expectSecs {
+			t.Fatalf("'%s' expected '%d', got '%d'", td[i].testString, td[i].expectSecs, secs)
+		}
+		if name != td[i].expectName {
+			t.Fatalf("'%s' expected '%s', got '%s'", td[i].testString, td[i].expectName, name)
+		}
+	}
+}
