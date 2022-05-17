@@ -118,6 +118,9 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
 
+	debugFunc(2, dumpHttpRequest, req)
+	debugFunc(2, dumpHttpResponse, resp)
+
 	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
@@ -140,6 +143,7 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 						resp.StatusCode, in.url, in.doNotLogin))
 			}
 
+			debugStr(1, fmt.Sprintf("got http '%s' at '%s' attempting login", resp.Status, in.url.String()))
 			// Try logging in
 			err := o.login(ctx)
 			if err != nil {
@@ -193,7 +197,6 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 // talkToApstraErr implements error{} and carries around http.Request and
 // http.Response object pointers. Error() method produces a string like
 // "<error> - http response <status> at url <url>".
-// todo: methods like ErrorCRIT() and ErrorWARN()
 type talkToApstraErr struct {
 	request  *http.Request
 	response *http.Response

@@ -360,6 +360,7 @@ func blueprintIdFromUrl(in *url.URL) (ObjectId, error) {
 // waitForTaskCompletion interacts with the taskMonitor, returns the Apstra API
 // *getTaskResponse
 func waitForTaskCompletion(bId ObjectId, tId TaskId, mon chan *taskMonitorMonReq) (*getTaskResponse, error) {
+	debugStr(1, fmt.Sprintf("awaiting completion of blueprint '%s' task '%s", bId, tId))
 	// task status update channel (how we'll learn the task is complete
 	reply := make(chan *taskCompleteInfo, 1) // Task Complete Info Channel
 
