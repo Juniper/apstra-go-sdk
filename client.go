@@ -194,3 +194,8 @@ func (o Client) DeleteRoutingZone(ctx context.Context, blueprintId ObjectId, zon
 func (o Client) GetRoutingZones(ctx context.Context, blueprintId ObjectId) ([]SecurityZone, error) {
 	return o.getAllRoutingZones(ctx, blueprintId)
 }
+
+// GetVirtualInfraMgrs returns all Virtual Infrastructure Managers configured in Apstra
+func (o *Client) GetVirtualInfraMgrs(ctx context.Context) ([]VirtualInfraMgrInfo, error) {
+	return o.getVirtualInfraMgrs(ctx)
+}

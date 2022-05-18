@@ -96,7 +96,7 @@ func newLiveTestClient() (*Client, error) {
 
 func newMockTestClient() (*Client, *mockApstraApi, error) {
 	c, err := NewClient(&ClientCfg{
-		Scheme: "mock",
+		Scheme: "http",
 		Host:   "mock",
 		Port:   uint16(0),
 		User:   mockApstraUser,

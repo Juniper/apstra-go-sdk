@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 func taskMonitorConfigTestClient1() (*Client, error) {
@@ -94,20 +93,6 @@ func TestBufIoReaderStuff(t *testing.T) {
 	log.Printf("got %d bytes from unbuffered reader: %s\n", j, buf.String())
 }
 
-func TestChanClose(t *testing.T) {
-	testChan := make(chan struct{})
-	select {
-	case <-testChan:
-		log.Println("read from testChan")
-	default:
-	}
-	log.Println("closing testChan")
-	close(testChan)
-	log.Println("closing testChan again")
-	close(testChan)
-	log.Println("closed testChan twice")
-}
-
 func TestBlueprintIdFromUrl(t *testing.T) {
 	testBpId := ObjectId("lkasdlfaj")
 	test := "https://host:443" + apiUrlBlueprintsPrefix + testBpId + apiUrlPathDelim + apiUrlRoutingZoneSuffix
@@ -122,31 +107,4 @@ func TestBlueprintIdFromUrl(t *testing.T) {
 	if testBpId != resultBpId {
 		log.Fatalf("expected '%s', got '%s'", testBpId, resultBpId)
 	}
-}
-
-func TestCopyToPointer(t *testing.T) {
-	type mystruct struct {
-		s string
-		i int
-	}
-
-	s1 := mystruct{
-		s: "hello",
-		i: 1,
-	}
-
-	s2 := &mystruct{}
-
-	*s2 = s1
-
-	log.Println("s1: ", s1)
-	log.Println("s2: ", s2)
-
-	ps1 := &s1
-	ps2 := s2
-
-	_ = ps1
-	_ = ps2
-	time.Sleep(time.Hour)
-
 }

@@ -14,10 +14,11 @@ const (
 )
 
 type mockApstraApi struct {
-	username  string
-	password  string
-	authToken string
-	metricDb  metricdbResponse
+	username        string
+	password        string
+	authToken       string
+	metricDb        metricdbResponse
+	virtualIfraMgrs virtualInfraMgrsResponse
 }
 
 func newMockApstraApi(password string) (*mockApstraApi, error) {
@@ -47,9 +48,23 @@ func (o *mockApstraApi) Do(req *http.Request) (*http.Response, error) {
 		return o.handleLogout(req)
 	case req.URL.Path == apiUrlMetricdbMetric:
 		return o.handleMetricdb(req)
+	case req.URL.Path == apiUrlVirtualInfraManagers:
+		return o.handleVirtualInfraManagers(req)
 	default:
 		return nil, fmt.Errorf("mock client doesn't handle API path '%s'", req.URL.Path)
 	}
+}
+
+func (o *mockApstraApi) auth(req *http.Request) (*http.Response, bool) {
+	for _, val := range req.Header.Values(apstraAuthHeader) {
+		if val == o.authToken {
+			return nil, true
+		}
+	}
+	return &http.Response{
+		StatusCode: http.StatusUnauthorized,
+		Body:       io.NopCloser(bytes.NewReader(nil)),
+	}, false
 }
 
 func (o *mockApstraApi) handleLogin(req *http.Request) (*http.Response, error) {
@@ -81,32 +96,20 @@ func (o *mockApstraApi) handleLogin(req *http.Request) (*http.Response, error) {
 }
 
 func (o mockApstraApi) handleLogout(req *http.Request) (*http.Response, error) {
-	for _, val := range req.Header.Values(apstraAuthHeader) {
-		if val == o.authToken {
-			o.authToken = ""
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(bytes.NewReader(nil)),
-			}, nil
-		}
+	if resp, ok := o.auth(req); !ok {
+		return resp, nil
 	}
-	return nil, fmt.Errorf("logout attempt without valid token in mockApstraApi.handleLogin()")
+	o.authToken = ""
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       io.NopCloser(bytes.NewReader(nil)),
+	}, nil
+
 }
 
 func (o mockApstraApi) handleMetricdb(req *http.Request) (*http.Response, error) {
-	var authOk bool
-authLoop:
-	for _, val := range req.Header.Values(apstraAuthHeader) {
-		if val == o.authToken {
-			authOk = true
-			break authLoop
-		}
-	}
-	if authOk == false {
-		return &http.Response{
-			StatusCode: http.StatusUnauthorized,
-			Body:       io.NopCloser(bytes.NewReader(nil)),
-		}, nil
+	if resp, ok := o.auth(req); !ok {
+		return resp, nil
 	}
 
 	outBody, err := json.Marshal(o.metricDb)
@@ -117,5 +120,21 @@ authLoop:
 	return &http.Response{
 		Body:       io.NopCloser(bytes.NewReader(outBody)),
 		StatusCode: http.StatusOK,
+	}, nil
+}
+
+func (o *mockApstraApi) handleVirtualInfraManagers(req *http.Request) (*http.Response, error) {
+	if resp, ok := o.auth(req); !ok {
+		return resp, nil
+	}
+
+	body, err := json.Marshal(o.virtualIfraMgrs)
+	if err != nil {
+		return nil, err
+	}
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       io.NopCloser(bytes.NewReader(body)),
 	}, nil
 }

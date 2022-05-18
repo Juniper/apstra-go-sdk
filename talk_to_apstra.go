@@ -109,6 +109,8 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		req.Header.Set(k, v)
 	}
 
+	debugFunc(2, dumpHttpRequest, req)
+
 	// talk to the server
 	resp, err := o.httpClient.Do(req)
 
@@ -118,7 +120,6 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
 
-	debugFunc(2, dumpHttpRequest, req)
 	debugFunc(2, dumpHttpResponse, resp)
 
 	// noinspection GoUnhandledErrorResult
@@ -143,7 +144,7 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 						resp.StatusCode, in.url, in.doNotLogin))
 			}
 
-			debugStr(1, fmt.Sprintf("got http '%s' at '%s' attempting login", resp.Status, in.url.String()))
+			debugStr(1, fmt.Sprintf("got http %d '%s' at '%s' attempting login", resp.StatusCode, resp.Status, in.url.String()))
 			// Try logging in
 			err := o.login(ctx)
 			if err != nil {
