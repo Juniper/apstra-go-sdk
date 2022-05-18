@@ -199,3 +199,19 @@ func (o Client) GetRoutingZones(ctx context.Context, blueprintId ObjectId) ([]Se
 func (o *Client) GetVirtualInfraMgrs(ctx context.Context) ([]VirtualInfraMgrInfo, error) {
 	return o.getVirtualInfraMgrs(ctx)
 }
+
+// GetMetricdbMetrics returns []MetricdbMetric representing the various metricdb
+// application/namespace/name paths available to be queried from Apstra
+func (o *Client) GetMetricdbMetrics(ctx context.Context) ([]MetricdbMetric, error) {
+	response, err := o.getMetricdbMetrics(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return response.Items, nil
+}
+
+// QueryMetricdb returns a MetricDbQueryResponse including all available data
+// for the metric and time range specified in the
+func (o *Client) QueryMetricdb(ctx context.Context, q *MetricDbQueryRequest) (*MetricDbQueryResponse, error) {
+	return o.queryMetricdb(ctx, q.begin, q.end, q.metric)
+}

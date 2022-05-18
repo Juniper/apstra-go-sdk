@@ -17,8 +17,16 @@ type mockApstraApi struct {
 	username        string
 	password        string
 	authToken       string
-	metricDb        metricdbResponse
+	metricdb        metricdb
 	virtualIfraMgrs virtualInfraMgrsResponse
+}
+
+type metricdb struct {
+	metrics metricdbMetrics
+}
+
+type metricdbMetrics struct {
+	Items []MetricdbMetric
 }
 
 func newMockApstraApi(password string) (*mockApstraApi, error) {
@@ -110,11 +118,12 @@ func (o mockApstraApi) handleLogout(req *http.Request) (*http.Response, error) {
 }
 
 func (o mockApstraApi) handleMetricdb(req *http.Request) (*http.Response, error) {
+	// so far only GET /api/metricdb/metric supported
 	if resp, ok := o.auth(req); !ok {
 		return resp, nil
 	}
 
-	outBody, err := json.Marshal(o.metricDb)
+	outBody, err := json.Marshal(o.metricdb)
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +131,7 @@ func (o mockApstraApi) handleMetricdb(req *http.Request) (*http.Response, error)
 	return &http.Response{
 		Body:       io.NopCloser(bytes.NewReader(outBody)),
 		StatusCode: http.StatusOK,
+		Status:     "200 OK",
 	}, nil
 }
 

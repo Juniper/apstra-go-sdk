@@ -153,6 +153,7 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 			// Try the request again
 			in.doNotLogin = true
+			// todo - reusing the context here is not great
 			return o.talkToApstra(ctx, in)
 		} // HTTP 401
 

@@ -44,7 +44,7 @@ func TestGetVirtualInfraMgrs(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing getMetricdb() with %s client", clientName)
+		log.Printf("testing getMetricdbMetrics() with %s client", clientName)
 
 		vim, err := client.getVirtualInfraMgrs(context.TODO())
 		if err != nil {
