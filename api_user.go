@@ -51,6 +51,12 @@ func (o *Client) login(ctx context.Context) error {
 }
 
 func (o Client) logout(ctx context.Context) error {
+	// presence of an auth token is proxy for both
+	// - "logged in" state and
+	// - operation of a task monitor routine
+	if _, tokenFound := o.httpHeaders[apstraAuthHeader]; !tokenFound {
+		return nil
+	}
 	defer close(o.tmQuit) // shut down the task monitor gothread
 
 	apstraUrl, err := url.Parse(apiUrlUserLogout)
@@ -58,8 +64,9 @@ func (o Client) logout(ctx context.Context) error {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogout, err)
 	}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodPost,
-		url:    apstraUrl,
+		method:     http.MethodPost,
+		url:        apstraUrl,
+		doNotLogin: true,
 	})
 	if err != nil {
 		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"testing"
@@ -70,5 +71,32 @@ func TestLogout(t *testing.T) {
 	err = c.Logout(context.TODO())
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestUserLogin(t *testing.T) {
+	DebugLevel = 2
+	clients, _, err := getTestClientsAndMockAPIs()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		client.cfg.Timeout = -1
+		log.Printf("testing Login() and Logout() with %s client", clientName)
+		err = client.Login(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = client.Logout(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = client.Logout(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 }

@@ -248,7 +248,6 @@ func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, 
 		// socket, and likely to be closed by a `defer` somewhere
 		rehydratedResponse := &bytes.Buffer{}
 		_, _ = io.CopyN(rehydratedResponse, resp.Body, errResponseLimit) // size limit
-		_ = resp.Body.Close()                                            // close the real network socket
 		resp.Body = io.NopCloser(rehydratedResponse)                     // replace the original body
 	}
 

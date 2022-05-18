@@ -92,6 +92,7 @@ func (o *mockApstraApi) handleLogin(req *http.Request) (*http.Response, error) {
 	return &http.Response{
 		Body:       io.NopCloser(bytes.NewReader(outBody)),
 		StatusCode: http.StatusCreated,
+		Status:     "201 CREATED",
 	}, nil
 }
 
@@ -103,6 +104,7 @@ func (o mockApstraApi) handleLogout(req *http.Request) (*http.Response, error) {
 	return &http.Response{
 		StatusCode: http.StatusOK,
 		Body:       io.NopCloser(bytes.NewReader(nil)),
+		Status:     "200 OK",
 	}, nil
 
 }
