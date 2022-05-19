@@ -67,5 +67,4 @@ func TestGetTelemetryServicesDeviceMapping(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Println(buf.String())
 }

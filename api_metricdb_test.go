@@ -163,10 +163,10 @@ func TestUseAggregation(t *testing.T) {
 	}
 
 	var td []testData
-	td = append(td, testData{testString: "foo"})
-	td = append(td, testData{testString: "foo_aggr_"})
-	td = append(td, testData{testString: "_aggr_3600"})
-	td = append(td, testData{testString: "foo_aggr_-3600"})
+	td = append(td, testData{testString: "foo", expectBool: false, expectName: "foo", expectSecs: 0})
+	td = append(td, testData{testString: "foo_aggr_", expectBool: false, expectName: "foo_aggr_", expectSecs: 0})
+	td = append(td, testData{testString: "_aggr_3600", expectBool: false, expectName: "_aggr_3600", expectSecs: 0})
+	td = append(td, testData{testString: "foo_aggr_-3600", expectBool: false, expectName: "foo_aggr_-3600", expectSecs: 0})
 	td = append(td, testData{testString: "foo_aggr_3600", expectBool: true, expectName: "foo", expectSecs: 3600})
 
 	for i := range td {
@@ -175,13 +175,13 @@ func TestUseAggregation(t *testing.T) {
 			t.Fatal(err)
 		}
 		if useAgg != td[i].expectBool {
-			t.Fatalf("'%s' expected '%t', got '%t'", td[i].testString, td[i].expectBool, useAgg)
+			t.Fatalf("'%s' expected bool '%t', got '%t'", td[i].testString, td[i].expectBool, useAgg)
 		}
 		if secs != td[i].expectSecs {
-			t.Fatalf("'%s' expected '%d', got '%d'", td[i].testString, td[i].expectSecs, secs)
+			t.Fatalf("'%s' expected time '%d', got '%d'", td[i].testString, td[i].expectSecs, secs)
 		}
 		if name != td[i].expectName {
-			t.Fatalf("'%s' expected '%s', got '%s'", td[i].testString, td[i].expectName, name)
+			t.Fatalf("'%s' expected name '%s', got '%s'", td[i].testString, td[i].expectName, name)
 		}
 	}
 }
@@ -219,8 +219,10 @@ func TestQueryMetricdb(t *testing.T) {
 
 		var result *MetricDbQueryResponse
 		if len(metrics.Items) > 0 { // do not call rand.Intn() with '0'
+			i := rand.Intn(len(metrics.Items))
+			log.Printf("randomly requesting metric %d of %d available", i, len(metrics.Items))
 			q := MetricDbQueryRequest{
-				metric: metrics.Items[rand.Intn(len(metrics.Items))],
+				metric: metrics.Items[i],
 				begin:  time.Now().Add(-time.Hour),
 				end:    time.Now(),
 			}

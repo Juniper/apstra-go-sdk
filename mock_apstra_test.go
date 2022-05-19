@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 const (
@@ -49,13 +50,16 @@ func (o *mockApstraApi) changePassword(password string) {
 }
 
 func (o *mockApstraApi) Do(req *http.Request) (*http.Response, error) {
+	// todo: inspect HTTP method in addition to URL path?
 	switch {
 	case req.URL.Path == apiUrlUserLogin:
 		return o.handleLogin(req)
 	case req.URL.Path == apiUrlUserLogout:
 		return o.handleLogout(req)
 	case req.URL.Path == apiUrlMetricdbMetric:
-		return o.handleMetricdb(req)
+		return o.handleMetricdbMetric(req)
+	case req.URL.Path == apiUrlMetricdbQuery:
+		return o.handleMetricdbQuery(req)
 	case req.URL.Path == apiUrlVirtualInfraManagers:
 		return o.handleVirtualInfraManagers(req)
 	default:
@@ -117,13 +121,40 @@ func (o mockApstraApi) handleLogout(req *http.Request) (*http.Response, error) {
 
 }
 
-func (o mockApstraApi) handleMetricdb(req *http.Request) (*http.Response, error) {
-	// so far only GET /api/metricdb/metric supported
+func (o mockApstraApi) handleMetricdbMetric(req *http.Request) (*http.Response, error) {
 	if resp, ok := o.auth(req); !ok {
 		return resp, nil
 	}
 
-	outBody, err := json.Marshal(o.metricdb)
+	outBody, err := json.Marshal(&o.metricdb.metrics)
+	if err != nil {
+		return nil, err
+	}
+
+	return &http.Response{
+		Body:       io.NopCloser(bytes.NewReader(outBody)),
+		StatusCode: http.StatusOK,
+		Status:     "200 OK",
+	}, nil
+}
+
+func (o mockApstraApi) handleMetricdbQuery(req *http.Request) (*http.Response, error) {
+	if resp, ok := o.auth(req); !ok {
+		return resp, nil
+	}
+
+	outBody, err := json.Marshal(&MetricDbQueryResponse{
+		Status: struct {
+			TotalCount    int       `json:"total_count"`
+			BeginTime     time.Time `json:"begin_time"`
+			EndTime       time.Time `json:"end_time"`
+			ResultCode    string    `json:"result_code"`
+			LastTimestamp time.Time `json:"last_timestamp"`
+		}{},
+		// todo
+		//Items: []json.RawMessage{[]byte{string"{bogus_data: }"}},
+		Items: nil,
+	})
 	if err != nil {
 		return nil, err
 	}
