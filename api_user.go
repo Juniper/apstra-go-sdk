@@ -45,7 +45,9 @@ func (o *Client) login(ctx context.Context) error {
 	}
 
 	// stash auth token in client's default set of apstra http httpHeaders
+	// and start the tasskMonitor (these go together)
 	o.httpHeaders[apstraAuthHeader] = response.Token
+	newTaskMonitor(o).start()
 
 	return nil
 }
@@ -57,7 +59,11 @@ func (o Client) logout(ctx context.Context) error {
 	if _, tokenFound := o.httpHeaders[apstraAuthHeader]; !tokenFound {
 		return nil
 	}
-	defer close(o.tmQuit) // shut down the task monitor gothread
+	defer func() {
+		// presence of auth token and taskMonitor go together
+		delete(o.httpHeaders, apstraAuthHeader) // delete the auth token
+		defer close(o.tmQuit)                   // shut down the task monitor gothread
+	}()
 
 	apstraUrl, err := url.Parse(apiUrlUserLogout)
 	if err != nil {
@@ -71,6 +77,5 @@ func (o Client) logout(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, err)
 	}
-	delete(o.httpHeaders, apstraAuthHeader)
 	return nil
 }

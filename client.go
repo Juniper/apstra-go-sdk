@@ -116,7 +116,6 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 
 	debugStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
 
-	newTaskMonitor(c).start()
 	return c, nil
 }
 
