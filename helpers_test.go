@@ -33,12 +33,13 @@ func randString(n int, style string) string {
 	return string(b)
 }
 
-func randId() string {
-	return randString(8, "hex") + "-" +
-		randString(4, "hex") + "-" +
-		randString(4, "hex") + "-" +
-		randString(4, "hex") + "-" +
-		randString(12, "hex")
+func randId() ObjectId {
+	return ObjectId(
+		randString(8, "hex") + "-" +
+			randString(4, "hex") + "-" +
+			randString(4, "hex") + "-" +
+			randString(4, "hex") + "-" +
+			randString(12, "hex"))
 }
 
 func randJwt() string {

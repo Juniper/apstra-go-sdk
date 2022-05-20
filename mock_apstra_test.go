@@ -105,7 +105,7 @@ func (o *mockApstraApi) handleLogin(req *http.Request) (*http.Response, error) {
 	o.authToken = randJwt()
 	outBody, err := json.Marshal(userLoginResponse{
 		Token: o.authToken,
-		Id:    randId(),
+		Id:    string(randId()),
 	})
 
 	return &http.Response{
@@ -220,7 +220,7 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 				return nil, fmt.Errorf("overlap with existing asn pool %s", existingPool.Id)
 			}
 		}
-		newPool.Id = ObjectId(randId())
+		newPool.Id = randId()
 		o.resourceAsnPools = append(o.resourceAsnPools, *newPool)
 		body, err := json.Marshal(objectIdResponse{Id: newPool.Id})
 		if err != nil {
