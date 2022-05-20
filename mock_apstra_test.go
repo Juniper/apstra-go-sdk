@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -15,11 +16,12 @@ const (
 )
 
 type mockApstraApi struct {
-	username        string
-	password        string
-	authToken       string
-	metricdb        metricdb
-	virtualIfraMgrs virtualInfraMgrsResponse
+	username         string
+	password         string
+	authToken        string
+	metricdb         metricdb
+	virtualIfraMgrs  virtualInfraMgrsResponse
+	resourceAsnPools []AsnPool
 }
 
 type metricdb struct {
@@ -62,6 +64,10 @@ func (o *mockApstraApi) Do(req *http.Request) (*http.Response, error) {
 		return o.handleMetricdbQuery(req)
 	case req.URL.Path == apiUrlVirtualInfraManagers:
 		return o.handleVirtualInfraManagers(req)
+	case req.URL.Path == apiUrlResourcesAsnPools:
+		return o.handleApiUrlResourcesAsnPools(req)
+	case strings.HasPrefix(req.URL.Path, apiUrlResourcesAsnPoolsPrefix):
+		return o.handleApiUrlResourcesAsnPoolsPrefix(req)
 	default:
 		return nil, fmt.Errorf("mock client doesn't handle API path '%s'", req.URL.Path)
 	}
@@ -75,6 +81,7 @@ func (o *mockApstraApi) auth(req *http.Request) (*http.Response, bool) {
 	}
 	return &http.Response{
 		StatusCode: http.StatusUnauthorized,
+		Status:     "401 Unauthorized",
 		Body:       io.NopCloser(bytes.NewReader(nil)),
 	}, false
 }
@@ -180,4 +187,109 @@ func (o *mockApstraApi) handleVirtualInfraManagers(req *http.Request) (*http.Res
 		StatusCode: http.StatusOK,
 		Body:       io.NopCloser(bytes.NewReader(body)),
 	}, nil
+}
+
+func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.Response, error) {
+	if resp, ok := o.auth(req); !ok {
+		return resp, nil
+	}
+
+	switch req.Method {
+	case http.MethodGet:
+		body, err := json.Marshal(getAsnPoolsResponse{Items: o.resourceAsnPools})
+		if err != nil {
+			return nil, err
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     "200 OK",
+			Body:       io.NopCloser(bytes.NewReader(body)),
+		}, nil
+	case http.MethodPost:
+		inBody, err := io.ReadAll(req.Body)
+		if err != nil {
+			return nil, err
+		}
+		newPool := &AsnPool{}
+		err = json.Unmarshal(inBody, newPool)
+		if err != nil {
+			return nil, err
+		}
+		for _, existingPool := range o.resourceAsnPools {
+			if asnPoolOverlap(existingPool, *newPool) {
+				return nil, fmt.Errorf("overlap with existing asn pool %s", existingPool.Id)
+			}
+		}
+		newPool.Id = ObjectId(randId())
+		o.resourceAsnPools = append(o.resourceAsnPools, *newPool)
+		body, err := json.Marshal(objectIdResponse{Id: newPool.Id})
+		if err != nil {
+			return nil, err
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     "202 ACCEPTED",
+			Body:       io.NopCloser(bytes.NewReader(body)),
+		}, nil
+
+	default:
+		return nil, fmt.Errorf("unsupported method '%s'", req.Method)
+	}
+}
+
+func asnPoolOverlap(a, b AsnPool) bool {
+	var rar, rbr NewAsnRange
+	for _, ra := range a.Ranges {
+		rar.B = ra.First
+		rar.E = ra.Last
+		for _, rb := range b.Ranges {
+			rbr.B = rb.First
+			rbr.E = rb.Last
+			if asnOverlap(rar, rbr) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (o *mockApstraApi) handleApiUrlResourcesAsnPoolsPrefix(req *http.Request) (*http.Response, error) {
+	if resp, ok := o.auth(req); !ok {
+		return resp, nil
+	}
+
+	requested := ObjectId(strings.TrimPrefix(req.URL.Path, apiUrlResourcesAsnPoolsPrefix))
+	switch req.Method {
+	case http.MethodGet:
+		for _, p := range o.resourceAsnPools {
+			if p.Id == requested {
+				body, err := json.Marshal(p)
+				if err != nil {
+					return nil, err
+				}
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewReader(body)),
+				}, nil
+			}
+		}
+		return &http.Response{
+			StatusCode: http.StatusNotFound,
+		}, nil
+	case http.MethodDelete:
+		id := ObjectId(strings.TrimPrefix(req.URL.Path, apiUrlResourcesAsnPoolsPrefix))
+		for i, pool := range o.resourceAsnPools {
+			if pool.Id == id {
+				o.resourceAsnPools = append(o.resourceAsnPools[:i], o.resourceAsnPools[i+1:]...)
+				return &http.Response{
+					StatusCode: 202,
+					Status:     "202 Accepted",
+					Body:       io.NopCloser(strings.NewReader("{}"))}, nil
+			}
+		}
+		return nil, fmt.Errorf("ASN resource pool '%s' not found", id)
+	default:
+		return nil, fmt.Errorf("method '%s' not supported", req.Method)
+	}
 }
