@@ -214,3 +214,12 @@ func (o *Client) GetMetricdbMetrics(ctx context.Context) ([]MetricdbMetric, erro
 func (o *Client) QueryMetricdb(ctx context.Context, q *MetricDbQueryRequest) (*MetricDbQueryResponse, error) {
 	return o.queryMetricdb(ctx, q.begin, q.end, q.metric)
 }
+
+// GetAnomalies is limted to 10k response items // todo: pagination?
+func (o *Client) GetAnomalies(ctx context.Context) ([]Anomaly, error) {
+	result, err := o.getAnomalies(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return result.Items, nil
+}
