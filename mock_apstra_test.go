@@ -22,6 +22,7 @@ type mockApstraApi struct {
 	metricdb         metricdb
 	virtualIfraMgrs  virtualInfraMgrsResponse
 	resourceAsnPools []AsnPool
+	anomalies        []string
 }
 
 type metricdb struct {
@@ -66,6 +67,8 @@ func (o *mockApstraApi) Do(req *http.Request) (*http.Response, error) {
 		return o.handleVirtualInfraManagers(req)
 	case req.URL.Path == apiUrlResourcesAsnPools:
 		return o.handleApiUrlResourcesAsnPools(req)
+	case req.URL.Path == apiUrlAnomalies:
+		return o.handleApiUrlAnomalies(req)
 	case strings.HasPrefix(req.URL.Path, apiUrlResourcesAsnPoolsPrefix):
 		return o.handleApiUrlResourcesAsnPoolsPrefix(req)
 	default:
@@ -292,4 +295,26 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPoolsPrefix(req *http.Request) (
 	default:
 		return nil, fmt.Errorf("method '%s' not supported", req.Method)
 	}
+}
+
+func (o mockApstraApi) handleApiUrlAnomalies(req *http.Request) (*http.Response, error) {
+	if resp, ok := o.auth(req); !ok {
+		return resp, nil
+	}
+	if req.Method != http.MethodGet {
+		return nil, fmt.Errorf("mock '%s' only supports '%s'", apiUrlAnomalies, http.MethodGet)
+	}
+	result := &getAnomaliesResponse{}
+	for _, a := range o.anomalies {
+		result.Items = append(result.Items, []byte(a))
+	}
+	body, err := json.Marshal(result)
+	if err != nil {
+		return nil, fmt.Errorf("mock anomaly error: %w", err)
+	}
+	return &http.Response{
+		StatusCode: 200,
+		Status:     "200 OK",
+		Body:       io.NopCloser(bytes.NewReader(body)),
+	}, nil
 }

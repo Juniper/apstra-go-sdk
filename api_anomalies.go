@@ -68,7 +68,7 @@ type rawAnomaly struct {
 }
 
 type getAnomaliesResponse struct {
-	Items []rawAnomaly `json:items`
+	Items []json.RawMessage `json:items`
 }
 
 // unpackAnomaly is clunky. It extracts instances of Anomaly as returned by
@@ -132,16 +132,28 @@ func unpackAnomaly(in []byte) (*Anomaly, error) {
 	return anomaly, nil
 }
 
-func (o *Client) getAnomalies(ctx context.Context) (*getAnomaliesResponse, error) {
+func (o *Client) getAnomalies(ctx context.Context) ([]*Anomaly, error) {
 	apstraUrl, err := url.Parse(apiUrlAnomalies)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlAnomalies, err)
 	}
 	response := &getAnomaliesResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodGet,
 		url:            apstraUrl,
 		apiResponse:    response,
 		unsynchronized: true,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("error getting anomalies - %w", err)
+	}
+	var result []*Anomaly
+	for _, ra := range response.Items {
+		a, err := unpackAnomaly(ra)
+		if err != nil {
+			return nil, fmt.Errorf("error unpacking anomaly - %w", err)
+		}
+		result = append(result, a)
+	}
+	return result, nil
 }
