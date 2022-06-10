@@ -117,7 +117,7 @@ func TestInvertRangesInRange(t *testing.T) {
 		log.Fatalf("expected max/min error")
 	}
 
-	var testBegin, testEnd []int64
+	var testBegin, testEnd []uint32
 	var testUsed [][]NewAsnRange
 
 	testBegin = append(testBegin, 1)
@@ -171,7 +171,7 @@ func TestInvertRangesInRange(t *testing.T) {
 // Valid ASNs are 1-4294967295.
 // If current ASN pools consume 50-100, 64512-65534 and 4200000000-4294967294,
 // we'd expect to get back [{1,49}{101,64511}{65535,4199999999}{4294967295,4294967295}]
-func invertRangesInRange(min, max int64, used []NewAsnRange) ([]NewAsnRange, error) {
+func invertRangesInRange(min, max uint32, used []NewAsnRange) ([]NewAsnRange, error) {
 	if min > max {
 		return nil, fmt.Errorf("min > max: %d > %d", min, max) // bad input
 	}

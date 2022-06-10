@@ -21,7 +21,7 @@ type mockApstraApi struct {
 	authToken        string
 	metricdb         metricdb
 	virtualIfraMgrs  virtualInfraMgrsResponse
-	resourceAsnPools []AsnPool
+	resourceAsnPools []rawAsnPool // todo: maybe use AsnPool here instead?
 	anomalies        []string
 }
 
@@ -213,19 +213,29 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 		if err != nil {
 			return nil, err
 		}
-		newPool := &AsnPool{}
-		err = json.Unmarshal(inBody, newPool)
+		newRawPool := &rawAsnPool{}
+		err = json.Unmarshal(inBody, newRawPool)
 		if err != nil {
 			return nil, err
 		}
-		for _, existingPool := range o.resourceAsnPools {
-			if asnPoolOverlap(existingPool, *newPool) {
-				return nil, fmt.Errorf("overlap with existing asn pool %s", existingPool.Id)
+		for _, existingRawPool := range o.resourceAsnPools {
+			existingPool, err := rawAsnPoolToAsnPool(existingRawPool)
+			if err != nil {
+				return nil, err
+			}
+
+			newPool, err := rawAsnPoolToAsnPool(*newRawPool)
+			if err != nil {
+				return nil, err
+			}
+
+			if asnPoolOverlap(existingPool, newPool) {
+				return nil, fmt.Errorf("overlap with existing asn pool %s", existingRawPool.Id)
 			}
 		}
-		newPool.Id = randId()
-		o.resourceAsnPools = append(o.resourceAsnPools, *newPool)
-		body, err := json.Marshal(objectIdResponse{Id: newPool.Id})
+		newRawPool.Id = randId()
+		o.resourceAsnPools = append(o.resourceAsnPools, *newRawPool)
+		body, err := json.Marshal(objectIdResponse{Id: newRawPool.Id})
 		if err != nil {
 			return nil, err
 		}

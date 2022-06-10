@@ -37,7 +37,7 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 				poolBeginEnds = append(poolBeginEnds, NewAsnRange{r.First, r.Last})
 			}
 		}
-		openHoles, err = invertRangesInRange(1, int64(math.MaxUint32), poolBeginEnds)
+		openHoles, err = invertRangesInRange(1, math.MaxUint32, poolBeginEnds)
 		if err != nil {
 			t.Fatal(err)
 		}

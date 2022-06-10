@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -15,8 +16,8 @@ const (
 )
 
 type NewAsnRange struct {
-	B int64 `json:"first"`
-	E int64 `json:"last"`
+	B uint32 `json:"first"`
+	E uint32 `json:"last"`
 }
 
 func (o NewAsnRange) String() string {
@@ -28,28 +29,52 @@ type NewAsnPool struct {
 	DisplayName string        `json:"display_name"`
 }
 
+type rawAsnPool struct {
+	Status         string        `json:"status"`
+	Used           string        `json:"used"`
+	DisplayName    string        `json:"display_name"`
+	Tags           []string      `json:"tags"`
+	CreatedAt      time.Time     `json:"created_at"`
+	LastModifiedAt time.Time     `json:"last_modified_at"`
+	Ranges         []rawAsnRange `json:"ranges"`
+	UsedPercentage float32       `json:"used_percentage"`
+	Total          string        `json:"total"`
+	Id             ObjectId      `json:"id"`
+}
+
+type rawAsnRange struct {
+	Status         string  `json:"status"`
+	First          uint32  `json:"first"`
+	Last           uint32  `json:"last"`
+	Total          string  `json:"total"`
+	Used           string  `json:"used"`
+	UsedPercentage float32 `json:"used_percentage"`
+}
+
 type AsnPool struct {
-	Status         string    `json:"status"`
-	Used           string    `json:"used"`
-	DisplayName    string    `json:"display_name"`
-	Tags           []string  `json:"tags"`
-	CreatedAt      time.Time `json:"created_at"`
-	LastModifiedAt time.Time `json:"last_modified_at"`
-	Ranges         []struct {
-		Status         string  `json:"status"`
-		Used           string  `json:"used"`
-		Last           int64   `json:"last"`
-		UsedPercentage float64 `json:"used_percentage"`
-		Total          string  `json:"total"`
-		First          int64   `json:"first"`
-	} `json:"ranges"`
-	UsedPercentage float64  `json:"used_percentage"`
-	Total          string   `json:"total"`
-	Id             ObjectId `json:"id"`
+	Status         string     `json:"status"`
+	Used           uint32     `json:"used"`
+	DisplayName    string     `json:"display_name"`
+	Tags           []string   `json:"tags"`
+	CreatedAt      time.Time  `json:"created_at"`
+	LastModifiedAt time.Time  `json:"last_modified_at"`
+	Ranges         []AsnRange `json:"ranges"`
+	UsedPercentage float32    `json:"used_percentage"`
+	Total          uint32     `json:"total"`
+	Id             ObjectId   `json:"id"`
+}
+
+type AsnRange struct {
+	Status         string  `json:"status"`
+	First          uint32  `json:"first"`
+	Last           uint32  `json:"last"`
+	Total          uint32  `json:"total"`
+	Used           uint32  `json:"used"`
+	UsedPercentage float32 `json:"used_percentage"`
 }
 
 type getAsnPoolsResponse struct {
-	Items []AsnPool `json:"items"`
+	Items []rawAsnPool `json:"items"`
 }
 
 func (o *Client) createAsnPool(ctx context.Context, in *NewAsnPool) (*objectIdResponse, error) {
@@ -67,7 +92,7 @@ func (o *Client) createAsnPool(ctx context.Context, in *NewAsnPool) (*objectIdRe
 }
 
 // todo: move to client.go
-func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
+func (o *Client) GetAsnPools(ctx context.Context) ([]rawAsnPool, error) {
 	return o.getAsnPools(ctx)
 }
 
@@ -90,7 +115,7 @@ func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
 	return o.deleteAsnPool(ctx, in)
 }
 
-func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
+func (o *Client) getAsnPools(ctx context.Context) ([]rawAsnPool, error) {
 	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPools, err)
@@ -138,5 +163,52 @@ func (o *Client) deleteAsnPool(ctx context.Context, in ObjectId) error {
 		return fmt.Errorf("error fetching ASN pools - %w", err)
 	}
 	return nil
+}
 
+func rawAsnPoolToAsnPool(in rawAsnPool) (AsnPool, error) {
+	used, err := strconv.ParseUint(in.Used, 10, 32)
+	if err != nil {
+		return AsnPool{}, fmt.Errorf("error parsing 'used' element of ASN Pool '%s' - %w", in.Id, err)
+	}
+
+	total, err := strconv.ParseUint(in.Total, 10, 32)
+	if err != nil {
+		return AsnPool{}, fmt.Errorf("error parsing 'total' element of ASN Pool '%s' - %w", in.Id, err)
+	}
+
+	result := AsnPool{
+		Status:         in.Status,
+		Used:           uint32(used),
+		Total:          uint32(total),
+		DisplayName:    in.DisplayName,
+		Tags:           in.Tags,
+		CreatedAt:      in.CreatedAt,
+		LastModifiedAt: in.LastModifiedAt,
+		UsedPercentage: in.UsedPercentage,
+		Id:             in.Id,
+	}
+
+	for i, r := range in.Ranges {
+		used, err := strconv.ParseUint(in.Used, 10, 32)
+		if err != nil {
+			return AsnPool{}, fmt.Errorf("error parsing ASN Pool '%s', 'ranges[%d]', 'used' element - %w", in.Id, i, err)
+		}
+
+		total, err := strconv.ParseUint(in.Total, 10, 32)
+		if err != nil {
+			return AsnPool{}, fmt.Errorf("error parsing ASN Pool '%s', 'ranges[%d]', 'total' element - %w", in.Id, i, err)
+		}
+
+		result.Ranges = append(result.Ranges, AsnRange{
+			Status:         r.Status,
+			First:          r.First,
+			Last:           r.Last,
+			Total:          uint32(total),
+			Used:           uint32(used),
+			UsedPercentage: r.UsedPercentage,
+		})
+
+	}
+
+	return result, nil
 }
