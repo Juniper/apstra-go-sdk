@@ -21,7 +21,7 @@ type mockApstraApi struct {
 	authToken        string
 	metricdb         metricdb
 	virtualIfraMgrs  virtualInfraMgrsResponse
-	resourceAsnPools []rawAsnPool // todo: maybe use AsnPool here instead?
+	resourceAsnPools []rawAsnPool
 	anomalies        []string
 }
 
