@@ -91,7 +91,7 @@ func (o *Client) createAsnPool(ctx context.Context, in *NewAsnPool) (*objectIdRe
 	})
 }
 
-func (o *Client) getAsnPools(ctx context.Context) ([]rawAsnPool, error) {
+func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
 	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPools, err)
@@ -105,7 +105,16 @@ func (o *Client) getAsnPools(ctx context.Context) ([]rawAsnPool, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error fetching ASN pools - %w", err)
 	}
-	return response.Items, nil
+
+	var pools []AsnPool
+	for _, rawPool := range response.Items {
+		p, err := rawAsnPoolToAsnPool(rawPool)
+		if err != nil {
+			return nil, err
+		}
+		pools = append(pools, p)
+	}
+	return pools, nil
 }
 
 func (o *Client) getAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) {

@@ -225,7 +225,7 @@ func (o *Client) GetAnomalies(ctx context.Context) ([]*Anomaly, error) {
 }
 
 // GetAsnPools returns ASN pools configured on Apstra
-func (o *Client) GetAsnPools(ctx context.Context) ([]rawAsnPool, error) {
+func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
 	return o.getAsnPools(ctx)
 }
 
