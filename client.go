@@ -223,3 +223,27 @@ func (o *Client) GetAnomalies(ctx context.Context) ([]*Anomaly, error) {
 	}
 	return result, nil
 }
+
+// GetAsnPools returns ASN pools configured on Apstra
+func (o *Client) GetAsnPools(ctx context.Context) ([]rawAsnPool, error) {
+	return o.getAsnPools(ctx)
+}
+
+// CreateAsnPool adds an ASN pool to Apstra
+func (o *Client) CreateAsnPool(ctx context.Context, in *NewAsnPool) (ObjectId, error) {
+	response, err := o.createAsnPool(ctx, in)
+	if err != nil {
+		return "", fmt.Errorf("error creating ASN pool - %w", err)
+	}
+	return response.Id, nil
+}
+
+// GetAsnPool returns, by ObjectId, a specifc ASN pool
+func (o *Client) GetAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) {
+	return o.getAsnPool(ctx, in)
+}
+
+// DeleteAsnPool deletes an ASN pool, by ObjectId from Apstra
+func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
+	return o.deleteAsnPool(ctx, in)
+}

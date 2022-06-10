@@ -91,30 +91,6 @@ func (o *Client) createAsnPool(ctx context.Context, in *NewAsnPool) (*objectIdRe
 	})
 }
 
-// todo: move to client.go
-func (o *Client) GetAsnPools(ctx context.Context) ([]rawAsnPool, error) {
-	return o.getAsnPools(ctx)
-}
-
-// todo: move to client.go
-func (o *Client) CreateAsnPool(ctx context.Context, in *NewAsnPool) (ObjectId, error) {
-	response, err := o.createAsnPool(ctx, in)
-	if err != nil {
-		return "", fmt.Errorf("error creating ASN pool - %w", err)
-	}
-	return response.Id, nil
-}
-
-// todo: move to client.go
-func (o *Client) GetAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) {
-	return o.getAsnPool(ctx, in)
-}
-
-// todo: move to client.go
-func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
-	return o.deleteAsnPool(ctx, in)
-}
-
 func (o *Client) getAsnPools(ctx context.Context) ([]rawAsnPool, error) {
 	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
 	if err != nil {
