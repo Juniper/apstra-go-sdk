@@ -20,6 +20,7 @@ const (
 	EnvApstraStreamKeyLogFile = "APSTRA_STREAM_TLS_LOGFILE"
 
 	defaultTimeout = 10 * time.Second
+	defaultScheme  = "https"
 
 	apstraAuthHeader = "Authtoken"
 )
@@ -32,7 +33,7 @@ type apstraHttpClient interface {
 type ClientCfg struct {
 	Scheme    string          // "https", probably
 	Host      string          // "apstra.company.com" or "192.168.10.10"
-	Port      uint16          // 443, maybe? omit for default httpClient behavior"
+	Port      uint16          // zero value for default httpClient behavior
 	User      string          // Apstra API/UI username
 	Pass      string          // Apstra API/UI password
 	TlsConfig *tls.Config     // optional, used with https transactions
@@ -71,7 +72,14 @@ type Client struct {
 
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
-	baseUrlString := fmt.Sprintf("%s://%s:%d", cfg.Scheme, cfg.Host, cfg.Port)
+	if cfg.Scheme == "" {
+		cfg.Scheme = defaultScheme
+	}
+	var portStr string
+	if cfg.Port > 0 { // Go default == "unset" for our purposes; this should be safe b/c rfc6335
+		portStr = fmt.Sprintf(":%d", cfg.Port)
+	}
+	baseUrlString := fmt.Sprintf("%s://%s%s", cfg.Scheme, cfg.Host, portStr)
 	baseUrl, err := url.Parse(baseUrlString)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", baseUrlString, err)
