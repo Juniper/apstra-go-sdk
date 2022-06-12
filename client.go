@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -70,11 +71,47 @@ type Client struct {
 	ctx         context.Context         // copied from ClientCfg, for async operations
 }
 
+// applyDefaults sets config elements which have default values
+func (o *ClientCfg) applyDefaults() {
+	if o.Scheme == "" {
+		o.Scheme = defaultScheme
+	}
+}
+
+// pullFromEnv tries to pull missing config elements from the environment
+func (o *ClientCfg) pullFromEnv() error {
+	if o.Scheme == "" {
+		o.Scheme = os.Getenv(EnvApstraScheme)
+	}
+	if o.User == "" {
+		o.User = os.Getenv(EnvApstraUser)
+	}
+	if o.Pass == "" {
+		o.Pass = os.Getenv(EnvApstraPass)
+	}
+	if o.Host == "" {
+		o.Host = os.Getenv(EnvApstraHost)
+	}
+	if o.Port == 0 {
+		if portStr, found := os.LookupEnv(EnvApstraPort); found {
+			port, err := strconv.ParseUint(portStr, 10, 16)
+			if err != nil {
+				return fmt.Errorf("error parsing Apstra port - %w", err)
+			}
+			o.Port = uint16(port)
+		}
+	}
+	return nil
+}
+
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
-	if cfg.Scheme == "" {
-		cfg.Scheme = defaultScheme
+	err := cfg.pullFromEnv()
+	if err != nil {
+		return nil, err
 	}
+
+	cfg.applyDefaults()
 	var portStr string
 	if cfg.Port > 0 { // Go default == "unset" for our purposes; this should be safe b/c rfc6335
 		portStr = fmt.Sprintf(":%d", cfg.Port)
