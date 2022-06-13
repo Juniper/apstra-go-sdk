@@ -200,23 +200,23 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 // http.Response object pointers. Error() method produces a string like
 // "<error> - http response <status> at url <url>".
 type TalkToApstraErr struct {
-	request  *http.Request
-	response *http.Response
-	error    string
+	Request  *http.Request
+	Response *http.Response
+	Msg      string
 }
 
 func (o TalkToApstraErr) Error() string {
 	apstraUrl := "nil"
-	if o.request != nil {
-		apstraUrl = o.request.URL.String()
+	if o.Request != nil {
+		apstraUrl = o.Request.URL.String()
 	}
 
 	status := "nil"
-	if o.response != nil {
-		status = o.response.Status
+	if o.Response != nil {
+		status = o.Response.Status
 	}
 
-	return fmt.Sprintf("%s - http response '%s' at '%s'", o.error, status, apstraUrl)
+	return fmt.Sprintf("%s - http response '%s' at '%s'", o.Msg, status, apstraUrl)
 }
 
 // newTalkToApstraErr returns a TalkToApstraErr. It's intended to be called after the
@@ -253,9 +253,9 @@ func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, 
 	}
 
 	return TalkToApstraErr{
-		request:  req,
-		response: resp,
-		error:    errMsg,
+		Request:  req,
+		Response: resp,
+		Msg:      errMsg,
 	}
 }
 
