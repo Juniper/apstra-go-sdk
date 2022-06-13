@@ -219,17 +219,17 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 			return nil, err
 		}
 		for _, existingRawPool := range o.resourceAsnPools {
-			existingPool, err := rawAsnPoolToAsnPool(existingRawPool)
+			existingPool, err := rawAsnPoolToAsnPool(&existingRawPool)
 			if err != nil {
 				return nil, err
 			}
 
-			newPool, err := rawAsnPoolToAsnPool(*newRawPool)
+			newPool, err := rawAsnPoolToAsnPool(newRawPool)
 			if err != nil {
 				return nil, err
 			}
 
-			if asnPoolOverlap(existingPool, newPool) {
+			if asnPoolOverlap(*existingPool, *newPool) {
 				return nil, fmt.Errorf("overlap with existing asn pool %s", existingRawPool.Id)
 			}
 		}
