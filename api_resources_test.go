@@ -2,10 +2,26 @@ package goapstra
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"math"
 	"math/rand"
 	"testing"
+)
+
+const (
+	testPool1 = `{
+      "status": "not_in_use",
+      "used": "0",
+      "display_name": "foo",
+      "tags": [],
+      "created_at": "2022-06-13T18:44:55.899107Z",
+      "last_modified_at": "2022-06-13T18:44:55.899107Z",
+      "ranges": [],
+      "used_percentage": 0,
+      "total": "0",
+      "id": "e49e0f45-ecf3-478d-8b1f-901af6d4ed89"
+    }`
 )
 
 // todo asnpool mocking
@@ -97,7 +113,13 @@ func TestEmptyAsnPool(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
 	}
+}
 
+func TestUnmarshalPool(t *testing.T) {
+	var result rawAsnPool
+	err := json.Unmarshal([]byte(testPool1), &result)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

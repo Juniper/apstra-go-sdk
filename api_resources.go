@@ -111,11 +111,11 @@ func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
 
 	var pools []AsnPool
 	for _, rawPool := range response.Items {
-		p, err := rawAsnPoolToAsnPool(rawPool)
+		p, err := rawAsnPoolToAsnPool(&rawPool)
 		if err != nil {
 			return nil, err
 		}
-		pools = append(pools, p)
+		pools = append(pools, *p)
 	}
 	return pools, nil
 }
@@ -125,16 +125,16 @@ func (o *Client) getAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPoolsPrefix+string(in), err)
 	}
-	response := &AsnPool{}
+	raw := &rawAsnPool{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
-		apiResponse: response,
+		apiResponse: raw,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error fetching ASN pool '%s' - %w", in, err)
 	}
-	return response, nil
+	return rawAsnPoolToAsnPool(raw)
 
 }
 
@@ -153,15 +153,15 @@ func (o *Client) deleteAsnPool(ctx context.Context, in ObjectId) error {
 	return nil
 }
 
-func rawAsnPoolToAsnPool(in rawAsnPool) (AsnPool, error) {
+func rawAsnPoolToAsnPool(in *rawAsnPool) (*AsnPool, error) {
 	used, err := strconv.ParseUint(in.Used, 10, 32)
 	if err != nil {
-		return AsnPool{}, fmt.Errorf("error parsing 'used' element of ASN Pool '%s' - %w", in.Id, err)
+		return nil, fmt.Errorf("error parsing 'used' element of ASN Pool '%s' - %w", in.Id, err)
 	}
 
 	total, err := strconv.ParseUint(in.Total, 10, 32)
 	if err != nil {
-		return AsnPool{}, fmt.Errorf("error parsing 'total' element of ASN Pool '%s' - %w", in.Id, err)
+		return nil, fmt.Errorf("error parsing 'total' element of ASN Pool '%s' - %w", in.Id, err)
 	}
 
 	result := AsnPool{
@@ -179,12 +179,12 @@ func rawAsnPoolToAsnPool(in rawAsnPool) (AsnPool, error) {
 	for i, r := range in.Ranges {
 		used, err := strconv.ParseUint(in.Used, 10, 32)
 		if err != nil {
-			return AsnPool{}, fmt.Errorf("error parsing ASN Pool '%s', 'ranges[%d]', 'used' element - %w", in.Id, i, err)
+			return nil, fmt.Errorf("error parsing ASN Pool '%s', 'ranges[%d]', 'used' element - %w", in.Id, i, err)
 		}
 
 		total, err := strconv.ParseUint(in.Total, 10, 32)
 		if err != nil {
-			return AsnPool{}, fmt.Errorf("error parsing ASN Pool '%s', 'ranges[%d]', 'total' element - %w", in.Id, i, err)
+			return nil, fmt.Errorf("error parsing ASN Pool '%s', 'ranges[%d]', 'total' element - %w", in.Id, i, err)
 		}
 
 		result.Ranges = append(result.Ranges, AsnRange{
@@ -198,5 +198,5 @@ func rawAsnPoolToAsnPool(in rawAsnPool) (AsnPool, error) {
 
 	}
 
-	return result, nil
+	return &result, nil
 }
