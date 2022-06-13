@@ -82,6 +82,9 @@ func (o *Client) createAsnPool(ctx context.Context, in *NewAsnPool) (*objectIdRe
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
 	}
+	if in.Ranges == nil {
+		in.Ranges = []NewAsnRange{}
+	}
 	response := &objectIdResponse{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,

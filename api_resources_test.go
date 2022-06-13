@@ -66,3 +66,38 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 		}
 	}
 }
+
+func TestEmptyAsnPool(t *testing.T) {
+	DebugLevel = 4
+	clients, apis, err := getTestClientsAndMockAPIs()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, mockExists := apis["mock"]
+	if mockExists {
+		err = apis["mock"].createMetricdb()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	name := "test-" + randString(10, "hex")
+
+	for clientName, client := range clients {
+		log.Printf("creating empty ASN pool '%s' with %s client", name, clientName)
+		id, err := client.CreateAsnPool(context.TODO(), &NewAsnPool{DisplayName: name})
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Printf("created ASN pool name %s id %s", name, id)
+
+		_, err = client.GetAsnPool(context.TODO(), id)
+		err = client.DeleteAsnPool(context.TODO(), id)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+	}
+
+}
