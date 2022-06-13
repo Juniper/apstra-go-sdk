@@ -196,16 +196,16 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 }
 
-// talkToApstraErr implements error{} and carries around http.Request and
+// TalkToApstraErr implements error{} and carries around http.Request and
 // http.Response object pointers. Error() method produces a string like
 // "<error> - http response <status> at url <url>".
-type talkToApstraErr struct {
+type TalkToApstraErr struct {
 	request  *http.Request
 	response *http.Response
 	error    string
 }
 
-func (o talkToApstraErr) Error() string {
+func (o TalkToApstraErr) Error() string {
 	apstraUrl := "nil"
 	if o.request != nil {
 		apstraUrl = o.request.URL.String()
@@ -219,13 +219,13 @@ func (o talkToApstraErr) Error() string {
 	return fmt.Sprintf("%s - http response '%s' at '%s'", o.error, status, apstraUrl)
 }
 
-// newTalkToApstraErr returns a talkToApstraErr. It's intended to be called after the
+// newTalkToApstraErr returns a TalkToApstraErr. It's intended to be called after the
 // http.Request has been executed with Do(), so the request body has already
 // been "spent" by Read(). We'll fill it back in. The response body is likely to
 // be closed by a 'defer body.Close()' somewhere, so we'll replace that as well,
 // up to some reasonable limit (don't try to buffer gigabytes of data from the
 // webserver).
-func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) talkToApstraErr {
+func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) TalkToApstraErr {
 	apstraUrl := req.URL.String()
 	// don't include secret in error
 	req.Header.Del(apstraAuthHeader)
@@ -252,7 +252,7 @@ func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, 
 		resp.Body = io.NopCloser(rehydratedResponse)                     // replace the original body
 	}
 
-	return talkToApstraErr{
+	return TalkToApstraErr{
 		request:  req,
 		response: resp,
 		error:    errMsg,
