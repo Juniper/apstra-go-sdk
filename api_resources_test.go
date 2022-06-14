@@ -161,3 +161,15 @@ func TestUnmarshalPool(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestGetAsnPoolRangeId(t *testing.T) {
+	testRange := AsnRange{
+		First: 66051,    // 0x00 0x01 0x02 0x03,
+		Last:  67438087, // 0x04 0x05 0x06 0x07,
+	}
+	expected := "pool-8a851ff8"
+	result := getAsnPoolRangeId(&testRange)
+	if result != expected {
+		t.Fatalf("expected %s, got %s", expected, result)
+	}
+}

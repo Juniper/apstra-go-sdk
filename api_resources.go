@@ -2,6 +2,10 @@ package goapstra
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/binary"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,6 +17,8 @@ const (
 	apiUrlResources               = "/api/resources"
 	apiUrlResourcesAsnPools       = apiUrlResources + "/asn-pools"
 	apiUrlResourcesAsnPoolsPrefix = apiUrlResourcesAsnPools + apiUrlPathDelim
+
+	asnPoolRangeIdPrefix = "pool-"
 )
 
 type NewAsnRange struct {
@@ -218,4 +224,41 @@ func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, poolInfo *N
 		url:      apstraUrl,
 		apiInput: poolInfo,
 	})
+}
+
+func getAsnPoolRangeId(in *AsnRange) string {
+	first := make([]byte, 4)
+	last := make([]byte, 4)
+
+	binary.BigEndian.PutUint32(first, in.First)
+	binary.BigEndian.PutUint32(last, in.Last)
+
+	hash := sha256.Sum256(append(first, last...))
+	printable := hex.EncodeToString(hash[0:len(hash)])
+	return asnPoolRangeIdPrefix + printable[:8]
+}
+
+func (o *Client) getAsnPoolRanges(ctx context.Context, poolId ObjectId) (map[string]AsnRange, error) {
+	result := make(map[string]AsnRange)
+	pool, err := o.getAsnPool(ctx, poolId)
+	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) {
+			if ttae.Response.StatusCode == http.StatusNotFound {
+				return nil, ApstraClientErr{
+					errType: ErrNotfound,
+					err:     err,
+				}
+			}
+		} else {
+			return nil, fmt.Errorf("error getting ASN pool info for pool '%s' - %w", poolId, err)
+		}
+	}
+
+	for _, r := range pool.Ranges {
+		rid := getAsnPoolRangeId(&r)
+		result[rid] = r
+	}
+
+	return result, nil
 }

@@ -24,7 +24,23 @@ const (
 	defaultScheme  = "https"
 
 	apstraAuthHeader = "Authtoken"
+
+	ErrUnknown = iota
+	ErrNotfound
 )
+
+type ApstraClientErr struct {
+	errType int
+	err     error
+}
+
+func (o ApstraClientErr) Error() string {
+	return o.err.Error()
+}
+
+func (o ApstraClientErr) Type() int {
+	return o.errType
+}
 
 type apstraHttpClient interface {
 	Do(*http.Request) (*http.Response, error)
