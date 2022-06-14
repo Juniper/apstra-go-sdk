@@ -1,57 +1,17 @@
 package goapstra
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/url"
-	"os"
-	"strconv"
 	"testing"
-	"time"
 )
 
 func blueprintsTestClient1() (*Client, error) {
-	user, foundUser := os.LookupEnv(EnvApstraUser)
-	pass, foundPass := os.LookupEnv(EnvApstraPass)
-	scheme, foundScheme := os.LookupEnv(EnvApstraScheme)
-	host, foundHost := os.LookupEnv(EnvApstraHost)
-	portstr, foundPort := os.LookupEnv(EnvApstraPort)
-
-	switch {
-	case !foundUser:
-		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraUser)
-	case !foundPass:
-		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraPass)
-	case !foundScheme:
-		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraScheme)
-	case !foundHost:
-		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraHost)
-	case !foundPort:
-		return nil, fmt.Errorf("environment variable '%s' not found", EnvApstraPort)
-	}
-
-	kl, err := keyLogWriter(EnvApstraApiKeyLogFile)
-	if err != nil {
-		return nil, fmt.Errorf("error creating keyLogWriter - %w", err)
-	}
-
-	port, err := strconv.Atoi(portstr)
-	if err != nil {
-		return nil, fmt.Errorf("error converting '%s' to integer - %w", portstr, err)
-	}
-
 	return NewClient(&ClientCfg{
-		Scheme:    scheme,
-		Host:      host,
-		Port:      uint16(port),
-		User:      user,
-		Pass:      pass,
-		TlsConfig: &tls.Config{InsecureSkipVerify: true, KeyLogWriter: kl},
-		Timeout:   5 * time.Minute,
+		TlsConfig: &tls.Config{InsecureSkipVerify: true},
 	})
 }
 
@@ -74,22 +34,41 @@ func TestGetAllBlueprintIds(t *testing.T) {
 	log.Println(string(result))
 }
 
-func TestCreateRoutingZone(t *testing.T) {
+func TestCreateDeleteRoutingZone(t *testing.T) {
+	DebugLevel = 4
 	client, err := blueprintsTestClient1()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	result, err := client.createRoutingZone(context.TODO(), &CreateRoutingZoneCfg{
-		SzType:      "evpn",
-		VrfName:     "test",
-		Label:       "label-test",
-		BlueprintId: "db10754a-610e-475b-9baa-4c85f82282e8",
-	})
+	blueprints, err := client.GetAllBlueprintIds(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	buf := bytes.Buffer{}
-	pp(result, &buf)
-	log.Print(buf.String())
+	if len(blueprints) < 1 {
+		t.Fatalf("cannot proceed without at least one blueprint")
+	}
+
+	blueprintId := blueprints[0]
+	randString := randString(10, "hex")
+
+	zoneId, err := client.CreateRoutingZone(context.TODO(), &CreateRoutingZoneCfg{
+		SzType:      "evpn",
+		VrfName:     "test-" + randString,
+		Label:       "label-test-" + randString,
+		BlueprintId: blueprintId,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("created zone '", zoneId, "' deleting...")
+
+	err = client.DeleteRoutingZone(context.TODO(), blueprintId, zoneId)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func TestThing(t *testing.T) {
