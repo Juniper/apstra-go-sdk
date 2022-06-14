@@ -173,7 +173,7 @@ func TestGetAsnPoolRangeHash(t *testing.T) {
 	}
 }
 
-func TestAddDeleteAsnPoolRange(t *testing.T) {
+func TestCreateDeleteAsnPoolRange(t *testing.T) {
 	DebugLevel = 2
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
@@ -204,7 +204,7 @@ func TestAddDeleteAsnPoolRange(t *testing.T) {
 		}
 		log.Printf("created ASN pool name %s id %s", name, poolId)
 		var asnRange AsnRange
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 3; i++ {
 			a := rand.Intn(1000) + (i * 1000 * 2)
 			b := rand.Intn(1000) + a
 			asnRange.First = uint32(a)
