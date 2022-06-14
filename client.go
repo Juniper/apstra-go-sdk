@@ -292,3 +292,8 @@ func (o *Client) GetAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) 
 func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
 	return o.deleteAsnPool(ctx, in)
 }
+
+// UpdateAsnPool updates an ASN pool by ObjectId with new ASN pool config
+func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *NewAsnPoolCfg) error {
+	return o.updateAsnPool(ctx, id, cfg)
+}
