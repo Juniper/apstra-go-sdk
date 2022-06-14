@@ -226,22 +226,6 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 		}
 		newRawPool.Used = "0"
 		newRawPool.Total = strconv.Itoa(int(total))
-		for _, existingRawPool := range o.resourceAsnPools {
-			existingPool, err := rawAsnPoolToAsnPool(&existingRawPool)
-			if err != nil {
-				return nil, err
-			}
-
-			newPool, err := rawAsnPoolToAsnPool(newRawPool)
-			if err != nil {
-				return nil, err
-			}
-
-			// todo: Apstra doesn't enforce this check
-			if asnPoolOverlap(*existingPool, *newPool) {
-				return nil, fmt.Errorf("overlap with existing asn pool %s", existingRawPool.Id)
-			}
-		}
 		newRawPool.Id = randId()
 		o.resourceAsnPools = append(o.resourceAsnPools, *newRawPool)
 		body, err := json.Marshal(objectIdResponse{Id: newRawPool.Id})
@@ -256,22 +240,6 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 	default:
 		return nil, fmt.Errorf("unsupported method '%s'", req.Method)
 	}
-}
-
-func asnPoolOverlap(a, b AsnPool) bool {
-	var rar, rbr AsnRange
-	for _, ra := range a.Ranges {
-		rar.First = ra.First
-		rar.Last = ra.Last
-		for _, rb := range b.Ranges {
-			rbr.First = rb.First
-			rbr.Last = rb.Last
-			if asnOverlap(rar, rbr) {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func (o *mockApstraApi) handleApiUrlResourcesAsnPoolsPrefix(req *http.Request) (*http.Response, error) {
