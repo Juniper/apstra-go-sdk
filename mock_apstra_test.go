@@ -237,6 +237,7 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 				return nil, err
 			}
 
+			// todo: Apstra doesn't enforce this check
 			if asnPoolOverlap(*existingPool, *newPool) {
 				return nil, fmt.Errorf("overlap with existing asn pool %s", existingRawPool.Id)
 			}
@@ -258,13 +259,13 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 }
 
 func asnPoolOverlap(a, b AsnPool) bool {
-	var rar, rbr NewAsnRange
+	var rar, rbr AsnRange
 	for _, ra := range a.Ranges {
-		rar.B = ra.First
-		rar.E = ra.Last
+		rar.First = ra.First
+		rar.Last = ra.Last
 		for _, rb := range b.Ranges {
-			rbr.B = rb.First
-			rbr.E = rb.Last
+			rbr.First = rb.First
+			rbr.Last = rb.Last
 			if asnOverlap(rar, rbr) {
 				return true
 			}

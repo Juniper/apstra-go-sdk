@@ -51,3 +51,20 @@ func ourIpForPeer(them net.IP) (*net.IP, error) {
 
 	return &c.LocalAddr().(*net.UDPAddr).IP, c.Close()
 }
+
+// asnOverlap returns a bool indicating whether two AsnRange objects overlap
+func asnOverlap(a, b AsnRange) bool {
+	if a.First >= b.First && a.First <= b.Last { // begin 'a' falls within 'b'
+		return true
+	}
+	if a.Last <= b.Last && a.Last >= b.First { // end 'a' falls within 'b'
+		return true
+	}
+	if b.First >= a.First && b.First <= a.Last { // begin 'b' falls within 'a'
+		return true
+	}
+	if b.Last <= a.Last && b.Last >= a.First { // end 'b' falls within 'a'
+		return true
+	}
+	return false // no overlap
+}

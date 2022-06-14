@@ -26,6 +26,8 @@ const (
 	apstraAuthHeader = "Authtoken"
 
 	ErrUnknown = iota
+	ErrAsnRangeExists
+	ErrAsnRangeOverlap
 	ErrNotfound
 )
 
@@ -291,7 +293,7 @@ func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
 }
 
 // CreateAsnPool adds an ASN pool to Apstra
-func (o *Client) CreateAsnPool(ctx context.Context, in *NewAsnPoolCfg) (ObjectId, error) {
+func (o *Client) CreateAsnPool(ctx context.Context, in *AsnPool) (ObjectId, error) {
 	response, err := o.createAsnPool(ctx, in)
 	if err != nil {
 		return "", fmt.Errorf("error creating ASN pool - %w", err)
@@ -310,6 +312,16 @@ func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
 }
 
 // UpdateAsnPool updates an ASN pool by ObjectId with new ASN pool config
-func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *NewAsnPoolCfg) error {
+func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPool) error {
 	return o.updateAsnPool(ctx, id, cfg)
+}
+
+// CreateAsnPoolRange updates an ASN pool by adding a new AsnRange
+func (o *Client) CreateAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRange) error {
+	return o.createAsnPoolRange(ctx, poolId, newRange)
+}
+
+// DeleteAsnPoolRange updates an ASN pool by adding a new AsnRange
+func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme *AsnRange) error {
+	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
 }
