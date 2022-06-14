@@ -24,9 +24,10 @@ func (o NewAsnRange) String() string {
 	return fmt.Sprintf("%d-%d", o.B, o.E)
 }
 
-type NewAsnPool struct {
-	Ranges      []NewAsnRange `json:"ranges"`
+type NewAsnPoolCfg struct {
 	DisplayName string        `json:"display_name"`
+	Ranges      []NewAsnRange `json:"ranges"`
+	Tags        []string      `json:"tags"`
 }
 
 type rawAsnPool struct {
@@ -77,13 +78,16 @@ type getAsnPoolsResponse struct {
 	Items []rawAsnPool `json:"items"`
 }
 
-func (o *Client) createAsnPool(ctx context.Context, in *NewAsnPool) (*objectIdResponse, error) {
+func (o *Client) createAsnPool(ctx context.Context, in *NewAsnPoolCfg) (*objectIdResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
 	}
 	if in.Ranges == nil {
-		in.Ranges = []NewAsnRange{}
+		in.Ranges = []NewAsnRange{} // avoid '"ranges": null' in JSON output
+	}
+	if in.Tags == nil {
+		in.Tags = []string{} // avoid '"tags": null' in JSON output
 	}
 	response := &objectIdResponse{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
@@ -199,4 +203,19 @@ func rawAsnPoolToAsnPool(in *rawAsnPool) (*AsnPool, error) {
 	}
 
 	return &result, nil
+}
+
+func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, poolInfo *NewAsnPoolCfg) error {
+	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
+	if err != nil {
+		return fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
+	}
+	if poolInfo.Ranges == nil {
+		poolInfo.Ranges = []NewAsnRange{}
+	}
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		url:      apstraUrl,
+		apiInput: poolInfo,
+	})
 }

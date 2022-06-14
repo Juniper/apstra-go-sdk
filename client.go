@@ -275,7 +275,7 @@ func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
 }
 
 // CreateAsnPool adds an ASN pool to Apstra
-func (o *Client) CreateAsnPool(ctx context.Context, in *NewAsnPool) (ObjectId, error) {
+func (o *Client) CreateAsnPool(ctx context.Context, in *NewAsnPoolCfg) (ObjectId, error) {
 	response, err := o.createAsnPool(ctx, in)
 	if err != nil {
 		return "", fmt.Errorf("error creating ASN pool - %w", err)

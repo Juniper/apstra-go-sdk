@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -218,6 +219,13 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 		if err != nil {
 			return nil, err
 		}
+		var total uint32
+		for _, i := range newRawPool.Ranges {
+			size := 1 + i.Last - i.First
+			total += size
+		}
+		newRawPool.Used = "0"
+		newRawPool.Total = strconv.Itoa(int(total))
 		for _, existingRawPool := range o.resourceAsnPools {
 			existingPool, err := rawAsnPoolToAsnPool(&existingRawPool)
 			if err != nil {
@@ -240,11 +248,10 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPools(req *http.Request) (*http.
 			return nil, err
 		}
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusAccepted,
 			Status:     "202 ACCEPTED",
 			Body:       io.NopCloser(bytes.NewReader(body)),
 		}, nil
-
 	default:
 		return nil, fmt.Errorf("unsupported method '%s'", req.Method)
 	}
@@ -302,6 +309,11 @@ func (o *mockApstraApi) handleApiUrlResourcesAsnPoolsPrefix(req *http.Request) (
 			}
 		}
 		return nil, fmt.Errorf("ASN resource pool '%s' not found", id)
+	case http.MethodPut:
+		return &http.Response{
+			StatusCode: http.StatusAccepted,
+			Status:     "202 ACCEPTED",
+			Body:       io.NopCloser(strings.NewReader("{}"))}, nil
 	default:
 		return nil, fmt.Errorf("method '%s' not supported", req.Method)
 	}

@@ -39,7 +39,6 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 			log.Fatal(err)
 		}
 	}
-	var openHoles []NewAsnRange
 	for clientName, client := range clients {
 		log.Printf("testing GetAsnPools() with %s client", clientName)
 		pools, err := client.GetAsnPools(context.TODO())
@@ -53,7 +52,7 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 				poolBeginEnds = append(poolBeginEnds, NewAsnRange{r.First, r.Last})
 			}
 		}
-		openHoles, err = invertRangesInRange(1, math.MaxUint32, poolBeginEnds)
+		openHoles, err := invertRangesInRange(1, math.MaxUint32, poolBeginEnds)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -62,7 +61,7 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 		// todo: make sure there's at least one open hole in the plan
 		name := "test-" + randString(10, "hex")
 		r := rand.Intn(len(openHoles))
-		id, err := client.CreateAsnPool(context.TODO(), &NewAsnPool{
+		id, err := client.CreateAsnPool(context.TODO(), &NewAsnPoolCfg{
 			Ranges: []NewAsnRange{{
 				B: openHoles[r].B,
 				E: openHoles[r].E,
@@ -83,7 +82,7 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 	}
 }
 
-func TestEmptyAsnPool(t *testing.T) {
+func TestUpdateEmptyAsnPool(t *testing.T) {
 	DebugLevel = 4
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
@@ -101,15 +100,54 @@ func TestEmptyAsnPool(t *testing.T) {
 	name := "test-" + randString(10, "hex")
 
 	for clientName, client := range clients {
+
 		log.Printf("creating empty ASN pool '%s' with %s client", name, clientName)
-		id, err := client.CreateAsnPool(context.TODO(), &NewAsnPool{DisplayName: name})
+		newPoolId, err := client.CreateAsnPool(context.TODO(), &NewAsnPoolCfg{DisplayName: name})
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("created ASN pool name %s id %s", name, id)
+		log.Printf("created ASN pool name %s id %s", name, newPoolId)
 
-		_, err = client.GetAsnPool(context.TODO(), id)
-		err = client.DeleteAsnPool(context.TODO(), id)
+		pools, err := client.GetAsnPools(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Println(pools)
+		var poolBeginEnds []NewAsnRange
+		for _, p := range pools {
+			for _, r := range p.Ranges {
+				poolBeginEnds = append(poolBeginEnds, NewAsnRange{r.First, r.Last})
+			}
+		}
+		openHoles, err := invertRangesInRange(1, math.MaxUint32, poolBeginEnds)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Println("open holes in ASN resources: ", openHoles)
+
+		// todo: make sure there's at least one open hole in the plan
+		r := rand.Intn(len(openHoles))
+		newRange := NewAsnRange{
+			B: openHoles[r].B,
+			E: openHoles[r].E,
+		}
+		newDisplayName := "updated-" + name
+		newTags := []string{"updated"}
+		err = client.updateAsnPool(context.TODO(), newPoolId, &NewAsnPoolCfg{
+			DisplayName: newDisplayName,
+			Ranges:      []NewAsnRange{newRange},
+			Tags:        newTags,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = client.GetAsnPool(context.TODO(), newPoolId)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = client.DeleteAsnPool(context.TODO(), newPoolId)
 		if err != nil {
 			t.Fatal(err)
 		}
