@@ -23,6 +23,7 @@ const (
 
 	defaultTimeout = 10 * time.Second
 	defaultScheme  = "https"
+	insecureScheme = "http"
 
 	apstraAuthHeader = "Authtoken"
 
@@ -125,7 +126,7 @@ func (o *ClientCfg) applyDefaults() {
 
 func (o ClientCfg) validate() error {
 	switch {
-	case o.Scheme != "http" && o.Scheme != "https":
+	case o.Scheme != defaultScheme && o.Scheme != insecureScheme:
 		return fmt.Errorf("error invalid URL scheme for Apstra service '%s'", o.Scheme)
 	case o.Host == "":
 		return errors.New("error hostname for Apstra service cannot be empty")
