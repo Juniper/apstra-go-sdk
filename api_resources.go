@@ -145,10 +145,13 @@ func (o *Client) getAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) 
 
 }
 
-func (o *Client) deleteAsnPool(ctx context.Context, in ObjectId) error {
-	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(in))
+func (o *Client) deleteAsnPool(ctx context.Context, poolId ObjectId) error {
+	if poolId == "" {
+		return errors.New("attempt to update ASN Pool with empty pool ID")
+	}
+	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
 	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPoolsPrefix+string(in), err)
+		return fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPoolsPrefix+string(poolId), err)
 	}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
@@ -248,6 +251,9 @@ func rawAsnPoolToAsnPool(in *rawAsnPool) (*AsnPool, error) {
 }
 
 func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, poolInfo *AsnPool) error {
+	if poolId == "" {
+		return errors.New("attempt to update ASN Pool with empty pool ID")
+	}
 	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
