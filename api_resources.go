@@ -129,7 +129,7 @@ func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
 
 func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, error) {
 	if poolId == "" {
-		return nil, errors.New("attempt to update ASN Pool with empty pool ID")
+		return nil, errors.New("attempt to get ASN Pool info with empty pool ID")
 	}
 	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
 	if err != nil {
@@ -150,7 +150,7 @@ func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, err
 
 func (o *Client) deleteAsnPool(ctx context.Context, poolId ObjectId) error {
 	if poolId == "" {
-		return errors.New("attempt to update ASN Pool with empty pool ID")
+		return errors.New("attempt to delete ASN Pool with empty pool ID")
 	}
 	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
 	if err != nil {
