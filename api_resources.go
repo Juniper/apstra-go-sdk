@@ -189,14 +189,25 @@ func asnPoolToNewAsnPool(in *AsnPool) *newAsnPool {
 // rawAsnPoolToAsnPool cleans up a rawAsnPool object (ints as strings) into
 // and AsnPool.
 func rawAsnPoolToAsnPool(in *rawAsnPool) (*AsnPool, error) {
-	used, err := strconv.ParseUint(in.Used, 10, 32)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing 'used' element of ASN Pool '%s' - %w", in.Id, err)
+	var total, used uint64
+	var err error
+
+	if in.Used == "" {
+		used = 0
+	} else {
+		used, err = strconv.ParseUint(in.Used, 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing 'used' element of ASN Pool '%s' - %w", in.Id, err)
+		}
 	}
 
-	total, err := strconv.ParseUint(in.Total, 10, 32)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing 'total' element of ASN Pool '%s' - %w", in.Id, err)
+	if in.Total == "" {
+		total = 0
+	} else {
+		total, err = strconv.ParseUint(in.Total, 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing 'total' element of ASN Pool '%s' - %w", in.Id, err)
+		}
 	}
 
 	result := AsnPool{
