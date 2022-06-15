@@ -127,10 +127,13 @@ func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
 	return pools, nil
 }
 
-func (o *Client) getAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) {
-	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(in))
+func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, error) {
+	if poolId == "" {
+		return nil, errors.New("attempt to update ASN Pool with empty pool ID")
+	}
+	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPoolsPrefix+string(in), err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPoolsPrefix+string(poolId), err)
 	}
 	raw := &rawAsnPool{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
@@ -139,7 +142,7 @@ func (o *Client) getAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) 
 		apiResponse: raw,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error fetching ASN pool '%s' - %w", in, err)
+		return nil, fmt.Errorf("error fetching ASN pool '%s' - %w", poolId, err)
 	}
 	return rawAsnPoolToAsnPool(raw)
 
