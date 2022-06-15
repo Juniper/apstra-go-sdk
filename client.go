@@ -315,6 +315,11 @@ func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
 	return o.getAsnPools(ctx)
 }
 
+// ListAsnPoolIds returns ASN pools configured on Apstra
+func (o *Client) ListAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listAsnPoolIds(ctx)
+}
+
 // CreateAsnPool adds an ASN pool to Apstra
 func (o *Client) CreateAsnPool(ctx context.Context, in *AsnPool) (ObjectId, error) {
 	response, err := o.createAsnPool(ctx, in)

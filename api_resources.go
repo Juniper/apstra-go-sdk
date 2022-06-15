@@ -86,6 +86,11 @@ type getAsnPoolsResponse struct {
 	Items []rawAsnPool `json:"items"`
 }
 
+type optionsAsnPoolsResponse struct {
+	Items   []ObjectId `json:"items"`
+	Methods []string   `json:"methods"`
+}
+
 func (o *Client) createAsnPool(ctx context.Context, in *AsnPool) (*objectIdResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
 	if err != nil {
@@ -349,4 +354,22 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 	}
 
 	return o.UpdateAsnPool(ctx, poolId, poolInfo)
+}
+
+func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
+	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
+	}
+
+	response := &optionsAsnPoolsResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPut,
+		url:         apstraUrl,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return response.Items, nil
 }
