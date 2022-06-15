@@ -3,6 +3,7 @@ package goapstra
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -89,13 +90,6 @@ type Client struct {
 	ctx         context.Context         // copied from ClientCfg, for async operations
 }
 
-// applyDefaults sets config elements which have default values
-func (o *ClientCfg) applyDefaults() {
-	if o.Scheme == "" {
-		o.Scheme = defaultScheme
-	}
-}
-
 // pullFromEnv tries to pull missing config elements from the environment
 func (o *ClientCfg) pullFromEnv() error {
 	if o.Scheme == "" {
@@ -122,6 +116,28 @@ func (o *ClientCfg) pullFromEnv() error {
 	return nil
 }
 
+// applyDefaults sets config elements which have default values
+func (o *ClientCfg) applyDefaults() {
+	if o.Scheme == "" {
+		o.Scheme = defaultScheme
+	}
+}
+
+func (o ClientCfg) validate() error {
+	switch {
+	case o.Scheme != "http" && o.Scheme != "https":
+		return fmt.Errorf("error invalid URL scheme for Apstra service '%s'", o.Scheme)
+	case o.Host == "":
+		return errors.New("error hostname for Apstra service cannot be empty")
+	case o.User == "":
+		return errors.New("error username for Apstra service cannot be empty")
+	case o.Pass == "":
+		return errors.New("error password for Apstra service cannot be empty")
+	}
+
+	return nil
+}
+
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
 	err := cfg.pullFromEnv()
@@ -130,6 +146,12 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	}
 
 	cfg.applyDefaults()
+
+	err = cfg.validate()
+	if err != nil {
+		return nil, err
+	}
+
 	var portStr string
 	if cfg.Port > 0 { // Go default == "unset" for our purposes; this should be safe b/c rfc6335
 		portStr = fmt.Sprintf(":%d", cfg.Port)
