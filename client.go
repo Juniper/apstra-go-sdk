@@ -172,8 +172,8 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error prepping TLS key log from env var '%s' - %w", EnvApstraApiKeyLogFile, err)
 		}
-		tlsCfg.KeyLogWriter = klw
 		if klw != nil {
+			tlsCfg.KeyLogWriter = klw
 			debugStr(1, fmt.Sprintf("TLS session keys being logged to %s", os.Getenv(EnvApstraApiKeyLogFile)))
 		}
 	}
