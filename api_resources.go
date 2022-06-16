@@ -148,7 +148,7 @@ func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, err
 	})
 	if err != nil {
 		var ttae TalkToApstraErr
-		if errors.As(err, ttae) && ttae.Response.StatusCode == http.StatusNotFound {
+		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
 			return nil, ApstraClientErr{
 				errType: ErrNotfound,
 				err:     err,
