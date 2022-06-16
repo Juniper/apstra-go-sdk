@@ -1,4 +1,36 @@
-## aosStreaming
+# goapstra
+
+This project aims to be a simple-to-consume client library for Apstra.
+
+It was initially developed to collect metric/event/anomaly/statistics kinds of
+things, but could eventually support the whole Apstra API.
+
+It's only ever been tested against AOS 4.0, does not check the API server
+version, and has no concept of potential differences between AOS API releases.
+
+It has two major features: Client and StreamTarget.
+
+### Client
+The `Client{}` object has methods closely related to Apstra API endpoints, and
+returns data structures which closely resemble the JSON returned by the Apstra
+API.
+
+Client forces Apstra into "full asynchronous" mode by default to avoid problems
+related to Apstra returning object IDs where the object isn't yet ready for use.
+A behind-the-scenes polling function keeps track of all outstanding tasks and
+returns final API results only when complete. It should be safe to run many
+client tasks concurrently.
+
+Logins are handled automatically.
+
+### StreamTarget
+
+StreamTarget is a listener/decoder for Apstra's "Streaming Receiver" feature.
+
+It has Start/Stop (listening) methods and Register/Unregister methods which
+add Streaming Receiver configurations via the Apstra API.
+
+Messages and Errors are returned to the consuming code via channels.
 
 The proto file `streaming-telemetry.proto` came from an AOS server. The easiest way to grab
 one is probably via the web UI:
@@ -12,3 +44,23 @@ Render the go code by running the following in the main project directory
 protoc --go_out=.      --go_opt=Mapstra/streaming-telemetry.proto=./apstra \
        apstra/streaming-telemetry.proto
 ```
+
+### Using this library
+
+```go
+package main
+import "github.com/chrismarget-j/goapstra"
+func main() {
+  clientCfg := &goapstra.ClientCfg{
+    //Host:      "", // omit to use env var 'APSTRA_HOST'
+    //User:      "", // omit to use env var 'APSTRA_USER'
+    //Pass:      "", // omit to use env var 'APSTRA_PASS'
+    TlsConfig: &tls.Config{InsecureSkipVerify: true},
+  }
+  client, _ := goapstra.NewClient(clientCfg) //error ignored
+  blueprintIds, _ := client.GetAllBlueprintIds(context.TODO()) //error ignored
+}
+```
+
+There's an example program at `cmd/example_streaming/main.go` which implements
+the streaming capability.

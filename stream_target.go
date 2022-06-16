@@ -161,6 +161,12 @@ func (o *StreamTarget) Stop() {
 	} // We're done when err channel gets closed
 }
 
+// Id returns the StreamTarget ID returned by Apstra during registration or ""
+// if unregistered.
+func (o StreamTarget) Id() ObjectId {
+	return o.strmCfgId
+}
+
 // receive loops until the listener gets closed, handing off connections from the
 // AOS server to instances of handleClientConn().
 func (o *StreamTarget) receive(nl net.Listener) {

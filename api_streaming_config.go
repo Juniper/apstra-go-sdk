@@ -28,6 +28,11 @@ type getStreamingConfigsResponse struct {
 	Items []StreamingConfigInfo `json:"items"`
 }
 
+type getStreamingConfigsOptionsResponse struct {
+	Items   []ObjectId `json:"items"`
+	Methods []string   `json:"methods"`
+}
+
 // StreamingConfigInfo is returned by Apstra in response to
 // both:
 //  - 'GET apiUrlStreamingConfig' (as a member of list 'Items')
@@ -65,6 +70,25 @@ type StreamingConfigParams struct {
 	Protocol       string `json:"protocol"`
 	Hostname       string `json:"hostname"`
 	Port           uint16 `json:"port"`
+}
+
+func (o Client) getAllStreamingConfigIds(ctx context.Context) ([]ObjectId, error) {
+	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
+	}
+	result := &getStreamingConfigsOptionsResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodOptions,
+		url:         apstraUrl,
+		apiInput:    nil,
+		apiResponse: result,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Items, nil
 }
 
 func (o Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigInfo, error) {
@@ -129,11 +153,21 @@ func (o Client) deleteStreamingConfig(ctx context.Context, id ObjectId) error {
 	})
 }
 
+// todo make public
+
+// GetAllStreamingConfigIds returns a []ObjectId representing Streaming
+// Receivers currently known to Apstra
+func (o *Client) GetAllStreamingConfigIds(ctx context.Context) ([]ObjectId, error) {
+	return o.getAllStreamingConfigIds(ctx)
+}
+
+// todo make public
+
 // GetStreamingConfigIDByCfg checks current StreamingConfigs (Streaming
 // Receivers) against the supplied StreamingConfigInfo. If the stream seems
 // to already exist on the AOS server, the returned ObjectId will be
 // populated. If not found, it will be empty.
-func (o Client) GetStreamingConfigIDByCfg(ctx context.Context, in *StreamingConfigParams) (ObjectId, error) {
+func (o *Client) GetStreamingConfigIDByCfg(ctx context.Context, in *StreamingConfigParams) (ObjectId, error) {
 	all, err := o.getAllStreamingConfigs(ctx)
 	if err != nil {
 		return "", fmt.Errorf("error getting streaming configs - %w", err)
