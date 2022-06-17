@@ -91,7 +91,7 @@ type Client struct {
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
 	ctx         context.Context         // copied from ClientCfg, for async operations
 	sync        map[int]*sync.Mutex     // some client operations are not concurrency safe. Their locks live here.
-	syncLock    *sync.Mutex             // control access to the 'sync' map
+	syncLock    sync.Mutex              // control access to the 'sync' map
 }
 
 // pullFromEnv tries to pull missing config elements from the environment
@@ -210,7 +210,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 }
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
-func (o Client) lock(id int) {
+func (o *Client) lock(id int) {
 	o.syncLock.Lock()
 	if _, found := o.sync[id]; !found {
 		o.sync[id] = &sync.Mutex{}
@@ -219,12 +219,12 @@ func (o Client) lock(id int) {
 }
 
 // unlock releases the named *sync.Mutex in Client.sync
-func (o Client) unlock(id int) {
+func (o *Client) unlock(id int) {
 	o.sync[id].Unlock()
 }
 
 // ServerName returns the name of the AOS server this client has been configured to use
-func (o Client) ServerName() string {
+func (o *Client) ServerName() string {
 	return o.cfg.Host
 }
 
@@ -237,47 +237,47 @@ func (o *Client) Login(ctx context.Context) error {
 }
 
 // Logout invalidates the Apstra API token held by Client
-func (o Client) Logout(ctx context.Context) error {
+func (o *Client) Logout(ctx context.Context) error {
 	return o.logout(ctx)
 }
 
 // GetAllBlueprintIds returns a slice of IDs representing all blueprints
-func (o Client) GetAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
+func (o *Client) GetAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
 	return o.getAllBlueprintIds(ctx)
 }
 
 // GetBlueprint returns *GetBlueprintResponse detailing the requested blueprint
-func (o Client) GetBlueprint(ctx context.Context, in ObjectId) (*GetBlueprintResponse, error) {
+func (o *Client) GetBlueprint(ctx context.Context, in ObjectId) (*GetBlueprintResponse, error) {
 	return o.getBlueprint(ctx, in)
 }
 
 // GetStreamingConfig returns a slice of *StreamingConfigInfo representing
 // the requested Apstra streaming configs / receivers
-func (o Client) GetStreamingConfig(ctx context.Context, id ObjectId) (*StreamingConfigInfo, error) {
+func (o *Client) GetStreamingConfig(ctx context.Context, id ObjectId) (*StreamingConfigInfo, error) {
 	return o.getStreamingConfig(ctx, id)
 }
 
 // NewStreamingConfig creates a StreamingConfig (Streaming Receiver) on the
 // Apstra server.
-func (o Client) NewStreamingConfig(ctx context.Context, cfg *StreamingConfigParams) (ObjectId, error) {
+func (o *Client) NewStreamingConfig(ctx context.Context, cfg *StreamingConfigParams) (ObjectId, error) {
 	response, err := o.newStreamingConfig(ctx, cfg)
 	return response.Id, err
 }
 
 // DeleteStreamingConfig deletes the specified streaming config / receiver from
 // the Apstra server configuration.
-func (o Client) DeleteStreamingConfig(ctx context.Context, id ObjectId) error {
+func (o *Client) DeleteStreamingConfig(ctx context.Context, id ObjectId) error {
 	return o.deleteStreamingConfig(ctx, id)
 }
 
 // GetVersion calls apiUrlVersion, returns the Apstra server version as a
 // VersionResponse
-func (o Client) GetVersion(ctx context.Context) (*VersionResponse, error) {
+func (o *Client) GetVersion(ctx context.Context) (*VersionResponse, error) {
 	return o.getVersion(ctx)
 }
 
 // CreateRoutingZone creates an Apstra Routing Zone / Security Zone / VRF
-func (o Client) CreateRoutingZone(ctx context.Context, cfg *CreateRoutingZoneCfg) (ObjectId, error) {
+func (o *Client) CreateRoutingZone(ctx context.Context, cfg *CreateRoutingZoneCfg) (ObjectId, error) {
 	response, err := o.createRoutingZone(ctx, cfg)
 	if err != nil {
 		return "", err
@@ -286,13 +286,13 @@ func (o Client) CreateRoutingZone(ctx context.Context, cfg *CreateRoutingZoneCfg
 }
 
 // DeleteRoutingZone deletes an Apstra Routing Zone / Security Zone / VRF
-func (o Client) DeleteRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) error {
+func (o *Client) DeleteRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) error {
 	return o.deleteRoutingZone(ctx, blueprintId, zoneId)
 }
 
 // GetRoutingZones returns all Apstra Routing Zones / Security Zones / VRFs
 // associated with the specified blueprint
-func (o Client) GetRoutingZones(ctx context.Context, blueprintId ObjectId) ([]SecurityZone, error) {
+func (o *Client) GetRoutingZones(ctx context.Context, blueprintId ObjectId) ([]SecurityZone, error) {
 	return o.getAllRoutingZones(ctx, blueprintId)
 }
 
