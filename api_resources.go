@@ -324,6 +324,13 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 		return fmt.Errorf("error getting ASN pool ranges - %w", err)
 	}
 
+	if o.asnPoolRangeInSlice(newRange, poolInfo.Ranges) {
+		return ApstraClientErr{
+			errType: ErrExists,
+			err:     fmt.Errorf("ASN range %d-%d in ASN pool '%s' already exists, cannot create", newRange.First, newRange.Last, poolInfo.Id),
+		}
+	}
+
 	for _, r := range poolInfo.Ranges {
 		if asnOverlap(r, *newRange) {
 			return ApstraClientErr{
@@ -344,13 +351,7 @@ func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 		return false, fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
 	}
 
-	targetHash := hashAsnPoolRange(asnRange)
-	for i := 0; i < len(poolInfo.Ranges); i++ {
-		if targetHash == hashAsnPoolRange(&poolInfo.Ranges[i]) {
-			return true, nil
-		}
-	}
-	return false, nil
+	return o.asnPoolRangeInSlice(asnRange, poolInfo.Ranges), nil
 }
 
 func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe *AsnRange) error {
@@ -394,4 +395,14 @@ func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
 		return nil, err
 	}
 	return response.Items, nil
+}
+
+func (o *Client) asnPoolRangeInSlice(target *AsnRange, ranges []AsnRange) bool {
+	targetHash := hashAsnPoolRange(target)
+	for _, r := range ranges {
+		if targetHash == hashAsnPoolRange(&r) {
+			return true
+		}
+	}
+	return false
 }
