@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -28,9 +29,9 @@ const (
 	apstraAuthHeader = "Authtoken"
 
 	ErrUnknown = iota
-	ErrAsnRangeExists
 	ErrAsnRangeOverlap
 	ErrNotfound
+	ErrExists
 )
 
 type ApstraClientErr struct {
@@ -89,6 +90,8 @@ type Client struct {
 	tmQuit      chan struct{}           // task monitor exit trigger
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
 	ctx         context.Context         // copied from ClientCfg, for async operations
+	sync        map[string]*sync.Mutex  // some client operations are not concurrency safe. Their locks live here.
+	syncLock    *sync.Mutex             // control access to the 'sync' map
 }
 
 // pullFromEnv tries to pull missing config elements from the environment
@@ -198,11 +201,26 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
 		ctx:         ctx,
+		sync:        make(map[string]*sync.Mutex),
 	}
 
 	debugStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
 
 	return c, nil
+}
+
+// lock creates (if necessary) a named *sync.Mutex in Client.sync, and then locks it.
+func (o Client) lock(name string) {
+	o.syncLock.Lock()
+	if _, found := o.sync[name]; !found {
+		o.sync[name] = &sync.Mutex{}
+	}
+	o.sync[name].Lock()
+}
+
+// unlock releases the named *sync.Mutex in Client.sync
+func (o Client) unlock(name string) {
+	o.sync[name].Unlock()
 }
 
 // ServerName returns the name of the AOS server this client has been configured to use
@@ -222,8 +240,6 @@ func (o *Client) Login(ctx context.Context) error {
 func (o Client) Logout(ctx context.Context) error {
 	return o.logout(ctx)
 }
-
-// functions below here are implemented in other files.
 
 // GetAllBlueprintIds returns a slice of IDs representing all blueprints
 func (o Client) GetAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
