@@ -338,10 +338,25 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 	return o.UpdateAsnPool(ctx, poolId, poolInfo)
 }
 
+func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange *AsnRange) (bool, error) {
+	poolInfo, err := o.GetAsnPool(ctx, poolId)
+	if err != nil {
+		return false, fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
+	}
+
+	targetHash := hashAsnPoolRange(asnRange)
+	for i := 0; i < len(poolInfo.Ranges); i++ {
+		if targetHash == hashAsnPoolRange(&poolInfo.Ranges[i]) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe *AsnRange) error {
 	poolInfo, err := o.GetAsnPool(ctx, poolId)
 	if err != nil {
-		return fmt.Errorf("error getting ASN pool ranges - %w", err)
+		return fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
 	}
 
 	initialRangeCount := len(poolInfo.Ranges)

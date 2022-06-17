@@ -349,6 +349,12 @@ func (o *Client) CreateAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 	return o.createAsnPoolRange(ctx, poolId, newRange)
 }
 
+// AsnPoolRangeExists reports whether an exact match range (first and last ASN)
+// exists in ASN pool poolId
+func (o *Client) AsnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange *AsnRange) (bool, error) {
+	return o.asnPoolRangeExists(ctx, poolId, asnRange)
+}
+
 // DeleteAsnPoolRange updates an ASN pool by adding a new AsnRange
 func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme *AsnRange) error {
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
