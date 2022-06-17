@@ -17,6 +17,8 @@ const (
 	apiUrlResources               = "/api/resources"
 	apiUrlResourcesAsnPools       = apiUrlResources + "/asn-pools"
 	apiUrlResourcesAsnPoolsPrefix = apiUrlResourcesAsnPools + apiUrlPathDelim
+
+	clientApiPoolRangeMutex = iota
 )
 
 type AsnPool struct {
@@ -319,11 +321,17 @@ func (o *Client) hashAsnPoolRanges(ctx context.Context, poolId ObjectId) (map[st
 }
 
 func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRange) error {
+	// we read, then replace the pool range. this is not concurrency safe.
+	o.lock(clientApiPoolRangeMutex)
+	defer o.unlock(clientApiPoolRangeMutex)
+
+	// read the ASN pool info (that's where the configured ranges are found)
 	poolInfo, err := o.GetAsnPool(ctx, poolId)
 	if err != nil {
 		return fmt.Errorf("error getting ASN pool ranges - %w", err)
 	}
 
+	// we don't expect to find the "new" range in there already
 	if o.asnPoolRangeInSlice(newRange, poolInfo.Ranges) {
 		return ApstraClientErr{
 			errType: ErrExists,
@@ -331,6 +339,7 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 		}
 	}
 
+	// sanity check: the new range shouldn't overlap any existing range (the API will reject it)
 	for _, r := range poolInfo.Ranges {
 		if asnOverlap(r, *newRange) {
 			return ApstraClientErr{
@@ -342,7 +351,7 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 	}
 
 	poolInfo.Ranges = append(poolInfo.Ranges, *newRange)
-	return o.UpdateAsnPool(ctx, poolId, poolInfo)
+	return o.updateAsnPool(ctx, poolId, poolInfo)
 }
 
 func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange *AsnRange) (bool, error) {
@@ -355,6 +364,10 @@ func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 }
 
 func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe *AsnRange) error {
+	// we read, then replace the pool range. this is not concurrency safe.
+	o.lock(clientApiPoolRangeMutex)
+	defer o.unlock(clientApiPoolRangeMutex)
+
 	poolInfo, err := o.GetAsnPool(ctx, poolId)
 	if err != nil {
 		return fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
@@ -376,7 +389,7 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 		}
 	}
 
-	return o.UpdateAsnPool(ctx, poolId, poolInfo)
+	return o.updateAsnPool(ctx, poolId, poolInfo)
 }
 
 func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {

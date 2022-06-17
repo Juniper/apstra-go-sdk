@@ -90,7 +90,7 @@ type Client struct {
 	tmQuit      chan struct{}           // task monitor exit trigger
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
 	ctx         context.Context         // copied from ClientCfg, for async operations
-	sync        map[string]*sync.Mutex  // some client operations are not concurrency safe. Their locks live here.
+	sync        map[int]*sync.Mutex     // some client operations are not concurrency safe. Their locks live here.
 	syncLock    *sync.Mutex             // control access to the 'sync' map
 }
 
@@ -201,7 +201,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
 		ctx:         ctx,
-		sync:        make(map[string]*sync.Mutex),
+		sync:        make(map[int]*sync.Mutex),
 	}
 
 	debugStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
@@ -209,18 +209,18 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	return c, nil
 }
 
-// lock creates (if necessary) a named *sync.Mutex in Client.sync, and then locks it.
-func (o Client) lock(name string) {
+// lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
+func (o Client) lock(id int) {
 	o.syncLock.Lock()
-	if _, found := o.sync[name]; !found {
-		o.sync[name] = &sync.Mutex{}
+	if _, found := o.sync[id]; !found {
+		o.sync[id] = &sync.Mutex{}
 	}
-	o.sync[name].Lock()
+	o.sync[id].Lock()
 }
 
 // unlock releases the named *sync.Mutex in Client.sync
-func (o Client) unlock(name string) {
-	o.sync[name].Unlock()
+func (o Client) unlock(id int) {
+	o.sync[id].Unlock()
 }
 
 // ServerName returns the name of the AOS server this client has been configured to use
@@ -357,6 +357,10 @@ func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
 
 // UpdateAsnPool updates an ASN pool by ObjectId with new ASN pool config
 func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPool) error {
+	// AsnPool "write" operations are not concurrency safe
+	o.lock(clientApiPoolRangeMutex)
+	defer o.unlock(clientApiPoolRangeMutex)
+
 	return o.updateAsnPool(ctx, id, cfg)
 }
 
