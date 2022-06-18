@@ -212,10 +212,11 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
 func (o *Client) lock(id int) {
 	o.syncLock.Lock() // lock the map of locks
-	defer o.sync[id].Unlock()
+	defer o.syncLock.Unlock()
 	if _, found := o.sync[id]; !found {
 		o.sync[id] = &sync.Mutex{}
 	}
+	o.sync[id].Lock()
 }
 
 // unlock releases the named *sync.Mutex in Client.sync
