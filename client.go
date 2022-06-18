@@ -30,6 +30,7 @@ const (
 
 	ErrUnknown = iota
 	ErrAsnRangeOverlap
+	ErrAsnOutOfRange
 	ErrNotfound
 	ErrExists
 )

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -321,6 +322,13 @@ func (o *Client) hashAsnPoolRanges(ctx context.Context, poolId ObjectId) (map[st
 }
 
 func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRange) error {
+	if newRange.First <= 0 || newRange.Last > math.MaxUint32 {
+		return ApstraClientErr{
+			errType: ErrAsnOutOfRange,
+			err:     fmt.Errorf("error invalid ASN Range %d-%d", newRange.First, newRange.Last),
+		}
+	}
+
 	// we read, then replace the pool range. this is not concurrency safe.
 	o.lock(clientApiPoolRangeMutex)
 	defer o.unlock(clientApiPoolRangeMutex)
