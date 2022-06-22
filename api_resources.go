@@ -408,7 +408,7 @@ func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
 
 	response := &optionsAsnPoolsResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPut,
+		method:      http.MethodOptions,
 		url:         apstraUrl,
 		apiResponse: response,
 	})
