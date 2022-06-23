@@ -12,7 +12,8 @@ const (
         "value": 1
       },
       "anomalous": {
-        "value_min": 1
+        "value_min": 1,
+		"value_max": "seven"
       },
       "anomaly_type": "probe",
       "id": "306b4f71-4285-4f1f-a106-e6571add182b",

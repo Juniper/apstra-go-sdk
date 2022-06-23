@@ -21,14 +21,10 @@ type AnomalyProperty struct {
 }
 
 type Anomaly struct {
-	Actual struct {
-		Value int `json:"value"`
-	} `json:"actual"`
-	Anomalous struct {
-		ValueMax int `json:"value_max"`
-	} `json:"anomalous"`
-	AnomalyType string   `json:"anomaly_type"`
-	Id          ObjectId `json:"id"`
+	Actual      Actual    `json:"actual"`
+	Anomalous   Anomalous `json:"anomalous"`
+	AnomalyType string    `json:"anomaly_type"`
+	Id          ObjectId  `json:"id"`
 	Identity    struct {
 		AnomalyType string            `json:"anomaly_type"`
 		ItemId      ObjectId          `json:"item_id"`
@@ -41,20 +37,26 @@ type Anomaly struct {
 	Severity       string    `json:"severity"`
 }
 
+type Actual struct {
+	Value string `json:"value"`
+}
+
+type Anomalous struct {
+	Value    string `json:"value"`
+	ValueMin string `json:"value_min"`
+	ValueMax string `json:"value_max"`
+}
+
 type rawAnomalyProperty struct {
 	Key   string          `json:"key"`
 	Value json.RawMessage `json:"value"`
 }
 
 type rawAnomaly struct {
-	Actual struct {
-		Value int `json:"value"`
-	} `json:"actual"`
-	Anomalous struct {
-		ValueMax int `json:"value_max"`
-	} `json:"anomalous"`
-	AnomalyType string   `json:"anomaly_type"`
-	Id          ObjectId `json:"id"`
+	Actual      rawActual    `json:"actual"`
+	Anomalous   rawAnomalous `json:"anomalous"`
+	AnomalyType string       `json:"anomaly_type"`
+	Id          ObjectId     `json:"id"`
 	Identity    struct {
 		AnomalyType string               `json:"anomaly_type"`
 		ItemId      ObjectId             `json:"item_id"`
@@ -65,6 +67,62 @@ type rawAnomaly struct {
 	} `json:"identity"`
 	LastModifiedAt time.Time `json:"last_modified_at"`
 	Severity       string    `json:"severity"`
+}
+
+type rawActual struct {
+	Value json.RawMessage `json:"value"`
+}
+
+func (o rawActual) Parse() (*Actual, error) {
+	var val string
+	var err error
+
+	if o.Value != nil {
+		val, err = unpackIntOrStringAsString(o.Value)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing rawActual payload - %w", err)
+		}
+	}
+
+	return &Actual{Value: val}, nil
+}
+
+type rawAnomalous struct {
+	Value    json.RawMessage `json:"value"`
+	ValueMin json.RawMessage `json:"value_min"`
+	ValueMax json.RawMessage `json:"value_max"`
+}
+
+func (o rawAnomalous) Parse() (*Anomalous, error) {
+	var val, min, max string
+	var err error
+
+	if o.Value != nil {
+		val, err = unpackIntOrStringAsString(o.Value)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing rawAnomalous 'value' payload - %w", err)
+		}
+	}
+
+	if o.ValueMin != nil {
+		min, err = unpackIntOrStringAsString(o.ValueMin)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing rawAnomalous 'value_min' payload - %w", err)
+		}
+	}
+
+	if o.ValueMax != nil {
+		max, err = unpackIntOrStringAsString(o.ValueMax)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing rawAnomalous 'value_max' payload - %w", err)
+		}
+	}
+
+	return &Anomalous{
+		Value:    val,
+		ValueMin: min,
+		ValueMax: max,
+	}, nil
 }
 
 type getAnomaliesResponse struct {
@@ -81,10 +139,21 @@ func unpackAnomaly(in []byte) (*Anomaly, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	actual, err := rawAnomaly.Actual.Parse()
+	if err != nil {
+		return nil, fmt.Errorf("error unpacking raw anomaly 'actual' - %w", err)
+	}
+
+	anomalous, err := rawAnomaly.Anomalous.Parse()
+	if err != nil {
+		return nil, fmt.Errorf("error unpacking raw anomaly 'anomalous' - %w", err)
+	}
+
 	anomaly := &Anomaly{}
 
-	anomaly.Actual = rawAnomaly.Actual
-	anomaly.Anomalous = rawAnomaly.Anomalous
+	anomaly.Actual = *actual
+	anomaly.Anomalous = *anomalous
 	anomaly.AnomalyType = rawAnomaly.AnomalyType
 	anomaly.Id = rawAnomaly.Id
 	anomaly.LastModifiedAt = rawAnomaly.LastModifiedAt
@@ -95,41 +164,46 @@ func unpackAnomaly(in []byte) (*Anomaly, error) {
 	anomaly.Identity.ProbeLabel = rawAnomaly.Identity.ProbeLabel
 	anomaly.Identity.StageName = rawAnomaly.Identity.StageName
 
+	for _, raw := range rawAnomaly.Identity.Properties {
+		property, err := raw.Parse()
+		if err != nil {
+			return nil, fmt.Errorf("error parsing rawAnomalyProperty - %w", err)
+		}
+		anomaly.Identity.Properties = append(anomaly.Identity.Properties, *property)
+	}
+
+	return anomaly, nil
+}
+
+func (o rawAnomalyProperty) Parse() (*AnomalyProperty, error) {
+	val, err := unpackIntOrStringAsString(o.Value)
+	if err != nil {
+		return nil, fmt.Errorf("error unpacking unpredictable JSON payload - %w", err)
+	}
+	return &AnomalyProperty{
+		Key:   o.Key,
+		Value: val,
+	}, nil
+}
+
+func unpackIntOrStringAsString(raw json.RawMessage) (string, error) {
 	var intVal int
 	var stringVal string
 	var unmarshalTypeError *json.UnmarshalTypeError
-
-	for _, p := range rawAnomaly.Identity.Properties {
-		// try unmarshaling as a string
-		err = json.Unmarshal(p.Value, &stringVal)
-		switch {
-		case err == nil:
-			anomaly.Identity.Properties = append(anomaly.Identity.Properties, AnomalyProperty{
-				Key:   p.Key,
-				Value: stringVal,
-			})
-		case errors.As(err, &unmarshalTypeError) && unmarshalTypeError.Value == "number":
-			// oops, this is probably a number
-			err = json.Unmarshal(p.Value, &intVal)
-			if err != nil {
-				return nil, fmt.Errorf("error unmarshaling data detected as number '%c' - %w", p.Value, err)
-			}
-			anomaly.Identity.Properties = append(anomaly.Identity.Properties, AnomalyProperty{
-				Key:   p.Key,
-				Value: strconv.Itoa(intVal),
-			})
-		default:
-			return nil, fmt.Errorf("unhandled error in unmarshaling anomaly payload - %w", err)
+	err := json.Unmarshal(raw, &stringVal)
+	switch {
+	case err == nil:
+		return stringVal, nil
+	case errors.As(err, &unmarshalTypeError) && unmarshalTypeError.Value == "number":
+		// oops, this is probably a number
+		err = json.Unmarshal(raw, &intVal)
+		if err != nil {
+			return "", fmt.Errorf("error unmarshaling data detected as number '%c' - %w", raw, err)
 		}
-		if err != nil && errors.Is(err, new(json.UnmarshalTypeError)) {
-			return nil, err
-		}
+		return strconv.Itoa(intVal), nil
+	default:
+		return "", fmt.Errorf("unhandled error in unmarshaling anomaly payload - %w", err)
 	}
-
-	//anomaly := Anomaly(*rawAnomaly)
-	//anomaly = rawAnomaly
-	//return anomaly, nil
-	return anomaly, nil
 }
 
 func (o *Client) getAnomalies(ctx context.Context) ([]*Anomaly, error) {
