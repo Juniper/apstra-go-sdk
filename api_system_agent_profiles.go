@@ -24,8 +24,8 @@ type optionsSystemAgentProfilesResponse struct {
 
 type SystemAgentProfileConfig struct {
 	Label       string            `json:"label"`
-	Username    string            `json:"username"`
-	Password    string            `json:"password"`
+	Username    string            `json:"username,omitempty""`
+	Password    string            `json:"password,omitempty"`
 	Platform    string            `json:"platform"`
 	Packages    []string          `json:"packages"`
 	OpenOptions map[string]string `json:"open_options"`
