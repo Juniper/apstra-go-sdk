@@ -381,3 +381,23 @@ func (o *Client) AsnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme *AsnRange) error {
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
 }
+
+// CreateSystemAgentProfile creates a new System Agent Profile identified by 'cfg'
+func (o *Client) CreateSystemAgentProfile(ctx context.Context, cfg *SystemAgentProfileConfig) (ObjectId, error) {
+	return o.createSystemAgentProfile(ctx, cfg)
+}
+
+// ListSystemAgentProfileIds returns a []ObjectId representing System Agent Profiles
+func (o *Client) ListSystemAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listSystemAgentProfileIds(ctx)
+}
+
+// GetSystemAgentProfile returns the SystemAgentProfile identified by 'id'
+func (o *Client) GetSystemAgentProfile(ctx context.Context, id ObjectId) (*SystemAgentProfile, error) {
+	return o.getSystemAgentProfile(ctx, id)
+}
+
+// DeleteSystemAgentProfile deletes the System Agent Profile 'id'
+func (o *Client) DeleteSystemAgentProfile(ctx context.Context, id ObjectId) error {
+	return o.deleteSystemAgentProfile(ctx, id)
+}
