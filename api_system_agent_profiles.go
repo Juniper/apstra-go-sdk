@@ -22,11 +22,12 @@ type optionsSystemAgentProfilesResponse struct {
 }
 
 type SystemAgentProfileConfig struct {
-	Label    string   `json:"label"`
-	Username string   `json:"username"`
-	Password string   `json:"password"`
-	Platform string   `json:"platform"`
-	Packages []string `json:"packages"`
+	Label       string            `json:"label"`
+	Username    string            `json:"username"`
+	Password    string            `json:"password"`
+	Platform    string            `json:"platform"`
+	Packages    []string          `json:"packages"`
+	OpenOptions map[string]string `json:"open_options"`
 }
 
 type getSystemAgentProfilesResponse struct {
@@ -34,12 +35,13 @@ type getSystemAgentProfilesResponse struct {
 }
 
 type SystemAgentProfile struct {
-	Label       string   `json:"label"`
-	HasUsername bool     `json:"has_username"`
-	HasPassword bool     `json:"has_password"`
-	Platform    string   `json:"platform"`
-	Packages    []string `json:"packages"`
-	Id          ObjectId `json:"id"`
+	Label       string            `json:"label"`
+	HasUsername bool              `json:"has_username"`
+	HasPassword bool              `json:"has_password"`
+	Platform    string            `json:"platform"`
+	Packages    []string          `json:"packages"`
+	Id          ObjectId          `json:"id"`
+	OpenOptions map[string]string `json:"open_options"`
 }
 
 func (o *Client) listSystemAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
@@ -100,7 +102,7 @@ func (o *Client) getSystemAgentProfile(ctx context.Context, id ObjectId) (*Syste
 	return response, nil
 }
 
-func (o *Client) getSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfile, error) {
+func (o *Client) getAllSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfile, error) {
 	method := http.MethodGet
 	urlStr := apiUrlSystemAgentProfiles
 	apstraUrl, err := url.Parse(urlStr)
@@ -154,12 +156,12 @@ func (o *Client) deleteSystemAgentProfile(ctx context.Context, id ObjectId) erro
 	return nil
 }
 
-func (o *Client) getSystemAgentProfileIdByLabel(ctx context.Context, label string) (ObjectId, error) {
+func (o *Client) getSystemAgentProfileByLabel(ctx context.Context, label string) (*SystemAgentProfile, error) {
 	method := http.MethodGet
 	urlStr := apiUrlSystemAgentProfiles
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return "", fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 	response := &getSystemAgentProfilesResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
@@ -168,26 +170,24 @@ func (o *Client) getSystemAgentProfileIdByLabel(ctx context.Context, label strin
 		apiResponse: response,
 	})
 	if err != nil {
-		return "", fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
 
-	var id ObjectId
-	var found bool
-	for _, sap := range response.Items {
+	found := -1 //slice index where the matching System Agent Profile can be found
+	for i, sap := range response.Items {
 		if sap.Label == label {
-			if found {
-				return "", fmt.Errorf("multiple matches for System Agent Profile with label '%s'", label)
+			if found >= 0 {
+				return nil, fmt.Errorf("multiple matches for System Agent Profile with label '%s'", label)
 			}
-			found = true
-			id = sap.Id
+			found = i
 		}
 	}
 
-	if id == "" {
-		return "", ApstraClientErr{
+	if found < 0 {
+		return nil, ApstraClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no System Agent Profile with label '%s' found", label),
 		}
 	}
-	return id, nil
+	return &response.Items[found], nil
 }

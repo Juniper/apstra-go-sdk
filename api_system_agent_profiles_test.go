@@ -40,6 +40,14 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 			t.Fatal(err)
 		}
 		newIds = append(newIds, id)
+
+		sap, err := client.GetSystemAgentProfileByLabel(context.TODO(), c.Label)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if id != sap.Id {
+			t.Fatalf("error fetching System Agent Profile by label - '%s' != '%s'", id, sap.Id)
+		}
 	}
 
 	apiIds, err := client.listSystemAgentProfileIds(context.TODO())
@@ -47,7 +55,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	allProfiles, err := client.GetSystemAgentProfiles(context.TODO())
+	allProfiles, err := client.GetAllSystemAgentProfiles(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +75,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 		}
 	}
 
-	for _, id := range apiIds {
+	for _, id := range newIds {
 		err := client.deleteSystemAgentProfile(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
