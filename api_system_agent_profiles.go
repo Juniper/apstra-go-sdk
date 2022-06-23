@@ -155,3 +155,41 @@ func (o *Client) deleteSystemAgentProfile(ctx context.Context, id ObjectId) erro
 	}
 	return nil
 }
+
+func (o *Client) getSystemAgentProfileIdByLabel(ctx context.Context, label string) (ObjectId, error) {
+	method := http.MethodGet
+	urlStr := apiUrlSystemAgentProfiles
+	apstraUrl, err := url.Parse(urlStr)
+	if err != nil {
+		return "", fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
+	}
+	response := &getSystemAgentProfilesResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      method,
+		url:         apstraUrl,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+	}
+
+	var id ObjectId
+	var found bool
+	for _, sap := range response.Items {
+		if sap.Label == label {
+			if found {
+				return "", fmt.Errorf("multiple matches for System Agent Profile with label '%s'", label)
+			}
+			found = true
+			id = sap.Id
+		}
+	}
+
+	if id == "" {
+		return "", ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no System Agent Profile with label '%s' found", label),
+		}
+	}
+	return id, nil
+}

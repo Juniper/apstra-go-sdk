@@ -397,7 +397,8 @@ func (o *Client) GetSystemAgentProfile(ctx context.Context, id ObjectId) (*Syste
 	return o.getSystemAgentProfile(ctx, id)
 }
 
-// GetSystemAgentProfiles returns the []SystemAgentProfile representing all System Agent Profiles
+// GetSystemAgentProfiles returns the []SystemAgentProfile representing all
+// System Agent Profiles
 func (o *Client) GetSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfile, error) {
 	return o.getSystemAgentProfiles(ctx)
 }
@@ -405,4 +406,12 @@ func (o *Client) GetSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfi
 // DeleteSystemAgentProfile deletes the System Agent Profile 'id'
 func (o *Client) DeleteSystemAgentProfile(ctx context.Context, id ObjectId) error {
 	return o.deleteSystemAgentProfile(ctx, id)
+}
+
+// GetSystemAgentProfileIdByLabel returns the ID of the System Agent Profile
+// with the given label. Apstra doesn't allow label collisions, so this should
+// be a unique match. If no match, an ApstraClientErr with Type ErrNotfound is
+// returned
+func (o *Client) GetSystemAgentProfileIdByLabel(ctx context.Context, label string) (ObjectId, error) {
+	return o.getSystemAgentProfileIdByLabel(ctx, label)
 }
