@@ -403,6 +403,11 @@ func (o *Client) GetSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfi
 	return o.getSystemAgentProfiles(ctx)
 }
 
+// UpdateSystemAgentProfile updates a System Agent Profile identified by 'cfg'
+func (o *Client) UpdateSystemAgentProfile(ctx context.Context, id ObjectId, cfg *SystemAgentProfileConfig) error {
+	return o.updateSystemAgentProfile(ctx, id, cfg)
+}
+
 // DeleteSystemAgentProfile deletes the System Agent Profile 'id'
 func (o *Client) DeleteSystemAgentProfile(ctx context.Context, id ObjectId) error {
 	return o.deleteSystemAgentProfile(ctx, id)

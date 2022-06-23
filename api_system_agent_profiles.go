@@ -119,24 +119,22 @@ func (o *Client) getSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfi
 	return response.Items, nil
 }
 
-func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *SystemAgentProfileConfig) (ObjectId, error) {
+func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *SystemAgentProfileConfig) error {
 	method := http.MethodPut
 	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, id)
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return "", fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
+		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
-	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
-		apiInput:    in,
-		apiResponse: response,
+		method:   method,
+		url:      apstraUrl,
+		apiInput: in,
 	})
 	if err != nil {
-		return "", fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
-	return response.Id, nil
+	return nil
 }
 
 func (o *Client) deleteSystemAgentProfile(ctx context.Context, id ObjectId) error {
