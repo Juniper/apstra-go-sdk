@@ -2,6 +2,7 @@ package goapstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -97,6 +98,13 @@ func (o *Client) getSystemAgentProfile(ctx context.Context, id ObjectId) (*Syste
 		apiResponse: response,
 	})
 	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
+			return nil, ApstraClientErr{
+				errType: ErrNotfound,
+				err:     err,
+			}
+		}
 		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
 	return response, nil
