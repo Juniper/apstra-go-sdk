@@ -29,6 +29,10 @@ type SystemAgentProfileConfig struct {
 	Packages []string `json:"packages"`
 }
 
+type getSystemAgentProfilesResponse struct {
+	Items []SystemAgentProfile `json:"items"`
+}
+
 type SystemAgentProfile struct {
 	Label       string   `json:"label"`
 	HasUsername bool     `json:"has_username"`
@@ -94,6 +98,25 @@ func (o *Client) getSystemAgentProfile(ctx context.Context, id ObjectId) (*Syste
 		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
 	return response, nil
+}
+
+func (o *Client) getSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfile, error) {
+	method := http.MethodGet
+	urlStr := apiUrlSystemAgentProfiles
+	apstraUrl, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
+	}
+	response := &getSystemAgentProfilesResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      method,
+		url:         apstraUrl,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+	}
+	return response.Items, nil
 }
 
 func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *SystemAgentProfileConfig) (ObjectId, error) {

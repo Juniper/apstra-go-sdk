@@ -47,6 +47,15 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	allProfiles, err := client.GetSystemAgentProfiles(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(allProfiles) != len(apiIds) {
+		t.Fatalf("found %d profiles and %d profile IDs", len(allProfiles), len(apiIds))
+	}
+
 	apiIdsMap := make(map[ObjectId]struct{})
 	for _, id := range apiIds {
 		apiIdsMap[id] = struct{}{}

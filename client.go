@@ -397,6 +397,11 @@ func (o *Client) GetSystemAgentProfile(ctx context.Context, id ObjectId) (*Syste
 	return o.getSystemAgentProfile(ctx, id)
 }
 
+// GetSystemAgentProfiles returns the []SystemAgentProfile representing all System Agent Profiles
+func (o *Client) GetSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfile, error) {
+	return o.getSystemAgentProfiles(ctx)
+}
+
 // DeleteSystemAgentProfile deletes the System Agent Profile 'id'
 func (o *Client) DeleteSystemAgentProfile(ctx context.Context, id ObjectId) error {
 	return o.deleteSystemAgentProfile(ctx, id)
