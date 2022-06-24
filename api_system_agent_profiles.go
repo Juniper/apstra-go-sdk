@@ -71,6 +71,17 @@ func (o *Client) createSystemAgentProfile(ctx context.Context, in *SystemAgentPr
 	if err != nil {
 		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlSystemAgentProfiles, err)
 	}
+
+	//// avoid "null" in JSON output
+	//if in.OpenOptions == nil {
+	//	in.OpenOptions = make(map[string]string)
+	//}
+	//
+	//// avoid "null" in JSON output
+	//if in.Packages == nil {
+	//	in.Packages = []string{}
+	//}
+
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
