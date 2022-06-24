@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 const (
@@ -15,6 +16,8 @@ const (
 	apstraAgentPlatformJunos = "junos"
 	apstraAgentPlatformEOS   = "eos"
 	apstraAgentPlatformNXOS  = "nxos"
+
+	apstraSystemAgentPlatformStringSep = "=="
 )
 
 type optionsSystemAgentProfilesResponse struct {
@@ -37,7 +40,7 @@ func (o *SystemAgentProfileConfig) raw() *rawSystemAgentProfileConfig {
 	//goland:noinspection GoPreferNilSlice
 	packages := []string{}
 	for k, v := range o.Packages {
-		packages = append(packages, fmt.Sprintf("%s==%s", k, v))
+		packages = append(packages, k+apstraSystemAgentPlatformStringSep+v)
 	}
 	return &rawSystemAgentProfileConfig{
 		Label:       o.Label,
@@ -93,6 +96,15 @@ func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
 	var packages map[string]string
 	if len(o.Packages) > 0 {
 		packages = make(map[string]string)
+	}
+	for _, s := range o.Packages {
+		kv := strings.SplitN(s, apstraSystemAgentPlatformStringSep, 2)
+		switch len(kv) {
+		case 2:
+			packages[kv[0]] = kv[1]
+		case 1:
+			packages[kv[0]] = ""
+		}
 	}
 	return &SystemAgentProfile{
 		Label:       o.Label,
