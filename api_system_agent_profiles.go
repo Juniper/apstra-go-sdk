@@ -22,7 +22,36 @@ type optionsSystemAgentProfilesResponse struct {
 	Methods []string   `json:"methods"`
 }
 
+// SystemAgentProfileConfig is used when creating or updating an Agent Profile
 type SystemAgentProfileConfig struct {
+	Label       string            `json:"label"`
+	Username    string            `json:"username,omitempty""`
+	Password    string            `json:"password,omitempty"`
+	Platform    string            `json:"platform,omitempty"`
+	Packages    map[string]string `json:"packages"`
+	OpenOptions map[string]string `json:"open_options"`
+}
+
+// raw turns a SystemAgentProfile (from our caller) into a rawSystemAgentProfile
+func (o *SystemAgentProfileConfig) raw() *rawSystemAgentProfileConfig {
+	//goland:noinspection GoPreferNilSlice
+	packages := []string{}
+	for k, v := range o.Packages {
+		packages = append(packages, fmt.Sprintf("%s==%s", k, v))
+	}
+	return &rawSystemAgentProfileConfig{
+		Label:       o.Label,
+		Username:    o.Username,
+		Password:    o.Password,
+		Platform:    o.Platform,
+		Packages:    packages,
+		OpenOptions: o.OpenOptions,
+	}
+}
+
+// rawSystemAgentProfileConfig is the nasty type expected by the API. Element
+// Packages is really a map, but k,v are string-joined with "==" here.
+type rawSystemAgentProfileConfig struct {
 	Label       string            `json:"label"`
 	Username    string            `json:"username,omitempty""`
 	Password    string            `json:"password,omitempty"`
@@ -32,10 +61,24 @@ type SystemAgentProfileConfig struct {
 }
 
 type getSystemAgentProfilesResponse struct {
-	Items []SystemAgentProfile `json:"items"`
+	Items []rawSystemAgentProfile `json:"items"`
 }
 
+// SystemAgentProfile describes an Agent Profile to our callers.
+// It has the Packages element presented sensibly as a map.
 type SystemAgentProfile struct {
+	Label       string            `json:"label"`
+	HasUsername bool              `json:"has_username"`
+	HasPassword bool              `json:"has_password"`
+	Platform    string            `json:"platform"`
+	Packages    map[string]string `json:"packages"`
+	Id          ObjectId          `json:"id"`
+	OpenOptions map[string]string `json:"open_options"`
+}
+
+// rawSystemAgentProfile represents the API's description of an Agent Profile.
+// The Packages element is really a map, but has k, v string-joined with "==".
+type rawSystemAgentProfile struct {
 	Label       string            `json:"label"`
 	HasUsername bool              `json:"has_username"`
 	HasPassword bool              `json:"has_password"`
@@ -43,6 +86,23 @@ type SystemAgentProfile struct {
 	Packages    []string          `json:"packages"`
 	Id          ObjectId          `json:"id"`
 	OpenOptions map[string]string `json:"open_options"`
+}
+
+// polish turns a rawSystemAgentProfile (from the API) into a SystemAgentProfile
+func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
+	var packages map[string]string
+	if len(o.Packages) > 0 {
+		packages = make(map[string]string)
+	}
+	return &SystemAgentProfile{
+		Label:       o.Label,
+		HasUsername: o.HasUsername,
+		HasPassword: o.HasPassword,
+		Platform:    o.Platform,
+		Packages:    packages,
+		Id:          o.Id,
+		OpenOptions: o.OpenOptions,
+	}
 }
 
 func (o *Client) listSystemAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
@@ -72,15 +132,11 @@ func (o *Client) createSystemAgentProfile(ctx context.Context, in *SystemAgentPr
 		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlSystemAgentProfiles, err)
 	}
 
-	// Avoid "null" in JSON output by setting nil slice/map to empty slice/map
-	// in the configuration object.
-	cfg := nilFreeCloneSystemAgentProfileConfig(in)
-
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
-		apiInput:    cfg,
+		apiInput:    in.raw(),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -88,7 +144,7 @@ func (o *Client) createSystemAgentProfile(ctx context.Context, in *SystemAgentPr
 		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusConflict {
 			return "", ApstraClientErr{
 				errType: ErrConflict,
-				err:     fmt.Errorf("error Agent Profile '%s' likely already exists - %w", cfg.Label, err),
+				err:     fmt.Errorf("error Agent Profile '%s' likely already exists - %w", in.Label, err),
 			}
 		}
 		return "", fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
@@ -103,7 +159,7 @@ func (o *Client) getSystemAgentProfile(ctx context.Context, id ObjectId) (*Syste
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlSystemAgentProfiles, err)
 	}
-	response := &SystemAgentProfile{}
+	response := &rawSystemAgentProfile{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
@@ -119,7 +175,7 @@ func (o *Client) getSystemAgentProfile(ctx context.Context, id ObjectId) (*Syste
 		}
 		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
-	return response, nil
+	return response.polish(), nil
 }
 
 func (o *Client) getAllSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfile, error) {
@@ -138,7 +194,12 @@ func (o *Client) getAllSystemAgentProfiles(ctx context.Context) ([]SystemAgentPr
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
-	return response.Items, nil
+
+	var out []SystemAgentProfile
+	for _, sap := range response.Items {
+		out = append(out, *sap.polish())
+	}
+	return out, nil
 }
 
 func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *SystemAgentProfileConfig) error {
@@ -149,14 +210,10 @@ func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *
 		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 
-	// Avoid "null" in JSON output by setting nil slice/map to empty slice/map
-	// in the configuration object.
-	cfg := nilFreeCloneSystemAgentProfileConfig(in)
-
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:   method,
 		url:      apstraUrl,
-		apiInput: cfg,
+		apiInput: in.raw(),
 	})
 	if err != nil {
 		return fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
@@ -214,30 +271,5 @@ func (o *Client) getSystemAgentProfileByLabel(ctx context.Context, label string)
 			err:     fmt.Errorf("no System Agent Profile with label '%s' found", label),
 		}
 	}
-	return &response.Items[found], nil
-}
-
-func nilFreeCloneSystemAgentProfileConfig(in *SystemAgentProfileConfig) *SystemAgentProfileConfig {
-	//goland:noinspection GoPreferNilSlice
-	packages := []string{}
-	for _, p := range in.Packages {
-		packages = append(packages, p)
-	}
-
-	openOptions := make(map[string]string)
-	if len(in.OpenOptions) != 0 {
-		openOptions = make(map[string]string)
-		for k, v := range in.OpenOptions {
-			openOptions[k] = v
-		}
-	}
-
-	return &SystemAgentProfileConfig{
-		Label:       in.Label,
-		Username:    in.Username,
-		Password:    in.Password,
-		Platform:    in.Platform,
-		Packages:    packages,
-		OpenOptions: openOptions,
-	}
+	return response.Items[found].polish(), nil
 }
