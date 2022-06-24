@@ -72,21 +72,15 @@ func (o *Client) createSystemAgentProfile(ctx context.Context, in *SystemAgentPr
 		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlSystemAgentProfiles, err)
 	}
 
-	//// avoid "null" in JSON output
-	//if in.OpenOptions == nil {
-	//	in.OpenOptions = make(map[string]string)
-	//}
-	//
-	//// avoid "null" in JSON output
-	//if in.Packages == nil {
-	//	in.Packages = []string{}
-	//}
+	// Avoid "null" in JSON output by setting nil slice/map to empty slice/map
+	// in the configuration object.
+	cfg := nilFreeCloneSystemAgentProfileConfig(in)
 
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
-		apiInput:    in,
+		apiInput:    cfg,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -147,10 +141,15 @@ func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
+
+	// Avoid "null" in JSON output by setting nil slice/map to empty slice/map
+	// in the configuration object.
+	cfg := nilFreeCloneSystemAgentProfileConfig(in)
+
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:   method,
 		url:      apstraUrl,
-		apiInput: in,
+		apiInput: cfg,
 	})
 	if err != nil {
 		return fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
@@ -209,4 +208,29 @@ func (o *Client) getSystemAgentProfileByLabel(ctx context.Context, label string)
 		}
 	}
 	return &response.Items[found], nil
+}
+
+func nilFreeCloneSystemAgentProfileConfig(in *SystemAgentProfileConfig) *SystemAgentProfileConfig {
+	//goland:noinspection GoPreferNilSlice
+	packages := []string{}
+	for _, p := range in.Packages {
+		packages = append(packages, p)
+	}
+
+	openOptions := make(map[string]string)
+	if len(in.OpenOptions) != 0 {
+		openOptions = make(map[string]string)
+		for k, v := range in.OpenOptions {
+			openOptions[k] = v
+		}
+	}
+
+	return &SystemAgentProfileConfig{
+		Label:       in.Label,
+		Username:    in.Username,
+		Password:    in.Password,
+		Platform:    in.Platform,
+		Packages:    packages,
+		OpenOptions: openOptions,
+	}
 }
