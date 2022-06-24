@@ -33,6 +33,7 @@ const (
 	ErrAsnOutOfRange
 	ErrNotfound
 	ErrExists
+	ErrConflict
 )
 
 type ApstraClientErr struct {

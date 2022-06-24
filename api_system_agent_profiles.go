@@ -84,6 +84,13 @@ func (o *Client) createSystemAgentProfile(ctx context.Context, in *SystemAgentPr
 		apiResponse: response,
 	})
 	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusConflict {
+			return "", ApstraClientErr{
+				errType: ErrConflict,
+				err:     fmt.Errorf("error Agent Profile '%s' likely already exists - %w", cfg.Label, err),
+			}
+		}
 		return "", fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
 	return response.Id, nil
