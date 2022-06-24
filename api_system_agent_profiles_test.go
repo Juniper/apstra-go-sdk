@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -30,6 +31,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 			Username: randString(10, "hex"),
 			Password: randString(10, "hex"),
 			Platform: p,
+			Packages: []string{strings.Join([]string{randString(10, "hex"), randString(10, "hex")}, "==")},
 		})
 	}
 
