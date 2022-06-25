@@ -42,7 +42,7 @@ func (o *SystemAgentProfileConfig) raw(id ObjectId) *rawSystemAgentProfileConfig
 	for k, v := range o.Packages {
 		packages = append(packages, k+apstraSystemAgentPlatformStringSep+v)
 	}
-	return &rawSystemAgentProfileConfig{
+	result := &rawSystemAgentProfileConfig{
 		Id:          string(id),
 		Label:       o.Label,
 		Username:    o.Username,
@@ -51,6 +51,10 @@ func (o *SystemAgentProfileConfig) raw(id ObjectId) *rawSystemAgentProfileConfig
 		Packages:    packages,
 		OpenOptions: o.OpenOptions,
 	}
+	if result.OpenOptions == nil { // this would result in 'null' in JSON payload
+		result.OpenOptions = make(map[string]string) // send '{}' instead
+	}
+	return result
 }
 
 // rawSystemAgentProfileConfig is the nasty type expected by the API. Element
@@ -109,7 +113,7 @@ func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
 			packages[kv[0]] = ""
 		}
 	}
-	result := &SystemAgentProfile{
+	return &SystemAgentProfile{
 		Label:       o.Label,
 		HasUsername: o.HasUsername,
 		HasPassword: o.HasPassword,
@@ -118,10 +122,6 @@ func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
 		Id:          o.Id,
 		OpenOptions: o.OpenOptions,
 	}
-	if result.OpenOptions == nil { // this would result in 'null' in JSON payload
-		result.OpenOptions = make(map[string]string) // send '{}' instead
-	}
-	return result
 }
 
 func (o *Client) listSystemAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
@@ -222,7 +222,7 @@ func (o *Client) getAllSystemAgentProfiles(ctx context.Context) ([]SystemAgentPr
 }
 
 func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *SystemAgentProfileConfig) error {
-	method := http.MethodPut
+	method := http.MethodPatch
 	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, id)
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
