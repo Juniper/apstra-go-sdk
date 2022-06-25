@@ -63,6 +63,7 @@ type rawSystemAgentProfileConfig struct {
 	Platform    string            `json:"platform,omitempty"`
 	Packages    []string          `json:"packages"`
 	OpenOptions map[string]string `json:"open_options"`
+	Profile     interface{}       `json:"profile"` // this exists to be 'null' json - don't know why
 }
 
 type getSystemAgentProfilesResponse struct {
