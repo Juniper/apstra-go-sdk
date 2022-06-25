@@ -109,7 +109,7 @@ func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
 			packages[kv[0]] = ""
 		}
 	}
-	return &SystemAgentProfile{
+	result := &SystemAgentProfile{
 		Label:       o.Label,
 		HasUsername: o.HasUsername,
 		HasPassword: o.HasPassword,
@@ -118,6 +118,10 @@ func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
 		Id:          o.Id,
 		OpenOptions: o.OpenOptions,
 	}
+	if result.OpenOptions == nil { // this would result in 'null' in JSON payload
+		result.OpenOptions = make(map[string]string) // send '{}' instead
+	}
+	return result
 }
 
 func (o *Client) listSystemAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
