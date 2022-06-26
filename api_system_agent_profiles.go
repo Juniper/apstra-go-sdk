@@ -36,14 +36,13 @@ type SystemAgentProfileConfig struct {
 }
 
 // raw turns a SystemAgentProfile (from our caller) into a rawSystemAgentProfile
-func (o *SystemAgentProfileConfig) raw(id ObjectId) *rawSystemAgentProfileConfig {
+func (o *SystemAgentProfileConfig) raw() *rawSystemAgentProfileConfig {
 	//goland:noinspection GoPreferNilSlice
 	packages := []string{}
 	for k, v := range o.Packages {
 		packages = append(packages, k+apstraSystemAgentPlatformStringSep+v)
 	}
 	result := &rawSystemAgentProfileConfig{
-		Id:          string(id),
 		Label:       o.Label,
 		Username:    o.Username,
 		Password:    o.Password,
@@ -60,7 +59,6 @@ func (o *SystemAgentProfileConfig) raw(id ObjectId) *rawSystemAgentProfileConfig
 // rawSystemAgentProfileConfig is the nasty type expected by the API. Element
 // Packages is really a map, but k,v are string-joined with "==" here.
 type rawSystemAgentProfileConfig struct {
-	Id          string            `json:"id,omitempty"`
 	Label       string            `json:"label"`
 	Username    string            `json:"username,omitempty""`
 	Password    string            `json:"password,omitempty"`
@@ -154,7 +152,7 @@ func (o *Client) createSystemAgentProfile(ctx context.Context, in *SystemAgentPr
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
-		apiInput:    in.raw(""),
+		apiInput:    in.raw(),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -231,7 +229,7 @@ func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:   method,
 		url:      apstraUrl,
-		apiInput: in.raw(id),
+		apiInput: in.raw(),
 	})
 	if err != nil {
 		return fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
