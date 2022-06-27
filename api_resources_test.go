@@ -2,7 +2,9 @@ package goapstra
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"log"
 	"math"
 	"math/rand"

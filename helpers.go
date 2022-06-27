@@ -68,3 +68,13 @@ func AsnOverlap(a, b AsnRange) bool {
 	}
 	return false // no overlap
 }
+
+func AsnPoolRangeInSlice(target *AsnRange, ranges []AsnRange) bool {
+	targetHash := hashAsnPoolRange(target)
+	for _, r := range ranges {
+		if targetHash == hashAsnPoolRange(&r) {
+			return true
+		}
+	}
+	return false
+}
