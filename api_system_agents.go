@@ -15,8 +15,8 @@ const (
 	apiUrlSystemAgentsById   = apiUrlSystemAgents + apiUrlPathDelim + "%s"
 
 	systemAgentJobInstall             = "install"
-	systemAgentOperationModeFull      = "full_control"
-	systemAgentOperationModeTelemetry = "telemetry_only"
+	SystemAgentOperationModeFull      = "full_control"
+	SystemAgentOperationModeTelemetry = "telemetry_only"
 	SystemAgentTypeOffbox             = "offbox"
 	SystemAgentTypeOnbox              = "onbox"
 	systemAgentConnectStateConnected  = "connected"
