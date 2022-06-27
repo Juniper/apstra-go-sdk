@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -233,9 +234,11 @@ func (o *Client) createSystemAgent(ctx context.Context, request *SystemAgentCfg)
 		var ttae TalkToApstraErr
 		if errors.As(err, &ttae) {
 			if ttae.Response.StatusCode == http.StatusConflict {
+				buf := make([]byte, 512)
+				_, _ = io.ReadFull(ttae.Response.Body, buf)
 				return "", ApstraClientErr{
 					errType: ErrExists,
-					err:     err,
+					err:     fmt.Errorf("%w - %s", ttae, string(buf)),
 				}
 			}
 		}
