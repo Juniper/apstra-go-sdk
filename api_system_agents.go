@@ -14,7 +14,7 @@ const (
 	apiUrlSystemAgentsPrefix = "/api/system-agents" + apiUrlPathDelim
 	apiUrlSystemAgentsById   = apiUrlSystemAgents + apiUrlPathDelim + "%s"
 
-	systemAgentJobInstall             = "install"
+	SystemAgentJobInstall             = "install"
 	SystemAgentOperationModeFull      = "full_control"
 	SystemAgentOperationModeTelemetry = "telemetry_only"
 	SystemAgentTypeOffbox             = "offbox"
