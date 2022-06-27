@@ -443,5 +443,5 @@ func (o *Client) DeleteSystemAgent(ctx context.Context, id ObjectId) error {
 
 // UninstallSystemAgent creates an Apstra System Agent and returns its ID
 func (o *Client) UninstallSystemAgent(ctx context.Context, id ObjectId) error {
-	return o.deleteSystemAgent(ctx, id)
+	return o.uninstallSystemAgent(ctx, id)
 }
