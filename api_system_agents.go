@@ -17,8 +17,8 @@ const (
 	systemAgentJobInstall             = "install"
 	systemAgentOperationModeFull      = "full_control"
 	systemAgentOperationModeTelemetry = "telemetry_only"
-	systemAgentTypeOffbox             = "offbox"
-	systemAgentTypeOnbox              = "onbox"
+	SystemAgentTypeOffbox             = "offbox"
+	SystemAgentTypeOnbox              = "onbox"
 	systemAgentConnectStateConnected  = "connected"
 )
 
@@ -42,7 +42,7 @@ type SystemAgentInfo struct {
 		PlatformVersion   string   `json:"platform_version"`
 		Platform          string   `json:"platform"`
 		State             string   `json:"state"`
-		SystemId          systemId `json:"system_id"`
+		SystemId          ObjectId `json:"system_id"`
 		HasCredential     bool     `json:"has_credential"`
 		Error             string   `json:"error"`
 		StatusMessage     string   `json:"status_message"`
