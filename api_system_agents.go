@@ -11,9 +11,11 @@ import (
 )
 
 const (
-	apiUrlSystemAgents       = "/api/system-agents"
-	apiUrlSystemAgentsPrefix = "/api/system-agents" + apiUrlPathDelim
-	apiUrlSystemAgentsById   = apiUrlSystemAgents + apiUrlPathDelim + "%s"
+	apiUrlSystemAgents         = "/api/system-agents"
+	apiUrlSystemAgentsPrefix   = "/api/system-agents" + apiUrlPathDelim
+	apiUrlSystemAgentsById     = apiUrlSystemAgentsPrefix + "%s"
+	apiUrlSystemAgentInstall   = apiUrlSystemAgentsPrefix + "%s" + "/install-agent"
+	apiUrlSystemAgentUninstall = apiUrlSystemAgentsPrefix + "%s" + "/uninstall-agent"
 
 	SystemAgentJobInstall             = "install"
 	SystemAgentOperationModeFull      = "full_control"
@@ -280,6 +282,32 @@ func (o *Client) updateSystemAgent(ctx context.Context, id ObjectId, request *Sy
 func (o *Client) deleteSystemAgent(ctx context.Context, id ObjectId) error {
 	method := http.MethodDelete
 	urlStr := fmt.Sprintf(apiUrlSystemAgentsById, id)
+	apstraUrl, err := url.Parse(urlStr)
+	if err != nil {
+		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
+	}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method: method,
+		url:    apstraUrl,
+	})
+	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) {
+			if ttae.Response.StatusCode == http.StatusNotFound {
+				return ApstraClientErr{
+					errType: ErrNotfound,
+					err:     err,
+				}
+			}
+		}
+		return err
+	}
+	return nil
+}
+
+func (o *Client) uninstallSystemAgent(ctx context.Context, id ObjectId) error {
+	method := http.MethodPost
+	urlStr := fmt.Sprintf(apiUrlSystemAgentUninstall, id)
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
