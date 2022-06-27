@@ -230,7 +230,16 @@ func (o *Client) createSystemAgent(ctx context.Context, request *SystemAgentCfg)
 		apiResponse: response,
 	})
 	if err != nil {
-		return "", fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) {
+			if ttae.Response.StatusCode == http.StatusConflict {
+				return "", ApstraClientErr{
+					errType: ErrNotfound,
+					err:     err,
+				}
+			}
+		}
+		return "", err
 	}
 
 	return response.Id, nil
@@ -289,5 +298,4 @@ func (o *Client) deleteSystemAgent(ctx context.Context, id ObjectId) error {
 		return err
 	}
 	return nil
-
 }
