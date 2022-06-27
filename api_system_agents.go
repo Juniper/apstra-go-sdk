@@ -234,7 +234,7 @@ func (o *Client) createSystemAgent(ctx context.Context, request *SystemAgentCfg)
 		if errors.As(err, &ttae) {
 			if ttae.Response.StatusCode == http.StatusConflict {
 				return "", ApstraClientErr{
-					errType: ErrNotfound,
+					errType: ErrExists,
 					err:     err,
 				}
 			}
