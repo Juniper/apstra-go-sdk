@@ -2,6 +2,7 @@ package goapstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -159,11 +160,24 @@ func (o *Client) getSystemAgent(ctx context.Context, id ObjectId) (*SystemAgentI
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 	response := &SystemAgentInfo{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
 		apiResponse: response,
 	})
+	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) {
+			if ttae.Response.StatusCode == http.StatusNotFound {
+				return nil, ApstraClientErr{
+					errType: ErrNotfound,
+					err:     err,
+				}
+			}
+		}
+		return nil, err
+	}
+	return response, nil
 }
 
 func (o *Client) getAllSystemAgents(ctx context.Context) ([]SystemAgentInfo, error) {
@@ -237,9 +251,17 @@ func (o *Client) updateSystemAgent(ctx context.Context, id ObjectId, request *Sy
 		apiResponse: response,
 	})
 	if err != nil {
-		return fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) {
+			if ttae.Response.StatusCode == http.StatusNotFound {
+				return ApstraClientErr{
+					errType: ErrNotfound,
+					err:     err,
+				}
+			}
+		}
+		return err
 	}
-
 	return nil
 }
 
@@ -250,8 +272,22 @@ func (o *Client) deleteSystemAgent(ctx context.Context, id ObjectId) error {
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method: method,
 		url:    apstraUrl,
 	})
+	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) {
+			if ttae.Response.StatusCode == http.StatusNotFound {
+				return ApstraClientErr{
+					errType: ErrNotfound,
+					err:     err,
+				}
+			}
+		}
+		return err
+	}
+	return nil
+
 }
