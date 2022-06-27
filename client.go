@@ -420,3 +420,23 @@ func (o *Client) DeleteSystemAgentProfile(ctx context.Context, id ObjectId) erro
 func (o *Client) GetSystemAgentProfileByLabel(ctx context.Context, label string) (*SystemAgentProfile, error) {
 	return o.getSystemAgentProfileByLabel(ctx, label)
 }
+
+// CreateSystemAgent creates an Apstra System Agent and returns its ID
+func (o *Client) CreateSystemAgent(ctx context.Context, request *SystemAgentCfg) (ObjectId, error) {
+	return o.createSystemAgent(ctx, request)
+}
+
+// GetSystemAgent returns a SystemAgentInfo structure representing the supplied ID
+func (o *Client) GetSystemAgent(ctx context.Context, id ObjectId) (*SystemAgentInfo, error) {
+	return o.getSystemAgent(ctx, id)
+}
+
+// UpdateSystemAgent creates an Apstra System Agent and returns its ID
+func (o *Client) UpdateSystemAgent(ctx context.Context, id ObjectId, request *SystemAgentCfg) error {
+	return o.updateSystemAgent(ctx, id, request)
+}
+
+// DeleteSystemAgent creates an Apstra System Agent and returns its ID
+func (o *Client) DeleteSystemAgent(ctx context.Context, id ObjectId) error {
+	return o.deleteSystemAgent(ctx, id)
+}
