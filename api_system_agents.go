@@ -2,9 +2,7 @@ package goapstra
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -169,15 +167,6 @@ func (o *Client) getSystemAgent(ctx context.Context, id ObjectId) (*SystemAgentI
 		apiResponse: response,
 	})
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) {
-			if ttae.Response.StatusCode == http.StatusNotFound {
-				return nil, ApstraClientErr{
-					errType: ErrNotfound,
-					err:     err,
-				}
-			}
-		}
 		return nil, err
 	}
 	return response, nil
@@ -233,17 +222,6 @@ func (o *Client) createSystemAgent(ctx context.Context, request *SystemAgentCfg)
 		apiResponse: response,
 	})
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) {
-			if ttae.Response.StatusCode == http.StatusConflict {
-				buf := make([]byte, 512)
-				_, _ = io.ReadFull(ttae.Response.Body, buf)
-				return "", ApstraClientErr{
-					errType: ErrExists,
-					err:     fmt.Errorf("%w - %s", ttae, string(buf)),
-				}
-			}
-		}
 		return "", err
 	}
 
@@ -265,15 +243,6 @@ func (o *Client) updateSystemAgent(ctx context.Context, id ObjectId, request *Sy
 		apiResponse: response,
 	})
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) {
-			if ttae.Response.StatusCode == http.StatusNotFound {
-				return ApstraClientErr{
-					errType: ErrNotfound,
-					err:     err,
-				}
-			}
-		}
 		return err
 	}
 	return nil
@@ -291,15 +260,6 @@ func (o *Client) deleteSystemAgent(ctx context.Context, id ObjectId) error {
 		url:    apstraUrl,
 	})
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) {
-			if ttae.Response.StatusCode == http.StatusNotFound {
-				return ApstraClientErr{
-					errType: ErrNotfound,
-					err:     err,
-				}
-			}
-		}
 		return err
 	}
 	return nil
@@ -317,15 +277,6 @@ func (o *Client) uninstallSystemAgent(ctx context.Context, id ObjectId) error {
 		url:    apstraUrl,
 	})
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) {
-			if ttae.Response.StatusCode == http.StatusNotFound {
-				return ApstraClientErr{
-					errType: ErrNotfound,
-					err:     err,
-				}
-			}
-		}
 		return err
 	}
 	return nil
