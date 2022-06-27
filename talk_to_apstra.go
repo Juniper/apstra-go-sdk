@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"net/url"
@@ -17,7 +18,8 @@ const (
 	apstraApiAsyncParamKey          = "async"
 	apstraApiAsyncParamValFull      = "full"
 	apstraApiAsyncParamValPartial   = "partial" // default?
-	errResponseLimit                = 4096
+	errResponseBodyLimit            = 4096
+	errResponseStringLimit          = 512
 	peekSizeForApstraTaskIdResponse = math.MaxUint8
 )
 
@@ -248,8 +250,16 @@ func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, 
 		// prepare a stunt double response body for the one that's likely attached to a network
 		// socket, and likely to be closed by a `defer` somewhere
 		rehydratedResponse := &bytes.Buffer{}
-		_, _ = io.CopyN(rehydratedResponse, resp.Body, errResponseLimit) // size limit
-		resp.Body = io.NopCloser(rehydratedResponse)                     // replace the original body
+		_, _ = io.CopyN(rehydratedResponse, resp.Body, errResponseBodyLimit) // size limit
+		resp.Body = io.NopCloser(rehydratedResponse)                         // replace the original body
+	}
+
+	// use first part of response body if errMsg empty
+	if errMsg == "" {
+		peekAbleBodyReader := bufio.NewReader(resp.Body)
+		resp.Body = ioutil.NopCloser(peekAbleBodyReader)
+		peek, _ := peekAbleBodyReader.Peek(errResponseStringLimit)
+		errMsg = string(peek)
 	}
 
 	return TalkToApstraErr{
