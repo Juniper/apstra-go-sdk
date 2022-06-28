@@ -431,6 +431,15 @@ func (o *Client) GetSystemAgent(ctx context.Context, id ObjectId) (*SystemAgentI
 	return o.getSystemAgent(ctx, id)
 }
 
+// GetSystemAgentByManagementIp returns *SystemAgentInfo representing the
+// SystemAgent with the given "Management Ip" (which in Apstra terms can also
+// be a hostname). Apstra doesn't allow management IP collisions, so this should
+// be a unique match. If no match, an ApstraClientErr with type ErrNotfound is
+// returned.
+func (o *Client) GetSystemAgentByManagementIp(ctx context.Context, ip string) (*SystemAgentInfo, error) {
+	return o.getSystemAgentByManagementIp(ctx, ip)
+}
+
 // UpdateSystemAgent creates an Apstra System Agent and returns its ID
 func (o *Client) UpdateSystemAgent(ctx context.Context, id ObjectId, request *SystemAgentCfg) error {
 	return o.updateSystemAgent(ctx, id, request)
