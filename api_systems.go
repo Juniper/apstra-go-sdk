@@ -31,7 +31,7 @@ type optionsSystemsResponse struct {
 
 type ManagedSystemInfo struct {
 	ContainerStatus SystemContainerStatus `json:"container_status"`
-	DeviceKey       SystemId              `json:"device_key"`
+	DeviceKey       string                `json:"device_key"`
 	Facts           SystemFacts           `json:"facts"`
 	Id              SystemId              `json:"id"`
 	Services        []string              `json:"services"`
@@ -41,7 +41,7 @@ type ManagedSystemInfo struct {
 
 type rawManagedSystemInfo struct {
 	ContainerStatus SystemContainerStatus `json:"container_status"`
-	DeviceKey       SystemId              `json:"device_key"`
+	DeviceKey       string                `json:"device_key"`
 	Facts           SystemFacts           `json:"facts"`
 	Id              SystemId              `json:"id"`
 	Services        []string              `json:"services"`
