@@ -19,13 +19,13 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var cfgs []*SystemAgentProfileConfig
+	var cfgs []*AgentProfileConfig
 	for _, p := range []string{
 		apstraAgentPlatformEOS,
 		apstraAgentPlatformJunos,
 		apstraAgentPlatformNXOS,
 	} {
-		cfgs = append(cfgs, &SystemAgentProfileConfig{
+		cfgs = append(cfgs, &AgentProfileConfig{
 			Label:    randString(10, "hex"),
 			Username: randString(10, "hex"),
 			Password: randString(10, "hex"),
@@ -43,7 +43,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 
 	var newIds []ObjectId
 	for _, c := range cfgs {
-		id, err := client.createSystemAgentProfile(context.TODO(), c)
+		id, err := client.createAgentProfile(context.TODO(), c)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -58,12 +58,12 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 		}
 	}
 
-	apiIds, err := client.listSystemAgentProfileIds(context.TODO())
+	apiIds, err := client.listAgentProfileIds(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	allProfiles, err := client.GetAllSystemAgentProfiles(context.TODO())
+	allProfiles, err := client.GetAllAgentProfiles(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 	}
 
 	for _, id := range newIds {
-		err := client.deleteSystemAgentProfile(context.TODO(), id)
+		err := client.deleteAgentProfile(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}

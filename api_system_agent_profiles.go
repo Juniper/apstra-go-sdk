@@ -19,13 +19,13 @@ const (
 	apstraSystemAgentPlatformStringSep = "=="
 )
 
-type optionsSystemAgentProfilesResponse struct {
+type optionsAgentProfilesResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
 }
 
-// SystemAgentProfileConfig is used when creating or updating an Agent Profile
-type SystemAgentProfileConfig struct {
+// AgentProfileConfig is used when creating or updating an Agent Profile
+type AgentProfileConfig struct {
 	Label       string            `json:"label"`
 	Username    string            `json:"username,omitempty""`
 	Password    string            `json:"password,omitempty"`
@@ -34,9 +34,9 @@ type SystemAgentProfileConfig struct {
 	OpenOptions map[string]string `json:"open_options"`
 }
 
-// raw turns a SystemAgentProfile (from our caller) into a rawSystemAgentProfile
-func (o *SystemAgentProfileConfig) raw() *rawSystemAgentProfileConfig {
-	result := &rawSystemAgentProfileConfig{
+// raw turns a *AgentProfile (from our caller) into a rawAgentProfile
+func (o *AgentProfileConfig) raw() *rawAgentProfileConfig {
+	result := &rawAgentProfileConfig{
 		Label:       o.Label,
 		Username:    o.Username,
 		Password:    o.Password,
@@ -50,9 +50,9 @@ func (o *SystemAgentProfileConfig) raw() *rawSystemAgentProfileConfig {
 	return result
 }
 
-// rawSystemAgentProfileConfig is the nasty type expected by the API. Element
+// rawAgentProfileConfig is the nasty type expected by the API. Element
 // Packages is really a map, but k,v are string-joined with "==" here.
-type rawSystemAgentProfileConfig struct {
+type rawAgentProfileConfig struct {
 	Label       string            `json:"label"`
 	Username    string            `json:"username,omitempty""`
 	Password    string            `json:"password,omitempty"`
@@ -61,13 +61,13 @@ type rawSystemAgentProfileConfig struct {
 	OpenOptions map[string]string `json:"open_options"`
 }
 
-type getSystemAgentProfilesResponse struct {
-	Items []rawSystemAgentProfile `json:"items"`
+type getAgentProfilesResponse struct {
+	Items []rawAgentProfile `json:"items"`
 }
 
-// SystemAgentProfile describes an Agent Profile to our callers.
+// AgentProfile describes an Agent Profile to our callers.
 // It has the Packages element presented sensibly as a map.
-type SystemAgentProfile struct {
+type AgentProfile struct {
 	Label       string            `json:"label"`
 	HasUsername bool              `json:"has_username"`
 	HasPassword bool              `json:"has_password"`
@@ -77,9 +77,9 @@ type SystemAgentProfile struct {
 	OpenOptions map[string]string `json:"open_options"`
 }
 
-// rawSystemAgentProfile represents the API's description of an Agent Profile.
+// rawAgentProfile represents the API's description of an Agent Profile.
 // The Packages element is really a map, but has k, v string-joined with "==".
-type rawSystemAgentProfile struct {
+type rawAgentProfile struct {
 	Label       string            `json:"label"`
 	HasUsername bool              `json:"has_username"`
 	HasPassword bool              `json:"has_password"`
@@ -89,9 +89,9 @@ type rawSystemAgentProfile struct {
 	OpenOptions map[string]string `json:"open_options"`
 }
 
-// polish turns a rawSystemAgentProfile (from the API) into a SystemAgentProfile
-func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
-	return &SystemAgentProfile{
+// polish turns a rawAgentProfile (from the API) into a AgentProfile
+func (o *rawAgentProfile) polish() *AgentProfile {
+	return &AgentProfile{
 		Label:       o.Label,
 		HasUsername: o.HasUsername,
 		HasPassword: o.HasPassword,
@@ -102,14 +102,14 @@ func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
 	}
 }
 
-func (o *Client) listSystemAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
+func (o *Client) listAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
 	method := http.MethodOptions
 	urlStr := apiUrlSystemAgentProfiles
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
-	response := &optionsSystemAgentProfilesResponse{}
+	response := &optionsAgentProfilesResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
@@ -121,7 +121,7 @@ func (o *Client) listSystemAgentProfileIds(ctx context.Context) ([]ObjectId, err
 	return response.Items, nil
 }
 
-func (o *Client) createSystemAgentProfile(ctx context.Context, in *SystemAgentProfileConfig) (ObjectId, error) {
+func (o *Client) createAgentProfile(ctx context.Context, in *AgentProfileConfig) (ObjectId, error) {
 	method := http.MethodPost
 	urlStr := apiUrlSystemAgentProfiles
 	apstraUrl, err := url.Parse(urlStr)
@@ -149,14 +149,14 @@ func (o *Client) createSystemAgentProfile(ctx context.Context, in *SystemAgentPr
 	return response.Id, nil
 }
 
-func (o *Client) getSystemAgentProfile(ctx context.Context, id ObjectId) (*SystemAgentProfile, error) {
+func (o *Client) getAgentProfile(ctx context.Context, id ObjectId) (*AgentProfile, error) {
 	method := http.MethodGet
 	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, id)
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlSystemAgentProfiles, err)
 	}
-	response := &rawSystemAgentProfile{}
+	response := &rawAgentProfile{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
@@ -175,14 +175,14 @@ func (o *Client) getSystemAgentProfile(ctx context.Context, id ObjectId) (*Syste
 	return response.polish(), nil
 }
 
-func (o *Client) getAllSystemAgentProfiles(ctx context.Context) ([]SystemAgentProfile, error) {
+func (o *Client) getAllAgentProfiles(ctx context.Context) ([]AgentProfile, error) {
 	method := http.MethodGet
 	urlStr := apiUrlSystemAgentProfiles
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
-	response := &getSystemAgentProfilesResponse{}
+	response := &getAgentProfilesResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
@@ -192,14 +192,14 @@ func (o *Client) getAllSystemAgentProfiles(ctx context.Context) ([]SystemAgentPr
 		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
 
-	var out []SystemAgentProfile
+	var out []AgentProfile
 	for _, sap := range response.Items {
 		out = append(out, *sap.polish())
 	}
 	return out, nil
 }
 
-func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *SystemAgentProfileConfig) error {
+func (o *Client) updateAgentProfile(ctx context.Context, id ObjectId, in *AgentProfileConfig) error {
 	method := http.MethodPatch
 	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, id)
 	apstraUrl, err := url.Parse(urlStr)
@@ -218,12 +218,12 @@ func (o *Client) updateSystemAgentProfile(ctx context.Context, id ObjectId, in *
 	return nil
 }
 
-func (o *Client) deleteSystemAgentProfile(ctx context.Context, id ObjectId) error {
+func (o *Client) deleteAgentProfile(ctx context.Context, id ObjectId) error {
 	method := http.MethodDelete
 	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, id)
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", apiUrlSystemAgentProfiles, err)
+		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method: method,
@@ -235,14 +235,14 @@ func (o *Client) deleteSystemAgentProfile(ctx context.Context, id ObjectId) erro
 	return nil
 }
 
-func (o *Client) getSystemAgentProfileByLabel(ctx context.Context, label string) (*SystemAgentProfile, error) {
+func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*AgentProfile, error) {
 	method := http.MethodGet
 	urlStr := apiUrlSystemAgentProfiles
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
-	response := &getSystemAgentProfilesResponse{}
+	response := &getAgentProfilesResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
