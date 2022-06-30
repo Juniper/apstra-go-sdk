@@ -34,6 +34,9 @@ const (
 	ErrNotfound
 	ErrExists
 	ErrConflict
+	ErrAuthFail
+
+	clientPollingIntervalMs = 250
 )
 
 type ApstraClientErr struct {
@@ -383,13 +386,13 @@ func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
 }
 
-// CreateSystemAgentProfile creates a new System Agent Profile identified by 'cfg'
-func (o *Client) CreateSystemAgentProfile(ctx context.Context, cfg *SystemAgentProfileConfig) (ObjectId, error) {
+// CreateAgentProfile creates a new System Agent Profile identified by 'cfg'
+func (o *Client) CreateAgentProfile(ctx context.Context, cfg *SystemAgentProfileConfig) (ObjectId, error) {
 	return o.createSystemAgentProfile(ctx, cfg)
 }
 
-// ListSystemAgentProfileIds returns a []ObjectId representing System Agent Profiles
-func (o *Client) ListSystemAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
+// ListAgentProfileIds returns a []ObjectId representing System Agent Profiles
+func (o *Client) ListAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listSystemAgentProfileIds(ctx)
 }
 
@@ -409,48 +412,79 @@ func (o *Client) UpdateSystemAgentProfile(ctx context.Context, id ObjectId, cfg 
 	return o.updateSystemAgentProfile(ctx, id, cfg)
 }
 
-// DeleteSystemAgentProfile deletes the System Agent Profile 'id'
-func (o *Client) DeleteSystemAgentProfile(ctx context.Context, id ObjectId) error {
+// DeleteAgentProfile deletes the System Agent Profile 'id'
+func (o *Client) DeleteAgentProfile(ctx context.Context, id ObjectId) error {
 	return o.deleteSystemAgentProfile(ctx, id)
 }
 
-// GetSystemAgentProfileByLabel returns the System Agent Profile with the given
+// GetAgentProfileByLabel returns the System Agent Profile with the given
 // label. Apstra doesn't allow label collisions, so this should be a unique
 // match. If no match, an ApstraClientErr with Type ErrNotfound is returned.
-func (o *Client) GetSystemAgentProfileByLabel(ctx context.Context, label string) (*SystemAgentProfile, error) {
+func (o *Client) GetAgentProfileByLabel(ctx context.Context, label string) (*SystemAgentProfile, error) {
 	return o.getSystemAgentProfileByLabel(ctx, label)
 }
 
-// CreateSystemAgent creates an Apstra System Agent and returns its ID
-func (o *Client) CreateSystemAgent(ctx context.Context, request *SystemAgentCfg) (ObjectId, error) {
-	return o.createSystemAgent(ctx, request)
+// CreateAgent creates an Apstra System Agent and returns its ID
+func (o *Client) CreateAgent(ctx context.Context, request *AgentCfg) (ObjectId, error) {
+	return o.createAgent(ctx, request)
 }
 
-// GetSystemAgent returns a SystemAgentInfo structure representing the supplied ID
-func (o *Client) GetSystemAgent(ctx context.Context, id ObjectId) (*SystemAgentInfo, error) {
-	return o.getSystemAgent(ctx, id)
+// GetAgentInfo returns a AgentInfo structure representing the supplied ID
+func (o *Client) GetAgentInfo(ctx context.Context, id ObjectId) (*AgentInfo, error) {
+	return o.getAgentInfo(ctx, id)
 }
 
-// GetSystemAgentByManagementIp returns *SystemAgentInfo representing the
+// GetAgentByManagementIp returns *AgentInfo representing the
 // SystemAgent with the given "Management Ip" (which in Apstra terms can also
 // be a hostname). Apstra doesn't allow management IP collisions, so this should
 // be a unique match. If no match, an ApstraClientErr with type ErrNotfound is
 // returned.
-func (o *Client) GetSystemAgentByManagementIp(ctx context.Context, ip string) (*SystemAgentInfo, error) {
-	return o.getSystemAgentByManagementIp(ctx, ip)
+func (o *Client) GetAgentByManagementIp(ctx context.Context, ip string) (*AgentInfo, error) {
+	return o.getAgentByManagementIp(ctx, ip)
 }
 
-// UpdateSystemAgent creates an Apstra System Agent and returns its ID
-func (o *Client) UpdateSystemAgent(ctx context.Context, id ObjectId, request *SystemAgentCfg) error {
-	return o.updateSystemAgent(ctx, id, request)
+// UpdateAgent creates an Apstra System Agent and returns its ID
+func (o *Client) UpdateAgent(ctx context.Context, id ObjectId, request *AgentCfg) error {
+	return o.updateAgent(ctx, id, request)
 }
 
-// DeleteSystemAgent creates an Apstra System Agent and returns its ID
-func (o *Client) DeleteSystemAgent(ctx context.Context, id ObjectId) error {
-	return o.deleteSystemAgent(ctx, id)
+// DeleteAgent creates an Apstra System Agent and returns its ID
+func (o *Client) DeleteAgent(ctx context.Context, id ObjectId) error {
+	return o.deleteAgent(ctx, id)
 }
 
-// UninstallSystemAgent creates an Apstra System Agent and returns its ID
-func (o *Client) UninstallSystemAgent(ctx context.Context, id ObjectId) error {
-	return o.uninstallSystemAgent(ctx, id)
+// AgentRunJob requests a job be started on the SystemAgent, returns the
+// resulting JobId
+func (o *Client) AgentRunJob(ctx context.Context, agentId ObjectId, jobType AgentJobType) (*AgentJobStatus, error) {
+	jobId, err := o.agentStartJob(ctx, agentId, jobType)
+	if err != nil {
+		return nil, err
+	}
+
+	err = o.agentWaitForJobToExist(ctx, agentId, jobId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = o.agentWaitForJobTermination(ctx, agentId, jobId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = o.agentWaitForConnection(ctx, agentId)
+	if err != nil {
+		return nil, err
+	}
+
+	return o.GetAgentJobStatus(ctx, agentId, jobId)
+}
+
+// GetAgentJobHistory returns []AgentJobStatus representing all jobs executed by the agent
+func (o *Client) GetAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJobStatus, error) {
+	return o.getAgentJobHistory(ctx, id)
+}
+
+// GetAgentJobStatus returns *AgentJobStatus for the given agent and job
+func (o *Client) GetAgentJobStatus(ctx context.Context, agentId ObjectId, jobId JobId) (*AgentJobStatus, error) {
+	return o.getAgentJobStatus(ctx, agentId, jobId)
 }

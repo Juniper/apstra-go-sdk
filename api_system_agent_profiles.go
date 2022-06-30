@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 const (
@@ -31,23 +30,18 @@ type SystemAgentProfileConfig struct {
 	Username    string            `json:"username,omitempty""`
 	Password    string            `json:"password,omitempty"`
 	Platform    string            `json:"platform,omitempty"`
-	Packages    map[string]string `json:"packages"`
+	Packages    AgentPackages     `json:"packages"`
 	OpenOptions map[string]string `json:"open_options"`
 }
 
 // raw turns a SystemAgentProfile (from our caller) into a rawSystemAgentProfile
 func (o *SystemAgentProfileConfig) raw() *rawSystemAgentProfileConfig {
-	//goland:noinspection GoPreferNilSlice
-	packages := []string{}
-	for k, v := range o.Packages {
-		packages = append(packages, k+apstraSystemAgentPlatformStringSep+v)
-	}
 	result := &rawSystemAgentProfileConfig{
 		Label:       o.Label,
 		Username:    o.Username,
 		Password:    o.Password,
 		Platform:    o.Platform,
-		Packages:    packages,
+		Packages:    o.Packages.raw(),
 		OpenOptions: o.OpenOptions,
 	}
 	if result.OpenOptions == nil { // this would result in 'null' in JSON payload
@@ -63,7 +57,7 @@ type rawSystemAgentProfileConfig struct {
 	Username    string            `json:"username,omitempty""`
 	Password    string            `json:"password,omitempty"`
 	Platform    string            `json:"platform,omitempty"`
-	Packages    []string          `json:"packages"`
+	Packages    rawAgentPackages  `json:"packages"`
 	OpenOptions map[string]string `json:"open_options"`
 }
 
@@ -78,7 +72,7 @@ type SystemAgentProfile struct {
 	HasUsername bool              `json:"has_username"`
 	HasPassword bool              `json:"has_password"`
 	Platform    string            `json:"platform"`
-	Packages    map[string]string `json:"packages"`
+	Packages    AgentPackages     `json:"packages"`
 	Id          ObjectId          `json:"id"`
 	OpenOptions map[string]string `json:"open_options"`
 }
@@ -90,32 +84,19 @@ type rawSystemAgentProfile struct {
 	HasUsername bool              `json:"has_username"`
 	HasPassword bool              `json:"has_password"`
 	Platform    string            `json:"platform"`
-	Packages    []string          `json:"packages"`
+	Packages    rawAgentPackages  `json:"packages"`
 	Id          ObjectId          `json:"id"`
 	OpenOptions map[string]string `json:"open_options"`
 }
 
 // polish turns a rawSystemAgentProfile (from the API) into a SystemAgentProfile
 func (o *rawSystemAgentProfile) polish() *SystemAgentProfile {
-	var packages map[string]string
-	if len(o.Packages) > 0 {
-		packages = make(map[string]string)
-	}
-	for _, s := range o.Packages {
-		kv := strings.SplitN(s, apstraSystemAgentPlatformStringSep, 2)
-		switch len(kv) {
-		case 2:
-			packages[kv[0]] = kv[1]
-		case 1:
-			packages[kv[0]] = ""
-		}
-	}
 	return &SystemAgentProfile{
 		Label:       o.Label,
 		HasUsername: o.HasUsername,
 		HasPassword: o.HasPassword,
 		Platform:    o.Platform,
-		Packages:    packages,
+		Packages:    o.Packages.polish(),
 		Id:          o.Id,
 		OpenOptions: o.OpenOptions,
 	}

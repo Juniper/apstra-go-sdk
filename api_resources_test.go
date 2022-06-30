@@ -2,9 +2,7 @@ package goapstra
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"log"
 	"math"
 	"math/rand"
@@ -232,5 +230,4 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-
 }

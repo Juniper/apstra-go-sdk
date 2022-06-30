@@ -49,7 +49,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 		}
 		newIds = append(newIds, id)
 
-		sap, err := client.GetSystemAgentProfileByLabel(context.TODO(), c.Label)
+		sap, err := client.GetAgentProfileByLabel(context.TODO(), c.Label)
 		if err != nil {
 			t.Fatal(err)
 		}
