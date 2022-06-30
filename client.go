@@ -509,11 +509,11 @@ func (o *Client) DeleteSystem(ctx context.Context, id SystemId) error {
 }
 
 // SetSystemUserConfig sets the UserConfig info for a managed system
-func (o *Client) SetSystemUserConfig(ctx context.Context, id SystemId, location string) error {
-	return o.setSystemUserConfig(ctx, id, location)
+func (o *Client) SetSystemUserConfig(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
+	return o.setSystemUserConfig(ctx, id, cfg)
 }
 
 // SetSystemUserConfigByAgentId sets the UserConfig info for a managed system
-func (o *Client) SetSystemUserConfigByAgentId(ctx context.Context, id ObjectId, location string) error {
-	return o.setSystemUserConfigByAgentId(ctx, id, location)
+func (o *Client) SetSystemUserConfigByAgentId(ctx context.Context, id ObjectId, cfg *SystemUserConfig) error {
+	return o.setSystemUserConfigByAgentId(ctx, id, cfg)
 }

@@ -172,7 +172,7 @@ func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystem
 	return response.polish(), nil
 }
 
-func (o *Client) setSystemUserConfigByAgentId(ctx context.Context, agentId ObjectId, location string) error {
+func (o *Client) setSystemUserConfigByAgentId(ctx context.Context, agentId ObjectId, cfg *SystemUserConfig) error {
 	agent, err := o.getAgentInfo(ctx, agentId)
 	if err != nil {
 		return fmt.Errorf("cannot get info for agent '%s' - %w", agentId, err)
@@ -191,10 +191,10 @@ func (o *Client) setSystemUserConfigByAgentId(ctx context.Context, agentId Objec
 		return fmt.Errorf("cannot acknowledge system from agent '%s' - system ID is empty", agentId)
 	}
 
-	return o.setSystemUserConfig(ctx, agent.Status.SystemId, location)
+	return o.setSystemUserConfig(ctx, agent.Status.SystemId, cfg)
 }
 
-func (o *Client) setSystemUserConfig(ctx context.Context, id SystemId, location string) error {
+func (o *Client) setSystemUserConfig(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
 	systemInfo, err := o.getSystemInfo(ctx, id)
 	if err != nil {
 		return fmt.Errorf("error getting system info - %w", err)
@@ -202,11 +202,7 @@ func (o *Client) setSystemUserConfig(ctx context.Context, id SystemId, location 
 
 	systemInfo.UserConfig.AdminState = systemAdminStateNormal
 
-	return o.updateSystem(ctx, id, &SystemUserConfig{
-		AdminState:  systemAdminStateNormal,
-		AosHclModel: systemInfo.Facts.AosHclModel,
-		Location:    location,
-	})
+	return o.updateSystem(ctx, id, cfg)
 }
 
 func (o *Client) updateSystem(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
