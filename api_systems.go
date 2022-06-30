@@ -13,14 +13,59 @@ const (
 	apiUrlSystemsPrefix = "/api/systems" + apiUrlPathDelim
 	apiUrlSystemsById   = apiUrlSystemsPrefix + "%s"
 
-	systemAdminStateNormal = "normal"
-	systemAdminStateDecomm = "decomm"
-
 	systemCommsOn  = "on"
 	systemCommsOff = "off"
 
 	ErrAgentNotConnect = iota
 )
+
+const ( // new block resets iota to 0
+	SystemAdminStateNormal = SystemAdminState(iota) // default type 0
+	SystemAdminStateDecomm
+	SystemAdminStateUnknown
+
+	systemAdminStateNormal  = rawSystemAdminState("normal")
+	systemAdminStateDecomm  = rawSystemAdminState("decomm")
+	systemAdminStateUnknown = "system agent state %d unknown"
+)
+
+type SystemAdminState int
+
+func (o SystemAdminState) Int() int {
+	return int(o)
+}
+
+func (o SystemAdminState) String() string {
+	switch o {
+	case SystemAdminStateNormal:
+		return string(systemAdminStateNormal)
+	case SystemAdminStateDecomm:
+		return string(systemAdminStateDecomm)
+	default:
+		return fmt.Sprintf(systemAdminStateUnknown, o)
+	}
+}
+
+func (o SystemAdminState) raw() rawSystemAdminState {
+	return rawSystemAdminState(o.String())
+}
+
+type rawSystemAdminState string
+
+func (o rawSystemAdminState) string() string {
+	return string(o)
+}
+
+func (o rawSystemAdminState) parse() int {
+	switch o {
+	case systemAdminStateNormal:
+		return int(SystemAdminStateNormal)
+	case systemAdminStateDecomm:
+		return int(SystemAdminStateDecomm)
+	default:
+		return int(SystemAdminStateUnknown)
+	}
+}
 
 type SystemId string
 
@@ -124,13 +169,35 @@ func (o *rawSystemStatus) polish() *SystemStatus {
 }
 
 type systemUpdate struct {
-	UserConfig SystemUserConfig `json:"user_config"`
+	UserConfig rawSystemUserConfig `json:"user_config"`
 }
 
 type SystemUserConfig struct {
-	AdminState  string `json:"admin_state,omitempty"`
-	AosHclModel string `json:"aos_hcl_model,omitempty"`
-	Location    string `json:"location,omitempty"`
+	AdminState  SystemAdminState `json:"admin_state,omitempty"`
+	AosHclModel string           `json:"aos_hcl_model,omitempty"`
+	Location    string           `json:"location,omitempty"`
+}
+
+func (o *SystemUserConfig) raw() *rawSystemUserConfig {
+	return &rawSystemUserConfig{
+		AdminState:  o.AdminState.raw(),
+		AosHclModel: o.AosHclModel,
+		Location:    o.Location,
+	}
+}
+
+type rawSystemUserConfig struct {
+	AdminState  rawSystemAdminState `json:"admin_state,omitempty"`
+	AosHclModel string              `json:"aos_hcl_model,omitempty"`
+	Location    string              `json:"location,omitempty"`
+}
+
+func (o *rawSystemUserConfig) polish() *SystemUserConfig {
+	return &SystemUserConfig{
+		AdminState:  SystemAdminState(o.AdminState.parse()),
+		AosHclModel: o.AosHclModel,
+		Location:    o.Location,
+	}
 }
 
 func (o *Client) listSystems(ctx context.Context) ([]SystemId, error) {
@@ -172,7 +239,7 @@ func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystem
 	return response.polish(), nil
 }
 
-func (o *Client) setSystemUserConfigByAgentId(ctx context.Context, agentId ObjectId, cfg *SystemUserConfig) error {
+func (o *Client) updateSystemByAgentId(ctx context.Context, agentId ObjectId, cfg *SystemUserConfig) error {
 	agent, err := o.getAgentInfo(ctx, agentId)
 	if err != nil {
 		return fmt.Errorf("cannot get info for agent '%s' - %w", agentId, err)
@@ -191,18 +258,7 @@ func (o *Client) setSystemUserConfigByAgentId(ctx context.Context, agentId Objec
 		return fmt.Errorf("cannot acknowledge system from agent '%s' - system ID is empty", agentId)
 	}
 
-	return o.setSystemUserConfig(ctx, agent.Status.SystemId, cfg)
-}
-
-func (o *Client) setSystemUserConfig(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
-	systemInfo, err := o.getSystemInfo(ctx, id)
-	if err != nil {
-		return fmt.Errorf("error getting system info - %w", err)
-	}
-
-	systemInfo.UserConfig.AdminState = systemAdminStateNormal
-
-	return o.updateSystem(ctx, id, cfg)
+	return o.updateSystem(ctx, agent.Status.SystemId, cfg)
 }
 
 func (o *Client) updateSystem(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
@@ -213,11 +269,10 @@ func (o *Client) updateSystem(ctx context.Context, id SystemId, cfg *SystemUserC
 		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 
-	update := &systemUpdate{UserConfig: *cfg}
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   method,
 		url:      apstraUrl,
-		apiInput: update,
+		apiInput: &systemUpdate{UserConfig: *cfg.raw()},
 	})
 }
 

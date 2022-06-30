@@ -108,7 +108,16 @@ func TestCreateOffboxAgent(t *testing.T) {
 	}
 	log.Println(string(jsonAgent))
 
-	err = client.setSystemUserConfigByAgentId(context.TODO(), agentId, randString(10, "hex"))
+	systemInfo, err := client.GetSystemInfo(context.TODO(), agent.Status.SystemId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = client.updateSystemByAgentId(context.TODO(), agentId, &SystemUserConfig{
+		AdminState:  SystemAdminStateNormal,
+		AosHclModel: systemInfo.Facts.AosHclModel,
+		Location:    randString(10, "hex"),
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,6 +187,9 @@ func TestStringThings(t *testing.T) {
 		{stringVal: "init", intType: AgentJobStateInit, stringType: agentJobStateInit},
 		{stringVal: "inprogress", intType: AgentJobStateInProgress, stringType: agentJobStateInProgress},
 		{stringVal: "success", intType: AgentJobStateSuccess, stringType: agentJobStateSuccess},
+
+		{stringVal: "normal", intType: SystemAdminStateNormal, stringType: systemAdminStateNormal},
+		{stringVal: "decomm", intType: SystemAdminStateDecomm, stringType: systemAdminStateDecomm},
 	}
 
 	for i, td := range testData {

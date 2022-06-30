@@ -508,12 +508,12 @@ func (o *Client) DeleteSystem(ctx context.Context, id SystemId) error {
 	return o.deleteSystem(ctx, id)
 }
 
-// SetSystemUserConfig sets the UserConfig info for a managed system
-func (o *Client) SetSystemUserConfig(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
-	return o.setSystemUserConfig(ctx, id, cfg)
+// UpdateManagedDevice sets the UserConfig info for a managed system
+func (o *Client) UpdateManagedDevice(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
+	return o.updateSystem(ctx, id, cfg)
 }
 
-// SetSystemUserConfigByAgentId sets the UserConfig info for a managed system
-func (o *Client) SetSystemUserConfigByAgentId(ctx context.Context, id ObjectId, cfg *SystemUserConfig) error {
-	return o.setSystemUserConfigByAgentId(ctx, id, cfg)
+// UpdateManagedDeviceByAgentId sets the UserConfig info for a managed system
+func (o *Client) UpdateManagedDeviceByAgentId(ctx context.Context, id ObjectId, cfg *SystemUserConfig) error {
+	return o.updateSystemByAgentId(ctx, id, cfg)
 }
