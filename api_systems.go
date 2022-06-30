@@ -172,7 +172,7 @@ func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystem
 	return response.polish(), nil
 }
 
-func (o *Client) acknowledgeSystemByAgentId(ctx context.Context, agentId ObjectId, location string) error {
+func (o *Client) setSystemUserConfigByAgentId(ctx context.Context, agentId ObjectId, location string) error {
 	agent, err := o.getAgentInfo(ctx, agentId)
 	if err != nil {
 		return fmt.Errorf("cannot get info for agent '%s' - %w", agentId, err)
@@ -191,10 +191,10 @@ func (o *Client) acknowledgeSystemByAgentId(ctx context.Context, agentId ObjectI
 		return fmt.Errorf("cannot acknowledge system from agent '%s' - system ID is empty", agentId)
 	}
 
-	return o.acknowledgeSystem(ctx, agent.Status.SystemId, location)
+	return o.setSystemUserConfig(ctx, agent.Status.SystemId, location)
 }
 
-func (o *Client) acknowledgeSystem(ctx context.Context, id SystemId, location string) error {
+func (o *Client) setSystemUserConfig(ctx context.Context, id SystemId, location string) error {
 	systemInfo, err := o.getSystemInfo(ctx, id)
 	if err != nil {
 		return fmt.Errorf("error getting system info - %w", err)

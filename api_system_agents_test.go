@@ -108,7 +108,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 	}
 	log.Println(string(jsonAgent))
 
-	err = client.acknowledgeSystemByAgentId(context.TODO(), agentId, randString(10, "hex"))
+	err = client.setSystemUserConfigByAgentId(context.TODO(), agentId, randString(10, "hex"))
 	if err != nil {
 		t.Fatal(err)
 	}
