@@ -85,19 +85,16 @@ func TestCreateOffboxAgent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	log.Println(agentId)
 
 	jobStatus, err := client.AgentRunJob(context.TODO(), agentId, AgentJobTypeInstall)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	jsonJobStatus, err := json.Marshal(jobStatus)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	log.Println(string(jsonJobStatus))
 
 	agent, err := client.GetAgentInfo(context.TODO(), agentId)
@@ -110,6 +107,34 @@ func TestCreateOffboxAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Println(string(jsonAgent))
+
+	err = client.acknowledgeSystemByAgentId(context.TODO(), agentId, randString(10, "hex"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println("acknowledged!")
+	log.Println("deleting...")
+
+	jobStatus, err = client.AgentRunJob(context.TODO(), agentId, AgentJobTypeUninstall)
+	if err != nil {
+		t.Fatal(err)
+	}
+	jsonJobStatus, err = json.Marshal(jobStatus)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Println(string(jsonJobStatus))
+
+	err = client.DeleteAgent(context.TODO(), agentId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = client.deleteSystem(context.TODO(), agent.Status.SystemId)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func TestStringThings(t *testing.T) {

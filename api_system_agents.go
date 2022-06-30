@@ -391,7 +391,7 @@ type AgentStatus struct {
 	PlatformVersion   string
 	Platform          AgentPlatform
 	State             string
-	SystemId          systemId
+	SystemId          SystemId
 	HasCredential     bool
 	Error             string
 	StatusMessage     string
@@ -427,7 +427,7 @@ type rawAgentStatus struct {
 	PlatformVersion   string           `json:"platform_version"`
 	Platform          rawAgentPlatform `json:"platform"`
 	State             string           `json:"state"`
-	SystemId          systemId         `json:"system_id"`
+	SystemId          SystemId         `json:"system_id"`
 	HasCredential     bool             `json:"has_credential"`
 	Error             string           `json:"error"`
 	StatusMessage     string           `json:"status_message"`
@@ -876,6 +876,11 @@ func (o *Client) updateAgent(ctx context.Context, id ObjectId, request *AgentCfg
 }
 
 func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
+	agent, err := o.getAgentInfo(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error fetching agent info prior to deletion - %w", err)
+	}
+
 	method := http.MethodDelete
 	urlStr := fmt.Sprintf(apiUrlSystemAgentsById, id)
 	apstraUrl, err := url.Parse(urlStr)
@@ -888,6 +893,24 @@ func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
 	})
 	if err != nil {
 		return err
+	}
+
+	// wait for agent's system comms status to go down before returning from "deleteAgent" because
+	// a) deleteSystem is probably next in line
+	// b) apstra complains:
+	//    	Can't delete the device in neither STOCKED nor DECOMM state. Device is in OOS-READY state.
+	if agent.Status.SystemId != "" {
+		minuteCountdown, _ := context.WithTimeout(ctx, 1*time.Minute)
+		for {
+			systemInfo, err := o.getSystem(minuteCountdown, agent.Status.SystemId)
+			if err != nil {
+				return fmt.Errorf("error checking system state prior to deletion - %w", err)
+			}
+			if systemInfo.Status.CommState == systemCommsOn {
+				continue
+			}
+			break
+		}
 	}
 	return nil
 }

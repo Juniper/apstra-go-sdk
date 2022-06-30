@@ -36,7 +36,7 @@ const (
 	ErrConflict
 	ErrAuthFail
 
-	clientPollingIntervalMs = 250
+	clientPollingIntervalMs = 500
 )
 
 type ApstraClientErr struct {
@@ -471,9 +471,13 @@ func (o *Client) AgentRunJob(ctx context.Context, agentId ObjectId, jobType Agen
 		return nil, err
 	}
 
-	err = o.agentWaitForConnection(ctx, agentId)
-	if err != nil {
-		return nil, err
+	switch jobType {
+	case AgentJobTypeInstall:
+		err = o.agentWaitForConnection(ctx, agentId)
+		if err != nil {
+			return nil, err
+		}
+	default:
 	}
 
 	return o.GetAgentJobStatus(ctx, agentId, jobId)
