@@ -16,8 +16,12 @@ export APSTRA_STREAM_TLS_LOGFILE="~/.apstra.keylog"
 #   export APSTRA_PASS=""             # apstra admin user password
 #   export APSTRA_STREAM_HOST=""      # hostname/IP of apstra streaming receiver
 #   export APSTRA_STREAM_BASE_PORT="" # first port to use when configuring apstra streaming receivers
+#   export QFX_IP=""                  # IP address of QFX switch
+#   export QFX_USER=""                # Username of QFX switch
+#   export QFX_PASS=""                # Password of QFX switch
 #
-APSTRA_ENV_FILE="$(dirname $(readlink -f $0))/.apstra_env"
+APSTRA_ENV_FILE=$(dirname $(readlink -f $0))/.apstra_env
+echo APSTRA_ENV_FILE: $APSTRA_ENV_FILE
 if [ ! -e "$APSTRA_ENV_FILE" ]
 then
   echo "$APSTRA_ENV_FILE not found"
@@ -38,5 +42,8 @@ echo -n "APSTRA_API_TLS_LOGFILE=$APSTRA_API_TLS_LOGFILE;"
 echo -n "APSTRA_STREAM_HOST=$APSTRA_STREAM_HOST;"
 echo -n "APSTRA_STREAM_BASE_PORT=$APSTRA_STREAM_BASE_PORT;"
 echo -n "APSTRA_STREAM_TLS_LOGFILE=$APSTRA_STREAM_TLS_LOGFILE;"
+echo -n "QFX_IP=$QFX_IP;"
+echo -n "QFX_USER=$QFX_USER;"
+echo -n "QFX_PASS=$QFX_PASS;"
 echo ""
 echo ""
