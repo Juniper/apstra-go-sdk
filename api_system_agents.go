@@ -902,7 +902,7 @@ func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
 	if agent.Status.SystemId != "" {
 		minuteCountdown, _ := context.WithTimeout(ctx, 1*time.Minute)
 		for {
-			systemInfo, err := o.getSystem(minuteCountdown, agent.Status.SystemId)
+			systemInfo, err := o.getSystemInfo(minuteCountdown, agent.Status.SystemId)
 			if err != nil {
 				return fmt.Errorf("error checking system state prior to deletion - %w", err)
 			}

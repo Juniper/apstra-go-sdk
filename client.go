@@ -492,3 +492,18 @@ func (o *Client) GetAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJo
 func (o *Client) GetAgentJobStatus(ctx context.Context, agentId ObjectId, jobId JobId) (*AgentJobStatus, error) {
 	return o.getAgentJobStatus(ctx, agentId, jobId)
 }
+
+// GetSystemInfo returns a *ManagedSystemInfo representing the requested SystemId
+func (o *Client) GetSystemInfo(ctx context.Context, id SystemId) (*ManagedSystemInfo, error) {
+	return o.getSystemInfo(ctx, id)
+}
+
+// UpdateSystem deletes the supplied SystemId
+func (o *Client) UpdateSystem(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
+	return o.updateSystem(ctx, id, cfg)
+}
+
+// DeleteSystem deletes the supplied SystemId
+func (o *Client) DeleteSystem(ctx context.Context, id SystemId) error {
+	return o.deleteSystem(ctx, id)
+}

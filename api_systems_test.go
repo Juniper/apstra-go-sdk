@@ -41,7 +41,7 @@ func TestGetSystems(t *testing.T) {
 	}
 
 	for _, s := range systems {
-		system, err := client.getSystem(context.TODO(), s)
+		system, err := client.getSystemInfo(context.TODO(), s)
 		if err != nil {
 			t.Fatal(err)
 		}

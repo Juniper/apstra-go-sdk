@@ -153,7 +153,7 @@ func (o *Client) listSystems(ctx context.Context) ([]SystemId, error) {
 	return response.Items, nil
 }
 
-func (o *Client) getSystem(ctx context.Context, id SystemId) (*ManagedSystemInfo, error) {
+func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystemInfo, error) {
 	method := http.MethodGet
 	urlStr := fmt.Sprintf(apiUrlSystemsById, id)
 	apstraUrl, err := url.Parse(urlStr)
@@ -195,7 +195,7 @@ func (o *Client) acknowledgeSystemByAgentId(ctx context.Context, agentId ObjectI
 }
 
 func (o *Client) acknowledgeSystem(ctx context.Context, id SystemId, location string) error {
-	systemInfo, err := o.getSystem(ctx, id)
+	systemInfo, err := o.getSystemInfo(ctx, id)
 	if err != nil {
 		return fmt.Errorf("error getting system info - %w", err)
 	}
