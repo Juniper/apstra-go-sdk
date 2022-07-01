@@ -493,6 +493,11 @@ func (o *Client) GetAgentJobStatus(ctx context.Context, agentId ObjectId, jobId 
 	return o.getAgentJobStatus(ctx, agentId, jobId)
 }
 
+// ListSystems returns []SystemId representing systems configured on the Apstra server
+func (o *Client) ListSystems(ctx context.Context) ([]SystemId, error) {
+	return o.listSystems(ctx)
+}
+
 // GetSystemInfo returns a *ManagedSystemInfo representing the requested SystemId
 func (o *Client) GetSystemInfo(ctx context.Context, id SystemId) (*ManagedSystemInfo, error) {
 	return o.getSystemInfo(ctx, id)
