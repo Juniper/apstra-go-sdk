@@ -4,6 +4,10 @@ import "strings"
 
 type AgentPackages map[string]string
 
+// todo: method for inventory
+//   to be checked by agent profile and agent create/update methods,
+//   refuse to reference packages which do not exist.
+
 func (o *AgentPackages) raw() rawAgentPackages {
 	// todo: one of these lines causes 'null' in JSON output, while the other causes '[]' ... which one is correct for the API?
 	//raw := rawAgentPackages{}
