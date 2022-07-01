@@ -92,7 +92,7 @@ type rawManagedSystemInfo struct {
 	Id              SystemId              `json:"id"`
 	Services        []string              `json:"services"`
 	Status          rawSystemStatus       `json:"status"`
-	UserConfig      SystemUserConfig      `json:"user_config"`
+	UserConfig      rawSystemUserConfig   `json:"user_config"`
 }
 
 func (o *rawManagedSystemInfo) polish() *ManagedSystemInfo {
@@ -103,7 +103,7 @@ func (o *rawManagedSystemInfo) polish() *ManagedSystemInfo {
 		Id:              o.Id,
 		Services:        o.Services,
 		Status:          *o.Status.polish(),
-		UserConfig:      o.UserConfig,
+		UserConfig:      *o.UserConfig.polish(),
 	}
 }
 
