@@ -876,9 +876,28 @@ func (o *Client) updateAgent(ctx context.Context, id ObjectId, request *AgentCfg
 }
 
 func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
-	agent, err := o.getAgentInfo(ctx, id)
+	agentInfo, err := o.getAgentInfo(ctx, id)
 	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
+			return ApstraClientErr{
+				errType: ErrNotfound,
+				err:     err,
+			}
+		}
 		return fmt.Errorf("error fetching agent info prior to deletion - %w", err)
+	}
+
+	_, err = o.AgentRunJob(ctx, id, AgentJobTypeUninstall)
+	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
+			return ApstraClientErr{
+				errType: ErrNotfound,
+				err:     err,
+			}
+		}
+		return fmt.Errorf("error running agent uninstall job prior to deletion - %w", err)
 	}
 
 	method := http.MethodDelete
@@ -899,12 +918,16 @@ func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
 	// a) deleteSystem is probably next in line
 	// b) apstra complains:
 	//    	Can't delete the device in neither STOCKED nor DECOMM state. Device is in OOS-READY state.
-	if agent.Status.SystemId != "" {
+	if agentInfo.Status.SystemId != "" {
 		minuteCountdown, _ := context.WithTimeout(ctx, 1*time.Minute)
 		for {
-			systemInfo, err := o.getSystemInfo(minuteCountdown, agent.Status.SystemId)
+			systemInfo, err := o.getSystemInfo(minuteCountdown, agentInfo.Status.SystemId)
 			if err != nil {
-				return fmt.Errorf("error checking system state prior to deletion - %w", err)
+				var ttae TalkToApstraErr
+				if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
+					return nil
+				}
+				return fmt.Errorf("error checking system state after agent deletion - %w", err)
 			}
 			if systemInfo.Status.CommState == systemCommsOn {
 				continue
