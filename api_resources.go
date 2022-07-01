@@ -48,6 +48,102 @@ type AsnRange struct {
 	UsedPercentage float32 `json:"used_percentage"`
 }
 
+type Ip4Pool struct {
+	Id             ObjectId    `json:"id"`
+	DisplayName    string      `json:"display_name"`
+	Status         string      `json:"status"`
+	Tags           []string    `json:"tags"`
+	Used           int64       `json:"used"`
+	Total          int64       `json:"total"`
+	UsedPercentage float32     `json:"used_percentage"`
+	CreatedAt      time.Time   `json:"created_at"`
+	LastModifiedAt time.Time   `json:"last_modified_at"`
+	Subnets        []Ip4Subnet `json:"subnets"`
+}
+
+type Ip4Subnet struct {
+	Network        string  `json:"network"`
+	Status         string  `json:"status"`
+	Used           int64   `json:"used"`
+	Total          int64   `json:"total"`
+	UsedPercentage float32 `json:"used_percentage"`
+}
+
+type rawIp4Pool struct {
+	Id             ObjectId       `json:"id"`
+	DisplayName    string         `json:"display_name"`
+	Status         string         `json:"status"`
+	Tags           []string       `json:"tags"`
+	Used           string         `json:"used"`
+	Total          string         `json:"total"`
+	UsedPercentage float32        `json:"used_percentage"`
+	CreatedAt      time.Time      `json:"created_at"`
+	LastModifiedAt time.Time      `json:"last_modified_at"`
+	Subnets        []rawIp4Subnet `json:"subnets"`
+}
+
+func (o *rawIp4Pool) polish() (*Ip4Pool, error) {
+	used, err := strconv.ParseInt(o.Used, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing IP Pool field 'used' ('%s') - %w", o.Used, err)
+	}
+
+	total, err := strconv.ParseInt(o.Used, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing IP Pool field 'total' ('%s') - %w", o.Total, err)
+	}
+
+	var subnets []Ip4Subnet
+	for _, rs := range o.Subnets {
+		ps, err := rs.polish()
+		if err != nil {
+			return nil, err
+		}
+		subnets = append(subnets, *ps)
+	}
+
+	return &Ip4Pool{
+		Id:             o.Id,
+		DisplayName:    o.DisplayName,
+		Status:         o.Status,
+		Tags:           o.Tags,
+		Used:           used,
+		Total:          total,
+		UsedPercentage: o.UsedPercentage,
+		CreatedAt:      o.CreatedAt,
+		LastModifiedAt: o.LastModifiedAt,
+		Subnets:        subnets,
+	}, nil
+}
+
+type rawIp4Subnet struct {
+	Network        string  `json:"network"`
+	Status         string  `json:"status"`
+	Used           string  `json:"used"`
+	Total          string  `json:"total"`
+	UsedPercentage float32 `json:"used_percentage"`
+}
+
+func (o *rawIp4Subnet) polish() (*Ip4Subnet, error) {
+	used, err := strconv.ParseInt(o.Used, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing subnet field 'used' ('%s') - %w", o.Used, err)
+	}
+
+	total, err := strconv.ParseInt(o.Used, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing subnet field 'total' ('%s') - %w", o.Total, err)
+	}
+
+	return &Ip4Subnet{
+		Network:        o.Network,
+		Status:         o.Status,
+		Used:           used,
+		Total:          total,
+		UsedPercentage: o.UsedPercentage,
+	}, nil
+}
+
 // newAsnPool is minimal version of AsnPool which omits statistical elements.
 // It is used with create/update commands upstream towards Apstra.
 type newAsnPool struct {
@@ -91,6 +187,10 @@ type rawAsnRange struct {
 
 type getAsnPoolsResponse struct {
 	Items []rawAsnPool `json:"items"`
+}
+
+type getIp4PoolsResponse struct {
+	Items []rawIp4Pool `json:"items"`
 }
 
 type optionsAsnPoolsResponse struct {
@@ -450,4 +550,83 @@ func (o *Client) listIpPoolIds(ctx context.Context) ([]ObjectId, error) {
 		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
 	}
 	return response.Items, nil
+}
+
+func (o *Client) getAllIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
+	method := http.MethodGet
+	urlStr := apiUrlResourcesIpPools
+	apstraUrl, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
+	}
+
+	response := &getIp4PoolsResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      method,
+		url:         apstraUrl,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
+	}
+
+	var polishedPools []Ip4Pool
+	for _, rp := range response.Items {
+		pp, err := rp.polish()
+		if err != nil {
+			return nil, fmt.Errorf("error parsing raw pool content - %w", err)
+		}
+		polishedPools = append(polishedPools, *pp)
+	}
+	return polishedPools, nil
+}
+
+func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, error) {
+	method := http.MethodGet
+	urlStr := fmt.Sprintf(apiUrlResourcesIpPoolById, poolId)
+	apstraUrl, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
+	}
+
+	response := &rawIp4Pool{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      method,
+		url:         apstraUrl,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
+	}
+
+	polishedPool, err := response.polish()
+	if err != nil {
+		return nil, fmt.Errorf("error parsing raw pool content - %w", err)
+	}
+
+	return polishedPool, nil
+}
+
+func (o *Client) getIp4PoolByName(ctx context.Context, desiredName string) (*Ip4Pool, error) {
+	pools, err := o.getAllIp4Pools(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var pool Ip4Pool
+	var found bool
+
+	for _, p := range pools {
+		if p.DisplayName == desiredName {
+			if found == true {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple matches for IP Pool with name '%s'", desiredName),
+				}
+			}
+			pool = p
+			found = true
+		}
+	}
+	return &pool, nil
 }

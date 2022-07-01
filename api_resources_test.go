@@ -252,3 +252,57 @@ func TestListIpPools(t *testing.T) {
 		}
 	}
 }
+
+func TestGetAllIpPools(t *testing.T) {
+	DebugLevel = 2
+	clients, _, err := getTestClientsAndMockAPIs()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Println(len(clients))
+
+	for clientName, client := range clients {
+		if clientName == "mock" {
+			continue // todo have I given up on mock testing?
+		}
+		pools, err := client.getAllIp4Pools(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(pools) <= 0 {
+			t.Fatalf("only got %d pools from %s client", len(pools), clientName)
+		}
+		log.Printf("pool count: %d", len(pools))
+	}
+}
+
+func TestGetIp4PoolByName(t *testing.T) {
+	DebugLevel = 2
+	clients, _, err := getTestClientsAndMockAPIs()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		if clientName == "mock" {
+			continue // todo have I given up on mock testing?
+		}
+		pools, err := client.getAllIp4Pools(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		poolNames := make(map[string]struct{})
+		for _, p := range pools {
+			poolNames[p.DisplayName] = struct{}{}
+		}
+
+		delete(poolNames, "")
+		for name, _ := range poolNames {
+			_, err := client.getIp4PoolByName(context.TODO(), name)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+}
