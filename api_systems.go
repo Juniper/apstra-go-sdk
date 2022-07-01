@@ -2,6 +2,7 @@ package goapstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -234,6 +235,13 @@ func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystem
 		apiResponse: response,
 	})
 	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
+			return nil, ApstraClientErr{
+				errType: ErrNotfound,
+				err:     err,
+			}
+		}
 		return nil, err
 	}
 	return response.polish(), nil
