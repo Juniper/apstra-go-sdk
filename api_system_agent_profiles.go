@@ -238,7 +238,7 @@ func (o *Client) deleteAgentProfile(ctx context.Context, id ObjectId) error {
 		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusUnprocessableEntity {
 			body, _ := io.ReadAll(ttae.Response.Body)
 			var ae apstraErr
-			_ := json.Unmarshal(body, &apstraErr{})
+			_ = json.Unmarshal(body, &apstraErr{})
 			if ae.Errors == apstraErrAgentProfileInUse {
 				return ApstraClientErr{
 					errType: ErrInUse,
