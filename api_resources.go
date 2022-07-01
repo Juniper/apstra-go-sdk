@@ -18,6 +18,10 @@ const (
 	apiUrlResources               = "/api/resources"
 	apiUrlResourcesAsnPools       = apiUrlResources + "/asn-pools"
 	apiUrlResourcesAsnPoolsPrefix = apiUrlResourcesAsnPools + apiUrlPathDelim
+	apiUrlResourcesAsnPoolById    = apiUrlResourcesAsnPoolsPrefix + "%s"
+	apiUrlResourcesIpPools        = apiUrlResources + "/ip-pools"
+	apiUrlResourcesIpPoolsPrefix  = apiUrlResourcesIpPools + apiUrlPathDelim
+	apiUrlResourcesIpPoolById     = apiUrlResourcesIpPoolsPrefix + "%s"
 
 	clientApiPoolRangeMutex = iota
 )
@@ -94,15 +98,22 @@ type optionsAsnPoolsResponse struct {
 	Methods []string   `json:"methods"`
 }
 
+type optionsIpPoolsResponse struct {
+	Items   []ObjectId `json:"items"`
+	Methods []string   `json:"methods"`
+}
+
 func (o *Client) createAsnPool(ctx context.Context, in *AsnPool) (*objectIdResponse, error) {
-	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
+	method := http.MethodPost
+	urlStr := apiUrlResourcesAsnPools
+	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 
 	response := &objectIdResponse{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
+		method:      method,
 		url:         apstraUrl,
 		apiInput:    asnPoolToNewAsnPool(in),
 		apiResponse: response,
@@ -110,9 +121,11 @@ func (o *Client) createAsnPool(ctx context.Context, in *AsnPool) (*objectIdRespo
 }
 
 func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
-	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
+	method := http.MethodGet
+	urlStr := apiUrlResourcesAsnPools
+	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPools, err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 	response := &getAsnPoolsResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
@@ -121,7 +134,7 @@ func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error fetching ASN pools - %w", err)
+		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
 	}
 
 	var pools []AsnPool
@@ -139,25 +152,20 @@ func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, err
 	if poolId == "" {
 		return nil, errors.New("attempt to get ASN Pool info with empty pool ID")
 	}
-	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
+	method := http.MethodGet
+	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, poolId)
+	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPoolsPrefix+string(poolId), err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 	raw := &rawAsnPool{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
+		method:      method,
 		url:         apstraUrl,
 		apiResponse: raw,
 	})
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
-			return nil, ApstraClientErr{
-				errType: ErrNotfound,
-				err:     err,
-			}
-		}
-		return nil, fmt.Errorf("error fetching ASN pool '%s' - %w", poolId, err)
+		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, convertTtaeToAceWherePossible(err))
 	}
 	return rawAsnPoolToAsnPool(raw)
 
@@ -167,16 +175,18 @@ func (o *Client) deleteAsnPool(ctx context.Context, poolId ObjectId) error {
 	if poolId == "" {
 		return errors.New("attempt to delete ASN Pool with empty pool ID")
 	}
-	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
+	method := http.MethodDelete
+	urlStr := fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId)
+	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", apiUrlResourcesAsnPoolsPrefix+string(poolId), err)
+		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		url:    apstraUrl,
 	})
 	if err != nil {
-		return fmt.Errorf("error fetching ASN pools - %w", err)
+		return fmt.Errorf("error calling '%s' at '%s - %w", method, urlStr, convertTtaeToAceWherePossible(err))
 	}
 	return nil
 }
@@ -272,13 +282,15 @@ func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, poolInfo *A
 	if poolId == "" {
 		return errors.New("attempt to update ASN Pool with empty pool ID")
 	}
-	apstraUrl, err := url.Parse(apiUrlResourcesAsnPoolsPrefix + string(poolId))
+	method := http.MethodPut
+	urlStr := fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId)
+	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
+		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 
 	return o.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPut,
+		method:   method,
 		url:      apstraUrl,
 		apiInput: asnPoolToNewAsnPool(poolInfo),
 	})
@@ -401,19 +413,41 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 }
 
 func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
-	apstraUrl, err := url.Parse(apiUrlResourcesAsnPools)
+	method := http.MethodOptions
+	urlStr := apiUrlResourcesAsnPools
+	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 
 	response := &optionsAsnPoolsResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodOptions,
+		method:      method,
 		url:         apstraUrl,
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
+	}
+	return response.Items, nil
+}
+
+func (o *Client) listIpPoolIds(ctx context.Context) ([]ObjectId, error) {
+	method := http.MethodOptions
+	urlStr := apiUrlResourcesIpPools
+	apstraUrl, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
+	}
+
+	response := &optionsIpPoolsResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      method,
+		url:         apstraUrl,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
 	}
 	return response.Items, nil
 }

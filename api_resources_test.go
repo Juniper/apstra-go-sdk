@@ -231,3 +231,24 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 		}
 	}
 }
+
+func TestListIpPools(t *testing.T) {
+	DebugLevel = 2
+	clients, _, err := getTestClientsAndMockAPIs()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		if clientName == "mock" {
+			continue // todo have I given up on mock testing?
+		}
+		poolIds, err := client.listIpPoolIds(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(poolIds) <= 0 {
+			t.Fatalf("only got %d pools from %s client", len(poolIds), clientName)
+		}
+	}
+}
