@@ -401,7 +401,7 @@ func (o *Client) GetAgentProfile(ctx context.Context, id ObjectId) (*AgentProfil
 	return o.getAgentProfile(ctx, id)
 }
 
-// GetAllAgentProfiles returns the []AgentProfile representing all
+// GetAllAgentProfiles returns the []AgentProfileId representing all
 // Agent Profiles
 func (o *Client) GetAllAgentProfiles(ctx context.Context) ([]AgentProfile, error) {
 	return o.getAllAgentProfiles(ctx)
