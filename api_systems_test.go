@@ -66,7 +66,7 @@ func TestSystemsStrings(t *testing.T) {
 		stringType apiIotaString
 	}
 	testData := []stringTestData{
-		{stringVal: "", intType: SystemAdminStateNull, stringType: systemAdminStateNull},
+		{stringVal: "maint", intType: SystemAdminStateMaint, stringType: systemAdminStateMaint},
 		{stringVal: "normal", intType: SystemAdminStateNormal, stringType: systemAdminStateNormal},
 		{stringVal: "decomm", intType: SystemAdminStateDecomm, stringType: systemAdminStateDecomm},
 	}

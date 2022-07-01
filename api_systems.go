@@ -21,14 +21,14 @@ const (
 )
 
 const ( // new block resets iota to 0
-	SystemAdminStateNull = SystemAdminState(iota) // default type 0
-	SystemAdminStateNormal
+	SystemAdminStateNormal = SystemAdminState(iota) // default type 0
 	SystemAdminStateDecomm
+	SystemAdminStateMaint
 	SystemAdminStateUnknown
 
-	systemAdminStateNull    = rawSystemAdminState("")
 	systemAdminStateNormal  = rawSystemAdminState("normal")
 	systemAdminStateDecomm  = rawSystemAdminState("decomm")
+	systemAdminStateMaint   = rawSystemAdminState("maint")
 	systemAdminStateUnknown = "system agent state %d unknown"
 )
 
@@ -42,8 +42,8 @@ func (o SystemAdminState) String() string {
 	switch o {
 	case SystemAdminStateDecomm:
 		return string(systemAdminStateDecomm)
-	case SystemAdminStateNull:
-		return string(systemAdminStateNull)
+	case SystemAdminStateMaint:
+		return string(systemAdminStateMaint)
 	case SystemAdminStateNormal:
 		return string(systemAdminStateNormal)
 	default:
@@ -67,8 +67,8 @@ func (o rawSystemAdminState) parse() int {
 		return int(SystemAdminStateDecomm)
 	case systemAdminStateNormal:
 		return int(SystemAdminStateNormal)
-	case systemAdminStateNull:
-		return int(SystemAdminStateNull)
+	case systemAdminStateMaint:
+		return int(SystemAdminStateMaint)
 	default:
 		return int(SystemAdminStateUnknown)
 	}
