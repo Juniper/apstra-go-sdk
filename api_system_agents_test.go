@@ -146,7 +146,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 	}
 }
 
-func TestStringThings(t *testing.T) {
+func TestSystemAgentsStrings(t *testing.T) {
 	type apiStringIota interface {
 		String() string
 		Int() int
@@ -187,9 +187,6 @@ func TestStringThings(t *testing.T) {
 		{stringVal: "init", intType: AgentJobStateInit, stringType: agentJobStateInit},
 		{stringVal: "inprogress", intType: AgentJobStateInProgress, stringType: agentJobStateInProgress},
 		{stringVal: "success", intType: AgentJobStateSuccess, stringType: agentJobStateSuccess},
-
-		{stringVal: "normal", intType: SystemAdminStateNormal, stringType: systemAdminStateNormal},
-		{stringVal: "decomm", intType: SystemAdminStateDecomm, stringType: systemAdminStateDecomm},
 	}
 
 	for i, td := range testData {

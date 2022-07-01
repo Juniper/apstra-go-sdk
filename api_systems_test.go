@@ -48,3 +48,39 @@ func TestGetSystems(t *testing.T) {
 		log.Println(system.Facts.HwModel)
 	}
 }
+
+func TestSystemsStrings(t *testing.T) {
+	type apiStringIota interface {
+		String() string
+		Int() int
+	}
+
+	type apiIotaString interface {
+		parse() int
+		string() string
+	}
+
+	type stringTestData struct {
+		stringVal  string
+		intType    apiStringIota
+		stringType apiIotaString
+	}
+	testData := []stringTestData{
+		{stringVal: "", intType: SystemAdminStateNull, stringType: systemAdminStateNull},
+		{stringVal: "normal", intType: SystemAdminStateNormal, stringType: systemAdminStateNormal},
+		{stringVal: "decomm", intType: SystemAdminStateDecomm, stringType: systemAdminStateDecomm},
+	}
+
+	for i, td := range testData {
+		ii := td.intType.Int()
+		is := td.intType.String()
+		sp := td.stringType.parse()
+		ss := td.stringType.string()
+		if td.intType.String() != td.stringType.string() ||
+			td.intType.Int() != td.stringType.parse() ||
+			td.stringType.string() != td.stringVal {
+			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
+				i, ii, sp, is, ss, td.stringVal)
+		}
+	}
+}
