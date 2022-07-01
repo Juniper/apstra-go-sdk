@@ -795,6 +795,13 @@ func (o *Client) getAgentInfo(ctx context.Context, id ObjectId) (*AgentInfo, err
 		apiResponse: response,
 	})
 	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
+			return nil, ApstraClientErr{
+				errType: ErrNotfound,
+				err:     err,
+			}
+		}
 		return nil, err
 	}
 	return response.polish(), nil
