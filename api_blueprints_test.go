@@ -47,7 +47,7 @@ func TestCreateDeleteRoutingZone(t *testing.T) {
 	}
 
 	if len(blueprints) < 1 {
-		t.Fatalf("cannot proceed without at least one blueprint")
+		t.Skipf("cannot proceed without at least one blueprint")
 	}
 
 	blueprintId := blueprints[0]
