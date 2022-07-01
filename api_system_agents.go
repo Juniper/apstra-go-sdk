@@ -32,10 +32,12 @@ const ( // new block resets iota to 0
 )
 
 const ( // new block resets iota to 0
-	AgentTypeOffbox = AgentType(iota) // default type 0
+	AgentTypeDefault = AgentType(iota) // default type 0
+	AgentTypeOffbox
 	AgentTypeOnbox
 	AgentTypeUnknown
 
+	agentTypeDefault = agentTypeOffbox
 	agentTypeOffbox  = rawAgentType("offbox")
 	agentTypeOnbox   = rawAgentType("onbox")
 	agentTypeUnknown = "system agent type %d unknown"
@@ -105,6 +107,8 @@ func (o AgentType) Int() int {
 
 func (o AgentType) String() string {
 	switch o {
+	case AgentTypeDefault:
+		return string(agentTypeDefault)
 	case AgentTypeOffbox:
 		return string(agentTypeOffbox)
 	case AgentTypeOnbox:
@@ -126,6 +130,8 @@ func (o rawAgentType) string() string {
 
 func (o rawAgentType) parse() int {
 	switch o {
+	case "":
+		return int(AgentTypeDefault)
 	case agentTypeOffbox:
 		return int(AgentTypeOffbox)
 	case agentTypeOnbox:
@@ -855,7 +861,9 @@ func (o *Client) createAgent(ctx context.Context, request *AgentCfg) (ObjectId, 
 	return response.Id, nil
 }
 
-func (o *Client) updateAgent(ctx context.Context, id ObjectId, request *AgentCfg) error {
+func (o *Client) updateAgent(ctx context.Context, id ObjectId, cfg *AgentCfg) error {
+	rawCfg := cfg.raw()
+	rawCfg.AgentType = "" // cannot change agent type
 	method := http.MethodPatch
 	urlStr := fmt.Sprintf(apiUrlSystemAgentsById, id)
 	apstraUrl, err := url.Parse(urlStr)
@@ -866,7 +874,7 @@ func (o *Client) updateAgent(ctx context.Context, id ObjectId, request *AgentCfg
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
-		apiInput:    request.raw(),
+		apiInput:    rawCfg,
 		apiResponse: response,
 	})
 	if err != nil {
