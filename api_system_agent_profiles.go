@@ -2,8 +2,10 @@ package goapstra
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -17,6 +19,8 @@ const (
 	apstraAgentPlatformNXOS  = "nxos"
 
 	apstraSystemAgentPlatformStringSep = "=="
+
+	apstraErrAgentProfileInUse = "Profile is in use"
 )
 
 type optionsAgentProfilesResponse struct {
@@ -230,6 +234,18 @@ func (o *Client) deleteAgentProfile(ctx context.Context, id ObjectId) error {
 		url:    apstraUrl,
 	})
 	if err != nil {
+		var ttae TalkToApstraErr
+		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusUnprocessableEntity {
+			body, _ := io.ReadAll(ttae.Response.Body)
+			var ae apstraErr
+			_ := json.Unmarshal(body, &apstraErr{})
+			if ae.Errors == apstraErrAgentProfileInUse {
+				return ApstraClientErr{
+					errType: ErrInUse,
+					err:     fmt.Errorf("agent profile '%s' is in use, cannot delete", id),
+				}
+			}
+		}
 		return fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
 	}
 	return nil

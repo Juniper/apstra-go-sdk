@@ -35,6 +35,7 @@ const (
 	ErrExists
 	ErrConflict
 	ErrAuthFail
+	ErrInUse
 
 	clientPollingIntervalMs = 500
 )

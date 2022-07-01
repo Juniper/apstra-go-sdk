@@ -33,6 +33,10 @@ type talkToApstraIn struct {
 	unsynchronized bool        // default behavior is to send apstraApiAsyncParamValFull, block until task completion
 }
 
+type apstraErr struct {
+	Errors string `json:"errors"`
+}
+
 // craftUrl combines o.baseUrl (probably "http://host:port") with in.url
 // (probably "/api/something/something", might have a query string).
 // The assumption is that o.baseUrl contains the scheme, host (host+port) and
