@@ -272,7 +272,10 @@ func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*Age
 	for i, sap := range response.Items {
 		if sap.Label == label {
 			if found >= 0 {
-				return nil, fmt.Errorf("multiple matches for System Agent Profile with label '%s'", label)
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple matches for System Agent Profile with label '%s'", label),
+				}
 			}
 			found = i
 		}
