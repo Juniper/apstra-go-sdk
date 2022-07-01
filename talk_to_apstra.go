@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -35,6 +36,17 @@ type talkToApstraIn struct {
 
 type apstraErr struct {
 	Errors string `json:"errors"`
+}
+
+func convertTtaeToAceWherePossible(err error) error {
+	var ttae TalkToApstraErr
+	if errors.As(err, &ttae) {
+		switch ttae.Response.StatusCode {
+		case http.StatusNotFound:
+			return ApstraClientErr{errType: ErrNotfound, err: err}
+		}
+	}
+	return err
 }
 
 // craftUrl combines o.baseUrl (probably "http://host:port") with in.url

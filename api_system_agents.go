@@ -795,14 +795,7 @@ func (o *Client) getAgentInfo(ctx context.Context, id ObjectId) (*AgentInfo, err
 		apiResponse: response,
 	})
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
-			return nil, ApstraClientErr{
-				errType: ErrNotfound,
-				err:     err,
-			}
-		}
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response.polish(), nil
 }
@@ -893,26 +886,12 @@ func (o *Client) updateAgent(ctx context.Context, id ObjectId, cfg *AgentCfg) er
 func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
 	agentInfo, err := o.getAgentInfo(ctx, id)
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
-			return ApstraClientErr{
-				errType: ErrNotfound,
-				err:     err,
-			}
-		}
-		return fmt.Errorf("error fetching agent info prior to deletion - %w", err)
+		return fmt.Errorf("error fetching agent info prior to deletion - %w", convertTtaeToAceWherePossible(err))
 	}
 
 	_, err = o.AgentRunJob(ctx, id, AgentJobTypeUninstall)
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
-			return ApstraClientErr{
-				errType: ErrNotfound,
-				err:     err,
-			}
-		}
-		return fmt.Errorf("error running agent uninstall job prior to deletion - %w", err)
+		return fmt.Errorf("error running agent uninstall job prior to deletion - %w", convertTtaeToAceWherePossible(err))
 	}
 
 	method := http.MethodDelete
@@ -938,11 +917,7 @@ func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
 		for {
 			systemInfo, err := o.getSystemInfo(minuteCountdown, agentInfo.Status.SystemId)
 			if err != nil {
-				var ttae TalkToApstraErr
-				if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
-					return nil
-				}
-				return fmt.Errorf("error checking system state after agent deletion - %w", err)
+				return fmt.Errorf("error checking system state after agent deletion - %w", convertTtaeToAceWherePossible(err))
 			}
 			if systemInfo.Status.CommState == systemCommsOn {
 				continue
