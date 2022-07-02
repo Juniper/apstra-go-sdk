@@ -524,3 +524,13 @@ func (o *Client) UpdateManagedDevice(ctx context.Context, id SystemId, cfg *Syst
 func (o *Client) UpdateManagedDeviceByAgentId(ctx context.Context, id ObjectId, cfg *SystemUserConfig) error {
 	return o.updateSystemByAgentId(ctx, id, cfg)
 }
+
+// ListLogicalDeviceIds returns a []LogicalDeviceId
+func (o *Client) ListLogicalDeviceIds(ctx context.Context) ([]LogicalDeviceId, error) {
+	return o.listLogicalDeviceIds(ctx)
+}
+
+// GetLogicalDevice returns a LogicalDevice represented by the supplied Id
+func (o *Client) GetLogicalDevice(ctx context.Context, id LogicalDeviceId) (*LogicalDevice, error) {
+	return o.getLogicalDevice(ctx, id)
+}
