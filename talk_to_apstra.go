@@ -27,7 +27,8 @@ const (
 // talkToApstraIn is the input structure for the Client.talkToApstra() function
 type talkToApstraIn struct {
 	method         string      // how to talk to Apstra
-	url            *url.URL    // where to talk to Aptstra (as little as /path/to/thing ok)
+	url            *url.URL    // where to talk to Aptstra (as little as /path/to/thing ok) this is considered before urlStr
+	urlStr         string      // where to talk to Apstra, this one is used if url is nil
 	apiInput       interface{} // if non-nil we'll JSON encode this prior to sending it
 	apiResponse    interface{} // if non-nil we'll JSON decode Apstra response here
 	doNotLogin     bool        // when set, Client will not attempt login (we set for anti-recursion)
@@ -50,22 +51,37 @@ func convertTtaeToAceWherePossible(err error) error {
 }
 
 // craftUrl combines o.baseUrl (probably "http://host:port") with in.url
-// (probably "/api/something/something", might have a query string).
+// (preferred), or in.urlStr (if in.url is nil). Both options are probably
+// something like "/api/something/something". More complicated callers (which
+// need to use a query string, etc) will probably send in.url (*url.URL), while
+// simple ones can simply send in.urlStr (string).
 // The assumption is that o.baseUrl contains the scheme, host (host+port) and
 // leading path components, while `in` (talkToApstraIn) is responsible for the
 // path to the specific API endpoint and any required query parameters.
 // When `in.unsychronized` is false (the default), Apstra's 'async=full' query
 // string parameter is added to the returned result.
-func (o Client) craftUrl(in *talkToApstraIn) *url.URL {
-	result := in.url
+func (o Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
+	var result *url.URL
+	var err error
+
+	if in.url == nil {
+		result, err = url.Parse(in.urlStr)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing url '%s' - %w", in.urlStr, err)
+		}
+	} else {
+		result = in.url
+	}
+
 	if result.Scheme == "" {
 		result.Scheme = o.baseUrl.Scheme // copy baseUrl scheme
 	}
+
 	if result.Host == "" {
 		result.Host = o.baseUrl.Host // copy baseUrl host
 	}
 
-	result.Path = o.baseUrl.Path + in.url.Path // path is cumulative, baseUrl can be empty
+	result.Path = o.baseUrl.Path + result.Path // path is cumulative, baseUrl can be empty
 
 	if !in.unsynchronized {
 		params := result.Query()
@@ -73,7 +89,7 @@ func (o Client) craftUrl(in *talkToApstraIn) *url.URL {
 		result.RawQuery = params.Encode()
 	}
 
-	return result
+	return result, nil
 }
 
 // talkToApstra talks to the Apstra server using in.method. If in.apiInput is
@@ -87,7 +103,10 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	}
 
 	// create URL
-	apstraUrl := o.craftUrl(in)
+	apstraUrl, err := o.craftUrl(in)
+	if err != nil {
+		return err
+	}
 
 	// are we sending data to the server?
 	if in.apiInput != nil {
@@ -149,20 +168,20 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		// Auth fail?
 		if resp.StatusCode == 401 {
 			// Auth fail at login API is fatal for this transaction
-			if in.url.Path == apiUrlUserLogin {
+			if strings.HasSuffix(apstraUrl.Path, apiUrlUserLogin) {
 				return newTalkToApstraErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' - check username/password",
-						resp.StatusCode, in.url))
+						resp.StatusCode, apstraUrl))
 			}
 
 			// Auth fail with "doNotLogin == true" is fatal for this transaction
 			if in.doNotLogin {
 				return newTalkToApstraErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' and doNotLogin is %t",
-						resp.StatusCode, in.url, in.doNotLogin))
+						resp.StatusCode, apstraUrl, in.doNotLogin))
 			}
 
-			debugStr(1, fmt.Sprintf("got http %d '%s' at '%s' attempting login", resp.StatusCode, resp.Status, in.url.String()))
+			debugStr(1, fmt.Sprintf("got http %d '%s' at '%s' attempting login", resp.StatusCode, resp.Status, apstraUrl.String()))
 			// Try logging in
 			err := o.login(ctx)
 			if err != nil {
