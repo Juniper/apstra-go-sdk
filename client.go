@@ -475,7 +475,7 @@ func (o *Client) AgentRunJob(ctx context.Context, agentId ObjectId, jobType Agen
 
 	switch jobType {
 	case AgentJobTypeInstall:
-		err = o.agentWaitForConnection(ctx, agentId)
+		err = o.agentWaitForConnection(ctx, agentId) // todo: this might be a bit much, perhaps we can release this wait sooner?
 		if err != nil {
 			return nil, err
 		}
