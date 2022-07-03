@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/url"
@@ -63,7 +64,7 @@ func TestBufIoReaderStuff(t *testing.T) {
 
 func TestBlueprintIdFromUrl(t *testing.T) {
 	testBpId := ObjectId("lkasdlfaj")
-	test := "https://host:443" + apiUrlBlueprintsPrefix + testBpId + apiUrlPathDelim + apiUrlRoutingZoneSuffix
+	test := "https://host:443" + fmt.Sprintf(apiUrlBlueprintById, testBpId)
 	url, err := url.Parse(string(test))
 	if err != nil {
 		log.Fatal(err)

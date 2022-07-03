@@ -20,7 +20,6 @@ func TestGetAllBlueprintIds(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.Logout(context.TODO())
 
 	blueprints, err := client.GetAllBlueprintIds(context.TODO())
 	if err != nil {
@@ -53,11 +52,10 @@ func TestCreateDeleteRoutingZone(t *testing.T) {
 	blueprintId := blueprints[0]
 	randString := randString(10, "hex")
 
-	zoneId, err := client.CreateRoutingZone(context.TODO(), &CreateRoutingZoneCfg{
-		SzType:      "evpn",
-		VrfName:     "test-" + randString,
-		Label:       "label-test-" + randString,
-		BlueprintId: blueprintId,
+	zoneId, err := client.CreateRoutingZone(context.TODO(), blueprintId, &CreateRoutingZoneCfg{
+		SzType:  "evpn",
+		VrfName: "test-" + randString,
+		Label:   "label-test-" + randString,
 	})
 	if err != nil {
 		log.Fatal(err)

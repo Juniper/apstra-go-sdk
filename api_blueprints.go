@@ -17,6 +17,11 @@ const (
 	apiUrlBluePrintRoutingZonesById   = apiUrlBluePrintRoutingZonesPrefix + "%s"
 )
 
+type optionsBlueprintsRoutingzonesResponse struct {
+	Items   []ObjectId `json:"items"`
+	Methods []string   `json:"methods"`
+}
+
 // getBlueprintsResponse is returned by Apstra in response to
 // 'GET apiUrlBlueprints'
 type getBlueprintsResponse struct {
@@ -164,21 +169,34 @@ type SecurityZone struct {
 }
 
 func (o *Client) createRoutingZone(ctx context.Context, Id ObjectId, cfg *CreateRoutingZoneCfg) (*objectIdResponse, error) {
-	result := &objectIdResponse{}
-	return result, o.talkToApstra(ctx, &talkToApstraIn{
+	response := &objectIdResponse{}
+	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBluePrintRoutingZones, Id),
 		apiInput:    cfg,
-		apiResponse: result,
+		apiResponse: response,
 	})
 }
 
+func (o *Client) listAllRoutingZoneIds(ctx context.Context, blueprintId ObjectId) ([]ObjectId, error) {
+	response := &optionsBlueprintsRoutingzonesResponse{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodOptions,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintById, blueprintId),
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response.Items, nil
+}
+
 func (o *Client) getRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) (*SecurityZone, error) {
-	result := &SecurityZone{}
-	return result, o.talkToApstra(ctx, &talkToApstraIn{
+	response := &SecurityZone{}
+	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBluePrintRoutingZonesById, blueprintId, zoneId),
-		apiResponse: result,
+		apiResponse: response,
 	})
 }
 
