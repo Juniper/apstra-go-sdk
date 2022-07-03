@@ -249,11 +249,6 @@ func (o *Client) Logout(ctx context.Context) error {
 	return o.logout(ctx)
 }
 
-// GetAllBlueprintIds returns a slice of IDs representing all blueprints
-func (o *Client) GetAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
-	return o.getAllBlueprintIds(ctx)
-}
-
 // GetBlueprint returns *GetBlueprintResponse detailing the requested blueprint
 func (o *Client) GetBlueprint(ctx context.Context, in ObjectId) (*GetBlueprintResponse, error) {
 	return o.getBlueprint(ctx, in)
@@ -285,8 +280,8 @@ func (o *Client) GetVersion(ctx context.Context) (*VersionResponse, error) {
 }
 
 // CreateRoutingZone creates an Apstra Routing Zone / Security Zone / VRF
-func (o *Client) CreateRoutingZone(ctx context.Context, cfg *CreateRoutingZoneCfg) (ObjectId, error) {
-	response, err := o.createRoutingZone(ctx, cfg)
+func (o *Client) CreateRoutingZone(ctx context.Context, blueprintId ObjectId, cfg *CreateRoutingZoneCfg) (ObjectId, error) {
+	response, err := o.createRoutingZone(ctx, blueprintId, cfg)
 	if err != nil {
 		return "", err
 	}

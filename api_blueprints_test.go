@@ -15,13 +15,13 @@ func blueprintsTestClient1() (*Client, error) {
 	})
 }
 
-func TestGetAllBlueprintIds(t *testing.T) {
+func TestListAllBlueprintIds(t *testing.T) {
 	client, err := blueprintsTestClient1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	blueprints, err := client.GetAllBlueprintIds(context.TODO())
+	blueprints, err := client.listAllBlueprintIds(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func TestCreateDeleteRoutingZone(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	blueprints, err := client.GetAllBlueprintIds(context.TODO())
+	blueprints, err := client.listAllBlueprintIds(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}

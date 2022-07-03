@@ -17,6 +17,11 @@ const (
 	apiUrlBluePrintRoutingZonesById   = apiUrlBluePrintRoutingZonesPrefix + "%s"
 )
 
+type optionsBlueprintsResponse struct {
+	Items   []ObjectId `json:"items"`
+	Methods []string   `json:"methods"`
+}
+
 type optionsBlueprintsRoutingzonesResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
@@ -106,20 +111,6 @@ type GetBlueprintResponse struct {
 	Label string `json:"label"`
 }
 
-// getAllBlueprintIds returns the Ids of all blueprints
-func (o Client) getAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
-	response, err := o.getBluePrints(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error calling getBluePrints - %w", err)
-	}
-
-	var result []ObjectId
-	for _, item := range response.Items {
-		result = append(result, item.Id)
-	}
-	return result, nil
-}
-
 func (o Client) getBluePrints(ctx context.Context) (*getBlueprintsResponse, error) {
 	response := &getBlueprintsResponse{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
@@ -166,6 +157,19 @@ type SecurityZone struct {
 	RouteTarget     string   `json:"route_target"`
 	Id              ObjectId `json:"id"`
 	VlanId          int      `json:"vlan_id"`
+}
+
+func (o *Client) listAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
+	response := &optionsBlueprintsResponse{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodOptions,
+		urlStr:      apiUrlBlueprints,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response.Items, nil
 }
 
 func (o *Client) createRoutingZone(ctx context.Context, Id ObjectId, cfg *CreateRoutingZoneCfg) (*objectIdResponse, error) {
