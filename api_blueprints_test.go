@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"log"
-	"net/url"
 	"testing"
 )
 
@@ -31,6 +30,42 @@ func TestListAllBlueprintIds(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Println(string(result))
+}
+
+func TestGetAllBlueprintStatus(t *testing.T) {
+	client, err := blueprintsTestClient1()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bps, err := client.getAllBlueprintStatus(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println(len(bps))
+}
+
+func TestCreateDeleteBlueprint(t *testing.T) {
+	client, err := blueprintsTestClient1()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client.Login(context.TODO())
+	name := randString(10, "hex")
+	id, err := client.createBlueprintFromTemplate(context.TODO(), &CreateBluePrintFromTemplate{
+		RefDesign:  RefDesign2StageL3Clos,
+		Label:      name,
+		TemplateId: "L2_Virtual_EVPN",
+	})
+
+	log.Printf("got id '%s'\n", id)
+
+	err = client.deleteBlueprint(context.TODO(), id)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func TestCreateDeleteRoutingZone(t *testing.T) {
@@ -67,12 +102,4 @@ func TestCreateDeleteRoutingZone(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func TestThing(t *testing.T) {
-	apstraUrl, err := url.Parse("/api/foo")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(apstraUrl.String())
 }
