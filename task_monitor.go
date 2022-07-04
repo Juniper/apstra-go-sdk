@@ -343,18 +343,18 @@ func (o Client) getBlueprintTaskStatusById(ctx context.Context, bpid ObjectId, t
 	})
 }
 
-func blueprintIdFromUrl(in *url.URL) (ObjectId, error) {
+func blueprintIdFromUrl(in *url.URL) ObjectId {
 	split1 := strings.Split(in.String(), apiUrlBlueprintsPrefix)
 	if len(split1) != 2 {
-		return "", fmt.Errorf("failed to extract blueprint ID from URL '%s' at step 1", in.String())
+		return ObjectId("")
 	}
 
 	split2 := strings.Split(split1[1], apiUrlPathDelim)
 	if len(split1) == 0 {
-		return "", fmt.Errorf("failed to extract blueprint ID from URL '%s' at step 2", in.String())
+		return ObjectId("")
 	}
 
-	return ObjectId(split2[0]), nil
+	return ObjectId(split2[0])
 }
 
 // waitForTaskCompletion interacts with the taskMonitor, returns the Apstra API

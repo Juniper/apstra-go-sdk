@@ -39,6 +39,13 @@ type apstraErr struct {
 	Errors string `json:"errors"`
 }
 
+// taskIdResponse data structure is returned by Apstra for *some* operations, when the
+// URL Query String includes `async=full`
+type taskIdResponse struct {
+	BlueprintId ObjectId `json:"id"`
+	TaskId      TaskId   `json:"task_id"`
+}
+
 func convertTtaeToAceWherePossible(err error) error {
 	var ttae TalkToApstraErr
 	if errors.As(err, &ttae) {
@@ -207,17 +214,30 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	var tIdR taskIdResponse
 	ok, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
 	if err != nil {
-		return newTalkToApstraErr(req, requestBody, resp, "")
+		return newTalkToApstraErr(req, requestBody, resp, "error peeking response body")
 	}
 	if !ok {
 		// no task ID, decode response body into the caller-specified structure
 		return json.NewDecoder(resp.Body).Decode(in.apiResponse)
 	}
 
-	// we got a task ID, instead of the expected response object
-	bpId, err := blueprintIdFromUrl(apstraUrl)
-	if err != nil {
-		return fmt.Errorf("error parsing blueprint ID from URL '%s' - %w", apstraUrl.String(), err)
+	// we got a task ID, instead of the expected response object. tasks are
+	// per-blueprint, so we need to figure out the blueprint ID for task
+	//progress query reasons.
+	var bpId ObjectId
+
+	// maybe the blueprintId is in the URL?
+	if strings.Contains(apstraUrl.Path, apiUrlBlueprintsPrefix) {
+		bpId = blueprintIdFromUrl(apstraUrl)
+	}
+
+	switch {
+	case (bpId != "" && tIdR.BlueprintId != "") && (bpId != tIdR.BlueprintId):
+		return fmt.Errorf("blueprint Id in URL ('%s') and returned object body ('%s') don't match", bpId, tIdR.BlueprintId)
+	case bpId == "" && tIdR.BlueprintId == "":
+		return newTalkToApstraErr(req, requestBody, resp, "blueprint id not found in url nor in response body")
+	case bpId == "":
+		bpId = tIdR.BlueprintId
 	}
 
 	// get (wait for) full detailed response on the outstanding task ID
@@ -230,7 +250,6 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// it's impossible to know exactly what'll be in there. Extract it now into
 	// whatever in.apiResponse (interface{} controlled by the caller) is.
 	return json.Unmarshal(taskResponse.DetailedStatus.ApiResponse, in.apiResponse)
-
 }
 
 // TalkToApstraErr implements error{} and carries around http.Request and

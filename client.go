@@ -74,12 +74,6 @@ type ClientCfg struct {
 // TaskId represents outstanding tasks on an Apstra server
 type TaskId string
 
-// taskIdResponse data structure is returned by Apstra for *some* operations, when the
-// URL Query String includes `async=full`
-type taskIdResponse struct {
-	TaskId TaskId `json:"task_id"`
-}
-
 // objectIdResponse is returned by various calls which create an Apstra object
 type objectIdResponse struct {
 	Id ObjectId `json:"id"`
