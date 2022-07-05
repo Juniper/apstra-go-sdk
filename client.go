@@ -529,6 +529,11 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBlu
 	return o.createBlueprintFromTemplate(ctx, cfg)
 }
 
+// GetBlueprintStatus returns *BlueprintStatus for the specified blueprint
+func (o *Client) GetBlueprintStatus(ctx context.Context, id ObjectId) (*BlueprintStatus, error) {
+	return o.getBlueprintStatus(ctx, id)
+}
+
 // DeleteBlueprint deletes the specified blueprint
 func (o *Client) DeleteBlueprint(ctx context.Context, id ObjectId) error {
 	return o.deleteBlueprint(ctx, id)
