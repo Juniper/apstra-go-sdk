@@ -243,8 +243,8 @@ func (o *Client) Logout(ctx context.Context) error {
 	return o.logout(ctx)
 }
 
-// GetBlueprint returns *GetBlueprintResponse detailing the requested blueprint
-func (o *Client) GetBlueprint(ctx context.Context, in ObjectId) (*GetBlueprintResponse, error) {
+// GetBlueprint returns *Blueprint detailing the requested blueprint
+func (o *Client) GetBlueprint(ctx context.Context, in ObjectId) (*Blueprint, error) {
 	return o.getBlueprint(ctx, in)
 }
 
@@ -499,7 +499,7 @@ func (o *Client) UpdateSystem(ctx context.Context, id SystemId, cfg *SystemUserC
 	return o.updateSystem(ctx, id, cfg)
 }
 
-// DeleteSystem deletes the supplied SystemId
+// DeleteSystem deletes the specified SystemId
 func (o *Client) DeleteSystem(ctx context.Context, id SystemId) error {
 	return o.deleteSystem(ctx, id)
 }
@@ -522,4 +522,14 @@ func (o *Client) ListLogicalDeviceIds(ctx context.Context) ([]LogicalDeviceId, e
 // GetLogicalDevice returns a LogicalDevice represented by the supplied Id
 func (o *Client) GetLogicalDevice(ctx context.Context, id LogicalDeviceId) (*LogicalDevice, error) {
 	return o.getLogicalDevice(ctx, id)
+}
+
+// CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
+func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBluePrintFromTemplate) (ObjectId, error) {
+	return o.createBlueprintFromTemplate(ctx, cfg)
+}
+
+// DeleteBlueprint deletes the specified blueprint
+func (o *Client) DeleteBlueprint(ctx context.Context, id ObjectId) error {
+	return o.deleteBlueprint(ctx, id)
 }
