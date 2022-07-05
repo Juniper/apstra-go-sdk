@@ -22,18 +22,18 @@ const (
 )
 
 const (
-	RefDesign2StageL3Clos = RefDesign(iota)
+	RefDesignDatacenter = RefDesign(iota)
 
-	refDesign2StageL3Clos = "two_stage_l3clos"
-	refDesignUnknown      = "unknown reference design %d"
+	refDesignDatacenter = "two_stage_l3clos"
+	refDesignUnknown    = "unknown reference design %d"
 )
 
 type RefDesign int
 
 func (o RefDesign) String() string {
 	switch o {
-	case RefDesign2StageL3Clos:
-		return refDesign2StageL3Clos
+	case RefDesignDatacenter:
+		return refDesignDatacenter
 	default:
 		return fmt.Sprintf(refDesignUnknown, o)
 	}
