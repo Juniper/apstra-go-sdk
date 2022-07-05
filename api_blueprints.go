@@ -59,6 +59,7 @@ type postBlueprintsResponse struct {
 }
 
 type Blueprint struct {
+	client         *Client
 	Id             ObjectId                   `json:"id"`
 	Version        int                        `json:"version"`
 	Design         string                     `json:"design"`
