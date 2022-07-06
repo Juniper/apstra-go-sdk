@@ -243,7 +243,7 @@ func TestListIpPools(t *testing.T) {
 		if clientName == "mock" {
 			continue // todo have I given up on mock testing?
 		}
-		poolIds, err := client.listIpPoolIds(context.TODO())
+		poolIds, err := client.listIp4PoolIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}

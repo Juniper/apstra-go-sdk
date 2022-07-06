@@ -193,12 +193,7 @@ type getIp4PoolsResponse struct {
 	Items []rawIp4Pool `json:"items"`
 }
 
-type optionsAsnPoolsResponse struct {
-	Items   []ObjectId `json:"items"`
-	Methods []string   `json:"methods"`
-}
-
-type optionsIpPoolsResponse struct {
+type optionsResourcePoolResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
 }
@@ -513,43 +508,21 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 }
 
 func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
-	method := http.MethodOptions
-	urlStr := apiUrlResourcesAsnPools
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-
-	response := &optionsAsnPoolsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	response := &optionsResourcePoolResponse{}
+	return response.Items, o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodOptions,
+		urlStr:      apiUrlResourcesAsnPools,
 		apiResponse: response,
 	})
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
-	}
-	return response.Items, nil
 }
 
-func (o *Client) listIpPoolIds(ctx context.Context) ([]ObjectId, error) {
-	method := http.MethodOptions
-	urlStr := apiUrlResourcesIpPools
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-
-	response := &optionsIpPoolsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+func (o *Client) listIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
+	response := &optionsResourcePoolResponse{}
+	return response.Items, o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodOptions,
+		urlStr:      apiUrlResourcesIpPools,
 		apiResponse: response,
 	})
-	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
-	}
-	return response.Items, nil
 }
 
 func (o *Client) getAllIp4Pools(ctx context.Context) ([]Ip4Pool, error) {

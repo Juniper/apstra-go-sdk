@@ -377,6 +377,11 @@ func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
 }
 
+// ListIp4PoolIds returns ASN pools configured on Apstra
+func (o *Client) ListIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listIp4PoolIds(ctx)
+}
+
 // CreateAgentProfile creates a new Agent Profile identified by 'cfg'
 func (o *Client) CreateAgentProfile(ctx context.Context, cfg *AgentProfileConfig) (ObjectId, error) {
 	return o.createAgentProfile(ctx, cfg)
