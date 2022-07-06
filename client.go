@@ -377,11 +377,6 @@ func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
 }
 
-// ListIp4PoolIds returns ASN pools configured on Apstra
-func (o *Client) ListIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
-	return o.listIp4PoolIds(ctx)
-}
-
 // CreateAgentProfile creates a new Agent Profile identified by 'cfg'
 func (o *Client) CreateAgentProfile(ctx context.Context, cfg *AgentProfileConfig) (ObjectId, error) {
 	return o.createAgentProfile(ctx, cfg)
@@ -542,4 +537,34 @@ func (o *Client) GetBlueprintStatus(ctx context.Context, id ObjectId) (*Blueprin
 // DeleteBlueprint deletes the specified blueprint
 func (o *Client) DeleteBlueprint(ctx context.Context, id ObjectId) error {
 	return o.deleteBlueprint(ctx, id)
+}
+
+// CreateIp4Pool creates an IPv4 resource pool
+func (o *Client) CreateIp4Pool(ctx context.Context, in *NewIp4PoolRequest) (ObjectId, error) {
+	return o.createIp4Pool(ctx, in)
+}
+
+// ListIp4PoolIds returns []ObjectId representing all IPv4 resource pools
+func (o *Client) ListIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listIp4PoolIds(ctx)
+}
+
+// GetIp4Pool returns an IPv4 resource pool
+func (o *Client) GetIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, error) {
+	return o.getIp4Pool(ctx, poolId)
+}
+
+// GetIp4PoolByName returns an IPv4 resource pool
+func (o *Client) GetIp4PoolByName(ctx context.Context, desiredName string) (*Ip4Pool, error) {
+	return o.getIp4PoolByName(ctx, desiredName)
+}
+
+// DeleteIp4Pool deletes the specified IPv4 resource pool
+func (o *Client) DeleteIp4Pool(ctx context.Context, id ObjectId) error {
+	return o.deleteIp4Pool(ctx, id)
+}
+
+// UpdateIp4Pool updates (full replace) an existing IPv4 address pool using a NewIp4PoolRequest object
+func (o *Client) UpdateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
+	return o.updateIp4Pool(ctx, poolId, request)
 }
