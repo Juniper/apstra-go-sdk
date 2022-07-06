@@ -8,9 +8,11 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -46,102 +48,6 @@ type AsnRange struct {
 	Total          uint32  `json:"total"`
 	Used           uint32  `json:"used"`
 	UsedPercentage float32 `json:"used_percentage"`
-}
-
-type Ip4Pool struct {
-	Id             ObjectId    `json:"id"`
-	DisplayName    string      `json:"display_name"`
-	Status         string      `json:"status"`
-	Tags           []string    `json:"tags"`
-	Used           int64       `json:"used"`
-	Total          int64       `json:"total"`
-	UsedPercentage float32     `json:"used_percentage"`
-	CreatedAt      time.Time   `json:"created_at"`
-	LastModifiedAt time.Time   `json:"last_modified_at"`
-	Subnets        []Ip4Subnet `json:"subnets"`
-}
-
-type Ip4Subnet struct {
-	Network        string  `json:"network"`
-	Status         string  `json:"status"`
-	Used           int64   `json:"used"`
-	Total          int64   `json:"total"`
-	UsedPercentage float32 `json:"used_percentage"`
-}
-
-type rawIp4Pool struct {
-	Id             ObjectId       `json:"id"`
-	DisplayName    string         `json:"display_name"`
-	Status         string         `json:"status"`
-	Tags           []string       `json:"tags"`
-	Used           string         `json:"used"`
-	Total          string         `json:"total"`
-	UsedPercentage float32        `json:"used_percentage"`
-	CreatedAt      time.Time      `json:"created_at"`
-	LastModifiedAt time.Time      `json:"last_modified_at"`
-	Subnets        []rawIp4Subnet `json:"subnets"`
-}
-
-func (o *rawIp4Pool) polish() (*Ip4Pool, error) {
-	used, err := strconv.ParseInt(o.Used, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing IP Pool field 'used' ('%s') - %w", o.Used, err)
-	}
-
-	total, err := strconv.ParseInt(o.Used, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing IP Pool field 'total' ('%s') - %w", o.Total, err)
-	}
-
-	var subnets []Ip4Subnet
-	for _, rs := range o.Subnets {
-		ps, err := rs.polish()
-		if err != nil {
-			return nil, err
-		}
-		subnets = append(subnets, *ps)
-	}
-
-	return &Ip4Pool{
-		Id:             o.Id,
-		DisplayName:    o.DisplayName,
-		Status:         o.Status,
-		Tags:           o.Tags,
-		Used:           used,
-		Total:          total,
-		UsedPercentage: o.UsedPercentage,
-		CreatedAt:      o.CreatedAt,
-		LastModifiedAt: o.LastModifiedAt,
-		Subnets:        subnets,
-	}, nil
-}
-
-type rawIp4Subnet struct {
-	Network        string  `json:"network"`
-	Status         string  `json:"status"`
-	Used           string  `json:"used"`
-	Total          string  `json:"total"`
-	UsedPercentage float32 `json:"used_percentage"`
-}
-
-func (o *rawIp4Subnet) polish() (*Ip4Subnet, error) {
-	used, err := strconv.ParseInt(o.Used, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing subnet field 'used' ('%s') - %w", o.Used, err)
-	}
-
-	total, err := strconv.ParseInt(o.Used, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing subnet field 'total' ('%s') - %w", o.Total, err)
-	}
-
-	return &Ip4Subnet{
-		Network:        o.Network,
-		Status:         o.Status,
-		Used:           used,
-		Total:          total,
-		UsedPercentage: o.UsedPercentage,
-	}, nil
 }
 
 // newAsnPool is minimal version of AsnPool which omits statistical elements.
@@ -211,6 +117,15 @@ func (o *Client) createAsnPool(ctx context.Context, in *AsnPool) (*objectIdRespo
 		method:      method,
 		url:         apstraUrl,
 		apiInput:    asnPoolToNewAsnPool(in),
+		apiResponse: response,
+	})
+}
+
+func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
+	response := &optionsResourcePoolResponse{}
+	return response.Items, o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodOptions,
+		urlStr:      apiUrlResourcesAsnPools,
 		apiResponse: response,
 	})
 }
@@ -507,13 +422,119 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 	return o.updateAsnPool(ctx, poolId, poolInfo)
 }
 
-func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
-	response := &optionsResourcePoolResponse{}
-	return response.Items, o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodOptions,
-		urlStr:      apiUrlResourcesAsnPools,
-		apiResponse: response,
-	})
+// ip4 pool stuff below here
+
+// minimal create subnet request:
+// {
+//  "subnets": [], // mandatory
+//  "tags": ["t1", "t2", "t3"],
+//  "display_name": "bang"
+//}
+
+type Ip4Pool struct {
+	Id             ObjectId    `json:"id"`
+	DisplayName    string      `json:"display_name"`
+	Status         string      `json:"status"`
+	Tags           []string    `json:"tags"`
+	Used           int64       `json:"used"`
+	Total          int64       `json:"total"`
+	UsedPercentage float32     `json:"used_percentage"`
+	CreatedAt      time.Time   `json:"created_at"`
+	LastModifiedAt time.Time   `json:"last_modified_at"`
+	Subnets        []Ip4Subnet `json:"subnets"`
+}
+
+type rawIp4Pool struct {
+	Id             ObjectId       `json:"id"`
+	DisplayName    string         `json:"display_name"`
+	Status         string         `json:"status"`
+	Tags           []string       `json:"tags"`
+	Used           string         `json:"used"`
+	Total          string         `json:"total"`
+	UsedPercentage float32        `json:"used_percentage"`
+	CreatedAt      time.Time      `json:"created_at"`
+	LastModifiedAt time.Time      `json:"last_modified_at"`
+	Subnets        []rawIp4Subnet `json:"subnets"`
+}
+
+func (o *rawIp4Pool) polish() (*Ip4Pool, error) {
+	used, err := strconv.ParseInt(o.Used, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing IP Pool field 'used' ('%s') - %w", o.Used, err)
+	}
+
+	total, err := strconv.ParseInt(o.Used, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing IP Pool field 'total' ('%s') - %w", o.Total, err)
+	}
+
+	var subnets []Ip4Subnet
+	for _, rs := range o.Subnets {
+		ps, err := rs.polish()
+		if err != nil {
+			return nil, err
+		}
+		subnets = append(subnets, *ps)
+	}
+
+	return &Ip4Pool{
+		Id:             o.Id,
+		DisplayName:    o.DisplayName,
+		Status:         o.Status,
+		Tags:           o.Tags,
+		Used:           used,
+		Total:          total,
+		UsedPercentage: o.UsedPercentage,
+		CreatedAt:      o.CreatedAt,
+		LastModifiedAt: o.LastModifiedAt,
+		Subnets:        subnets,
+	}, nil
+}
+
+type Ip4Subnet struct {
+	Network        string  `json:"network"`
+	Status         string  `json:"status"`
+	Used           int64   `json:"used"`
+	Total          int64   `json:"total"`
+	UsedPercentage float32 `json:"used_percentage"`
+}
+
+type rawIp4Subnet struct {
+	Network        string  `json:"network,omitempty"`
+	Status         string  `json:"status,omitempty"`
+	Used           string  `json:"used,omitempty"`
+	Total          string  `json:"total,omitempty"`
+	UsedPercentage float32 `json:"used_percentage"`
+}
+
+func (o *rawIp4Subnet) polish() (*Ip4Subnet, error) {
+	used, err := strconv.ParseInt(o.Used, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing subnet field 'used' ('%s') - %w", o.Used, err)
+	}
+
+	total, err := strconv.ParseInt(o.Used, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing subnet field 'total' ('%s') - %w", o.Total, err)
+	}
+
+	return &Ip4Subnet{
+		Network:        o.Network,
+		Status:         o.Status,
+		Used:           used,
+		Total:          total,
+		UsedPercentage: o.UsedPercentage,
+	}, nil
+}
+
+type NewIp4PoolRequest struct {
+	DisplayName string         `json:"display_name"`
+	Tags        []string       `json:"tags"`
+	Subnets     []NewIp4Subnet `json:"subnets"`
+}
+
+type NewIp4Subnet struct {
+	Network string `json:"network"`
 }
 
 func (o *Client) listIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
@@ -602,4 +623,111 @@ func (o *Client) getIp4PoolByName(ctx context.Context, desiredName string) (*Ip4
 		}
 	}
 	return &pool, nil
+}
+
+func (o *Client) createIp4Pool(ctx context.Context, in *NewIp4PoolRequest) (ObjectId, error) {
+	if in.Subnets == nil {
+		in.Subnets = []NewIp4Subnet{}
+	}
+	response := &objectIdResponse{}
+	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlResourcesIpPools,
+		apiInput:    in,
+		apiResponse: response,
+	})
+}
+
+func (o *Client) deleteIp4Pool(ctx context.Context, id ObjectId) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodDelete,
+		urlStr:   fmt.Sprintf(apiUrlResourcesIpPoolById, id),
+		apiInput: nil,
+	})
+}
+
+func (o *Client) updateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlResourcesIpPoolById, poolId),
+		apiInput: request,
+	})
+}
+
+func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *net.IPNet) error {
+	// IPv4 only, buddy
+	if strings.Contains(new.String(), ":") {
+		return fmt.Errorf("error attmempt to add '%s' to IPv4 address pool", new.String())
+	}
+
+	// grab the existing pool
+	pool, err := o.getIp4Pool(ctx, poolId)
+	if err != nil {
+		return fmt.Errorf("cannot fetch ip pool - %w", err)
+	}
+
+	// check for subnet collisions while copying existing subnets to new request object
+	subnets := []NewIp4Subnet{{Network: new.String()}} // start the list with the new one
+	for _, s := range pool.Subnets {
+		_, old, err := net.ParseCIDR(s.Network)
+		if err != nil {
+			return fmt.Errorf("error parsing subnet string returned by apstra %s - %w", s.Network, err)
+		}
+		if old.Contains(new.IP) || new.Contains(old.IP) {
+			return fmt.Errorf("new subnet '%s' overlaps existing subnet %s'", new.String(), s.Network)
+		}
+		subnets = append(subnets, NewIp4Subnet{Network: s.Network})
+	}
+
+	return o.updateIp4Pool(ctx, poolId, &NewIp4PoolRequest{
+		DisplayName: pool.DisplayName,
+		Tags:        pool.Tags,
+		Subnets:     subnets,
+	})
+}
+
+func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
+	// IPv4 only, buddy
+	if strings.Contains(target.String(), ":") {
+		return fmt.Errorf("error attmempt to add '%s' to IPv4 address pool", target.String())
+	}
+
+	// grab the existing pool
+	pool, err := o.getIp4Pool(ctx, poolId)
+	if err != nil {
+		return fmt.Errorf("cannot fetch ip pool - %w", err)
+	}
+
+	// prep new request structure
+	newRequest := &NewIp4PoolRequest{
+		DisplayName: pool.DisplayName,
+		Tags:        pool.Tags,
+		Subnets:     []NewIp4Subnet{}, // empty slice, but not nil for apstra
+	}
+
+	// work through the list copy non-target subnets to the new request
+	var targetFound bool
+	for _, s := range pool.Subnets {
+		_, existing, err := net.ParseCIDR(s.Network)
+		if err != nil {
+			return fmt.Errorf("error parsing subnet string returned by apstra %s - %w", s.Network, err)
+		}
+
+		// copy old subnets which don't match deletion target to new request slice
+		if existing.String() != target.String() {
+			newRequest.Subnets = append(newRequest.Subnets, NewIp4Subnet{Network: s.Network})
+		} else {
+			targetFound = true
+		}
+	}
+
+	if !targetFound {
+		// nothing to do
+		return ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("target '%s' not found in pool '%s'", target.String(), poolId),
+		}
+	}
+
+	return o.updateIp4Pool(ctx, poolId, newRequest)
 }

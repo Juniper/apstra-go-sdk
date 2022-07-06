@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"net"
 	"testing"
 )
 
@@ -304,5 +305,56 @@ func TestGetIp4PoolByName(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
+	}
+}
+
+func TestCreateGetDeleteIp4Pool(t *testing.T) {
+	DebugLevel = 2
+	clients, _, err := getTestClientsAndMockAPIs()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		if clientName == "mock" {
+			continue // todo have I given up on mock testing?
+		}
+		log.Printf("client: %s\n", clientName)
+
+		id, err := client.createIp4Pool(context.TODO(), &NewIp4PoolRequest{
+			DisplayName: randString(10, "hex"),
+			Tags:        []string{"tag one", "tag two"},
+			//Subnets:     []NewIp4Subnet{
+			//{Network: "1.1.1.0/30"},
+			//{Network: "2.2.2.0/31"},
+			//{Network: "3.3.3.3/32"},
+			//},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, s, err := net.ParseCIDR("10.1.2.3/24")
+		err = client.addSubnetToIp4Pool(context.TODO(), id, s)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = client.deleteSubnetFromIp4Pool(context.TODO(), id, s)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		pool, err := client.getIp4Pool(context.TODO(), id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Println(pool.Id)
+
+		err = client.deleteIp4Pool(context.TODO(), id)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 	}
 }
