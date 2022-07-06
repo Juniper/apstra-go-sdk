@@ -9,7 +9,7 @@ import (
 const (
 	apiUrlBlueprintResourceGroups        = apiUrlBlueprintById + apiUrlPathDelim + "resource_groups"
 	apiUrlResourceGroupsPrefix           = apiUrlBlueprintResourceGroups + apiUrlPathDelim
-	apiUrlBlueprintResourceGroupTypeName = apiUrlResourceGroupsPrefix + apiUrlPathDelim + "%s" + apiUrlPathDelim + "%s"
+	apiUrlBlueprintResourceGroupTypeName = apiUrlResourceGroupsPrefix + "%s" + apiUrlPathDelim + "%s"
 )
 
 const (
@@ -140,19 +140,40 @@ type rawResourceGroupAllocation struct {
 	PoolIds []ObjectId        `json:"pool_ids"`
 }
 
-func (o *Blueprint) getResourceAllocation(ctx context.Context, in *ResourceGroupAllocation) (*ResourceGroupAllocation, error) {
-	response := &ResourceGroupAllocation{}
-	return response, o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.Id, in.Type, in.Name),
-		apiResponse: response,
-	})
+func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) {
+	t, err := o.Type.parse()
+	if err != nil {
+		return nil, err
+	}
+	n, err := o.Name.parse()
+	if err != nil {
+		return nil, err
+	}
+	return &ResourceGroupAllocation{
+		Type:    t,
+		Name:    n,
+		PoolIds: nil,
+	}, nil
 }
 
-func (o *Blueprint) setResourceAllocation(ctx context.Context, in *ResourceGroupAllocation) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+func (o *Client) getResourceAllocation(ctx context.Context, id ObjectId, rga *ResourceGroupAllocation) (*ResourceGroupAllocation, error) {
+	response := &rawResourceGroupAllocation{}
+	ttii := talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, id, rga.Type.String(), rga.Name.String()),
+		apiResponse: response,
+	}
+	err := o.talkToApstra(ctx, &ttii)
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response.polish()
+}
+
+func (o *Client) setResourceAllocation(ctx context.Context, id ObjectId, rga *ResourceGroupAllocation) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.Id, in.Type, in.Name),
-		apiInput: in.raw(),
+		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, id, rga.Type.String(), rga.Name.String()),
+		apiInput: rga.raw(),
 	})
 }
