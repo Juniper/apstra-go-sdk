@@ -20,7 +20,7 @@ const (
 	ResourceTypeUnknown
 
 	resourceTypeAsnPool = "asn"
-	resourceTypeIp4Pool = "x" // todo
+	resourceTypeIp4Pool = "ip"
 	resourceTypeIp6Pool = "y" // todo
 	resourceTypeVniPool = "z" // todo
 	resourceTypeUnknown = "resource type %d unknown"
