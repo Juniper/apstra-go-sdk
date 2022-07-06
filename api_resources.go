@@ -649,6 +649,9 @@ func (o *Client) createIp4Pool(ctx context.Context, request *NewIp4PoolRequest) 
 	if request.Subnets == nil {
 		request.Subnets = []NewIp4Subnet{}
 	}
+	if request.Tags == nil {
+		request.Tags = []string{}
+	}
 	response := &objectIdResponse{}
 	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -669,6 +672,9 @@ func (o *Client) deleteIp4Pool(ctx context.Context, id ObjectId) error {
 func (o *Client) updateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
 	if request.Subnets == nil {
 		request.Subnets = []NewIp4Subnet{}
+	}
+	if request.Tags == nil {
+		request.Tags = []string{}
 	}
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
