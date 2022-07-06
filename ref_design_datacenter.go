@@ -145,14 +145,16 @@ func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) 
 	if err != nil {
 		return nil, err
 	}
+
 	n, err := o.Name.parse()
 	if err != nil {
 		return nil, err
 	}
+
 	return &ResourceGroupAllocation{
 		Type:    t,
 		Name:    n,
-		PoolIds: nil,
+		PoolIds: o.PoolIds,
 	}, nil
 }
 
