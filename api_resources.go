@@ -504,15 +504,15 @@ func (o *rawIp4Pool) polish() (*Ip4Pool, error) {
 }
 
 type Ip4Subnet struct {
-	Network        string  `json:"network"`
-	Status         string  `json:"status"`
-	Used           int64   `json:"used"`
-	Total          int64   `json:"total"`
-	UsedPercentage float32 `json:"used_percentage"`
+	Network        *net.IPNet
+	Status         string
+	Used           int64
+	Total          int64
+	UsedPercentage float32
 }
 
 func (o *Ip4Subnet) ToNew() *NewIp4Subnet {
-	return &NewIp4Subnet{Network: o.Network}
+	return &NewIp4Subnet{Network: o.Network.String()}
 }
 
 type rawIp4Subnet struct {
@@ -534,8 +534,12 @@ func (o *rawIp4Subnet) polish() (*Ip4Subnet, error) {
 		return nil, fmt.Errorf("error parsing subnet field 'total' ('%s') - %w", o.Total, err)
 	}
 
+	_, parsed, err := net.ParseCIDR(o.Network)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing subnet string from apstra '%s' - %w", o.Network, err)
+	}
 	return &Ip4Subnet{
-		Network:        o.Network,
+		Network:        parsed,
 		Status:         o.Status,
 		Used:           used,
 		Total:          total,
@@ -685,14 +689,14 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 	// check for subnet collisions while copying existing subnets to new request object
 	subnets := []NewIp4Subnet{{Network: new.String()}} // start the list with the new one
 	for _, s := range pool.Subnets {
-		_, old, err := net.ParseCIDR(s.Network)
+		old := s.Network
 		if err != nil {
 			return fmt.Errorf("error parsing subnet string returned by apstra %s - %w", s.Network, err)
 		}
 		if old.Contains(new.IP) || new.Contains(old.IP) {
 			return fmt.Errorf("new subnet '%s' overlaps existing subnet %s'", new.String(), s.Network)
 		}
-		subnets = append(subnets, NewIp4Subnet{Network: s.Network})
+		subnets = append(subnets, NewIp4Subnet{Network: s.Network.String()})
 	}
 
 	return o.updateIp4Pool(ctx, poolId, &NewIp4PoolRequest{
@@ -724,14 +728,13 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 	// work through the list copy non-target subnets to the new request
 	var targetFound bool
 	for _, s := range pool.Subnets {
-		_, existing, err := net.ParseCIDR(s.Network)
 		if err != nil {
 			return fmt.Errorf("error parsing subnet string returned by apstra %s - %w", s.Network, err)
 		}
 
 		// copy old subnets which don't match deletion target to new request slice
-		if existing.String() != target.String() {
-			newRequest.Subnets = append(newRequest.Subnets, NewIp4Subnet{Network: s.Network})
+		if s.Network.String() != target.String() {
+			newRequest.Subnets = append(newRequest.Subnets, NewIp4Subnet{Network: s.Network.String()})
 		} else {
 			targetFound = true
 		}
