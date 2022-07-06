@@ -27,10 +27,18 @@ const (
 )
 
 const (
-	ResourceGroupNameSpineAsn = ResourceGroupName(iota)
+	ResourceGroupNameLeafAsn = ResourceGroupName(iota)
+	ResourceGroupNameLeafIps
+	ResourceGroupNameLinkIps
+	ResourceGroupNameSpineAsn
+	ResourceGroupNameSpineIps
 	ResourceGroupNameUnknown
 
+	resourceGroupNameLeafAsn  = resourceGroupName("leaf_asns")
+	resourceGroupNameLeafIps  = resourceGroupName("leaf_loopback_ips")
+	resourceGroupNameLinkIps  = resourceGroupName("spine_leaf_link_ips")
 	resourceGroupNameSpineAsn = resourceGroupName("spine_asns")
+	resourceGroupNameSpineIps = resourceGroupName("spine_loopback_ips")
 	resourceGroupNameUnknown  = "group name %d unknown"
 )
 
@@ -42,8 +50,16 @@ func (o ResourceGroupName) String() string {
 
 func (o ResourceGroupName) raw() resourceGroupName {
 	switch o {
+	case ResourceGroupNameLeafAsn:
+		return resourceGroupNameLeafAsn
+	case ResourceGroupNameLeafIps:
+		return resourceGroupNameLeafIps
+	case ResourceGroupNameLinkIps:
+		return resourceGroupNameLinkIps
 	case ResourceGroupNameSpineAsn:
 		return resourceGroupNameSpineAsn
+	case ResourceGroupNameSpineIps:
+		return resourceGroupNameSpineIps
 	default:
 		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
@@ -53,8 +69,16 @@ type resourceGroupName string
 
 func (o resourceGroupName) parse() (ResourceGroupName, error) {
 	switch o {
+	case resourceGroupNameLeafAsn:
+		return ResourceGroupNameLeafAsn, nil
+	case resourceGroupNameLeafIps:
+		return ResourceGroupNameLeafIps, nil
+	case resourceGroupNameLinkIps:
+		return ResourceGroupNameLinkIps, nil
 	case resourceGroupNameSpineAsn:
 		return ResourceGroupNameSpineAsn, nil
+	case resourceGroupNameSpineIps:
+		return ResourceGroupNameSpineIps, nil
 	default:
 		return ResourceGroupNameUnknown, fmt.Errorf("unknown group name '%s'", o)
 	}
