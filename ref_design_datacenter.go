@@ -27,11 +27,11 @@ const (
 )
 
 const (
-	GroupNameSpineAsn = ResourceGroupName(iota)
-	GroupNameUnknown
+	ResourceGroupNameSpineAsn = ResourceGroupName(iota)
+	ResourceGroupNameUnknown
 
-	groupNameSpineAsn = resourceGroupName("spine_asns")
-	groupNameUnknown  = "group name %d unknown"
+	resourceGroupNameSpineAsn = resourceGroupName("spine_asns")
+	resourceGroupNameUnknown  = "group name %d unknown"
 )
 
 type ResourceGroupName int
@@ -42,10 +42,10 @@ func (o ResourceGroupName) String() string {
 
 func (o ResourceGroupName) raw() resourceGroupName {
 	switch o {
-	case GroupNameSpineAsn:
-		return groupNameSpineAsn
+	case ResourceGroupNameSpineAsn:
+		return resourceGroupNameSpineAsn
 	default:
-		return resourceGroupName(fmt.Sprintf(groupNameUnknown, o))
+		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
 }
 
@@ -53,10 +53,10 @@ type resourceGroupName string
 
 func (o resourceGroupName) parse() (ResourceGroupName, error) {
 	switch o {
-	case groupNameSpineAsn:
-		return GroupNameSpineAsn, nil
+	case resourceGroupNameSpineAsn:
+		return ResourceGroupNameSpineAsn, nil
 	default:
-		return GroupNameUnknown, fmt.Errorf("unknown group name '%s'", o)
+		return ResourceGroupNameUnknown, fmt.Errorf("unknown group name '%s'", o)
 	}
 }
 
