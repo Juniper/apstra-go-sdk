@@ -645,15 +645,15 @@ func (o *Client) getIp4PoolByName(ctx context.Context, desiredName string) (*Ip4
 	return &pool, nil
 }
 
-func (o *Client) createIp4Pool(ctx context.Context, in *NewIp4PoolRequest) (ObjectId, error) {
-	if in.Subnets == nil {
-		in.Subnets = []NewIp4Subnet{}
+func (o *Client) createIp4Pool(ctx context.Context, request *NewIp4PoolRequest) (ObjectId, error) {
+	if request.Subnets == nil {
+		request.Subnets = []NewIp4Subnet{}
 	}
 	response := &objectIdResponse{}
 	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlResourcesIpPools,
-		apiInput:    in,
+		apiInput:    request,
 		apiResponse: response,
 	})
 }
@@ -667,6 +667,9 @@ func (o *Client) deleteIp4Pool(ctx context.Context, id ObjectId) error {
 }
 
 func (o *Client) updateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
+	if request.Subnets == nil {
+		request.Subnets = []NewIp4Subnet{}
+	}
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlResourcesIpPoolById, poolId),
