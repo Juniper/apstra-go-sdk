@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -567,4 +568,16 @@ func (o *Client) DeleteIp4Pool(ctx context.Context, id ObjectId) error {
 // UpdateIp4Pool updates (full replace) an existing IPv4 address pool using a NewIp4PoolRequest object
 func (o *Client) UpdateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
 	return o.updateIp4Pool(ctx, poolId, request)
+}
+
+// AddSubnetToIp4Pool adds a subnet to an IPv4 resource pool. Overlap with an existing subnet will
+// produce an error
+func (o *Client) AddSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *net.IPNet) error {
+	return o.addSubnetToIp4Pool(ctx, poolId, new)
+}
+
+// DeleteSubnetFromIp4Pool deletes a subnet from an IPv4 resource pool. If the subnet does not exist,
+// an ApstraClientErr with type ErrNotfound will be returned.
+func (o *Client) DeleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
+	return o.deleteSubnetFromIp4Pool(ctx, poolId, target)
 }
