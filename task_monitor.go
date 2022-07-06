@@ -87,6 +87,8 @@ type getTaskResponse struct {
 	DetailedStatus struct {
 		ApiResponse            json.RawMessage `json:"api_response"`
 		ConfigBlueprintVersion int             `json:"config_blueprint_version"`
+		Errors                 json.RawMessage `json:"errors"`
+		ErrorCode              int
 	} `json:"detailed_status"`
 	ConfigLastUpdatedAt string `json:"config_last_updated_at"`
 	UserIp              string `json:"user_ip"`

@@ -204,19 +204,18 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		return newTalkToApstraErr(req, requestBody, resp, "")
 	}
 
-	// caller not expecting any response?
-	if in.apiResponse == nil {
-		return nil
-	}
-
 	// caller is expecting a response, but we don't know if Apstra will return
 	// the desired data structure, or a taskIdResponse.
 	var tIdR taskIdResponse
-	ok, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
+	taskResponseFound, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
 	if err != nil {
 		return newTalkToApstraErr(req, requestBody, resp, "error peeking response body")
 	}
-	if !ok {
+	if !taskResponseFound {
+		// caller not expecting any response?
+		if in.apiResponse == nil {
+			return nil
+		}
 		// no task ID, decode response body into the caller-specified structure
 		return json.NewDecoder(resp.Body).Decode(in.apiResponse)
 	}
@@ -244,6 +243,17 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	taskResponse, err := waitForTaskCompletion(bpId, tIdR.TaskId, o.taskMonChan)
 	if err != nil {
 		return fmt.Errorf("error in task monitor - %w\n API result:\n", err)
+	}
+
+	// there might be errors articulated in the taskResponse body
+	if len(taskResponse.DetailedStatus.Errors) > 0 || taskResponse.DetailedStatus.ErrorCode != 0 {
+		return fmt.Errorf("task completion result %d: %s",
+			taskResponse.DetailedStatus.ErrorCode, taskResponse.DetailedStatus.Errors)
+	}
+
+	// caller not expecting any response?
+	if in.apiResponse == nil {
+		return nil
 	}
 
 	// the getTaskResponse data structure is only partially unmarshaled because
