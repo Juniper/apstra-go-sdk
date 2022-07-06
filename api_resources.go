@@ -163,7 +163,7 @@ func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, err
 		return nil, errors.New("attempt to get ASN Pool info with empty pool ID")
 	}
 	method := http.MethodGet
-	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, poolId)
+	urlStr := fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId)
 	apstraUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
