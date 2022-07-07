@@ -11,7 +11,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -292,10 +291,6 @@ func rawAsnPoolToAsnPool(in *rawAsnPool) (*AsnPool, error) {
 }
 
 func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, poolInfo *AsnPool) error {
-	// AsnPool "write" operations are not concurrency safe
-	o.lock(clientApiResourceAsnPoolRangeMutex)
-	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
-
 	if poolId == "" {
 		return errors.New("attempt to update ASN Pool with empty pool ID")
 	}
@@ -677,12 +672,6 @@ func (o *Client) deleteIp4Pool(ctx context.Context, id ObjectId) error {
 }
 
 func (o *Client) updateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
-	// Ip4Pool "write" operations are not concurrency safe
-	os.Stderr.WriteString("xxxxxx updateIp4Pool waiting for lock...")
-	o.lock(clientApiResourceIp4PoolRangeMutex)
-	os.Stderr.WriteString("xxxxxx updateIp4Pool got lock...")
-	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
-
 	if request.Subnets == nil {
 		request.Subnets = []NewIp4Subnet{}
 	}
@@ -703,9 +692,7 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 	}
 
 	// we read, then replace the pool range. this is not concurrency safe.
-	os.Stderr.WriteString("xxxxxx addSubnetToIp4Pool waiting for lock...")
 	o.lock(clientApiResourceIp4PoolRangeMutex)
-	os.Stderr.WriteString("xxxxxx addSubnetToIp4Pool got lock...")
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
 	// grab the existing pool
@@ -741,9 +728,7 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 	}
 
 	// we read, then replace the pool range. this is not concurrency safe.
-	os.Stderr.WriteString("xxxxxx deleteSubnetFromIp4Pool waiting for lock...")
 	o.lock(clientApiResourceIp4PoolRangeMutex)
-	os.Stderr.WriteString("xxxxxx deleteSubnetFromIp4Pool got lock...")
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
 	// grab the existing pool

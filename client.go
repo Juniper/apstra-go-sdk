@@ -355,6 +355,12 @@ func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
 
 // UpdateAsnPool updates an ASN pool by ObjectId with new ASN pool config
 func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPool) error {
+	// AsnPool "write" operations are not concurrency safe
+	// It is important that this lock is performed in the public method, rather than the private
+	// one below, because other callers of the private method implement their own locking.
+	o.lock(clientApiResourceAsnPoolRangeMutex)
+	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
+
 	return o.updateAsnPool(ctx, id, cfg)
 }
 
@@ -568,6 +574,11 @@ func (o *Client) DeleteIp4Pool(ctx context.Context, id ObjectId) error {
 
 // UpdateIp4Pool updates (full replace) an existing IPv4 address pool using a NewIp4PoolRequest object
 func (o *Client) UpdateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
+	// Ip4Pool "write" operations are not concurrency safe.
+	// It is important that this lock is performed in the public method, rather than the private
+	// one below, because other callers of the private method implement their own locking.
+	o.lock(clientApiResourceIp4PoolRangeMutex)
+	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 	return o.updateIp4Pool(ctx, poolId, request)
 }
 
