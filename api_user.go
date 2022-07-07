@@ -46,6 +46,7 @@ func (o *Client) login(ctx context.Context) error {
 
 	// stash auth token in client's default set of apstra http httpHeaders
 	// and start the tasskMonitor (these go together)
+	// todo: need locking here, got "concurrent map writes" (once)
 	o.httpHeaders[apstraAuthHeader] = response.Token
 	newTaskMonitor(o).start()
 

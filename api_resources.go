@@ -475,7 +475,7 @@ func (o *rawIp4Pool) polish() (*Ip4Pool, error) {
 		return nil, fmt.Errorf("error parsing IP Pool field 'used' ('%s') - %w", o.Used, err)
 	}
 
-	total, err := strconv.ParseInt(o.Used, 10, 64)
+	total, err := strconv.ParseInt(o.Total, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing IP Pool field 'total' ('%s') - %w", o.Total, err)
 	}

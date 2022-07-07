@@ -340,16 +340,16 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err = client.deleteSubnetFromIp4Pool(context.TODO(), id, s)
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		pool, err := client.getIp4Pool(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Println(pool.Id)
+		log.Println(pool.Id, pool.Total)
+
+		err = client.deleteSubnetFromIp4Pool(context.TODO(), id, s)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		err = client.deleteIp4Pool(context.TODO(), id)
 		if err != nil {
