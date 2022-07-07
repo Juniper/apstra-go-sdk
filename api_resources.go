@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -700,6 +701,7 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 	}
 
 	// we read, then replace the pool range. this is not concurrency safe.
+	os.Stderr.WriteString("xxxxxx addSubnetToIp4Pool waiting for lock...")
 	o.lock(clientApiResourceIp4PoolRangeMutex)
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
