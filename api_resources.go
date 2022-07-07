@@ -24,10 +24,6 @@ const (
 	apiUrlResourcesIpPools        = apiUrlResources + "/ip-pools"
 	apiUrlResourcesIpPoolsPrefix  = apiUrlResourcesIpPools + apiUrlPathDelim
 	apiUrlResourcesIpPoolById     = apiUrlResourcesIpPoolsPrefix + "%s"
-
-	clientApiResourceAsnPoolRangeMutex = iota
-	clientApiResourceIp4PoolRangeMutex
-	clientApiResourceIp6PoolRangeMutex
 )
 
 type AsnPool struct {

@@ -40,6 +40,11 @@ const (
 	ErrMultipleMatch
 
 	clientPollingIntervalMs = 500
+
+	clientAuthTokenMutex = iota
+	clientApiResourceAsnPoolRangeMutex
+	clientApiResourceIp4PoolRangeMutex
+	clientApiResourceIp6PoolRangeMutex
 )
 
 type ApstraClientErr struct {
