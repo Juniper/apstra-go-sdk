@@ -566,7 +566,7 @@ func (o *Client) listIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
 	})
 }
 
-func (o *Client) getAllIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
+func (o *Client) getIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
 	method := http.MethodGet
 	urlStr := apiUrlResourcesIpPools
 	apstraUrl, err := url.Parse(urlStr)
@@ -622,7 +622,7 @@ func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, err
 }
 
 func (o *Client) getIp4PoolByName(ctx context.Context, desiredName string) (*Ip4Pool, error) {
-	pools, err := o.getAllIp4Pools(ctx)
+	pools, err := o.getIp4Pools(ctx)
 	if err != nil {
 		return nil, err
 	}

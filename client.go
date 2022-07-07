@@ -550,6 +550,11 @@ func (o *Client) ListIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listIp4PoolIds(ctx)
 }
 
+// GetIp4Pools returns all IPv4 pools configured on Apstra
+func (o *Client) GetIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
+	return o.getIp4Pools(ctx)
+}
+
 // GetIp4Pool returns an IPv4 resource pool
 func (o *Client) GetIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, error) {
 	return o.getIp4Pool(ctx, poolId)

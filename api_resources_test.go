@@ -266,7 +266,7 @@ func TestGetAllIpPools(t *testing.T) {
 		if clientName == "mock" {
 			continue // todo have I given up on mock testing?
 		}
-		pools, err := client.getAllIp4Pools(context.TODO())
+		pools, err := client.getIp4Pools(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -288,7 +288,7 @@ func TestGetIp4PoolByName(t *testing.T) {
 		if clientName == "mock" {
 			continue // todo have I given up on mock testing?
 		}
-		pools, err := client.getAllIp4Pools(context.TODO())
+		pools, err := client.getIp4Pools(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
