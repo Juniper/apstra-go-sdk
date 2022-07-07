@@ -50,8 +50,6 @@ func (o *Client) login(ctx context.Context) error {
 	defer o.unlock(clientAuthTokenMutex)
 	o.httpHeaders[apstraAuthHeader] = response.Token
 
-	newTaskMonitor(o).start()
-
 	return nil
 }
 

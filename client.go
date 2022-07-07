@@ -211,6 +211,8 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		sync:        make(map[int]*sync.Mutex),
 	}
 
+	newTaskMonitor(c).start()
+
 	debugStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
 
 	return c, nil
