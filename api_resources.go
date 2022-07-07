@@ -25,7 +25,9 @@ const (
 	apiUrlResourcesIpPoolsPrefix  = apiUrlResourcesIpPools + apiUrlPathDelim
 	apiUrlResourcesIpPoolById     = apiUrlResourcesIpPoolsPrefix + "%s"
 
-	clientApiPoolRangeMutex = iota
+	clientApiResourceAsnPoolRangeMutex = iota
+	clientApiResourceIp4PoolRangeMutex
+	clientApiResourceIp6PoolRangeMutex
 )
 
 type AsnPool struct {
@@ -289,6 +291,10 @@ func rawAsnPoolToAsnPool(in *rawAsnPool) (*AsnPool, error) {
 }
 
 func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, poolInfo *AsnPool) error {
+	// AsnPool "write" operations are not concurrency safe
+	o.lock(clientApiResourceAsnPoolRangeMutex)
+	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
+
 	if poolId == "" {
 		return errors.New("attempt to update ASN Pool with empty pool ID")
 	}
@@ -352,8 +358,8 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 	}
 
 	// we read, then replace the pool range. this is not concurrency safe.
-	o.lock(clientApiPoolRangeMutex)
-	defer o.unlock(clientApiPoolRangeMutex)
+	o.lock(clientApiResourceAsnPoolRangeMutex)
+	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
 
 	// read the ASN pool info (that's where the configured ranges are found)
 	poolInfo, err := o.GetAsnPool(ctx, poolId)
@@ -395,8 +401,8 @@ func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 
 func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe *AsnRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
-	o.lock(clientApiPoolRangeMutex)
-	defer o.unlock(clientApiPoolRangeMutex)
+	o.lock(clientApiResourceAsnPoolRangeMutex)
+	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
 
 	poolInfo, err := o.GetAsnPool(ctx, poolId)
 	if err != nil {
@@ -670,6 +676,10 @@ func (o *Client) deleteIp4Pool(ctx context.Context, id ObjectId) error {
 }
 
 func (o *Client) updateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
+	// Ip4Pool "write" operations are not concurrency safe
+	o.lock(clientApiResourceIp4PoolRangeMutex)
+	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
+
 	if request.Subnets == nil {
 		request.Subnets = []NewIp4Subnet{}
 	}
@@ -688,6 +698,10 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 	if strings.Contains(new.String(), ":") {
 		return fmt.Errorf("error attmempt to add '%s' to IPv4 address pool", new.String())
 	}
+
+	// we read, then replace the pool range. this is not concurrency safe.
+	o.lock(clientApiResourceIp4PoolRangeMutex)
+	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
 	// grab the existing pool
 	pool, err := o.getIp4Pool(ctx, poolId)
@@ -720,6 +734,10 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 	if strings.Contains(target.String(), ":") {
 		return fmt.Errorf("error attmempt to add '%s' to IPv4 address pool", target.String())
 	}
+
+	// we read, then replace the pool range. this is not concurrency safe.
+	o.lock(clientApiResourceIp4PoolRangeMutex)
+	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
 	// grab the existing pool
 	pool, err := o.getIp4Pool(ctx, poolId)

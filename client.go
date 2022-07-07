@@ -355,10 +355,6 @@ func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
 
 // UpdateAsnPool updates an ASN pool by ObjectId with new ASN pool config
 func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPool) error {
-	// AsnPool "write" operations are not concurrency safe
-	o.lock(clientApiPoolRangeMutex)
-	defer o.unlock(clientApiPoolRangeMutex)
-
 	return o.updateAsnPool(ctx, id, cfg)
 }
 
