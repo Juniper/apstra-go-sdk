@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 )
 
 const (
@@ -107,36 +106,23 @@ func (o *rawAgentProfile) polish() *AgentProfile {
 }
 
 func (o *Client) listAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
-	method := http.MethodOptions
-	urlStr := apiUrlSystemAgentProfiles
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &optionsAgentProfilesResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodOptions,
+		urlStr:      apiUrlSystemAgentProfiles,
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response.Items, nil
 }
 
 func (o *Client) createAgentProfile(ctx context.Context, in *AgentProfileConfig) (ObjectId, error) {
-	method := http.MethodPost
-	urlStr := apiUrlSystemAgentProfiles
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return "", fmt.Errorf("error parsing url '%s' - %w", apiUrlSystemAgentProfiles, err)
-	}
-
 	response := &objectIdResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlSystemAgentProfiles,
 		apiInput:    in.raw(),
 		apiResponse: response,
 	})
@@ -148,22 +134,16 @@ func (o *Client) createAgentProfile(ctx context.Context, in *AgentProfileConfig)
 				err:     fmt.Errorf("error Agent Profile '%s' likely already exists - %w", in.Label, err),
 			}
 		}
-		return "", fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return "", convertTtaeToAceWherePossible(err)
 	}
 	return response.Id, nil
 }
 
 func (o *Client) getAgentProfile(ctx context.Context, id ObjectId) (*AgentProfile, error) {
-	method := http.MethodGet
-	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, id)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlSystemAgentProfiles, err)
-	}
 	response := &rawAgentProfile{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlSystemAgentProfilesById, id),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -174,26 +154,20 @@ func (o *Client) getAgentProfile(ctx context.Context, id ObjectId) (*AgentProfil
 				err:     err,
 			}
 		}
-		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response.polish(), nil
 }
 
 func (o *Client) getAllAgentProfiles(ctx context.Context) ([]AgentProfile, error) {
-	method := http.MethodGet
-	urlStr := apiUrlSystemAgentProfiles
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &getAgentProfilesResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlSystemAgentProfiles,
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	var out []AgentProfile
@@ -204,34 +178,21 @@ func (o *Client) getAllAgentProfiles(ctx context.Context) ([]AgentProfile, error
 }
 
 func (o *Client) updateAgentProfile(ctx context.Context, id ObjectId, in *AgentProfileConfig) error {
-	method := http.MethodPatch
-	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, id)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:   method,
-		url:      apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlSystemAgentProfilesById, id),
 		apiInput: in.raw(),
 	})
 	if err != nil {
-		return fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return convertTtaeToAceWherePossible(err)
 	}
 	return nil
 }
 
 func (o *Client) deleteAgentProfile(ctx context.Context, id ObjectId) error {
-	method := http.MethodDelete
-	urlStr := fmt.Sprintf(apiUrlSystemAgentProfilesById, id)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method: method,
-		url:    apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlSystemAgentProfilesById, id),
 	})
 	if err != nil {
 		var ttae TalkToApstraErr
@@ -246,26 +207,20 @@ func (o *Client) deleteAgentProfile(ctx context.Context, id ObjectId) error {
 				}
 			}
 		}
-		return fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return convertTtaeToAceWherePossible(err)
 	}
 	return nil
 }
 
 func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*AgentProfile, error) {
-	method := http.MethodGet
-	urlStr := apiUrlSystemAgentProfiles
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &getAgentProfilesResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlSystemAgentProfiles,
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	found := -1 //slice index where the matching System Agent Profile can be found
