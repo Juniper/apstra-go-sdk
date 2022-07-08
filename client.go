@@ -524,16 +524,6 @@ func (o *Client) UpdateManagedDeviceByAgentId(ctx context.Context, id ObjectId, 
 	return o.updateSystemByAgentId(ctx, id, cfg)
 }
 
-// ListLogicalDeviceIds returns a []LogicalDeviceId
-func (o *Client) ListLogicalDeviceIds(ctx context.Context) ([]LogicalDeviceId, error) {
-	return o.listLogicalDeviceIds(ctx)
-}
-
-// GetLogicalDevice returns a LogicalDevice represented by the supplied Id
-func (o *Client) GetLogicalDevice(ctx context.Context, id LogicalDeviceId) (*LogicalDevice, error) {
-	return o.getLogicalDevice(ctx, id)
-}
-
 // CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
 func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBluePrintFromTemplate) (ObjectId, error) {
 	return o.createBlueprintFromTemplate(ctx, cfg)
@@ -599,4 +589,30 @@ func (o *Client) AddSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 // an ApstraClientErr with type ErrNotfound will be returned.
 func (o *Client) DeleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
 	return o.deleteSubnetFromIp4Pool(ctx, poolId, target)
+}
+
+// ListLogicalDeviceIds returns a list of logical device IDs configured in Apstra
+func (o *Client) ListLogicalDeviceIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listRackTypeIds(ctx)
+}
+
+// GetLogicalDevice returns the requested *LogicalDevice
+func (o *Client) GetLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDevice, error) {
+	return o.getLogicalDevice(ctx, id)
+}
+
+// CreateLogicalDevice creates a new logical device, returns its ObjectId
+func (o *Client) CreateLogicalDevice(ctx context.Context, in *LogicalDevice) (ObjectId, error) {
+	return o.createLogicalDevice(ctx, in)
+}
+
+// UpdateLogicalDevice replaces the whole logical device configuration specified
+// by id with the supplied details.
+func (o *Client) UpdateLogicalDevice(ctx context.Context, id ObjectId, in *LogicalDevice) error {
+	return o.updateLogicalDevice(ctx, id, in)
+}
+
+// DeleteLogicalDevice deletes the specified logical device
+func (o *Client) DeleteLogicalDevice(ctx context.Context, id ObjectId) error {
+	return o.deleteLogicalDevice(ctx, id)
 }
