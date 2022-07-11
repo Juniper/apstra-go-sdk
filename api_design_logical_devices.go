@@ -14,6 +14,7 @@ const (
 
 	PortIndexingVerticalFirst   = "L-R, T-B"
 	PortIndexingHorizontalFirst = "T-B, L-R"
+	PortIndexingSchemaAbsolute  = "absolute"
 )
 
 type optionsLogicalDevicesResponse struct {
@@ -52,9 +53,9 @@ type LogicalDevicePanel struct {
 type LogicalDevice struct {
 	DisplayName    string               `json:"display_name"`
 	Id             ObjectId             `json:"id,omitempty"`
+	Panels         []LogicalDevicePanel `json:"panels"`
 	CreatedAt      time.Time            `json:"created_at"`
 	LastModifiedAt time.Time            `json:"last_modified_at"`
-	Panels         []LogicalDevicePanel `json:"panels"`
 }
 
 func (o *Client) listLogicalDeviceIds(ctx context.Context) ([]ObjectId, error) {
