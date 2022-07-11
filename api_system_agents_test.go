@@ -57,7 +57,6 @@ func TestGetSystemAgent(t *testing.T) {
 }
 
 func TestCreateOffboxAgent(t *testing.T) {
-	return
 	client, err := systemAgentsTestClient1()
 	if err != nil {
 		t.Fatal(err)

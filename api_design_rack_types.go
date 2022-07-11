@@ -92,8 +92,6 @@ const (
 	genericSystemLogicalDeviceIdPrefix = "generic-"
 )
 
-type AccessRedundancyProtocol int
-
 const (
 	AccessRedundancyProtocolNone = AccessRedundancyProtocol(iota)
 	AccessRedundancyProtocolEsi
@@ -102,6 +100,49 @@ const (
 	accessRedundancyProtocolEsi     = accessRedundancyProtocol("esi")
 	accessRedundancyProtocolUnknown = "unknown type %d"
 )
+
+const (
+	LeafRedundancyProtocolNone = LeafRedundancyProtocol(iota)
+	LeafRedundancyProtocolMlag
+	LeafRedundancyProtocolEsi
+
+	leafRedundancyProtocolNone    = leafRedundancyProtocol("")
+	leafRedundancyProtocolMlag    = leafRedundancyProtocol("mlag")
+	leafRedundancyProtocolEsi     = leafRedundancyProtocol("esi")
+	leafRedundancyProtocolUnknown = "unknown type %d"
+)
+
+const (
+	FabricCOnnectivityDesignL3Clos = FabricConnectivityDesign(iota)
+	FabricCOnnectivityDesignL3Collapsed
+
+	fabricConnectivityDesignL3Clos      = fabricConnectivityDesign("l3clos")
+	fabricConnectivityDesignL3Collapsed = fabricConnectivityDesign("l3collapsed")
+	fabricConnectivityDesignUnknown     = "unknown type %d"
+)
+
+const (
+	FeatureSwitchDisabled = FeatureSwitch(iota)
+	FeatureSwitchEnabled
+
+	featureSwitchDisabled = featureSwitch("disabled")
+	featureSwitchEnabled  = featureSwitch("enabled")
+	featureSwitchUnknown  = "unknown feature switch state '%d'"
+)
+
+const (
+	// unmanaged, telemetry_only or full_control
+	GenericSystemUnmanaged = GenericSystemManagementLevel(iota)
+	GenericSystemTelemetryOnly
+	GenericSystemFullControl
+
+	genericSystemUnmanaged     = genericSystemManagementLevel("unmanaged")
+	genericSystemTelemetryOnly = genericSystemManagementLevel("telemetry_only")
+	genericSystemFullControl   = genericSystemManagementLevel("full_control")
+	genericSystemUnknown       = "unknown generic system management level '%d'"
+)
+
+type AccessRedundancyProtocol int
 
 func (o AccessRedundancyProtocol) Int() int {
 	return int(o)
@@ -140,17 +181,6 @@ func (o accessRedundancyProtocol) parse() (int, error) {
 }
 
 type LeafRedundancyProtocol int
-
-const (
-	LeafRedundancyProtocolNone = LeafRedundancyProtocol(iota)
-	LeafRedundancyProtocolMlag
-	LeafRedundancyProtocolEsi
-
-	leafRedundancyProtocolNone    = leafRedundancyProtocol("")
-	leafRedundancyProtocolMlag    = leafRedundancyProtocol("mlag")
-	leafRedundancyProtocolEsi     = leafRedundancyProtocol("esi")
-	leafRedundancyProtocolUnknown = "unknown type %d"
-)
 
 func (o LeafRedundancyProtocol) Int() int {
 	return int(o)
@@ -192,21 +222,7 @@ func (o leafRedundancyProtocol) parse() (int, error) {
 	}
 }
 
-func (o leafRedundancyProtocol) int() (int, error) {
-	i, err := o.parse()
-	return int(i), err
-}
-
 type FabricConnectivityDesign int
-
-const (
-	FabricCOnnectivityDesignL3Clos = FabricConnectivityDesign(iota)
-	FabricCOnnectivityDesignL3Collapsed
-
-	fabricConnectivityDesignL3Clos      = fabricConnectivityDesign("l3clos")
-	fabricConnectivityDesignL3Collapsed = fabricConnectivityDesign("l3collapsed")
-	fabricConnectivityDesignUnknown     = "unknown type %d"
-)
 
 func (o FabricConnectivityDesign) Int() int {
 	return int(o)
@@ -241,6 +257,77 @@ func (o fabricConnectivityDesign) parse() (int, error) {
 		return int(FabricCOnnectivityDesignL3Collapsed), nil
 	default:
 		return 0, fmt.Errorf("unknown fabric connectivity design '%s'", o)
+	}
+}
+
+type FeatureSwitch int
+
+func (o FeatureSwitch) Int() int {
+	return int(o)
+}
+
+func (o FeatureSwitch) String() string {
+	switch o {
+	case FeatureSwitchDisabled:
+		return string(featureSwitchDisabled)
+	case FeatureSwitchEnabled:
+		return string(featureSwitchEnabled)
+	default:
+		return fmt.Sprintf(featureSwitchUnknown, o)
+	}
+}
+
+type featureSwitch string
+
+func (o featureSwitch) string() string {
+	return string(o)
+}
+
+func (o featureSwitch) parse() (int, error) {
+	switch o {
+	case featureSwitchDisabled:
+		return int(FeatureSwitchDisabled), nil
+	case featureSwitchEnabled:
+		return int(FeatureSwitchEnabled), nil
+	default:
+		return 0, fmt.Errorf("unknown feature state '%s'", o)
+	}
+}
+
+type GenericSystemManagementLevel int
+
+func (o GenericSystemManagementLevel) Int() int {
+	return int(o)
+}
+
+func (o GenericSystemManagementLevel) String() string {
+	switch o {
+	case GenericSystemUnmanaged:
+		return string(genericSystemUnmanaged)
+	case GenericSystemTelemetryOnly:
+		return string(genericSystemTelemetryOnly)
+	case GenericSystemFullControl:
+		return string(genericSystemFullControl)
+	default:
+		return fmt.Sprintf(genericSystemUnknown, o)
+	}
+}
+
+type genericSystemManagementLevel string
+
+func (o genericSystemManagementLevel) string() string {
+	return string(o)
+}
+func (o genericSystemManagementLevel) parse() (int, error) {
+	switch o {
+	case genericSystemFullControl:
+		return int(GenericSystemFullControl), nil
+	case genericSystemUnmanaged:
+		return int(GenericSystemUnmanaged), nil
+	case genericSystemTelemetryOnly:
+		return int(GenericSystemTelemetryOnly), nil
+	default:
+		return 0, fmt.Errorf("unknown generic system management state '%s'", o)
 	}
 }
 
@@ -402,11 +489,11 @@ type GenericSystemAccessLink struct {
 
 type RackElementGenericSystem struct {
 	Count            int
-	AsnDomain        string
-	ManagementLevel  string
+	AsnDomain        FeatureSwitch
+	ManagementLevel  GenericSystemManagementLevel
 	PortChannelIdMin int
 	PortChannelIdMax int
-	Loopback         string
+	Loopback         FeatureSwitch
 	Tags             []RackTag
 	Label            string
 	Links            []GenericSystemAccessLink
@@ -415,14 +502,19 @@ type RackElementGenericSystem struct {
 }
 
 func (o RackElementGenericSystem) raw(logicalDeviceId string) *rawRackElementGenericSystem {
+	tags := o.Tags
+	if tags == nil {
+		tags = []RackTag{}
+	}
+
 	return &rawRackElementGenericSystem{
 		Count:            o.Count,
-		AsnDomain:        o.AsnDomain,
-		ManagementLevel:  o.ManagementLevel,
+		AsnDomain:        featureSwitch(o.AsnDomain.String()),
+		ManagementLevel:  genericSystemManagementLevel(o.ManagementLevel.String()),
 		PortChannelIdMin: o.PortChannelIdMin,
 		PortChannelIdMax: o.PortChannelIdMax,
-		Loopback:         o.Loopback,
-		Tags:             o.Tags,
+		Loopback:         featureSwitch(o.Loopback.String()),
+		Tags:             tags,
 		Label:            o.Label,
 		LogicalDevice:    logicalDeviceId,
 		Links:            o.Links,
@@ -430,32 +522,47 @@ func (o RackElementGenericSystem) raw(logicalDeviceId string) *rawRackElementGen
 }
 
 type rawRackElementGenericSystem struct {
-	Count            int                       `json:"count"`
-	AsnDomain        string                    `json:"asn_domain"`
-	ManagementLevel  string                    `json:"management_level"`
-	PortChannelIdMin int                       `json:"port_channel_id_min"`
-	PortChannelIdMax int                       `json:"port_channel_id_max"`
-	Loopback         string                    `json:"loopback"`
-	Tags             []RackTag                 `json:"tags"`
-	Label            string                    `json:"label"`
-	LogicalDevice    string                    `json:"logical_device"`
-	Links            []GenericSystemAccessLink `json:"links"`
+	Count            int                          `json:"count"`
+	AsnDomain        featureSwitch                `json:"asn_domain"`
+	ManagementLevel  genericSystemManagementLevel `json:"management_level"`
+	PortChannelIdMin int                          `json:"port_channel_id_min"`
+	PortChannelIdMax int                          `json:"port_channel_id_max"`
+	Loopback         featureSwitch                `json:"loopback"`
+	Tags             []RackTag                    `json:"tags"`
+	Label            string                       `json:"label"`
+	LogicalDevice    string                       `json:"logical_device"`
+	Links            []GenericSystemAccessLink    `json:"links"`
 }
 
-func (o *rawRackElementGenericSystem) polish(ld LogicalDevice) *RackElementGenericSystem {
+func (o *rawRackElementGenericSystem) polish(ld LogicalDevice) (*RackElementGenericSystem, error) {
+	asnDomain, err := o.AsnDomain.parse()
+	if err != nil {
+		return nil, err
+	}
+
+	mgmtLevel, err := o.ManagementLevel.parse()
+	if err != nil {
+		return nil, err
+	}
+
+	loopback, err := o.Loopback.parse()
+	if err != nil {
+		return nil, err
+	}
+
 	return &RackElementGenericSystem{
 		Count:            o.Count,
-		AsnDomain:        o.AsnDomain,
-		ManagementLevel:  o.ManagementLevel,
+		AsnDomain:        FeatureSwitch(asnDomain),
+		ManagementLevel:  GenericSystemManagementLevel(mgmtLevel),
 		PortChannelIdMin: o.PortChannelIdMin,
 		PortChannelIdMax: o.PortChannelIdMax,
-		Loopback:         o.Loopback,
+		Loopback:         FeatureSwitch(loopback),
 		Tags:             o.Tags,
 		Label:            o.Label,
 		Links:            o.Links,
 		Panels:           ld.Panels,
 		DisplayName:      ld.DisplayName,
-	}
+	}, nil
 }
 
 type RackType struct {
@@ -577,7 +684,10 @@ func (o *rawRackType) polish() (*RackType, error) {
 		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
 			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
 		}
-		p := r.polish(*ld)
+		p, err := r.polish(*ld)
+		if err != nil {
+			return nil, err
+		}
 		result.GenericSystems = append(result.GenericSystems, *p)
 	}
 

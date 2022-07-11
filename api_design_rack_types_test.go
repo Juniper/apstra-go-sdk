@@ -141,7 +141,39 @@ func TestCreateGetRackType(t *testing.T) {
 				DisplayName: "logical device display name " + randString(10, "hex"),
 			},
 		},
-		GenericSystems: nil,
+		GenericSystems: []RackElementGenericSystem{
+			{
+				Count:            10,
+				AsnDomain:        FeatureSwitchEnabled,
+				ManagementLevel:  GenericSystemUnmanaged,
+				PortChannelIdMin: 0,
+				PortChannelIdMax: 0,
+				Loopback:         FeatureSwitchDisabled,
+				Tags:             nil,
+				Label:            "some generic system",
+				Links: []GenericSystemAccessLink{
+					{
+						Label:              "",
+						Tags:               nil,
+						LinkPerSwitchCount: 0,
+						LinkSpeed:          LogicalDevicePortSpeed{},
+						TargetSwitchLabel:  "",
+						AttachmentType:     "",
+						LagMode:            "",
+					},
+				},
+				Panels: []LogicalDevicePanel{{
+					PanelLayout:  LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 2},
+					PortIndexing: LogicalDevicePortIndexing{Order: PortIndexingVerticalFirst, Schema: PortIndexingSchemaAbsolute},
+					PortGroups: []LogicalDevicePortGroup{{
+						Count: 2,
+						Speed: LogicalDevicePortSpeed{Unit: "G", Value: 10},
+						Roles: []string{"generic"},
+					}},
+				}},
+				DisplayName: "Generic System Display Name",
+			},
+		},
 		AccessSwitches: nil,
 	})
 	if err != nil {

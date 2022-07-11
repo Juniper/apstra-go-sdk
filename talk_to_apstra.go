@@ -20,7 +20,7 @@ const (
 	apstraApiAsyncParamValFull      = "full"
 	apstraApiAsyncParamValPartial   = "partial" // default?
 	errResponseBodyLimit            = 4096
-	errResponseStringLimit          = 512
+	errResponseStringLimit          = 1024
 	peekSizeForApstraTaskIdResponse = math.MaxUint8
 )
 
