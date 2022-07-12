@@ -623,3 +623,45 @@ func (o *Client) UpdateLogicalDevice(ctx context.Context, id ObjectId, in *Logic
 func (o *Client) DeleteLogicalDevice(ctx context.Context, id ObjectId) error {
 	return o.deleteLogicalDevice(ctx, id)
 }
+
+// ListAllTags returns []ObjectId representing all DesignTag objects
+func (o *Client) ListAllTags(ctx context.Context) ([]ObjectId, error) {
+	return o.listAllTags(ctx)
+}
+
+// GetTag returns *DesignTag describing the specified ObjectId
+func (o *Client) GetTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
+	return o.getTag(ctx, id)
+}
+
+// GetTagByLabel returns a *DesignTag matching the supplied DesignTag.Label
+// string ("Name" in the web UI). This is a case-insensitive search because
+// apstra enforces uniqueness in a case-insensitive manner. An error is returned
+// if no DesignTag objects match the supplied DesignTag.Label.
+func (o *Client) GetTagByLabel(ctx context.Context, label string) (*DesignTag, error) {
+	return o.getTagByLabel(ctx, label)
+}
+
+// GetAllTags returns []DesignTag describing all DesignTag objects
+func (o *Client) GetAllTags(ctx context.Context) ([]DesignTag, error) {
+	return o.getAllTags(ctx)
+}
+
+// CreateTag creates a DesignTag and returns its ObjectId. Note that the
+// DesignTag.Label field across all tags is required to be unique and case
+// is not considered when making that comparison.
+func (o *Client) CreateTag(ctx context.Context, in *DesignTag) (ObjectId, error) {
+	return o.createTag(ctx, in)
+}
+
+// UpdateTag updates a DesignTag by ObjectId. Note that the DesignTag.Label
+// is required, but cannot be changed, so it's really just DesignTag.Description
+// that we're allowed to monkey around with.
+func (o *Client) UpdateTag(ctx context.Context, id ObjectId, in *DesignTag) (ObjectId, error) {
+	return o.updateTag(ctx, id, in)
+}
+
+// DeleteTag deletes the specified DesignTag by its ObjectId
+func (o *Client) DeleteTag(ctx context.Context, id ObjectId) error {
+	return o.deleteTag(ctx, id)
+}

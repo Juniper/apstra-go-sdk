@@ -557,14 +557,6 @@ func (o rackLinkSwitchPeer) parse() (int, error) {
 	}
 }
 
-type RackTag struct {
-	Id             ObjectId  `json:"id"`
-	Label          string    `json:"label"`
-	Description    string    `json:"description"`
-	CreatedAt      time.Time `json:"created_at"`
-	LastModifiedAt time.Time `json:"last_modified_at"`
-}
-
 type optionsRackTypeResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
@@ -582,7 +574,7 @@ type RackElementLeafSwitch struct {
 	LinkPerSpineSpeed           *LogicalDevicePortSpeed
 	MlagVlanId                  int
 	RedundancyProtocol          LeafRedundancyProtocol
-	Tags                        []RackTag
+	Tags                        []DesignTag
 	Panels                      []LogicalDevicePanel
 	DisplayName                 string
 }
@@ -590,7 +582,7 @@ type RackElementLeafSwitch struct {
 func (o *RackElementLeafSwitch) raw(logicalDeviceId string) *rawRackElementLeaf {
 	tags := o.Tags
 	if tags == nil {
-		tags = []RackTag{}
+		tags = []DesignTag{}
 	}
 
 	return &rawRackElementLeaf{
@@ -623,7 +615,7 @@ type rawRackElementLeaf struct {
 	LogicalDevice               string                  `json:"logical_device"`
 	MlagVlanId                  int                     `json:"mlag_vlan_id"`
 	RedundancyProtocol          leafRedundancyProtocol  `json:"redundancy_protocol,omitempty"`
-	Tags                        []RackTag               `json:"tags"`
+	Tags                        []DesignTag             `json:"tags"`
 }
 
 func (o *rawRackElementLeaf) polish(ld LogicalDevice) (*RackElementLeafSwitch, error) {
@@ -705,7 +697,7 @@ func (o *rawRackElementAccessSwitch) polish(ld LogicalDevice) (*RackElementAcces
 
 type RackLink struct {
 	Label              string                 // `json:"label"`
-	Tags               []RackTag              // `json:"tags"`
+	Tags               []DesignTag            // `json:"tags"`
 	LinkPerSwitchCount int                    // `json:"link_per_switch_count"`
 	LinkSpeed          LogicalDevicePortSpeed // `json:"link_speed"`
 	TargetSwitchLabel  string                 // `json:"target_switch_label"`
@@ -715,12 +707,12 @@ type RackLink struct {
 }
 
 func (o RackLink) raw() *rawRackLink {
-	var tags []RackTag
+	var tags []DesignTag
 	for _, tag := range o.Tags {
 		tags = append(tags, tag)
 	}
 	if tags == nil {
-		tags = []RackTag{}
+		tags = []DesignTag{}
 	}
 
 	// JSON encoding of lag_mode must be one of the accepted strings or null (nil ptr)
@@ -745,7 +737,7 @@ func (o RackLink) raw() *rawRackLink {
 
 type rawRackLink struct {
 	Label              string                 `json:"label"`
-	Tags               []RackTag              `json:"tags"`
+	Tags               []DesignTag            `json:"tags"`
 	LinkPerSwitchCount int                    `json:"link_per_switch_count"`
 	LinkSpeed          LogicalDevicePortSpeed `json:"link_speed"`
 	TargetSwitchLabel  string                 `json:"target_switch_label"`
@@ -789,7 +781,7 @@ type RackElementGenericSystem struct {
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Loopback         FeatureSwitch
-	Tags             []RackTag
+	Tags             []DesignTag
 	Label            string
 	Links            []RackLink
 	Panels           []LogicalDevicePanel
@@ -799,7 +791,7 @@ type RackElementGenericSystem struct {
 func (o RackElementGenericSystem) raw(logicalDeviceId string) *rawRackElementGenericSystem {
 	tags := o.Tags
 	if tags == nil {
-		tags = []RackTag{}
+		tags = []DesignTag{}
 	}
 
 	var links []rawRackLink
@@ -828,7 +820,7 @@ type rawRackElementGenericSystem struct {
 	PortChannelIdMin int                          `json:"port_channel_id_min"`
 	PortChannelIdMax int                          `json:"port_channel_id_max"`
 	Loopback         featureSwitch                `json:"loopback"`
-	Tags             []RackTag                    `json:"tags"`
+	Tags             []DesignTag                  `json:"tags"`
 	Label            string                       `json:"label"`
 	LogicalDevice    string                       `json:"logical_device"`
 	Links            []rawRackLink                `json:"links"`
@@ -879,7 +871,7 @@ type RackType struct {
 	Description              string
 	FabricConnectivityDesign FabricConnectivityDesign
 	Id                       ObjectId
-	Tags                     []RackTag
+	Tags                     []DesignTag
 	CreatedAt                time.Time
 	LastModifiedAt           time.Time
 	LeafSwitches             []RackElementLeafSwitch
@@ -939,7 +931,7 @@ type rawRackType struct {
 	DisplayName              string                        `json:"display_name"`
 	Description              string                        `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
-	Tags                     []RackTag                     `json:"tags,omitempty"`
+	Tags                     []DesignTag                   `json:"tags,omitempty"`
 	CreatedAt                time.Time                     `json:"created_at"`
 	LastModifiedAt           time.Time                     `json:"last_modified_at"`
 	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
