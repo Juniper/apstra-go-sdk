@@ -106,6 +106,10 @@ type optionsLogicalDevicesResponse struct {
 	Methods []string   `json:"methods"`
 }
 
+type getLogicalDevicesResponse struct {
+	Items []rawLogicalDevice `json:"items"`
+}
+
 type LogicalDevicePanelLayout struct {
 	RowCount    int `json:"row_count"`
 	ColumnCount int `json:"column_count"`
@@ -263,6 +267,27 @@ func (o *Client) listLogicalDeviceIds(ctx context.Context) ([]ObjectId, error) {
 	return response.Items, nil
 }
 
+func (o *Client) getAllLogicalDevices(ctx context.Context) ([]LogicalDevice, error) {
+	response := &getLogicalDevicesResponse{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlDesignLogicalDevices,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	var result []LogicalDevice
+	for _, raw := range response.Items {
+		ld, err := raw.parse()
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, *ld)
+	}
+	return result, nil
+}
+
 func (o *Client) getLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDevice, error) {
 	response := &rawLogicalDevice{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -274,6 +299,36 @@ func (o *Client) getLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDev
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response.parse()
+}
+
+func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*LogicalDevice, error) {
+	logicalDevices, err := o.getAllLogicalDevices(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *LogicalDevice
+	var found bool
+
+	for _, ld := range logicalDevices {
+		if ld.DisplayName == name {
+			if found {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("found multiple logical devices named '%s' found", name),
+				}
+			}
+			result = &ld
+			found = true
+		}
+	}
+	if found {
+		return result, nil
+	}
+	return nil, ApstraClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("no logical device named '%s' found", name),
+	}
 }
 
 func (o *Client) createLogicalDevice(ctx context.Context, in *LogicalDevice) (ObjectId, error) {
