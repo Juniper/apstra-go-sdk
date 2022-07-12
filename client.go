@@ -601,6 +601,13 @@ func (o *Client) GetLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDev
 	return o.getLogicalDevice(ctx, id)
 }
 
+// GetLogicalDeviceByName returns *LogicalDevice matching name if exactly one
+// logical device uses that name. No match or multiple match conditions produce
+// and error.
+func (o *Client) GetLogicalDeviceByName(ctx context.Context, name string) (*LogicalDevice, error) {
+	return o.getLogicalDeviceByName(ctx, name)
+}
+
 // CreateLogicalDevice creates a new logical device, returns its ObjectId
 func (o *Client) CreateLogicalDevice(ctx context.Context, in *LogicalDevice) (ObjectId, error) {
 	return o.createLogicalDevice(ctx, in)
