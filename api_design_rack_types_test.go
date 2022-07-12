@@ -46,6 +46,14 @@ func TestRackTypeStrings(t *testing.T) {
 
 		{stringVal: "l3clos", intType: FabricCOnnectivityDesignL3Clos, stringType: fabricConnectivityDesignL3Clos},
 		{stringVal: "l3collapsed", intType: FabricCOnnectivityDesignL3Collapsed, stringType: fabricConnectivityDesignL3Collapsed},
+
+		{stringVal: "singleAttached", intType: RackLinkAttachmentTypeSingle, stringType: rackLinkAttachmentTypeSingle},
+		{stringVal: "dualAttached", intType: RackLinkAttachmentTypeDual, stringType: rackLinkAttachmentTypeDual},
+
+		{stringVal: "", intType: RackLinkLagModeLacpNone, stringType: rackLinkLagModeLacpNone},
+		{stringVal: "lacp_active", intType: RackLinkLagModeLacpActive, stringType: rackLinkLagModeLacpActive},
+		{stringVal: "lacp_passive", intType: RackLinkLagModeLacpPassive, stringType: rackLinkLagModeLacpPassive},
+		{stringVal: "static_lag", intType: RackLinkLagModeLacpStatic, stringType: rackLinkLagModeLacpStatic},
 	}
 
 	for i, td := range testData {
@@ -94,13 +102,15 @@ func TestCreateGetRackType(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	leafLabel := "ll-" + randString(10, "hex")
+
 	id, err := client.createRackType(context.TODO(), &RackType{
-		DisplayName:              "name-" + randString(10, "hex"),
+		DisplayName:              "rdn " + randString(5, "hex"),
 		Description:              "description " + randString(10, "hex"),
 		FabricConnectivityDesign: FabricCOnnectivityDesignL3Clos,
 		LeafSwitches: []RackElementLeafSwitch{
 			{
-				Label:                       "label-" + randString(10, "hex"),
+				Label:                       leafLabel,
 				LeafLeafL3LinkCount:         0,
 				LeafLeafL3LinkPortChannelId: 0,
 				LeafLeafL3LinkSpeed:         nil,
@@ -138,7 +148,7 @@ func TestCreateGetRackType(t *testing.T) {
 						},
 					},
 				},
-				DisplayName: "logical device display name " + randString(10, "hex"),
+				DisplayName: "leaf display name" + randString(10, "hex"),
 			},
 		},
 		GenericSystems: []RackElementGenericSystem{
@@ -155,11 +165,14 @@ func TestCreateGetRackType(t *testing.T) {
 					{
 						Label:              "",
 						Tags:               nil,
-						LinkPerSwitchCount: 0,
-						LinkSpeed:          LogicalDevicePortSpeed{},
-						TargetSwitchLabel:  "",
-						AttachmentType:     "",
-						LagMode:            "",
+						LinkPerSwitchCount: 1,
+						LinkSpeed: LogicalDevicePortSpeed{
+							Unit:  "G",
+							Value: 10,
+						},
+						TargetSwitchLabel: leafLabel,
+						AttachmentType:    RackLinkAttachmentTypeSingle,
+						LagMode:           RackLinkLagModeLacpActive,
 					},
 				},
 				Panels: []LogicalDevicePanel{{
