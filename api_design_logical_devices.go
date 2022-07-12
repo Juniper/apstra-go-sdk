@@ -165,9 +165,9 @@ type LogicalDevicePortSpeed struct {
 func (o *LogicalDevicePortSpeed) BitsPerSecond() int64 {
 	switch o.Unit {
 	case "M":
-		return o.Value * 1000 * 1000
+		return int64(o.Value * 1000 * 1000)
 	case "G":
-		return o.Value * 1000 * 1000 * 1000
+		return int64(o.Value * 1000 * 1000 * 1000)
 	}
 }
 
