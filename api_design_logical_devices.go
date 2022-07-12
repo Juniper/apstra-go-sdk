@@ -76,7 +76,7 @@ func (o LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
 	return result
 }
 
-func (o LogicalDevicePortRoleFlags) Strings() []string {
+func (o *LogicalDevicePortRoleFlags) Strings() []string {
 	var result []string
 	for _, role := range o.raw() {
 		result = append(result, string(role))
@@ -176,6 +176,8 @@ func (o *LogicalDevicePortSpeed) BitsPerSecond() int64 {
 		return int64(o.Value * 1000 * 1000)
 	case "G":
 		return int64(o.Value * 1000 * 1000 * 1000)
+	default:
+		return int64(0)
 	}
 }
 
