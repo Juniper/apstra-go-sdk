@@ -13,11 +13,9 @@ const (
 	apiUrlDeviceProfileById    = apiUrlDeviceProfilesPrefix + "%s"
 )
 
-type DeviceProfileId string
-
 type optionsDeviceProfilessResponse struct {
-	Items   []DeviceProfileId `json:"items"`
-	Methods []string          `json:"methods"`
+	Items   []ObjectId `json:"items"`
+	Methods []string   `json:"methods"`
 }
 
 type getAllDeviceProfilesResponse struct {
@@ -96,7 +94,7 @@ type PortInfo struct {
 }
 
 type DeviceProfile struct {
-	Id                   DeviceProfileId      `json:"id"`
+	Id                   ObjectId             `json:"id"`
 	Label                string               `json:"label"`
 	DeviceProfileType    string               `json:"device_profile_type"`
 	CreatedAt            time.Time            `json:"created_at"`
@@ -125,7 +123,7 @@ type DeviceProfile struct {
 	} `json:"slot_configuration"`
 }
 
-func (o *Client) listDeviceProfileIds(ctx context.Context) ([]DeviceProfileId, error) {
+func (o *Client) listDeviceProfileIds(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsDeviceProfilessResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
@@ -148,7 +146,7 @@ func (o *Client) getAllDeviceProfiles(ctx context.Context) ([]DeviceProfile, err
 	return response.Items, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) getDeviceProfile(ctx context.Context, id DeviceProfileId) (*DeviceProfile, error) {
+func (o *Client) getDeviceProfile(ctx context.Context, id ObjectId) (*DeviceProfile, error) {
 	response := &DeviceProfile{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -156,4 +154,41 @@ func (o *Client) getDeviceProfile(ctx context.Context, id DeviceProfileId) (*Dev
 		apiResponse: response,
 	})
 	return response, convertTtaeToAceWherePossible(err)
+}
+
+func (o *Client) createDeviceProfile(ctx context.Context, profile DeviceProfile) (ObjectId, error) {
+	response := &objectIdResponse{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlDeviceProfiles,
+		apiInput:    profile,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
+}
+
+func (o *Client) updateDeviceProfile(ctx context.Context, id ObjectId, profile DeviceProfile) error {
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlDeviceProfileById, id),
+		apiInput: profile,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
+}
+
+func (o *Client) deleteDeviceProfile(ctx context.Context, id ObjectId) error {
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlDeviceProfileById, id),
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
