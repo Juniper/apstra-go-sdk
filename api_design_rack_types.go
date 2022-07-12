@@ -181,10 +181,11 @@ type accessRedundancyProtocol string
 const (
 	AccessRedundancyProtocolNone = AccessRedundancyProtocol(iota)
 	AccessRedundancyProtocolEsi
+	AccessRedundancyProtocolUnknown = "unknown redundancy protocol '%s'"
 
 	accessRedundancyProtocolNone    = accessRedundancyProtocol("")
 	accessRedundancyProtocolEsi     = accessRedundancyProtocol("esi")
-	accessRedundancyProtocolUnknown = "unknown type %d"
+	accessRedundancyProtocolUnknown = "unknown redundancy protocol '%d'"
 )
 
 type LeafRedundancyProtocol int
@@ -194,6 +195,7 @@ const (
 	LeafRedundancyProtocolNone = LeafRedundancyProtocol(iota)
 	LeafRedundancyProtocolMlag
 	LeafRedundancyProtocolEsi
+	LeafRedundancyProtocolUnknown = "unknown redundancy protocol '%s'"
 
 	leafRedundancyProtocolNone    = leafRedundancyProtocol("")
 	leafRedundancyProtocolMlag    = leafRedundancyProtocol("mlag")
@@ -205,12 +207,13 @@ type FabricConnectivityDesign int
 type fabricConnectivityDesign string
 
 const (
-	FabricCOnnectivityDesignL3Clos = FabricConnectivityDesign(iota)
-	FabricCOnnectivityDesignL3Collapsed
+	FabricConnectivityDesignL3Clos = FabricConnectivityDesign(iota)
+	FabricConnectivityDesignL3Collapsed
+	FabricConnectivityDesignUnknown = "unknown connectivity design '%s'"
 
 	fabricConnectivityDesignL3Clos      = fabricConnectivityDesign("l3clos")
 	fabricConnectivityDesignL3Collapsed = fabricConnectivityDesign("l3collapsed")
-	fabricConnectivityDesignUnknown     = "unknown type %d"
+	fabricConnectivityDesignUnknown     = "unknown connectivity design '%d'"
 )
 
 type FeatureSwitch int
@@ -219,6 +222,7 @@ type featureSwitch string
 const (
 	FeatureSwitchDisabled = FeatureSwitch(iota)
 	FeatureSwitchEnabled
+	FeatureSwitchUnknown = "unknown feature switch state '%s'"
 
 	featureSwitchDisabled = featureSwitch("disabled")
 	featureSwitchEnabled  = featureSwitch("enabled")
@@ -229,10 +233,10 @@ type GenericSystemManagementLevel int
 type genericSystemManagementLevel string
 
 const (
-	// unmanaged, telemetry_only or full_control
 	GenericSystemUnmanaged = GenericSystemManagementLevel(iota)
 	GenericSystemTelemetryOnly
 	GenericSystemFullControl
+	GenericSystemUnknown = "unknown generic system management level '%s'"
 
 	genericSystemUnmanaged     = genericSystemManagementLevel("unmanaged")
 	genericSystemTelemetryOnly = genericSystemManagementLevel("telemetry_only")
@@ -246,26 +250,43 @@ type rackLinkAttachmentType string
 const (
 	RackLinkAttachmentTypeSingle = RackLinkAttachmentType(iota)
 	RackLinkAttachmentTypeDual
+	RackLinkAttachmentTypeUnknown = "unknown link attachment scheme '%s'"
 
 	rackLinkAttachmentTypeSingle  = rackLinkAttachmentType("singleAttached")
 	rackLinkAttachmentTypeDual    = rackLinkAttachmentType("dualAttached")
-	rackLinkAttachmentTypeUnknown = "unknown generic system attachment type '%d'"
+	rackLinkAttachmentTypeUnknown = "unknown link attachment scheme '%d'"
 )
 
 type RackLinkLagMode int
 type rackLinkLagMode string
 
 const (
-	RackLinkLagModeLacpNone = RackLinkLagMode(iota)
-	RackLinkLagModeLacpActive
-	RackLinkLagModeLacpPassive
-	RackLinkLagModeLacpStatic
+	RackLinkLagModeNone = RackLinkLagMode(iota)
+	RackLinkLagModeActive
+	RackLinkLagModePassive
+	RackLinkLagModeStatic
+	RackLinkLagModeUnknown = "unknown lag mode '%s'"
 
-	rackLinkLagModeLacpNone    = rackLinkLagMode("")
-	rackLinkLagModeLacpActive  = rackLinkLagMode("lacp_active")
-	rackLinkLagModeLacpPassive = rackLinkLagMode("lacp_passive")
-	rackLinkLagModeLacpStatic  = rackLinkLagMode("static_lag")
-	rackLinkLagModeUnknown     = "unknown lag mode '%d'"
+	rackLinkLagModeNone    = rackLinkLagMode("")
+	rackLinkLagModeActive  = rackLinkLagMode("lacp_active")
+	rackLinkLagModePassive = rackLinkLagMode("lacp_passive")
+	rackLinkLagModeStatic  = rackLinkLagMode("static_lag")
+	rackLinkLagModeUnknown = "unknown lag mode '%d'"
+)
+
+type RackLinkSwitchPeer int
+type rackLinkSwitchPeer string
+
+const (
+	RackLinkSwitchPeerNone = RackLinkSwitchPeer(iota)
+	RackLinkSwitchPeerFirst
+	RackLinkSwitchPeerSecond
+	RackLinkSwitchPeerUnknown = "unknown lag mode '%s'"
+
+	rackLinkSwitchPeerNone    = rackLinkSwitchPeer("")
+	rackLinkSwitchPeerFirst   = rackLinkSwitchPeer("first")
+	rackLinkSwitchPeerSecond  = rackLinkSwitchPeer("second")
+	rackLinkSwitchPeerUnknown = "unknown switch peer '%d'"
 )
 
 func (o AccessRedundancyProtocol) Int() int {
@@ -298,7 +319,7 @@ func (o accessRedundancyProtocol) parse() (int, error) {
 	case accessRedundancyProtocolEsi:
 		return int(AccessRedundancyProtocolEsi), nil
 	default:
-		return 0, fmt.Errorf("unknown access redundancy protocol '%s'", o)
+		return 0, fmt.Errorf(AccessRedundancyProtocolUnknown, o)
 	}
 }
 
@@ -336,7 +357,7 @@ func (o leafRedundancyProtocol) parse() (int, error) {
 	case leafRedundancyProtocolMlag:
 		return int(LeafRedundancyProtocolMlag), nil
 	default:
-		return 0, fmt.Errorf("unknown leaf redundancy protocol '%s'", o)
+		return 0, fmt.Errorf(LeafRedundancyProtocolUnknown, o)
 	}
 }
 
@@ -346,9 +367,9 @@ func (o FabricConnectivityDesign) Int() int {
 
 func (o FabricConnectivityDesign) String() string {
 	switch o {
-	case FabricCOnnectivityDesignL3Clos:
+	case FabricConnectivityDesignL3Clos:
 		return string(fabricConnectivityDesignL3Clos)
-	case FabricCOnnectivityDesignL3Collapsed:
+	case FabricConnectivityDesignL3Collapsed:
 		return string(fabricConnectivityDesignL3Collapsed)
 	default:
 		return fmt.Sprintf(fabricConnectivityDesignUnknown, o)
@@ -366,11 +387,11 @@ func (o fabricConnectivityDesign) string() string {
 func (o fabricConnectivityDesign) parse() (int, error) {
 	switch o {
 	case fabricConnectivityDesignL3Clos:
-		return int(FabricCOnnectivityDesignL3Clos), nil
+		return int(FabricConnectivityDesignL3Clos), nil
 	case fabricConnectivityDesignL3Collapsed:
-		return int(FabricCOnnectivityDesignL3Collapsed), nil
+		return int(FabricConnectivityDesignL3Collapsed), nil
 	default:
-		return 0, fmt.Errorf("unknown fabric connectivity design '%s'", o)
+		return 0, fmt.Errorf(FabricConnectivityDesignUnknown, o)
 	}
 }
 
@@ -400,7 +421,7 @@ func (o featureSwitch) parse() (int, error) {
 	case featureSwitchEnabled:
 		return int(FeatureSwitchEnabled), nil
 	default:
-		return 0, fmt.Errorf("unknown feature state '%s'", o)
+		return 0, fmt.Errorf(FeatureSwitchUnknown, o)
 	}
 }
 
@@ -433,7 +454,7 @@ func (o genericSystemManagementLevel) parse() (int, error) {
 	case genericSystemTelemetryOnly:
 		return int(GenericSystemTelemetryOnly), nil
 	default:
-		return 0, fmt.Errorf("unknown generic system management state '%s'", o)
+		return 0, fmt.Errorf(GenericSystemUnknown, o)
 	}
 }
 
@@ -462,7 +483,7 @@ func (o rackLinkAttachmentType) parse() (int, error) {
 	case rackLinkAttachmentTypeDual:
 		return int(RackLinkAttachmentTypeDual), nil
 	default:
-		return 0, fmt.Errorf("unknown generic system link attachment type '%s'", o)
+		return 0, fmt.Errorf(RackLinkAttachmentTypeUnknown, o)
 	}
 }
 
@@ -472,14 +493,14 @@ func (o RackLinkLagMode) Int() int {
 
 func (o RackLinkLagMode) String() string {
 	switch o {
-	case RackLinkLagModeLacpNone:
-		return string(rackLinkLagModeLacpNone)
-	case RackLinkLagModeLacpActive:
-		return string(rackLinkLagModeLacpActive)
-	case RackLinkLagModeLacpPassive:
-		return string(rackLinkLagModeLacpPassive)
-	case RackLinkLagModeLacpStatic:
-		return string(rackLinkLagModeLacpStatic)
+	case RackLinkLagModeNone:
+		return string(rackLinkLagModeNone)
+	case RackLinkLagModeActive:
+		return string(rackLinkLagModeActive)
+	case RackLinkLagModePassive:
+		return string(rackLinkLagModePassive)
+	case RackLinkLagModeStatic:
+		return string(rackLinkLagModeStatic)
 	default:
 		return fmt.Sprintf(rackLinkLagModeUnknown, o)
 	}
@@ -490,16 +511,49 @@ func (o rackLinkLagMode) string() string {
 }
 func (o rackLinkLagMode) parse() (int, error) {
 	switch o {
-	case rackLinkLagModeLacpNone:
-		return int(RackLinkLagModeLacpNone), nil
-	case rackLinkLagModeLacpActive:
-		return int(RackLinkLagModeLacpActive), nil
-	case rackLinkLagModeLacpPassive:
-		return int(RackLinkLagModeLacpPassive), nil
-	case rackLinkLagModeLacpStatic:
-		return int(RackLinkLagModeLacpStatic), nil
+	case rackLinkLagModeNone:
+		return int(RackLinkLagModeNone), nil
+	case rackLinkLagModeActive:
+		return int(RackLinkLagModeActive), nil
+	case rackLinkLagModePassive:
+		return int(RackLinkLagModePassive), nil
+	case rackLinkLagModeStatic:
+		return int(RackLinkLagModeStatic), nil
 	default:
-		return 0, fmt.Errorf("unknown link LACP mode '%s'", o)
+		return 0, fmt.Errorf(RackLinkLagModeUnknown, o)
+	}
+}
+
+func (o RackLinkSwitchPeer) Int() int {
+	return int(o)
+}
+
+func (o RackLinkSwitchPeer) String() string {
+	switch o {
+	case RackLinkSwitchPeerNone:
+		return string(rackLinkSwitchPeerNone)
+	case RackLinkSwitchPeerFirst:
+		return string(rackLinkSwitchPeerFirst)
+	case RackLinkSwitchPeerSecond:
+		return string(rackLinkSwitchPeerSecond)
+	default:
+		return fmt.Sprintf(rackLinkSwitchPeerUnknown, o)
+	}
+}
+
+func (o rackLinkSwitchPeer) string() string {
+	return string(o)
+}
+func (o rackLinkSwitchPeer) parse() (int, error) {
+	switch o {
+	case rackLinkSwitchPeerNone:
+		return int(RackLinkSwitchPeerNone), nil
+	case rackLinkSwitchPeerFirst:
+		return int(RackLinkSwitchPeerFirst), nil
+	case rackLinkSwitchPeerSecond:
+		return int(RackLinkSwitchPeerSecond), nil
+	default:
+		return 0, fmt.Errorf(RackLinkSwitchPeerUnknown, o)
 	}
 }
 
@@ -596,20 +650,20 @@ func (o *rawRackElementLeaf) polish(ld LogicalDevice) (*RackElementLeafSwitch, e
 	}, nil
 }
 
-type AccessSwitchLink struct {
-	Label              string                 `json:"label"`
-	LinkPerSwitchCount int                    `json:"link_per_switch_count"`
-	LinkSpeed          LogicalDevicePortSpeed `json:"link_speed"`
-	TargetSwitchLabel  string                 `json:"target_switch_label"`
-	LagMode            string                 `json:"lag_mode,omitempty"`
-	SwitchPeer         interface{}            `json:"switch_peer"` // todo - what is this?
-	AttachmentType     string                 `json:"attachment_type"`
-}
+//type AccessSwitchLink struct {
+//	Label              string                 `json:"label"`
+//	LinkPerSwitchCount int                    `json:"link_per_switch_count"`
+//	LinkSpeed          LogicalDevicePortSpeed `json:"link_speed"`
+//	TargetSwitchLabel  string                 `json:"target_switch_label"`
+//	LagMode            string                 `json:"lag_mode,omitempty"`
+//	SwitchPeer         RackLinkSwitchPeer     `json:"switch_peer"` // todo - what is this?
+//	AttachmentType     string                 `json:"attachment_type"`
+//}
 
 type RackElementAccessSwitch struct {
 	InstanceCount      int
 	RedundancyProtocol AccessRedundancyProtocol
-	Links              []AccessSwitchLink
+	Links              []RackLink
 	Label              string
 	Panels             []LogicalDevicePanel
 	DisplayName        string
@@ -628,7 +682,7 @@ func (o *RackElementAccessSwitch) raw(logicalDeviceId string) *rawRackElementAcc
 type rawRackElementAccessSwitch struct {
 	InstanceCount      int                      `json:"instance_count"`
 	RedundancyProtocol accessRedundancyProtocol `json:"redundancy_protocol,omitempty"`
-	Links              []AccessSwitchLink       `json:"links"`
+	Links              []RackLink               `json:"links"`
 	Label              string                   `json:"label"`
 	LogicalDevice      string                   `json:"logical_device"`
 }
@@ -649,17 +703,18 @@ func (o *rawRackElementAccessSwitch) polish(ld LogicalDevice) (*RackElementAcces
 	}, nil
 }
 
-type GenericSystemAccessLink struct {
-	Label              string                 `json:"label"`
-	Tags               []RackTag              `json:"tags"`
-	LinkPerSwitchCount int                    `json:"link_per_switch_count"`
-	LinkSpeed          LogicalDevicePortSpeed `json:"link_speed"`
-	TargetSwitchLabel  string                 `json:"target_switch_label"`
-	AttachmentType     RackLinkAttachmentType `json:"attachment_type"`
-	LagMode            RackLinkLagMode        `json:"lag_mode,omitempty"`
+type RackLink struct {
+	Label              string                 // `json:"label"`
+	Tags               []RackTag              // `json:"tags"`
+	LinkPerSwitchCount int                    // `json:"link_per_switch_count"`
+	LinkSpeed          LogicalDevicePortSpeed // `json:"link_speed"`
+	TargetSwitchLabel  string                 // `json:"target_switch_label"`
+	AttachmentType     RackLinkAttachmentType // `json:"attachment_type"`
+	LagMode            RackLinkLagMode        // `json:"lag_mode"`
+	SwitchPeer         RackLinkSwitchPeer     // `json:"switch_peer"`
 }
 
-func (o GenericSystemAccessLink) raw() *rawGenericSystemAccessLink {
+func (o RackLink) raw() *rawRackLink {
 	var tags []RackTag
 	for _, tag := range o.Tags {
 		tags = append(tags, tag)
@@ -667,28 +722,39 @@ func (o GenericSystemAccessLink) raw() *rawGenericSystemAccessLink {
 	if tags == nil {
 		tags = []RackTag{}
 	}
-	return &rawGenericSystemAccessLink{
+
+	// JSON encoding of lag_mode must be one of the accepted strings or null (nil ptr)
+	var lagModePtr *rackLinkLagMode
+	lagMode := rackLinkLagMode(o.LagMode.String())
+	lagModePtr = &lagMode
+	if lagMode == rackLinkLagModeNone {
+		lagModePtr = nil
+	}
+
+	return &rawRackLink{
 		Label:              o.Label,
 		Tags:               tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
 		LinkSpeed:          o.LinkSpeed,
 		TargetSwitchLabel:  o.TargetSwitchLabel,
 		AttachmentType:     rackLinkAttachmentType(o.AttachmentType.String()),
-		LagMode:            rackLinkLagMode(o.LagMode.String()),
+		LagMode:            lagModePtr,
+		SwitchPeer:         rackLinkSwitchPeer(o.LagMode.String()),
 	}
 }
 
-type rawGenericSystemAccessLink struct {
+type rawRackLink struct {
 	Label              string                 `json:"label"`
 	Tags               []RackTag              `json:"tags"`
 	LinkPerSwitchCount int                    `json:"link_per_switch_count"`
 	LinkSpeed          LogicalDevicePortSpeed `json:"link_speed"`
 	TargetSwitchLabel  string                 `json:"target_switch_label"`
 	AttachmentType     rackLinkAttachmentType `json:"attachment_type"`
-	LagMode            rackLinkLagMode        `json:"lag_mode"`
+	LagMode            *rackLinkLagMode       `json:"lag_mode"` // do not 'omitempty"
+	SwitchPeer         rackLinkSwitchPeer     `json:"switch_peer,omitempty"`
 }
 
-func (o rawGenericSystemAccessLink) polish() (*GenericSystemAccessLink, error) {
+func (o rawRackLink) polish() (*RackLink, error) {
 	attachment, err := o.AttachmentType.parse()
 	if err != nil {
 		return nil, err
@@ -699,7 +765,12 @@ func (o rawGenericSystemAccessLink) polish() (*GenericSystemAccessLink, error) {
 		return nil, err
 	}
 
-	return &GenericSystemAccessLink{
+	switchPeer, err := o.SwitchPeer.parse()
+	if err != nil {
+		return nil, err
+	}
+
+	return &RackLink{
 		Label:              o.Label,
 		Tags:               o.Tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
@@ -707,6 +778,7 @@ func (o rawGenericSystemAccessLink) polish() (*GenericSystemAccessLink, error) {
 		TargetSwitchLabel:  o.TargetSwitchLabel,
 		AttachmentType:     RackLinkAttachmentType(attachment),
 		LagMode:            RackLinkLagMode(lagMode),
+		SwitchPeer:         RackLinkSwitchPeer(switchPeer),
 	}, nil
 }
 
@@ -719,7 +791,7 @@ type RackElementGenericSystem struct {
 	Loopback         FeatureSwitch
 	Tags             []RackTag
 	Label            string
-	Links            []GenericSystemAccessLink
+	Links            []RackLink
 	Panels           []LogicalDevicePanel
 	DisplayName      string
 }
@@ -730,7 +802,7 @@ func (o RackElementGenericSystem) raw(logicalDeviceId string) *rawRackElementGen
 		tags = []RackTag{}
 	}
 
-	var links []rawGenericSystemAccessLink
+	var links []rawRackLink
 	for _, link := range o.Links {
 		links = append(links, *link.raw())
 	}
@@ -759,7 +831,7 @@ type rawRackElementGenericSystem struct {
 	Tags             []RackTag                    `json:"tags"`
 	Label            string                       `json:"label"`
 	LogicalDevice    string                       `json:"logical_device"`
-	Links            []rawGenericSystemAccessLink `json:"links"`
+	Links            []rawRackLink                `json:"links"`
 }
 
 func (o *rawRackElementGenericSystem) polish(ld LogicalDevice) (*RackElementGenericSystem, error) {
@@ -778,7 +850,7 @@ func (o *rawRackElementGenericSystem) polish(ld LogicalDevice) (*RackElementGene
 		return nil, err
 	}
 
-	var links []GenericSystemAccessLink
+	var links []RackLink
 	for _, link := range o.Links {
 		p, err := link.polish()
 		if err != nil {
@@ -829,22 +901,22 @@ func (o *RackType) raw() *rawRackType {
 	for k, v := range o.LeafSwitches {
 		result.LeafSwitchess = append(result.LeafSwitchess, *v.raw(leafSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)))
 		if _, found := result.logicalDeviceById(leafSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)); !found {
-			result.LogicalDevices = append(result.LogicalDevices, LogicalDevice{
+			result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
 				Panels:      v.Panels,
 				DisplayName: v.DisplayName,
 				Id:          ObjectId(leafSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)),
-			})
+			}.raw())
 		}
 	}
 
 	for k, v := range o.AccessSwitches {
 		result.AccessSwitches = append(result.AccessSwitches, *v.raw(accessSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)))
 		if _, found := result.logicalDeviceById(accessSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)); !found {
-			result.LogicalDevices = append(result.LogicalDevices, LogicalDevice{
+			result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
 				Panels:      v.Panels,
 				DisplayName: v.DisplayName,
 				Id:          ObjectId(accessSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)),
-			})
+			}.raw())
 		}
 
 	}
@@ -852,11 +924,11 @@ func (o *RackType) raw() *rawRackType {
 	for k, v := range o.GenericSystems {
 		result.GenericSystems = append(result.GenericSystems, *v.raw(genericSystemLogicalDeviceIdPrefix + strconv.Itoa(k)))
 		if _, found := result.logicalDeviceById(genericSystemLogicalDeviceIdPrefix + strconv.Itoa(k)); !found {
-			result.LogicalDevices = append(result.LogicalDevices, LogicalDevice{
+			result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
 				Panels:      v.Panels,
 				DisplayName: v.DisplayName,
 				Id:          ObjectId(genericSystemLogicalDeviceIdPrefix + strconv.Itoa(k)),
-			})
+			}.raw())
 		}
 	}
 	return result
@@ -870,7 +942,7 @@ type rawRackType struct {
 	Tags                     []RackTag                     `json:"tags,omitempty"`
 	CreatedAt                time.Time                     `json:"created_at"`
 	LastModifiedAt           time.Time                     `json:"last_modified_at"`
-	LogicalDevices           []LogicalDevice               `json:"logical_devices,omitempty"`
+	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
 	LeafSwitchess            []rawRackElementLeaf          `json:"leafs,omitempty"`
 	AccessSwitches           []rawRackElementAccessSwitch  `json:"access_switches,omitempty"`
@@ -892,14 +964,18 @@ func (o *rawRackType) polish() (*RackType, error) {
 		LastModifiedAt:           o.LastModifiedAt,
 	}
 
-	var ld *LogicalDevice
+	var ld *rawLogicalDevice
 	var found bool
 
 	for _, r := range o.LeafSwitchess {
 		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
 			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
 		}
-		p, err := r.polish(*ld)
+		ldp, err := ld.parse()
+		if err != nil {
+			return nil, err
+		}
+		p, err := r.polish(*ldp)
 		if err != nil {
 			return nil, err
 		}
@@ -910,7 +986,11 @@ func (o *rawRackType) polish() (*RackType, error) {
 		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
 			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
 		}
-		p, err := r.polish(*ld)
+		ldp, err := ld.parse()
+		if err != nil {
+			return nil, err
+		}
+		p, err := r.polish(*ldp)
 		if err != nil {
 			return nil, err
 		}
@@ -921,7 +1001,11 @@ func (o *rawRackType) polish() (*RackType, error) {
 		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
 			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
 		}
-		p, err := r.polish(*ld)
+		ldp, err := ld.parse()
+		if err != nil {
+			return nil, err
+		}
+		p, err := r.polish(*ldp)
 		if err != nil {
 			return nil, err
 		}
@@ -931,7 +1015,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 	return result, nil
 }
 
-func (o rawRackType) logicalDeviceById(id string) (*LogicalDevice, bool) {
+func (o rawRackType) logicalDeviceById(id string) (*rawLogicalDevice, bool) {
 	for _, ld := range o.LogicalDevices {
 		if ld.Id == ObjectId(id) {
 			return &ld, true

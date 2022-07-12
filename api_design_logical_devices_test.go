@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 )
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
@@ -67,7 +68,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 								Unit:  "G",
 								Value: 1,
 							},
-							Roles: []string{"unused"},
+							Roles: LogicalDevicePortRoleUnused,
 						},
 					},
 				},
@@ -117,4 +118,35 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+func TestRawIfy(t *testing.T) {
+	testDev := LogicalDevice{
+		DisplayName: "name",
+		Id:          "id",
+		Panels: []LogicalDevicePanel{{
+
+			PanelLayout: LogicalDevicePanelLayout{
+				RowCount:    3,
+				ColumnCount: 3,
+			},
+			PortIndexing: LogicalDevicePortIndexing{
+				Order:      PortIndexingVerticalFirst,
+				StartIndex: 0,
+				Schema:     PortIndexingSchemaAbsolute,
+			},
+			PortGroups: []LogicalDevicePortGroup{{
+				Count: 9,
+				Speed: LogicalDevicePortSpeed{
+					Unit:  "G",
+					Value: 10,
+				},
+				Roles: LogicalDevicePortRoleAccess | LogicalDevicePortRoleSpine,
+			}},
+		}},
+		CreatedAt:      time.Now().Add(-time.Hour * 24),
+		LastModifiedAt: time.Now(),
+	}
+	raw := testDev.raw()
+	log.Println(raw.Panels[0].PortGroups[0].Roles)
 }

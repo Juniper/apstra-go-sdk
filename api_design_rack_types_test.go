@@ -44,16 +44,16 @@ func TestRackTypeStrings(t *testing.T) {
 		{stringVal: "", intType: AccessRedundancyProtocolNone, stringType: accessRedundancyProtocolNone},
 		{stringVal: "esi", intType: AccessRedundancyProtocolEsi, stringType: accessRedundancyProtocolEsi},
 
-		{stringVal: "l3clos", intType: FabricCOnnectivityDesignL3Clos, stringType: fabricConnectivityDesignL3Clos},
-		{stringVal: "l3collapsed", intType: FabricCOnnectivityDesignL3Collapsed, stringType: fabricConnectivityDesignL3Collapsed},
+		{stringVal: "l3clos", intType: FabricConnectivityDesignL3Clos, stringType: fabricConnectivityDesignL3Clos},
+		{stringVal: "l3collapsed", intType: FabricConnectivityDesignL3Collapsed, stringType: fabricConnectivityDesignL3Collapsed},
 
 		{stringVal: "singleAttached", intType: RackLinkAttachmentTypeSingle, stringType: rackLinkAttachmentTypeSingle},
 		{stringVal: "dualAttached", intType: RackLinkAttachmentTypeDual, stringType: rackLinkAttachmentTypeDual},
 
-		{stringVal: "", intType: RackLinkLagModeLacpNone, stringType: rackLinkLagModeLacpNone},
-		{stringVal: "lacp_active", intType: RackLinkLagModeLacpActive, stringType: rackLinkLagModeLacpActive},
-		{stringVal: "lacp_passive", intType: RackLinkLagModeLacpPassive, stringType: rackLinkLagModeLacpPassive},
-		{stringVal: "static_lag", intType: RackLinkLagModeLacpStatic, stringType: rackLinkLagModeLacpStatic},
+		{stringVal: "", intType: RackLinkLagModeNone, stringType: rackLinkLagModeNone},
+		{stringVal: "lacp_active", intType: RackLinkLagModeActive, stringType: rackLinkLagModeActive},
+		{stringVal: "lacp_passive", intType: RackLinkLagModePassive, stringType: rackLinkLagModePassive},
+		{stringVal: "static_lag", intType: RackLinkLagModeStatic, stringType: rackLinkLagModeStatic},
 	}
 
 	for i, td := range testData {
@@ -107,7 +107,7 @@ func TestCreateGetRackType(t *testing.T) {
 	id, err := client.createRackType(context.TODO(), &RackType{
 		DisplayName:              "rdn " + randString(5, "hex"),
 		Description:              "description " + randString(10, "hex"),
-		FabricConnectivityDesign: FabricCOnnectivityDesignL3Clos,
+		FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
 		LeafSwitches: []RackElementLeafSwitch{
 			{
 				Label:                       leafLabel,
@@ -143,7 +143,7 @@ func TestCreateGetRackType(t *testing.T) {
 									Unit:  "G",
 									Value: 10,
 								},
-								Roles: []string{"access", "generic", "spine", "peer"},
+								Roles: LogicalDevicePortRoleAccess | LogicalDevicePortRoleGeneric | LogicalDevicePortRoleSpine | LogicalDevicePortRolePeer,
 							},
 						},
 					},
@@ -153,7 +153,7 @@ func TestCreateGetRackType(t *testing.T) {
 		},
 		GenericSystems: []RackElementGenericSystem{
 			{
-				Count:            10,
+				Count:            5,
 				AsnDomain:        FeatureSwitchEnabled,
 				ManagementLevel:  GenericSystemUnmanaged,
 				PortChannelIdMin: 0,
@@ -161,9 +161,9 @@ func TestCreateGetRackType(t *testing.T) {
 				Loopback:         FeatureSwitchDisabled,
 				Tags:             nil,
 				Label:            "some generic system",
-				Links: []GenericSystemAccessLink{
+				Links: []RackLink{
 					{
-						Label:              "",
+						Label:              "foo",
 						Tags:               nil,
 						LinkPerSwitchCount: 1,
 						LinkSpeed: LogicalDevicePortSpeed{
@@ -172,7 +172,7 @@ func TestCreateGetRackType(t *testing.T) {
 						},
 						TargetSwitchLabel: leafLabel,
 						AttachmentType:    RackLinkAttachmentTypeSingle,
-						LagMode:           RackLinkLagModeLacpActive,
+						LagMode:           RackLinkLagModeNone,
 					},
 				},
 				Panels: []LogicalDevicePanel{{
@@ -181,7 +181,8 @@ func TestCreateGetRackType(t *testing.T) {
 					PortGroups: []LogicalDevicePortGroup{{
 						Count: 2,
 						Speed: LogicalDevicePortSpeed{Unit: "G", Value: 10},
-						Roles: []string{"generic"},
+						Roles: LogicalDevicePortRoleGeneric | LogicalDevicePortRoleLeaf | LogicalDevicePortRoleAccess,
+						//Roles: []string{"generic", "leaf", "access"},
 					}},
 				}},
 				DisplayName: "Generic System Display Name",
