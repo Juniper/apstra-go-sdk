@@ -2,6 +2,7 @@ package goapstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"testing"
@@ -149,4 +150,30 @@ func TestRawIfy(t *testing.T) {
 	}
 	raw := testDev.raw()
 	log.Println(raw.Panels[0].PortGroups[0].Roles)
+}
+
+func TestGetLogicalDeviceByName(t *testing.T) {
+	client, err := newLiveTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	logicalDevices, err := client.getAllLogicalDevices(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, test := range logicalDevices {
+		logicalDevice, err := client.getLogicalDeviceByName(context.TODO(), test.DisplayName)
+		var ace ApstraClientErr
+		if err != nil {
+			if !(errors.As(err, &ace) && ace.Type() == ErrMultipleMatch) {
+				log.Fatal(err)
+			}
+			continue
+		}
+		if logicalDevice.Id != test.Id {
+			log.Fatal(fmt.Errorf("expected '%s', got '%s'", test.Id, logicalDevice.Id))
+		}
+	}
 }

@@ -326,10 +326,12 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 		return nil, err
 	}
 
-	var result *LogicalDevice
+	var result LogicalDevice
 	var found bool
 
 	for _, ld := range logicalDevices {
+		foo := &ld
+		_ = foo
 		if ld.DisplayName == name {
 			if found {
 				return nil, ApstraClientErr{
@@ -337,12 +339,12 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 					err:     fmt.Errorf("found multiple logical devices named '%s' found", name),
 				}
 			}
-			result = &ld
+			result = ld
 			found = true
 		}
 	}
 	if found {
-		return result, nil
+		return &result, nil
 	}
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
