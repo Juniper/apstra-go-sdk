@@ -162,6 +162,15 @@ type LogicalDevicePortSpeed struct {
 	Value int    `json:"value"`
 }
 
+func (o *LogicalDevicePortSpeed) BitsPerSecond() int64 {
+	switch o.Unit {
+	case "M":
+		return o.Value * 1000 * 1000
+	case "G":
+		return o.Value * 1000 * 1000 * 1000
+	}
+}
+
 type LogicalDevicePanel struct {
 	PanelLayout  LogicalDevicePanelLayout  `json:"panel_layout"`
 	PortIndexing LogicalDevicePortIndexing `json:"port_indexing"`
