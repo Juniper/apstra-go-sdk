@@ -76,6 +76,14 @@ func (o LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
 	return result
 }
 
+func (o LogicalDevicePortRoleFlags) Strings() []string {
+	var result []string
+	for _, role := range o.raw() {
+		result = append(result, string(role))
+	}
+	return result
+}
+
 func (o logicalDevicePortRole) parse() (LogicalDevicePortRoleFlags, error) {
 	switch o {
 	case logicalDevicePortRoleAccess:
