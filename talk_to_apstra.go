@@ -102,7 +102,7 @@ func (o Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 // talkToApstra talks to the Apstra server using in.method. If in.apiInput is
 // not nil, it JSON-encodes that data structure and sends it. In case the
 // in.apiResponse is not nil, the server response is extracted into it.
-func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
+func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	var err error
 	var requestBody []byte
 	if ctx == nil {
