@@ -672,11 +672,14 @@ func (o *RackElementAccessSwitch) raw(logicalDeviceId string) *rawRackElementAcc
 }
 
 type rawRackElementAccessSwitch struct {
-	InstanceCount      int                      `json:"instance_count"`
-	RedundancyProtocol accessRedundancyProtocol `json:"redundancy_protocol,omitempty"`
-	Links              []RackLink               `json:"links"`
-	Label              string                   `json:"label"`
-	LogicalDevice      string                   `json:"logical_device"`
+	InstanceCount         int                      `json:"instance_count"`
+	RedundancyProtocol    accessRedundancyProtocol `json:"redundancy_protocol,omitempty"`
+	Links                 []RackLink               `json:"links"`
+	Label                 string                   `json:"label"`
+	LogicalDevice         string                   `json:"logical_device"`
+	AccessAccessLinkCount int                      `json:"access_access_link_count"` // todo: add these to RacKElementAccessSwitch, and raw/polish methods
+	Tags                  []DesignTag              `json:"tags"`                     // todo: add these to RacKElementAccessSwitch, and raw/polish methods
+	AccessAccessLinkSpeed LogicalDevicePortSpeed   `json:"access_access_link_speed"` // todo: add these to RacKElementAccessSwitch, and raw/polish methods
 }
 
 func (o *rawRackElementAccessSwitch) polish(ld LogicalDevice) (*RackElementAccessSwitch, error) {
