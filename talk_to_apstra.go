@@ -26,14 +26,13 @@ const (
 
 // talkToApstraIn is the input structure for the Client.talkToApstra() function
 type talkToApstraIn struct {
-	method         string         // how to talk to Apstra
-	url            *url.URL       // where to talk to Aptstra (as little as /path/to/thing ok) this is considered before urlStr
-	urlStr         string         // where to talk to Apstra, this one is used if url is nil
-	apiInput       interface{}    // if non-nil we'll JSON encode this prior to sending it
-	apiResponse    interface{}    // if non-nil we'll JSON decode Apstra response here
-	doNotLogin     bool           // when set, Client will not attempt login (we set for anti-recursion)
-	unsynchronized bool           // default behavior is to send apstraApiAsyncParamValFull, block until task completion
-	bodyPtr        *io.ReadCloser // if set, do not parse reply, fill this pointer with the http response body
+	method         string      // how to talk to Apstra
+	url            *url.URL    // where to talk to Aptstra (as little as /path/to/thing ok) this is considered before urlStr
+	urlStr         string      // where to talk to Apstra, this one is used if url is nil
+	apiInput       interface{} // if non-nil we'll JSON encode this prior to sending it
+	apiResponse    interface{} // if non-nil we'll JSON decode Apstra response here
+	doNotLogin     bool        // when set, Client will not attempt login (we set for anti-recursion)
+	unsynchronized bool        // default behavior is to send apstraApiAsyncParamValFull, block until task completion
 }
 
 type apstraErr struct {
@@ -129,7 +128,7 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	if !contextHasDeadline { // maybe this context already has a deadline?
 		switch {
 		case o.cfg.Timeout < 0: // negative Timeout is no timeout interval (infinite)
-		case o.cfg.Timeout == 0: // Timeout of zero means use the interval passed in ClientCfg
+		case o.cfg.Timeout == 0: // Timeout of zero means use defaultTimeout
 			var cancel func()
 			ctx, cancel = context.WithTimeout(ctx, defaultTimeout)
 			defer cancel()
@@ -203,12 +202,6 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		} // HTTP 401
 
 		return newTalkToApstraErr(req, requestBody, resp, "")
-	}
-
-	// return the response body if that's what the user wants
-	if in.bodyPtr != nil {
-		in.bodyPtr = &resp.Body
-		return nil
 	}
 
 	// noinspection GoUnhandledErrorResult
