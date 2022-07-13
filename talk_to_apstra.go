@@ -167,11 +167,11 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	debugFunc(2, dumpHttpResponse, resp)
 
-	// noinspection GoUnhandledErrorResult
-	defer resp.Body.Close()
-
 	// response not okay?
 	if resp.StatusCode/100 != 2 {
+		// all paths in here lead to 'return'
+		// noinspection GoUnhandledErrorResult
+		defer resp.Body.Close()
 
 		// Auth fail?
 		if resp.StatusCode == 401 {
@@ -210,6 +210,9 @@ func (o Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		in.bodyPtr = &resp.Body
 		return nil
 	}
+
+	// noinspection GoUnhandledErrorResult
+	defer resp.Body.Close()
 
 	// caller is expecting a response, but we don't know if Apstra will return
 	// the desired data structure, or a taskIdResponse.
