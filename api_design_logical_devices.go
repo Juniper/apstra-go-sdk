@@ -254,7 +254,7 @@ type rawLogicalDevice struct {
 	LastModifiedAt time.Time               `json:"last_modified_at"`
 }
 
-func (o rawLogicalDevice) parse() (*LogicalDevice, error) {
+func (o rawLogicalDevice) polish() (*LogicalDevice, error) {
 	var panels []LogicalDevicePanel
 	for _, panel := range o.Panels {
 		parsed, err := panel.parse()
@@ -298,7 +298,7 @@ func (o *Client) getAllLogicalDevices(ctx context.Context) ([]LogicalDevice, err
 	}
 	var result []LogicalDevice
 	for _, raw := range response.Items {
-		ld, err := raw.parse()
+		ld, err := raw.polish()
 		if err != nil {
 			return nil, err
 		}
@@ -317,7 +317,7 @@ func (o *Client) getLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDev
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response.parse()
+	return response.polish()
 }
 
 func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*LogicalDevice, error) {

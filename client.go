@@ -668,3 +668,47 @@ func (o *Client) UpdateTag(ctx context.Context, id ObjectId, in *DesignTag) (Obj
 func (o *Client) DeleteTag(ctx context.Context, id ObjectId) error {
 	return o.deleteTag(ctx, id)
 }
+
+// ListAllTemplateIds returns []ObjectId representing all blueprint templates
+func (o *Client) ListAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listAllTemplateIds(ctx)
+}
+
+// GetAllTemplates returns map[TemplateType][]interface{} where each element
+// is one of these:
+//   []TemplateRackBased
+//   []TemplatePodBased
+//   []TemplateL3Collapsed
+func (o *Client) GetAllTemplates(ctx context.Context) (map[TemplateType][]interface{}, error) {
+	return o.getAllTemplates(ctx)
+}
+
+// GetRackBasedTemplate returns *TemplateRackBased represented by `id`
+func (o *Client) GetRackBasedTemplate(ctx context.Context, id ObjectId) (*TemplateRackBased, error) {
+	return o.getRackBasedTemplate(ctx, id)
+}
+
+// GetAllRackBasedTemplates returns []TemplateRackBased representing all rack_based templates
+func (o *Client) GetAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBased, error) {
+	return o.getAllRackBasedTemplates(ctx)
+}
+
+// GetPodBasedTemplate returns *TemplatePodBased represented by `id`
+func (o *Client) GetPodBasedTemplate(ctx context.Context, id ObjectId) (*TemplatePodBased, error) {
+	return o.getPodBasedTemplate(ctx, id)
+}
+
+// GetAllPodBasedTemplates returns []TemplatePodBased representing all pod_based templates
+func (o *Client) GetAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBased, error) {
+	return o.getAllPodBasedTemplates(ctx)
+}
+
+// GetL3CollapsedTemplate returns *TemplateL3Collapsed represented by `id`
+func (o *Client) GetL3CollapsedTemplate(ctx context.Context, id ObjectId) (*TemplateL3Collapsed, error) {
+	return o.getL3CollapsedTemplate(ctx, id)
+}
+
+// GetAllL3CollapsedTemplates returns []TemplateL3Collapsed representing all l3_collapsed templates
+func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Collapsed, error) {
+	return o.getAllL3CollapsedTemplates(ctx)
+}

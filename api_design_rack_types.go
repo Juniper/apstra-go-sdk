@@ -745,7 +745,7 @@ type rawRackLink struct {
 	LinkSpeed          LogicalDevicePortSpeed `json:"link_speed"`
 	TargetSwitchLabel  string                 `json:"target_switch_label"`
 	AttachmentType     rackLinkAttachmentType `json:"attachment_type"`
-	LagMode            *rackLinkLagMode       `json:"lag_mode"` // do not 'omitempty"
+	LagMode            *rackLinkLagMode       `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
 	SwitchPeer         rackLinkSwitchPeer     `json:"switch_peer,omitempty"`
 }
 
@@ -755,9 +755,12 @@ func (o rawRackLink) polish() (*RackLink, error) {
 		return nil, err
 	}
 
-	lagMode, err := o.LagMode.parse()
-	if err != nil {
-		return nil, err
+	var lagMode int
+	if o.LagMode != nil {
+		lagMode, err = o.LagMode.parse()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	switchPeer, err := o.SwitchPeer.parse()
@@ -966,7 +969,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
 			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
 		}
-		ldp, err := ld.parse()
+		ldp, err := ld.polish()
 		if err != nil {
 			return nil, err
 		}
@@ -981,7 +984,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
 			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
 		}
-		ldp, err := ld.parse()
+		ldp, err := ld.polish()
 		if err != nil {
 			return nil, err
 		}
@@ -996,7 +999,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
 			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
 		}
-		ldp, err := ld.parse()
+		ldp, err := ld.polish()
 		if err != nil {
 			return nil, err
 		}
