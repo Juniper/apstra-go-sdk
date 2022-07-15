@@ -125,30 +125,7 @@ func TestCreateGetRackType(t *testing.T) {
 				MlagVlanId:         0,
 				RedundancyProtocol: LeafRedundancyProtocolNone,
 				Tags:               nil,
-				Panels: []LogicalDevicePanel{
-					{
-						PanelLayout: LogicalDevicePanelLayout{
-							RowCount:    3,
-							ColumnCount: 3,
-						},
-						PortIndexing: LogicalDevicePortIndexing{
-							Order:      PortIndexingHorizontalFirst,
-							StartIndex: 1,
-							Schema:     PortIndexingSchemaAbsolute,
-						},
-						PortGroups: []LogicalDevicePortGroup{
-							{
-								Count: 9,
-								Speed: LogicalDevicePortSpeed{
-									Unit:  "G",
-									Value: 10,
-								},
-								Roles: LogicalDevicePortRoleAccess | LogicalDevicePortRoleGeneric | LogicalDevicePortRoleSpine | LogicalDevicePortRolePeer,
-							},
-						},
-					},
-				},
-				DisplayName: "leaf display name" + randString(10, "hex"),
+				LogicalDeviceId:    "virtual-7x10-1",
 			},
 		},
 		GenericSystems: []RackElementGenericSystem{
@@ -175,17 +152,7 @@ func TestCreateGetRackType(t *testing.T) {
 						LagMode:           RackLinkLagModeNone,
 					},
 				},
-				Panels: []LogicalDevicePanel{{
-					PanelLayout:  LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 2},
-					PortIndexing: LogicalDevicePortIndexing{Order: PortIndexingVerticalFirst, Schema: PortIndexingSchemaAbsolute},
-					PortGroups: []LogicalDevicePortGroup{{
-						Count: 2,
-						Speed: LogicalDevicePortSpeed{Unit: "G", Value: 10},
-						Roles: LogicalDevicePortRoleGeneric | LogicalDevicePortRoleLeaf | LogicalDevicePortRoleAccess,
-						//Roles: []string{"generic", "leaf", "access"},
-					}},
-				}},
-				DisplayName: "Generic System Display Name",
+				LogicalDeviceId: "5ed7ed07-7222-4d6c-a5cb-1e1aa6036dab",
 			},
 		},
 		AccessSwitches: nil,
