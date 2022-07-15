@@ -217,8 +217,8 @@ func (o rawLogicalDevicePanel) parse() (*LogicalDevicePanel, error) {
 	}
 
 	return &LogicalDevicePanel{
-		PanelLayout:  LogicalDevicePanelLayout{},
-		PortIndexing: LogicalDevicePortIndexing{},
+		PanelLayout:  o.PanelLayout,
+		PortIndexing: o.PortIndexing,
 		PortGroups:   portGroups,
 	}, nil
 }
