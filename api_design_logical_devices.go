@@ -156,7 +156,7 @@ func (o *rawLogicalDevicePortGroup) parse() (*LogicalDevicePortGroup, error) {
 		if err != nil {
 			return nil, err
 		}
-		roles = roles & parsed
+		roles = roles | parsed
 	}
 	return &LogicalDevicePortGroup{
 		Count: o.Count,
