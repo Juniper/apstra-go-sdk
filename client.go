@@ -712,3 +712,8 @@ func (o *Client) GetL3CollapsedTemplate(ctx context.Context, id ObjectId) (*Temp
 func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Collapsed, error) {
 	return o.getAllL3CollapsedTemplates(ctx)
 }
+
+// NewQuery returns a *QEQuery with embedded *Client
+func (o *Client) NewQuery(blueprint ObjectId) *QEQuery {
+	return o.newQuery(blueprint)
+}

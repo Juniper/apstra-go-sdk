@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -379,22 +380,24 @@ func (o *Client) deleteRoutingZone(ctx context.Context, blueprintId ObjectId, zo
 	})
 }
 
-type QueryEngineQuery struct {
-	Query string `json:"query"`
-}
+func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuery) (*QueryEngineResponse, error) {
+	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintQueryEngine, blueprint))
+	if err != nil {
+		return nil, err
+	}
 
-type QueryEngineResponse struct {
-	Count int           `json:"count"`
-	Items []interface{} `json:"items"`
-}
+	if query.queryType != QEQueryTypeNone {
+		params := apstraUrl.Query()
+		params.Set(queryEngineQueryTypeUrlParam, query.queryType.string())
+		apstraUrl.RawQuery = params.Encode()
+	}
 
-func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, in *QueryEngineQuery) (*QueryEngineResponse, error) {
 	response := &QueryEngineResponse{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintQueryEngine, blueprint),
-		apiInput:    in,
-		apiResponse: response,
+		method:         http.MethodPost,
+		url:            apstraUrl,
+		apiInput:       &queryEngineQuery{Query: query.string()},
+		apiResponse:    response,
+		unsynchronized: true,
 	})
-
 }

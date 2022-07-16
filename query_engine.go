@@ -9,50 +9,79 @@ import (
 const (
 	apiUrlBlueprintQueryEngine = apiUrlBlueprintById + apiUrlPathDelim + "qe"
 	qEElementAttributeSep      = ","
+
+	queryEngineQueryTypeUrlParam = "type"
 )
 
 type QEEType int
 
 const (
-	QEETypeNode = QEEType(iota)
-	QEETypeIn
-	QEETypeout
-
-	qEETypeNode    = "node"
-	qEETypeIn      = "in_"
-	qEETypeOut     = "out"
-	qEETypeUnknown = "unknown QueryEngine element type '%d'"
+	qEETypeNode = "node"
+	qEETypeIn   = "in_"
+	qEETypeOut  = "out"
 )
 
-func (o QEEType) String() string {
+type QEQueryType int
+
+const (
+	QEQueryTypeNone = QEQueryType(iota)
+	QEQueryTypeConfig
+	QEQueryTypeDeployed
+	QEQueryTypeOperation
+	QEQueryTypeStaging
+
+	qEQueryTypeNone      = ""
+	qEQueryTypeConfig    = "config"
+	qEQueryTypeDeployed  = "deployed"
+	qEQueryTypeOperation = "operation"
+	qEQueryTypeStaging   = "staging"
+	qEQueryTypeUnknown   = "unknown query type %d"
+)
+
+func (o QEQueryType) string() string {
 	switch o {
-	case QEETypeNode:
-		return qEETypeNode
-	case QEETypeIn:
-		return qEETypeIn
-	case QEETypeout:
-		return qEETypeOut
+	case QEQueryTypeNone:
+		return qEQueryTypeNone
+	case QEQueryTypeConfig:
+		return qEQueryTypeConfig
+	case QEQueryTypeDeployed:
+		return qEQueryTypeDeployed
+	case QEQueryTypeOperation:
+		return qEQueryTypeOperation
+	case QEQueryTypeStaging:
+		return qEQueryTypeStaging
 	default:
-		return fmt.Sprintf(qEETypeUnknown, o)
+		return fmt.Sprintf(qEQueryTypeUnknown, o)
 	}
+}
+
+// per apstra API
+type queryEngineQuery struct {
+	Query string `json:"query"`
+}
+
+// per apstra API
+type QueryEngineResponse struct {
+	Count int           `json:"count"`
+	Items []interface{} `json:"items"`
 }
 
 type QEAttrVal interface {
 	String() string
 }
 
-type QEEAttributes struct {
+type QEEAttribute struct {
 	key   string
 	value QEAttrVal
 }
 
-func (o QEEAttributes) String() string {
+func (o QEEAttribute) String() string {
 	return fmt.Sprintf("%s=%s", o.key, o.value.String())
 }
 
 type QEElement struct {
 	qeeType    string
-	attributes []QEEAttributes
+	attributes []QEEAttribute
 	next       *QEElement
 }
 
@@ -119,7 +148,7 @@ func (o QEBoolVal) String() string {
 	return "false"
 }
 
-func (o *Client) NewQuery(blueprint ObjectId) *QEQuery {
+func (o *Client) newQuery(blueprint ObjectId) *QEQuery {
 	return &QEQuery{
 		client:    o,
 		blueprint: blueprint,
@@ -131,33 +160,39 @@ type QEQuery struct {
 	client       *Client
 	context      context.Context
 	blueprint    ObjectId
+	queryType    QEQueryType
 }
 
-func (o *QEQuery) addElement(elementType string, attributes []QEEAttributes) *QEQuery {
-	new := QEElement{
+func (o *QEQuery) addElement(elementType string, attributes []QEEAttribute) *QEQuery {
+	newElement := QEElement{
 		qeeType:    elementType,
 		attributes: attributes,
 	}
 	if o.firstElement == nil {
-		o.firstElement = &new
+		o.firstElement = &newElement
 		return o
 	}
-	o.firstElement.getLast().next = &new
+	o.firstElement.getLast().next = &newElement
 	return o
 }
 
-func (o *QEQuery) Node(attributes []QEEAttributes) *QEQuery {
+func (o *QEQuery) Node(attributes []QEEAttribute) *QEQuery {
 	return o.addElement(qEETypeNode, attributes)
 }
-func (o *QEQuery) Out(attributes []QEEAttributes) *QEQuery {
+func (o *QEQuery) Out(attributes []QEEAttribute) *QEQuery {
 	return o.addElement(qEETypeOut, attributes)
 }
-func (o *QEQuery) In(attributes []QEEAttributes) *QEQuery {
+func (o *QEQuery) In(attributes []QEEAttribute) *QEQuery {
 	return o.addElement(qEETypeIn, attributes)
 }
 
-func (o *QEQuery) Context(ctx context.Context) *QEQuery {
+func (o *QEQuery) SetContext(ctx context.Context) *QEQuery {
 	o.context = ctx
+	return o
+}
+
+func (o *QEQuery) SetType(t QEQueryType) *QEQuery {
+	o.queryType = t
 	return o
 }
 
@@ -180,7 +215,7 @@ func (o *QEQuery) Do() (interface{}, error) {
 	if o.context == nil {
 		ctx = context.TODO()
 	}
-	resp, err := o.client.runQuery(ctx, o.blueprint, &QueryEngineQuery{Query: o.string()})
+	resp, err := o.client.runQuery(ctx, o.blueprint, o)
 	if err != nil {
 		return nil, err
 	}

@@ -103,25 +103,3 @@ func TestCreateDeleteRoutingZone(t *testing.T) {
 		log.Fatal(err)
 	}
 }
-
-func TestQueryEngine(t *testing.T) {
-	client, err := newLiveTestClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	blueprints, err := client.listAllBlueprintIds(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(blueprints) == 0 {
-		t.Skip("can't test queries without any blueprints")
-	}
-
-	resp, err := client.runQuery(context.TODO(), blueprints[0], &QueryEngineQuery{Query: "node('system', role=is_in(['spine','leaf','access']), name='switch')"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Println(resp.Items)
-}

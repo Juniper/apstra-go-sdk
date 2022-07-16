@@ -67,7 +67,7 @@ func convertTtaeToAceWherePossible(err error) error {
 // path to the specific API endpoint and any required query parameters.
 // When `in.unsychronized` is false (the default), Apstra's 'async=full' query
 // string parameter is added to the returned result.
-func (o Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
+func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 	var result *url.URL
 	var err error
 
