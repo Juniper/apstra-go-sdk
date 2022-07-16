@@ -14,9 +14,9 @@ const (
 	apiUrlPathDelim                   = "/"
 	apiUrlBlueprintsPrefix            = apiUrlBlueprints + apiUrlPathDelim
 	apiUrlBlueprintById               = apiUrlBlueprintsPrefix + "%s"
-	apiUrlBluePrintRoutingZones       = apiUrlBlueprintById + "/security_zones"
-	apiUrlBluePrintRoutingZonesPrefix = apiUrlBluePrintRoutingZones + apiUrlPathDelim
-	apiUrlBluePrintRoutingZonesById   = apiUrlBluePrintRoutingZonesPrefix + "%s"
+	apiUrlBlueprintRoutingZones       = apiUrlBlueprintById + apiUrlPathDelim + "security_zones"
+	apiUrlBlueprintRoutingZonesPrefix = apiUrlBlueprintRoutingZones + apiUrlPathDelim
+	apiUrlBlueprintRoutingZonesById   = apiUrlBlueprintRoutingZonesPrefix + "%s"
 
 	initTypeFromTemplate = "template_reference"
 )
@@ -325,7 +325,7 @@ func (o *Client) createRoutingZone(ctx context.Context, Id ObjectId, cfg *Create
 	response := &objectIdResponse{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlBluePrintRoutingZones, Id),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingZones, Id),
 		apiInput:    cfg,
 		apiResponse: response,
 	})
@@ -348,7 +348,7 @@ func (o *Client) getRoutingZone(ctx context.Context, blueprintId ObjectId, zoneI
 	response := &SecurityZone{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBluePrintRoutingZonesById, blueprintId, zoneId),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingZonesById, blueprintId, zoneId),
 		apiResponse: response,
 	})
 }
@@ -375,6 +375,26 @@ func (o *Client) getAllRoutingZones(ctx context.Context, blueprintId ObjectId) (
 func (o *Client) deleteRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlBluePrintRoutingZonesById, blueprintId, zoneId),
+		urlStr: fmt.Sprintf(apiUrlBlueprintRoutingZonesById, blueprintId, zoneId),
 	})
+}
+
+type QueryEngineQuery struct {
+	Query string `json:"query"`
+}
+
+type QueryEngineResponse struct {
+	Count int           `json:"count"`
+	Items []interface{} `json:"items"`
+}
+
+func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, in *QueryEngineQuery) (*QueryEngineResponse, error) {
+	response := &QueryEngineResponse{}
+	return response, o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintQueryEngine, blueprint),
+		apiInput:    in,
+		apiResponse: response,
+	})
+
 }
