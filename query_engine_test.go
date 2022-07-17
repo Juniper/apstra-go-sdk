@@ -44,27 +44,27 @@ func TestQEEAttributeString(t *testing.T) {
 	}{
 		{
 			"empty_string=''",
-			QEEAttribute{key: "empty_string", value: QEStringVal("")},
+			QEEAttribute{Key: "empty_string", Value: QEStringVal("")},
 		},
 		{
 			"foo='FOO'",
-			QEEAttribute{key: "foo", value: QEStringVal("FOO")},
+			QEEAttribute{Key: "foo", Value: QEStringVal("FOO")},
 		},
 		{
 			"empty_val_is_in=is_in([])",
-			QEEAttribute{key: "empty_val_is_in", value: QEStringValIsIn{}},
+			QEEAttribute{Key: "empty_val_is_in", Value: QEStringValIsIn{}},
 		},
 		{
 			"val_is_in_foo_bar=is_in(['foo','bar'])",
-			QEEAttribute{key: "val_is_in_foo_bar", value: QEStringValIsIn{"foo", "bar"}},
+			QEEAttribute{Key: "val_is_in_foo_bar", Value: QEStringValIsIn{"foo", "bar"}},
 		},
 		{
 			"empty_val_not_in=not_in([])",
-			QEEAttribute{key: "empty_val_not_in", value: QEStringValNotIn{}},
+			QEEAttribute{Key: "empty_val_not_in", Value: QEStringValNotIn{}},
 		},
 		{
 			"val_is_in_foo_bar=is_in(['foo','bar'])",
-			QEEAttribute{key: "val_is_in_foo_bar", value: QEStringValIsIn{"foo", "bar"}},
+			QEEAttribute{Key: "val_is_in_foo_bar", Value: QEStringValIsIn{"foo", "bar"}},
 		},
 	}
 

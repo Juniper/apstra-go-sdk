@@ -71,12 +71,12 @@ type QEAttrVal interface {
 }
 
 type QEEAttribute struct {
-	key   string
-	value QEAttrVal
+	Key   string
+	Value QEAttrVal
 }
 
 func (o QEEAttribute) String() string {
-	return fmt.Sprintf("%s=%s", o.key, o.value.String())
+	return fmt.Sprintf("%s=%s", o.Key, o.Value.String())
 }
 
 type QEElement struct {
