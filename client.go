@@ -717,3 +717,28 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 func (o *Client) NewQuery(blueprint ObjectId) *QEQuery {
 	return o.newQuery(blueprint)
 }
+
+// ListAllInterfaceMapIds returns []ObjectId representing all interface maps
+func (o *Client) ListAllInterfaceMapIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listAllInterfaceMapIds(ctx)
+}
+
+// GetInterfaceMap returns *InterfaceMap representing the interface map identified by id
+func (o *Client) GetInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMap, error) {
+	return o.getInterfaceMap(ctx, id)
+}
+
+// CreateInterfaceMap creates an interface map, returns its ObjectId
+func (o *Client) CreateInterfaceMap(ctx context.Context, in *InterfaceMap) (ObjectId, error) {
+	return o.createInterfaceMap(ctx, in)
+}
+
+// UpdateInterfaceMap updates the interface map represented by id, with the details in ifMap
+func (o *Client) UpdateInterfaceMap(ctx context.Context, id ObjectId, ifMap *InterfaceMap) error {
+	return o.updateInterfaceMap(ctx, id, ifMap)
+}
+
+// DeleteInterfaceMap deletes the interface map identified by id
+func (o *Client) DeleteInterfaceMap(ctx context.Context, id ObjectId) error {
+	return o.deleteInterfaceMap(ctx, id)
+}

@@ -72,7 +72,7 @@ func (o InterfaceSettingParam) String() string {
 	return strings.Replace(string(payload), `"`, `\"`, -1)
 }
 
-type InterfaceMapping struct {
+type InterfaceMapMapping struct {
 	DPPortId      int
 	DPTransformId int
 	DPInterfaceId int
@@ -80,14 +80,14 @@ type InterfaceMapping struct {
 	LDPort        int
 }
 
-func (o *InterfaceMapping) raw() *rawInterfaceMapping {
+func (o *InterfaceMapMapping) raw() *rawInterfaceMapping {
 	return &rawInterfaceMapping{o.DPPortId, o.DPTransformId, o.DPInterfaceId, o.LDPanel, o.LDPort}
 }
 
 type rawInterfaceMapping []int
 
-func (o rawInterfaceMapping) polish() *InterfaceMapping {
-	return &InterfaceMapping{DPPortId: o[0], DPTransformId: o[1], DPInterfaceId: o[2], LDPanel: o[3], LDPort: o[4]}
+func (o rawInterfaceMapping) polish() *InterfaceMapMapping {
+	return &InterfaceMapMapping{DPPortId: o[0], DPTransformId: o[1], DPInterfaceId: o[2], LDPanel: o[3], LDPort: o[4]}
 }
 
 type InterfaceStateActive bool
@@ -118,13 +118,13 @@ type InterfaceMapInterfaceSetting struct {
 }
 
 type InterfaceMapInterface struct {
-	Name        string                       `json:"name"`
-	Roles       LogicalDevicePortRoleFlags   `json:"roles"`
-	Mapping     InterfaceMapping             `json:"mapping"`
-	ActiveState InterfaceStateActive         `json:"state"`
-	Position    int                          `json:"position"`
-	Speed       LogicalDevicePortSpeed       `json:"speed"`
-	Setting     InterfaceMapInterfaceSetting `json:"setting"`
+	Name        string
+	Roles       LogicalDevicePortRoleFlags
+	Mapping     InterfaceMapMapping
+	ActiveState InterfaceStateActive
+	Position    int
+	Speed       LogicalDevicePortSpeed
+	Setting     InterfaceMapInterfaceSetting
 }
 
 func (o *InterfaceMapInterface) raw() *rawInterfaceMapInterface {
@@ -180,12 +180,29 @@ type InterfaceMap struct {
 	Interfaces      []InterfaceMapInterface
 }
 
+func (o *InterfaceMap) raw() *rawInterfaceMap {
+	rawInterfaces := make([]rawInterfaceMapInterface, len(o.Interfaces))
+	for i, intf := range o.Interfaces {
+		rawInterfaces[i] = *intf.raw()
+	}
+
+	return &rawInterfaceMap{
+		LogicalDeviceId: o.LogicalDeviceId,
+		DeviceProfileId: o.DeviceProfileId,
+		CreatedAt:       o.CreatedAt,
+		LastModifiedAt:  o.LastModifiedAt,
+		Id:              o.Id,
+		Label:           o.Label,
+		Interfaces:      rawInterfaces,
+	}
+}
+
 type rawInterfaceMap struct {
 	LogicalDeviceId ObjectId                   `json:"logical_device_id"`
 	DeviceProfileId ObjectId                   `json:"device_profile_id"`
 	CreatedAt       time.Time                  `json:"created_at"`
 	LastModifiedAt  time.Time                  `json:"last_modified_at"`
-	Id              ObjectId                   `json:"id"`
+	Id              ObjectId                   `json:"id,omitempty"`
 	Label           string                     `json:"label"`
 	Interfaces      []rawInterfaceMapInterface `json:"interfaces"`
 }
@@ -223,7 +240,7 @@ func (o *Client) listAllInterfaceMapIds(ctx context.Context) ([]ObjectId, error)
 	return response.Items, nil
 }
 
-func (o *Client) GetInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMap, error) {
+func (o *Client) getInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMap, error) {
 	response := &rawInterfaceMap{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -234,4 +251,29 @@ func (o *Client) GetInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMa
 		return nil, err
 	}
 	return response.polish()
+}
+
+func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMap) (ObjectId, error) {
+	response := &objectIdResponse{}
+	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlDesignInterfaceMaps,
+		apiInput:    in.raw(),
+		apiResponse: response,
+	})
+}
+
+func (o *Client) updateInterfaceMap(ctx context.Context, id ObjectId, in *InterfaceMap) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		urlStr:   apiUrlDesignInterfaceMaps,
+		apiInput: in.raw(),
+	})
+}
+
+func (o *Client) deleteInterfaceMap(ctx context.Context, id ObjectId) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlDesignInterfaceMapById, id),
+	})
 }
