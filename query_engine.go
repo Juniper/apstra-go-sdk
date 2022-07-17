@@ -210,7 +210,7 @@ func (o *QEQuery) string() string {
 	return sb.String()
 }
 
-func (o *QEQuery) Do() (interface{}, error) {
+func (o *QEQuery) Do() (*QueryEngineResponse, error) {
 	ctx := o.context
 	if o.context == nil {
 		ctx = context.TODO()
