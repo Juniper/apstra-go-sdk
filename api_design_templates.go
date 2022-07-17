@@ -3,6 +3,7 @@ package goapstra
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -972,4 +973,21 @@ func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 	}
 
 	return result, nil
+}
+
+func (o *Client) getTemplateAndType(ctx context.Context, id ObjectId) (TemplateType, interface{}, error) {
+	template, err := o.getTemplate(ctx, id)
+	if err != nil {
+		return 0, nil, err
+	}
+	switch template.(type) {
+	case *TemplateRackBased:
+		return TemplateTypeRackBased, template, nil
+	case *TemplatePodBased:
+		return TemplateTypePodBased, template, nil
+	case *TemplateL3Collapsed:
+		return TemplateTypeL3Collapsed, template, nil
+	default:
+		return 0, template, errors.New("unknown template type at getTemplateAndType()")
+	}
 }

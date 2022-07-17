@@ -98,3 +98,37 @@ func TestGetTemplateMethods(t *testing.T) {
 	l3CollapsedTemplate, err := client.getL3CollapsedTemplate(context.TODO(), l3CollapsedTemplates[n].Id)
 	log.Printf("  got template type '%s', ID '%s'\n", l3CollapsedTemplate.Type, l3CollapsedTemplate.Id)
 }
+
+func TestGetTemplateAndType(t *testing.T) {
+	rand.Seed(time.Now().UnixNano())
+	client, err := newLiveTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	templateIds, err := client.ListAllTemplateIds(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	randomTemplateId := templateIds[rand.Intn(len(templateIds))]
+
+	tmplType, tmpl, err := client.getTemplateAndType(context.TODO(), randomTemplateId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var name string
+	switch tmplType {
+	case TemplateTypeRackBased:
+		name = tmpl.(*TemplateRackBased).DisplayName
+	case TemplateTypePodBased:
+		name = tmpl.(*TemplatePodBased).DisplayName
+	case TemplateTypeL3Collapsed:
+		name = tmpl.(*TemplateL3Collapsed).DisplayName
+	default:
+		t.Fatalf("unknown template type '%d'", tmplType)
+	}
+	log.Printf("random template '%s' named '%s' has type '%s'", randomTemplateId, name, tmplType.String())
+
+}

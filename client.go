@@ -713,6 +713,12 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 	return o.getAllL3CollapsedTemplates(ctx)
 }
 
+// GetTemplateAndType returns the TemplateType and template object (*TemplateTypeRackBased, *TemplateTypePodBased,
+// *TemplateTypeL3Collapsed) associated with the specified template id.
+func (o *Client) GetTemplateAndType(ctx context.Context, id ObjectId) (TemplateType, interface{}, error) {
+	return o.getTemplateAndType(ctx, id)
+}
+
 // NewQuery returns a *QEQuery with embedded *Client
 func (o *Client) NewQuery(blueprint ObjectId) *QEQuery {
 	return o.newQuery(blueprint)
