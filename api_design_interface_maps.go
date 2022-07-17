@@ -223,7 +223,6 @@ func (o *Client) listAllInterfaceMapIds(ctx context.Context) ([]ObjectId, error)
 	return response.Items, nil
 }
 
-//something is wrong with this function
 func (o *Client) GetInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMap, error) {
 	response := &rawInterfaceMap{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
