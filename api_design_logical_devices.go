@@ -19,7 +19,6 @@ const (
 
 type LogicalDevicePortRoleFlags uint16
 type logicalDevicePortRole string
-type logicalDevicePortRoles []string
 
 const (
 	LogicalDevicePortRoleAccess = LogicalDevicePortRoleFlags(1 << iota)
@@ -109,6 +108,20 @@ func (o logicalDevicePortRole) parse() (LogicalDevicePortRoleFlags, error) {
 	}
 }
 
+type logicalDevicePortRoles []logicalDevicePortRole
+
+func (o logicalDevicePortRoles) parse() (LogicalDevicePortRoleFlags, error) {
+	var result LogicalDevicePortRoleFlags
+	for _, r := range o {
+		roleFlag, err := r.parse()
+		if err != nil {
+			return result, err
+		}
+		result = result | roleFlag
+	}
+	return result, nil
+}
+
 type optionsLogicalDevicesResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
@@ -144,19 +157,15 @@ func (o LogicalDevicePortGroup) raw() *rawLogicalDevicePortGroup {
 }
 
 type rawLogicalDevicePortGroup struct {
-	Count int                     `json:"count"`
-	Speed LogicalDevicePortSpeed  `json:"speed"`
-	Roles []logicalDevicePortRole `json:"roles"`
+	Count int                    `json:"count"`
+	Speed LogicalDevicePortSpeed `json:"speed"`
+	Roles logicalDevicePortRoles `json:"roles"`
 }
 
 func (o *rawLogicalDevicePortGroup) parse() (*LogicalDevicePortGroup, error) {
-	var roles LogicalDevicePortRoleFlags
-	for _, role := range o.Roles {
-		parsed, err := role.parse()
-		if err != nil {
-			return nil, err
-		}
-		roles = roles | parsed
+	roles, err := o.Roles.parse()
+	if err != nil {
+		return nil, err
 	}
 	return &LogicalDevicePortGroup{
 		Count: o.Count,

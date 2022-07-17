@@ -1,7 +1,11 @@
 package goapstra
 
 import (
+	"context"
+	"log"
+	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestInterfaceSettingParam(t *testing.T) {
@@ -28,4 +32,29 @@ func TestInterfaceSettingParam(t *testing.T) {
 	if result != expected {
 		t.Fatalf("expected '%s', got '%s'", expected, result)
 	}
+}
+
+func TestListGetAllInterfaceMaps(t *testing.T) {
+	rand.Seed(time.Now().UnixNano())
+	client, err := newLiveTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	iMapIds, err := client.listAllInterfaceMapIds(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(iMapIds) == 0 {
+		t.Fatal("we should have gotten some interface maps here")
+	}
+
+	log.Println("all interface maps IDs: ", iMapIds)
+
+	iMap, err := client.GetInterfaceMap(context.TODO(), iMapIds[rand.Intn(len(iMapIds))])
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Println("random interface map: ", iMap)
 }
