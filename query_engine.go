@@ -146,9 +146,9 @@ type QEBoolVal bool
 
 func (o QEBoolVal) String() string {
 	if o {
-		return "true"
+		return "True"
 	}
-	return "false"
+	return "False"
 }
 
 func (o *Client) newQuery(blueprint ObjectId) *QEQuery {

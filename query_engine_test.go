@@ -74,12 +74,12 @@ func TestParsingQueryInfo(t *testing.T) {
 			} `json:"n_system"`
 		} `json:"items"`
 	}
-
 	err = client.NewQuery(bpIds[0]).
 		Node([]QEEAttribute{
 			{"type", QEStringVal("system")},
 			{"name", QEStringVal("n_system")},
-			{"system_type", QEStringVal("switch")},
+			{"role", QEStringValIsIn{"superspine", "spine", "leaf"}},
+			{"external", QEBoolVal(false)},
 		}).
 		Out([]QEEAttribute{
 			{"type", QEStringVal("logical_device")},
