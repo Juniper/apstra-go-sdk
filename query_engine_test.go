@@ -2,41 +2,9 @@ package goapstra
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"testing"
 )
-
-func TestQEQ(t *testing.T) {
-	client, err := newLiveTestClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	blueprints, err := client.listAllBlueprintIds(context.TODO())
-	if len(blueprints) == 0 {
-		t.Skip("no blueprints, cannot perform query test")
-	}
-
-	queryResponse, err := client.newQuery(blueprints[0]).SetType(QEQueryTypeStaging).
-		Node([]QEEAttribute{
-			{"type", QEStringVal("system")},
-			{"name", QEStringVal("system")},
-			{"role", QEStringVal("spine")},
-			{"label", QEStringValIsIn{"spine1", "spine2"}},
-		}).
-		Out([]QEEAttribute{
-			{"type", QEStringVal("logical_device")},
-			{"name", QEStringVal("logical_device")},
-		}).
-		Do()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	log.Println(queryResponse)
-}
 
 func TestQEEAttributeString(t *testing.T) {
 	test := []struct {
@@ -93,18 +61,21 @@ func TestParsingQueryInfo(t *testing.T) {
 	}
 
 	// the type of info we expect the query to return (a slice of these)
-	type qrItem struct {
-		LogicalDevice struct {
-			Id    string `json:"id"`
-			Label string `json:"label"`
-		} `json:"n_logical_device"`
-		System struct {
-			Id    string `json:"id"`
-			Label string `json:"label"`
-		} `json:"n_system"`
+	var qResponse struct {
+		Count int `json:"count"`
+		Items []struct {
+			LogicalDevice struct {
+				Id    string `json:"id"`
+				Label string `json:"label"`
+			} `json:"n_logical_device"`
+			System struct {
+				Id    string `json:"id"`
+				Label string `json:"label"`
+			} `json:"n_system"`
+		} `json:"items"`
 	}
 
-	qr, err := client.NewQuery(bpIds[0]).
+	err = client.NewQuery(bpIds[0]).
 		Node([]QEEAttribute{
 			{"type", QEStringVal("system")},
 			{"name", QEStringVal("n_system")},
@@ -117,24 +88,13 @@ func TestParsingQueryInfo(t *testing.T) {
 			{"type", QEStringVal("logical_device")},
 			{"name", QEStringVal("n_logical_device")},
 		}).
-		Do()
+		Do(&qResponse)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	qResponses := make([]qrItem, len(qr))
-	for i, item := range qr {
-		err = json.Unmarshal(item, &qResponses[i])
-		if err != nil {
-			t.Fatal(err)
-		}
+	log.Printf("query produced %d results", qResponse.Count)
+	for i, item := range qResponse.Items {
+		log.Printf("  %d id: '%s', label: '%s', logical_device: '%s'", i, item.System.Id, item.System.Label, item.LogicalDevice.Label)
 	}
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for _, response := range qResponses {
-		log.Println(response)
-	}
-
 }

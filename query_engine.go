@@ -213,14 +213,10 @@ func (o *QEQuery) string() string {
 	return sb.String()
 }
 
-func (o *QEQuery) Do() (QueryEngineResponse, error) {
+func (o *QEQuery) Do(response interface{}) error {
 	ctx := o.context
 	if o.context == nil {
 		ctx = context.TODO()
 	}
-	resp, err := o.client.runQuery(ctx, o.blueprint, o)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
+	return o.client.runQuery(ctx, o.blueprint, o, response)
 }
