@@ -2,6 +2,7 @@ package goapstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -61,10 +62,12 @@ type queryEngineQuery struct {
 }
 
 // per apstra API
-type QueryEngineResponse struct {
-	Count int           `json:"count"`
-	Items []interface{} `json:"items"`
+type queryEngineResponse struct {
+	Count int               `json:"count"`
+	Items []json.RawMessage `json:"items"`
 }
+
+type QueryEngineResponse []json.RawMessage
 
 type QEAttrVal interface {
 	String() string
@@ -210,7 +213,7 @@ func (o *QEQuery) string() string {
 	return sb.String()
 }
 
-func (o *QEQuery) Do() (*QueryEngineResponse, error) {
+func (o *QEQuery) Do() (QueryEngineResponse, error) {
 	ctx := o.context
 	if o.context == nil {
 		ctx = context.TODO()

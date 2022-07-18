@@ -2,6 +2,7 @@ package goapstra
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"testing"
 )
@@ -74,4 +75,66 @@ func TestQEEAttributeString(t *testing.T) {
 			t.Fatalf("expected '%s', got '%s'", testData.expected, result)
 		}
 	}
+}
+
+func TestParsingQueryInfo(t *testing.T) {
+	client, err := newLiveTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpIds, err := client.listAllBlueprintIds(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(bpIds) == 0 {
+		t.Skip("cannot test blueprint query with no blueprint")
+	}
+
+	// the type of info we expect the query to return (a slice of these)
+	type qrItem struct {
+		LogicalDevice struct {
+			Id    string `json:"id"`
+			Label string `json:"label"`
+		} `json:"n_logical_device"`
+		System struct {
+			Id    string `json:"id"`
+			Label string `json:"label"`
+		} `json:"n_system"`
+	}
+
+	qr, err := client.NewQuery(bpIds[0]).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("system")},
+			{"name", QEStringVal("n_system")},
+			{"system_type", QEStringVal("switch")},
+		}).
+		Out([]QEEAttribute{
+			{"type", QEStringVal("logical_device")},
+		}).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("logical_device")},
+			{"name", QEStringVal("n_logical_device")},
+		}).
+		Do()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	qResponses := make([]qrItem, len(qr))
+	for i, item := range qr {
+		err = json.Unmarshal(item, &qResponses[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, response := range qResponses {
+		log.Println(response)
+	}
+
 }
