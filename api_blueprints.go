@@ -380,7 +380,7 @@ func (o *Client) deleteRoutingZone(ctx context.Context, blueprintId ObjectId, zo
 	})
 }
 
-func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuery) (*QueryEngineResponse, error) {
+func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuery) (QueryEngineResponse, error) {
 	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintQueryEngine, blueprint))
 	if err != nil {
 		return nil, err
@@ -392,12 +392,17 @@ func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuer
 		apstraUrl.RawQuery = params.Encode()
 	}
 
-	response := &QueryEngineResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	response := &queryEngineResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodPost,
 		url:            apstraUrl,
 		apiInput:       &queryEngineQuery{Query: query.string()},
 		apiResponse:    response,
 		unsynchronized: true,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Items, nil
 }
