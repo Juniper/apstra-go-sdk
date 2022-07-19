@@ -158,24 +158,24 @@ func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) 
 	}, nil
 }
 
-func (o *Client) getResourceAllocation(ctx context.Context, id ObjectId, rga *ResourceGroupAllocation) (*ResourceGroupAllocation, error) {
+func (o *TwoStageLThreeClosClient) getResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) (*ResourceGroupAllocation, error) {
 	response := &rawResourceGroupAllocation{}
 	ttii := talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, id, rga.Type.String(), rga.Name.String()),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.Type.String(), rga.Name.String()),
 		apiResponse: response,
 	}
-	err := o.talkToApstra(ctx, &ttii)
+	err := o.client.talkToApstra(ctx, &ttii)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response.polish()
 }
 
-func (o *Client) setResourceAllocation(ctx context.Context, id ObjectId, rga *ResourceGroupAllocation) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+func (o *TwoStageLThreeClosClient) setResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) error {
+	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, id, rga.Type.String(), rga.Name.String()),
+		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.Type.String(), rga.Name.String()),
 		apiInput: rga.raw(),
 	})
 }

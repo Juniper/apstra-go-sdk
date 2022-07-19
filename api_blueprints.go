@@ -53,7 +53,7 @@ func (o refDesign) parse() (RefDesign, error) {
 }
 
 type getBluePrintsResponse struct {
-	Items []BlueprintStatus `json:"items"`
+	Items []rawBlueprintStatus `json:"items"`
 }
 
 type optionsBlueprintsResponse struct {
@@ -362,7 +362,18 @@ func (o *Client) getAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, 
 		urlStr:      apiUrlBlueprints,
 		apiResponse: response,
 	})
-	return response.Items, err
+	if err != nil {
+		return nil, err
+	}
+	result := make([]BlueprintStatus, len(response.Items))
+	for i, item := range response.Items {
+		p, err := item.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *p
+	}
+	return result, nil
 }
 
 func (o *Client) getBlueprintStatus(ctx context.Context, id ObjectId) (*BlueprintStatus, error) {

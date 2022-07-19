@@ -2,19 +2,12 @@ package goapstra
 
 import (
 	"context"
-	"crypto/tls"
 	"log"
 	"testing"
 )
 
-func refDesignBlueprintTestclient1() (*Client, error) {
-	return NewClient(&ClientCfg{
-		TlsConfig: &tls.Config{InsecureSkipVerify: true},
-	})
-}
-
 func TestGetResourceAllocation(t *testing.T) {
-	client, err := refDesignBlueprintTestclient1()
+	client, err := newLiveTestClient()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,8 +21,12 @@ func TestGetResourceAllocation(t *testing.T) {
 		t.Skip("cannot test resource allocation - no blueprints")
 	}
 
-	bp, err := client.GetBlueprint(context.TODO(), blueprintIds[0])
-	spineAsns, err := client.getResourceAllocation(context.TODO(), bp.Id, &ResourceGroupAllocation{
+	bpClient, err := client.NewTwoStageL3ClosClient(context.TODO(), blueprintIds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	spineAsns, err := bpClient.getResourceAllocation(context.TODO(), &ResourceGroupAllocation{
 		Type: ResourceTypeAsnPool,
 		Name: ResourceGroupNameSpineAsn,
 	})
