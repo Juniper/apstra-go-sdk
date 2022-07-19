@@ -45,6 +45,26 @@ func TestQEEAttributeString(t *testing.T) {
 	}
 }
 
+func TestQueryString(t *testing.T) {
+	x := QEQuery{}
+	y := x.Node([]QEEAttribute{
+		{"type", QEStringVal("system")},
+		{"name", QEStringVal("n_system")},
+		{"system_type", QEStringVal("switch")},
+	}).
+		Out([]QEEAttribute{{"type", QEStringVal("logical_device")}}).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("logical_device")},
+		}).
+		In([]QEEAttribute{{"type", QEStringVal("logical_device")}}).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("interface_map")},
+			{"name", QEStringVal("n_interface_map")},
+		}).
+		string()
+	log.Println("\n", y)
+}
+
 func TestParsingQueryInfo(t *testing.T) {
 	client, err := newLiveTestClient()
 	if err != nil {
