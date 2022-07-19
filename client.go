@@ -127,6 +127,21 @@ func (o *ClientCfg) pullFromEnv() error {
 	return nil
 }
 
+func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId ObjectId) (*TwoStageLThreeClosClient, error) {
+	bp, err := o.getBlueprintStatus(ctx, blueprintId)
+	if err != nil {
+		return nil, err
+	}
+	if bp.Design != RefDesignTwoStageL3Clos {
+		return nil, fmt.Errorf("cannot create '%s' client for nonexistent blueprint '%s' (type '%s')",
+			RefDesignTwoStageL3Clos.String(), blueprintId, bp.Design.String())
+	}
+	return &TwoStageLThreeClosClient{
+		client:      o,
+		blueprintId: blueprintId,
+	}, nil
+}
+
 // applyDefaults sets config elements which have default values
 func (o *ClientCfg) applyDefaults() {
 	if o.Scheme == "" {
