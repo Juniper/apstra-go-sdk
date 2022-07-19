@@ -10,7 +10,11 @@ const (
 	apiUrlBlueprintInterfaceMapAssignment = apiUrlBlueprintById + apiUrlPathDelim + "interface-map-assignments"
 )
 
-type SystemIdToInterfaceMapAssignment map[string]string
+// SystemIdToInterfaceMapAssignment maps graph db 'system' nodes (their id is
+// the string value) to graph db 'interface_map' nodes. interface{} is used for
+// the interface_map nodes because apstra expects 'null' in the JSON fields
+// where no map is assigned.
+type SystemIdToInterfaceMapAssignment map[string]interface{}
 
 type interfaceMapAssignment struct {
 	Assignments SystemIdToInterfaceMapAssignment `json:"assignments"`
@@ -25,14 +29,10 @@ func (o *TwoStageLThreeClosClient) getInterfaceMapAssignments(ctx context.Contex
 	})
 }
 
-func (o *TwoStageLThreeClosClient) setInterfaceMapAssignments(ctx context.Context, assignments SystemIdToInterfaceMapAssignment) (int, error) {
-	response := &struct {
-		ConfigBlueprintVersion int `json:"config_blueprint_version"`
-	}{}
-	return response.ConfigBlueprintVersion, o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPatch,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintInterfaceMapAssignment, o.blueprintId),
-		apiInput:    &interfaceMapAssignment{Assignments: assignments},
-		apiResponse: response,
+func (o *TwoStageLThreeClosClient) setInterfaceMapAssignments(ctx context.Context, assignments SystemIdToInterfaceMapAssignment) error {
+	return o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintInterfaceMapAssignment, o.blueprintId),
+		apiInput: &interfaceMapAssignment{Assignments: assignments},
 	})
 }

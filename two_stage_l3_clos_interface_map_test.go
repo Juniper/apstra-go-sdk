@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestGetInterfaceMapAssignments(t *testing.T) {
+func TestGetSetInterfaceMapAssignments(t *testing.T) {
 	client, err := newLiveTestClient()
 	if err != nil {
 		t.Fatal(err)
@@ -21,7 +21,7 @@ func TestGetInterfaceMapAssignments(t *testing.T) {
 		t.Skip("cannot get interface map assignments with no blueprints")
 	}
 
-	bpClient, err := client.NewTwoStageL3ClosClient(context.TODO(), "1ed198c3-ccac-4adc-917b-4300eaab7f8e")
+	bpClient, err := client.NewTwoStageL3ClosClient(context.TODO(), "d7ff0cbb-3cba-48b6-9271-9c6d7aef8b46")
 
 	ifMapAss, err := bpClient.GetInterfaceMapAssignments(context.TODO())
 	if err != nil {
@@ -31,4 +31,15 @@ func TestGetInterfaceMapAssignments(t *testing.T) {
 	for _, i := range ifMapAss {
 		log.Println(i)
 	}
+
+	// todo check length before using in assignment
+
+	err = bpClient.SetInterfaceMapAssignments(context.TODO(), ifMapAss)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
+
+//func TestSetInterfaceMapAssignments(t *testing.T) {
+//
+//}

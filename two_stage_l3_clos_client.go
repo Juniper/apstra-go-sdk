@@ -34,6 +34,6 @@ func (o *TwoStageLThreeClosClient) GetInterfaceMapAssignments(ctx context.Contex
 // SetInterfaceMapAssignments sets the supplied interface map assignments,
 // overwriting any prior assignments with the supplied info. It returns
 // the Blueprint config revision number.
-func (o *TwoStageLThreeClosClient) SetInterfaceMapAssignments(ctx context.Context, assignments SystemIdToInterfaceMapAssignment) (int, error) {
+func (o *TwoStageLThreeClosClient) SetInterfaceMapAssignments(ctx context.Context, assignments SystemIdToInterfaceMapAssignment) error {
 	return o.setInterfaceMapAssignments(ctx, assignments)
 }
