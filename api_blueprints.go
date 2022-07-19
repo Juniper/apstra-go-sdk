@@ -23,20 +23,32 @@ const (
 )
 
 const (
-	RefDesignDatacenter = RefDesign(iota)
+	RefDesignTwoStageL3Clos = RefDesign(iota)
+	RefDesignDatacenter     = RefDesignTwoStageL3Clos
+	RefDesignUnknown        = "unknown reference design '%s'"
 
-	refDesignDatacenter = "two_stage_l3clos"
-	refDesignUnknown    = "unknown reference design %d"
+	refDesignDatacenter = refDesign("two_stage_l3clos")
+	refDesignUnknown    = refDesign("unknown reference design %d")
 )
 
 type RefDesign int
+type refDesign string
 
 func (o RefDesign) String() string {
 	switch o {
 	case RefDesignDatacenter:
-		return refDesignDatacenter
+		return string(refDesignDatacenter)
 	default:
-		return fmt.Sprintf(refDesignUnknown, o)
+		return fmt.Sprintf(string(refDesignUnknown), o)
+	}
+}
+
+func (o refDesign) parse() (RefDesign, error) {
+	switch o {
+	case refDesignDatacenter:
+		return RefDesignDatacenter, nil
+	default:
+		return 0, fmt.Errorf(RefDesignUnknown, o)
 	}
 }
 
@@ -61,9 +73,22 @@ type postBlueprintsResponse struct {
 
 type Blueprint struct {
 	client         *Client
+	Id             ObjectId
+	Version        int
+	Design         RefDesign
+	LastModifiedAt time.Time
+	Label          string
+	Relationships  map[string]json.RawMessage
+	Nodes          map[string]json.RawMessage
+	SourceVersions struct {
+		ConfigBlueprint int
+	}
+}
+
+type rawBlueprint struct {
 	Id             ObjectId                   `json:"id"`
 	Version        int                        `json:"version"`
-	Design         string                     `json:"design"`
+	Design         refDesign                  `json:"design"`
 	LastModifiedAt time.Time                  `json:"last_modified_at"`
 	Label          string                     `json:"label"`
 	Relationships  map[string]json.RawMessage `json:"relationships"`
@@ -73,64 +98,144 @@ type Blueprint struct {
 	} `json:"source_versions"`
 }
 
+func (o *rawBlueprint) polish() (*Blueprint, error) {
+	design, err := o.Design.parse()
+	if err != nil {
+		return nil, err
+	}
+	return &Blueprint{
+		client:         nil,
+		Id:             o.Id,
+		Version:        o.Version,
+		Design:         design,
+		LastModifiedAt: o.LastModifiedAt,
+		Label:          o.Label,
+		Relationships:  o.Relationships,
+		Nodes:          o.Nodes,
+		SourceVersions: struct {
+			ConfigBlueprint int
+		}{ConfigBlueprint: o.SourceVersions.ConfigBlueprint},
+	}, nil
+}
+
+type BlueprintDeploymentStatus struct {
+	ServiceConfig struct {
+		NumSucceeded int `json:"num_succeeded"`
+		NumFailed    int `json:"num_failed"`
+		NumPending   int `json:"num_pending"`
+	} `json:"service_config"`
+	DrainConfig struct {
+		NumSucceeded int `json:"num_succeeded"`
+		NumFailed    int `json:"num_failed"`
+		NumPending   int `json:"num_pending"`
+	} `json:"drain_config"`
+	Discovery2Config struct {
+		NumSucceeded int `json:"num_succeeded"`
+		NumFailed    int `json:"num_failed"`
+		NumPending   int `json:"num_pending"`
+	} `json:"discovery2_config"`
+}
+
+type BlueprintAnomalyCounts struct {
+	Arp                int `json:"arp"`
+	Probe              int `json:"probe"`
+	Hostname           int `json:"hostname"`
+	Streaming          int `json:"streaming"`
+	Series             int `json:"series"`
+	Cabling            int `json:"cabling"`
+	Route              int `json:"route"`
+	Counter            int `json:"counter"`
+	All                int `json:"all"`
+	Bgp                int `json:"bgp"`
+	BlueprintRendering int `json:"blueprint_rendering"`
+	Mac                int `json:"mac"`
+	Mlag               int `json:"mlag"`
+	Deployment         int `json:"deployment"`
+	Interface          int `json:"interface"`
+	Liveness           int `json:"liveness"`
+	Config             int `json:"config"`
+	Lag                int `json:"lag"`
+}
+
 type BlueprintStatus struct {
-	Id                     ObjectId  `json:"id"`
-	Label                  string    `json:"label"`
-	Status                 string    `json:"status"`
-	Design                 string    `json:"design"`
-	HasUncommittedChanges  bool      `json:"has_uncommitted_changes"`
-	Version                int       `json:"version"`
-	LastModifiedAt         time.Time `json:"last_modified_at"`
-	SuperspineCount        int       `json:"superspine_count"`
-	SpineCount             int       `json:"spine_count"`
-	LeafCount              int       `json:"leaf_count"`
-	AccessCount            int       `json:"access_count"`
-	GenericCount           int       `json:"generic_count"`
-	ExternalRouterCount    int       `json:"external_router_count"`
-	L2ServerCount          int       `json:"l2_server_count"`
-	L3ServerCount          int       `json:"l3_server_count"`
-	RemoteGatewayCount     int       `json:"remote_gateway_count"`
-	BuildWarningsCount     int       `json:"build_warnings_count"`
-	RootCauseCount         int       `json:"root_cause_count"`
-	TopLevelRootCauseCount int       `json:"top_level_root_cause_count"`
-	BuildErrorsCount       int       `json:"build_errors_count"`
-	DeploymentStatus       struct {
-		ServiceConfig struct {
-			NumSucceeded int `json:"num_succeeded"`
-			NumFailed    int `json:"num_failed"`
-			NumPending   int `json:"num_pending"`
-		} `json:"service_config"`
-		DrainConfig struct {
-			NumSucceeded int `json:"num_succeeded"`
-			NumFailed    int `json:"num_failed"`
-			NumPending   int `json:"num_pending"`
-		} `json:"drain_config"`
-		Discovery2Config struct {
-			NumSucceeded int `json:"num_succeeded"`
-			NumFailed    int `json:"num_failed"`
-			NumPending   int `json:"num_pending"`
-		} `json:"discovery2_config"`
-	} `json:"deployment_status"`
-	AnomalyCounts struct {
-		Arp                int `json:"arp"`
-		Probe              int `json:"probe"`
-		Hostname           int `json:"hostname"`
-		Streaming          int `json:"streaming"`
-		Series             int `json:"series"`
-		Cabling            int `json:"cabling"`
-		Route              int `json:"route"`
-		Counter            int `json:"counter"`
-		All                int `json:"all"`
-		Bgp                int `json:"bgp"`
-		BlueprintRendering int `json:"blueprint_rendering"`
-		Mac                int `json:"mac"`
-		Mlag               int `json:"mlag"`
-		Deployment         int `json:"deployment"`
-		Interface          int `json:"interface"`
-		Liveness           int `json:"liveness"`
-		Config             int `json:"config"`
-		Lag                int `json:"lag"`
-	} `json:"anomaly_counts"`
+	Id                     ObjectId                  `json:"id"`
+	Label                  string                    `json:"label"`
+	Status                 string                    `json:"status"`
+	Design                 RefDesign                 `json:"design"`
+	HasUncommittedChanges  bool                      `json:"has_uncommitted_changes"`
+	Version                int                       `json:"version"`
+	LastModifiedAt         time.Time                 `json:"last_modified_at"`
+	SuperspineCount        int                       `json:"superspine_count"`
+	SpineCount             int                       `json:"spine_count"`
+	LeafCount              int                       `json:"leaf_count"`
+	AccessCount            int                       `json:"access_count"`
+	GenericCount           int                       `json:"generic_count"`
+	ExternalRouterCount    int                       `json:"external_router_count"`
+	L2ServerCount          int                       `json:"l2_server_count"`
+	L3ServerCount          int                       `json:"l3_server_count"`
+	RemoteGatewayCount     int                       `json:"remote_gateway_count"`
+	BuildWarningsCount     int                       `json:"build_warnings_count"`
+	RootCauseCount         int                       `json:"root_cause_count"`
+	TopLevelRootCauseCount int                       `json:"top_level_root_cause_count"`
+	BuildErrorsCount       int                       `json:"build_errors_count"`
+	DeploymentStatus       BlueprintDeploymentStatus `json:"deployment_status"`
+	AnomalyCounts          BlueprintAnomalyCounts    `json:"anomaly_counts"`
+}
+
+type rawBlueprintStatus struct {
+	Id                     ObjectId                  `json:"id"`
+	Label                  string                    `json:"label"`
+	Status                 string                    `json:"status"`
+	Design                 refDesign                 `json:"design"`
+	HasUncommittedChanges  bool                      `json:"has_uncommitted_changes"`
+	Version                int                       `json:"version"`
+	LastModifiedAt         time.Time                 `json:"last_modified_at"`
+	SuperspineCount        int                       `json:"superspine_count"`
+	SpineCount             int                       `json:"spine_count"`
+	LeafCount              int                       `json:"leaf_count"`
+	AccessCount            int                       `json:"access_count"`
+	GenericCount           int                       `json:"generic_count"`
+	ExternalRouterCount    int                       `json:"external_router_count"`
+	L2ServerCount          int                       `json:"l2_server_count"`
+	L3ServerCount          int                       `json:"l3_server_count"`
+	RemoteGatewayCount     int                       `json:"remote_gateway_count"`
+	BuildWarningsCount     int                       `json:"build_warnings_count"`
+	RootCauseCount         int                       `json:"root_cause_count"`
+	TopLevelRootCauseCount int                       `json:"top_level_root_cause_count"`
+	BuildErrorsCount       int                       `json:"build_errors_count"`
+	DeploymentStatus       BlueprintDeploymentStatus `json:"deployment_status"`
+	AnomalyCounts          BlueprintAnomalyCounts    `json:"anomaly_counts"`
+}
+
+func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
+	design, err := o.Design.parse()
+	if err != nil {
+		return nil, err
+	}
+	return &BlueprintStatus{
+		Id:                     o.Id,
+		Label:                  o.Label,
+		Status:                 o.Status,
+		Design:                 design,
+		HasUncommittedChanges:  o.HasUncommittedChanges,
+		Version:                o.Version,
+		LastModifiedAt:         o.LastModifiedAt,
+		SuperspineCount:        o.SuperspineCount,
+		SpineCount:             o.SpineCount,
+		LeafCount:              o.LeafCount,
+		AccessCount:            o.AccessCount,
+		GenericCount:           o.GenericCount,
+		ExternalRouterCount:    o.ExternalRouterCount,
+		L2ServerCount:          o.L2ServerCount,
+		L3ServerCount:          o.L3ServerCount,
+		RemoteGatewayCount:     o.RemoteGatewayCount,
+		BuildWarningsCount:     o.BuildWarningsCount,
+		RootCauseCount:         o.RootCauseCount,
+		TopLevelRootCauseCount: o.TopLevelRootCauseCount,
+		BuildErrorsCount:       o.BuildErrorsCount,
+		DeploymentStatus:       BlueprintDeploymentStatus{},
+		AnomalyCounts:          BlueprintAnomalyCounts{},
+	}, nil
 }
 
 type CreateBluePrintFromTemplate struct {
@@ -230,12 +335,16 @@ func (o *Client) getBlueprintIdByName(ctx context.Context, name string) (ObjectI
 }
 
 func (o *Client) getBlueprint(ctx context.Context, id ObjectId) (*Blueprint, error) {
-	response := &Blueprint{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	response := &rawBlueprint{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintById, id),
 		apiResponse: response,
 	})
+	if err != nil {
+		return nil, err
+	}
+	return response.polish()
 }
 
 func (o *Client) getBlueprintByName(ctx context.Context, name string) (*Blueprint, error) {
