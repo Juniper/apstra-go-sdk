@@ -547,9 +547,14 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBlu
 	return o.createBlueprintFromTemplate(ctx, cfg)
 }
 
-// GetBlueprintStatus returns *BlueprintStatus for the specified blueprint
+// GetBlueprintStatus returns *BlueprintStatus for the specified blueprint ID
 func (o *Client) GetBlueprintStatus(ctx context.Context, id ObjectId) (*BlueprintStatus, error) {
 	return o.getBlueprintStatus(ctx, id)
+}
+
+// GetBlueprintStatusByName returns *BlueprintStatus for the specified blueprint name
+func (o *Client) GetBlueprintStatusByName(ctx context.Context, name string) (*BlueprintStatus, error) {
+	return o.getBlueprintStatusByName(ctx, name)
 }
 
 // DeleteBlueprint deletes the specified blueprint
