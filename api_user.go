@@ -3,8 +3,10 @@ package goapstra
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 const (
@@ -46,7 +48,10 @@ func (o *Client) login(ctx context.Context) error {
 
 	// stash auth token in client's default set of apstra http httpHeaders
 	// and start the tasskMonitor (these go together)
+	r := rand.Intn(100)
+	os.Stderr.WriteString(fmt.Sprintf("locking auth token %d...\n", r))
 	o.lock(clientAuthTokenMutex)
+	os.Stderr.WriteString(fmt.Sprintf("locking auth token locked %d.", r))
 	defer o.unlock(clientAuthTokenMutex)
 	o.httpHeaders[apstraAuthHeader] = response.Token
 
