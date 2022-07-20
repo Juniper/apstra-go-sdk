@@ -596,6 +596,7 @@ func (o *Client) getIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
 }
 
 func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, error) {
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx enter getIp4Pool().\n"))
 	method := http.MethodGet
 	urlStr := fmt.Sprintf(apiUrlResourcesIpPoolById, poolId)
 	apstraUrl, err := url.Parse(urlStr)
