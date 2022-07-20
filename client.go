@@ -236,27 +236,17 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
 func (o *Client) lock(id int) {
 
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx locking the lock of locks...\n"))
-	o.syncLock.Lock() // lock the map of locks
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx locked lock of locks...\n"))
+	o.syncLock.Lock() // lock the map of locks - no defer unlock here, we unlock aggressively in the 'found' case below.
 	if mu, found := o.sync[id]; found {
-		os.Stderr.WriteString(fmt.Sprintf("xxxxxx unlocking the lock of locks...\n"))
 		o.syncLock.Unlock()
-		os.Stderr.WriteString(fmt.Sprintf("xxxxxx unlocked lock of locks...\n"))
 
-		os.Stderr.WriteString(fmt.Sprintf("xxxxxx locking #%d...\n", id))
 		mu.Lock()
-		os.Stderr.WriteString(fmt.Sprintf("xxxxxx locked #%d...\n", id))
 	} else {
 		mu := &sync.Mutex{}
-		os.Stderr.WriteString(fmt.Sprintf("xxxxxx locking #%d...\n", id))
 		mu.Lock()
-		os.Stderr.WriteString(fmt.Sprintf("xxxxxx locked #%d...\n", id))
 		o.sync[id] = mu
 
-		os.Stderr.WriteString(fmt.Sprintf("xxxxxx unlocking the lock of locks...\n"))
 		o.syncLock.Unlock()
-		os.Stderr.WriteString(fmt.Sprintf("xxxxxx unlocked lock of locks...\n"))
 	}
 }
 
