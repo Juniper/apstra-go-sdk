@@ -470,6 +470,7 @@ type rawIp4Pool struct {
 }
 
 func (o *rawIp4Pool) polish() (*Ip4Pool, error) {
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx enter polish().\n"))
 	used, err := strconv.ParseInt(o.Used, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing IP Pool field 'used' ('%s') - %w", o.Used, err)
