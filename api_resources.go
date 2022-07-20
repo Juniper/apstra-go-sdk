@@ -8,9 +8,11 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -688,7 +690,10 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 	}
 
 	// we read, then replace the pool range. this is not concurrency safe.
+	r := rand.Intn(100)
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx addSubnetToIp4Pool %d waiting for lock...", r))
 	o.lock(clientApiResourceIp4PoolRangeMutex)
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx addSubnetToIp4Pool %d locked.", r))
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
 	// grab the existing pool
@@ -710,11 +715,13 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 		subnets = append(subnets, NewIp4Subnet{Network: s.Network.String()})
 	}
 
-	return o.updateIp4Pool(ctx, poolId, &NewIp4PoolRequest{
+	err = o.updateIp4Pool(ctx, poolId, &NewIp4PoolRequest{
 		DisplayName: pool.DisplayName,
 		Tags:        pool.Tags,
 		Subnets:     subnets,
 	})
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx addSubnetToIp4Pool %d unlocked.", r))
+	return err
 }
 
 func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
@@ -724,7 +731,10 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 	}
 
 	// we read, then replace the pool range. this is not concurrency safe.
+	r := rand.Intn(100)
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deleteSubnetFromIp4Pool %d waiting for lock...", r))
 	o.lock(clientApiResourceIp4PoolRangeMutex)
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deleteSubnetFromIp4Pool %d locked.", r))
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
 	// grab the existing pool
@@ -763,5 +773,7 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 		}
 	}
 
-	return o.updateIp4Pool(ctx, poolId, newRequest)
+	err = o.updateIp4Pool(ctx, poolId, newRequest)
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deleteSubnetFromIp4Pool %d unlocked.", r))
+	return err
 }

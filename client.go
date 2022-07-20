@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -597,9 +598,14 @@ func (o *Client) UpdateIp4Pool(ctx context.Context, poolId ObjectId, request *Ne
 	// Ip4Pool "write" operations are not concurrency safe.
 	// It is important that this lock is performed in the public method, rather than the private
 	// one below, because other callers of the private method implement their own locking.
+	r := rand.Intn(100)
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx UpdateIp4Pool %d waiting for lock...", r))
 	o.lock(clientApiResourceIp4PoolRangeMutex)
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx UpdateIp4Pool %d locked.", r))
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
-	return o.updateIp4Pool(ctx, poolId, request)
+	err := o.updateIp4Pool(ctx, poolId, request)
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx UpdateIp4Pool %d ullocked.", r))
+	return err
 }
 
 // AddSubnetToIp4Pool adds a subnet to an IPv4 resource pool. Overlap with an existing subnet will
