@@ -29,6 +29,27 @@ func TestListSystems(t *testing.T) {
 	}
 }
 
+func TestGetAllSystems(t *testing.T) {
+	client, err := systemsTestClient1()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	systemIds, err := client.listSystems(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	systems, err := client.getAllSystemsInfo(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(systemIds) != len(systems) {
+		t.Fatalf("system count discrepancy: %d vs. %d", len(systemIds), len(systems))
+	}
+}
+
 func TestGetSystems(t *testing.T) {
 	client, err := systemsTestClient1()
 	if err != nil {

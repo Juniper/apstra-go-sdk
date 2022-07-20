@@ -252,9 +252,7 @@ func (o *Client) lock(id int) {
 
 // unlock releases the named *sync.Mutex in Client.sync
 func (o *Client) unlock(id int) {
-	os.Stderr.WriteString(fmt.Sprintf("unlocking #%d...\n", id))
 	o.sync[id].Unlock()
-	os.Stderr.WriteString(fmt.Sprintf("unlocked #%d...\n", id))
 }
 
 // ServerName returns the name of the AOS server this client has been configured to use
@@ -518,9 +516,16 @@ func (o *Client) GetAgentJobStatus(ctx context.Context, agentId ObjectId, jobId 
 	return o.getAgentJobStatus(ctx, agentId, jobId)
 }
 
-// ListSystems returns []SystemId representing systems configured on the Apstra server
+// ListSystems returns []SystemId representing systems configured on the Apstra
+// server.
 func (o *Client) ListSystems(ctx context.Context) ([]SystemId, error) {
 	return o.listSystems(ctx)
+}
+
+// GetAllSystemsInfo returns []ManagedSystemInfo representing all systems
+// configured on the Apstra server.
+func (o *Client) GetAllSystemsInfo(ctx context.Context) ([]ManagedSystemInfo, error) {
+	return o.getAllSystemsInfo(ctx)
 }
 
 // GetSystemInfo returns a *ManagedSystemInfo representing the requested SystemId

@@ -228,16 +228,10 @@ func (o *Client) listSystems(ctx context.Context) ([]SystemId, error) {
 }
 
 func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystemInfo, error) {
-	method := http.MethodGet
-	urlStr := fmt.Sprintf(apiUrlSystemsById, id)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &rawManagedSystemInfo{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlSystemsById, id),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -251,6 +245,25 @@ func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystem
 		return nil, err
 	}
 	return response.polish(), nil
+}
+
+func (o *Client) getAllSystemsInfo(ctx context.Context) ([]ManagedSystemInfo, error) {
+	response := &struct{ Items []rawManagedSystemInfo }{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlSystems,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]ManagedSystemInfo, len(response.Items))
+	for i, rmsi := range response.Items {
+		result[i] = *rmsi.polish()
+	}
+
+	return result, nil
 }
 
 func (o *Client) updateSystemByAgentId(ctx context.Context, agentId ObjectId, cfg *SystemUserConfig) error {
