@@ -8,11 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -470,7 +468,6 @@ type rawIp4Pool struct {
 }
 
 func (o *rawIp4Pool) polish() (*Ip4Pool, error) {
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx enter polish().\n"))
 	used, err := strconv.ParseInt(o.Used, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing IP Pool field 'used' ('%s') - %w", o.Used, err)
@@ -597,7 +594,6 @@ func (o *Client) getIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
 }
 
 func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, error) {
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx enter getIp4Pool().\n"))
 	method := http.MethodGet
 	urlStr := fmt.Sprintf(apiUrlResourcesIpPoolById, poolId)
 	apstraUrl, err := url.Parse(urlStr)
@@ -614,13 +610,11 @@ func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, err
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
 	}
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx getIp4Pool() talked to apstra.\n"))
 
 	polishedPool, err := response.polish()
 	if err != nil {
 		return nil, fmt.Errorf("error parsing raw pool content - %w", err)
 	}
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx getIp4Pool() polished result.\n"))
 
 	return polishedPool, nil
 }
@@ -694,10 +688,7 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 	}
 
 	// we read, then replace the pool range. this is not concurrency safe.
-	r := rand.Intn(100)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx addSubnetToIp4Pool %d waiting for lock...\n", r))
 	o.lock(clientApiResourceIp4PoolRangeMutex)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx addSubnetToIp4Pool %d locked.\n", r))
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
 	// grab the existing pool
@@ -724,7 +715,6 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 		Tags:        pool.Tags,
 		Subnets:     subnets,
 	})
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx addSubnetToIp4Pool %d unlocked.\n", r))
 	return err
 }
 
@@ -735,10 +725,7 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 	}
 
 	// we read, then replace the pool range. this is not concurrency safe.
-	r := rand.Intn(100)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deleteSubnetFromIp4Pool %d waiting for lock...\n", r))
 	o.lock(clientApiResourceIp4PoolRangeMutex)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deleteSubnetFromIp4Pool %d locked.\n", r))
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
 
 	// grab the existing pool
@@ -746,8 +733,6 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 	if err != nil {
 		return fmt.Errorf("cannot fetch ip pool - %w", err)
 	}
-
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deleteSubnetFromIp4Pool %d getIp4Pool() complete.\n", r))
 
 	// prep new request structure
 	newRequest := &NewIp4PoolRequest{
@@ -778,9 +763,6 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 			err:     fmt.Errorf("target '%s' not found in pool '%s'", target.String(), poolId),
 		}
 	}
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deleteSubnetFromIp4Pool %d calling updateIp4Pool() complete.\n", r))
 
-	err = o.updateIp4Pool(ctx, poolId, newRequest)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deleteSubnetFromIp4Pool %d unlocked.\n", r))
-	return err
+	return o.updateIp4Pool(ctx, poolId, newRequest)
 }

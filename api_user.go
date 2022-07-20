@@ -3,10 +3,8 @@ package goapstra
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 const (
@@ -48,21 +46,14 @@ func (o *Client) login(ctx context.Context) error {
 
 	// stash auth token in client's default set of apstra http httpHeaders
 	// and start the tasskMonitor (these go together)
-	r := rand.Intn(100)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxx locking auth token %d...\n", r))
 	o.lock(clientAuthTokenMutex)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxx locking auth token locked %d.\n", r))
-	defer func() {
-		os.Stderr.WriteString(fmt.Sprintf("xxxxx unlocking auth token %d...\n", r))
-		o.unlock(clientAuthTokenMutex)
-		os.Stderr.WriteString(fmt.Sprintf("xxxxx auth token %d unlocked.\n", r))
-	}()
+	defer o.unlock(clientAuthTokenMutex)
 	o.httpHeaders[apstraAuthHeader] = response.Token
 
 	return nil
 }
 
-func (o Client) logout(ctx context.Context) error {
+func (o *Client) logout(ctx context.Context) error {
 	// presence of an auth token is proxy for both
 	// - "logged in" state and
 	// - operation of a task monitor routine

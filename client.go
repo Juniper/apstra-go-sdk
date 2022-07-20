@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -236,20 +235,33 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
 func (o *Client) lock(id int) {
+
+	os.Stderr.WriteString(fmt.Sprintf("locking the lock of locks...\n"))
 	o.syncLock.Lock() // lock the map of locks
-	defer o.syncLock.Unlock()
+	os.Stderr.WriteString(fmt.Sprintf("locked lock of locks...\n"))
+	defer func() {
+		os.Stderr.WriteString(fmt.Sprintf("unlocking the lock of locks...\n"))
+		o.syncLock.Unlock()
+		os.Stderr.WriteString(fmt.Sprintf("unlocked lock of locks...\n"))
+	}()
 	if mu, found := o.sync[id]; found {
+		os.Stderr.WriteString(fmt.Sprintf("locking #%d...\n", id))
 		mu.Lock()
+		os.Stderr.WriteString(fmt.Sprintf("locked #%d...\n", id))
 	} else {
 		mu := &sync.Mutex{}
+		os.Stderr.WriteString(fmt.Sprintf("locking #%d...\n", id))
 		mu.Lock()
+		os.Stderr.WriteString(fmt.Sprintf("locked #%d...\n", id))
 		o.sync[id] = mu
 	}
 }
 
 // unlock releases the named *sync.Mutex in Client.sync
 func (o *Client) unlock(id int) {
+	os.Stderr.WriteString(fmt.Sprintf("unlocking #%d...\n", id))
 	o.sync[id].Unlock()
+	os.Stderr.WriteString(fmt.Sprintf("unlocked #%d...\n", id))
 }
 
 // ServerName returns the name of the AOS server this client has been configured to use
@@ -598,14 +610,9 @@ func (o *Client) UpdateIp4Pool(ctx context.Context, poolId ObjectId, request *Ne
 	// Ip4Pool "write" operations are not concurrency safe.
 	// It is important that this lock is performed in the public method, rather than the private
 	// one below, because other callers of the private method implement their own locking.
-	r := rand.Intn(100)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx UpdateIp4Pool %d waiting for lock...", r))
 	o.lock(clientApiResourceIp4PoolRangeMutex)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx UpdateIp4Pool %d locked.", r))
 	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
-	err := o.updateIp4Pool(ctx, poolId, request)
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx UpdateIp4Pool %d ullocked.", r))
-	return err
+	return o.updateIp4Pool(ctx, poolId, request)
 }
 
 // AddSubnetToIp4Pool adds a subnet to an IPv4 resource pool. Overlap with an existing subnet will
