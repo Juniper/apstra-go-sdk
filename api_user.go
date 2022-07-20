@@ -55,6 +55,7 @@ func (o *Client) login(ctx context.Context) error {
 	defer o.unlock(clientAuthTokenMutex)
 	o.httpHeaders[apstraAuthHeader] = response.Token
 
+	os.Stderr.WriteString(fmt.Sprintf("xxxxx unlocking auth token %d.", r))
 	return nil
 }
 
