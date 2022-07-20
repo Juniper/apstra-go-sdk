@@ -17,8 +17,9 @@ const (
 	apiUrlBlueprintById               = apiUrlBlueprintsPrefix + "%s"
 	apiUrlBlueprintRoutingZones       = apiUrlBlueprintById + apiUrlPathDelim + "security_zones"
 	apiUrlBlueprintRoutingZonesPrefix = apiUrlBlueprintRoutingZones + apiUrlPathDelim
-	apiUrlBlueprintRoutingZonesById   = apiUrlBlueprintRoutingZonesPrefix + "%s"
+	apiUrlBlueprintRoutingZoneById    = apiUrlBlueprintRoutingZonesPrefix + "%s"
 	apiUrlBlueprintNodes              = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
+	apiUrlBlueprintNodeById           = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
 
 	initTypeFromTemplate      = "template_reference"
 	nodeQueryNodeTypeUrlParam = "node_type"
@@ -506,7 +507,7 @@ func (o *Client) getRoutingZone(ctx context.Context, blueprintId ObjectId, zoneI
 	response := &SecurityZone{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingZonesById, blueprintId, zoneId),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingZoneById, blueprintId, zoneId),
 		apiResponse: response,
 	})
 }
@@ -533,7 +534,7 @@ func (o *Client) getAllRoutingZones(ctx context.Context, blueprintId ObjectId) (
 func (o *Client) deleteRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlBlueprintRoutingZonesById, blueprintId, zoneId),
+		urlStr: fmt.Sprintf(apiUrlBlueprintRoutingZoneById, blueprintId, zoneId),
 	})
 }
 
@@ -573,6 +574,15 @@ func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType Node
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
+		apiResponse: response,
+	})
+}
+
+func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPatch,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, blueprint, node),
+		apiInput:    request,
 		apiResponse: response,
 	})
 }

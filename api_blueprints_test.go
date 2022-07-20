@@ -104,7 +104,7 @@ func TestCreateDeleteRoutingZone(t *testing.T) {
 	}
 }
 
-func TestGetNodes(t *testing.T) {
+func TestGetPatchGetPatchNode(t *testing.T) {
 	client, err := newLiveTestClient()
 	if err != nil {
 		t.Fatal(err)
@@ -119,24 +119,61 @@ func TestGetNodes(t *testing.T) {
 		t.Skip("no blueprints? no nodes.")
 	}
 
-	nodes := struct {
-		Nodes map[string]struct {
-			Tags         interface{} `json:"tags"`
-			PropertySet  interface{} `json:"property_set"`
-			Label        string      `json:"label"`
-			UserIp       interface{} `json:"user_ip"`
-			TemplateJson interface{} `json:"template_json"`
-			Design       string      `json:"design"`
-			User         interface{} `json:"user"`
-			Type         string      `json:"type"`
-			Id           string      `json:"id"`
-		} `json:"nodes"`
+	type metadataNode struct {
+		Tags         interface{} `json:"tags,omitempty"`
+		PropertySet  interface{} `json:"property_set,omitempty"`
+		Label        string      `json:"label,omitempty"`
+		UserIp       interface{} `json:"user_ip,omitempty"`
+		TemplateJson interface{} `json:"template_json,omitempty"`
+		Design       string      `json:"design,omitempty"`
+		User         interface{} `json:"user,omitempty"`
+		Type         string      `json:"type,omitempty"`
+		Id           ObjectId    `json:"id,omitempty"`
+	}
+
+	nodesA := struct {
+		Nodes map[string]metadataNode `json:"nodes"`
 	}{}
-	err = client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodes)
+	nodesB := struct {
+		Nodes map[string]metadataNode `json:"nodes"`
+	}{}
+	err = client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesA)
 	if err != nil {
 		t.Fatal()
 	}
-	for id, node := range nodes.Nodes {
-		log.Printf("node id: %s ; label: %s\n", id, node.Label)
+
+	if len(nodesA.Nodes) != 1 {
+		t.Fatalf("not expecting %d '%s' nodes", len(nodesA.Nodes), NodeTypeMetadata)
 	}
+
+	newName := randString(10, "hex")
+	// loop should run just once (len check above)
+	for idA, nodeA := range nodesA.Nodes {
+		log.Printf("node id: %s ; label: %s\n", idA, nodeA.Label)
+
+		req := metadataNode{Label: newName}
+		resp := &metadataNode{}
+		err := client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Printf("response indicates name changed '%s' -> '%s'", nodeA.Label, resp.Label)
+
+		err = client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesB)
+		if err != nil {
+			t.Fatal()
+		}
+		for idB, nodeB := range nodesB.Nodes {
+			log.Printf("node id: %s ; label: %s\n", idB, nodeB.Label)
+
+		}
+
+		req = metadataNode{Label: nodeA.Label}
+		err = client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Printf("response indicates name changed '%s' -> '%s'", newName, resp.Label)
+	}
+
 }

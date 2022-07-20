@@ -768,3 +768,14 @@ func (o *Client) UpdateInterfaceMap(ctx context.Context, id ObjectId, ifMap *Int
 func (o *Client) DeleteInterfaceMap(ctx context.Context, id ObjectId) error {
 	return o.deleteInterfaceMap(ctx, id)
 }
+
+// GetNodes fetches the node of the specified type, unpacks the API response
+// into 'response'
+func (o *Client) GetNodes(ctx context.Context, blueprint ObjectId, nodeType NodeType, response interface{}) error {
+}
+
+// PatchNode patches (only submitted fields are changed) the specified node
+// using the contents of 'request', the server's response (whole node info
+// without map wrapper?) is returned in 'response'
+func (o *Client) PatchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
+}
