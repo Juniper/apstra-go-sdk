@@ -619,6 +619,7 @@ func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, err
 	if err != nil {
 		return nil, fmt.Errorf("error parsing raw pool content - %w", err)
 	}
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx getIp4Pool() polished result.\n"))
 
 	return polishedPool, nil
 }
