@@ -52,10 +52,13 @@ func (o *Client) login(ctx context.Context) error {
 	os.Stderr.WriteString(fmt.Sprintf("xxxxx locking auth token %d...\n", r))
 	o.lock(clientAuthTokenMutex)
 	os.Stderr.WriteString(fmt.Sprintf("xxxxx locking auth token locked %d.", r))
-	defer o.unlock(clientAuthTokenMutex)
+	defer func() {
+		os.Stderr.WriteString(fmt.Sprintf("xxxxx unlocking auth token %d...", r))
+		o.unlock(clientAuthTokenMutex)
+		os.Stderr.WriteString(fmt.Sprintf("xxxxx auth token %d unlocked.", r))
+	}()
 	o.httpHeaders[apstraAuthHeader] = response.Token
 
-	os.Stderr.WriteString(fmt.Sprintf("xxxxx unlocking auth token %d.", r))
 	return nil
 }
 
