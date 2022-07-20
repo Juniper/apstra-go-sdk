@@ -613,6 +613,7 @@ func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, err
 	if err != nil {
 		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
 	}
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx getIp4Pool() talked to apstra.\n"))
 
 	polishedPool, err := response.polish()
 	if err != nil {
