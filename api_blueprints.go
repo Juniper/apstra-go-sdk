@@ -390,7 +390,7 @@ func (o *Client) getBlueprintStatus(ctx context.Context, id ObjectId) (*Blueprin
 	}
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
-		err:     fmt.Errorf("found %d blueprints; '%s' wasn't among them", len(blueprintStatuses), id),
+		err:     fmt.Errorf("found %d blueprints but one with id '%s' wasn't among them", len(blueprintStatuses), id),
 	}
 }
 
@@ -419,7 +419,7 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, name string) (*Bl
 	} else {
 		return nil, ApstraClientErr{
 			errType: ErrNotfound,
-			err:     fmt.Errorf("found %d blueprints; '%s' wasn't among them", len(blueprintStatuses), name),
+			err:     fmt.Errorf("found %d blueprints but one named '%s' wasn't among them", len(blueprintStatuses), name),
 		}
 	}
 }
