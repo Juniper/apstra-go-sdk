@@ -18,9 +18,46 @@ const (
 	apiUrlBlueprintRoutingZones       = apiUrlBlueprintById + apiUrlPathDelim + "security_zones"
 	apiUrlBlueprintRoutingZonesPrefix = apiUrlBlueprintRoutingZones + apiUrlPathDelim
 	apiUrlBlueprintRoutingZonesById   = apiUrlBlueprintRoutingZonesPrefix + "%s"
+	apiUrlBlueprintNodes              = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
 
-	initTypeFromTemplate = "template_reference"
+	initTypeFromTemplate      = "template_reference"
+	nodeQueryNodeTypeUrlParam = "node_type"
 )
+
+const (
+	NodeTypeNone = NodeType(iota)
+	NodeTypeMetadata
+	NodeTypeUnknown = "unknown node type %s"
+
+	nodeTypeNone     = nodeType("")
+	nodeTypeMetadata = nodeType("metadata")
+	nodeTypeUnknown  = "unknown node type %d"
+)
+
+type NodeType int
+type nodeType string
+
+func (o NodeType) String() string {
+	switch o {
+	case NodeTypeNone:
+		return string(nodeTypeNone)
+	case NodeTypeMetadata:
+		return string(nodeTypeMetadata)
+	default:
+		return fmt.Sprintf(nodeTypeUnknown, o)
+	}
+}
+
+func (o nodeType) parse() (NodeType, error) {
+	switch o {
+	case nodeTypeNone:
+		return NodeTypeNone, nil
+	case nodeTypeMetadata:
+		return NodeTypeMetadata, nil
+	default:
+		return 0, fmt.Errorf(NodeTypeUnknown, o)
+	}
+}
 
 const (
 	RefDesignTwoStageL3Clos = RefDesign(iota)
@@ -518,5 +555,24 @@ func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuer
 		apiInput:       &queryEngineQuery{Query: query.string()},
 		apiResponse:    response,
 		unsynchronized: true,
+	})
+}
+
+func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType NodeType, response interface{}) error {
+	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintNodes, blueprint))
+	if err != nil {
+		return err
+	}
+
+	if nodeType != NodeTypeNone {
+		params := apstraUrl.Query()
+		params.Set(nodeQueryNodeTypeUrlParam, nodeType.String())
+		apstraUrl.RawQuery = params.Encode()
+	}
+
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		url:         apstraUrl,
+		apiResponse: response,
 	})
 }
