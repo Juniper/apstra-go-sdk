@@ -28,10 +28,12 @@ const (
 const (
 	NodeTypeNone = NodeType(iota)
 	NodeTypeMetadata
+	NodeTypeSystem
 	NodeTypeUnknown = "unknown node type %s"
 
 	nodeTypeNone     = nodeType("")
 	nodeTypeMetadata = nodeType("metadata")
+	nodeTypeSystem   = nodeType("system")
 	nodeTypeUnknown  = "unknown node type %d"
 )
 
@@ -44,6 +46,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeNone)
 	case NodeTypeMetadata:
 		return string(nodeTypeMetadata)
+	case NodeTypeSystem:
+		return string(nodeTypeSystem)
 	default:
 		return fmt.Sprintf(nodeTypeUnknown, o)
 	}
@@ -55,6 +59,8 @@ func (o nodeType) parse() (NodeType, error) {
 		return NodeTypeNone, nil
 	case nodeTypeMetadata:
 		return NodeTypeMetadata, nil
+	case nodeTypeSystem:
+		return NodeTypeSystem, nil
 	default:
 		return 0, fmt.Errorf(NodeTypeUnknown, o)
 	}
