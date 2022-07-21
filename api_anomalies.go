@@ -206,7 +206,7 @@ func unpackIntOrStringAsString(raw json.RawMessage) (string, error) {
 	}
 }
 
-func (o *Client) getAnomalies(ctx context.Context) ([]*Anomaly, error) {
+func (o *Client) getAnomalies(ctx context.Context) ([]Anomaly, error) {
 	apstraUrl, err := url.Parse(apiUrlAnomalies)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlAnomalies, err)
@@ -221,13 +221,13 @@ func (o *Client) getAnomalies(ctx context.Context) ([]*Anomaly, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting anomalies - %w", err)
 	}
-	var result []*Anomaly
+	var result []Anomaly
 	for _, ra := range response.Items {
 		a, err := unpackAnomaly(ra)
 		if err != nil {
 			return nil, fmt.Errorf("error unpacking anomaly - %w", err)
 		}
-		result = append(result, a)
+		result = append(result, *a)
 	}
 	return result, nil
 }
