@@ -3,10 +3,12 @@ package goapstra
 import (
 	"context"
 	"log"
+	"math/rand"
 	"testing"
+	"time"
 )
 
-func TestListRackTypeIds(t *testing.T) {
+func TestListGetAllGetRackType(t *testing.T) {
 	client, err := newLiveTestClient()
 	if err != nil {
 		t.Fatal(err)
@@ -17,8 +19,6 @@ func TestListRackTypeIds(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	DebugLevel = 4
-
 	rackTypes, err := client.getAllRackTypes(context.TODO())
 	if err != nil {
 		t.Fatal(err)
@@ -28,6 +28,15 @@ func TestListRackTypeIds(t *testing.T) {
 		t.Fatalf("got %d rack type IDs but %d rack types", len(rackTypeIds), len(rackTypes))
 	}
 
+	rand.Seed(time.Now().UnixNano())
+	randRackid := rackTypeIds[rand.Intn(len(rackTypeIds))]
+	rt, err := client.getRackType(context.TODO(), randRackid)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("randomly selected rack type '%s' (%s) has %d leaf switches, %d access switches, and %d generic systems",
+		rt.DisplayName, rt.Id, len(rt.LeafSwitches), len(rt.AccessSwitches), len(rt.GenericSystems))
 }
 
 func TestRackTypeStrings(t *testing.T) {
@@ -83,29 +92,6 @@ func TestRackTypeStrings(t *testing.T) {
 	}
 }
 
-func TestGetRackType(t *testing.T) {
-	client, err := newLiveTestClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rackTypes, err := client.listRackTypeIds(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(rackTypes) == 0 {
-		t.Skip("no rack types to fetch")
-	}
-
-	rt, err := client.getRackType(context.TODO(), rackTypes[0])
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	log.Println(rt)
-}
-
 func TestCreateGetRackType(t *testing.T) {
 	client, err := newLiveTestClient()
 	if err != nil {
@@ -116,42 +102,25 @@ func TestCreateGetRackType(t *testing.T) {
 
 	id, err := client.createRackType(context.TODO(), &RackType{
 		DisplayName:              "rdn " + randString(5, "hex"),
-		Description:              "description " + randString(10, "hex"),
 		FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
 		LeafSwitches: []RackElementLeafSwitch{
 			{
-				Label:                       leafLabel,
-				LeafLeafL3LinkCount:         0,
-				LeafLeafL3LinkPortChannelId: 0,
-				LeafLeafL3LinkSpeed:         nil,
-				LeafLeafLinkCount:           0,
-				LeafLeafLinkPortChannelId:   0,
-				LeafLeafLinkSpeed:           nil,
-				LinkPerSpineCount:           2,
+				Label:             leafLabel,
+				LinkPerSpineCount: 2,
 				LinkPerSpineSpeed: &LogicalDevicePortSpeed{
 					Unit:  "G",
 					Value: 10,
 				},
-				MlagVlanId:         0,
-				RedundancyProtocol: LeafRedundancyProtocolNone,
-				Tags:               nil,
-				LogicalDeviceId:    "virtual-7x10-1",
+				LogicalDeviceId: "virtual-7x10-1",
 			},
 		},
 		GenericSystems: []RackElementGenericSystem{
 			{
-				Count:            5,
-				AsnDomain:        FeatureSwitchEnabled,
-				ManagementLevel:  GenericSystemUnmanaged,
-				PortChannelIdMin: 0,
-				PortChannelIdMax: 0,
-				Loopback:         FeatureSwitchDisabled,
-				Tags:             nil,
-				Label:            "some generic system",
+				Count: 5,
+				Label: "some generic system",
 				Links: []RackLink{
 					{
 						Label:              "foo",
-						Tags:               nil,
 						LinkPerSwitchCount: 1,
 						LinkSpeed: LogicalDevicePortSpeed{
 							Unit:  "G",
