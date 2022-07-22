@@ -656,22 +656,28 @@ func (o *rawRackElementLeaf) polish(ld LogicalDevice) (*RackElementLeafSwitch, e
 //}
 
 type RackElementAccessSwitch struct {
-	InstanceCount      int
-	RedundancyProtocol AccessRedundancyProtocol
-	Links              []RackLink
-	Label              string
-	Panels             []LogicalDevicePanel
-	DisplayName        string
-	LogicalDeviceId    ObjectId
+	InstanceCount         int
+	RedundancyProtocol    AccessRedundancyProtocol
+	Links                 []RackLink
+	Label                 string
+	Panels                []LogicalDevicePanel
+	DisplayName           string
+	LogicalDeviceId       ObjectId
+	Tags                  []DesignTag
+	AccessAccessLinkCount int
+	AccessAccessLinkSpeed LogicalDevicePortSpeed
 }
 
 func (o *RackElementAccessSwitch) raw() *rawRackElementAccessSwitch {
 	return &rawRackElementAccessSwitch{
-		InstanceCount:      o.InstanceCount,
-		RedundancyProtocol: o.RedundancyProtocol.raw(),
-		Links:              o.Links,
-		Label:              o.Label,
-		LogicalDevice:      o.LogicalDeviceId,
+		InstanceCount:         o.InstanceCount,
+		RedundancyProtocol:    o.RedundancyProtocol.raw(),
+		Links:                 o.Links,
+		Label:                 o.Label,
+		LogicalDevice:         o.LogicalDeviceId,
+		Tags:                  o.Tags,
+		AccessAccessLinkCount: o.AccessAccessLinkCount,
+		AccessAccessLinkSpeed: o.AccessAccessLinkSpeed,
 	}
 }
 
@@ -681,9 +687,9 @@ type rawRackElementAccessSwitch struct {
 	Links                 []RackLink               `json:"links"`
 	Label                 string                   `json:"label"`
 	LogicalDevice         ObjectId                 `json:"logical_device"`
-	AccessAccessLinkCount int                      `json:"access_access_link_count"` // todo: add these to RacKElementAccessSwitch, and raw/polish methods
-	Tags                  []DesignTag              `json:"tags"`                     // todo: add these to RacKElementAccessSwitch, and raw/polish methods
-	AccessAccessLinkSpeed LogicalDevicePortSpeed   `json:"access_access_link_speed"` // todo: add these to RacKElementAccessSwitch, and raw/polish methods
+	AccessAccessLinkCount int                      `json:"access_access_link_count"`
+	AccessAccessLinkSpeed LogicalDevicePortSpeed   `json:"access_access_link_speed"`
+	Tags                  []DesignTag              `json:"tags"`
 }
 
 func (o *rawRackElementAccessSwitch) polish(ld LogicalDevice) (*RackElementAccessSwitch, error) {
@@ -693,12 +699,15 @@ func (o *rawRackElementAccessSwitch) polish(ld LogicalDevice) (*RackElementAcces
 	}
 
 	return &RackElementAccessSwitch{
-		InstanceCount:      o.InstanceCount,
-		RedundancyProtocol: AccessRedundancyProtocol(rp),
-		Links:              o.Links,
-		Label:              o.Label,
-		Panels:             ld.Panels,
-		DisplayName:        ld.DisplayName,
+		InstanceCount:         o.InstanceCount,
+		RedundancyProtocol:    AccessRedundancyProtocol(rp),
+		Links:                 o.Links,
+		Label:                 o.Label,
+		Panels:                ld.Panels,
+		DisplayName:           ld.DisplayName,
+		AccessAccessLinkCount: o.AccessAccessLinkCount,
+		AccessAccessLinkSpeed: o.AccessAccessLinkSpeed,
+		Tags:                  o.Tags,
 	}, nil
 }
 
