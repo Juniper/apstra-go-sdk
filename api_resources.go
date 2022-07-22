@@ -565,21 +565,14 @@ func (o *Client) listIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 func (o *Client) getIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
-	method := http.MethodGet
-	urlStr := apiUrlResourcesIpPools
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-
 	response := &getIp4PoolsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlResourcesIpPools,
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	var polishedPools []Ip4Pool
@@ -594,21 +587,14 @@ func (o *Client) getIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
 }
 
 func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, error) {
-	method := http.MethodGet
-	urlStr := fmt.Sprintf(apiUrlResourcesIpPoolById, poolId)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-
 	response := &rawIp4Pool{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlResourcesIpPoolById, poolId),
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	polishedPool, err := response.polish()
