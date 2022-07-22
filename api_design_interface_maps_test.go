@@ -86,7 +86,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 				},
 				ActiveState: true,
 				Position:    1,
-				Speed:       LogicalDevicePortSpeed{Value: 1, Unit: "G"},
+				Speed:       "10G",
 				Setting:     InterfaceMapInterfaceSetting{Param: ""},
 			},
 		},

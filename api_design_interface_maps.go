@@ -135,7 +135,7 @@ func (o *InterfaceMapInterface) raw() *rawInterfaceMapInterface {
 		State:    o.ActiveState.raw(),
 		Setting:  o.Setting,
 		Position: o.Position,
-		Speed:    o.Speed,
+		Speed:    *o.Speed.raw(),
 	}
 }
 
@@ -146,7 +146,7 @@ type rawInterfaceMapInterface struct {
 	State    rawInterfaceState            `json:"state"`
 	Setting  InterfaceMapInterfaceSetting `json:"setting"`
 	Position int                          `json:"position"`
-	Speed    LogicalDevicePortSpeed       `json:"speed"`
+	Speed    rawLogicalDevicePortSpeed    `json:"speed"`
 }
 
 func (o *rawInterfaceMapInterface) polish() (*InterfaceMapInterface, error) {
@@ -165,7 +165,7 @@ func (o *rawInterfaceMapInterface) polish() (*InterfaceMapInterface, error) {
 		Mapping:     *o.Mapping.polish(),
 		ActiveState: state,
 		Position:    o.Position,
-		Speed:       o.Speed,
+		Speed:       o.Speed.parse(),
 		Setting:     o.Setting,
 	}, nil
 }
