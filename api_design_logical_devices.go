@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -151,15 +153,15 @@ type LogicalDevicePortGroup struct {
 func (o LogicalDevicePortGroup) raw() *rawLogicalDevicePortGroup {
 	return &rawLogicalDevicePortGroup{
 		Count: o.Count,
-		Speed: o.Speed,
+		Speed: *o.Speed.raw(),
 		Roles: o.Roles.raw(),
 	}
 }
 
 type rawLogicalDevicePortGroup struct {
-	Count int                    `json:"count"`
-	Speed LogicalDevicePortSpeed `json:"speed"`
-	Roles logicalDevicePortRoles `json:"roles"`
+	Count int                       `json:"count"`
+	Speed rawLogicalDevicePortSpeed `json:"speed"`
+	Roles logicalDevicePortRoles    `json:"roles"`
 }
 
 func (o *rawLogicalDevicePortGroup) parse() (*LogicalDevicePortGroup, error) {
@@ -169,17 +171,76 @@ func (o *rawLogicalDevicePortGroup) parse() (*LogicalDevicePortGroup, error) {
 	}
 	return &LogicalDevicePortGroup{
 		Count: o.Count,
-		Speed: o.Speed,
+		Speed: o.Speed.parse(),
 		Roles: roles,
 	}, nil
 }
 
-type LogicalDevicePortSpeed struct {
+type LogicalDevicePortSpeed string
+
+func (o LogicalDevicePortSpeed) raw() *rawLogicalDevicePortSpeed {
+	if o == "" {
+		return nil
+	}
+	defaultSpeed := rawLogicalDevicePortSpeed{
+		Unit:  "G",
+		Value: 1,
+	}
+	lower := strings.ToLower(string(o))
+	lower = strings.TrimSpace(lower)
+	lower = strings.TrimSuffix(lower, "bps")
+	lower = strings.TrimSuffix(lower, "b/s")
+	var factor int64
+	var trimmed string
+	switch {
+	case strings.HasSuffix(lower, "m"):
+		trimmed = strings.TrimSuffix(lower, "m")
+		factor = 1000 * 1000
+	case strings.HasSuffix(lower, "g"):
+		trimmed = strings.TrimSuffix(lower, "g")
+		factor = 1000 * 1000 * 1000
+	case strings.HasSuffix(lower, "t"):
+		trimmed = strings.TrimSuffix(lower, "t")
+		factor = 1000 * 1000 * 1000 * 1000
+	default:
+		trimmed = lower
+		factor = 1
+	}
+	trimmedInt, err := strconv.ParseInt(trimmed, 10, 64)
+	if err != nil {
+		return &defaultSpeed
+	}
+	bps := trimmedInt * factor
+	switch {
+	case bps >= 1000*1000*1000: // at least 1Gbps
+		return &rawLogicalDevicePortSpeed{
+			Unit:  "G",
+			Value: int(bps / 1000 / 1000 / 1000),
+		}
+	case bps >= 10*1000*1000: // at least 10Mbps
+		return &rawLogicalDevicePortSpeed{
+			Unit:  "M",
+			Value: int(bps / 1000 / 1000),
+		}
+	default:
+		return &defaultSpeed
+	}
+}
+
+func (o *LogicalDevicePortSpeed) BitsPerSecond() int64 {
+	return o.raw().BitsPerSecond()
+}
+
+type rawLogicalDevicePortSpeed struct {
 	Unit  string `json:"unit"`
 	Value int    `json:"value"`
 }
 
-func (o *LogicalDevicePortSpeed) BitsPerSecond() int64 {
+func (o rawLogicalDevicePortSpeed) parse() LogicalDevicePortSpeed {
+	return LogicalDevicePortSpeed(fmt.Sprintf("%d%s", o.Value, o.Unit))
+}
+
+func (o *rawLogicalDevicePortSpeed) BitsPerSecond() int64 {
 	switch o.Unit {
 	case "M":
 		return int64(o.Value * 1000 * 1000)

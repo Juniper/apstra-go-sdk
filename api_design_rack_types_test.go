@@ -106,12 +106,9 @@ func TestCreateGetRackType(t *testing.T) {
 		LeafSwitches: []RackElementLeafSwitch{
 			{
 				Label:             leafLabel,
+				LogicalDeviceId:   "virtual-7x10-1",
 				LinkPerSpineCount: 2,
-				LinkPerSpineSpeed: &LogicalDevicePortSpeed{
-					Unit:  "G",
-					Value: 10,
-				},
-				LogicalDeviceId: "virtual-7x10-1",
+				LinkPerSpineSpeed: "10G",
 			},
 		},
 		GenericSystems: []RackElementGenericSystem{
@@ -122,13 +119,10 @@ func TestCreateGetRackType(t *testing.T) {
 					{
 						Label:              "foo",
 						LinkPerSwitchCount: 1,
-						LinkSpeed: LogicalDevicePortSpeed{
-							Unit:  "G",
-							Value: 10,
-						},
-						TargetSwitchLabel: leafLabel,
-						AttachmentType:    RackLinkAttachmentTypeSingle,
-						LagMode:           RackLinkLagModeNone,
+						LinkSpeed:          "10G",
+						TargetSwitchLabel:  leafLabel,
+						AttachmentType:     RackLinkAttachmentTypeSingle,
+						LagMode:            RackLinkLagModeNone,
 					},
 				},
 				LogicalDeviceId: "5ed7ed07-7222-4d6c-a5cb-1e1aa6036dab",

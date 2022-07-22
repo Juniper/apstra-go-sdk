@@ -411,9 +411,9 @@ type Spine struct {
 func (o Spine) raw() *rawSpine {
 	return &rawSpine{
 		Count:                   o.Count,
-		ExternalLinkSpeed:       o.ExternalLinkSpeed,
-		LinkPerSuperspineSpeed:  o.LinkPerSuperspineSpeed,
-		LogicalDevice:           *o.LogicalDevice.raw(),
+		ExternalLinkSpeed:       o.ExternalLinkSpeed.raw(),
+		LinkPerSuperspineSpeed:  o.LinkPerSuperspineSpeed.raw(),
+		LogicalDevice:           o.LogicalDevice.raw(),
 		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
 		Tags:                    o.Tags,
 		ExternalLinksPerNode:    o.ExternalLinksPerNode,
@@ -423,23 +423,23 @@ func (o Spine) raw() *rawSpine {
 }
 
 type rawSpine struct {
-	Count                   int                    `json:"count"`
-	ExternalLinkSpeed       LogicalDevicePortSpeed `json:"external_link_speed"`
-	LinkPerSuperspineSpeed  LogicalDevicePortSpeed `json:"link_per_superspine_speed"`
-	LogicalDevice           rawLogicalDevice       `json:"logical_device"`
-	LinkPerSuperspineCount  int                    `json:"link_per_superspine_count"`
-	Tags                    []DesignTag            `json:"tags"`
-	ExternalLinksPerNode    int                    `json:"external_links_per_node"`
-	ExternalFacingNodeCount int                    `json:"external_facing_node_count"`
-	ExternalLinkCount       int                    `json:"external_link_count"`
+	Count                   int                        `json:"count"`
+	ExternalLinkSpeed       *rawLogicalDevicePortSpeed `json:"external_link_speed"`
+	LinkPerSuperspineSpeed  *rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
+	LogicalDevice           *rawLogicalDevice          `json:"logical_device"`
+	LinkPerSuperspineCount  int                        `json:"link_per_superspine_count"`
+	Tags                    []DesignTag                `json:"tags"`
+	ExternalLinksPerNode    int                        `json:"external_links_per_node"`
+	ExternalFacingNodeCount int                        `json:"external_facing_node_count"`
+	ExternalLinkCount       int                        `json:"external_link_count"`
 }
 
 func (o rawSpine) polish() (*Spine, error) {
 	ld, err := o.LogicalDevice.polish()
 	return &Spine{
 		Count:                   o.Count,
-		ExternalLinkSpeed:       o.ExternalLinkSpeed,
-		LinkPerSuperspineSpeed:  o.LinkPerSuperspineSpeed,
+		ExternalLinkSpeed:       o.ExternalLinkSpeed.parse(),
+		LinkPerSuperspineSpeed:  o.LinkPerSuperspineSpeed.parse(),
 		LogicalDevice:           *ld,
 		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
 		Tags:                    o.Tags,
@@ -574,7 +574,7 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 type Superspine struct {
 	PlaneCount         int
 	ExternalLinkCount  int
-	ExternalLinkSpeed  LogicalDevicePortSpeed
+	ExternalLinkSpeed  rawLogicalDevicePortSpeed
 	Tags               []DesignTag
 	SuperspinePerPlane int
 	LogicalDevice      LogicalDevice
@@ -592,12 +592,12 @@ func (o Superspine) raw() *rawSuperspine {
 }
 
 type rawSuperspine struct {
-	PlaneCount         int                    `json:"plane_count"`
-	ExternalLinkCount  int                    `json:"external_link_count"`
-	ExternalLinkSpeed  LogicalDevicePortSpeed `json:"external_link_speed"`
-	Tags               []DesignTag            `json:"tags"`
-	SuperspinePerPlane int                    `json:"superspine_per_plane"`
-	LogicalDevice      rawLogicalDevice       `json:"logical_device"`
+	PlaneCount         int                       `json:"plane_count"`
+	ExternalLinkCount  int                       `json:"external_link_count"`
+	ExternalLinkSpeed  rawLogicalDevicePortSpeed `json:"external_link_speed"`
+	Tags               []DesignTag               `json:"tags"`
+	SuperspinePerPlane int                       `json:"superspine_per_plane"`
+	LogicalDevice      rawLogicalDevice          `json:"logical_device"`
 }
 
 func (o rawSuperspine) polish() (*Superspine, error) {
@@ -713,18 +713,18 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 }
 
 type TemplateL3Collapsed struct {
-	Id                   ObjectId               `json:"id"`
-	Type                 string                 `json:"type"`
-	Status               string                 `json:"status"`
-	DisplayName          string                 `json:"display_name"`
-	AntiAffinityPolicy   AntiAffinityPolicy     `json:"anti_affinity_policy"`
-	CreatedAt            time.Time              `json:"created_at"`
-	LastModifiedAt       time.Time              `json:"last_modified_at"`
-	RackTypes            []RackType             `json:"rack_types"`
-	Capability           TemplateCapability     `json:"capability"`
-	MeshLinkSpeed        LogicalDevicePortSpeed `json:"mesh_link_speed"`
-	VirtualNetworkPolicy VirtualNetworkPolicy   `json:"virtual_network_policy"`
-	MeshLinkCount        int                    `json:"mesh_link_count"`
+	Id                   ObjectId                  `json:"id"`
+	Type                 string                    `json:"type"`
+	Status               string                    `json:"status"`
+	DisplayName          string                    `json:"display_name"`
+	AntiAffinityPolicy   AntiAffinityPolicy        `json:"anti_affinity_policy"`
+	CreatedAt            time.Time                 `json:"created_at"`
+	LastModifiedAt       time.Time                 `json:"last_modified_at"`
+	RackTypes            []RackType                `json:"rack_types"`
+	Capability           TemplateCapability        `json:"capability"`
+	MeshLinkSpeed        rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
+	VirtualNetworkPolicy VirtualNetworkPolicy      `json:"virtual_network_policy"`
+	MeshLinkCount        int                       `json:"mesh_link_count"`
 	RackTypeCounts       []struct {
 		RackTypeId ObjectId `json:"rack_type_id"`
 		Count      int      `json:"count"`
@@ -758,18 +758,18 @@ func (o TemplateL3Collapsed) raw() *rawTemplateL3Collapsed {
 }
 
 type rawTemplateL3Collapsed struct {
-	Id                   ObjectId                `json:"id"`
-	Type                 string                  `json:"type"`
-	Status               string                  `json:"status"`
-	DisplayName          string                  `json:"display_name"`
-	AntiAffinityPolicy   AntiAffinityPolicy      `json:"anti_affinity_policy"`
-	CreatedAt            time.Time               `json:"created_at"`
-	LastModifiedAt       time.Time               `json:"last_modified_at"`
-	RackTypes            []rawRackType           `json:"rack_types"`
-	Capability           templateCapability      `json:"capability"`
-	MeshLinkSpeed        LogicalDevicePortSpeed  `json:"mesh_link_speed"`
-	VirtualNetworkPolicy rawVirtualNetworkPolicy `json:"virtual_network_policy"`
-	MeshLinkCount        int                     `json:"mesh_link_count"`
+	Id                   ObjectId                  `json:"id"`
+	Type                 string                    `json:"type"`
+	Status               string                    `json:"status"`
+	DisplayName          string                    `json:"display_name"`
+	AntiAffinityPolicy   AntiAffinityPolicy        `json:"anti_affinity_policy"`
+	CreatedAt            time.Time                 `json:"created_at"`
+	LastModifiedAt       time.Time                 `json:"last_modified_at"`
+	RackTypes            []rawRackType             `json:"rack_types"`
+	Capability           templateCapability        `json:"capability"`
+	MeshLinkSpeed        rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
+	VirtualNetworkPolicy rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
+	MeshLinkCount        int                       `json:"mesh_link_count"`
 	RackTypeCounts       []struct {
 		RackTypeId ObjectId `json:"rack_type_id"`
 		Count      int      `json:"count"`

@@ -9,6 +9,60 @@ import (
 	"time"
 )
 
+func TestParseLogicalDeviceSpeed(t *testing.T) {
+	tests := [][]string{
+		{"10000000", "10M"},
+		{"10M", "10M"},
+		{"10Mbps", "10M"},
+		{"10Mb/s", "10M"},
+		{"100000000", "100M"},
+		{"100M", "100M"},
+		{"100Mbps", "100M"},
+		{"100Mb/s", "100M"},
+		{"1000000000", "1G"},
+		{"1000M", "1G"},
+		{"1000Mbps", "1G"},
+		{"1000Mb/s", "1G"},
+		{"1000000000", "1G"},
+		{"10G", "10G"},
+		{"10Gbps", "10G"},
+		{"10Gb/s", "10G"},
+		{"10000000000", "10G"},
+		{"25G", "25G"},
+		{"25Gbps", "25G"},
+		{"25Gb/s", "25G"},
+		{"25000000000", "25G"},
+		{"40G", "40G"},
+		{"40Gbps", "40G"},
+		{"40Gb/s", "40G"},
+		{"40000000000", "40G"},
+		{"50G", "50G"},
+		{"50Gbps", "50G"},
+		{"50Gb/s", "50G"},
+		{"50000000000", "50G"},
+		{"100G", "100G"},
+		{"100Gbps", "100G"},
+		{"100Gb/s", "100G"},
+		{"100000000000", "100G"},
+		{"200G", "200G"},
+		{"200Gbps", "200G"},
+		{"200Gb/s", "200G"},
+		{"200000000000", "200G"},
+		{"400G", "400G"},
+		{"400Gbps", "400G"},
+		{"400Gb/s", "400G"},
+		{"400000000000", "400G"},
+	}
+	for _, test := range tests {
+		r := LogicalDevicePortSpeed(test[0]).raw()
+		s1 := fmt.Sprintf("%d%s", r.Value, r.Unit)
+		s2 := fmt.Sprintf("%s", r.parse())
+		if s1 != s2 {
+			log.Fatalf("conversion problem: %s %s %s %s", test[0], test[1], s1, s2)
+		}
+	}
+}
+
 func TestListAndGetAllLogicalDevices(t *testing.T) {
 	DebugLevel = 2
 	clients, _, err := getTestClientsAndMockAPIs()
@@ -65,10 +119,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 					PortGroups: []LogicalDevicePortGroup{
 						{
 							Count: 4,
-							Speed: LogicalDevicePortSpeed{
-								Unit:  "G",
-								Value: 1,
-							},
+							Speed: "10G",
 							Roles: LogicalDevicePortRoleUnused,
 						},
 					},
@@ -138,10 +189,7 @@ func TestRawIfy(t *testing.T) {
 			},
 			PortGroups: []LogicalDevicePortGroup{{
 				Count: 9,
-				Speed: LogicalDevicePortSpeed{
-					Unit:  "G",
-					Value: 10,
-				},
+				Speed: "10G",
 				Roles: LogicalDevicePortRoleAccess | LogicalDevicePortRoleSpine,
 			}},
 		}},
