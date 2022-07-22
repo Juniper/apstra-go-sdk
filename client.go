@@ -812,3 +812,30 @@ func (o *Client) CreateRackType(ctx context.Context, request *RackTypeRequest) (
 func (o *Client) UpdateRackType(ctx context.Context, id ObjectId, request *RackTypeRequest) error {
 	return o.updateRackType(ctx, id, request)
 }
+
+// ListRackTypeIds returns a []ObjectId representing all rack types configured
+// on Apstra.
+func (o *Client) ListRackTypeIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listRackTypeIds(ctx)
+}
+
+// GetRackType returns *RackType detailing the rack type identified by id.
+func (o *Client) GetRackType(ctx context.Context, id ObjectId) (*RackType, error) {
+	return o.getRackType(ctx, id)
+}
+
+// GetAllRackTypes returns []RackType representing all rack types configured
+// on Apstra.
+func (o *Client) GetAllRackTypes(ctx context.Context) ([]RackType, error) {
+	return o.getAllRackTypes(ctx)
+}
+
+// GetRackTypeByName returns *RackType detailing the rack type identified by name.
+func (o *Client) GetRackTypeByName(ctx context.Context, name string) (*RackType, error) {
+	return o.getRackTypeByName(ctx, name)
+}
+
+// DeleteRackType deletes the rack type identified by id.
+func (o *Client) DeleteRackType(ctx context.Context, id ObjectId) error {
+	return o.deleteRackType(ctx, id)
+}
