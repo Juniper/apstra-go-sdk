@@ -48,11 +48,15 @@ func (o *Client) listAllTags(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) getTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
 	response := &DesignTag{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	 err :=  o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignTagById, id),
 		apiResponse: response,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response, nil
 }
 
 func (o *Client) getTagByLabel(ctx context.Context, label TagLabel) (*DesignTag, error) {
