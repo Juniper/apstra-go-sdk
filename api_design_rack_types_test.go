@@ -100,7 +100,7 @@ func TestCreateGetRackType(t *testing.T) {
 
 	leafLabel := "ll-" + randString(10, "hex")
 
-	id, err := client.createRackType(context.TODO(), &RackType{
+	id, err := client.CreateRackType(context.TODO(), &RackTypeRequest{
 		DisplayName:              "rdn " + randString(5, "hex"),
 		FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
 		LeafSwitches: []RackElementLeafSwitch{
