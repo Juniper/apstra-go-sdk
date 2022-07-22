@@ -793,14 +793,22 @@ func (o *Client) PatchNode(ctx context.Context, blueprint ObjectId, node ObjectI
 	return o.patchNode(ctx, blueprint, node, request, response)
 }
 
-// CreateRackType creates an Apstra Rack Type based on the contents of rackType.
+// CreateRackType creates an Apstra Rack Type based on the contents of the
+// supplied RackTypeRequest.
 // Consistent with the Apstra UI and documentation, logical devices (switches,
-// generic systems) within the rack are specified by referencing items found in
-// the global catalog. Changes to global catalog items will not propagate into
-// previously-created rack types. Within the RackType object, the []Panels and
-// DisplayName elements of each switch and generic system must be empty when
-// submitted to CreateRackType(). These elements are automatically populated.
-// The data structure referenced by rackType will be modified by this function.
-func (o *Client) CreateRackType(ctx context.Context, rackType *RackType) (ObjectId, error) {
-	return o.createRackType(ctx, rackType)
+// generic systems) and tags cloned within the rack are specified by referencing
+// items found in the global catalog. Changes to global catalog items will not
+// propagate into previously-created rack types.
+func (o *Client) CreateRackType(ctx context.Context, request *RackTypeRequest) (ObjectId, error) {
+	return o.createRackType(ctx, request)
+}
+
+// UpdateRackType updates the Apstra Rack Type identified by id, based on the
+// contents of the supplied RackTypeRequest.
+// Consistent with the Apstra UI and documentation, logical devices (switches,
+// generic systems) and tags cloned within the rack are specified by referencing
+// items found in the global catalog. Changes to global catalog items will not
+// propagate into previously-created rack types.
+func (o *Client) UpdateRackType(ctx context.Context, id ObjectId, request *RackTypeRequest) (ObjectId, error) {
+	return o.updateRackType(ctx, id, request)
 }

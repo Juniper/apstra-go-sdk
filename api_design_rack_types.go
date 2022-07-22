@@ -886,6 +886,73 @@ func (o *rawRackElementGenericSystem) polish(ld LogicalDevice) (*RackElementGene
 	}, nil
 }
 
+type RackTypeRequest struct {
+	DisplayName              string
+	Description              string
+	FabricConnectivityDesign FabricConnectivityDesign
+	TagsByLabel              []TagLabel
+	LeafSwitches             []RackElementLeafSwitch
+	GenericSystems           []RackElementGenericSystem
+	AccessSwitches           []RackElementAccessSwitch
+	tags                     []DesignTag
+	logicalDevices           []LogicalDevice
+}
+
+func (o *RackTypeRequest) raw() *rawRackTypeRequest {
+	result := &rawRackTypeRequest{
+		DisplayName:              o.DisplayName,
+		Description:              o.Description,
+		FabricConnectivityDesign: o.FabricConnectivityDesign.raw(),
+		TagsByLabel:              nil, // need a Client to find these, must be populated elsewhere
+	}
+
+	for _, v := range o.LeafSwitches {
+		result.LeafSwitches = append(result.LeafSwitches, *v.raw())
+		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
+		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
+		//		Panels:      v.Panels,
+		//		DisplayName: v.DisplayName,
+		//		Id:          ObjectId(leafSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)),
+		//	}.raw())
+		//}
+	}
+
+	for _, v := range o.AccessSwitches {
+		result.AccessSwitches = append(result.AccessSwitches, *v.raw())
+		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
+		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
+		//		Panels:      v.Panels,
+		//		DisplayName: v.DisplayName,
+		//		Id:          ObjectId(accessSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)),
+		//	}.raw())
+		//}
+
+	}
+
+	for _, v := range o.GenericSystems {
+		result.GenericSystems = append(result.GenericSystems, *v.raw())
+		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
+		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
+		//		Panels:      v.Panels,
+		//		DisplayName: v.DisplayName,
+		//		Id:          ObjectId(genericSystemLogicalDeviceIdPrefix + strconv.Itoa(k)),
+		//	}.raw())
+		//}
+	}
+	return result
+}
+
+type rawRackTypeRequest struct {
+	DisplayName              string                        `json:"display_name"`
+	Description              string                        `json:"description"`
+	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
+	TagsByLabel              []TagLabel                    `json:"tags,omitempty"`
+	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
+	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
+	LeafSwitches             []rawRackElementLeaf          `json:"leafs,omitempty"`
+	AccessSwitches           []rawRackElementAccessSwitch  `json:"access_switches,omitempty"`
+}
+
 type RackType struct {
 	DisplayName              string
 	Description              string
@@ -916,7 +983,7 @@ func (o RackType) raw() *rawRackType {
 	}
 
 	for _, v := range o.LeafSwitches {
-		result.LeafSwitchess = append(result.LeafSwitchess, *v.raw())
+		result.LeafSwitches = append(result.LeafSwitches, *v.raw())
 		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
 		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
 		//		Panels:      v.Panels,
@@ -961,7 +1028,7 @@ type rawRackType struct {
 	LastModifiedAt           time.Time                     `json:"last_modified_at"`
 	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
-	LeafSwitchess            []rawRackElementLeaf          `json:"leafs,omitempty"`
+	LeafSwitches             []rawRackElementLeaf          `json:"leafs,omitempty"`
 	AccessSwitches           []rawRackElementAccessSwitch  `json:"access_switches,omitempty"`
 }
 
@@ -984,7 +1051,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 	var ld *rawLogicalDevice
 	var found bool
 
-	for _, r := range o.LeafSwitchess {
+	for _, r := range o.LeafSwitches {
 		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
 			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
 		}
@@ -1108,16 +1175,22 @@ func (o *Client) getRackTypeByName(ctx context.Context, name string) (*RackType,
 	}
 }
 
-func (o *Client) createRackType(ctx context.Context, rackType *RackType) (ObjectId, error) {
-	err := rackType.populateLogicalDeviceDetailsFromGlobalCatalog(ctx, o)
+func (o *Client) createRackType(ctx context.Context, request *RackTypeRequest) (ObjectId, error) {
+	err := request.populateLogicalDeviceDetailsFromGlobalCatalog(ctx, o)
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
+
+	err = request.populateTagDetailsFromGlobalCatalog(ctx, o)
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignRackTypes,
-		apiInput:    rackType.raw(),
+		apiInput:    request.raw(),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -1126,16 +1199,22 @@ func (o *Client) createRackType(ctx context.Context, rackType *RackType) (Object
 	return response.Id, nil
 }
 
-func (o *Client) updateRackType(ctx context.Context, id ObjectId, rackType *RackType) (ObjectId, error) {
-	err := rackType.populateLogicalDeviceDetailsFromGlobalCatalog(ctx, o)
+func (o *Client) updateRackType(ctx context.Context, id ObjectId, request *RackTypeRequest) (ObjectId, error) {
+	err := request.populateLogicalDeviceDetailsFromGlobalCatalog(ctx, o)
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
+
+	err = request.populateTagDetailsFromGlobalCatalog(ctx, o)
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPut,
 		urlStr:      fmt.Sprintf(apiUrlDesignRackTypeById, id),
-		apiInput:    rackType.raw(),
+		apiInput:    request.raw(),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -1155,7 +1234,24 @@ func (o *Client) deleteRackType(ctx context.Context, id ObjectId) error {
 	return nil
 }
 
-func (o *RackType) populateLogicalDeviceDetailsFromGlobalCatalog(ctx context.Context, client *Client) error {
+func (o *RackTypeRequest) populateTagDetailsFromGlobalCatalog(ctx context.Context, client *Client) error {
+	// unique-ify with map
+	tagMap := make(map[TagLabel]struct{})
+	for _, i := range o.TagsByLabel {
+		tagMap[i] = struct{}{}
+	}
+
+	for tagLabel := range tagMap {
+		tag, err := client.getTagByLabel(ctx, tagLabel)
+		if err != nil {
+			return err
+		}
+		o.tags = append(o.tags, *tag)
+	}
+	return nil
+}
+
+func (o *RackTypeRequest) populateLogicalDeviceDetailsFromGlobalCatalog(ctx context.Context, client *Client) error {
 	ldMap := make(map[ObjectId]struct{}) // for keeping track of logical devices retrieved from the API
 
 	for _, i := range o.LeafSwitches {
