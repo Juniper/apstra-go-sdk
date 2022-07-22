@@ -809,6 +809,6 @@ func (o *Client) CreateRackType(ctx context.Context, request *RackTypeRequest) (
 // generic systems) and tags cloned within the rack are specified by referencing
 // items found in the global catalog. Changes to global catalog items will not
 // propagate into previously-created rack types.
-func (o *Client) UpdateRackType(ctx context.Context, id ObjectId, request *RackTypeRequest) (ObjectId, error) {
+func (o *Client) UpdateRackType(ctx context.Context, id ObjectId, request *RackTypeRequest) error {
 	return o.updateRackType(ctx, id, request)
 }

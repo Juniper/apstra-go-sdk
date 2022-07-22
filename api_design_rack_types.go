@@ -1,162 +1,5 @@
 package goapstra
 
-// RACK_LINKS_SCHEMA = s.List(s.Object({
-//    'label': s.String(validate=s.Length(min=1)),
-//    'target_switch_label': s.String(validate=s.Length(min=1)),
-//    'link_per_switch_count': s.Integer(validate=s.Range(min=1)),
-//    'link_speed': PortSpeedSchema,
-//    'attachment_type': s.Enum(['singleAttached', 'dualAttached']),
-//    'switch_peer': s.Optional(s.Enum(['first', 'second'])),
-//    'lag_mode': s.Optional(s.Enum(['lacp_active', 'lacp_passive', 'static_lag'])),
-//    'tags': TAG_LABEL_LIST,
-//}, allow_extra_fields=False, default_field_type=s.IndexField))
-
-// RACK_GENERIC_SYSTEM_SCHEMA = s.Object({
-//    'label': s.String(validate=s.Length(min=1)),
-//    'logical_device': s.String(validate=s.Length(min=1)),
-//    'links': RACK_LINKS_SCHEMA,
-//    'count': s.Optional(s.Integer(validate=s.Range(min=1)), load_default=1),
-//    'management_level': s.ManagementLevel,
-//    'port_channel_id_min': s.Optional(
-//        s.Integer(validate=s.Range(min=0, max=CONSTANTS.max_port_channel_number)),
-//        load_default=0),
-//    'port_channel_id_max': s.Optional(
-//        s.Integer(validate=s.Range(min=0, max=CONSTANTS.max_port_channel_number)),
-//        load_default=0),
-//    'loopback': s.Optional(s.OptionalProperty, load_default='disabled'),
-//    'asn_domain': s.Optional(s.OptionalProperty, load_default='disabled'),
-//    'tags': TAG_LABEL_LIST,
-//}, allow_extra_fields=False, default_field_type=s.IndexField)
-
-// RACK_TYPE_SCHEMA = s.Object({
-//    'id': s.String(validate=s.Length(min=1)),
-//    'display_name': s.Rackname(),
-//    'description': s.Optional(s.String(), load_default=''),
-//    'fabric_connectivity_design': s.Optional(s.Enum(['l3clos', 'l3collapsed']),
-//                                             load_default='l3clos'),
-//    'access_switches': s.Optional(
-//        s.List(s.Object({
-//            'label': s.String(validate=s.Length(min=1)),
-//            'logical_device': s.String(),
-//            'instance_count': s.Optional(s.Integer(validate=s.Range(min=1)),
-//                                         load_default=1),
-//            'links': RACK_LINKS_SCHEMA,
-//            'access_access_link_count': s.Optional(
-//                s.Integer(validate=s.Range(min=0)), load_default=0),
-//            'access_access_link_speed': s.Optional(PortSpeedSchema),
-//            'redundancy_protocol': s.Optional(s.Enum(['esi'])),
-//            'tags': TAG_LABEL_LIST,
-//        }, allow_extra_fields=False, default_field_type=s.IndexField)),
-//        load_default=[]),
-//    'status': s.Optional(s.Enum(['ok', 'inconsistent']), load_default='ok'),
-//    'leafs': s.List(s.Object({
-//        'label': s.String(validate=s.Length(min=1)),
-//        'logical_device': s.String(),
-//        'leaf_leaf_link_count': s.Optional(s.Integer(validate=s.Range(min=0)),
-//                                           load_default=0),
-//        'leaf_leaf_link_speed': s.Optional(PortSpeedSchema),
-//        'leaf_leaf_l3_link_count': s.Optional(
-//            s.Integer(validate=s.Range(min=0)), load_default=0),
-//        'leaf_leaf_l3_link_speed': s.Optional(PortSpeedSchema),
-//        'link_per_spine_count': s.Integer(validate=s.Range(min=0)),
-//        'link_per_spine_speed': s.Optional(PortSpeedSchema),
-//        'redundancy_protocol': s.Optional(s.Enum(['mlag', 'esi'])),
-//        'leaf_leaf_link_port_channel_id': s.Optional(
-//            s.Integer(validate=s.Range(min=0, max=CONSTANTS.max_port_channel_number)),
-//            load_default=0),
-//        'leaf_leaf_l3_link_port_channel_id': s.Optional(
-//            s.Integer(validate=s.Range(min=0, max=CONSTANTS.max_port_channel_number)),
-//            load_default=0),
-//        'mlag_vlan_id': s.Optional(
-//            s.Integer(validate=s.Range(min=0, max=CONSTANTS.max_vlan_id)),
-//            load_default=0),
-//        'tags': TAG_LABEL_LIST,
-//    }, allow_extra_fields=False, default_field_type=s.IndexField)),
-//    'servers': s.Optional(s.List(RACK_SERVER_SCHEMA), load_default=[]),
-//    'generic_systems': s.Optional(s.List(RACK_GENERIC_SYSTEM_SCHEMA), load_default=[]),
-//    'logical_devices': s.List(LOGICAL_DEVICE_SCHEMA,
-//                              validate=s.Unique(key=lambda ld: ld['id'])),
-//    'tags': ASSIGNED_TAGS_SCHEMA,
-//    'created_at': s.Optional(s.String(),
-//                             load_default="1970-01-01T00:00:00.000000Z"),
-//    'last_modified_at': s.Optional(s.String(),
-//                                   load_default="1970-01-01T00:00:00.000000Z"),
-//}, validate=validate_rack_type, allow_extra_fields=False, default_field_type=s.IndexField)
-
-// POST
-// https://13.58.9.57:22409/api/design/rack-types
-// {
-//  "display_name": "yourname-single"
-//  "description": "",
-//  "last_modified_at": null,
-//  "tags": [],
-//  "leafs": [
-//    {
-//      "link_per_spine_count": 1,
-//      "redundancy_protocol": null,
-//      "leaf_leaf_link_speed": null,
-//      "leaf_leaf_l3_link_count": 0,
-//      "leaf_leaf_l3_link_speed": null,
-//      "link_per_spine_speed": {
-//        "unit": "G",
-//        "value": 10
-//      },
-//      "label": "yourname-single",
-//      "leaf_leaf_l3_link_port_channel_id": 0,
-//      "leaf_leaf_link_port_channel_id": 0,
-//      "logical_device": "virtual-7x10-1",
-//      "leaf_leaf_link_count": 0
-//    }
-//  ],
-//  "logical_devices": [
-//    {
-//      "created_at": "2022-07-08T13:48:38.033982Z",
-//      "panels": [], // snip
-//      "display_name": "virtual-7x10-1",
-//      "id": "virtual-7x10-1",
-//      "last_modified_at": "2022-07-08T13:48:38.033982Z",
-//      "href": "#/design/logical-devices/virtual-7x10-1"
-//    },
-//    {
-//      "created_at": "2022-04-22T06:08:55.568587Z",
-//      "panels": [], // snip
-//      "display_name": "AOS-1x10-1",
-//      "id": "AOS-1x10-1",
-//      "last_modified_at": "2022-04-22T06:08:55.568587Z",
-//      "href": "#/design/logical-devices/AOS-1x10-1"
-//    }
-//  ],
-//  "access_switches": [],
-//  "fabric_connectivity_design": "l3clos", // or "l3collapsed"
-//  "id": "yourname-single",
-//  "generic_systems": [
-//    {
-//      "loopback": "disabled",
-//      "asn_domain": "disabled",
-//      "port_channel_id_max": 0,
-//      "label": "single-server",
-//      "count": 1,
-//      "management_level": "unmanaged",
-//      "logical_device": "AOS-1x10-1",
-//      "links": [
-//        {
-//          "link_per_switch_count": 1,
-//          "link_speed": {
-//            "unit": "G",
-//            "value": 10
-//          },
-//          "target_switch_label": "yourname-single",
-//          "lag_mode": null,
-//          "switch_peer": null,
-//          "attachment_type": "singleAttached",
-//          "label": "single-link"
-//        }
-//      ],
-//      "port_channel_id_min": 0
-//    }
-//  ],
-//}
-
 import (
 	"context"
 	"fmt"
@@ -168,13 +11,6 @@ const (
 	apiUrlDesignRackTypes       = apiUrlDesignPrefix + "rack-types"
 	apiUrlDesignRackTypesPrefix = apiUrlDesignRackTypes + apiUrlPathDelim
 	apiUrlDesignRackTypeById    = apiUrlDesignRackTypesPrefix + "%s"
-
-	leafSwitchLogicalDeviceIdPrefix    = "leaf-"
-	accessSwitchLogicalDeviceIdPrefix  = "access-"
-	genericSystemLogicalDeviceIdPrefix = "generic-"
-
-	errLdIdRequired = "%s logical device id cannot be empty"
-	errNotEmpty     = "%s %s element must be empty for this operation"
 )
 
 type AccessRedundancyProtocol int
@@ -564,7 +400,7 @@ type optionsRackTypeResponse struct {
 	Methods []string   `json:"methods"`
 }
 
-type RackElementLeafSwitch struct {
+type RackElementLeafSwitchRequest struct {
 	Label                       string
 	LeafLeafL3LinkCount         int
 	LeafLeafL3LinkPortChannelId int
@@ -577,57 +413,104 @@ type RackElementLeafSwitch struct {
 	MlagVlanId                  int
 	RedundancyProtocol          LeafRedundancyProtocol
 	Tags                        []TagLabel
+	LogicalDeviceId             ObjectId
+}
+
+func (o *RackElementLeafSwitchRequest) raw() *rawRackElementLeafSwitchRequest {
+	return &rawRackElementLeafSwitchRequest{
+		Label:                       o.Label,
+		LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
+		LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
+		LeafLeafL3LinkSpeed:         *o.LeafLeafL3LinkSpeed.raw(),
+		LeafLeafLinkCount:           o.LeafLeafLinkCount,
+		LeafLeafLinkPortChannelId:   o.LeafLeafLinkPortChannelId,
+		LeafLeafLinkSpeed:           *o.LeafLeafLinkSpeed.raw(),
+		LinkPerSpineCount:           o.LinkPerSpineCount,
+		LinkPerSpineSpeed:           *o.LinkPerSpineSpeed.raw(),
+		MlagVlanId:                  o.MlagVlanId,
+		RedundancyProtocol:          o.RedundancyProtocol.raw(),
+		LogicalDevice:               o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
+		Tags:                        o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
+	}
+}
+
+type rawRackElementLeafSwitchRequest struct {
+	Label                       string                    `json:"label"`
+	LeafLeafL3LinkCount         int                       `json:"leaf_leaf_l3_link_count"`
+	LeafLeafL3LinkPortChannelId int                       `json:"leaf_leaf_l3_link_port_channel_id"`
+	LeafLeafL3LinkSpeed         rawLogicalDevicePortSpeed `json:"leaf_leaf_l3_link_speed"`
+	LeafLeafLinkCount           int                       `json:"leaf_leaf_link_count"`
+	LeafLeafLinkPortChannelId   int                       `json:"leaf_leaf_link_port_channel_id"`
+	LeafLeafLinkSpeed           rawLogicalDevicePortSpeed `json:"leaf_leaf_link_speed"`
+	LinkPerSpineCount           int                       `json:"link_per_spine_count"`
+	LinkPerSpineSpeed           rawLogicalDevicePortSpeed `json:"link_per_spine_speed"`
+	LogicalDevice               ObjectId                  `json:"logical_device"`
+	MlagVlanId                  int                       `json:"mlag_vlan_id"`
+	RedundancyProtocol          leafRedundancyProtocol    `json:"redundancy_protocol,omitempty"`
+	Tags                        []TagLabel                `json:"tags"`
+}
+
+type RackElementLeafSwitch struct {
+	Label                       string
+	LeafLeafL3LinkCount         int
+	LeafLeafL3LinkPortChannelId int
+	LeafLeafL3LinkSpeed         LogicalDevicePortSpeed
+	LeafLeafLinkCount           int
+	LeafLeafLinkPortChannelId   int
+	LeafLeafLinkSpeed           LogicalDevicePortSpeed
+	LinkPerSpineCount           int
+	LinkPerSpineSpeed           LogicalDevicePortSpeed
+	MlagVlanId                  int
+	RedundancyProtocol          LeafRedundancyProtocol
+	Tags                        []DesignTag
 	Panels                      []LogicalDevicePanel
 	DisplayName                 string
 	LogicalDeviceId             ObjectId
 }
 
-func (o *RackElementLeafSwitch) raw() *rawRackElementLeaf {
-	tags := o.Tags
-	if tags == nil {
-		tags = []TagLabel{}
-	}
-
-	return &rawRackElementLeaf{
-		Label:                       o.Label,
-		LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
-		LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
-		LeafLeafL3LinkSpeed:         o.LeafLeafL3LinkSpeed.raw(),
-		LeafLeafLinkCount:           o.LeafLeafLinkCount,
-		LeafLeafLinkPortChannelId:   o.LeafLeafLinkPortChannelId,
-		LeafLeafLinkSpeed:           o.LeafLeafLinkSpeed.raw(),
-		LinkPerSpineCount:           o.LinkPerSpineCount,
-		LinkPerSpineSpeed:           o.LinkPerSpineSpeed.raw(),
-		LogicalDevice:               o.LogicalDeviceId,
-		MlagVlanId:                  o.MlagVlanId,
-		RedundancyProtocol:          o.RedundancyProtocol.raw(),
-		Tags:                        tags,
-	}
+type rawRackElementLeafSwitch struct {
+	Label                       string                    `json:"label"`
+	LeafLeafL3LinkCount         int                       `json:"leaf_leaf_l3_link_count"`
+	LeafLeafL3LinkPortChannelId int                       `json:"leaf_leaf_l3_link_port_channel_id"`
+	LeafLeafL3LinkSpeed         rawLogicalDevicePortSpeed `json:"leaf_leaf_l3_link_speed"`
+	LeafLeafLinkCount           int                       `json:"leaf_leaf_link_count"`
+	LeafLeafLinkPortChannelId   int                       `json:"leaf_leaf_link_port_channel_id"`
+	LeafLeafLinkSpeed           rawLogicalDevicePortSpeed `json:"leaf_leaf_link_speed"`
+	LinkPerSpineCount           int                       `json:"link_per_spine_count"`
+	LinkPerSpineSpeed           rawLogicalDevicePortSpeed `json:"link_per_spine_speed"`
+	LogicalDevice               ObjectId                  `json:"logical_device"`
+	MlagVlanId                  int                       `json:"mlag_vlan_id"`
+	RedundancyProtocol          leafRedundancyProtocol    `json:"redundancy_protocol,omitempty"`
+	Tags                        []TagLabel                `json:"tags"`
 }
 
-type rawRackElementLeaf struct {
-	Label                       string                     `json:"label"`
-	LeafLeafL3LinkCount         int                        `json:"leaf_leaf_l3_link_count"`
-	LeafLeafL3LinkPortChannelId int                        `json:"leaf_leaf_l3_link_port_channel_id"`
-	LeafLeafL3LinkSpeed         *rawLogicalDevicePortSpeed `json:"leaf_leaf_l3_link_speed"`
-	LeafLeafLinkCount           int                        `json:"leaf_leaf_link_count"`
-	LeafLeafLinkPortChannelId   int                        `json:"leaf_leaf_link_port_channel_id"`
-	LeafLeafLinkSpeed           *rawLogicalDevicePortSpeed `json:"leaf_leaf_link_speed"`
-	LinkPerSpineCount           int                        `json:"link_per_spine_count"`
-	LinkPerSpineSpeed           *rawLogicalDevicePortSpeed `json:"link_per_spine_speed"`
-	LogicalDevice               ObjectId                   `json:"logical_device"`
-	MlagVlanId                  int                        `json:"mlag_vlan_id"`
-	RedundancyProtocol          leafRedundancyProtocol     `json:"redundancy_protocol,omitempty"`
-	Tags                        []TagLabel                 `json:"tags"`
-}
-
-func (o *rawRackElementLeaf) polish(ld LogicalDevice) (*RackElementLeafSwitch, error) {
+func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSwitch, error) {
 	rp, err := o.RedundancyProtocol.parse()
 	if err != nil {
 		return nil, err
 	}
 
-	return &RackElementLeafSwitch{
+	var found bool
+
+	var rld *rawLogicalDevice
+	if rld, found = rack.logicalDeviceById(o.LogicalDevice); !found {
+		return nil, fmt.Errorf("logical device '%s' not found in rack type '%s' definition", o.LogicalDevice, rack.Id)
+	}
+	pld, err := rld.polish()
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []DesignTag
+	var tag *DesignTag
+	for _, label := range o.Tags {
+		if tag, found = rack.tagByLabel(label); !found {
+			return nil, fmt.Errorf("design tag '%s' not found in rack type '%s' definition", label, rack.Id)
+		}
+		tags = append(tags, *tag)
+	}
+
+	result := &RackElementLeafSwitch{
 		Label:                       o.Label,
 		LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
 		LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
@@ -639,21 +522,50 @@ func (o *rawRackElementLeaf) polish(ld LogicalDevice) (*RackElementLeafSwitch, e
 		LinkPerSpineSpeed:           o.LinkPerSpineSpeed.parse(),
 		MlagVlanId:                  o.MlagVlanId,
 		RedundancyProtocol:          LeafRedundancyProtocol(rp),
-		Tags:                        o.Tags,
-		Panels:                      ld.Panels,
-		DisplayName:                 ld.DisplayName,
-	}, nil
+		Panels:                      pld.Panels,
+		DisplayName:                 pld.DisplayName,
+		Tags:                        tags,
+	}
+
+	return result, nil
 }
 
-//type AccessSwitchLink struct {
-//	Label              string                 `json:"label"`
-//	LinkPerSwitchCount int                    `json:"link_per_switch_count"`
-//	LinkSpeed          rawLogicalDevicePortSpeed `json:"link_speed"`
-//	TargetSwitchLabel  string                 `json:"target_switch_label"`
-//	LagMode            string                 `json:"lag_mode,omitempty"`
-//	SwitchPeer         RackLinkSwitchPeer     `json:"switch_peer"` // todo - what is this?
-//	AttachmentType     string                 `json:"attachment_type"`
-//}
+type RackElementAccessSwitchRequest struct {
+	InstanceCount         int
+	RedundancyProtocol    AccessRedundancyProtocol
+	Links                 []RackLink
+	Label                 string
+	Panels                []LogicalDevicePanel
+	DisplayName           string
+	LogicalDeviceId       ObjectId
+	Tags                  []TagLabel
+	AccessAccessLinkCount int
+	AccessAccessLinkSpeed LogicalDevicePortSpeed
+}
+
+func (o *RackElementAccessSwitchRequest) raw() *rawRackElementAccessSwitchRequest {
+	return &rawRackElementAccessSwitchRequest{
+		InstanceCount:         o.InstanceCount,
+		RedundancyProtocol:    o.RedundancyProtocol.raw(),
+		Links:                 o.Links,
+		Label:                 o.Label,
+		AccessAccessLinkCount: o.AccessAccessLinkCount,
+		AccessAccessLinkSpeed: *o.AccessAccessLinkSpeed.raw(),
+		LogicalDevice:         o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
+		Tags:                  o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
+	}
+}
+
+type rawRackElementAccessSwitchRequest struct {
+	InstanceCount         int                       `json:"instance_count"`
+	RedundancyProtocol    accessRedundancyProtocol  `json:"redundancy_protocol,omitempty"`
+	Links                 []RackLink                `json:"links"`
+	Label                 string                    `json:"label"`
+	LogicalDevice         ObjectId                  `json:"logical_device"`
+	AccessAccessLinkCount int                       `json:"access_access_link_count"`
+	AccessAccessLinkSpeed rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
+	Tags                  []TagLabel                `json:"tags"`
+}
 
 type RackElementAccessSwitch struct {
 	InstanceCount         int
@@ -668,19 +580,6 @@ type RackElementAccessSwitch struct {
 	AccessAccessLinkSpeed LogicalDevicePortSpeed
 }
 
-func (o *RackElementAccessSwitch) raw() *rawRackElementAccessSwitch {
-	return &rawRackElementAccessSwitch{
-		InstanceCount:         o.InstanceCount,
-		RedundancyProtocol:    o.RedundancyProtocol.raw(),
-		Links:                 o.Links,
-		Label:                 o.Label,
-		LogicalDevice:         o.LogicalDeviceId,
-		Tags:                  o.Tags,
-		AccessAccessLinkCount: o.AccessAccessLinkCount,
-		AccessAccessLinkSpeed: *o.AccessAccessLinkSpeed.raw(),
-	}
-}
-
 type rawRackElementAccessSwitch struct {
 	InstanceCount         int                       `json:"instance_count"`
 	RedundancyProtocol    accessRedundancyProtocol  `json:"redundancy_protocol,omitempty"`
@@ -689,13 +588,33 @@ type rawRackElementAccessSwitch struct {
 	LogicalDevice         ObjectId                  `json:"logical_device"`
 	AccessAccessLinkCount int                       `json:"access_access_link_count"`
 	AccessAccessLinkSpeed rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
-	Tags                  []DesignTag               `json:"tags"`
+	Tags                  []TagLabel                `json:"tags"`
 }
 
-func (o *rawRackElementAccessSwitch) polish(ld LogicalDevice) (*RackElementAccessSwitch, error) {
+func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAccessSwitch, error) {
 	rp, err := o.RedundancyProtocol.parse()
 	if err != nil {
 		return nil, err
+	}
+
+	var found bool
+
+	var rld *rawLogicalDevice
+	if rld, found = rack.logicalDeviceById(o.LogicalDevice); !found {
+		return nil, fmt.Errorf("logical device '%s' not found in rack type '%s' definition", o.LogicalDevice, rack.Id)
+	}
+	pld, err := rld.polish()
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []DesignTag
+	var tag *DesignTag
+	for _, label := range o.Tags {
+		if tag, found = rack.tagByLabel(label); !found {
+			return nil, fmt.Errorf("design tag '%s' not found in rack type '%s' definition", label, rack.Id)
+		}
+		tags = append(tags, *tag)
 	}
 
 	return &RackElementAccessSwitch{
@@ -703,11 +622,11 @@ func (o *rawRackElementAccessSwitch) polish(ld LogicalDevice) (*RackElementAcces
 		RedundancyProtocol:    AccessRedundancyProtocol(rp),
 		Links:                 o.Links,
 		Label:                 o.Label,
-		Panels:                ld.Panels,
-		DisplayName:           ld.DisplayName,
+		Panels:                pld.Panels,
+		DisplayName:           pld.DisplayName,
 		AccessAccessLinkCount: o.AccessAccessLinkCount,
 		AccessAccessLinkSpeed: o.AccessAccessLinkSpeed.parse(),
-		Tags:                  o.Tags,
+		Tags:                  tags,
 	}, nil
 }
 
@@ -743,7 +662,7 @@ func (o RackLink) raw() *rawRackLink {
 		Label:              o.Label,
 		Tags:               tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
-		LinkSpeed:          o.LinkSpeed.raw(),
+		LinkSpeed:          *o.LinkSpeed.raw(),
 		TargetSwitchLabel:  o.TargetSwitchLabel,
 		AttachmentType:     rackLinkAttachmentType(o.AttachmentType.String()),
 		LagMode:            lagModePtr,
@@ -752,14 +671,14 @@ func (o RackLink) raw() *rawRackLink {
 }
 
 type rawRackLink struct {
-	Label              string                     `json:"label"`
-	Tags               []DesignTag                `json:"tags"`
-	LinkPerSwitchCount int                        `json:"link_per_switch_count"`
-	LinkSpeed          *rawLogicalDevicePortSpeed `json:"link_speed"`
-	TargetSwitchLabel  string                     `json:"target_switch_label"`
-	AttachmentType     rackLinkAttachmentType     `json:"attachment_type"`
-	LagMode            *rackLinkLagMode           `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
-	SwitchPeer         rackLinkSwitchPeer         `json:"switch_peer,omitempty"`
+	Label              string                    `json:"label"`
+	Tags               []DesignTag               `json:"tags"`
+	LinkPerSwitchCount int                       `json:"link_per_switch_count"`
+	LinkSpeed          rawLogicalDevicePortSpeed `json:"link_speed"`
+	TargetSwitchLabel  string                    `json:"target_switch_label"`
+	AttachmentType     rackLinkAttachmentType    `json:"attachment_type"`
+	LagMode            *rackLinkLagMode          `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
+	SwitchPeer         rackLinkSwitchPeer        `json:"switch_peer,omitempty"`
 }
 
 func (o rawRackLink) polish() (*RackLink, error) {
@@ -793,7 +712,7 @@ func (o rawRackLink) polish() (*RackLink, error) {
 	}, nil
 }
 
-type RackElementGenericSystem struct {
+type RackElementGenericSystemRequest struct {
 	Count            int
 	AsnDomain        FeatureSwitch
 	ManagementLevel  GenericSystemManagementLevel
@@ -808,29 +727,52 @@ type RackElementGenericSystem struct {
 	LogicalDeviceId  ObjectId
 }
 
-func (o RackElementGenericSystem) raw() *rawRackElementGenericSystem {
-	tags := o.Tags
-	if tags == nil {
-		tags = []TagLabel{}
-	}
-
+func (o *RackElementGenericSystemRequest) raw() *rawRackElementGenericSystemRequest {
 	var links []rawRackLink
 	for _, link := range o.Links {
 		links = append(links, *link.raw())
 	}
 
-	return &rawRackElementGenericSystem{
+	return &rawRackElementGenericSystemRequest{
 		Count:            o.Count,
 		AsnDomain:        featureSwitch(o.AsnDomain.String()),
 		ManagementLevel:  genericSystemManagementLevel(o.ManagementLevel.String()),
 		PortChannelIdMin: o.PortChannelIdMin,
 		PortChannelIdMax: o.PortChannelIdMax,
 		Loopback:         featureSwitch(o.Loopback.String()),
-		Tags:             tags,
 		Label:            o.Label,
-		LogicalDevice:    o.LogicalDeviceId,
 		Links:            links,
+		LogicalDevice:    o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
+		Tags:             o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
 	}
+}
+
+type rawRackElementGenericSystemRequest struct {
+	Count            int                          `json:"count"`
+	AsnDomain        featureSwitch                `json:"asn_domain"`
+	ManagementLevel  genericSystemManagementLevel `json:"management_level"`
+	PortChannelIdMin int                          `json:"port_channel_id_min"`
+	PortChannelIdMax int                          `json:"port_channel_id_max"`
+	Loopback         featureSwitch                `json:"loopback"`
+	Label            string                       `json:"label"`
+	LogicalDevice    ObjectId                     `json:"logical_device"`
+	Links            []rawRackLink                `json:"links"`
+	Tags             []TagLabel                   `json:"tags"`
+}
+
+type RackElementGenericSystem struct {
+	Count            int
+	AsnDomain        FeatureSwitch
+	ManagementLevel  GenericSystemManagementLevel
+	PortChannelIdMin int
+	PortChannelIdMax int
+	Loopback         FeatureSwitch
+	Tags             []DesignTag
+	Label            string
+	Links            []RackLink
+	Panels           []LogicalDevicePanel
+	DisplayName      string
+	LogicalDeviceId  ObjectId
 }
 
 type rawRackElementGenericSystem struct {
@@ -846,7 +788,7 @@ type rawRackElementGenericSystem struct {
 	Links            []rawRackLink                `json:"links"`
 }
 
-func (o *rawRackElementGenericSystem) polish(ld LogicalDevice) (*RackElementGenericSystem, error) {
+func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGenericSystem, error) {
 	asnDomain, err := o.AsnDomain.parse()
 	if err != nil {
 		return nil, err
@@ -871,6 +813,26 @@ func (o *rawRackElementGenericSystem) polish(ld LogicalDevice) (*RackElementGene
 		links = append(links, *p)
 	}
 
+	var found bool
+
+	var rld *rawLogicalDevice
+	if rld, found = rack.logicalDeviceById(o.LogicalDevice); !found {
+		return nil, fmt.Errorf("logical device '%s' not found in rack type '%s' definition", o.LogicalDevice, rack.Id)
+	}
+	pld, err := rld.polish()
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []DesignTag
+	var tag *DesignTag
+	for _, label := range o.Tags {
+		if tag, found = rack.tagByLabel(label); !found {
+			return nil, fmt.Errorf("design tag '%s' not found in rack type '%s' definition", label, rack.Id)
+		}
+		tags = append(tags, *tag)
+	}
+
 	return &RackElementGenericSystem{
 		Count:            o.Count,
 		AsnDomain:        FeatureSwitch(asnDomain),
@@ -878,11 +840,11 @@ func (o *rawRackElementGenericSystem) polish(ld LogicalDevice) (*RackElementGene
 		PortChannelIdMin: o.PortChannelIdMin,
 		PortChannelIdMax: o.PortChannelIdMax,
 		Loopback:         FeatureSwitch(loopback),
-		Tags:             o.Tags,
+		Tags:             tags,
 		Label:            o.Label,
 		Links:            links,
-		Panels:           ld.Panels,
-		DisplayName:      ld.DisplayName,
+		Panels:           pld.Panels,
+		DisplayName:      pld.DisplayName,
 	}, nil
 }
 
@@ -891,66 +853,76 @@ type RackTypeRequest struct {
 	Description              string
 	FabricConnectivityDesign FabricConnectivityDesign
 	TagsByLabel              []TagLabel
-	LeafSwitches             []RackElementLeafSwitch
-	GenericSystems           []RackElementGenericSystem
-	AccessSwitches           []RackElementAccessSwitch
-	tags                     []DesignTag
+	LeafSwitches             []RackElementLeafSwitchRequest
+	GenericSystems           []RackElementGenericSystemRequest
+	AccessSwitches           []RackElementAccessSwitchRequest
 	logicalDevices           []LogicalDevice
 }
 
-func (o *RackTypeRequest) raw() *rawRackTypeRequest {
+func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackTypeRequest, error) {
 	result := &rawRackTypeRequest{
 		DisplayName:              o.DisplayName,
 		Description:              o.Description,
 		FabricConnectivityDesign: o.FabricConnectivityDesign.raw(),
-		TagsByLabel:              nil, // need a Client to find these, must be populated elsewhere
+		Tags:                     nil, // populated by API calls below
+		LogicalDevices:           nil, // populated by API calls below
 	}
 
-	for _, v := range o.LeafSwitches {
-		result.LeafSwitches = append(result.LeafSwitches, *v.raw())
-		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
-		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
-		//		Panels:      v.Panels,
-		//		DisplayName: v.DisplayName,
-		//		Id:          ObjectId(leafSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)),
-		//	}.raw())
-		//}
+	ldMap := make(map[ObjectId]struct{})  // collect IDs of all logical devices relevant to this rack
+	tagMap := make(map[TagLabel]struct{}) // collect labels of all tags relevant to this rack
+
+	for _, s := range o.LeafSwitches {
+		result.LeafSwitches = append(result.LeafSwitches, *s.raw())
+		ldMap[s.LogicalDeviceId] = struct{}{}
+		for _, t := range s.Tags {
+			tagMap[t] = struct{}{}
+		}
 	}
 
-	for _, v := range o.AccessSwitches {
-		result.AccessSwitches = append(result.AccessSwitches, *v.raw())
-		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
-		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
-		//		Panels:      v.Panels,
-		//		DisplayName: v.DisplayName,
-		//		Id:          ObjectId(accessSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)),
-		//	}.raw())
-		//}
-
+	for _, s := range o.AccessSwitches {
+		result.AccessSwitches = append(result.AccessSwitches, *s.raw())
+		ldMap[s.LogicalDeviceId] = struct{}{}
+		for _, t := range s.Tags {
+			tagMap[t] = struct{}{}
+		}
 	}
 
-	for _, v := range o.GenericSystems {
-		result.GenericSystems = append(result.GenericSystems, *v.raw())
-		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
-		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
-		//		Panels:      v.Panels,
-		//		DisplayName: v.DisplayName,
-		//		Id:          ObjectId(genericSystemLogicalDeviceIdPrefix + strconv.Itoa(k)),
-		//	}.raw())
-		//}
+	for _, s := range o.GenericSystems {
+		result.GenericSystems = append(result.GenericSystems, *s.raw())
+		ldMap[s.LogicalDeviceId] = struct{}{}
+		for _, t := range s.Tags {
+			tagMap[t] = struct{}{}
+		}
 	}
-	return result
+
+	for id := range ldMap {
+		ld, err := client.GetLogicalDevice(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		result.LogicalDevices = append(result.LogicalDevices, *ld.raw())
+	}
+
+	for tl := range tagMap {
+		tag, err := client.getTagByLabel(ctx, tl)
+		if err != nil {
+			return nil, err
+		}
+		result.Tags = append(result.Tags, *tag)
+	}
+
+	return result, nil
 }
 
 type rawRackTypeRequest struct {
-	DisplayName              string                        `json:"display_name"`
-	Description              string                        `json:"description"`
-	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
-	TagsByLabel              []TagLabel                    `json:"tags,omitempty"`
-	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
-	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
-	LeafSwitches             []rawRackElementLeaf          `json:"leafs,omitempty"`
-	AccessSwitches           []rawRackElementAccessSwitch  `json:"access_switches,omitempty"`
+	DisplayName              string                               `json:"display_name"`
+	Description              string                               `json:"description"`
+	FabricConnectivityDesign fabricConnectivityDesign             `json:"fabric_connectivity_design"`
+	Tags                     []DesignTag                          `json:"tags,omitempty"`
+	LogicalDevices           []rawLogicalDevice                   `json:"logical_devices,omitempty"`
+	GenericSystems           []rawRackElementGenericSystemRequest `json:"generic_systems,omitempty"`
+	LeafSwitches             []rawRackElementLeafSwitchRequest    `json:"leafs,omitempty"`
+	AccessSwitches           []rawRackElementAccessSwitchRequest  `json:"access_switches,omitempty"`
 }
 
 type RackType struct {
@@ -967,57 +939,6 @@ type RackType struct {
 	logicalDevices           []LogicalDevice
 }
 
-func (o RackType) raw() *rawRackType {
-	result := &rawRackType{
-		Id:                       o.Id,
-		DisplayName:              o.DisplayName,
-		Description:              o.Description,
-		FabricConnectivityDesign: o.FabricConnectivityDesign.raw(),
-		Tags:                     o.Tags,
-		CreatedAt:                o.CreatedAt,
-		LastModifiedAt:           o.LastModifiedAt,
-	}
-
-	for _, ld := range o.logicalDevices {
-		result.LogicalDevices = append(result.LogicalDevices, *ld.raw())
-	}
-
-	for _, v := range o.LeafSwitches {
-		result.LeafSwitches = append(result.LeafSwitches, *v.raw())
-		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
-		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
-		//		Panels:      v.Panels,
-		//		DisplayName: v.DisplayName,
-		//		Id:          ObjectId(leafSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)),
-		//	}.raw())
-		//}
-	}
-
-	for _, v := range o.AccessSwitches {
-		result.AccessSwitches = append(result.AccessSwitches, *v.raw())
-		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
-		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
-		//		Panels:      v.Panels,
-		//		DisplayName: v.DisplayName,
-		//		Id:          ObjectId(accessSwitchLogicalDeviceIdPrefix + strconv.Itoa(k)),
-		//	}.raw())
-		//}
-
-	}
-
-	for _, v := range o.GenericSystems {
-		result.GenericSystems = append(result.GenericSystems, *v.raw())
-		//if _, found := result.logicalDeviceById(v.LogicalDeviceId); !found {
-		//	result.LogicalDevices = append(result.LogicalDevices, *LogicalDevice{
-		//		Panels:      v.Panels,
-		//		DisplayName: v.DisplayName,
-		//		Id:          ObjectId(genericSystemLogicalDeviceIdPrefix + strconv.Itoa(k)),
-		//	}.raw())
-		//}
-	}
-	return result
-}
-
 type rawRackType struct {
 	Id                       ObjectId                      `json:"id,omitempty"`
 	DisplayName              string                        `json:"display_name"`
@@ -1028,7 +949,7 @@ type rawRackType struct {
 	LastModifiedAt           time.Time                     `json:"last_modified_at"`
 	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
-	LeafSwitches             []rawRackElementLeaf          `json:"leafs,omitempty"`
+	LeafSwitches             []rawRackElementLeafSwitch    `json:"leafs,omitempty"`
 	AccessSwitches           []rawRackElementAccessSwitch  `json:"access_switches,omitempty"`
 }
 
@@ -1048,18 +969,8 @@ func (o *rawRackType) polish() (*RackType, error) {
 		LastModifiedAt:           o.LastModifiedAt,
 	}
 
-	var ld *rawLogicalDevice
-	var found bool
-
 	for _, r := range o.LeafSwitches {
-		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
-			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
-		}
-		ldp, err := ld.polish()
-		if err != nil {
-			return nil, err
-		}
-		p, err := r.polish(*ldp)
+		p, err := r.polish(o)
 		if err != nil {
 			return nil, err
 		}
@@ -1067,14 +978,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 	}
 
 	for _, r := range o.AccessSwitches {
-		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
-			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
-		}
-		ldp, err := ld.polish()
-		if err != nil {
-			return nil, err
-		}
-		p, err := r.polish(*ldp)
+		p, err := r.polish(o)
 		if err != nil {
 			return nil, err
 		}
@@ -1082,14 +986,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 	}
 
 	for _, r := range o.GenericSystems {
-		if ld, found = o.logicalDeviceById(r.LogicalDevice); !found {
-			return nil, fmt.Errorf("logical device '%s' not found in rack '%s'", r.LogicalDevice, o.Id)
-		}
-		ldp, err := ld.polish()
-		if err != nil {
-			return nil, err
-		}
-		p, err := r.polish(*ldp)
+		p, err := r.polish(o)
 		if err != nil {
 			return nil, err
 		}
@@ -1099,10 +996,19 @@ func (o *rawRackType) polish() (*RackType, error) {
 	return result, nil
 }
 
-func (o rawRackType) logicalDeviceById(id ObjectId) (*rawLogicalDevice, bool) {
+func (o rawRackType) logicalDeviceById(desired ObjectId) (*rawLogicalDevice, bool) {
 	for _, ld := range o.LogicalDevices {
-		if ld.Id == id {
+		if ld.Id == desired {
 			return &ld, true
+		}
+	}
+	return nil, false
+}
+
+func (o rawRackType) tagByLabel(desired TagLabel) (*DesignTag, bool) {
+	for _, tag := range o.Tags {
+		if tag.Label == desired {
+			return &tag, true
 		}
 	}
 	return nil, false
@@ -1176,21 +1082,15 @@ func (o *Client) getRackTypeByName(ctx context.Context, name string) (*RackType,
 }
 
 func (o *Client) createRackType(ctx context.Context, request *RackTypeRequest) (ObjectId, error) {
-	err := request.populateLogicalDeviceDetailsFromGlobalCatalog(ctx, o)
+	rawRequest, err := request.raw(ctx, o)
 	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
+		return "", err
 	}
-
-	err = request.populateTagDetailsFromGlobalCatalog(ctx, o)
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
-	}
-
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignRackTypes,
-		apiInput:    request.raw(),
+		apiInput:    rawRequest,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -1199,28 +1099,23 @@ func (o *Client) createRackType(ctx context.Context, request *RackTypeRequest) (
 	return response.Id, nil
 }
 
-func (o *Client) updateRackType(ctx context.Context, id ObjectId, request *RackTypeRequest) (ObjectId, error) {
-	err := request.populateLogicalDeviceDetailsFromGlobalCatalog(ctx, o)
+func (o *Client) updateRackType(ctx context.Context, id ObjectId, request *RackTypeRequest) error {
+	rawRequest, err := request.raw(ctx, o)
 	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
-	}
-
-	err = request.populateTagDetailsFromGlobalCatalog(ctx, o)
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
+		return err
 	}
 
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPut,
 		urlStr:      fmt.Sprintf(apiUrlDesignRackTypeById, id),
-		apiInput:    request.raw(),
+		apiInput:    rawRequest,
 		apiResponse: response,
 	})
 	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
+		return convertTtaeToAceWherePossible(err)
 	}
-	return response.Id, nil
+	return nil
 }
 
 func (o *Client) deleteRackType(ctx context.Context, id ObjectId) error {
@@ -1230,86 +1125,6 @@ func (o *Client) deleteRackType(ctx context.Context, id ObjectId) error {
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
-	}
-	return nil
-}
-
-func (o *RackTypeRequest) populateTagDetailsFromGlobalCatalog(ctx context.Context, client *Client) error {
-	// unique-ify with map
-	tagMap := make(map[TagLabel]struct{})
-	for _, i := range o.TagsByLabel {
-		tagMap[i] = struct{}{}
-	}
-
-	for tagLabel := range tagMap {
-		tag, err := client.getTagByLabel(ctx, tagLabel)
-		if err != nil {
-			return err
-		}
-		o.tags = append(o.tags, *tag)
-	}
-	return nil
-}
-
-func (o *RackTypeRequest) populateLogicalDeviceDetailsFromGlobalCatalog(ctx context.Context, client *Client) error {
-	ldMap := make(map[ObjectId]struct{}) // for keeping track of logical devices retrieved from the API
-
-	for _, i := range o.LeafSwitches {
-		switch {
-		case i.LogicalDeviceId == "":
-			return fmt.Errorf(errLdIdRequired, "leaf switch")
-		case len(i.Panels) != 0:
-			return fmt.Errorf(errNotEmpty, "leaf switch", "[]Panels")
-		case i.DisplayName != "":
-			return fmt.Errorf(errNotEmpty, "leaf switch", "DisplayName")
-		}
-
-		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
-			ld, err := client.GetLogicalDevice(ctx, i.LogicalDeviceId)
-			if err != nil {
-				return err
-			}
-			ldMap[i.LogicalDeviceId] = struct{}{}
-			o.logicalDevices = append(o.logicalDevices, *ld)
-		}
-	}
-	for _, i := range o.AccessSwitches {
-		switch {
-		case i.LogicalDeviceId == "":
-			return fmt.Errorf(errLdIdRequired, "access switch")
-		case len(i.Panels) != 0:
-			return fmt.Errorf(errNotEmpty, "access switch", "[]Panels")
-		case i.DisplayName != "":
-			return fmt.Errorf(errNotEmpty, "access switch", "DisplayName")
-		}
-
-		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
-			ld, err := client.GetLogicalDevice(ctx, i.LogicalDeviceId)
-			if err != nil {
-				return err
-			}
-			ldMap[i.LogicalDeviceId] = struct{}{}
-			o.logicalDevices = append(o.logicalDevices, *ld)
-		}
-	}
-	for _, i := range o.GenericSystems {
-		switch {
-		case i.LogicalDeviceId == "":
-			return fmt.Errorf(errLdIdRequired, "generic system")
-		case len(i.Panels) != 0:
-			return fmt.Errorf(errNotEmpty, "generic system", "[]Panels")
-		case i.DisplayName != "":
-			return fmt.Errorf(errNotEmpty, "generic system", "DisplayName")
-		}
-
-		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
-			ld, err := client.GetLogicalDevice(ctx, i.LogicalDeviceId)
-			if err != nil {
-				return err
-			}
-			ldMap[i.LogicalDeviceId] = struct{}{}
-			o.logicalDevices = append(o.logicalDevices, *ld)
-		}
 	}
 	return nil
 }

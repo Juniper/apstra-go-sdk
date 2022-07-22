@@ -8,6 +8,29 @@ import (
 	"time"
 )
 
+func TestListGetOneRackType(t *testing.T) {
+	client, err := newLiveTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rtIds, err := client.listRackTypeIds(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = rtIds
+
+	DebugLevel = 4
+	rt, err := client.getRackType(context.TODO(), rtIds[0])
+	//rt, err := client.getRackType(context.TODO(), ObjectId("test-name"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println(rt.Id)
+
+}
+
 func TestListGetAllGetRackType(t *testing.T) {
 	client, err := newLiveTestClient()
 	if err != nil {
@@ -17,6 +40,14 @@ func TestListGetAllGetRackType(t *testing.T) {
 	rackTypeIds, err := client.listRackTypeIds(context.TODO())
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	for _, id := range rackTypeIds {
+		rt, err := client.getRackType(context.TODO(), id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Println(rt.Id)
 	}
 
 	rackTypes, err := client.getAllRackTypes(context.TODO())
@@ -103,7 +134,7 @@ func TestCreateGetRackType(t *testing.T) {
 	id, err := client.CreateRackType(context.TODO(), &RackTypeRequest{
 		DisplayName:              "rdn " + randString(5, "hex"),
 		FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
-		LeafSwitches: []RackElementLeafSwitch{
+		LeafSwitches: []RackElementLeafSwitchRequest{
 			{
 				Label:             leafLabel,
 				LogicalDeviceId:   "virtual-7x10-1",
@@ -111,7 +142,7 @@ func TestCreateGetRackType(t *testing.T) {
 				LinkPerSpineSpeed: "10G",
 			},
 		},
-		GenericSystems: []RackElementGenericSystem{
+		GenericSystems: []RackElementGenericSystemRequest{
 			{
 				Count: 5,
 				Label: "some generic system",

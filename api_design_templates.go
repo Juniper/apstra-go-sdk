@@ -411,8 +411,8 @@ type Spine struct {
 func (o Spine) raw() *rawSpine {
 	return &rawSpine{
 		Count:                   o.Count,
-		ExternalLinkSpeed:       o.ExternalLinkSpeed.raw(),
-		LinkPerSuperspineSpeed:  o.LinkPerSuperspineSpeed.raw(),
+		ExternalLinkSpeed:       *o.ExternalLinkSpeed.raw(),
+		LinkPerSuperspineSpeed:  *o.LinkPerSuperspineSpeed.raw(),
 		LogicalDevice:           o.LogicalDevice.raw(),
 		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
 		Tags:                    o.Tags,
@@ -423,15 +423,15 @@ func (o Spine) raw() *rawSpine {
 }
 
 type rawSpine struct {
-	Count                   int                        `json:"count"`
-	ExternalLinkSpeed       *rawLogicalDevicePortSpeed `json:"external_link_speed"`
-	LinkPerSuperspineSpeed  *rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
-	LogicalDevice           *rawLogicalDevice          `json:"logical_device"`
-	LinkPerSuperspineCount  int                        `json:"link_per_superspine_count"`
-	Tags                    []DesignTag                `json:"tags"`
-	ExternalLinksPerNode    int                        `json:"external_links_per_node"`
-	ExternalFacingNodeCount int                        `json:"external_facing_node_count"`
-	ExternalLinkCount       int                        `json:"external_link_count"`
+	Count                   int                       `json:"count"`
+	ExternalLinkSpeed       rawLogicalDevicePortSpeed `json:"external_link_speed"`
+	LinkPerSuperspineSpeed  rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
+	LogicalDevice           *rawLogicalDevice         `json:"logical_device"`
+	LinkPerSuperspineCount  int                       `json:"link_per_superspine_count"`
+	Tags                    []DesignTag               `json:"tags"`
+	ExternalLinksPerNode    int                       `json:"external_links_per_node"`
+	ExternalFacingNodeCount int                       `json:"external_facing_node_count"`
+	ExternalLinkCount       int                       `json:"external_link_count"`
 }
 
 func (o rawSpine) polish() (*Spine, error) {
@@ -472,29 +472,29 @@ type TemplateRackBased struct {
 	} `json:"dhcp_service_intent"`
 }
 
-func (o TemplateRackBased) raw() *rawTemplateRackBased {
-	var rrt []rawRackType
-	for _, rt := range o.RackTypes {
-		rrt = append(rrt, *rt.raw())
-	}
-	return &rawTemplateRackBased{
-		Id:                     o.Id,
-		Type:                   o.Type.raw(),
-		DisplayName:            o.DisplayName,
-		Status:                 o.Status,
-		AntiAffinityPolicy:     o.AntiAffinityPolicy,
-		CreatedAt:              o.CreatedAt,
-		LastModifiedAt:         o.LastModifiedAt,
-		VirtualNetworkPolicy:   *o.VirtualNetworkPolicy.raw(),
-		AsnAllocationPolicy:    *o.AsnAllocationPolicy.raw(),
-		FabricAddressingPolicy: *o.FabricAddressingPolicy.raw(),
-		Spine:                  *o.Spine.raw(),
-		RackTypes:              rrt,
-		RackTypeCounts:         o.RackTypeCounts,
-		DhcpServiceIntent:      o.DhcpServiceIntent,
-		Capability:             o.Capability.raw(),
-	}
-}
+//func (o TemplateRackBased) raw() *rawTemplateRackBased {
+//	var rrt []rawRackType
+//	for _, rt := range o.RackTypes {
+//		rrt = append(rrt, *rt.raw())
+//	}
+//	return &rawTemplateRackBased{
+//		Id:                     o.Id,
+//		Type:                   o.Type.raw(),
+//		DisplayName:            o.DisplayName,
+//		Status:                 o.Status,
+//		AntiAffinityPolicy:     o.AntiAffinityPolicy,
+//		CreatedAt:              o.CreatedAt,
+//		LastModifiedAt:         o.LastModifiedAt,
+//		VirtualNetworkPolicy:   *o.VirtualNetworkPolicy.raw(),
+//		AsnAllocationPolicy:    *o.AsnAllocationPolicy.raw(),
+//		FabricAddressingPolicy: *o.FabricAddressingPolicy.raw(),
+//		Spine:                  *o.Spine.raw(),
+//		RackTypes:              rrt,
+//		RackTypeCounts:         o.RackTypeCounts,
+//		DhcpServiceIntent:      o.DhcpServiceIntent,
+//		Capability:             o.Capability.raw(),
+//	}
+//}
 
 type rawTemplateRackBased struct {
 	Id                     ObjectId                  `json:"id"`
@@ -635,26 +635,26 @@ type TemplatePodBased struct {
 	RackBasedTemplateCounts []RackBasedTemplateCount
 }
 
-func (o TemplatePodBased) raw() *rawTemplatePodBased { // todo
-	var rrbt []rawTemplateRackBased
-	for _, rbt := range o.RackBasedTemplates {
-		rrbt = append(rrbt, *rbt.raw())
-	}
-	return &rawTemplatePodBased{
-		Id:                      o.Id,
-		Type:                    o.Type,
-		Status:                  o.Status,
-		DisplayName:             o.DisplayName,
-		AntiAffinityPolicy:      o.AntiAffinityPolicy,
-		FabricAddressingPolicy:  *o.FabricAddressingPolicy.raw(),
-		Superspine:              *o.Superspine.raw(),
-		CreatedAt:               o.CreatedAt,
-		LastModifiedAt:          o.LastModifiedAt,
-		Capability:              o.Capability.raw(),
-		RackBasedTemplates:      rrbt,
-		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
-	}
-}
+//func (o TemplatePodBased) raw() *rawTemplatePodBased { // todo
+//	var rrbt []rawTemplateRackBased
+//	for _, rbt := range o.RackBasedTemplates {
+//		rrbt = append(rrbt, *rbt.raw())
+//	}
+//	return &rawTemplatePodBased{
+//		Id:                      o.Id,
+//		Type:                    o.Type,
+//		Status:                  o.Status,
+//		DisplayName:             o.DisplayName,
+//		AntiAffinityPolicy:      o.AntiAffinityPolicy,
+//		FabricAddressingPolicy:  *o.FabricAddressingPolicy.raw(),
+//		Superspine:              *o.Superspine.raw(),
+//		CreatedAt:               o.CreatedAt,
+//		LastModifiedAt:          o.LastModifiedAt,
+//		Capability:              o.Capability.raw(),
+//		RackBasedTemplates:      rrbt,
+//		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
+//	}
+//}
 
 type rawTemplatePodBased struct {
 	Id                      ObjectId                  `json:"id"`
@@ -734,28 +734,28 @@ type TemplateL3Collapsed struct {
 	} `json:"dhcp_service_intent"`
 }
 
-func (o TemplateL3Collapsed) raw() *rawTemplateL3Collapsed {
-	var rrt []rawRackType
-	for _, rt := range o.RackTypes {
-		rrt = append(rrt, *rt.raw())
-	}
-	return &rawTemplateL3Collapsed{
-		Id:                   o.Id,
-		Type:                 o.Type,
-		Status:               o.Status,
-		DisplayName:          o.DisplayName,
-		AntiAffinityPolicy:   o.AntiAffinityPolicy,
-		CreatedAt:            o.CreatedAt,
-		LastModifiedAt:       o.LastModifiedAt,
-		RackTypes:            rrt,
-		Capability:           o.Capability.raw(),
-		MeshLinkSpeed:        o.MeshLinkSpeed,
-		VirtualNetworkPolicy: *o.VirtualNetworkPolicy.raw(),
-		MeshLinkCount:        o.MeshLinkCount,
-		RackTypeCounts:       o.RackTypeCounts,
-		DhcpServiceIntent:    o.DhcpServiceIntent,
-	}
-}
+//func (o TemplateL3Collapsed) raw() *rawTemplateL3Collapsed {
+//	var rrt []rawRackType
+//	for _, rt := range o.RackTypes {
+//		rrt = append(rrt, *rt.raw())
+//	}
+//	return &rawTemplateL3Collapsed{
+//		Id:                   o.Id,
+//		Type:                 o.Type,
+//		Status:               o.Status,
+//		DisplayName:          o.DisplayName,
+//		AntiAffinityPolicy:   o.AntiAffinityPolicy,
+//		CreatedAt:            o.CreatedAt,
+//		LastModifiedAt:       o.LastModifiedAt,
+//		RackTypes:            rrt,
+//		Capability:           o.Capability.raw(),
+//		MeshLinkSpeed:        o.MeshLinkSpeed,
+//		VirtualNetworkPolicy: *o.VirtualNetworkPolicy.raw(),
+//		MeshLinkCount:        o.MeshLinkCount,
+//		RackTypeCounts:       o.RackTypeCounts,
+//		DhcpServiceIntent:    o.DhcpServiceIntent,
+//	}
+//}
 
 type rawTemplateL3Collapsed struct {
 	Id                   ObjectId                  `json:"id"`
