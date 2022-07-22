@@ -672,7 +672,7 @@ func (o *Client) GetTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
 // string ("Name" in the web UI). This is a case-insensitive search because
 // apstra enforces uniqueness in a case-insensitive manner. An error is returned
 // if no DesignTag objects match the supplied DesignTag.Label.
-func (o *Client) GetTagByLabel(ctx context.Context, label string) (*DesignTag, error) {
+func (o *Client) GetTagByLabel(ctx context.Context, label TagLabel) (*DesignTag, error) {
 	return o.getTagByLabel(ctx, label)
 }
 
@@ -791,4 +791,16 @@ func (o *Client) GetNodes(ctx context.Context, blueprint ObjectId, nodeType Node
 // without map wrapper?) is returned in 'response'
 func (o *Client) PatchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
 	return o.patchNode(ctx, blueprint, node, request, response)
+}
+
+// CreateRackType creates an Apstra Rack Type based on the contents of rackType.
+// Consistent with the Apstra UI and documentation, logical devices (switches,
+// generic systems) within the rack are specified by referencing items found in
+// the global catalog. Changes to global catalog items will not propagate into
+// previously-created rack types. Within the RackType object, the []Panels and
+// DisplayName elements of each switch and generic system must be empty when
+// submitted to CreateRackType(). These elements are automatically populated.
+// The data structure referenced by rackType will be modified by this function.
+func (o *Client) CreateRackType(ctx context.Context, rackType *RackType) (ObjectId, error) {
+	return o.createRackType(ctx, rackType)
 }

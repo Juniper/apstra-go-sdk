@@ -12,12 +12,22 @@ func TestListRackTypeIds(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rackTypes, err := client.listRackTypeIds(context.TODO())
+	rackTypeIds, err := client.listRackTypeIds(context.TODO())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	log.Println(rackTypes)
+	DebugLevel = 4
+
+	rackTypes, err := client.getAllRackTypes(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(rackTypeIds) != len(rackTypes) {
+		t.Fatalf("got %d rack type IDs but %d rack types", len(rackTypeIds), len(rackTypes))
+	}
+
 }
 
 func TestRackTypeStrings(t *testing.T) {

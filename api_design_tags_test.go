@@ -41,7 +41,7 @@ func TestCreateGetDeleteTag(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	label := randString(10, "hex")
+	label := TagLabel(randString(10, "hex"))
 	description := randString(10, "hex")
 	id, err := client.CreateTag(context.TODO(), &DesignTag{
 		Label:       label,

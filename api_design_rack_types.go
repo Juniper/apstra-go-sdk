@@ -576,7 +576,7 @@ type RackElementLeafSwitch struct {
 	LinkPerSpineSpeed           *LogicalDevicePortSpeed
 	MlagVlanId                  int
 	RedundancyProtocol          LeafRedundancyProtocol
-	Tags                        []DesignTag
+	Tags                        []TagLabel
 	Panels                      []LogicalDevicePanel
 	DisplayName                 string
 	LogicalDeviceId             ObjectId
@@ -585,7 +585,7 @@ type RackElementLeafSwitch struct {
 func (o *RackElementLeafSwitch) raw() *rawRackElementLeaf {
 	tags := o.Tags
 	if tags == nil {
-		tags = []DesignTag{}
+		tags = []TagLabel{}
 	}
 
 	return &rawRackElementLeaf{
@@ -618,7 +618,7 @@ type rawRackElementLeaf struct {
 	LogicalDevice               ObjectId                `json:"logical_device"`
 	MlagVlanId                  int                     `json:"mlag_vlan_id"`
 	RedundancyProtocol          leafRedundancyProtocol  `json:"redundancy_protocol,omitempty"`
-	Tags                        []DesignTag             `json:"tags"`
+	Tags                        []TagLabel              `json:"tags"`
 }
 
 func (o *rawRackElementLeaf) polish(ld LogicalDevice) (*RackElementLeafSwitch, error) {
@@ -791,7 +791,7 @@ type RackElementGenericSystem struct {
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Loopback         FeatureSwitch
-	Tags             []DesignTag
+	Tags             []TagLabel
 	Label            string
 	Links            []RackLink
 	Panels           []LogicalDevicePanel
@@ -802,7 +802,7 @@ type RackElementGenericSystem struct {
 func (o RackElementGenericSystem) raw() *rawRackElementGenericSystem {
 	tags := o.Tags
 	if tags == nil {
-		tags = []DesignTag{}
+		tags = []TagLabel{}
 	}
 
 	var links []rawRackLink
@@ -831,7 +831,7 @@ type rawRackElementGenericSystem struct {
 	PortChannelIdMin int                          `json:"port_channel_id_min"`
 	PortChannelIdMax int                          `json:"port_channel_id_max"`
 	Loopback         featureSwitch                `json:"loopback"`
-	Tags             []DesignTag                  `json:"tags"`
+	Tags             []TagLabel                   `json:"tags"`
 	Label            string                       `json:"label"`
 	LogicalDevice    ObjectId                     `json:"logical_device"`
 	Links            []rawRackLink                `json:"links"`
@@ -1059,69 +1059,53 @@ func (o *Client) getRackType(ctx context.Context, id ObjectId) (*RackType, error
 	return response.polish()
 }
 
-func (o *Client) createRackType(ctx context.Context, rackType *RackType) (ObjectId, error) {
-	ldMap := make(map[ObjectId]struct{}) // for keeping track of logical devices retrieved from the API
-
-	for _, i := range rackType.LeafSwitches {
-		switch {
-		case i.LogicalDeviceId == "":
-			return "", fmt.Errorf(errLdIdRequired, "leaf switch")
-		case len(i.Panels) != 0:
-			return "", fmt.Errorf(errNotEmpty, "leaf switch", "[]Panels")
-		case i.DisplayName != "":
-			return "", fmt.Errorf(errNotEmpty, "leaf switch", "DisplayName")
-		}
-
-		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
-			ld, err := o.GetLogicalDevice(ctx, i.LogicalDeviceId)
-			if err != nil {
-				return "", err
-			}
-			ldMap[i.LogicalDeviceId] = struct{}{}
-			rackType.logicalDevices = append(rackType.logicalDevices, *ld)
-		}
-	}
-	for _, i := range rackType.AccessSwitches {
-		switch {
-		case i.LogicalDeviceId == "":
-			return "", fmt.Errorf(errLdIdRequired, "access switch")
-		case len(i.Panels) != 0:
-			return "", fmt.Errorf(errNotEmpty, "access switch", "[]Panels")
-		case i.DisplayName != "":
-			return "", fmt.Errorf(errNotEmpty, "access switch", "DisplayName")
-		}
-
-		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
-			ld, err := o.GetLogicalDevice(ctx, i.LogicalDeviceId)
-			if err != nil {
-				return "", err
-			}
-			ldMap[i.LogicalDeviceId] = struct{}{}
-			rackType.logicalDevices = append(rackType.logicalDevices, *ld)
-		}
-	}
-	for _, i := range rackType.GenericSystems {
-		switch {
-		case i.LogicalDeviceId == "":
-			return "", fmt.Errorf(errLdIdRequired, "generic system")
-		case len(i.Panels) != 0:
-			return "", fmt.Errorf(errNotEmpty, "generic system", "[]Panels")
-		case i.DisplayName != "":
-			return "", fmt.Errorf(errNotEmpty, "generic system", "DisplayName")
-		}
-
-		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
-			ld, err := o.GetLogicalDevice(ctx, i.LogicalDeviceId)
-			if err != nil {
-				return "", err
-			}
-			ldMap[i.LogicalDeviceId] = struct{}{}
-			rackType.logicalDevices = append(rackType.logicalDevices, *ld)
-		}
-	}
-
-	response := &objectIdResponse{}
+func (o *Client) getAllRackTypes(ctx context.Context) ([]RackType, error) {
+	response := &struct {
+		Items []rawRackType `json:"items"`
+	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlDesignRackTypes,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	result := make([]RackType, len(response.Items))
+	for i, raw := range response.Items {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
+func (o *Client) getRackTypeByName(ctx context.Context, name string) (*RackType, error) {
+	rackTypes, err := o.getAllRackTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, rackType := range rackTypes {
+		if rackType.DisplayName == name {
+			return &rackType, nil
+		}
+	}
+	return nil, ApstraClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("rack type with name '%s' not found", name),
+	}
+}
+
+func (o *Client) createRackType(ctx context.Context, rackType *RackType) (ObjectId, error) {
+	err := rackType.populateLogicalDeviceDetailsFromGlobalCatalog(ctx, o)
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	response := &objectIdResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignRackTypes,
 		apiInput:    rackType.raw(),
@@ -1131,4 +1115,96 @@ func (o *Client) createRackType(ctx context.Context, rackType *RackType) (Object
 		return "", convertTtaeToAceWherePossible(err)
 	}
 	return response.Id, nil
+}
+
+func (o *Client) updateRackType(ctx context.Context, id ObjectId, rackType *RackType) (ObjectId, error) {
+	err := rackType.populateLogicalDeviceDetailsFromGlobalCatalog(ctx, o)
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	response := &objectIdResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPut,
+		urlStr:      fmt.Sprintf(apiUrlDesignRackTypeById, id),
+		apiInput:    rackType.raw(),
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
+}
+
+func (o *Client) deleteRackType(ctx context.Context, id ObjectId) error {
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodGet,
+		urlStr: fmt.Sprintf(apiUrlDesignRackTypeById, id),
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
+}
+
+func (o *RackType) populateLogicalDeviceDetailsFromGlobalCatalog(ctx context.Context, client *Client) error {
+	ldMap := make(map[ObjectId]struct{}) // for keeping track of logical devices retrieved from the API
+
+	for _, i := range o.LeafSwitches {
+		switch {
+		case i.LogicalDeviceId == "":
+			return fmt.Errorf(errLdIdRequired, "leaf switch")
+		case len(i.Panels) != 0:
+			return fmt.Errorf(errNotEmpty, "leaf switch", "[]Panels")
+		case i.DisplayName != "":
+			return fmt.Errorf(errNotEmpty, "leaf switch", "DisplayName")
+		}
+
+		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
+			ld, err := client.GetLogicalDevice(ctx, i.LogicalDeviceId)
+			if err != nil {
+				return err
+			}
+			ldMap[i.LogicalDeviceId] = struct{}{}
+			o.logicalDevices = append(o.logicalDevices, *ld)
+		}
+	}
+	for _, i := range o.AccessSwitches {
+		switch {
+		case i.LogicalDeviceId == "":
+			return fmt.Errorf(errLdIdRequired, "access switch")
+		case len(i.Panels) != 0:
+			return fmt.Errorf(errNotEmpty, "access switch", "[]Panels")
+		case i.DisplayName != "":
+			return fmt.Errorf(errNotEmpty, "access switch", "DisplayName")
+		}
+
+		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
+			ld, err := client.GetLogicalDevice(ctx, i.LogicalDeviceId)
+			if err != nil {
+				return err
+			}
+			ldMap[i.LogicalDeviceId] = struct{}{}
+			o.logicalDevices = append(o.logicalDevices, *ld)
+		}
+	}
+	for _, i := range o.GenericSystems {
+		switch {
+		case i.LogicalDeviceId == "":
+			return fmt.Errorf(errLdIdRequired, "generic system")
+		case len(i.Panels) != 0:
+			return fmt.Errorf(errNotEmpty, "generic system", "[]Panels")
+		case i.DisplayName != "":
+			return fmt.Errorf(errNotEmpty, "generic system", "DisplayName")
+		}
+
+		if _, ok := ldMap[i.LogicalDeviceId]; !ok {
+			ld, err := client.GetLogicalDevice(ctx, i.LogicalDeviceId)
+			if err != nil {
+				return err
+			}
+			ldMap[i.LogicalDeviceId] = struct{}{}
+			o.logicalDevices = append(o.logicalDevices, *ld)
+		}
+	}
+	return nil
 }
