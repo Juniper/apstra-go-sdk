@@ -146,7 +146,7 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 			{
 				Count: 5,
 				Label: "some generic system",
-				Links: []RackLink{
+				Links: []RackLinkRequest{
 					{
 						Label:              "foo",
 						LinkPerSwitchCount: 1,
@@ -154,6 +154,7 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 						TargetSwitchLabel:  leafLabel,
 						AttachmentType:     RackLinkAttachmentTypeSingle,
 						LagMode:            RackLinkLagModeNone,
+						Tags:               []TagLabel{"my_tag"},
 					},
 				},
 				LogicalDeviceId: "5ed7ed07-7222-4d6c-a5cb-1e1aa6036dab",

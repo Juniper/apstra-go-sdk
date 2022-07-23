@@ -630,9 +630,9 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 	}, nil
 }
 
-type RackLink struct {
+type RackLinkRequest struct {
 	Label              string                 // `json:"label"`
-	Tags               []DesignTag            // `json:"tags"`
+	Tags               []TagLabel             // `json:"tags"`
 	LinkPerSwitchCount int                    // `json:"link_per_switch_count"`
 	LinkSpeed          LogicalDevicePortSpeed // `json:"link_speed"`
 	TargetSwitchLabel  string                 // `json:"target_switch_label"`
@@ -641,13 +641,10 @@ type RackLink struct {
 	SwitchPeer         RackLinkSwitchPeer     // `json:"switch_peer"`
 }
 
-func (o RackLink) raw() *rawRackLink {
-	var tags []DesignTag
-	for _, tag := range o.Tags {
-		tags = append(tags, tag)
-	}
-	if tags == nil {
-		tags = []DesignTag{}
+func (o RackLinkRequest) raw() *rawRackLinkRequest {
+	tags := make([]TagLabel, len(o.Tags))
+	for i, tag := range o.Tags {
+		tags[i] = tag
 	}
 
 	// JSON encoding of lag_mode must be one of the accepted strings or null (nil ptr)
@@ -658,7 +655,7 @@ func (o RackLink) raw() *rawRackLink {
 		lagModePtr = nil
 	}
 
-	return &rawRackLink{
+	return &rawRackLinkRequest{
 		Label:              o.Label,
 		Tags:               tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
@@ -670,9 +667,31 @@ func (o RackLink) raw() *rawRackLink {
 	}
 }
 
+type rawRackLinkRequest struct {
+	Label              string                     `json:"label"`
+	LinkPerSwitchCount int                        `json:"link_per_switch_count"`
+	LinkSpeed          *rawLogicalDevicePortSpeed `json:"link_speed"`
+	TargetSwitchLabel  string                     `json:"target_switch_label"`
+	AttachmentType     rackLinkAttachmentType     `json:"attachment_type"`
+	LagMode            *rackLinkLagMode           `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
+	SwitchPeer         rackLinkSwitchPeer         `json:"switch_peer,omitempty"`
+	Tags               []TagLabel                 `json:"tags"` // needs to be fetched from API, cloned into rack type on create() / update()
+}
+
+type RackLink struct {
+	Label              string                 // `json:"label"`
+	Tags               []DesignTag            // `json:"tags"`
+	LinkPerSwitchCount int                    // `json:"link_per_switch_count"`
+	LinkSpeed          LogicalDevicePortSpeed // `json:"link_speed"`
+	TargetSwitchLabel  string                 // `json:"target_switch_label"`
+	AttachmentType     RackLinkAttachmentType // `json:"attachment_type"`
+	LagMode            RackLinkLagMode        // `json:"lag_mode"`
+	SwitchPeer         RackLinkSwitchPeer     // `json:"switch_peer"`
+}
+
 type rawRackLink struct {
 	Label              string                     `json:"label"`
-	Tags               []DesignTag                `json:"tags"`
+	Tags               []TagLabel                 `json:"tags"`
 	LinkPerSwitchCount int                        `json:"link_per_switch_count"`
 	LinkSpeed          *rawLogicalDevicePortSpeed `json:"link_speed"`
 	TargetSwitchLabel  string                     `json:"target_switch_label"`
@@ -681,7 +700,7 @@ type rawRackLink struct {
 	SwitchPeer         rackLinkSwitchPeer         `json:"switch_peer,omitempty"`
 }
 
-func (o rawRackLink) polish() (*RackLink, error) {
+func (o rawRackLink) polish(rack *rawRackType) (*RackLink, error) {
 	attachment, err := o.AttachmentType.parse()
 	if err != nil {
 		return nil, err
@@ -700,9 +719,19 @@ func (o rawRackLink) polish() (*RackLink, error) {
 		return nil, err
 	}
 
+	var found bool
+	var tags []DesignTag
+	var tag *DesignTag
+	for _, label := range o.Tags {
+		if tag, found = rack.tagByLabel(label); !found {
+			return nil, fmt.Errorf("design tag '%s' not found in rack type '%s' definition", label, rack.Id)
+		}
+		tags = append(tags, *tag)
+	}
+
 	return &RackLink{
 		Label:              o.Label,
-		Tags:               o.Tags,
+		Tags:               tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
 		LinkSpeed:          o.LinkSpeed.parse(),
 		TargetSwitchLabel:  o.TargetSwitchLabel,
@@ -721,14 +750,14 @@ type RackElementGenericSystemRequest struct {
 	Loopback         FeatureSwitch
 	Tags             []TagLabel
 	Label            string
-	Links            []RackLink
+	Links            []RackLinkRequest
 	Panels           []LogicalDevicePanel
 	DisplayName      string
 	LogicalDeviceId  ObjectId
 }
 
 func (o *RackElementGenericSystemRequest) raw() *rawRackElementGenericSystemRequest {
-	var links []rawRackLink
+	var links []rawRackLinkRequest
 	for _, link := range o.Links {
 		links = append(links, *link.raw())
 	}
@@ -756,7 +785,7 @@ type rawRackElementGenericSystemRequest struct {
 	Loopback         featureSwitch                `json:"loopback"`
 	Label            string                       `json:"label"`
 	LogicalDevice    ObjectId                     `json:"logical_device"`
-	Links            []rawRackLink                `json:"links"`
+	Links            []rawRackLinkRequest         `json:"links"`
 	Tags             []TagLabel                   `json:"tags,omitempty"`
 }
 
@@ -806,7 +835,7 @@ func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGen
 
 	var links []RackLink
 	for _, link := range o.Links {
-		p, err := link.polish()
+		p, err := link.polish(rack)
 		if err != nil {
 			return nil, err
 		}
@@ -865,6 +894,7 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 		FabricConnectivityDesign: o.FabricConnectivityDesign.raw(),
 		Tags:                     nil, // populated by API calls below
 		LogicalDevices:           nil, // populated by API calls below
+		//LeafSwitches: make([]RackElementLeafSwitchRequest, len(o.LeafSwitches)), // todo: init array with correct size?
 	}
 
 	ldMap := make(map[ObjectId]struct{})  // collect IDs of all logical devices relevant to this rack
@@ -891,6 +921,11 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 		ldMap[s.LogicalDeviceId] = struct{}{}
 		for _, t := range s.Tags {
 			tagMap[t] = struct{}{}
+		}
+		for _, l := range s.Links {
+			for _, t := range l.Tags {
+				tagMap[t] = struct{}{}
+			}
 		}
 	}
 
