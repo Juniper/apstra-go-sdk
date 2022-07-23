@@ -1119,7 +1119,7 @@ func (o *Client) updateRackType(ctx context.Context, id ObjectId, request *RackT
 
 func (o *Client) deleteRackType(ctx context.Context, id ObjectId) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodGet,
+		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDesignRackTypeById, id),
 	})
 	if err != nil {
