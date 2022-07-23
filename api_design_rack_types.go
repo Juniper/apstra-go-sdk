@@ -964,7 +964,6 @@ type RackType struct {
 	Description              string
 	FabricConnectivityDesign FabricConnectivityDesign
 	Id                       ObjectId
-	Tags                     []DesignTag
 	CreatedAt                time.Time
 	LastModifiedAt           time.Time
 	LeafSwitches             []RackElementLeafSwitch
@@ -998,7 +997,6 @@ func (o *rawRackType) polish() (*RackType, error) {
 		Description:              o.Description,
 		FabricConnectivityDesign: FabricConnectivityDesign(fcd),
 		Id:                       o.Id,
-		Tags:                     o.Tags,
 		CreatedAt:                o.CreatedAt,
 		LastModifiedAt:           o.LastModifiedAt,
 	}
