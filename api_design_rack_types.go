@@ -421,12 +421,12 @@ func (o *RackElementLeafSwitchRequest) raw() *rawRackElementLeafSwitchRequest {
 		Label:                       o.Label,
 		LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
 		LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
-		LeafLeafL3LinkSpeed:         *o.LeafLeafL3LinkSpeed.raw(),
+		LeafLeafL3LinkSpeed:         o.LeafLeafL3LinkSpeed.raw(),
 		LeafLeafLinkCount:           o.LeafLeafLinkCount,
 		LeafLeafLinkPortChannelId:   o.LeafLeafLinkPortChannelId,
-		LeafLeafLinkSpeed:           *o.LeafLeafLinkSpeed.raw(),
+		LeafLeafLinkSpeed:           o.LeafLeafLinkSpeed.raw(),
 		LinkPerSpineCount:           o.LinkPerSpineCount,
-		LinkPerSpineSpeed:           *o.LinkPerSpineSpeed.raw(),
+		LinkPerSpineSpeed:           o.LinkPerSpineSpeed.raw(),
 		MlagVlanId:                  o.MlagVlanId,
 		RedundancyProtocol:          o.RedundancyProtocol.raw(),
 		LogicalDevice:               o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
@@ -435,19 +435,19 @@ func (o *RackElementLeafSwitchRequest) raw() *rawRackElementLeafSwitchRequest {
 }
 
 type rawRackElementLeafSwitchRequest struct {
-	Label                       string                    `json:"label"`
-	LeafLeafL3LinkCount         int                       `json:"leaf_leaf_l3_link_count"`
-	LeafLeafL3LinkPortChannelId int                       `json:"leaf_leaf_l3_link_port_channel_id"`
-	LeafLeafL3LinkSpeed         rawLogicalDevicePortSpeed `json:"leaf_leaf_l3_link_speed"`
-	LeafLeafLinkCount           int                       `json:"leaf_leaf_link_count"`
-	LeafLeafLinkPortChannelId   int                       `json:"leaf_leaf_link_port_channel_id"`
-	LeafLeafLinkSpeed           rawLogicalDevicePortSpeed `json:"leaf_leaf_link_speed"`
-	LinkPerSpineCount           int                       `json:"link_per_spine_count"`
-	LinkPerSpineSpeed           rawLogicalDevicePortSpeed `json:"link_per_spine_speed"`
-	LogicalDevice               ObjectId                  `json:"logical_device"`
-	MlagVlanId                  int                       `json:"mlag_vlan_id"`
-	RedundancyProtocol          leafRedundancyProtocol    `json:"redundancy_protocol,omitempty"`
-	Tags                        []TagLabel                `json:"tags"`
+	Label                       string                     `json:"label"`
+	LeafLeafL3LinkCount         int                        `json:"leaf_leaf_l3_link_count"`
+	LeafLeafL3LinkPortChannelId int                        `json:"leaf_leaf_l3_link_port_channel_id"`
+	LeafLeafL3LinkSpeed         *rawLogicalDevicePortSpeed `json:"leaf_leaf_l3_link_speed"`
+	LeafLeafLinkCount           int                        `json:"leaf_leaf_link_count"`
+	LeafLeafLinkPortChannelId   int                        `json:"leaf_leaf_link_port_channel_id"`
+	LeafLeafLinkSpeed           *rawLogicalDevicePortSpeed `json:"leaf_leaf_link_speed"`
+	LinkPerSpineCount           int                        `json:"link_per_spine_count"`
+	LinkPerSpineSpeed           *rawLogicalDevicePortSpeed `json:"link_per_spine_speed"`
+	LogicalDevice               ObjectId                   `json:"logical_device"`
+	MlagVlanId                  int                        `json:"mlag_vlan_id"`
+	RedundancyProtocol          leafRedundancyProtocol     `json:"redundancy_protocol,omitempty"`
+	Tags                        []TagLabel                 `json:"tags,omitempty"`
 }
 
 type RackElementLeafSwitch struct {
@@ -550,21 +550,21 @@ func (o *RackElementAccessSwitchRequest) raw() *rawRackElementAccessSwitchReques
 		Links:                 o.Links,
 		Label:                 o.Label,
 		AccessAccessLinkCount: o.AccessAccessLinkCount,
-		AccessAccessLinkSpeed: *o.AccessAccessLinkSpeed.raw(),
+		AccessAccessLinkSpeed: o.AccessAccessLinkSpeed.raw(),
 		LogicalDevice:         o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
 		Tags:                  o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
 	}
 }
 
 type rawRackElementAccessSwitchRequest struct {
-	InstanceCount         int                       `json:"instance_count"`
-	RedundancyProtocol    accessRedundancyProtocol  `json:"redundancy_protocol,omitempty"`
-	Links                 []RackLink                `json:"links"`
-	Label                 string                    `json:"label"`
-	LogicalDevice         ObjectId                  `json:"logical_device"`
-	AccessAccessLinkCount int                       `json:"access_access_link_count"`
-	AccessAccessLinkSpeed rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
-	Tags                  []TagLabel                `json:"tags"`
+	InstanceCount         int                        `json:"instance_count"`
+	RedundancyProtocol    accessRedundancyProtocol   `json:"redundancy_protocol,omitempty"`
+	Links                 []RackLink                 `json:"links"`
+	Label                 string                     `json:"label"`
+	LogicalDevice         ObjectId                   `json:"logical_device"`
+	AccessAccessLinkCount int                        `json:"access_access_link_count"`
+	AccessAccessLinkSpeed *rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
+	Tags                  []TagLabel                 `json:"tags,omitempty"`
 }
 
 type RackElementAccessSwitch struct {
@@ -662,7 +662,7 @@ func (o RackLink) raw() *rawRackLink {
 		Label:              o.Label,
 		Tags:               tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
-		LinkSpeed:          *o.LinkSpeed.raw(),
+		LinkSpeed:          o.LinkSpeed.raw(),
 		TargetSwitchLabel:  o.TargetSwitchLabel,
 		AttachmentType:     rackLinkAttachmentType(o.AttachmentType.String()),
 		LagMode:            lagModePtr,
@@ -671,14 +671,14 @@ func (o RackLink) raw() *rawRackLink {
 }
 
 type rawRackLink struct {
-	Label              string                    `json:"label"`
-	Tags               []DesignTag               `json:"tags"`
-	LinkPerSwitchCount int                       `json:"link_per_switch_count"`
-	LinkSpeed          rawLogicalDevicePortSpeed `json:"link_speed"`
-	TargetSwitchLabel  string                    `json:"target_switch_label"`
-	AttachmentType     rackLinkAttachmentType    `json:"attachment_type"`
-	LagMode            *rackLinkLagMode          `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
-	SwitchPeer         rackLinkSwitchPeer        `json:"switch_peer,omitempty"`
+	Label              string                     `json:"label"`
+	Tags               []DesignTag                `json:"tags"`
+	LinkPerSwitchCount int                        `json:"link_per_switch_count"`
+	LinkSpeed          *rawLogicalDevicePortSpeed `json:"link_speed"`
+	TargetSwitchLabel  string                     `json:"target_switch_label"`
+	AttachmentType     rackLinkAttachmentType     `json:"attachment_type"`
+	LagMode            *rackLinkLagMode           `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
+	SwitchPeer         rackLinkSwitchPeer         `json:"switch_peer,omitempty"`
 }
 
 func (o rawRackLink) polish() (*RackLink, error) {
@@ -757,7 +757,7 @@ type rawRackElementGenericSystemRequest struct {
 	Label            string                       `json:"label"`
 	LogicalDevice    ObjectId                     `json:"logical_device"`
 	Links            []rawRackLink                `json:"links"`
-	Tags             []TagLabel                   `json:"tags"`
+	Tags             []TagLabel                   `json:"tags,omitempty"`
 }
 
 type RackElementGenericSystem struct {
@@ -852,7 +852,6 @@ type RackTypeRequest struct {
 	DisplayName              string
 	Description              string
 	FabricConnectivityDesign FabricConnectivityDesign
-	TagsByLabel              []TagLabel
 	LeafSwitches             []RackElementLeafSwitchRequest
 	GenericSystems           []RackElementGenericSystemRequest
 	AccessSwitches           []RackElementAccessSwitchRequest

@@ -123,7 +123,7 @@ func TestRackTypeStrings(t *testing.T) {
 	}
 }
 
-func TestCreateGetRackType(t *testing.T) {
+func TestCreateGetRackDeleteRackType(t *testing.T) {
 	client, err := newLiveTestClient()
 	if err != nil {
 		t.Fatal(err)
@@ -164,5 +164,16 @@ func TestCreateGetRackType(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("id: '%s'\n", id)
+
+	rt, err := client.GetRackType(context.TODO(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = client.DeleteRackType(context.TODO(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("id: '%s'\n", rt.Id)
 }
