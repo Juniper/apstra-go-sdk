@@ -535,8 +535,6 @@ type RackElementAccessSwitchRequest struct {
 	RedundancyProtocol    AccessRedundancyProtocol
 	Links                 []RackLink
 	Label                 string
-	Panels                []LogicalDevicePanel
-	DisplayName           string
 	LogicalDeviceId       ObjectId
 	Tags                  []TagLabel
 	AccessAccessLinkCount int
@@ -751,8 +749,6 @@ type RackElementGenericSystemRequest struct {
 	Tags             []TagLabel
 	Label            string
 	Links            []RackLinkRequest
-	Panels           []LogicalDevicePanel
-	DisplayName      string
 	LogicalDeviceId  ObjectId
 }
 
