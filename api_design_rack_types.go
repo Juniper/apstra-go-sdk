@@ -665,7 +665,7 @@ func (o RackLinkRequest) raw() *rawRackLinkRequest {
 		TargetSwitchLabel:  o.TargetSwitchLabel,
 		AttachmentType:     rackLinkAttachmentType(o.AttachmentType.String()),
 		LagMode:            lagModePtr,
-		SwitchPeer:         rackLinkSwitchPeer(o.LagMode.String()),
+		SwitchPeer:         rackLinkSwitchPeer(o.SwitchPeer.String()),
 	}
 }
 
