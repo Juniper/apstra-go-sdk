@@ -2,7 +2,6 @@ package goapstra
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -1144,7 +1143,6 @@ func (o *Client) updateRackType(ctx context.Context, id ObjectId, request *RackT
 		apiInput: rawRequest,
 	})
 	if err != nil {
-		return errors.New("womp womp")
 		return convertTtaeToAceWherePossible(err)
 	}
 	return nil
