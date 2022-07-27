@@ -1138,12 +1138,10 @@ func (o *Client) updateRackType(ctx context.Context, id ObjectId, request *RackT
 		return err
 	}
 
-	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPut,
-		urlStr:      fmt.Sprintf(apiUrlDesignRackTypeById, id),
-		apiInput:    rawRequest,
-		apiResponse: response,
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlDesignRackTypeById, id),
+		apiInput: rawRequest,
 	})
 	if err != nil {
 		return errors.New("womp womp")
