@@ -149,7 +149,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	if in.apiInput != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	for k, v := range o.httpHeaders {
+	for k, v := range o.httpHeaders { // todo: there is a map concurrency problem here , need mutex / lock
 		req.Header.Set(k, v)
 	}
 
