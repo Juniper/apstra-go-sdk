@@ -153,7 +153,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		req.Header.Set(k, v)
 	}
 	dl, _ := ctx.Deadline()
-	req.Header.Set("DL", dl.String())
+	req.Header.Set("DLxxxxxx", dl.String())
 
 	debugFunc(2, dumpHttpRequest, req)
 
