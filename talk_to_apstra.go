@@ -12,7 +12,6 @@ import (
 	"math"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -125,8 +124,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	}
 
 	// wrap supplied context with timeout (maybe)
-	dl, contextHasDeadline := ctx.Deadline()
-	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deadline: %s", dl.String()))
+	_, contextHasDeadline := ctx.Deadline()
 	if !contextHasDeadline { // maybe this context already has a deadline?
 		switch {
 		case o.cfg.Timeout < 0: // negative Timeout is no timeout interval (infinite)
@@ -154,6 +152,8 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	for k, v := range o.httpHeaders { // todo: there is a map concurrency problem here , need mutex / lock
 		req.Header.Set(k, v)
 	}
+	dl, _ := ctx.Deadline()
+	req.Header.Set("DL", dl.String())
 
 	debugFunc(2, dumpHttpRequest, req)
 
