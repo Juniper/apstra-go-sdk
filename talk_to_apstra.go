@@ -12,6 +12,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -124,7 +125,8 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	}
 
 	// wrap supplied context with timeout (maybe)
-	_, contextHasDeadline := ctx.Deadline()
+	dl, contextHasDeadline := ctx.Deadline()
+	os.Stderr.WriteString(fmt.Sprintf("xxxxxx deadline: %s", dl.String()))
 	if !contextHasDeadline { // maybe this context already has a deadline?
 		switch {
 		case o.cfg.Timeout < 0: // negative Timeout is no timeout interval (infinite)
