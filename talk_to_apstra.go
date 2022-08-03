@@ -152,8 +152,6 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	for k, v := range o.httpHeaders { // todo: there is a map concurrency problem here , need mutex / lock
 		req.Header.Set(k, v)
 	}
-	dl, _ := ctx.Deadline()
-	req.Header.Set("DLxxxxxx", dl.String())
 
 	debugFunc(2, dumpHttpRequest, req)
 
