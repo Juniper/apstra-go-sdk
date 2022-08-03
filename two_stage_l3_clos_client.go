@@ -1,6 +1,52 @@
 package goapstra
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
+
+const (
+	blueprintTypeParam = "type"
+)
+
+type BlueprintType int
+type blueprintType string
+
+const (
+	BlueprintTypeNone = BlueprintType(iota)
+	BlueprintTypeConfig
+	BlueprintTypeDeployed
+	BlueprintTypeOperation
+	BlueprintTypeStaging
+
+	blueprintTypeNone      = blueprintType("")
+	blueprintTypeConfig    = blueprintType("config")
+	blueprintTypeDeployed  = blueprintType("deployed")
+	blueprintTypeOperation = blueprintType("operation")
+	blueprintTypeStaging   = blueprintType("staging")
+	blueprintTypeUnknown   = "unknown-blueprint-type-%d"
+)
+
+func (o BlueprintType) raw() blueprintType {
+	switch o {
+	case BlueprintTypeNone:
+		return blueprintTypeNone
+	case BlueprintTypeConfig:
+		return blueprintTypeConfig
+	case BlueprintTypeDeployed:
+		return blueprintTypeDeployed
+	case BlueprintTypeStaging:
+		return blueprintTypeStaging
+	case BlueprintTypeOperation:
+		return blueprintTypeOperation
+	default:
+		return blueprintType(fmt.Sprintf(blueprintTypeUnknown, o))
+	}
+}
+
+func (o BlueprintType) string() string {
+	return string(o.raw())
+}
 
 type TwoStageLThreeClosClient struct {
 	client      *Client

@@ -10,8 +10,6 @@ import (
 const (
 	apiUrlBlueprintQueryEngine = apiUrlBlueprintById + apiUrlPathDelim + "qe"
 	qEElementAttributeSep      = ","
-
-	queryEngineQueryTypeUrlParam = "type"
 )
 
 type QEEType int
@@ -21,51 +19,6 @@ const (
 	qEETypeIn   = "in_"
 	qEETypeOut  = "out"
 )
-
-type QEQueryType int
-
-const (
-	QEQueryTypeNone = QEQueryType(iota)
-	QEQueryTypeConfig
-	QEQueryTypeDeployed
-	QEQueryTypeOperation
-	QEQueryTypeStaging
-
-	qEQueryTypeNone      = ""
-	qEQueryTypeConfig    = "config"
-	qEQueryTypeDeployed  = "deployed"
-	qEQueryTypeOperation = "operation"
-	qEQueryTypeStaging   = "staging"
-	qEQueryTypeUnknown   = "unknown query type %d"
-)
-
-func (o QEQueryType) string() string {
-	switch o {
-	case QEQueryTypeNone:
-		return qEQueryTypeNone
-	case QEQueryTypeConfig:
-		return qEQueryTypeConfig
-	case QEQueryTypeDeployed:
-		return qEQueryTypeDeployed
-	case QEQueryTypeOperation:
-		return qEQueryTypeOperation
-	case QEQueryTypeStaging:
-		return qEQueryTypeStaging
-	default:
-		return fmt.Sprintf(qEQueryTypeUnknown, o)
-	}
-}
-
-// per apstra API
-type queryEngineQuery struct {
-	Query string `json:"query"`
-}
-
-// per apstra API
-type queryEngineResponse struct {
-	Count int               `json:"count"`
-	Items []json.RawMessage `json:"items"`
-}
 
 type QueryEngineResponse []json.RawMessage
 
@@ -159,11 +112,11 @@ func (o *Client) newQuery(blueprint ObjectId) *QEQuery {
 }
 
 type QEQuery struct {
-	firstElement *QEElement
-	client       *Client
-	context      context.Context
-	blueprint    ObjectId
-	queryType    QEQueryType
+	firstElement  *QEElement
+	client        *Client
+	context       context.Context
+	blueprint     ObjectId
+	blueprintType BlueprintType
 }
 
 func (o *QEQuery) addElement(elementType string, attributes []QEEAttribute) *QEQuery {
@@ -194,8 +147,8 @@ func (o *QEQuery) SetContext(ctx context.Context) *QEQuery {
 	return o
 }
 
-func (o *QEQuery) SetType(t QEQueryType) *QEQuery {
-	o.queryType = t
+func (o *QEQuery) SetType(t BlueprintType) *QEQuery {
+	o.blueprintType = t
 	return o
 }
 

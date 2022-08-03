@@ -550,16 +550,20 @@ func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuer
 		return err
 	}
 
-	if query.queryType != QEQueryTypeNone {
+	if query.blueprintType != BlueprintTypeNone {
 		params := apstraUrl.Query()
-		params.Set(queryEngineQueryTypeUrlParam, query.queryType.string())
+		params.Set(blueprintTypeParam, query.blueprintType.string())
 		apstraUrl.RawQuery = params.Encode()
 	}
+
+	apiInput := &struct {
+		Query string `json:"query"`
+	}{Query: query.string()}
 
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodPost,
 		url:            apstraUrl,
-		apiInput:       &queryEngineQuery{Query: query.string()},
+		apiInput:       apiInput,
 		apiResponse:    response,
 		unsynchronized: true,
 	})
