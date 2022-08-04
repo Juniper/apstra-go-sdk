@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCreateDeleteRoutingZone(t *testing.T) {
+func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 	client, err := blueprintsTestClient1()
 	if err != nil {
 		t.Fatal(err)
@@ -26,10 +26,10 @@ func TestCreateDeleteRoutingZone(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	randString := randString(5, "hex")
+	randStr := randString(5, "hex")
 
-	label := "test-" + randString
-	vrfName := "test-" + randString
+	label := "test-" + randStr
+	vrfName := "test-" + randStr
 	zoneId, err := dcClient.CreateSecurityZone(context.TODO(), &CreateSecurityZoneCfg{
 		SzType:  "evpn",
 		VrfName: vrfName,
@@ -57,6 +57,29 @@ func TestCreateDeleteRoutingZone(t *testing.T) {
 	}
 	if zone.Id != zoneId {
 		t.Fatalf("created vs. fetched zone IDs don't match: '%s' and '%s'", zone.Id, zoneId)
+	}
+
+	randStr2 := randString(5, "hex")
+	vrfName2 := "test-" + randStr2
+	label2 := "test-" + randStr2
+	err = dcClient.UpdateSecurityZone(context.TODO(), zoneId, &CreateSecurityZoneCfg{
+		SzType:  "evpn",
+		VrfName: vrfName2,
+		Label:   label2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	zone, err = dcClient.GetSecurityZoneByName(context.TODO(), vrfName2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if zone.Id != zoneId {
+		t.Fatal()
+	}
+	if zone.VrfName != vrfName2 {
+		t.Fatal()
 	}
 
 	log.Println("deleting security zone...")

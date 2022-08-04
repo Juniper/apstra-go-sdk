@@ -95,6 +95,15 @@ func (o *TwoStageLThreeClosClient) getAllSecurityZones(ctx context.Context) ([]S
 	return result, nil
 }
 
+func (o *TwoStageLThreeClosClient) updateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *CreateSecurityZoneCfg) error {
+	return o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
+		apiInput: cfg,
+	})
+
+}
+
 func (o *TwoStageLThreeClosClient) deleteSecurityZone(ctx context.Context, zoneId ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,

@@ -121,3 +121,8 @@ func (o *TwoStageLThreeClosClient) GetSecurityZoneByName(ctx context.Context, la
 func (o *TwoStageLThreeClosClient) GetAllSecurityZones(ctx context.Context) ([]SecurityZone, error) {
 	return o.getAllSecurityZones(ctx)
 }
+
+// UpdateSecurityZone replaces the configuration of zone zoneId with the supplied CreateSecurityZoneCfg
+func (o *TwoStageLThreeClosClient) UpdateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *CreateSecurityZoneCfg) error {
+	return o.updateSecurityZone(ctx, zoneId, cfg)
+}
