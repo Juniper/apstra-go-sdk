@@ -103,3 +103,21 @@ func (o *TwoStageLThreeClosClient) DeleteSecurityZone(ctx context.Context, zoneI
 func (o *TwoStageLThreeClosClient) GetSecurityZones(ctx context.Context) ([]SecurityZone, error) {
 	return o.getAllSecurityZones(ctx)
 }
+
+// GetSecurityZone fetches the Security Zone / Routing Zone / VRF with the given
+// zoneId.
+func (o *TwoStageLThreeClosClient) GetSecurityZone(ctx context.Context, zoneId ObjectId) (*SecurityZone, error) {
+	return o.getSecurityZone(ctx, zoneId)
+}
+
+// GetSecurityZoneByLabel fetches the Security Zone / Routing Zone / VRF with
+// the given label.
+func (o *TwoStageLThreeClosClient) GetSecurityZoneByLabel(ctx context.Context, label string) (*SecurityZone, error) {
+	return o.getSecurityZoneByLabel(ctx, label)
+}
+
+// GetAllSecurityZones returns []SecurityZone representing all Security Zones /
+// Routing Zones / VRFs on the system.
+func (o *TwoStageLThreeClosClient) GetAllSecurityZones(ctx context.Context) ([]SecurityZone, error) {
+	return o.getAllSecurityZones(ctx)
+}
