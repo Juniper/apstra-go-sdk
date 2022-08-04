@@ -83,3 +83,23 @@ func (o *TwoStageLThreeClosClient) GetInterfaceMapAssignments(ctx context.Contex
 func (o *TwoStageLThreeClosClient) SetInterfaceMapAssignments(ctx context.Context, assignments SystemIdToInterfaceMapAssignment) error {
 	return o.setInterfaceMapAssignments(ctx, assignments)
 }
+
+// CreateSecurityZone creates an Apstra Routing Zone / Security Zone / VRF
+func (o *TwoStageLThreeClosClient) CreateSecurityZone(ctx context.Context, cfg *CreateSecurityZoneCfg) (ObjectId, error) {
+	response, err := o.createSecurityZone(ctx, cfg)
+	if err != nil {
+		return "", err
+	}
+	return response.Id, nil
+}
+
+// DeleteSecurityZone deletes an Apstra Routing Zone / Security Zone / VRF
+func (o *TwoStageLThreeClosClient) DeleteSecurityZone(ctx context.Context, zoneId ObjectId) error {
+	return o.deleteSecurityZone(ctx, zoneId)
+}
+
+// GetSecurityZones returns all Apstra Routing Zones / Security Zones / VRFs
+// associated with the specified blueprint
+func (o *TwoStageLThreeClosClient) GetSecurityZones(ctx context.Context) ([]SecurityZone, error) {
+	return o.getAllSecurityZones(ctx)
+}

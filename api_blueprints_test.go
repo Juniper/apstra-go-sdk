@@ -68,42 +68,6 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 	}
 }
 
-func TestCreateDeleteRoutingZone(t *testing.T) {
-	DebugLevel = 4
-	client, err := blueprintsTestClient1()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	blueprints, err := client.listAllBlueprintIds(context.TODO())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if len(blueprints) < 1 {
-		t.Skipf("cannot proceed without at least one blueprint")
-	}
-
-	blueprintId := blueprints[0]
-	randString := randString(10, "hex")
-
-	zoneId, err := client.CreateRoutingZone(context.TODO(), blueprintId, &CreateRoutingZoneCfg{
-		SzType:  "evpn",
-		VrfName: "test-" + randString,
-		Label:   "label-test-" + randString,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("created zone '", zoneId, "' deleting...")
-
-	err = client.DeleteRoutingZone(context.TODO(), blueprintId, zoneId)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func TestGetPatchGetPatchNode(t *testing.T) {
 	client, err := newLiveTestClient()
 	if err != nil {

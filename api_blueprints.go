@@ -11,15 +11,12 @@ import (
 )
 
 const (
-	apiUrlBlueprints                  = "/api/blueprints"
-	apiUrlPathDelim                   = "/"
-	apiUrlBlueprintsPrefix            = apiUrlBlueprints + apiUrlPathDelim
-	apiUrlBlueprintById               = apiUrlBlueprintsPrefix + "%s"
-	apiUrlBlueprintRoutingZones       = apiUrlBlueprintById + apiUrlPathDelim + "security_zones"
-	apiUrlBlueprintRoutingZonesPrefix = apiUrlBlueprintRoutingZones + apiUrlPathDelim
-	apiUrlBlueprintRoutingZoneById    = apiUrlBlueprintRoutingZonesPrefix + "%s"
-	apiUrlBlueprintNodes              = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
-	apiUrlBlueprintNodeById           = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
+	apiUrlBlueprints        = "/api/blueprints"
+	apiUrlPathDelim         = "/"
+	apiUrlBlueprintsPrefix  = apiUrlBlueprints + apiUrlPathDelim
+	apiUrlBlueprintById     = apiUrlBlueprintsPrefix + "%s"
+	apiUrlBlueprintNodes    = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
+	apiUrlBlueprintNodeById = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
 
 	initTypeFromTemplate      = "template_reference"
 	nodeQueryNodeTypeUrlParam = "node_type"
@@ -101,11 +98,6 @@ type getBluePrintsResponse struct {
 }
 
 type optionsBlueprintsResponse struct {
-	Items   []ObjectId `json:"items"`
-	Methods []string   `json:"methods"`
-}
-
-type optionsBlueprintsRoutingzonesResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
 }
@@ -304,36 +296,6 @@ type rawCreateBluePrintFromTemplate struct {
 	TemplateId string `json:"template_id"`
 }
 
-type RtPolicy struct {
-	// todo: what's an RtPolicy?
-	//ImportRTs interface{} `json:"import_RTs"`
-	//ExportRTs interface{} `json:"export_RTs"`
-}
-
-type CreateRoutingZoneCfg struct {
-	SzType          string
-	RoutingPolicyId string
-	RtPolicy        RtPolicy
-	VrfName         string
-	Label           string
-}
-
-type getAllSecurityZonesResponse struct {
-	Items map[string]SecurityZone
-}
-
-type SecurityZone struct {
-	VniId           int      `json:"vni_id"`
-	SzType          string   `json:"sz_type"`
-	RoutingPolicyId ObjectId `json:"routing_policy_id"`
-	Label           string   `json:"label"`
-	VrfName         string   `json:"vrf_name"`
-	RtPolicy        RtPolicy `json:"rt_policy"`
-	RouteTarget     string   `json:"route_target"`
-	Id              ObjectId `json:"id"`
-	VlanId          int      `json:"vlan_id"`
-}
-
 func (o *Client) listAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsBlueprintsResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -483,64 +445,6 @@ func (o *Client) deleteBlueprint(ctx context.Context, id ObjectId) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintById, id),
-	})
-}
-
-func (o *Client) createRoutingZone(ctx context.Context, Id ObjectId, cfg *CreateRoutingZoneCfg) (*objectIdResponse, error) {
-	response := &objectIdResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingZones, Id),
-		apiInput:    cfg,
-		apiResponse: response,
-	})
-}
-
-func (o *Client) listAllRoutingZoneIds(ctx context.Context, blueprintId ObjectId) ([]ObjectId, error) {
-	response := &optionsBlueprintsRoutingzonesResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodOptions,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintById, blueprintId),
-		apiResponse: response,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-	return response.Items, nil
-}
-
-func (o *Client) getRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) (*SecurityZone, error) {
-	response := &SecurityZone{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingZoneById, blueprintId, zoneId),
-		apiResponse: response,
-	})
-}
-
-func (o *Client) getAllRoutingZones(ctx context.Context, blueprintId ObjectId) ([]SecurityZone, error) {
-	response := &getAllSecurityZonesResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintById, blueprintId),
-		apiResponse: response,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// This API endpoint returns a map. Convert to list for consistency with other 'getAll' functions.
-	var result []SecurityZone
-	for _, v := range response.Items {
-		result = append(result, v)
-	}
-	return result, nil
-}
-
-func (o *Client) deleteRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlBlueprintRoutingZoneById, blueprintId, zoneId),
 	})
 }
 

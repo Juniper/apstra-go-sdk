@@ -303,26 +303,6 @@ func (o *Client) GetVersion(ctx context.Context) (*VersionResponse, error) {
 	return o.getVersion(ctx)
 }
 
-// CreateRoutingZone creates an Apstra Routing Zone / Security Zone / VRF
-func (o *Client) CreateRoutingZone(ctx context.Context, blueprintId ObjectId, cfg *CreateRoutingZoneCfg) (ObjectId, error) {
-	response, err := o.createRoutingZone(ctx, blueprintId, cfg)
-	if err != nil {
-		return "", err
-	}
-	return response.Id, nil
-}
-
-// DeleteRoutingZone deletes an Apstra Routing Zone / Security Zone / VRF
-func (o *Client) DeleteRoutingZone(ctx context.Context, blueprintId ObjectId, zoneId ObjectId) error {
-	return o.deleteRoutingZone(ctx, blueprintId, zoneId)
-}
-
-// GetRoutingZones returns all Apstra Routing Zones / Security Zones / VRFs
-// associated with the specified blueprint
-func (o *Client) GetRoutingZones(ctx context.Context, blueprintId ObjectId) ([]SecurityZone, error) {
-	return o.getAllRoutingZones(ctx, blueprintId)
-}
-
 // GetVirtualInfraMgrs returns all Virtual Infrastructure Managers configured in Apstra
 func (o *Client) GetVirtualInfraMgrs(ctx context.Context) ([]VirtualInfraMgrInfo, error) {
 	return o.getVirtualInfraMgrs(ctx)
