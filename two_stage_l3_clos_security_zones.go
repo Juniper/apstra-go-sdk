@@ -57,20 +57,20 @@ func (o *TwoStageLThreeClosClient) getSecurityZone(ctx context.Context, zoneId O
 	})
 }
 
-func (o *TwoStageLThreeClosClient) getSecurityZoneByLabel(ctx context.Context, label string) (*SecurityZone, error) {
+func (o *TwoStageLThreeClosClient) getSecurityZoneByName(ctx context.Context, vrfName string) (*SecurityZone, error) {
 	zones, err := o.getAllSecurityZones(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, zone := range zones {
-		if zone.Label == label {
+		if zone.VrfName == vrfName {
 			return o.getSecurityZone(ctx, zone.Id)
 		}
 	}
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
-		err:     fmt.Errorf("security zone with label '%s' in blueprint '%s' not found", label, o.blueprintId),
+		err:     fmt.Errorf("security zone with vrf name '%s' in blueprint '%s' not found", vrfName, o.blueprintId),
 	}
 }
 

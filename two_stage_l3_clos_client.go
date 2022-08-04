@@ -110,10 +110,10 @@ func (o *TwoStageLThreeClosClient) GetSecurityZone(ctx context.Context, zoneId O
 	return o.getSecurityZone(ctx, zoneId)
 }
 
-// GetSecurityZoneByLabel fetches the Security Zone / Routing Zone / VRF with
+// GetSecurityZoneByName fetches the Security Zone / Routing Zone / VRF with
 // the given label.
-func (o *TwoStageLThreeClosClient) GetSecurityZoneByLabel(ctx context.Context, label string) (*SecurityZone, error) {
-	return o.getSecurityZoneByLabel(ctx, label)
+func (o *TwoStageLThreeClosClient) GetSecurityZoneByName(ctx context.Context, label string) (*SecurityZone, error) {
+	return o.getSecurityZoneByName(ctx, label)
 }
 
 // GetAllSecurityZones returns []SecurityZone representing all Security Zones /
