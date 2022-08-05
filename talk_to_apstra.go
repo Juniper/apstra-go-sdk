@@ -140,7 +140,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	}
 
 	// create request
-	req, err := http.NewRequestWithContext(ctx, string(in.method), apstraUrl.String(), bytes.NewReader(requestBody))
+	req, err := http.NewRequestWithContext(ctx, in.method, apstraUrl.String(), bytes.NewReader(requestBody))
 	if err != nil {
 		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
 	}
