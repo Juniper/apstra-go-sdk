@@ -88,6 +88,10 @@ type objectIdResponse struct {
 // ObjectId known to Apstra for various objects/resources
 type ObjectId string
 
+func (o ObjectId) objectId() ObjectId {
+	return o
+}
+
 // Client interacts with an AOS API server
 type Client struct {
 	baseUrl     *url.URL

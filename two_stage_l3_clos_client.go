@@ -3,10 +3,13 @@ package goapstra
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 const (
-	blueprintTypeParam = "type"
+	blueprintTypeParam   = "type"
+	dcClientMaxRetries   = 10
+	dcClientRetryBackoff = 100 * time.Millisecond
 )
 
 type BlueprintType int
@@ -125,4 +128,43 @@ func (o *TwoStageLThreeClosClient) GetAllSecurityZones(ctx context.Context) ([]S
 // UpdateSecurityZone replaces the configuration of zone zoneId with the supplied CreateSecurityZoneCfg
 func (o *TwoStageLThreeClosClient) UpdateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *CreateSecurityZoneCfg) error {
 	return o.updateSecurityZone(ctx, zoneId, cfg)
+}
+
+// GetAllPolicies returns []Policy representing all policies configured within the DC blueprint
+func (o *TwoStageLThreeClosClient) GetAllPolicies(ctx context.Context) ([]Policy, error) {
+	return o.getAllPolicies(ctx)
+}
+
+// GetPolicy returns *Policy representing policy 'id' within the DC blueprint
+func (o *TwoStageLThreeClosClient) GetPolicy(ctx context.Context, id ObjectId) (*Policy, error) {
+	return o.getPolicy(ctx, id)
+}
+
+// CreatePolicy creates a policy within the DC blueprint, returns its ID
+func (o *TwoStageLThreeClosClient) CreatePolicy(ctx context.Context, policy *Policy) (ObjectId, error) {
+	return o.createPolicy(ctx, policy)
+}
+
+// DeletePolicy deletes policy 'id' within the DC blueprint
+func (o *TwoStageLThreeClosClient) DeletePolicy(ctx context.Context, id ObjectId) error {
+	return o.deletePolicy(ctx, id)
+}
+
+// UpdatePolicy calls PUT to replace the configuration of policy 'id' within the DC blueprint
+func (o *TwoStageLThreeClosClient) UpdatePolicy(ctx context.Context, id ObjectId, policy *Policy) error {
+	return o.updatePolicy(ctx, id, policy)
+}
+
+// AddPolicyRule adds a policy rule at 'position' (bumping all other rules
+// down). Position 0 makes the new policy first on the list, 1 makes it second
+// on the list, etc... Use -1 for last on the list. The returned ObjectId
+// represents the new rule
+func (o *TwoStageLThreeClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRule, position int, policyId ObjectId) (ObjectId, error) {
+	return o.addPolicyRule(ctx, rule, position, policyId)
+}
+
+// DeletePolicyRuleById deletes the given rule. If the rule doesn't exist, an
+// ApstraClientErr with ErrNotFound is returned.
+func (o *TwoStageLThreeClosClient) DeletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
+	return o.deletePolicyRuleById(ctx, policyId, ruleId)
 }

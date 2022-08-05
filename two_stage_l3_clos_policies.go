@@ -1,13 +1,19 @@
 package goapstra
 
 import (
+	"context"
 	"fmt"
 	"math"
+	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
+	apiUrlPolicies   = apiUrlBlueprintById + apiUrlPathDelim + "policies"
+	apiUrlPolicyById = apiUrlPolicies + apiUrlPathDelim + "%s"
+
 	portAny       = "any"
 	portRangeSep  = "-"
 	portRangesSep = ","
@@ -88,9 +94,12 @@ type PortRange struct {
 }
 
 func (o PortRange) string() string {
-	if o.first < o.last {
+	switch {
+	case o.first == o.last:
+		return strconv.Itoa(int(o.first))
+	case o.first < o.last:
 		return strconv.Itoa(int(o.first)) + portRangeSep + strconv.Itoa(int(o.last))
-	} else {
+	default:
 		return strconv.Itoa(int(o.last)) + portRangeSep + strconv.Itoa(int(o.first))
 	}
 }
@@ -102,12 +111,12 @@ func (o rawPortRanges) parse() (PortRanges, error) {
 		return []PortRange{}, nil
 	}
 
-	rawRangeSlice := strings.Split(portRangesSep, string(o))
+	rawRangeSlice := strings.Split(string(o), portRangesSep)
 	result := make([]PortRange, len(rawRangeSlice))
 	for i, raw := range rawRangeSlice {
 		var first, last uint64
 		var err error
-		portStrs := strings.Split(portRangeSep, raw)
+		portStrs := strings.Split(raw, portRangeSep)
 		switch len(portStrs) {
 		case 1:
 			first, err = strconv.ParseUint(raw, 10, 16)
@@ -120,7 +129,7 @@ func (o rawPortRanges) parse() (PortRanges, error) {
 			if err != nil {
 				return nil, fmt.Errorf("error parsing first element of port range '%s' - %w", raw, err)
 			}
-			last, err = strconv.ParseUint(portStrs[0], 10, 16)
+			last, err = strconv.ParseUint(portStrs[1], 10, 16)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing last element of port range '%s' - %w", raw, err)
 			}
@@ -153,13 +162,13 @@ func (o PortRanges) string() string {
 }
 
 type PolicyRule struct {
-	Id          ObjectId         `json:"id"`
-	Label       string           `json:"label"`
-	Description string           `json:"description"`
-	Protocol    string           `json:"protocol"`
-	Action      PolicyRuleAction `json:"action"`
-	SrcPort     PortRanges       `json:"src_port"`
-	DstPort     PortRanges       `json:"dst_port"`
+	Id          ObjectId
+	Label       string
+	Description string
+	Protocol    string
+	Action      PolicyRuleAction
+	SrcPort     PortRanges
+	DstPort     PortRanges
 }
 
 func (o PolicyRule) raw() *rawPolicyRule {
@@ -193,7 +202,7 @@ func (o rawPolicyRule) polish() (*PolicyRule, error) {
 	if err != nil {
 		return nil, err
 	}
-	dstPort, err := o.SrcPort.parse()
+	dstPort, err := o.DstPort.parse()
 	if err != nil {
 		return nil, err
 	}
@@ -209,11 +218,241 @@ func (o rawPolicyRule) polish() (*PolicyRule, error) {
 }
 
 type Policy struct {
-	Enabled             bool         `json:"enabled"`
-	Label               string       `json:"label"`
-	Description         string       `json:"description"`
-	SrcApplicationPoint string       `json:"src_application_point"`
-	DstApplicationPoint string       `json:"dst_application_point"`
-	Rules               []PolicyRule `json:"rules"`
-	Tags                []TagLabel   `json:"tags"`
+	Enabled             bool                   `json:"enabled"`
+	Label               string                 `json:"label"`
+	Description         string                 `json:"description"`
+	SrcApplicationPoint PolicyApplicationPoint `json:"src_application_point"`
+	DstApplicationPoint PolicyApplicationPoint `json:"dst_application_point"`
+	Rules               []PolicyRule           `json:"rules"`
+	Tags                []TagLabel             `json:"tags"`
+	Id                  ObjectId               `json:"object_id,omitempty"`
+}
+
+func (o Policy) request() *policyRequest {
+	rules := make([]rawPolicyRule, len(o.Rules))
+	for i, rule := range o.Rules {
+		rules[i] = *rule.raw()
+	}
+	return &policyRequest{
+		Enabled:             o.Enabled,
+		Label:               o.Label,
+		Description:         o.Description,
+		SrcApplicationPoint: o.SrcApplicationPoint.objectId(),
+		DstApplicationPoint: o.DstApplicationPoint.objectId(),
+		Rules:               rules,
+		Tags:                o.Tags,
+		Id:                  o.Id,
+	}
+}
+
+type policyRequest struct {
+	Enabled             bool            `json:"enabled"`
+	Label               string          `json:"label"`
+	Description         string          `json:"description"`
+	SrcApplicationPoint ObjectId        `json:"src_application_point"`
+	DstApplicationPoint ObjectId        `json:"dst_application_point"`
+	Rules               []rawPolicyRule `json:"rules"`
+	Tags                []TagLabel      `json:"tags"`
+	Id                  ObjectId        `json:"object_id,omitempty"`
+}
+
+type policyResponse struct {
+	Enabled             bool                         `json:"enabled"`
+	Label               string                       `json:"label"`
+	Description         string                       `json:"description"`
+	SrcApplicationPoint PolicyApplicationPointDigest `json:"src_application_point"`
+	DstApplicationPoint PolicyApplicationPointDigest `json:"dst_application_point"`
+	Rules               []rawPolicyRule              `json:"rules"`
+	Tags                []TagLabel                   `json:"tags"`
+	Id                  ObjectId                     `json:"id,omitempty"`
+}
+
+func (o policyResponse) polish() (*Policy, error) {
+	rules := make([]PolicyRule, len(o.Rules))
+	for i, raw := range o.Rules {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		rules[i] = *polished
+	}
+	return &Policy{
+		Enabled:             o.Enabled,
+		Label:               o.Label,
+		Description:         o.Description,
+		SrcApplicationPoint: o.SrcApplicationPoint,
+		DstApplicationPoint: o.DstApplicationPoint,
+		Rules:               rules,
+		Tags:                o.Tags,
+		Id:                  o.Id,
+	}, nil
+}
+
+type PolicyApplicationPoint interface {
+	objectId() ObjectId
+}
+
+type PolicyApplicationPointDigest struct {
+	Id    ObjectId `json:"id"`
+	Label string   `json:"label"`
+	Type  string   `json:"type"` // group, internal, external, security_zone, virtual_network
+}
+
+func (o PolicyApplicationPointDigest) objectId() ObjectId {
+	return o.Id
+}
+
+func (o *TwoStageLThreeClosClient) getAllPolicies(ctx context.Context) ([]Policy, error) {
+	response := &struct {
+		Policies []policyResponse `json:"policies"`
+	}{}
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodGet,
+		urlStr:         fmt.Sprintf(apiUrlPolicies, o.blueprintId),
+		apiResponse:    response,
+		unsynchronized: true,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	result := make([]Policy, len(response.Policies))
+	for i, policy := range response.Policies {
+		polished, err := policy.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
+func (o *TwoStageLThreeClosClient) getPolicy(ctx context.Context, id ObjectId) (*Policy, error) {
+	response := &policyResponse{}
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodGet,
+		urlStr:         fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
+		apiResponse:    response,
+		unsynchronized: true,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return response.polish()
+}
+
+func (o *TwoStageLThreeClosClient) createPolicy(ctx context.Context, policy *Policy) (ObjectId, error) {
+	response := &struct {
+		Id ObjectId `json:"id"`
+	}{}
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodPost,
+		urlStr:         fmt.Sprintf(apiUrlPolicies, o.blueprintId),
+		apiInput:       policy,
+		apiResponse:    response,
+		unsynchronized: true,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
+}
+
+func (o *TwoStageLThreeClosClient) deletePolicy(ctx context.Context, id ObjectId) error {
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodDelete,
+		urlStr:         fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
+		unsynchronized: true,
+	})
+	return convertTtaeToAceWherePossible(err)
+}
+
+func (o *TwoStageLThreeClosClient) updatePolicy(ctx context.Context, id ObjectId, policy *Policy) error {
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodPut,
+		urlStr:         fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
+		apiInput:       policy.request(),
+		unsynchronized: true,
+	})
+	return convertTtaeToAceWherePossible(err)
+}
+
+func (o *TwoStageLThreeClosClient) getPolicyRuleIdByLabel(ctx context.Context, policyId ObjectId, label string) (ObjectId, error) {
+	start := time.Now()
+	for i := 0; i <= dcClientMaxRetries; i++ {
+		time.Sleep(dcClientRetryBackoff * time.Duration(i))
+		policy, err := o.getPolicy(ctx, policyId)
+		if err != nil {
+			return "", err
+		}
+		for _, rule := range policy.Rules {
+			if rule.Label == label {
+				return rule.Id, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("rule '%s' didn't appear in policy '%s' after %s", label, policyId, time.Since(start))
+}
+
+func (o *TwoStageLThreeClosClient) addPolicyRule(ctx context.Context, rule *PolicyRule, position int, policyId ObjectId) (ObjectId, error) {
+	policy, err := o.getPolicy(ctx, policyId)
+	if err != nil {
+		return "", err
+	}
+
+	currentRuleCount := len(policy.Rules)
+
+	if position < 0 {
+		position = currentRuleCount
+	}
+
+	switch {
+	// empty rule set is an easy case
+	case currentRuleCount == 0:
+		policy.Rules = []PolicyRule{*rule}
+	// zero insertion point
+	case position <= 0:
+		policy.Rules = append([]PolicyRule{*rule}, policy.Rules...)
+	// end insertion point
+	case position >= currentRuleCount:
+		policy.Rules = append(policy.Rules, *rule)
+	// insert in the middle
+	default:
+		policy.Rules = append(policy.Rules[:position+1], policy.Rules[position:]...)
+		policy.Rules[position] = *rule
+	}
+
+	// push the new policy
+	err = o.updatePolicy(ctx, policyId, policy)
+	if err != nil {
+		return "", err
+	}
+
+	return o.getPolicyRuleIdByLabel(ctx, policyId, rule.Label)
+}
+
+func (o *TwoStageLThreeClosClient) deletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
+	policy, err := o.getPolicy(ctx, policyId)
+	if err != nil {
+		return err
+	}
+
+	ruleIdx := -1
+	for i, rule := range policy.Rules {
+		if rule.Id == ruleId {
+			ruleIdx = i
+			break
+		}
+	}
+
+	if ruleIdx < 0 {
+		return ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("rule id '%s' not found in policy '%s'", ruleId, policyId),
+		}
+	}
+
+	policy.Rules = append(policy.Rules[:ruleIdx], policy.Rules[ruleIdx+1:]...)
+	return o.updatePolicy(ctx, policyId, policy)
 }
