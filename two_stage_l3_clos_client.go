@@ -3,6 +3,7 @@ package goapstra
 import (
 	"context"
 	"fmt"
+	"net"
 	"time"
 )
 
@@ -167,4 +168,19 @@ func (o *TwoStageLThreeClosClient) AddPolicyRule(ctx context.Context, rule *Poli
 // ApstraClientErr with ErrNotFound is returned.
 func (o *TwoStageLThreeClosClient) DeletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
 	return o.deletePolicyRuleById(ctx, policyId, ruleId)
+}
+
+// ListAllVirtualNetworkIds returns []ObjectId representing virtual networks configured in the blueprint
+func (o *TwoStageLThreeClosClient) ListAllVirtualNetworkIds(ctx context.Context, bpType BlueprintType) ([]ObjectId, error) {
+	return o.listAllVirtualNetworkIds(ctx, bpType)
+}
+
+// GetVirtualNetwork returns *VirtualNetwork representing the given vnId within the blueprint type
+func (o *TwoStageLThreeClosClient) GetVirtualNetwork(ctx context.Context, vnId ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
+	return o.getVirtualNetwork(ctx, vnId, bpType)
+}
+
+// GetVirtualNetworkBySubnet returns *VirtualNetwork representing the given desiredNet within the blueprint type
+func (o *TwoStageLThreeClosClient) GetVirtualNetworkBySubnet(ctx context.Context, desiredNet *net.IPNet, vrf ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
+	return o.getVirtualNetworkBySubnet(ctx, desiredNet, vrf, bpType)
 }
