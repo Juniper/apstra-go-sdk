@@ -88,7 +88,7 @@ type objectIdResponse struct {
 // ObjectId known to Apstra for various objects/resources
 type ObjectId string
 
-func (o ObjectId) objectId() ObjectId {
+func (o ObjectId) ObjectId() ObjectId {
 	return o
 }
 
