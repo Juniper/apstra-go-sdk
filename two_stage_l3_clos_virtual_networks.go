@@ -235,10 +235,12 @@ type vnType string
 
 const (
 	VnTypeVlan = VnType(iota)
+	VnTypeVxlan
 	VnTypeOverlay
 	VnTypeUnknown = "unknown VN type '%s'"
 
 	vnTypeVlan    = vnType("vlan")
+	vnTypeVxlan   = vnType("vxlan")
 	vnTypeOverlay = vnType("overlay")
 	vnTypeUnknown = "unknown VN type '%d'"
 )
@@ -255,6 +257,8 @@ func (o VnType) raw() vnType {
 		return vnTypeOverlay
 	case VnTypeVlan:
 		return vnTypeVlan
+	case VnTypeVxlan:
+		return vnTypeVxlan
 	default:
 		return vnType(fmt.Sprintf(vnTypeUnknown, o))
 	}
@@ -268,6 +272,8 @@ func (o vnType) parse() (VnType, error) {
 		return VnTypeOverlay, nil
 	case vnTypeVlan:
 		return VnTypeVlan, nil
+	case vnTypeVxlan:
+		return VnTypeVxlan, nil
 	default:
 		return 0, fmt.Errorf(VnTypeUnknown, o)
 	}
