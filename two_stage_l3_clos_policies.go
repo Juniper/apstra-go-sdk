@@ -237,8 +237,8 @@ func (o Policy) request() *policyRequest {
 		Enabled:             o.Enabled,
 		Label:               o.Label,
 		Description:         o.Description,
-		SrcApplicationPoint: o.SrcApplicationPoint.objectId(),
-		DstApplicationPoint: o.DstApplicationPoint.objectId(),
+		SrcApplicationPoint: o.SrcApplicationPoint.ObjectId(),
+		DstApplicationPoint: o.DstApplicationPoint.ObjectId(),
 		Rules:               rules,
 		Tags:                o.Tags,
 		Id:                  o.Id,
@@ -289,7 +289,7 @@ func (o policyResponse) polish() (*Policy, error) {
 }
 
 type PolicyApplicationPoint interface {
-	objectId() ObjectId
+	ObjectId() ObjectId
 }
 
 type PolicyApplicationPointDigest struct {
@@ -298,7 +298,7 @@ type PolicyApplicationPointDigest struct {
 	Type  string   `json:"type"` // group, internal, external, security_zone, virtual_network
 }
 
-func (o PolicyApplicationPointDigest) objectId() ObjectId {
+func (o PolicyApplicationPointDigest) ObjectId() ObjectId {
 	return o.Id
 }
 
