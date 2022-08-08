@@ -207,20 +207,22 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
-	// caller is expecting a response, but we don't know if Apstra will return
-	// the desired data structure, or a taskIdResponse.
+	// figure out whether Apstra responded with a task ID
 	var tIdR taskIdResponse
 	taskResponseFound, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
 	if err != nil {
 		return newTalkToApstraErr(req, requestBody, resp, "error peeking response body")
 	}
+
+	// no task ID response, so no polling tomfoolery required
 	if !taskResponseFound {
-		// caller not expecting any response?
 		if in.apiResponse == nil {
+			// caller expects no response, so we're done here
 			return nil
+		} else {
+			// no task ID, decode response body into the caller-specified structure
+			return json.NewDecoder(resp.Body).Decode(in.apiResponse)
 		}
-		// no task ID, decode response body into the caller-specified structure
-		return json.NewDecoder(resp.Body).Decode(in.apiResponse)
 	}
 
 	// we got a task ID, instead of the expected response object. tasks are

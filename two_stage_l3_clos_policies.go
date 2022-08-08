@@ -307,10 +307,9 @@ func (o *TwoStageLThreeClosClient) getAllPolicies(ctx context.Context) ([]Policy
 		Policies []policyResponse `json:"policies"`
 	}{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:         http.MethodGet,
-		urlStr:         fmt.Sprintf(apiUrlPolicies, o.blueprintId),
-		apiResponse:    response,
-		unsynchronized: true,
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlPolicies, o.blueprintId),
+		apiResponse: response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -330,10 +329,9 @@ func (o *TwoStageLThreeClosClient) getAllPolicies(ctx context.Context) ([]Policy
 func (o *TwoStageLThreeClosClient) getPolicy(ctx context.Context, id ObjectId) (*Policy, error) {
 	response := &policyResponse{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:         http.MethodGet,
-		urlStr:         fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
-		apiResponse:    response,
-		unsynchronized: true,
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
+		apiResponse: response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -347,11 +345,10 @@ func (o *TwoStageLThreeClosClient) createPolicy(ctx context.Context, policy *Pol
 		Id ObjectId `json:"id"`
 	}{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:         http.MethodPost,
-		urlStr:         fmt.Sprintf(apiUrlPolicies, o.blueprintId),
-		apiInput:       policy,
-		apiResponse:    response,
-		unsynchronized: true,
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlPolicies, o.blueprintId),
+		apiInput:    policy,
+		apiResponse: response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
@@ -361,19 +358,17 @@ func (o *TwoStageLThreeClosClient) createPolicy(ctx context.Context, policy *Pol
 
 func (o *TwoStageLThreeClosClient) deletePolicy(ctx context.Context, id ObjectId) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:         http.MethodDelete,
-		urlStr:         fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
-		unsynchronized: true,
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
 	})
 	return convertTtaeToAceWherePossible(err)
 }
 
 func (o *TwoStageLThreeClosClient) updatePolicy(ctx context.Context, id ObjectId, policy *Policy) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:         http.MethodPut,
-		urlStr:         fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
-		apiInput:       policy.request(),
-		unsynchronized: true,
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
+		apiInput: policy.request(),
 	})
 	return convertTtaeToAceWherePossible(err)
 }
