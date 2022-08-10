@@ -356,7 +356,7 @@ func (o *Client) CreateAsnPool(ctx context.Context, in *AsnPool) (ObjectId, erro
 	return response.Id, nil
 }
 
-// GetAsnPool returns, by ObjectId, a specifc ASN pool
+// GetAsnPool returns, by ObjectId, a specific ASN pool
 func (o *Client) GetAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) {
 	return o.getAsnPool(ctx, in)
 }

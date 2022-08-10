@@ -33,7 +33,7 @@ type PolicyRuleAction int
 type policyRuleAction string
 
 const (
-	PolicyRuleActionDeny = iota
+	PolicyRuleActionDeny = PolicyRuleAction(iota)
 	PolicyRuleActionDenyLog
 	PolicyRuleActionPermit
 	PolicyRuleActionPermitLog
@@ -76,13 +76,13 @@ func (o policyRuleAction) string() string {
 func (o policyRuleAction) parse() (int, error) {
 	switch o {
 	case policyRuleActionDeny:
-		return PolicyRuleActionDeny, nil
+		return int(PolicyRuleActionDeny), nil
 	case policyRuleActionDenyLog:
-		return PolicyRuleActionDenyLog, nil
+		return int(PolicyRuleActionDenyLog), nil
 	case policyRuleActionPermit:
-		return PolicyRuleActionPermit, nil
+		return int(PolicyRuleActionPermit), nil
 	case policyRuleActionPermitLog:
-		return PolicyRuleActionPermitLog, nil
+		return int(PolicyRuleActionPermitLog), nil
 	default:
 		return 0, fmt.Errorf(PolicyRuleActionUnknown, o)
 	}
