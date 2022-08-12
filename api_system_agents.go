@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 )
@@ -799,35 +798,23 @@ type jobIdResponse struct {
 }
 
 func (o *Client) listAgents(ctx context.Context) ([]ObjectId, error) {
-	method := http.MethodOptions
-	urlStr := apiUrlSystemAgents
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &optionsAgentsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodOptions,
+		urlStr:      apiUrlSystemAgents,
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s'", http.MethodOptions, apstraUrl.String())
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response.Items, nil
 }
 
 func (o *Client) getAgentInfo(ctx context.Context, id ObjectId) (*AgentInfo, error) {
-	method := http.MethodGet
-	urlStr := fmt.Sprintf(apiUrlSystemAgentsById, id)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &rawAgentInfo{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlSystemAgentsById, id),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -837,20 +824,14 @@ func (o *Client) getAgentInfo(ctx context.Context, id ObjectId) (*AgentInfo, err
 }
 
 func (o *Client) getAllAgentsInfo(ctx context.Context) ([]AgentInfo, error) {
-	method := http.MethodGet
-	urlStr := apiUrlSystemAgents
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &getAgentsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlSystemAgents,
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s'", method, apstraUrl.String())
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	var result []AgentInfo
@@ -877,21 +858,15 @@ func (o *Client) getAgentByManagementIp(ctx context.Context, ip string) (*AgentI
 }
 
 func (o *Client) createAgent(ctx context.Context, request *AgentCfg) (ObjectId, error) {
-	method := http.MethodPost
-	urlStr := apiUrlSystemAgents
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return "", fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &objectIdResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlSystemAgents,
 		apiInput:    request.raw(),
 		apiResponse: response,
 	})
 	if err != nil {
-		return "", err
+		return "", convertTtaeToAceWherePossible(err)
 	}
 
 	return response.Id, nil
@@ -900,21 +875,15 @@ func (o *Client) createAgent(ctx context.Context, request *AgentCfg) (ObjectId, 
 func (o *Client) updateAgent(ctx context.Context, id ObjectId, cfg *AgentCfg) error {
 	rawCfg := cfg.raw()
 	rawCfg.AgentType = "" // cannot change agent type
-	method := http.MethodPatch
-	urlStr := fmt.Sprintf(apiUrlSystemAgentsById, id)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &objectIdResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPatch,
+		urlStr:      fmt.Sprintf(apiUrlSystemAgentsById, id),
 		apiInput:    rawCfg,
 		apiResponse: response,
 	})
 	if err != nil {
-		return err
+		return convertTtaeToAceWherePossible(err)
 	}
 	return nil
 }
@@ -930,18 +899,12 @@ func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
 		return fmt.Errorf("error running agent uninstall job prior to deletion - %w", convertTtaeToAceWherePossible(err))
 	}
 
-	method := http.MethodDelete
-	urlStr := fmt.Sprintf(apiUrlSystemAgentsById, id)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method: method,
-		url:    apstraUrl,
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlSystemAgentsById, id),
 	})
 	if err != nil {
-		return err
+		return convertTtaeToAceWherePossible(err)
 	}
 
 	// wait for agent's system comms status to go down before returning from "deleteAgent" because
@@ -976,39 +939,28 @@ func (o *Client) agentStartJob(ctx context.Context, id ObjectId, job AgentJobTyp
 	default:
 		return 0, fmt.Errorf("don't know how to run job '%s' (type %d)", job.String(), job)
 	}
-	method := http.MethodPost
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return 0, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &jobIdResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      urlStr,
 		apiResponse: response,
 	})
 	if err != nil {
-		return 0, err
+		return 0, convertTtaeToAceWherePossible(err)
 	}
 
 	return response.Id, nil
 }
 
 func (o *Client) getAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJobStatus, error) {
-	method := http.MethodGet
-	urlStr := fmt.Sprintf(apiUrlSystemAgentJobHistory, id)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &agentJobHistoryResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlSystemAgentJobHistory, id),
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 	var result []AgentJobStatus
 	for _, js := range response.Items {
