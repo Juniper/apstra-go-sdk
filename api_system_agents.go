@@ -20,11 +20,13 @@ const (
 )
 
 const ( // new block resets iota to 0
-	AgentCxnStateConnected = AgentCxnState(iota)
+	AgentCxnStateNone = AgentCxnState(iota)
+	AgentCxnStateConnected
 	AgentCxnStateDisconnected
 	AgentCxnStateAuthFail
 	AgentCxnStateUnknown
 
+	agentCxnStateNone         = rawAgentCxnState("")
 	agentCxnStateConnected    = rawAgentCxnState("connected")
 	agentCxnStateDisconnected = rawAgentCxnState("disconnected")
 	agentCxnStateAuthFail     = rawAgentCxnState("auth_failed")
@@ -58,15 +60,19 @@ const ( // new block resets iota to 0
 	AgentJobTypeNone
 	AgentJobTypeInstall
 	AgentJobTypeCheck
+	AgentJobTypeRevertToPristine
 	AgentJobTypeUninstall
+	AgentJobTypeUpgrade
 	AgentJobTypeUnknown
 
-	agentJobTypeNull      = rawAgentJobType("")
-	agentJobTypeNone      = rawAgentJobType("none")
-	agentJobTypeInstall   = rawAgentJobType("install")
-	agentJobTypeCheck     = rawAgentJobType("check")
-	agentJobTypeUninstall = rawAgentJobType("uninstall")
-	agentJobTypeUnknown   = "system agent job type %d unknown"
+	agentJobTypeNull             = rawAgentJobType("")
+	agentJobTypeNone             = rawAgentJobType("none")
+	agentJobTypeInstall          = rawAgentJobType("install")
+	agentJobTypeCheck            = rawAgentJobType("check")
+	agentJobTypeRevertToPristine = rawAgentJobType("revertToPristine")
+	agentJobTypeUninstall        = rawAgentJobType("uninstall")
+	agentJobTypeUpgrade          = rawAgentJobType("upgrade")
+	agentJobTypeUnknown          = "system agent job type %d unknown"
 )
 
 const ( // new block resets iota to 0
@@ -206,6 +212,7 @@ func (o AgentJobState) raw() rawAgentJobState {
 
 func (o AgentJobState) HasExited() bool {
 	switch o {
+	// todo: more states which look like "exited" ?
 	case AgentJobStateSuccess:
 		return true
 	}
@@ -248,8 +255,12 @@ func (o AgentJobType) String() string {
 		return string(agentJobTypeInstall)
 	case AgentJobTypeCheck:
 		return string(agentJobTypeCheck)
+	case AgentJobTypeRevertToPristine:
+		return string(agentJobTypeRevertToPristine)
 	case AgentJobTypeUninstall:
 		return string(agentJobTypeUninstall)
+	case AgentJobTypeUpgrade:
+		return string(agentJobTypeUpgrade)
 	case AgentJobTypeNone:
 		return string(agentJobTypeNone)
 	default:
@@ -275,8 +286,12 @@ func (o rawAgentJobType) parse() int {
 		return int(AgentJobTypeInstall)
 	case agentJobTypeCheck:
 		return int(AgentJobTypeCheck)
+	case agentJobTypeRevertToPristine:
+		return int(AgentJobTypeRevertToPristine)
 	case agentJobTypeUninstall:
 		return int(AgentJobTypeUninstall)
+	case agentJobTypeUpgrade:
+		return int(AgentJobTypeUpgrade)
 	case agentJobTypeNone:
 		return int(AgentJobTypeNone)
 	default:
@@ -339,6 +354,8 @@ func (o AgentCxnState) Int() int {
 
 func (o AgentCxnState) String() string {
 	switch o {
+	case AgentCxnStateNone:
+		return string(agentCxnStateNone)
 	case AgentCxnStateConnected:
 		return string(agentCxnStateConnected)
 	case AgentCxnStateDisconnected:
@@ -363,6 +380,8 @@ func (o rawAgentCxnState) string() string {
 
 func (o rawAgentCxnState) parse() int {
 	switch o {
+	case agentCxnStateNone:
+		return int(AgentCxnStateNone)
 	case agentCxnStateConnected:
 		return int(AgentCxnStateConnected)
 	case agentCxnStateDisconnected:
@@ -409,6 +428,16 @@ func (o rawAgentPackages) polish() AgentPackages {
 	return polish
 }
 
+type rawAgentJobTypes []rawAgentJobType
+
+func (o rawAgentJobTypes) polish() []AgentJobType {
+	result := make([]AgentJobType, len(o))
+	for i, t := range o {
+		result[i] = AgentJobType(t.parse())
+	}
+	return result
+}
+
 type agentJobHistoryResponse struct {
 	Items []rawAgentJobStatus `json:"items"`
 }
@@ -419,7 +448,7 @@ type optionsAgentsResponse struct {
 }
 
 type getAgentsResponse struct {
-	Items []rawAgentInfo `json:"items"`
+	Items []rawSystemAgent `json:"items"`
 }
 
 type AgentStatus struct {
@@ -609,11 +638,11 @@ type PlatformConfig struct {
 	ContainerEnable bool `json:"container_enable"`
 }
 
-type AgentInfo struct {
-	Config             ConfigInfo         `json:"config"`
+type SystemAgent struct {
 	Id                 ObjectId           `json:"id"`
+	Config             SystemAgentConfig  `json:"config"`
+	RunningConfig      SystemAgentConfig  `json:"running_config"`
 	LastJobStatus      AgentJobStatus     `json:"last_job_status"`
-	RunningConfig      ConfigInfo         `json:"running_config"`
 	Status             AgentStatus        `json:"status"`
 	TelemetryExtStatus TelemetryExtStatus `json:"telemetry_ext_status"`
 	ContainerStatus    ContainerStatus    `json:"container_status"`
@@ -622,8 +651,8 @@ type AgentInfo struct {
 	PlatformStatus     PlatformStatus     `json:"platform_status"`
 }
 
-func (o AgentInfo) raw() *rawAgentInfo {
-	return &rawAgentInfo{
+func (o SystemAgent) raw() *rawSystemAgent {
+	return &rawSystemAgent{
 		Config:             *o.Config.raw(),
 		Id:                 o.Id,
 		LastJobStatus:      *o.LastJobStatus.raw(),
@@ -637,50 +666,51 @@ func (o AgentInfo) raw() *rawAgentInfo {
 	}
 }
 
-type rawAgentInfo struct {
-	Config             rawConfigInfo         `json:"config"`
+type rawSystemAgent struct {
 	Id                 ObjectId              `json:"id"`
-	LastJobStatus      rawAgentJobStatus     `json:"last_job_status"`
-	RunningConfig      rawConfigInfo         `json:"running_config"`
 	Status             rawAgentStatus        `json:"status"`
+	Config             rawSystemAgentConfig  `json:"config"`
+	RunningConfig      rawSystemAgentConfig  `json:"running_config"`
+	LastJobStatus      rawAgentJobStatus     `json:"last_job_status"`
 	TelemetryExtStatus rawTelemetryExtStatus `json:"telemetry_ext_status"`
-	ContainerStatus    ContainerStatus       `json:"container_status"`
 	DeviceFacts        DeviceFacts           `json:"device_facts"`
+	ContainerStatus    ContainerStatus       `json:"container_status"`
 	PlatformConfig     PlatformConfig        `json:"platform_config"`
 	PlatformStatus     PlatformStatus        `json:"platform_status"`
 }
 
-func (o *rawAgentInfo) polish() *AgentInfo {
-	return &AgentInfo{
-		Config:             *o.Config.polish(),
-		Id:                 o.Id,
-		LastJobStatus:      *o.LastJobStatus.polish(),
-		RunningConfig:      *o.RunningConfig.polish(),
-		Status:             *o.Status.polish(),
+func (o *rawSystemAgent) polish() *SystemAgent {
+	return &SystemAgent{
+		Id:                 o.Id,                      //
+		Config:             *o.Config.polish(),        //
+		LastJobStatus:      *o.LastJobStatus.polish(), //
+		RunningConfig:      *o.RunningConfig.polish(), //
+		Status:             *o.Status.polish(),        //
 		TelemetryExtStatus: *o.TelemetryExtStatus.polish(),
-		ContainerStatus:    o.ContainerStatus,
-		DeviceFacts:        o.DeviceFacts,
-		PlatformConfig:     o.PlatformConfig,
-		PlatformStatus:     o.PlatformStatus,
+		ContainerStatus:    o.ContainerStatus, //
+		DeviceFacts:        o.DeviceFacts,     //
+		PlatformConfig:     o.PlatformConfig,  //
+		PlatformStatus:     o.PlatformStatus,  //
 	}
 }
 
-type ConfigInfo struct {
+type SystemAgentConfig struct {
+	Id                  ObjectId
+	Label               string
 	Profile             ObjectId
 	ForcePackageInstall bool
 	InstallRequirements bool
 	Packages            AgentPackages
 	OpenOptions         map[string]string
-	Label               string
 	Platform            string
 	ManagementIp        string
 	AgentType           AgentType
 	OperationMode       AgentMode
-	Id                  ObjectId
+	AllowedJobTypes     []AgentJobType
 }
 
-func (o *ConfigInfo) raw() *rawConfigInfo {
-	return &rawConfigInfo{
+func (o *SystemAgentConfig) raw() *rawSystemAgentConfig {
+	return &rawSystemAgentConfig{
 		Profile:             o.Profile,
 		ForcePackageInstall: o.ForcePackageInstall,
 		InstallRequirements: o.InstallRequirements,
@@ -695,7 +725,7 @@ func (o *ConfigInfo) raw() *rawConfigInfo {
 	}
 }
 
-type rawConfigInfo struct {
+type rawSystemAgentConfig struct {
 	Profile             ObjectId          `json:"profile"`
 	ForcePackageInstall bool              `json:"force_package_install"`
 	InstallRequirements bool              `json:"install_requirements"`
@@ -707,10 +737,11 @@ type rawConfigInfo struct {
 	AgentType           rawAgentType      `json:"agent_type"`
 	OperationMode       rawAgentMode      `json:"operation_mode"`
 	Id                  ObjectId          `json:"id"`
+	AllowedJobTypes     rawAgentJobTypes  `json:"allowed_job_types"`
 }
 
-func (o *rawConfigInfo) polish() *ConfigInfo {
-	return &ConfigInfo{
+func (o *rawSystemAgentConfig) polish() *SystemAgentConfig {
+	return &SystemAgentConfig{
 		Profile:             o.Profile,
 		ForcePackageInstall: o.ForcePackageInstall,
 		InstallRequirements: o.InstallRequirements,
@@ -722,27 +753,29 @@ func (o *rawConfigInfo) polish() *ConfigInfo {
 		AgentType:           AgentType(o.AgentType.parse()),
 		OperationMode:       AgentMode(o.OperationMode.parse()),
 		Id:                  o.Id,
+		AllowedJobTypes:     o.AllowedJobTypes.polish(),
 	}
 }
 
-type AgentCfg struct {
+// SystemAgentRequest is used when creating/updating system agents
+type SystemAgentRequest struct {
 	AgentType           AgentType
 	ManagementIp        string
-	Profile             ObjectId
 	OperationMode       AgentMode
 	JobOnCreate         AgentJobType
+	Profile             ObjectId
 	Username            string
+	Password            string
+	Packages            AgentPackages
 	ForcePackageInstall bool
 	InstallRequirements bool
 	EnableMonitor       bool
-	Password            string
-	Packages            AgentPackages
 	Label               string
 	Platform            AgentPlatform
 }
 
-func (o *AgentCfg) raw() *rawAgentCfg {
-	return &rawAgentCfg{
+func (o *SystemAgentRequest) raw() *rawSystemAgentRequest {
+	return &rawSystemAgentRequest{
 		AgentType:           rawAgentType(o.AgentType.String()),
 		ManagementIp:        o.ManagementIp,
 		Profile:             o.Profile,
@@ -759,7 +792,7 @@ func (o *AgentCfg) raw() *rawAgentCfg {
 	}
 }
 
-type rawAgentCfg struct {
+type rawSystemAgentRequest struct {
 	AgentType           rawAgentType     `json:"agent_type,omitempty"`
 	ManagementIp        string           `json:"management_ip,omitempty"`
 	Profile             ObjectId         `json:"profile,omitempty"`
@@ -773,24 +806,6 @@ type rawAgentCfg struct {
 	Packages            rawAgentPackages `json:"packages,omitempty"`
 	Label               string           `json:"label,omitempty"`
 	Platform            rawAgentPlatform `json:"platform,omitempty"`
-}
-
-func (o *rawAgentCfg) polish() *AgentCfg {
-	return &AgentCfg{
-		AgentType:           AgentType(o.AgentType.parse()),
-		ManagementIp:        o.ManagementIp,
-		Profile:             o.Profile,
-		OperationMode:       AgentMode(o.OperationMode.parse()),
-		JobOnCreate:         AgentJobType(o.JobOnCreate.parse()),
-		Username:            o.Username,
-		ForcePackageInstall: o.ForcePackageInstall,
-		InstallRequirements: o.InstallRequirements,
-		EnableMonitor:       o.EnableMonitor,
-		Password:            o.Password,
-		Packages:            o.Packages.polish(),
-		Label:               o.Label,
-		Platform:            AgentPlatform(o.Platform.parse()),
-	}
 }
 
 type jobIdResponse struct {
@@ -810,8 +825,8 @@ func (o *Client) listAgents(ctx context.Context) ([]ObjectId, error) {
 	return response.Items, nil
 }
 
-func (o *Client) getAgentInfo(ctx context.Context, id ObjectId) (*AgentInfo, error) {
-	response := &rawAgentInfo{}
+func (o *Client) getSystemAgent(ctx context.Context, id ObjectId) (*SystemAgent, error) {
+	response := &rawSystemAgent{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlSystemAgentsById, id),
@@ -823,7 +838,7 @@ func (o *Client) getAgentInfo(ctx context.Context, id ObjectId) (*AgentInfo, err
 	return response.polish(), nil
 }
 
-func (o *Client) getAllAgentsInfo(ctx context.Context) ([]AgentInfo, error) {
+func (o *Client) getAllAgentsInfo(ctx context.Context) ([]SystemAgent, error) {
 	response := &getAgentsResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -834,14 +849,14 @@ func (o *Client) getAllAgentsInfo(ctx context.Context) ([]AgentInfo, error) {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	var result []AgentInfo
+	var result []SystemAgent
 	for _, i := range response.Items {
 		result = append(result, *i.polish())
 	}
 	return result, nil
 }
 
-func (o *Client) getAgentByManagementIp(ctx context.Context, ip string) (*AgentInfo, error) {
+func (o *Client) getSystemAgentByManagementIp(ctx context.Context, ip string) (*SystemAgent, error) {
 	asa, err := o.getAllAgentsInfo(ctx)
 	if err != nil {
 		return nil, err
@@ -857,7 +872,7 @@ func (o *Client) getAgentByManagementIp(ctx context.Context, ip string) (*AgentI
 	}
 }
 
-func (o *Client) createAgent(ctx context.Context, request *AgentCfg) (ObjectId, error) {
+func (o *Client) createAgent(ctx context.Context, request *SystemAgentRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -872,7 +887,7 @@ func (o *Client) createAgent(ctx context.Context, request *AgentCfg) (ObjectId, 
 	return response.Id, nil
 }
 
-func (o *Client) updateAgent(ctx context.Context, id ObjectId, cfg *AgentCfg) error {
+func (o *Client) updateSystemAgent(ctx context.Context, id ObjectId, cfg *SystemAgentRequest) error {
 	rawCfg := cfg.raw()
 	rawCfg.AgentType = "" // cannot change agent type
 	response := &objectIdResponse{}
@@ -888,13 +903,13 @@ func (o *Client) updateAgent(ctx context.Context, id ObjectId, cfg *AgentCfg) er
 	return nil
 }
 
-func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
-	agentInfo, err := o.getAgentInfo(ctx, id)
+func (o *Client) deleteSystemAgent(ctx context.Context, id ObjectId) error {
+	agentInfo, err := o.getSystemAgent(ctx, id)
 	if err != nil {
 		return fmt.Errorf("error fetching agent info prior to deletion - %w", convertTtaeToAceWherePossible(err))
 	}
 
-	_, err = o.AgentRunJob(ctx, id, AgentJobTypeUninstall)
+	_, err = o.SystemAgentRunJob(ctx, id, AgentJobTypeUninstall)
 	if err != nil {
 		return fmt.Errorf("error running agent uninstall job prior to deletion - %w", convertTtaeToAceWherePossible(err))
 	}
@@ -907,7 +922,7 @@ func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
 		return convertTtaeToAceWherePossible(err)
 	}
 
-	// wait for agent's system comms status to go down before returning from "deleteAgent" because
+	// wait for agent's system comms status to go down before returning from "deleteSystemAgent" because
 	// a) deleteSystem is probably next in line
 	// b) apstra complains:
 	//    	Can't delete the device in neither STOCKED nor DECOMM state. Device is in OOS-READY state.
@@ -927,7 +942,7 @@ func (o *Client) deleteAgent(ctx context.Context, id ObjectId) error {
 	return nil
 }
 
-func (o *Client) agentStartJob(ctx context.Context, id ObjectId, job AgentJobType) (JobId, error) {
+func (o *Client) systemAgentStartJob(ctx context.Context, id ObjectId, job AgentJobType) (JobId, error) {
 	var urlStr string
 	switch job {
 	case AgentJobTypeCheck:
@@ -952,7 +967,7 @@ func (o *Client) agentStartJob(ctx context.Context, id ObjectId, job AgentJobTyp
 	return response.Id, nil
 }
 
-func (o *Client) getAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJobStatus, error) {
+func (o *Client) getSystemAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJobStatus, error) {
 	response := &agentJobHistoryResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -969,8 +984,8 @@ func (o *Client) getAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJo
 	return result, nil
 }
 
-func (o *Client) getAgentJobStatus(ctx context.Context, agentId ObjectId, jobId JobId) (*AgentJobStatus, error) {
-	jobs, err := o.getAgentJobHistory(ctx, agentId)
+func (o *Client) getSystemAgentJobStatus(ctx context.Context, agentId ObjectId, jobId JobId) (*AgentJobStatus, error) {
+	jobs, err := o.getSystemAgentJobHistory(ctx, agentId)
 	if err != nil {
 		return nil, fmt.Errorf("error getting agent job history - %w", err)
 	}
@@ -989,7 +1004,7 @@ func (o *Client) getAgentJobStatus(ctx context.Context, agentId ObjectId, jobId 
 	}
 }
 
-func (o *Client) agentWaitForJobToExist(ctx context.Context, agentId ObjectId, jobId JobId) error {
+func (o *Client) systemAgentWaitForJobToExist(ctx context.Context, agentId ObjectId, jobId JobId) error {
 	// loop until we find a reason to return
 	for {
 		// bail out if our context is cancelled
@@ -999,7 +1014,7 @@ func (o *Client) agentWaitForJobToExist(ctx context.Context, agentId ObjectId, j
 		default:
 		}
 
-		_, err := o.getAgentJobStatus(ctx, agentId, jobId)
+		_, err := o.getSystemAgentJobStatus(ctx, agentId, jobId)
 		if err != nil {
 			var ace ApstraClientErr
 			if !(errors.As(err, &ace) && ace.Type() == ErrNotfound) {
@@ -1014,7 +1029,7 @@ func (o *Client) agentWaitForJobToExist(ctx context.Context, agentId ObjectId, j
 	}
 }
 
-func (o *Client) agentWaitForJobTermination(ctx context.Context, agentId ObjectId, jobId JobId) error {
+func (o *Client) systemAgentWaitForJobTermination(ctx context.Context, agentId ObjectId, jobId JobId) error {
 	// loop until we find a reason to return
 	for {
 		// bail out if our context is cancelled
@@ -1024,7 +1039,7 @@ func (o *Client) agentWaitForJobTermination(ctx context.Context, agentId ObjectI
 		default:
 		}
 
-		jobStatus, err := o.getAgentJobStatus(ctx, agentId, jobId)
+		jobStatus, err := o.getSystemAgentJobStatus(ctx, agentId, jobId)
 		if err != nil {
 			return fmt.Errorf("error getting job status - %w", err)
 		}
@@ -1037,7 +1052,7 @@ func (o *Client) agentWaitForJobTermination(ctx context.Context, agentId ObjectI
 	}
 }
 
-func (o *Client) agentWaitForConnection(ctx context.Context, agentId ObjectId) error {
+func (o *Client) systemAgentWaitForConnection(ctx context.Context, agentId ObjectId) error {
 	// loop until we find a reason to return
 	for {
 		// bail out if our context is cancelled
@@ -1047,12 +1062,14 @@ func (o *Client) agentWaitForConnection(ctx context.Context, agentId ObjectId) e
 		default:
 		}
 
-		agentInfo, err := o.getAgentInfo(ctx, agentId)
+		agentInfo, err := o.getSystemAgent(ctx, agentId)
 		if err != nil {
 			return fmt.Errorf("error getting agent info - %w", err)
 		}
 
 		switch agentInfo.Status.ConnectionState {
+		case AgentCxnStateNone: //onbox agents don't "connect"
+			return nil
 		case AgentCxnStateConnected:
 			return nil
 		case AgentCxnStateAuthFail:

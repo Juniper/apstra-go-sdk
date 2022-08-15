@@ -48,7 +48,7 @@ func TestGetSystemAgent(t *testing.T) {
 	}
 
 	for i := 0; i < len(list); i++ {
-		info, err := client.getAgentInfo(context.TODO(), list[i])
+		info, err := client.getSystemAgent(context.TODO(), list[i])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -75,19 +75,22 @@ func TestCreateOffboxAgent(t *testing.T) {
 		t.Fatal("env QFX_PASS not found, cannot create system agent")
 	}
 
-	agentId, err := client.CreateAgent(context.TODO(), &AgentCfg{
+	label := randString(5, "hex")
+
+	agentId, err := client.CreateAgent(context.TODO(), &SystemAgentRequest{
 		ManagementIp: qfxIp,
 		Username:     qfxUser,
 		Password:     qfxPass,
-		Platform:     AgentPlatformJunos,
-		Label:        "xxx",
+		//Platform:     AgentPlatformJunos,
+		Label:     label,
+		AgentType: AgentTypeOnbox,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Println(agentId)
 
-	jobStatus, err := client.AgentRunJob(context.TODO(), agentId, AgentJobTypeInstall)
+	jobStatus, err := client.SystemAgentRunJob(context.TODO(), agentId, AgentJobTypeInstall)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,11 +98,15 @@ func TestCreateOffboxAgent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Println(string(jsonJobStatus))
+	log.Printf("jobstatus: %s", string(jsonJobStatus))
 
-	agent, err := client.GetAgentInfo(context.TODO(), agentId)
+	agent, err := client.GetSystemAgent(context.TODO(), agentId)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if agent.Config.Label != label {
+		t.Fatalf("label mismatch: expected '%s', got '%s'", label, agent.Config.Label)
 	}
 
 	jsonAgent, err := json.Marshal(agent)
@@ -125,7 +132,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 	log.Println("acknowledged!")
 	log.Println("deleting...")
 
-	jobStatus, err = client.AgentRunJob(context.TODO(), agentId, AgentJobTypeUninstall)
+	jobStatus, err = client.SystemAgentRunJob(context.TODO(), agentId, AgentJobTypeUninstall)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,7 +142,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 	}
 	log.Println(string(jsonJobStatus))
 
-	err = client.DeleteAgent(context.TODO(), agentId)
+	err = client.DeleteSystemAgent(context.TODO(), agentId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,6 +183,8 @@ func TestSystemAgentsStrings(t *testing.T) {
 		{stringVal: "none", intType: AgentJobTypeNone, stringType: agentJobTypeNone},
 		{stringVal: "check", intType: AgentJobTypeCheck, stringType: agentJobTypeCheck},
 		{stringVal: "install", intType: AgentJobTypeInstall, stringType: agentJobTypeInstall},
+		{stringVal: "revertToPristine", intType: AgentJobTypeRevertToPristine, stringType: agentJobTypeRevertToPristine},
+		{stringVal: "upgrade", intType: AgentJobTypeUpgrade, stringType: agentJobTypeUpgrade},
 		{stringVal: "uninstall", intType: AgentJobTypeUninstall, stringType: agentJobTypeUninstall},
 
 		{stringVal: "", intType: AgentPlatformNull, stringType: agentPlatformNull},

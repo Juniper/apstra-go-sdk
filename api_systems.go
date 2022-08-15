@@ -267,18 +267,9 @@ func (o *Client) getAllSystemsInfo(ctx context.Context) ([]ManagedSystemInfo, er
 }
 
 func (o *Client) updateSystemByAgentId(ctx context.Context, agentId ObjectId, cfg *SystemUserConfig) error {
-	agent, err := o.getAgentInfo(ctx, agentId)
+	agent, err := o.getSystemAgent(ctx, agentId)
 	if err != nil {
 		return fmt.Errorf("cannot get info for agent '%s' - %w", agentId, err)
-	}
-
-	// todo: maybe this test isn't needed?
-	if agent.Status.ConnectionState != AgentCxnStateConnected {
-		return ApstraClientErr{
-			errType: ErrAgentNotConnect,
-			err: fmt.Errorf("cannot acknowledge system with connection state '%s', must be '%s'",
-				agent.Status.ConnectionState.String(), AgentCxnStateConnected.String()),
-		}
 	}
 
 	if agent.Status.SystemId == "" {

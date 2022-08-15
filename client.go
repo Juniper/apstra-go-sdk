@@ -432,72 +432,72 @@ func (o *Client) GetAgentProfileByLabel(ctx context.Context, label string) (*Age
 }
 
 // CreateAgent creates an Apstra Agent and returns its ID
-func (o *Client) CreateAgent(ctx context.Context, request *AgentCfg) (ObjectId, error) {
+func (o *Client) CreateAgent(ctx context.Context, request *SystemAgentRequest) (ObjectId, error) {
 	return o.createAgent(ctx, request)
 }
 
-// GetAgentInfo returns a AgentInfo structure representing the supplied ID
-func (o *Client) GetAgentInfo(ctx context.Context, id ObjectId) (*AgentInfo, error) {
-	return o.getAgentInfo(ctx, id)
+// GetSystemAgent returns a SystemAgent structure representing the supplied ID
+func (o *Client) GetSystemAgent(ctx context.Context, id ObjectId) (*SystemAgent, error) {
+	return o.getSystemAgent(ctx, id)
 }
 
-// GetAgentByManagementIp returns *AgentInfo representing the
+// GetSystemAgentByManagementIp returns *SystemAgent representing the
 // Agent with the given "Management Ip" (which in Apstra terms can also
 // be a hostname). Apstra doesn't allow management IP collisions, so this should
 // be a unique match. If no match, an ApstraClientErr with type ErrNotfound is
 // returned.
-func (o *Client) GetAgentByManagementIp(ctx context.Context, ip string) (*AgentInfo, error) {
-	return o.getAgentByManagementIp(ctx, ip)
+func (o *Client) GetSystemAgentByManagementIp(ctx context.Context, ip string) (*SystemAgent, error) {
+	return o.getSystemAgentByManagementIp(ctx, ip)
 }
 
-// UpdateAgent creates an Apstra Agent and returns its ID
-func (o *Client) UpdateAgent(ctx context.Context, id ObjectId, request *AgentCfg) error {
-	return o.updateAgent(ctx, id, request)
+// UpdateSystemAgent creates an Apstra Agent and returns its ID
+func (o *Client) UpdateSystemAgent(ctx context.Context, id ObjectId, request *SystemAgentRequest) error {
+	return o.updateSystemAgent(ctx, id, request)
 }
 
-// DeleteAgent creates an Apstra Agent and returns its ID
-func (o *Client) DeleteAgent(ctx context.Context, id ObjectId) error {
-	return o.deleteAgent(ctx, id)
+// DeleteSystemAgent creates an Apstra Agent and returns its ID
+func (o *Client) DeleteSystemAgent(ctx context.Context, id ObjectId) error {
+	return o.deleteSystemAgent(ctx, id)
 }
 
-// AgentRunJob requests a job be started on the Agent, returns the
+// SystemAgentRunJob requests a job be started on the Agent, returns the
 // resulting JobId
-func (o *Client) AgentRunJob(ctx context.Context, agentId ObjectId, jobType AgentJobType) (*AgentJobStatus, error) {
-	jobId, err := o.agentStartJob(ctx, agentId, jobType)
+func (o *Client) SystemAgentRunJob(ctx context.Context, agentId ObjectId, jobType AgentJobType) (*AgentJobStatus, error) {
+	jobId, err := o.systemAgentStartJob(ctx, agentId, jobType)
 	if err != nil {
 		return nil, err
 	}
 
-	err = o.agentWaitForJobToExist(ctx, agentId, jobId)
+	err = o.systemAgentWaitForJobToExist(ctx, agentId, jobId)
 	if err != nil {
 		return nil, err
 	}
 
-	err = o.agentWaitForJobTermination(ctx, agentId, jobId)
+	err = o.systemAgentWaitForJobTermination(ctx, agentId, jobId)
 	if err != nil {
 		return nil, err
 	}
 
 	switch jobType {
 	case AgentJobTypeInstall:
-		err = o.agentWaitForConnection(ctx, agentId) // todo: this might be a bit much, perhaps we can release this wait sooner?
+		err = o.systemAgentWaitForConnection(ctx, agentId) // todo: this might be a bit much, perhaps we can release this wait sooner?
 		if err != nil {
 			return nil, err
 		}
 	default:
 	}
 
-	return o.GetAgentJobStatus(ctx, agentId, jobId)
+	return o.GetSystemAgentJobStatus(ctx, agentId, jobId)
 }
 
-// GetAgentJobHistory returns []AgentJobStatus representing all jobs executed by the agent
-func (o *Client) GetAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJobStatus, error) {
-	return o.getAgentJobHistory(ctx, id)
+// GetSystemAgentJobHistory returns []AgentJobStatus representing all jobs executed by the agent
+func (o *Client) GetSystemAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJobStatus, error) {
+	return o.getSystemAgentJobHistory(ctx, id)
 }
 
-// GetAgentJobStatus returns *AgentJobStatus for the given agent and job
-func (o *Client) GetAgentJobStatus(ctx context.Context, agentId ObjectId, jobId JobId) (*AgentJobStatus, error) {
-	return o.getAgentJobStatus(ctx, agentId, jobId)
+// GetSystemAgentJobStatus returns *AgentJobStatus for the given agent and job
+func (o *Client) GetSystemAgentJobStatus(ctx context.Context, agentId ObjectId, jobId JobId) (*AgentJobStatus, error) {
+	return o.getSystemAgentJobStatus(ctx, agentId, jobId)
 }
 
 // ListSystems returns []SystemId representing systems configured on the Apstra
