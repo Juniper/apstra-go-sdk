@@ -34,18 +34,6 @@ const ( // new block resets iota to 0
 )
 
 const ( // new block resets iota to 0
-	AgentTypeDefault = AgentType(iota) // default type 0
-	AgentTypeOffbox
-	AgentTypeOnbox
-	AgentTypeUnknown
-
-	agentTypeDefault = agentTypeOffbox
-	agentTypeOffbox  = rawAgentType("offbox")
-	agentTypeOnbox   = rawAgentType("onbox")
-	agentTypeUnknown = "system agent type %d unknown"
-)
-
-const ( // new block resets iota to 0
 	AgentModeFull = AgentMode(iota) // default type 0
 	AgentModeTelemetry
 	AgentModeUnknown
@@ -105,46 +93,22 @@ const ( // new block resets iota to 0
 
 type JobId int
 
-type AgentType int
+type AgentTypeOffbox bool
 
-func (o AgentType) Int() int {
-	return int(o)
-}
-
-func (o AgentType) String() string {
-	switch o {
-	case AgentTypeDefault:
-		return string(agentTypeDefault)
-	case AgentTypeOffbox:
-		return string(agentTypeOffbox)
-	case AgentTypeOnbox:
-		return string(agentTypeOnbox)
-	default:
-		return fmt.Sprintf(agentTypeUnknown, o)
+func (o AgentTypeOffbox) raw() rawAgentType {
+	if o {
+		return "offbox"
 	}
-}
-
-func (o AgentType) raw() rawAgentType {
-	return rawAgentType(o.String())
+	return "onbox"
 }
 
 type rawAgentType string
 
-func (o rawAgentType) string() string {
-	return string(o)
-}
-
-func (o rawAgentType) parse() int {
-	switch o {
-	case "":
-		return int(AgentTypeDefault)
-	case agentTypeOffbox:
-		return int(AgentTypeOffbox)
-	case agentTypeOnbox:
-		return int(AgentTypeOnbox)
-	default:
-		return int(AgentTypeUnknown)
+func (o rawAgentType) parse() AgentTypeOffbox {
+	if o == "offbox" {
+		return true
 	}
+	return false
 }
 
 type AgentMode int
@@ -524,17 +488,17 @@ func (o *rawAgentStatus) polish() *AgentStatus {
 }
 
 type AgentJobStatus struct {
-	Started        time.Time
-	JobType        AgentJobType
-	Finished       time.Time
-	HostId         string
-	CurrentTask    string
-	IsLogAvailable bool
-	JobId          JobId
-	Created        time.Time
-	State          AgentJobState
-	AgentType      AgentType
-	Error          string
+	Started         time.Time
+	JobType         AgentJobType
+	Finished        time.Time
+	HostId          string
+	CurrentTask     string
+	IsLogAvailable  bool
+	JobId           JobId
+	Created         time.Time
+	State           AgentJobState
+	AgentTypeOffBox AgentTypeOffbox
+	Error           string
 }
 
 func (o *AgentJobStatus) raw() *rawAgentJobStatus {
@@ -548,7 +512,7 @@ func (o *AgentJobStatus) raw() *rawAgentJobStatus {
 		JobId:          o.JobId,
 		Created:        o.Created,
 		State:          o.State.raw(),
-		AgentType:      o.AgentType.raw(),
+		AgentType:      o.AgentTypeOffBox.raw(),
 		Error:          o.Error,
 	}
 }
@@ -569,17 +533,17 @@ type rawAgentJobStatus struct {
 
 func (o *rawAgentJobStatus) polish() *AgentJobStatus {
 	return &AgentJobStatus{
-		Started:        o.Started,
-		JobType:        AgentJobType(o.JobType.parse()),
-		Finished:       o.Finished,
-		HostId:         o.HostId,
-		CurrentTask:    o.CurrentTask,
-		IsLogAvailable: o.IsLogAvailable,
-		JobId:          o.JobId,
-		Created:        o.Created,
-		State:          AgentJobState(o.State.parse()),
-		AgentType:      AgentType(o.AgentType.parse()),
-		Error:          o.Error,
+		Started:         o.Started,
+		JobType:         AgentJobType(o.JobType.parse()),
+		Finished:        o.Finished,
+		HostId:          o.HostId,
+		CurrentTask:     o.CurrentTask,
+		IsLogAvailable:  o.IsLogAvailable,
+		JobId:           o.JobId,
+		Created:         o.Created,
+		State:           AgentJobState(o.State.parse()),
+		AgentTypeOffBox: o.AgentType.parse(),
+		Error:           o.Error,
 	}
 }
 
@@ -704,7 +668,7 @@ type SystemAgentConfig struct {
 	OpenOptions         map[string]string
 	Platform            string
 	ManagementIp        string
-	AgentType           AgentType
+	AgentTypeOffBox     AgentTypeOffbox
 	OperationMode       AgentMode
 	AllowedJobTypes     []AgentJobType
 }
@@ -719,7 +683,7 @@ func (o *SystemAgentConfig) raw() *rawSystemAgentConfig {
 		Label:               o.Label,
 		Platform:            o.Platform,
 		ManagementIp:        o.ManagementIp,
-		AgentType:           rawAgentType(o.AgentType.String()),
+		AgentType:           o.AgentTypeOffBox.raw(),
 		OperationMode:       rawAgentMode(o.OperationMode.String()),
 		Id:                  o.Id,
 	}
@@ -750,7 +714,7 @@ func (o *rawSystemAgentConfig) polish() *SystemAgentConfig {
 		Label:               o.Label,
 		Platform:            o.Platform,
 		ManagementIp:        o.ManagementIp,
-		AgentType:           AgentType(o.AgentType.parse()),
+		AgentTypeOffBox:     o.AgentType.parse(),
 		OperationMode:       AgentMode(o.OperationMode.parse()),
 		Id:                  o.Id,
 		AllowedJobTypes:     o.AllowedJobTypes.polish(),
@@ -759,7 +723,7 @@ func (o *rawSystemAgentConfig) polish() *SystemAgentConfig {
 
 // SystemAgentRequest is used when creating/updating system agents
 type SystemAgentRequest struct {
-	AgentType           AgentType
+	AgentTypeOffbox     AgentTypeOffbox
 	ManagementIp        string
 	OperationMode       AgentMode
 	JobOnCreate         AgentJobType
@@ -776,7 +740,7 @@ type SystemAgentRequest struct {
 
 func (o *SystemAgentRequest) raw() *rawSystemAgentRequest {
 	return &rawSystemAgentRequest{
-		AgentType:           rawAgentType(o.AgentType.String()),
+		AgentType:           o.AgentTypeOffbox.raw(),
 		ManagementIp:        o.ManagementIp,
 		Profile:             o.Profile,
 		OperationMode:       rawAgentMode(o.OperationMode.String()),

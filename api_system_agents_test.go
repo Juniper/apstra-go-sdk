@@ -52,7 +52,7 @@ func TestGetSystemAgent(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Println(info.Id, info.DeviceFacts.DeviceOsFamily, info.Config.ManagementIp)
+		log.Println(info.Id, info.DeviceFacts.DeviceOsFamily, info.Config.ManagementIp, info.Config.AgentTypeOffBox)
 	}
 }
 
@@ -170,9 +170,6 @@ func TestSystemAgentsStrings(t *testing.T) {
 		stringType apiIotaString
 	}
 	testData := []stringTestData{
-		{stringVal: "offbox", intType: AgentTypeOffbox, stringType: agentTypeOffbox},
-		{stringVal: "onbox", intType: AgentTypeOnbox, stringType: agentTypeOnbox},
-
 		{stringVal: "connected", intType: AgentCxnStateConnected, stringType: agentCxnStateConnected},
 		{stringVal: "disconnected", intType: AgentCxnStateDisconnected, stringType: agentCxnStateDisconnected},
 		{stringVal: "auth_failed", intType: AgentCxnStateAuthFail, stringType: agentCxnStateAuthFail},
@@ -209,5 +206,35 @@ func TestSystemAgentsStrings(t *testing.T) {
 			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
 				i, ii, sp, is, ss, td.stringVal)
 		}
+	}
+}
+
+func TestAgentTypeOffbox(t *testing.T) {
+	t1 := AgentTypeOffbox(true)
+	e1 := rawAgentType("offbox")
+	r1 := t1.raw()
+	if r1 != e1 {
+		t.Fatalf("expected '%s', got '%s'", e1, r1)
+	}
+
+	t2 := AgentTypeOffbox(false)
+	e2 := rawAgentType("onbox")
+	r2 := t2.raw()
+	if r2 != e2 {
+		t.Fatalf("expected '%s', got '%s'", e2, r2)
+	}
+
+	t3 := rawAgentType("offbox")
+	e3 := AgentTypeOffbox(true)
+	p3 := t3.parse()
+	if p3 != e3 {
+		t.Fatalf("expected '%t', got '%t'", e3, p3)
+	}
+
+	t4 := rawAgentType("onbox")
+	e4 := AgentTypeOffbox(false)
+	p4 := t4.parse()
+	if p4 != e4 {
+		t.Fatalf("expected '%t', got '%t'", e4, p4)
 	}
 }
