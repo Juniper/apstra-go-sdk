@@ -274,13 +274,13 @@ func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
 	}, nil
 }
 
-type CreateBluePrintFromTemplate struct {
+type CreateBlueprintFromTemplate struct {
 	RefDesign  RefDesign
 	Label      string
 	TemplateId string
 }
 
-func (o *CreateBluePrintFromTemplate) raw() *rawCreateBluePrintFromTemplate {
+func (o *CreateBlueprintFromTemplate) raw() *rawCreateBluePrintFromTemplate {
 	return &rawCreateBluePrintFromTemplate{
 		RefDesign:  o.RefDesign.String(),
 		Label:      o.Label,
@@ -430,7 +430,7 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, name string) (*Bl
 	}
 }
 
-func (o *Client) createBlueprintFromTemplate(ctx context.Context, cfg *CreateBluePrintFromTemplate) (ObjectId, error) {
+func (o *Client) createBlueprintFromTemplate(ctx context.Context, cfg *CreateBlueprintFromTemplate) (ObjectId, error) {
 	response := &postBlueprintsResponse{}
 	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,

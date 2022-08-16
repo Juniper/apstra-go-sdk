@@ -538,7 +538,7 @@ func (o *Client) UpdateManagedDeviceByAgentId(ctx context.Context, id ObjectId, 
 }
 
 // CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
-func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBluePrintFromTemplate) (ObjectId, error) {
+func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBlueprintFromTemplate) (ObjectId, error) {
 	return o.createBlueprintFromTemplate(ctx, cfg)
 }
 

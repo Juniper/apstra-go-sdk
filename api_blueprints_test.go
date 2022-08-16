@@ -54,7 +54,7 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 
 	client.Login(context.TODO())
 	name := randString(10, "hex")
-	id, err := client.createBlueprintFromTemplate(context.TODO(), &CreateBluePrintFromTemplate{
+	id, err := client.createBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplate{
 		RefDesign:  RefDesignDatacenter,
 		Label:      name,
 		TemplateId: "L2_Virtual_EVPN",
