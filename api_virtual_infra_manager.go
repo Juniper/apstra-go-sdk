@@ -2,9 +2,7 @@ package goapstra
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -27,14 +25,10 @@ type VirtualInfraMgrInfo struct {
 }
 
 func (o *Client) getVirtualInfraMgrs(ctx context.Context) ([]VirtualInfraMgrInfo, error) {
-	apstraUrl, err := url.Parse(apiUrlVirtualInfraManagers)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVirtualInfraManagers, err)
-	}
 	response := &virtualInfraMgrsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		url:         apstraUrl,
+		urlStr:      apiUrlVirtualInfraManagers,
 		apiResponse: response,
 	})
 	if err != nil {
