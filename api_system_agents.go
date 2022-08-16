@@ -524,17 +524,17 @@ func (o *rawAgentStatus) polish() *AgentStatus {
 }
 
 type AgentJobStatus struct {
-	Started        time.Time     `json:"started"`
-	JobType        AgentJobType  `json:"job_type"`
-	Finished       time.Time     `json:"finished"`
-	HostId         string        `json:"host_id"` // todo: device s/n? own type?
-	CurrentTask    string        `json:"current_task"`
-	IsLogAvailable bool          `json:"is_log_available"`
-	JobId          JobId         `json:"job_id"`
-	Created        time.Time     `json:"created"`
-	State          AgentJobState `json:"state"`
-	AgentType      AgentType     `json:"agent_type"`
-	Error          string        `json:"error"`
+	Started        time.Time
+	JobType        AgentJobType
+	Finished       time.Time
+	HostId         string
+	CurrentTask    string
+	IsLogAvailable bool
+	JobId          JobId
+	Created        time.Time
+	State          AgentJobState
+	AgentType      AgentType
+	Error          string
 }
 
 func (o *AgentJobStatus) raw() *rawAgentJobStatus {
