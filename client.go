@@ -537,6 +537,11 @@ func (o *Client) UpdateManagedDeviceByAgentId(ctx context.Context, id ObjectId, 
 	return o.updateSystemByAgentId(ctx, id, cfg)
 }
 
+// ListAllBlueprintIds returns []ObjectId representing all blueprints
+func (o *Client) ListAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listAllBlueprintIds(ctx)
+}
+
 // CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
 func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBlueprintFromTemplate) (ObjectId, error) {
 	return o.createBlueprintFromTemplate(ctx, cfg)
