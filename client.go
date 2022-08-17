@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -155,7 +156,7 @@ func (o *ClientCfg) applyDefaults() {
 
 func (o ClientCfg) validate() error {
 	switch {
-	case o.Scheme != defaultScheme && o.Scheme != insecureScheme:
+	case strings.ToLower(o.Scheme) != defaultScheme && strings.ToLower(o.Scheme) != insecureScheme:
 		return fmt.Errorf("error invalid URL scheme for Apstra service '%s'", o.Scheme)
 	case o.Host == "":
 		return errors.New("error hostname for Apstra service cannot be empty")
