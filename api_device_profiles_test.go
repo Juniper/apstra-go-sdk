@@ -7,7 +7,6 @@ import (
 )
 
 func TestListAndGetAllDeviceProfiles(t *testing.T) {
-	DebugLevel = 0
 	clients, _, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)

@@ -126,7 +126,6 @@ func TestUnpackAnomaly(t *testing.T) {
 }
 
 func TestGetAnomalies(t *testing.T) {
-	DebugLevel = 2
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)

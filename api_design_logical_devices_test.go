@@ -64,7 +64,6 @@ func TestParseLogicalDeviceSpeed(t *testing.T) {
 }
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
-	DebugLevel = 2
 	clients, _, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)

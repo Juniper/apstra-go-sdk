@@ -126,7 +126,6 @@ func TestUnmarshalMockMetricdbData(t *testing.T) {
 }
 
 func TestGetMetricdbMetrics(t *testing.T) {
-	DebugLevel = 2
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
@@ -187,7 +186,6 @@ func TestUseAggregation(t *testing.T) {
 }
 
 func TestQueryMetricdb(t *testing.T) {
-	DebugLevel = 2
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)

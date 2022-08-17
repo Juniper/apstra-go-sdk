@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -16,15 +17,15 @@ import (
 )
 
 const (
+	EnvApstraScheme           = "APSTRA_SCHEME"
 	EnvApstraUser             = "APSTRA_USER"
 	EnvApstraPass             = "APSTRA_PASS"
 	EnvApstraHost             = "APSTRA_HOST"
 	EnvApstraPort             = "APSTRA_PORT"
-	EnvApstraScheme           = "APSTRA_SCHEME"
 	EnvApstraApiKeyLogFile    = "APSTRA_API_TLS_LOGFILE"
 	EnvApstraStreamKeyLogFile = "APSTRA_STREAM_TLS_LOGFILE"
 
-	defaultTimeout = 10 * time.Second
+	DefaultTimeout = 10 * time.Second
 	defaultScheme  = "https"
 	insecureScheme = "http"
 
@@ -48,6 +49,8 @@ const (
 	clientApiResourceAsnPoolRangeMutex
 	clientApiResourceIp4PoolRangeMutex
 	clientApiResourceIp6PoolRangeMutex
+
+	LogVerbosityLevels = 4
 )
 
 type ApstraClientErr struct {
@@ -67,15 +70,32 @@ type apstraHttpClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
-// ClientCfg passed to NewClient() when instantiating a new Client{}
+// ClientCfg is passed to NewClient() when instantiating a new goapstra Client.
+// Scheme, Host, Port, User(name) and Pass(word) describe the Apstra API. Each
+// of these can be set by environment variable, the names of which are
+// controlled by these constants: EnvApstraScheme, EnvApstraUser, EnvApstraPass,
+// EnvApstraHost and EnvApstraPort.
+// If Loggers is nil, the Client will log verbosity level 0 (least noisy) to the
+// default logger. If Loggers is non-nil, logs will be sent to the supplied
+// loggers in verbosity order: least noisy to Loggers[0], slightly more noisy
+// to Loggers[1], etc... Overall verbosity level depends on how many loggers are
+// supplied here. If Loggers is empty, no logs will be created. Maximum loggers
+// is controlled by LogVerbosityLevels.
+// TlsConfig is used by the HTTP client when talking to Apstra.
+// Timeout is used to create a contextWithTimeout for any passed contexts which
+// do not expire. negative values == infinite timeout, 0/default uses
+// DefaultTimeout value, positive values are used directly.
+// ErrChan, when not nil, is used by async operations to deliver any errors to
+// the caller's code.
 type ClientCfg struct {
 	Scheme    string          // "https", probably
 	Host      string          // "apstra.company.com" or "192.168.10.10"
 	Port      uint16          // zero value for default httpClient behavior
 	User      string          // Apstra API/UI username
 	Pass      string          // Apstra API/UI password
+	Loggers   []*log.Logger   // optional caller-created loggers sorted by increasing verbosity
 	TlsConfig *tls.Config     // optional, used with https transactions
-	Timeout   time.Duration   // <0 = infinite; 0 = defaultTimeout; >0 = this value is used
+	Timeout   time.Duration   // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
 	ErrChan   chan<- error    // async client errors (apstra task polling, etc) sent here
 	ctx       context.Context // used for async operations (apstra task polling, etc)
 }
@@ -102,6 +122,7 @@ type Client struct {
 	cfg         *ClientCfg              // passed by the caller when creating Client
 	httpClient  apstraHttpClient        // used when talking to apstra
 	httpHeaders map[string]string       // default set of http headers
+	loggers     []*log.Logger           // loggers sorted in order of increasing verbosity
 	tmQuit      chan struct{}           // task monitor exit trigger
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
 	ctx         context.Context         // copied from ClientCfg, for async operations
@@ -172,6 +193,18 @@ func (o ClientCfg) validate() error {
 	return nil
 }
 
+func (o ClientCfg) loggers() ([]*log.Logger, error) {
+	if o.Loggers == nil {
+		return []*log.Logger{log.Default()}, nil
+	}
+
+	if len(o.Loggers) > LogVerbosityLevels {
+		return nil, fmt.Errorf("too many loggers (%d) for max %d supported verbosity levels", len(o.Loggers), LogVerbosityLevels)
+	}
+
+	return o.Loggers, nil
+}
+
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
 	err := cfg.pullFromEnv()
@@ -197,18 +230,27 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	}
 
 	tlsCfg := cfg.TlsConfig
-	if tlsCfg != nil {
-		if tlsCfg.InsecureSkipVerify {
-			debugStr(1, "TLS certificate verification disabled")
-		}
+	if tlsCfg == nil {
+		// conjure a default tls.Config if the caller didn't supply one
+		tlsCfg = &tls.Config{}
+	}
+
+	if tlsCfg.InsecureSkipVerify == true {
+		// todo: log TLS certificate validation disabled
+	}
+
+	if tlsCfg.KeyLogWriter != nil {
 		klw, err := keyLogWriter(EnvApstraApiKeyLogFile)
 		if err != nil {
-			return nil, fmt.Errorf("error prepping TLS key log from env var '%s' - %w", EnvApstraApiKeyLogFile, err)
+			return nil, err
 		}
 		if klw != nil {
 			tlsCfg.KeyLogWriter = klw
-			debugStr(1, fmt.Sprintf("TLS session keys being logged to %s", os.Getenv(EnvApstraApiKeyLogFile)))
+			// todo: log keylogwriter in use
 		}
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error prepping TLS key log from env var '%s' - %w", EnvApstraApiKeyLogFile, err)
 	}
 
 	httpClient := &http.Client{
@@ -223,11 +265,18 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	} else {
 		ctx = cfg.ctx
 	}
+
+	loggers, err := cfg.loggers()
+	if err != nil {
+		return nil, err
+	}
+
 	c := &Client{
 		cfg:         cfg,
 		baseUrl:     baseUrl,
 		httpClient:  httpClient,
 		httpHeaders: map[string]string{"Accept": "application/json"},
+		loggers:     loggers,
 		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
 		ctx:         ctx,
@@ -242,7 +291,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 
 	newTaskMonitor(c).start()
 
-	debugStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
+	c.logStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
 
 	return c, nil
 }

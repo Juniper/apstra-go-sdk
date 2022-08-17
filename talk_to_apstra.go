@@ -128,9 +128,9 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	if !contextHasDeadline { // maybe this context already has a deadline?
 		switch {
 		case o.cfg.Timeout < 0: // negative Timeout is no timeout interval (infinite)
-		case o.cfg.Timeout == 0: // Timeout of zero means use defaultTimeout
+		case o.cfg.Timeout == 0: // Timeout of zero means use DefaultTimeout
 			var cancel func()
-			ctx, cancel = context.WithTimeout(ctx, defaultTimeout)
+			ctx, cancel = context.WithTimeout(ctx, DefaultTimeout)
 			defer cancel()
 		case o.cfg.Timeout > 0: // positive Timeout means use this value
 			var cancel func()
@@ -153,7 +153,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		req.Header.Set(k, v)
 	}
 
-	debugFunc(2, dumpHttpRequest, req)
+	o.logFunc(2, o.dumpHttpRequest, req)
 
 	// talk to the server
 	resp, err := o.httpClient.Do(req)
@@ -164,7 +164,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
 	}
 
-	debugFunc(2, dumpHttpResponse, resp)
+	o.logFunc(2, o.dumpHttpResponse, resp)
 
 	// response not okay?
 	if resp.StatusCode/100 != 2 {
@@ -188,7 +188,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 						resp.StatusCode, apstraUrl, in.doNotLogin))
 			}
 
-			debugStr(1, fmt.Sprintf("got http %d '%s' at '%s' attempting login", resp.StatusCode, resp.Status, apstraUrl.String()))
+			o.logStr(1, fmt.Sprintf("got http %d '%s' at '%s' attempting login", resp.StatusCode, resp.Status, apstraUrl.String()))
 			// Try logging in
 			err := o.login(ctx)
 			if err != nil {
