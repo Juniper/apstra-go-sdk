@@ -82,8 +82,8 @@ func TestCreateOffboxAgent(t *testing.T) {
 		Username:     qfxUser,
 		Password:     qfxPass,
 		//Platform:     AgentPlatformJunos,
-		Label:     label,
-		AgentType: AgentTypeOnbox,
+		Label:           label,
+		AgentTypeOffbox: true,
 	})
 	if err != nil {
 		t.Fatal(err)

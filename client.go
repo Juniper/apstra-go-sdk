@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -27,7 +28,9 @@ const (
 	defaultScheme  = "https"
 	insecureScheme = "http"
 
-	apstraAuthHeader = "Authtoken"
+	apstraAuthHeader           = "Authtoken"
+	apstraSupportedApiVersions = "1.0.0,4.1.0"
+	apstraSupportedVersionSep  = ","
 
 	ErrUnknown = iota
 	ErrAsnRangeOverlap
@@ -94,9 +97,10 @@ func (o ObjectId) ObjectId() ObjectId {
 
 // Client interacts with an AOS API server
 type Client struct {
-	baseUrl     *url.URL
-	cfg         *ClientCfg
-	httpClient  apstraHttpClient
+	apiVersion  string                  // as reported by apstra API
+	baseUrl     *url.URL                // everything up to the file path, generated based on env and cfg
+	cfg         *ClientCfg              // passed by the caller when creating Client
+	httpClient  apstraHttpClient        // used when talking to apstra
 	httpHeaders map[string]string       // default set of http headers
 	tmQuit      chan struct{}           // task monitor exit trigger
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
@@ -230,13 +234,26 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		sync:        make(map[int]*sync.Mutex),
 	}
 
-	// todo: something about apstra supported versions
+	apiVersion, err := c.getVersionsApi(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c.apiVersion = apiVersion.Version
 
 	newTaskMonitor(c).start()
 
 	debugStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
 
 	return c, nil
+}
+
+func (o *Client) apiVersionIsSupported() bool {
+	for _, v := range strings.Split(apstraSupportedApiVersions, apstraSupportedVersionSep) {
+		if strings.TrimSpace(v) == o.apiVersion {
+			return true
+		}
+	}
+	return false
 }
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
