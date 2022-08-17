@@ -2,39 +2,50 @@ package goapstra
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"log"
 	"testing"
 )
 
-func clientTestVersionsCfg1() (*ClientCfg, error) {
-	return &ClientCfg{
-		TlsConfig: &tls.Config{InsecureSkipVerify: true},
-	}, nil
-}
-
 func TestGetVersionsServer(t *testing.T) {
-	cfg, err := clientTestVersionsCfg1()
+	clients, err := getCloudlabsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	client, err := NewClient(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer client.Logout(context.TODO())
+	for _, client := range clients {
+		aosdi, err := client.getVersionsAosdi(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+		api, err := client.getVersionsApi(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+		build, err := client.getVersionsBuild(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+		server, err := client.getVersionsServer(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	response, err := client.getVersionsServer(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
+		body, err := json.Marshal(&struct {
+			Aosdi  *versionsAosdiResponse  `json:"aosdi"`
+			Api    *versionsApiResponse    `json:"api"`
+			Build  *versionsBuildResponse  `json:"build"`
+			Server *versionsServerResponse `json:"server"`
+		}{
+			Aosdi:  aosdi,
+			Api:    api,
+			Build:  build,
+			Server: server,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	body, err := json.Marshal(response)
-	if err != nil {
-		t.Fatal(err)
+		log.Println(string(body))
 	}
-
-	log.Println(string(body))
 }
