@@ -226,6 +226,28 @@ func (o *cloudlabsTopology) getSwitchInfo() ([]cloudlabsSwitchInfo, error) {
 	return result, nil
 }
 
+func getCloudlabsTestClients() ([]*Client, error) {
+	topologyIds, err := topologyIdsFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	clients := make([]*Client, len(topologyIds))
+	for i, id := range topologyIds {
+		topology, err := getCloudlabsTopology(id)
+		if err != nil {
+			return nil, err
+		}
+		client, err := topology.getGoapstraClient()
+		if err != nil {
+			return nil, err
+		}
+
+		clients[i] = client
+	}
+	return clients, nil
+}
+
 func TestGetCloudlabsTopologies(t *testing.T) {
 	topologyIds, err := topologyIdsFromEnv()
 	if err != nil {
