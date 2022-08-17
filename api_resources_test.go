@@ -27,7 +27,6 @@ const (
 
 // todo asnpool mocking
 func TestGetCreateDeleteAsnPools(t *testing.T) {
-	DebugLevel = 2
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
@@ -84,7 +83,6 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 }
 
 func TestUpdateEmptyAsnPool(t *testing.T) {
-	DebugLevel = 2
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
@@ -175,7 +173,6 @@ func TestGetAsnPoolRangeHash(t *testing.T) {
 }
 
 func TestCreateDeleteAsnPoolRange(t *testing.T) {
-	DebugLevel = 2
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
@@ -234,7 +231,6 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 }
 
 func TestListIpPools(t *testing.T) {
-	DebugLevel = 2
 	clients, _, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
@@ -255,7 +251,6 @@ func TestListIpPools(t *testing.T) {
 }
 
 func TestGetAllIpPools(t *testing.T) {
-	DebugLevel = 2
 	clients, _, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
@@ -278,7 +273,6 @@ func TestGetAllIpPools(t *testing.T) {
 }
 
 func TestGetIp4PoolByName(t *testing.T) {
-	DebugLevel = 2
 	clients, _, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
@@ -309,7 +303,6 @@ func TestGetIp4PoolByName(t *testing.T) {
 }
 
 func TestCreateGetDeleteIp4Pool(t *testing.T) {
-	DebugLevel = 2
 	clients, _, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)

@@ -29,7 +29,6 @@ func (o *mockApstraApi) createVirtualInfraMgrs() error {
 }
 
 func TestGetVirtualInfraMgrs(t *testing.T) {
-	DebugLevel = 2
 	clients, apis, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
@@ -55,7 +54,5 @@ func TestGetVirtualInfraMgrs(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		debugStr(2, buf.String())
 	}
 }

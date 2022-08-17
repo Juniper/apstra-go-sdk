@@ -20,7 +20,6 @@ func TestListGetOneRackType(t *testing.T) {
 	}
 	_ = rtIds
 
-	DebugLevel = 4
 	rt, err := client.getRackType(context.TODO(), rtIds[0])
 	//rt, err := client.getRackType(context.TODO(), ObjectId("test-name"))
 	if err != nil {

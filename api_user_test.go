@@ -43,7 +43,6 @@ func TestLogout(t *testing.T) {
 }
 
 func TestUserLogin(t *testing.T) {
-	DebugLevel = 2
 	clients, _, err := getTestClientsAndMockAPIs()
 	if err != nil {
 		t.Fatal(err)
