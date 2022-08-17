@@ -36,8 +36,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client.GetAllBlueprintIds(context.TODO())
-
 	// figure out our IP address -- we'll tell Apstra to fire protobuf structures at this address
 	ourIp, err := ourIpForPeer(net.ParseIP(os.Getenv("APSTRA_HOST")))
 	if err != nil {
