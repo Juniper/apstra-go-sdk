@@ -69,7 +69,7 @@ func TestKeyLogWriter(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	klw, err := keyLogWriter(envVarName)
+	klw, err := keyLogWriterFromEnv(envVarName)
 	if err != nil {
 		t.Fatal(err)
 	}

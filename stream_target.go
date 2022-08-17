@@ -58,7 +58,7 @@ type StreamingMessage struct {
 func NewStreamTarget(cfg *StreamTargetCfg) (*StreamTarget, error) {
 	var tlsConfig *tls.Config
 
-	keyLog, err := keyLogWriter(EnvApstraStreamKeyLogFile)
+	keyLog, err := keyLogWriterFromEnv(EnvApstraStreamKeyLogFile)
 	if err != nil {
 		return nil, err
 	}

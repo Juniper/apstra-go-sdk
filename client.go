@@ -219,6 +219,11 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		return nil, err
 	}
 
+	loggers, err := cfg.loggers()
+	if err != nil {
+		return nil, err
+	}
+
 	var portStr string
 	if cfg.Port > 0 { // Go default == "unset" for our purposes; this should be safe b/c rfc6335
 		portStr = fmt.Sprintf(":%d", cfg.Port)
@@ -233,29 +238,27 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	if tlsCfg == nil {
 		// conjure a default tls.Config if the caller didn't supply one
 		tlsCfg = &tls.Config{}
+	} else {
+		if tlsCfg.InsecureSkipVerify == true {
+			loggers[0].Println("TLS certificate validation disabled")
+		}
 	}
 
-	if tlsCfg.InsecureSkipVerify == true {
-		// todo: log TLS certificate validation disabled
-	}
-
+	// configure TLS session key logging
 	if tlsCfg.KeyLogWriter != nil {
-		klw, err := keyLogWriter(EnvApstraApiKeyLogFile)
+		klw, err := keyLogWriterFromEnv(EnvApstraApiKeyLogFile)
 		if err != nil {
 			return nil, err
 		}
 		if klw != nil {
 			tlsCfg.KeyLogWriter = klw
-			// todo: log keylogwriter in use
+			loggers[0].Printf("TLS session keys being logged to '%s'", klw.Name())
 		}
-	}
-	if err != nil {
-		return nil, fmt.Errorf("error prepping TLS key log from env var '%s' - %w", EnvApstraApiKeyLogFile, err)
 	}
 
 	httpClient := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: cfg.TlsConfig,
+			TLSClientConfig: tlsCfg,
 		},
 	}
 
@@ -264,11 +267,6 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		ctx = context.TODO()
 	} else {
 		ctx = cfg.ctx
-	}
-
-	loggers, err := cfg.loggers()
-	if err != nil {
-		return nil, err
 	}
 
 	c := &Client{

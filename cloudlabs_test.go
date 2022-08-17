@@ -151,12 +151,16 @@ func getCloudlabsTopology(id string) (*cloudlabsTopology, error) {
 		return nil, err
 	}
 
-	klw, err := keyLogWriter(EnvApstraApiKeyLogFile)
+	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+	klw, err := keyLogWriterFromEnv(EnvApstraApiKeyLogFile)
 	if err != nil {
 		return nil, err
 	}
+	if klw != nil {
+		tlsConfig.KeyLogWriter = klw
+	}
 
-	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{KeyLogWriter: klw}}}
+	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}
 	req := &http.Request{
 		Method: http.MethodGet,
 		URL:    topologyUrl,
