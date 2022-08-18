@@ -36,27 +36,30 @@ func TestInterfaceSettingParam(t *testing.T) {
 
 func TestListGetAllInterfaceMaps(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	client, err := newLiveTestClient()
+	clients, err := getCloudlabsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
+	for _, client := range clients {
+		log.Printf("testing listAllInterfaceMapIds() against Apstra %s\n", client.ApiVersion())
+		iMapIds, err := client.listAllInterfaceMapIds(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	iMapIds, err := client.listAllInterfaceMapIds(context.TODO())
-	if err != nil {
-		t.Fatal(err)
+		if len(iMapIds) == 0 {
+			t.Fatal("we should have gotten some interface maps here")
+		}
+
+		log.Println("all interface maps IDs: ", iMapIds)
+
+		log.Printf("testing getInterfaceMap() against Apstra %s\n", client.ApiVersion())
+		iMap, err := client.getInterfaceMap(context.TODO(), iMapIds[rand.Intn(len(iMapIds))])
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Println("random interface map: ", iMap)
 	}
-
-	if len(iMapIds) == 0 {
-		t.Fatal("we should have gotten some interface maps here")
-	}
-
-	log.Println("all interface maps IDs: ", iMapIds)
-
-	iMap, err := client.getInterfaceMap(context.TODO(), iMapIds[rand.Intn(len(iMapIds))])
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Println("random interface map: ", iMap)
 }
 
 func TestCreateInterfaceMap(t *testing.T) {

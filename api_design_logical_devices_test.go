@@ -64,24 +64,22 @@ func TestParseLogicalDeviceSpeed(t *testing.T) {
 }
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
-	clients, _, err := getTestClientsAndMockAPIs()
+	clients, err := getCloudlabsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Println(len(clients))
 
-	for clientName, client := range clients {
-		if clientName == "mock" {
-			continue // todo have I given up on mock testing?
-		}
+	for _, client := range clients {
+		log.Printf("testing listLogicalDeviceIds() against Apstra %s\n", client.ApiVersion())
 		ids, err := client.listLogicalDeviceIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 		if len(ids) <= 0 {
-			t.Fatalf("only got %d ids from %s client", len(ids), clientName)
+			t.Fatalf("only got %d ids", len(ids))
 		}
 		for _, id := range ids {
+			log.Printf("testing getLogicalDevice() against Apstra %s\n", client.ApiVersion())
 			ld, err := client.getLogicalDevice(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
@@ -92,81 +90,90 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 }
 
 func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
-	client, err := newLiveTestClient()
+	clients, err := getCloudlabsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	var deviceConfigs []LogicalDevice
-	for i, indexing := range []string{
-		PortIndexingVerticalFirst,
-		PortIndexingHorizontalFirst,
-	} {
-		deviceConfigs = append(deviceConfigs, LogicalDevice{
-			DisplayName: fmt.Sprintf("AAAA-%s-%d", t.Name(), i),
-			Panels: []LogicalDevicePanel{
-				{
-					PanelLayout: LogicalDevicePanelLayout{
-						RowCount:    2,
-						ColumnCount: 2,
-					},
-					PortIndexing: LogicalDevicePortIndexing{
-						Order:      indexing,
-						StartIndex: 0,
-						Schema:     "absolute",
-					},
-					PortGroups: []LogicalDevicePortGroup{
-						{
-							Count: 4,
-							Speed: "10G",
-							Roles: LogicalDevicePortRoleUnused,
+	for _, client := range clients {
+		var deviceConfigs []LogicalDevice
+		for i, indexing := range []string{
+			PortIndexingVerticalFirst,
+			PortIndexingHorizontalFirst,
+		} {
+			deviceConfigs = append(deviceConfigs, LogicalDevice{
+				DisplayName: fmt.Sprintf("AAAA-%s-%d", t.Name(), i),
+				Panels: []LogicalDevicePanel{
+					{
+						PanelLayout: LogicalDevicePanelLayout{
+							RowCount:    2,
+							ColumnCount: 2,
+						},
+						PortIndexing: LogicalDevicePortIndexing{
+							Order:      indexing,
+							StartIndex: 0,
+							Schema:     "absolute",
+						},
+						PortGroups: []LogicalDevicePortGroup{
+							{
+								Count: 4,
+								Speed: "10G",
+								Roles: LogicalDevicePortRoleUnused,
+							},
 						},
 					},
 				},
-			},
-		})
-	}
-
-	var id []ObjectId
-	for i := 0; i < len(deviceConfigs); i++ {
-		id = append(id, ObjectId(""))
-		id[i], err = client.createLogicalDevice(context.TODO(), &deviceConfigs[i])
-		if err != nil {
-			t.Fatal(err)
+			})
 		}
 
-		d, err := client.getLogicalDevice(context.TODO(), id[i])
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Println(d.Id)
-		deviceConfigs[i].Panels[0].PortIndexing.StartIndex = 1
-		err = client.updateLogicalDevice(context.TODO(), d.Id, &deviceConfigs[i])
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if i > 0 {
-			previous, err := client.getLogicalDevice(context.TODO(), id[i-1])
+		var id []ObjectId
+		for i := 0; i < len(deviceConfigs); i++ {
+			id = append(id, ObjectId(""))
+			log.Printf("testing createLogicalDevice() against Apstra %s\n", client.ApiVersion())
+			id[i], err = client.createLogicalDevice(context.TODO(), &deviceConfigs[i])
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = client.updateLogicalDevice(context.TODO(), id[i], previous)
+			log.Printf("testing getLogicalDevice() against Apstra %s\n", client.ApiVersion())
+			d, err := client.getLogicalDevice(context.TODO(), id[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Println(d.Id)
+			deviceConfigs[i].Panels[0].PortIndexing.StartIndex = 1
+			log.Printf("testing updateLogicalDevice() against Apstra %s\n", client.ApiVersion())
+			err = client.updateLogicalDevice(context.TODO(), d.Id, &deviceConfigs[i])
 			if err != nil {
 				log.Fatal(err)
 			}
-		}
 
-		_, err = client.getLogicalDevice(context.TODO(), id[i])
-		if err != nil {
-			t.Fatal(err)
-		}
+			if i > 0 {
+				log.Printf("testing getLogicalDevice() against Apstra %s\n", client.ApiVersion())
+				previous, err := client.getLogicalDevice(context.TODO(), id[i-1])
+				if err != nil {
+					t.Fatal(err)
+				}
 
-		err = client.deleteLogicalDevice(context.TODO(), d.Id)
-		if err != nil {
-			t.Fatal(err)
+				log.Printf("testing updateLogicalDevice() against Apstra %s\n", client.ApiVersion())
+				err = client.updateLogicalDevice(context.TODO(), id[i], previous)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			log.Printf("testing getLogicalDevice() against Apstra %s\n", client.ApiVersion())
+			_, err = client.getLogicalDevice(context.TODO(), id[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing deleteLogicalDevice() against Apstra %s\n", client.ApiVersion())
+			err = client.deleteLogicalDevice(context.TODO(), d.Id)
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 }
@@ -200,27 +207,31 @@ func TestRawIfy(t *testing.T) {
 }
 
 func TestGetLogicalDeviceByName(t *testing.T) {
-	client, err := newLiveTestClient()
+	clients, err := getCloudlabsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	logicalDevices, err := client.getAllLogicalDevices(context.TODO())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, test := range logicalDevices {
-		logicalDevice, err := client.getLogicalDeviceByName(context.TODO(), test.DisplayName)
-		var ace ApstraClientErr
+	for _, client := range clients {
+		log.Printf("testing deleteLogicalDevice() against Apstra %s\n", client.ApiVersion())
+		logicalDevices, err := client.getAllLogicalDevices(context.TODO())
 		if err != nil {
-			if !(errors.As(err, &ace) && ace.Type() == ErrMultipleMatch) {
-				log.Fatal(err)
-			}
-			continue
+			log.Fatal(err)
 		}
-		if logicalDevice.Id != test.Id {
-			log.Fatal(fmt.Errorf("expected '%s', got '%s'", test.Id, logicalDevice.Id))
+
+		for _, test := range logicalDevices {
+			log.Printf("testing getLogicalDeviceByName() against Apstra %s\n", client.ApiVersion())
+			logicalDevice, err := client.getLogicalDeviceByName(context.TODO(), test.DisplayName)
+			var ace ApstraClientErr
+			if err != nil {
+				if !(errors.As(err, &ace) && ace.Type() == ErrMultipleMatch) {
+					log.Fatal(err)
+				}
+				continue
+			}
+			if logicalDevice.Id != test.Id {
+				log.Fatal(fmt.Errorf("expected '%s', got '%s'", test.Id, logicalDevice.Id))
+			}
 		}
 	}
 }
