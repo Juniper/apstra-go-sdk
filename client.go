@@ -30,7 +30,7 @@ const (
 	insecureScheme = "http"
 
 	apstraAuthHeader           = "Authtoken"
-	apstraSupportedApiVersions = "1.0.0,4.1.0"
+	apstraSupportedApiVersions = "4.1.0, 4.1.1"
 	apstraSupportedVersionSep  = ","
 
 	ErrUnknown = iota
