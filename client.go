@@ -894,3 +894,8 @@ func (o *Client) GetRackTypeByName(ctx context.Context, name string) (*RackType,
 func (o *Client) DeleteRackType(ctx context.Context, id ObjectId) error {
 	return o.deleteRackType(ctx, id)
 }
+
+// Log causes the message to be logged according to the policy for the selected msgLevel
+func (o *Client) Log(msgLevel int, msg string) {
+	o.logStr(msgLevel, msg)
+}
