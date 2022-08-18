@@ -245,7 +245,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	}
 
 	// configure TLS session key logging
-	if tlsCfg.KeyLogWriter != nil {
+	if tlsCfg.KeyLogWriter == nil {
 		klw, err := keyLogWriterFromEnv(EnvApstraApiKeyLogFile)
 		if err != nil {
 			return nil, err
