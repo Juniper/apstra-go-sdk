@@ -243,7 +243,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		// conjure a default tls.Config if the caller didn't supply one
 		tlsCfg = &tls.Config{}
 	} else {
-		if tlsCfg.InsecureSkipVerify == true {
+		if tlsCfg.InsecureSkipVerify && len(loggers) > 0 {
 			loggers[0].Println("TLS certificate validation disabled")
 		}
 	}
@@ -256,7 +256,9 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		}
 		if klw != nil {
 			tlsCfg.KeyLogWriter = klw
-			loggers[0].Printf("TLS session keys being logged to '%s'", klw.Name())
+			if len(loggers) > 0 {
+				loggers[0].Printf("TLS session keys being logged to '%s'", klw.Name())
+			}
 		}
 	}
 
