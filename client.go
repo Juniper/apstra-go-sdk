@@ -43,7 +43,7 @@ const (
 	ErrInUse
 	ErrMultipleMatch
 
-	clientPollingIntervalMs = 500
+	clientPollingIntervalMs = 1000
 
 	clientAuthTokenMutex = iota
 	clientApiResourceAsnPoolRangeMutex
