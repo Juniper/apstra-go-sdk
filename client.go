@@ -97,7 +97,7 @@ type ClientCfg struct {
 	TlsConfig *tls.Config     // optional, used with https transactions
 	Timeout   time.Duration   // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
 	ErrChan   chan<- error    // async client errors (apstra task polling, etc) sent here
-	ctx       context.Context // used for async operations (apstra task polling, etc)
+	ctx       context.Context // used for async operations (apstra task polling, etc.)
 }
 
 // TaskId represents outstanding tasks on an Apstra server
@@ -205,6 +205,14 @@ func (o ClientCfg) loggers() ([]*log.Logger, error) {
 	return o.Loggers, nil
 }
 
+func (o ClientCfg) url() string {
+	var portStr string
+	if o.Port > 0 { // Go default == "unset" for our purposes; this should be safe b/c rfc6335
+		portStr = fmt.Sprintf(":%d", o.Port)
+	}
+	return fmt.Sprintf("%s://%s%s", o.Scheme, o.Host, portStr)
+}
+
 // NewClient creates a Client object
 func NewClient(cfg *ClientCfg) (*Client, error) {
 	err := cfg.pullFromEnv()
@@ -224,14 +232,9 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		return nil, err
 	}
 
-	var portStr string
-	if cfg.Port > 0 { // Go default == "unset" for our purposes; this should be safe b/c rfc6335
-		portStr = fmt.Sprintf(":%d", cfg.Port)
-	}
-	baseUrlString := fmt.Sprintf("%s://%s%s", cfg.Scheme, cfg.Host, portStr)
-	baseUrl, err := url.Parse(baseUrlString)
+	baseUrl, err := url.Parse(cfg.url())
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", baseUrlString, err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", cfg.url(), err)
 	}
 
 	tlsCfg := cfg.TlsConfig
@@ -256,12 +259,6 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		}
 	}
 
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: tlsCfg,
-		},
-	}
-
 	var ctx context.Context
 	if cfg.ctx == nil {
 		ctx = context.TODO()
@@ -272,7 +269,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	c := &Client{
 		cfg:         cfg,
 		baseUrl:     baseUrl,
-		httpClient:  httpClient,
+		httpClient:  &http.Client{Transport: &http.Transport{TLSClientConfig: tlsCfg}},
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		loggers:     loggers,
 		tmQuit:      make(chan struct{}),
