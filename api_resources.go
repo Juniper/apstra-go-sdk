@@ -10,7 +10,6 @@ import (
 	"math"
 	"net"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -103,17 +102,10 @@ type optionsResourcePoolResponse struct {
 }
 
 func (o *Client) createAsnPool(ctx context.Context, in *AsnPool) (*objectIdResponse, error) {
-	method := http.MethodPost
-	urlStr := apiUrlResourcesAsnPools
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-
 	response := &objectIdResponse{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+		method:      http.MethodPost,
+		urlStr:      apiUrlResourcesAsnPools,
 		apiInput:    asnPoolToNewAsnPool(in),
 		apiResponse: response,
 	})
@@ -129,29 +121,23 @@ func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
-	method := http.MethodGet
-	urlStr := apiUrlResourcesAsnPools
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	response := &getAsnPoolsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		url:         apstraUrl,
+		urlStr:      apiUrlResourcesAsnPools,
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, err)
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	var pools []AsnPool
-	for _, rawPool := range response.Items {
+	pools := make([]AsnPool, len(response.Items))
+	for i, rawPool := range response.Items {
 		p, err := rawAsnPoolToAsnPool(&rawPool)
 		if err != nil {
 			return nil, err
 		}
-		pools = append(pools, *p)
+		pools[i] = *p
 	}
 	return pools, nil
 }
@@ -160,41 +146,28 @@ func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, err
 	if poolId == "" {
 		return nil, errors.New("attempt to get ASN Pool info with empty pool ID")
 	}
-	method := http.MethodGet
-	urlStr := fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
 	raw := &rawAsnPool{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      method,
-		url:         apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId),
 		apiResponse: raw,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error calling '%s' at '%s' - %w", method, urlStr, convertTtaeToAceWherePossible(err))
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return rawAsnPoolToAsnPool(raw)
-
 }
 
 func (o *Client) deleteAsnPool(ctx context.Context, poolId ObjectId) error {
 	if poolId == "" {
 		return errors.New("attempt to delete ASN Pool with empty pool ID")
 	}
-	method := http.MethodDelete
-	urlStr := fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		url:    apstraUrl,
+		urlStr: fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId),
 	})
 	if err != nil {
-		return fmt.Errorf("error calling '%s' at '%s - %w", method, urlStr, convertTtaeToAceWherePossible(err))
+		return convertTtaeToAceWherePossible(err)
 	}
 	return nil
 }
@@ -290,18 +263,15 @@ func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, poolInfo *A
 	if poolId == "" {
 		return errors.New("attempt to update ASN Pool with empty pool ID")
 	}
-	method := http.MethodPut
-	urlStr := fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId)
-	apstraUrl, err := url.Parse(urlStr)
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
-	}
-
-	return o.talkToApstra(ctx, &talkToApstraIn{
-		method:   method,
-		url:      apstraUrl,
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId),
 		apiInput: asnPoolToNewAsnPool(poolInfo),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
 
 func hashAsnPoolRange(in *AsnRange) string {
@@ -419,15 +389,6 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 
 	return o.updateAsnPool(ctx, poolId, poolInfo)
 }
-
-// ip4 pool stuff below here
-
-// minimal create subnet request:
-// {
-//  "subnets": [], // mandatory
-//  "tags": ["t1", "t2", "t3"],
-//  "display_name": "bang"
-//}
 
 type Ip4Pool struct {
 	Id             ObjectId    `json:"id"`
@@ -597,12 +558,7 @@ func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, err
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	polishedPool, err := response.polish()
-	if err != nil {
-		return nil, fmt.Errorf("error parsing raw pool content - %w", err)
-	}
-
-	return polishedPool, nil
+	return response.polish()
 }
 
 func (o *Client) getIp4PoolByName(ctx context.Context, desiredName string) (*Ip4Pool, error) {
@@ -646,11 +602,15 @@ func (o *Client) createIp4Pool(ctx context.Context, request *NewIp4PoolRequest) 
 }
 
 func (o *Client) deleteIp4Pool(ctx context.Context, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodDelete,
 		urlStr:   fmt.Sprintf(apiUrlResourcesIpPoolById, id),
 		apiInput: nil,
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
 
 func (o *Client) updateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
@@ -660,11 +620,15 @@ func (o *Client) updateIp4Pool(ctx context.Context, poolId ObjectId, request *Ne
 	if request.Tags == nil {
 		request.Tags = []string{}
 	}
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlResourcesIpPoolById, poolId),
 		apiInput: request,
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
 
 func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *net.IPNet) error {
@@ -701,7 +665,10 @@ func (o *Client) addSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 		Tags:        pool.Tags,
 		Subnets:     subnets,
 	})
-	return err
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
 
 func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
@@ -750,5 +717,9 @@ func (o *Client) deleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, t
 		}
 	}
 
-	return o.updateIp4Pool(ctx, poolId, newRequest)
+	err = o.updateIp4Pool(ctx, poolId, newRequest)
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
