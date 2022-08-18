@@ -88,16 +88,17 @@ type apstraHttpClient interface {
 // ErrChan, when not nil, is used by async operations to deliver any errors to
 // the caller's code.
 type ClientCfg struct {
-	Scheme    string          // "https", probably
-	Host      string          // "apstra.company.com" or "192.168.10.10"
-	Port      uint16          // zero value for default httpClient behavior
-	User      string          // Apstra API/UI username
-	Pass      string          // Apstra API/UI password
-	Loggers   []*log.Logger   // optional caller-created loggers sorted by increasing verbosity
-	TlsConfig *tls.Config     // optional, used with https transactions
-	Timeout   time.Duration   // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
-	ErrChan   chan<- error    // async client errors (apstra task polling, etc) sent here
-	ctx       context.Context // used for async operations (apstra task polling, etc.)
+	Scheme       string          // "https", probably
+	Host         string          // "apstra.company.com" or "192.168.10.10"
+	Port         uint16          // zero value for default httpClient behavior
+	User         string          // Apstra API/UI username
+	Pass         string          // Apstra API/UI password
+	Loggers      []*log.Logger   // optional caller-created loggers sorted by increasing verbosity
+	TlsConfig    *tls.Config     // optional, used with https transactions
+	Timeout      time.Duration   // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
+	ErrChan      chan<- error    // async client errors (apstra task polling, etc) sent here
+	ctx          context.Context // used for async operations (apstra task polling, etc.)
+	Experimental bool            // used to enable experimental features
 }
 
 // TaskId represents outstanding tasks on an Apstra server
@@ -278,11 +279,17 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		sync:        make(map[int]*sync.Mutex),
 	}
 
-	apiVersion, err := c.getVersionsApi(ctx)
+	_, err = c.getApiVersion(c.ctx)
 	if err != nil {
 		return nil, err
 	}
-	c.apiVersion = apiVersion.Version
+	if c.unsupportedApiVersion() {
+		msg := fmt.Sprintf("unsupported API version: '%s'", c.apiVersion)
+		c.logStr(0, msg)
+		if !c.cfg.Experimental {
+			return nil, errors.New(msg)
+		}
+	}
 
 	newTaskMonitor(c).start()
 
@@ -291,13 +298,25 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	return c, nil
 }
 
-func (o *Client) apiVersionIsSupported() bool {
+func (o *Client) getApiVersion(ctx context.Context) (string, error) {
+	if o.apiVersion != "" {
+		return o.apiVersion, nil
+	}
+	apiVersion, err := o.getVersionsApi(ctx)
+	if err != nil {
+		return "", err
+	}
+	o.apiVersion = apiVersion.Version
+	return o.apiVersion, nil
+}
+
+func (o *Client) unsupportedApiVersion() bool {
 	for _, v := range strings.Split(apstraSupportedApiVersions, apstraSupportedVersionSep) {
 		if strings.TrimSpace(v) == o.apiVersion {
-			return true
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
