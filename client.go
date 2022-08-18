@@ -262,13 +262,6 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		}
 	}
 
-	var ctx context.Context
-	if cfg.ctx == nil {
-		ctx = context.TODO()
-	} else {
-		ctx = cfg.ctx
-	}
-
 	c := &Client{
 		cfg:         cfg,
 		baseUrl:     baseUrl,
@@ -277,11 +270,16 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		loggers:     loggers,
 		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
-		ctx:         ctx,
+		ctx:         cfg.ctx,
 		sync:        make(map[int]*sync.Mutex),
 	}
 
-	_, err = c.getApiVersion(c.ctx)
+	// set default context if necessary
+	if c.ctx == nil {
+		c.ctx = context.TODO()
+	}
+
+	_, err = c.GetApiVersion(c.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +298,8 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	return c, nil
 }
 
-func (o *Client) getApiVersion(ctx context.Context) (string, error) {
+// GetApiVersion retrieves the API version from Apstra
+func (o *Client) GetApiVersion(ctx context.Context) (string, error) {
 	if o.apiVersion != "" {
 		return o.apiVersion, nil
 	}
