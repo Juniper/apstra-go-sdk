@@ -279,7 +279,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		c.ctx = context.TODO()
 	}
 
-	_, err = c.GetApiVersion(c.ctx)
+	_, err = c.getApiVersion(c.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -298,8 +298,7 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 	return c, nil
 }
 
-// GetApiVersion retrieves the API version from Apstra
-func (o *Client) GetApiVersion(ctx context.Context) (string, error) {
+func (o *Client) getApiVersion(ctx context.Context) (string, error) {
 	if o.apiVersion != "" {
 		return o.apiVersion, nil
 	}
@@ -915,4 +914,9 @@ func (o *Client) DeleteRackType(ctx context.Context, id ObjectId) error {
 // Log causes the message to be logged according to the policy for the selected msgLevel
 func (o *Client) Log(msgLevel int, msg string) {
 	o.logStr(msgLevel, msg)
+}
+
+// ApiVersion returns the version string reported by the Apstra API
+func (o *Client) ApiVersion() string {
+	return o.apiVersion
 }

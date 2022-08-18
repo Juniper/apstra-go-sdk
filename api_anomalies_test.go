@@ -132,11 +132,7 @@ func TestGetAnomalies(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		apiVer, err := client.GetApiVersion(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing getAnomalies() against %s API", apiVer)
+		log.Printf("testing getAnomalies() against %s API", client.ApiVersion())
 
 		anomalies, err := client.GetAnomalies(context.TODO())
 		if err != nil {
