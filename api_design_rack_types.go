@@ -726,7 +726,7 @@ func (o rawRackLink) polish(rack *rawRackType) (*RackLink, error) {
 	var tag *DesignTag
 	for _, label := range o.Tags {
 		if tag, found = rack.tagByLabel(label); !found {
-			return nil, fmt.Errorf("design tag '%s' not found in rack type '%s' definition", label, rack.Id)
+			return nil, fmt.Errorf("link '%s' in rack '%s' has tag '%s' but tag missing from rack definition", o.Label, rack.Id, label)
 		}
 		tags = append(tags, *tag)
 	}
