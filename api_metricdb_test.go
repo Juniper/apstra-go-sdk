@@ -126,27 +126,14 @@ func TestUnmarshalMockMetricdbData(t *testing.T) {
 }
 
 func TestGetMetricdbMetrics(t *testing.T) {
-	clients, apis, err := getTestClientsAndMockAPIs()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, mockExists := apis["mock"]
-	if mockExists {
-		err = apis["mock"].createMetricdb()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	for clientName, client := range clients {
-		log.Printf("testing getMetricdbMetrics() with %s client", clientName)
-		err := client.Login(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		_, err = client.getMetricdbMetrics(context.TODO())
+	for _, client := range clients {
+		log.Printf("testing getMetricdbMetrics() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		_, err = client.client.getMetricdbMetrics(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -186,31 +173,15 @@ func TestUseAggregation(t *testing.T) {
 }
 
 func TestQueryMetricdb(t *testing.T) {
-	clients, apis, err := getTestClientsAndMockAPIs()
+	rand.Seed(time.Now().UnixNano())
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// todo: implement mock metricdb query
-
-	_, mockExists := apis["mock"]
-	if mockExists {
-		err = apis["mock"].createMetricdb()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	rand.Seed(time.Now().UnixNano())
-
-	for clientName, client := range clients {
-		log.Printf("testing getMetricdbMetrics() with %s client", clientName)
-		err := client.Login(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		metrics, err := client.getMetricdbMetrics(context.TODO())
+	for _, client := range clients {
+		log.Printf("testing getMetricdbMetrics() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		metrics, err := client.client.getMetricdbMetrics(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -225,7 +196,8 @@ func TestQueryMetricdb(t *testing.T) {
 				end:    time.Now(),
 			}
 
-			result, err = client.QueryMetricdb(context.TODO(), &q)
+			log.Printf("testing QueryMetricdb() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			result, err = client.client.QueryMetricdb(context.TODO(), &q)
 			if err != nil {
 				t.Fatal(err)
 			}

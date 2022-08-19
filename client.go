@@ -2,7 +2,6 @@ package goapstra
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
@@ -49,8 +48,6 @@ const (
 	clientApiResourceAsnPoolRangeMutex
 	clientApiResourceIp4PoolRangeMutex
 	clientApiResourceIp6PoolRangeMutex
-
-	LogVerbosityLevels = 4
 )
 
 type ApstraClientErr struct {
@@ -78,7 +75,7 @@ type apstraHttpClient interface {
 // If Logger is nil, the Client will log to log.Default().
 // LogLevel controls log verbosity. 0 is default logging level, higher values
 // produce more detailed logs. Negative values disable logging.
-// TlsConfig is used by the HTTP client when talking to Apstra.
+// HttpClient is optional.
 // Timeout is used to create a contextWithTimeout for any passed contexts which
 // do not expire. negative values == infinite timeout, 0/default uses
 // DefaultTimeout value, positive values are used directly.
@@ -92,7 +89,7 @@ type ClientCfg struct {
 	Pass         string          // Apstra API/UI password
 	LogLevel     int             // set < 0 for no logging
 	Logger       Logger          // optional caller-created logger sorted by increasing verbosity
-	TlsConfig    *tls.Config     // optional, used with https transactions
+	HttpClient   *http.Client    // optional
 	Timeout      time.Duration   // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
 	ErrChan      chan<- error    // async client errors (apstra task polling, etc) sent here
 	ctx          context.Context // used for async operations (apstra task polling, etc.)
@@ -118,7 +115,7 @@ func (o ObjectId) ObjectId() ObjectId {
 type Client struct {
 	apiVersion  string                  // as reported by apstra API
 	baseUrl     *url.URL                // everything up to the file path, generated based on env and cfg
-	cfg         *ClientCfg              // passed by the caller when creating Client
+	cfg         ClientCfg               // passed by the caller when creating Client
 	httpClient  apstraHttpClient        // used when talking to apstra
 	httpHeaders map[string]string       // default set of http headers
 	tmQuit      chan struct{}           // task monitor exit trigger
@@ -201,61 +198,43 @@ func (o ClientCfg) url() string {
 }
 
 // NewClient creates a Client object
-func NewClient(cfg *ClientCfg) (*Client, error) {
-	err := cfg.pullFromEnv()
+func (o ClientCfg) NewClient() (*Client, error) {
+	err := o.pullFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	cfg.applyDefaults()
+	o.applyDefaults()
 
-	err = cfg.validate()
+	err = o.validate()
 	if err != nil {
 		return nil, err
 	}
 
 	var logger Logger
-	if cfg.Logger == nil && cfg.LogLevel >= 0 {
+	if o.Logger == nil && o.LogLevel >= 0 {
 		logger = log.Default()
 	}
 
-	baseUrl, err := url.Parse(cfg.url())
+	baseUrl, err := url.Parse(o.url())
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", cfg.url(), err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", o.url(), err)
 	}
 
-	tlsCfg := cfg.TlsConfig
-	if tlsCfg == nil {
-		// conjure a default tls.Config if the caller didn't supply one
-		tlsCfg = &tls.Config{}
-	} else {
-		if tlsCfg.InsecureSkipVerify && cfg.LogLevel >= 0 {
-			logger.Println(fmt.Sprintf("TLS certificate validation disabled for '%s'", baseUrl.String()))
-		}
-	}
-
-	// configure TLS session key logging
-	if tlsCfg.KeyLogWriter == nil {
-		klw, err := keyLogWriterFromEnv(EnvApstraApiKeyLogFile)
-		if err != nil {
-			return nil, err
-		}
-		if klw != nil {
-			tlsCfg.KeyLogWriter = klw
-			if cfg.LogLevel >= 0 {
-				logger.Println(fmt.Sprintf("TLS session keys for '%s' being logged to '%s'", baseUrl.String(), klw.Name()))
-			}
-		}
+	httpClient := o.HttpClient
+	if httpClient == nil {
+		httpClient = &http.Client{}
 	}
 
 	c := &Client{
-		cfg:         cfg,
+		cfg:         o,
 		baseUrl:     baseUrl,
-		httpClient:  &http.Client{Transport: &http.Transport{TLSClientConfig: tlsCfg}},
+		httpClient:  httpClient,
 		httpHeaders: map[string]string{"Accept": "application/json"},
+		logger:      logger,
 		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
-		ctx:         cfg.ctx,
+		ctx:         o.ctx,
 		sync:        make(map[int]*sync.Mutex),
 	}
 

@@ -289,6 +289,15 @@ func (o AgentPlatform) raw() rawAgentPlatform {
 	return rawAgentPlatform(o.String())
 }
 
+func (o AgentPlatform) offbox() AgentTypeOffbox {
+	switch o {
+	case AgentPlatformJunos:
+		return true
+	default:
+		return false
+	}
+}
+
 type rawAgentPlatform string
 
 func (o rawAgentPlatform) string() string {

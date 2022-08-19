@@ -3,7 +3,6 @@ package goapstra
 import (
 	"bufio"
 	"bytes"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -12,31 +11,6 @@ import (
 	"strings"
 	"testing"
 )
-
-func taskMonitorConfigTestClient1() (*Client, error) {
-	return NewClient(&ClientCfg{
-		TlsConfig: &tls.Config{InsecureSkipVerify: true},
-	})
-}
-
-//func TestGetTaskByBlueprintIdAndTaskId(t *testing.T) {
-//	client, err := taskMonitorConfigTestClient1()
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	result, err := client.GetTaskByBlueprintIdAndTaskId("db10754a-610e-475b-9baa-4c85f82282e8", "46dbddde-8d2d-410d-ac70-8bf6c110afe2")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-//	buf := bytes.Buffer{}
-//	err = pp(result, &buf)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	log.Print(buf.String())
-//}
 
 func TestBufIoReaderStuff(t *testing.T) {
 	peekSize := 5

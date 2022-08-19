@@ -29,23 +29,14 @@ func (o *mockApstraApi) createVirtualInfraMgrs() error {
 }
 
 func TestGetVirtualInfraMgrs(t *testing.T) {
-	clients, apis, err := getTestClientsAndMockAPIs()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, mockExists := apis["mock"]
-	if mockExists {
-		err = apis["mock"].createMetricdb()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	for clientName, client := range clients {
-		log.Printf("testing getMetricdbMetrics() with %s client", clientName)
-
-		vim, err := client.getVirtualInfraMgrs(context.TODO())
+	for _, client := range clients {
+		log.Printf("testing getVirtualInfraMgrs() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		vim, err := client.client.getVirtualInfraMgrs(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}

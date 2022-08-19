@@ -2,71 +2,74 @@ package goapstra
 
 import (
 	"context"
-	"crypto/tls"
 	"log"
 	"testing"
 )
 
-func systemsTestClient1() (*Client, error) {
-	return NewClient(&ClientCfg{
-		TlsConfig: &tls.Config{InsecureSkipVerify: true},
-	})
-}
-
 func TestListSystems(t *testing.T) {
-	client, err := systemsTestClient1()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
+	for _, client := range clients {
+		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		systems, err := client.client.listSystems(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	systems, err := client.listSystems(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for _, s := range systems {
-		log.Println(s)
+		for _, s := range systems {
+			log.Println(s)
+		}
 	}
 }
 
 func TestGetAllSystems(t *testing.T) {
-	client, err := systemsTestClient1()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	systemIds, err := client.listSystems(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
+	for _, client := range clients {
+		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		systemIds, err := client.client.listSystems(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	systems, err := client.getAllSystemsInfo(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
+		log.Printf("testing getAllSystemsInfo() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		systems, err := client.client.getAllSystemsInfo(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	if len(systemIds) != len(systems) {
-		t.Fatalf("system count discrepancy: %d vs. %d", len(systemIds), len(systems))
+		if len(systemIds) != len(systems) {
+			t.Fatalf("system count discrepancy: %d vs. %d", len(systemIds), len(systems))
+		}
 	}
 }
 
 func TestGetSystems(t *testing.T) {
-	client, err := systemsTestClient1()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	systems, err := client.listSystems(context.TODO())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for _, s := range systems {
-		system, err := client.getSystemInfo(context.TODO(), s)
+	for _, client := range clients {
+		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		systems, err := client.client.listSystems(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Println(system.Facts.HwModel)
+
+		for _, s := range systems {
+			log.Printf("testing getSystemInfo() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			system, err := client.client.getSystemInfo(context.TODO(), s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Println(system.Facts.HwModel)
+		}
 	}
 }
 

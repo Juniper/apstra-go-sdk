@@ -131,18 +131,26 @@ func (o *cloudlabsTopology) getGoapstraClient() (*Client, error) {
 		}
 	}
 
+	klw, err := keyLogWriterFromEnv(EnvApstraApiKeyLogFile)
+	if err != nil {
+		return nil, err
+	}
+	tlsConfig := &tls.Config{InsecureSkipVerify: true, KeyLogWriter: klw}
+	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}
+
 	access, err := o.getVmAccessInfo("aos-vm1", "https")
 	if err != nil {
 		return nil, err
 	}
-	return NewClient(&ClientCfg{
-		Scheme:    access.Protocol,
-		Host:      access.Host,
-		Port:      uint16(access.Port),
-		User:      access.Username,
-		Pass:      access.Password,
-		TlsConfig: &tls.Config{InsecureSkipVerify: true},
-	})
+
+	return ClientCfg{
+		Scheme:     access.Protocol,
+		Host:       access.Host,
+		Port:       uint16(access.Port),
+		User:       access.Username,
+		Pass:       access.Password,
+		HttpClient: httpClient,
+	}.NewClient()
 }
 
 func getCloudlabsTopology(id string) (*cloudlabsTopology, error) {
@@ -234,25 +242,6 @@ type testClient struct {
 	clientName string
 	clientType string ``
 	client     *Client
-}
-
-var testClients []testClient
-
-func getTestClients() ([]testClient, error) {
-	if testClients != nil {
-		return testClients, nil
-	}
-
-	// add cloudlabs clients to testClients slice
-	clTestClients, err := getCloudlabsTestClients()
-	if err != nil {
-		return nil, err
-	}
-	testClients = append(testClients, clTestClients...)
-
-	// add future type clients (slicer?) to testClients slice here
-
-	return testClients, nil
 }
 
 func getCloudlabsTestClients() ([]testClient, error) {
