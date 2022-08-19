@@ -36,13 +36,13 @@ func TestInterfaceSettingParam(t *testing.T) {
 
 func TestListGetAllInterfaceMaps(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, client := range clients {
-		log.Printf("testing listAllInterfaceMapIds() against Apstra %s\n", client.ApiVersion())
-		iMapIds, err := client.listAllInterfaceMapIds(context.TODO())
+		log.Printf("testing listAllInterfaceMapIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		iMapIds, err := client.client.listAllInterfaceMapIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -53,8 +53,8 @@ func TestListGetAllInterfaceMaps(t *testing.T) {
 
 		log.Println("all interface maps IDs: ", iMapIds)
 
-		log.Printf("testing getInterfaceMap() against Apstra %s\n", client.ApiVersion())
-		iMap, err := client.getInterfaceMap(context.TODO(), iMapIds[rand.Intn(len(iMapIds))])
+		log.Printf("testing getInterfaceMap() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		iMap, err := client.client.getInterfaceMap(context.TODO(), iMapIds[rand.Intn(len(iMapIds))])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -63,7 +63,7 @@ func TestListGetAllInterfaceMaps(t *testing.T) {
 }
 
 func TestCreateInterfaceMap(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,14 +97,14 @@ func TestCreateInterfaceMap(t *testing.T) {
 			},
 		}
 
-		log.Printf("testing createInterfaceMap() against Apstra %s\n", client.ApiVersion())
-		mapId, err := client.createInterfaceMap(context.TODO(), &newMapInfo)
+		log.Printf("testing createInterfaceMap() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		mapId, err := client.client.createInterfaceMap(context.TODO(), &newMapInfo)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing getInterfaceMap() against Apstra %s\n", client.ApiVersion())
-		asCreated, err := client.getInterfaceMap(context.TODO(), mapId)
+		log.Printf("testing getInterfaceMap() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		asCreated, err := client.client.getInterfaceMap(context.TODO(), mapId)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -167,8 +167,8 @@ func TestCreateInterfaceMap(t *testing.T) {
 
 		log.Println("new interface map: ", mapId)
 
-		log.Printf("testing deleteInterfaceMap() against Apstra %s\n", client.ApiVersion())
-		err = client.deleteInterfaceMap(context.TODO(), mapId)
+		log.Printf("testing deleteInterfaceMap() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		err = client.client.deleteInterfaceMap(context.TODO(), mapId)
 		if err != nil {
 			log.Fatal(err)
 		}

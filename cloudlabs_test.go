@@ -230,13 +230,34 @@ func (o *cloudlabsTopology) getSwitchInfo() ([]cloudlabsSwitchInfo, error) {
 	return result, nil
 }
 
-func getCloudlabsTestClients() ([]*Client, error) {
+type testClient struct {
+	clientName string
+	clientType string ``
+	client     *Client
+}
+
+var testClients []testClient
+
+func getTestClients() ([]testClient, error) {
+	if testClients != nil {
+		return testClients, nil
+	}
+
+	clTestClients, err := getCloudlabsTestClients()
+	if err != nil {
+		return nil, err
+	}
+	testClients = append(testClients, clTestClients...)
+	return testClients, nil
+}
+
+func getCloudlabsTestClients() ([]testClient, error) {
 	topologyIds, err := topologyIdsFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	clients := make([]*Client, len(topologyIds))
+	result := make([]testClient, len(topologyIds))
 	for i, id := range topologyIds {
 		topology, err := getCloudlabsTopology(id)
 		if err != nil {
@@ -247,9 +268,13 @@ func getCloudlabsTestClients() ([]*Client, error) {
 			return nil, err
 		}
 
-		clients[i] = client
+		result[i] = testClient{
+			clientName: id,
+			clientType: "cloudlabs",
+			client:     client,
+		}
 	}
-	return clients, nil
+	return result, nil
 }
 
 func TestGetCloudlabsTopologies(t *testing.T) {

@@ -7,14 +7,14 @@ import (
 )
 
 func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against Apstra %s\n", client.ApiVersion())
-		blueprints, err := client.listAllBlueprintIds(context.TODO())
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		blueprints, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -23,8 +23,8 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			t.Skipf("cannot proceed without at least one blueprint")
 		}
 
-		log.Printf("testing NewTwoStageL3ClosClient() against Apstra %s\n", client.ApiVersion())
-		dcClient, err := client.NewTwoStageL3ClosClient(context.TODO(), blueprints[0])
+		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), blueprints[0])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -33,7 +33,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 
 		label := "test-" + randStr
 		vrfName := "test-" + randStr
-		log.Printf("testing CreateSecurityZone() against Apstra %s\n", dcClient.client.ApiVersion())
+		log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		zoneId, err := dcClient.CreateSecurityZone(context.TODO(), &CreateSecurityZoneCfg{
 			SzType:  "evpn",
 			VrfName: vrfName,
@@ -46,7 +46,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 		log.Printf("created zone - id:'%s', name: '%s', label:'%s'", zoneId, vrfName, label)
 
 		log.Println("fetching by id...")
-		log.Printf("testing getSecurityZone() against Apstra %s\n", dcClient.client.ApiVersion())
+		log.Printf("testing getSecurityZone() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		zone, err := dcClient.getSecurityZone(context.TODO(), zoneId)
 		if err != nil {
 			t.Fatal(err)
@@ -56,7 +56,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 		}
 
 		log.Println("fetching by vrf name...")
-		log.Printf("testing getSecurityZoneByName() against Apstra %s\n", dcClient.client.ApiVersion())
+		log.Printf("testing getSecurityZoneByName() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		zone, err = dcClient.getSecurityZoneByName(context.TODO(), vrfName)
 		if err != nil {
 			t.Fatal(err)
@@ -68,7 +68,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 		randStr2 := randString(5, "hex")
 		vrfName2 := "test-" + randStr2
 		label2 := "test-" + randStr2
-		log.Printf("testing UpdateSecurityZone() against Apstra %s\n", dcClient.client.ApiVersion())
+		log.Printf("testing UpdateSecurityZone() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = dcClient.UpdateSecurityZone(context.TODO(), zoneId, &CreateSecurityZoneCfg{
 			SzType:  "evpn",
 			VrfName: vrfName2,
@@ -78,7 +78,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetSecurityZoneByName() against Apstra %s\n", dcClient.client.ApiVersion())
+		log.Printf("testing GetSecurityZoneByName() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		zone, err = dcClient.GetSecurityZoneByName(context.TODO(), vrfName2)
 		if err != nil {
 			t.Fatal(err)
@@ -90,7 +90,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			t.Fatal()
 		}
 
-		log.Printf("testing DeleteSecurityZone() against Apstra %s\n", dcClient.client.ApiVersion())
+		log.Printf("testing DeleteSecurityZone() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = dcClient.DeleteSecurityZone(context.TODO(), zoneId)
 		if err != nil {
 			t.Fatal(err)
@@ -99,14 +99,14 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 }
 
 func TestGetDefaultRoutingZone(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against Apstra %s\n", client.ApiVersion())
-		blueprints, err := client.listAllBlueprintIds(context.TODO())
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		blueprints, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -116,13 +116,13 @@ func TestGetDefaultRoutingZone(t *testing.T) {
 		}
 
 		for _, bpId := range blueprints {
-			log.Printf("testing NewTwoStageL3ClosClient() against Apstra %s\n", client.ApiVersion())
-			dcClient, err := client.NewTwoStageL3ClosClient(context.TODO(), bpId)
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), bpId)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			log.Printf("testing GetSecurityZoneByName() against Apstra %s\n", dcClient.client.ApiVersion())
+			log.Printf("testing GetSecurityZoneByName() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 			sz, err := dcClient.GetSecurityZoneByName(context.TODO(), "default")
 			if err != nil {
 				t.Fatal(err)

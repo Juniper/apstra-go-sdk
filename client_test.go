@@ -82,18 +82,18 @@ func newMockTestClient() (*Client, *mockApstraApi, error) {
 }
 
 func TestLoginLogout(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, client := range clients {
-		err = client.Login(context.TODO())
+		err = client.client.Login(context.TODO())
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = client.Logout(context.TODO())
+		err = client.client.Logout(context.TODO())
 		if err != nil {
 			log.Fatal(err)
 		}

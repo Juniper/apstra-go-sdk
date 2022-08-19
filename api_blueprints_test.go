@@ -8,14 +8,14 @@ import (
 )
 
 func TestListAllBlueprintIds(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against Apsra %s\n", client.ApiVersion())
-		blueprints, err := client.listAllBlueprintIds(context.TODO())
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		blueprints, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -29,14 +29,14 @@ func TestListAllBlueprintIds(t *testing.T) {
 }
 
 func TestGetAllBlueprintStatus(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, client := range clients {
-		log.Printf("testing getAllBlueprintStatus() against Apstra %s\n", client.ApiVersion())
-		bps, err := client.getAllBlueprintStatus(context.TODO())
+		log.Printf("testing getAllBlueprintStatus() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		bps, err := client.client.getAllBlueprintStatus(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -46,22 +46,23 @@ func TestGetAllBlueprintStatus(t *testing.T) {
 }
 
 func TestCreateDeleteBlueprint(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, client := range clients {
-		log.Printf("testing createBlueprintFromTemplate() against Apstra %s\n", client.ApiVersion())
+		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		name := randString(10, "hex")
-		id, err := client.createBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplate{
+		id, err := client.client.createBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplate{
 			RefDesign:  RefDesignDatacenter,
 			Label:      name,
 			TemplateId: "L2_Virtual_EVPN",
 		})
 
 		log.Printf("got id '%s', deleting blueprint...\n", id)
-		err = client.deleteBlueprint(context.TODO(), id)
+		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		err = client.client.deleteBlueprint(context.TODO(), id)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -69,14 +70,14 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 }
 
 func TestGetPatchGetPatchNode(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against Apstra %s\n", client.ApiVersion())
-		bpIds, err := client.listAllBlueprintIds(context.TODO())
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -103,8 +104,8 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 		nodesB := struct {
 			Nodes map[string]metadataNode `json:"nodes"`
 		}{}
-		log.Printf("testing getNodes() against Apstra %s\n", client.ApiVersion())
-		err = client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesA)
+		log.Printf("testing getNodes() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		err = client.client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesA)
 		if err != nil {
 			t.Fatal()
 		}
@@ -120,15 +121,15 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 
 			req := metadataNode{Label: newName}
 			resp := &metadataNode{}
-			log.Printf("testing patchNode() against Apstra %s\n", client.ApiVersion())
-			err := client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
+			log.Printf("testing patchNode() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			err := client.client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
 			if err != nil {
 				t.Fatal(err)
 			}
 			log.Printf("response indicates name changed '%s' -> '%s'", nodeA.Label, resp.Label)
 
-			log.Printf("testing getNodes() against Apstra %s\n", client.ApiVersion())
-			err = client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesB)
+			log.Printf("testing getNodes() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			err = client.client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesB)
 			if err != nil {
 				t.Fatal()
 			}
@@ -138,8 +139,8 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 			}
 
 			req = metadataNode{Label: nodeA.Label}
-			log.Printf("testing patchNode() against Apstra %s\n", client.ApiVersion())
-			err = client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
+			log.Printf("testing patchNode() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			err = client.client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
 			if err != nil {
 				t.Fatal(err)
 			}

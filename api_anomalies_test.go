@@ -126,15 +126,15 @@ func TestUnpackAnomaly(t *testing.T) {
 }
 
 func TestGetAnomalies(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, client := range clients {
-		log.Printf("testing getAnomalies() against %s API", client.ApiVersion())
+		log.Printf("testing getAnomalies() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 
-		anomalies, err := client.GetAnomalies(context.TODO())
+		anomalies, err := client.client.GetAnomalies(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}

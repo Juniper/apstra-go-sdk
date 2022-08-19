@@ -8,25 +8,29 @@ import (
 )
 
 func TestGetVersionsServer(t *testing.T) {
-	clients, err := getCloudlabsTestClients()
+	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, client := range clients {
-		aosdi, err := client.getVersionsAosdi(context.TODO())
+		log.Printf("testing getVersionsAosdi() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		aosdi, err := client.client.getVersionsAosdi(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
-		api, err := client.getVersionsApi(context.TODO())
+		log.Printf("testing getVersionsApi() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		api, err := client.client.getVersionsApi(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
-		build, err := client.getVersionsBuild(context.TODO())
+		log.Printf("testing getVersionsBuild() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		build, err := client.client.getVersionsBuild(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
-		server, err := client.getVersionsServer(context.TODO())
+		log.Printf("testing getVersionsServer() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		server, err := client.client.getVersionsServer(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}

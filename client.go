@@ -196,6 +196,7 @@ func (o ClientCfg) validate() error {
 
 func (o ClientCfg) loggers() ([]*log.Logger, error) {
 	if o.Loggers == nil {
+		// nil slice implies client took no action, returned slice contains the default logger.
 		return []*log.Logger{log.Default()}, nil
 	}
 
