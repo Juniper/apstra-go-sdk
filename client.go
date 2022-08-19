@@ -75,12 +75,9 @@ type apstraHttpClient interface {
 // of these can be set by environment variable, the names of which are
 // controlled by these constants: EnvApstraScheme, EnvApstraUser, EnvApstraPass,
 // EnvApstraHost and EnvApstraPort.
-// If Loggers is nil, the Client will log verbosity level 0 (least noisy) to the
-// default logger. If Loggers is non-nil, logs will be sent to the supplied
-// loggers in verbosity order: least noisy to Loggers[0], slightly more noisy
-// to Loggers[1], etc... Overall verbosity level depends on how many loggers are
-// supplied here. If Loggers is empty, no logs will be created. Maximum loggers
-// is controlled by LogVerbosityLevels.
+// If Logger is nil, the Client will log to log.Default().
+// LogLevel controls log verbosity. 0 is default logging level, higher values
+// produce more detailed logs. Negative values disable logging.
 // TlsConfig is used by the HTTP client when talking to Apstra.
 // Timeout is used to create a contextWithTimeout for any passed contexts which
 // do not expire. negative values == infinite timeout, 0/default uses
@@ -93,7 +90,8 @@ type ClientCfg struct {
 	Port         uint16          // zero value for default httpClient behavior
 	User         string          // Apstra API/UI username
 	Pass         string          // Apstra API/UI password
-	Loggers      []*log.Logger   // optional caller-created loggers sorted by increasing verbosity
+	LogLevel     int             // set < 0 for no logging
+	Logger       Logger          // optional caller-created logger sorted by increasing verbosity
 	TlsConfig    *tls.Config     // optional, used with https transactions
 	Timeout      time.Duration   // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
 	ErrChan      chan<- error    // async client errors (apstra task polling, etc) sent here
@@ -123,10 +121,10 @@ type Client struct {
 	cfg         *ClientCfg              // passed by the caller when creating Client
 	httpClient  apstraHttpClient        // used when talking to apstra
 	httpHeaders map[string]string       // default set of http headers
-	loggers     []*log.Logger           // loggers sorted in order of increasing verbosity
 	tmQuit      chan struct{}           // task monitor exit trigger
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
 	ctx         context.Context         // copied from ClientCfg, for async operations
+	logger      Logger                  // logs sent here
 	sync        map[int]*sync.Mutex     // some client operations are not concurrency safe. Their locks live here.
 	syncLock    sync.Mutex              // control access to the 'sync' map
 }
@@ -194,19 +192,6 @@ func (o ClientCfg) validate() error {
 	return nil
 }
 
-func (o ClientCfg) loggers() ([]*log.Logger, error) {
-	if o.Loggers == nil {
-		// nil slice implies client took no action, returned slice contains the default logger.
-		return []*log.Logger{log.Default()}, nil
-	}
-
-	if len(o.Loggers) > LogVerbosityLevels {
-		return nil, fmt.Errorf("too many loggers (%d) for max %d supported verbosity levels", len(o.Loggers), LogVerbosityLevels)
-	}
-
-	return o.Loggers, nil
-}
-
 func (o ClientCfg) url() string {
 	var portStr string
 	if o.Port > 0 { // Go default == "unset" for our purposes; this should be safe b/c rfc6335
@@ -229,9 +214,9 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		return nil, err
 	}
 
-	loggers, err := cfg.loggers()
-	if err != nil {
-		return nil, err
+	var logger Logger
+	if cfg.Logger == nil && cfg.LogLevel >= 0 {
+		logger = log.Default()
 	}
 
 	baseUrl, err := url.Parse(cfg.url())
@@ -244,8 +229,8 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		// conjure a default tls.Config if the caller didn't supply one
 		tlsCfg = &tls.Config{}
 	} else {
-		if tlsCfg.InsecureSkipVerify && len(loggers) > 0 {
-			loggers[0].Println("TLS certificate validation disabled")
+		if tlsCfg.InsecureSkipVerify && cfg.LogLevel >= 0 {
+			logger.Println(fmt.Sprintf("TLS certificate validation disabled for '%s'", baseUrl.String()))
 		}
 	}
 
@@ -257,8 +242,8 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		}
 		if klw != nil {
 			tlsCfg.KeyLogWriter = klw
-			if len(loggers) > 0 {
-				loggers[0].Printf("TLS session keys being logged to '%s'", klw.Name())
+			if cfg.LogLevel >= 0 {
+				logger.Println(fmt.Sprintf("TLS session keys for '%s' being logged to '%s'", baseUrl.String(), klw.Name()))
 			}
 		}
 	}
@@ -268,7 +253,6 @@ func NewClient(cfg *ClientCfg) (*Client, error) {
 		baseUrl:     baseUrl,
 		httpClient:  &http.Client{Transport: &http.Transport{TLSClientConfig: tlsCfg}},
 		httpHeaders: map[string]string{"Accept": "application/json"},
-		loggers:     loggers,
 		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
 		ctx:         cfg.ctx,
