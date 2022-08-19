@@ -2,6 +2,7 @@ package goapstra
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"testing"
 )
@@ -72,108 +73,123 @@ func TestCreateOffboxAgent(t *testing.T) {
 			}
 		}
 
-		type createAgentResult struct {
-			agentId ObjectId
-			label   string
-			err     error
-		}
-
-		createAgentResultChan := make(chan createAgentResult, len(switchInfo))
-		for _, testSwitch := range switchInfo {
-			go func(si testSwitchInfo, result chan createAgentResult) {
-				log.Printf("testing CreateAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-				label := randString(5, "hex")
-				id, err := client.client.CreateAgent(context.TODO(), &SystemAgentRequest{
-					ManagementIp:    si.ip,
-					Username:        si.user,
-					Password:        si.pass,
-					Platform:        si.platform,
-					Label:           label,
-					AgentTypeOffbox: si.platform.offbox(),
-				})
-				createAgentResultChan <- createAgentResult{agentId: id, label: label, err: err}
-			}(testSwitch, createAgentResultChan)
-		}
-
 		agentIds := make([]ObjectId, len(switchInfo))
 		labels := make([]string, len(switchInfo))
-		for i := 0; i < len(switchInfo); i++ {
-			result := <-createAgentResultChan
-			if result.err != nil {
+		for i, testSwitch := range switchInfo {
+			log.Printf("testing CreateAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			label := randString(5, "hex")
+			id, err := client.client.CreateAgent(context.TODO(), &SystemAgentRequest{
+				ManagementIp:    testSwitch.ip,
+				Username:        testSwitch.user,
+				Password:        testSwitch.pass,
+				Platform:        testSwitch.platform,
+				Label:           label,
+				AgentTypeOffbox: testSwitch.platform.offbox(),
+			})
+			if err != nil {
 				t.Fatal(err)
 			}
-			agentIds[i] = result.agentId
-			labels[i] = result.label
+			agentIds[i] = id
+			labels[i] = label
 		}
 
-		//log.Printf("testing SystemAgentRunJob() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		//jobStatus, err := client.client.SystemAgentRunJob(context.TODO(), agentId, AgentJobTypeInstall)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//jsonJobStatus, err := json.Marshal(jobStatus)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//log.Printf("jobstatus: %s", string(jsonJobStatus))
-		//
-		//log.Printf("testing GetSystemAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		//agent, err := client.client.GetSystemAgent(context.TODO(), agentId)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//
-		//if agent.Config.Label != label {
-		//	t.Fatalf("label mismatch: expected '%s', got '%s'", label, agent.Config.Label)
-		//}
-		//
-		//jsonAgent, err := json.Marshal(agent)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//log.Println(string(jsonAgent))
-		//
-		//log.Printf("testing GetSystemInfo() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		//systemInfo, err := client.client.GetSystemInfo(context.TODO(), agent.Status.SystemId)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//
-		//log.Printf("testing updateSystemByAgentId() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		//err = client.client.updateSystemByAgentId(context.TODO(), agentId, &SystemUserConfig{
-		//	AdminState:  SystemAdminStateNormal,
-		//	AosHclModel: systemInfo.Facts.AosHclModel,
-		//	Location:    randString(10, "hex"),
-		//})
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//
-		//log.Println("acknowledged!")
-		//log.Println("deleting...")
-		//
-		//log.Printf("testing SystemAgentRunJob() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		//jobStatus, err = client.client.SystemAgentRunJob(context.TODO(), agentId, AgentJobTypeUninstall)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//jsonJobStatus, err = json.Marshal(jobStatus)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//log.Println(string(jsonJobStatus))
-		//
-		//log.Printf("testing DeleteSystemAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		//err = client.client.DeleteSystemAgent(context.TODO(), agentId)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//
-		//log.Printf("testing deleteSystem() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		//err = client.client.deleteSystem(context.TODO(), agent.Status.SystemId)
-		//if err != nil {
-		//	log.Println(err)
-		//}
+		// run these jobs in parallel
+		type runJobResult struct {
+			jobStatus *AgentJobStatus
+			err       error
+		}
+		installRunJobResultChan := make(chan runJobResult, len(switchInfo))
+		for _, id := range agentIds {
+			go func(agentId ObjectId, resultChan chan<- runJobResult) {
+				log.Printf("testing SystemAgentRunJob(install) against agent %s %s %s (%s)", agentId, client.clientType, client.clientName, client.client.ApiVersion())
+				status, err := client.client.SystemAgentRunJob(context.TODO(), agentId, AgentJobTypeInstall)
+				resultChan <- runJobResult{jobStatus: status, err: err}
+			}(id, installRunJobResultChan)
+		}
+		installJobStatus := make([]AgentJobStatus, len(agentIds))
+		for i, _ := range agentIds {
+			log.Printf("waiting for SystemAgentRunJob(install) result %d of %d", i+1, len(agentIds))
+			result := <-installRunJobResultChan
+			if result.err != nil {
+				t.Fatal(result.err)
+			}
+			installJobStatus[i] = *result.jobStatus
+		}
+
+		agents := make([]SystemAgent, len(agentIds))
+		for i, agentId := range agentIds {
+			log.Printf("testing GetSystemAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			agent, err := client.client.GetSystemAgent(context.TODO(), agentId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			agents[i] = *agent
+
+			if agent.Config.Label != labels[i] {
+				t.Fatalf("label mismatch: expected '%s', got '%s'", labels[i], agent.Config.Label)
+			}
+
+			jsonAgent, err := json.Marshal(agent)
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Println(string(jsonAgent))
+
+			log.Printf("testing GetSystemInfo() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			systemInfo, err := client.client.GetSystemInfo(context.TODO(), agent.Status.SystemId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing updateSystemByAgentId() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			err = client.client.updateSystemByAgentId(context.TODO(), agentId, &SystemUserConfig{
+				AdminState:  SystemAdminStateNormal,
+				AosHclModel: systemInfo.Facts.AosHclModel,
+				Location:    randString(10, "hex"),
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Println("acknowledged!")
+		}
+
+		log.Println("uninstalling agents...")
+		// run these jobs in parallel
+		type unInstallAgentResult struct {
+			jobStatus *AgentJobStatus
+			err       error
+		}
+		unInstallAgentResultChan := make(chan unInstallAgentResult, len(agentIds))
+		for _, agentId := range agentIds {
+			go func(id ObjectId, resultChan chan<- unInstallAgentResult) {
+				log.Printf("testing SystemAgentRunJob(unInstall) against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+				status, err := client.client.SystemAgentRunJob(context.TODO(), id, AgentJobTypeUninstall)
+				resultChan <- unInstallAgentResult{jobStatus: status, err: err}
+			}(agentId, unInstallAgentResultChan)
+		}
+		unInstallJobStatus := make([]AgentJobStatus, len(agentIds))
+		for i, _ := range agentIds {
+			log.Printf("waiting for SystemAgentRunJob(unInstall) result %d of %d", i+1, len(agentIds))
+			result := <-unInstallAgentResultChan
+			if result.err != nil {
+				t.Fatal(result.err)
+			}
+			unInstallJobStatus[i] = *result.jobStatus
+		}
+
+		for _, agent := range agents {
+			log.Printf("testing DeleteSystemAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			err = client.client.DeleteSystemAgent(context.TODO(), agent.Id)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing deleteSystem() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			err = client.client.deleteSystem(context.TODO(), agent.Status.SystemId)
+			if err != nil {
+				log.Println(err)
+			}
+		}
 	}
 }
 
