@@ -2,99 +2,11 @@ package goapstra
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"math/rand"
 	"testing"
 	"time"
 )
-
-const (
-	mockGetMetricdbIbaAppPayload = `{"items":[
-	   { "application": "iba",
-	     "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/d6ffca4d-ba91-4833-bf43-714bc0c5b665",
-	     "name": "imbalanced_system_count_out_of_range" },
-	   { "application": "iba",
-	     "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/4eb11184-4b32-4106-8e90-edb312042683",
-	     "name": "System Interface Counters" },
-	   { "application": "iba",
-	     "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/4eb11184-4b32-4106-8e90-edb312042683",
-	     "name": "Average Interface Counters" },
-	   { "application": "iba",
-	     "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/d6ffca4d-ba91-4833-bf43-714bc0c5b665",
-	     "name": "leaf_fab_int_tx_avg" },
-	   { "application": "iba",
-	     "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/d6ffca4d-ba91-4833-bf43-714bc0c5b665",
-	     "name": "std_dev_percentage" },
-	   { "application": "iba",
-	     "namespace": "db10754a-610e-475b-9baa-4c85f82282e8/d6ffca4d-ba91-4833-bf43-714bc0c5b665",
-	     "name": "system_imbalance" }
-	]}`
-	mockGetMetricdbClusterHealthAppPayload = `{"items":[
-        { "application": "cluster_health_info",
-          "namespace": "agent",
-          "name": "health_aggr_3600" },
-        { "application": "cluster_health_info",
-          "namespace": "file_registry",
-          "name": "file_aggr_3600" },
-        { "application": "cluster_health_info",
-          "namespace": "file_registry",
-          "name": "directory_aggr_3600" },
-        { "application": "cluster_health_info",
-          "namespace": "agent",
-          "name": "health" },
-        { "application": "cluster_health_info",
-          "namespace": "agent",
-          "name": "utilization" },
-        { "application": "cluster_health_info",
-          "namespace": "node",
-          "name": "utilization_aggr_3600" },
-        { "application": "cluster_health_info",
-          "namespace": "node",
-          "name": "disk_utilization_aggr_3600" },
-        { "application": "cluster_health_info",
-          "namespace": "container",
-          "name": "utilization" },
-        { "application": "cluster_health_info",
-          "namespace": "node",
-          "name": "utilization" },
-        { "application": "cluster_health_info",
-          "namespace": "file_registry",
-          "name": "directory" },
-        { "application": "cluster_health_info",
-          "namespace": "node",
-          "name": "disk_utilization" },
-        { "application": "cluster_health_info",
-          "namespace": "file_registry",
-          "name": "file" },
-        { "application": "cluster_health_info",
-          "namespace": "container",
-          "name": "utilization_aggr_3600" },
-        { "application": "cluster_health_info",
-          "namespace": "agent",
-          "name": "utilization_aggr_3600" },
-        { "application": "cluster_health_info",
-          "namespace": "container",
-          "name": "file_usage_aggr_3600" },
-        { "application": "cluster_health_info",
-          "namespace": "container",
-          "name": "file_usage" }
-    ]}`
-)
-
-func TestUnmarshalMockMetricdbData(t *testing.T) {
-	result := &metricdbMetricResponse{}
-	for i, s := range []string{
-		mockGetMetricdbIbaAppPayload,
-		mockGetMetricdbClusterHealthAppPayload,
-	} {
-		log.Printf("TestUnmarshalMockMetricdbData test %d", i)
-		err := json.Unmarshal([]byte(s), result)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-}
 
 func TestGetMetricdbMetrics(t *testing.T) {
 	clients, err := getTestClients()

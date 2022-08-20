@@ -48,10 +48,6 @@ type optionsInterfaceMapsResponse struct {
 	Methods []string   `json:"methods"`
 }
 
-type getAllInterfaceMapsResponse struct {
-	Items []rawInterfaceMap `json:"items"`
-}
-
 type InterfaceSettingParam struct {
 	Global struct {
 		Breakout bool   `json:"breakout"`

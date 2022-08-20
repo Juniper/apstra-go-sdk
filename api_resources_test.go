@@ -25,7 +25,6 @@ const (
     }`
 )
 
-// todo asnpool mocking
 func TestGetCreateDeleteAsnPools(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {

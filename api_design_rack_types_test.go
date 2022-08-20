@@ -24,7 +24,6 @@ func TestListGetOneRackType(t *testing.T) {
 
 		log.Printf("testing getRackType() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		rt, err := client.client.getRackType(context.TODO(), rtIds[0])
-		//rt, err := client.getRackType(context.TODO(), ObjectId("test-name"))
 		if err != nil {
 			t.Fatal(err)
 		}
