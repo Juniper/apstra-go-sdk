@@ -55,7 +55,7 @@ type newAsnPool struct {
 	Tags        []string      `json:"tags"`
 }
 
-// newAsnRange is minimal version of AsnRange which omits statisitcal elements.
+// newAsnRange is minimal version of AsnRange which omits statistical elements.
 // It is used with create/update commands upstream towards Apstra.
 type newAsnRange struct {
 	First uint32 `json:"first"`
