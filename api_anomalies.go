@@ -125,10 +125,6 @@ func (o rawAnomalous) Parse() (*Anomalous, error) {
 	}, nil
 }
 
-type getAnomaliesResponse struct {
-	Items []json.RawMessage `json:items`
-}
-
 // unpackAnomaly is clunky. It extracts instances of Anomaly as returned by
 // apiUrlAnomalies, and attempts to gracefully handle the unpredictable
 // Anomaly.Identity.Properties list as returned by Apstra. Sometimes it
@@ -211,7 +207,9 @@ func (o *Client) getAnomalies(ctx context.Context) ([]Anomaly, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlAnomalies, err)
 	}
-	response := &getAnomaliesResponse{}
+	response := &struct {
+		Items []json.RawMessage `json:"items"`
+	}{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodGet,
 		url:            apstraUrl,
