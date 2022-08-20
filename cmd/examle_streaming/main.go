@@ -6,6 +6,7 @@ import (
 	"github.com/chrismarget-j/goapstra"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 )
@@ -29,9 +30,9 @@ func main() {
 		//Port:      "", // omit to use env var 'APSTRA_PORT'
 		//User:      "", // omit to use env var 'APSTRA_USER'
 		//Pass:      "", // omit to use env var 'APSTRA_PASS'
-		TlsConfig: &tls.Config{InsecureSkipVerify: true},
+		HttpClient: &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
 	}
-	client, err := goapstra.NewClient(&clientCfg)
+	client, err := clientCfg.NewClient()
 	if err != nil {
 		log.Fatal(err)
 	}
