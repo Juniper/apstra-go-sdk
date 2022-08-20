@@ -266,7 +266,7 @@ func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMap) (Obje
 func (o *Client) updateInterfaceMap(ctx context.Context, id ObjectId, in *InterfaceMap) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   apiUrlDesignInterfaceMaps,
+		urlStr:   fmt.Sprintf(apiUrlDesignInterfaceMapById, id),
 		apiInput: in.raw(),
 	})
 }
