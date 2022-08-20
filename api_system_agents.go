@@ -900,7 +900,8 @@ func (o *Client) deleteSystemAgent(ctx context.Context, id ObjectId) error {
 	// b) apstra complains:
 	//    	Can't delete the device in neither STOCKED nor DECOMM state. Device is in OOS-READY state.
 	if agentInfo.Status.SystemId != "" {
-		minuteCountdown, _ := context.WithTimeout(ctx, 1*time.Minute)
+		minuteCountdown, cancel := context.WithTimeout(ctx, 1*time.Minute)
+		defer cancel()
 		for {
 			systemInfo, err := o.getSystemInfo(minuteCountdown, agentInfo.Status.SystemId)
 			if err != nil {
