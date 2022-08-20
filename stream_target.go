@@ -163,7 +163,7 @@ func (o *StreamTarget) Stop() {
 
 // Id returns the StreamTarget ID returned by Apstra during registration or ""
 // if unregistered.
-func (o StreamTarget) Id() ObjectId {
+func (o *StreamTarget) Id() ObjectId {
 	return o.strmCfgId
 }
 

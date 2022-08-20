@@ -18,7 +18,7 @@ type VersionResponse struct {
 	Minor   string `json:"minor"`
 }
 
-func (o Client) getVersion(ctx context.Context) (*VersionResponse, error) {
+func (o *Client) getVersion(ctx context.Context) (*VersionResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersion)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)

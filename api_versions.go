@@ -76,7 +76,7 @@ type versionsServerResponse struct {
 	BuildDateTime string `json:"build_datetime"`
 }
 
-func (o Client) getVersionsAosdi(ctx context.Context) (*versionsAosdiResponse, error) {
+func (o *Client) getVersionsAosdi(ctx context.Context) (*versionsAosdiResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsAosdi)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsAosdi, err)
@@ -89,7 +89,7 @@ func (o Client) getVersionsAosdi(ctx context.Context) (*versionsAosdiResponse, e
 	})
 }
 
-func (o Client) getVersionsApi(ctx context.Context) (*versionsApiResponse, error) {
+func (o *Client) getVersionsApi(ctx context.Context) (*versionsApiResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsApi)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsApi, err)
@@ -102,7 +102,7 @@ func (o Client) getVersionsApi(ctx context.Context) (*versionsApiResponse, error
 	})
 }
 
-func (o Client) getVersionsBuild(ctx context.Context) (*versionsBuildResponse, error) {
+func (o *Client) getVersionsBuild(ctx context.Context) (*versionsBuildResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsBuild)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsBuild, err)
@@ -115,7 +115,7 @@ func (o Client) getVersionsBuild(ctx context.Context) (*versionsBuildResponse, e
 	})
 }
 
-func (o Client) postVersionsDevice(ctx context.Context, request *versionsDeviceRequest) (*versionsDeviceResponse, error) {
+func (o *Client) postVersionsDevice(ctx context.Context, request *versionsDeviceRequest) (*versionsDeviceResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsDevice)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsDevice, err)
@@ -129,7 +129,7 @@ func (o Client) postVersionsDevice(ctx context.Context, request *versionsDeviceR
 	})
 }
 
-func (o Client) postVersionsIba(ctx context.Context, request *versionsIbaRequest) (*versionsIbaResponse, error) {
+func (o *Client) postVersionsIba(ctx context.Context, request *versionsIbaRequest) (*versionsIbaResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsIba)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsIba, err)
@@ -143,7 +143,7 @@ func (o Client) postVersionsIba(ctx context.Context, request *versionsIbaRequest
 	})
 }
 
-func (o Client) postVersionsNode(ctx context.Context, request *versionsNodeRequest) (*versionsNodeResponse, error) {
+func (o *Client) postVersionsNode(ctx context.Context, request *versionsNodeRequest) (*versionsNodeResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsNode)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsNode, err)
@@ -157,7 +157,7 @@ func (o Client) postVersionsNode(ctx context.Context, request *versionsNodeReque
 	})
 }
 
-func (o Client) getVersionsServer(ctx context.Context) (*versionsServerResponse, error) {
+func (o *Client) getVersionsServer(ctx context.Context) (*versionsServerResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsServer)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsServer, err)

@@ -297,7 +297,7 @@ func taskListToFilterExpr(in []TaskId) string {
 
 // getBlueprintTasksStatus returns a map of TaskId to status (strings like
 // "succeeded", "init", etc...)
-func (o Client) getBlueprintTasksStatus(ctx context.Context, bpid ObjectId, taskIdList []TaskId) (map[TaskId]string, error) {
+func (o *Client) getBlueprintTasksStatus(ctx context.Context, bpid ObjectId, taskIdList []TaskId) (map[TaskId]string, error) {
 	apstraUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix)
 	apstraUrl.RawQuery = url.Values{"filter": []string{taskListToFilterExpr(taskIdList)}}.Encode()
 	if err != nil {
@@ -329,7 +329,7 @@ func (o Client) getBlueprintTasksStatus(ctx context.Context, bpid ObjectId, task
 	return result, nil
 }
 
-func (o Client) getBlueprintTaskStatusById(ctx context.Context, bpid ObjectId, tid TaskId) (*getTaskResponse, error) {
+func (o *Client) getBlueprintTaskStatusById(ctx context.Context, bpid ObjectId, tid TaskId) (*getTaskResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlTasksPrefix + string(bpid) + apiUrlTasksSuffix + string(tid))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w",

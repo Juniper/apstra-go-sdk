@@ -72,7 +72,7 @@ type StreamingConfigParams struct {
 	Port           uint16 `json:"port"`
 }
 
-func (o Client) getAllStreamingConfigIds(ctx context.Context) ([]ObjectId, error) {
+func (o *Client) getAllStreamingConfigIds(ctx context.Context) ([]ObjectId, error) {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
@@ -91,7 +91,7 @@ func (o Client) getAllStreamingConfigIds(ctx context.Context) ([]ObjectId, error
 	return result.Items, nil
 }
 
-func (o Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigInfo, error) {
+func (o *Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigInfo, error) {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
@@ -115,7 +115,7 @@ func (o Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigIn
 	return result, nil
 }
 
-func (o Client) getStreamingConfig(ctx context.Context, id ObjectId) (*StreamingConfigInfo, error) {
+func (o *Client) getStreamingConfig(ctx context.Context, id ObjectId) (*StreamingConfigInfo, error) {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig + string(id))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+string(id), err)
@@ -128,7 +128,7 @@ func (o Client) getStreamingConfig(ctx context.Context, id ObjectId) (*Streaming
 	})
 }
 
-func (o Client) newStreamingConfig(ctx context.Context, cfg *StreamingConfigParams) (*objectIdResponse, error) {
+func (o *Client) newStreamingConfig(ctx context.Context, cfg *StreamingConfigParams) (*objectIdResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
@@ -142,7 +142,7 @@ func (o Client) newStreamingConfig(ctx context.Context, cfg *StreamingConfigPara
 	})
 }
 
-func (o Client) deleteStreamingConfig(ctx context.Context, id ObjectId) error {
+func (o *Client) deleteStreamingConfig(ctx context.Context, id ObjectId) error {
 	apstraUrl, err := url.Parse(apiUrlStreamingConfig + "/" + string(id))
 	if err != nil {
 		return fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+"/"+string(id), err)
