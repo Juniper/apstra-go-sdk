@@ -39,11 +39,11 @@ func TestBufIoReaderStuff(t *testing.T) {
 func TestBlueprintIdFromUrl(t *testing.T) {
 	testBpId := ObjectId("lkasdlfaj")
 	test := "https://host:443" + fmt.Sprintf(apiUrlBlueprintById, testBpId)
-	url, err := url.Parse(test)
+	parsed, err := url.Parse(test)
 	if err != nil {
 		log.Fatal(err)
 	}
-	resultBpId := blueprintIdFromUrl(url)
+	resultBpId := blueprintIdFromUrl(parsed)
 	if testBpId != resultBpId {
 		log.Fatalf("expected '%s', got '%s'", testBpId, resultBpId)
 	}
