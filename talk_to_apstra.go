@@ -60,7 +60,7 @@ func convertTtaeToAceWherePossible(err error) error {
 // craftUrl combines o.baseUrl (probably "http://host:port") with in.url
 // (preferred), or in.urlStr (if in.url is nil). Both options are probably
 // something like "/api/something/something". More complicated callers (which
-// need to use a query string, etc) will probably send in.url (*url.URL), while
+// need to use a query string, etc.) will probably send in.url (*url.URL), while
 // simple ones can simply send in.urlStr (string).
 // The assumption is that o.baseUrl contains the scheme, host (host+port) and
 // leading path components, while `in` (talkToApstraIn) is responsible for the

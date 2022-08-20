@@ -35,7 +35,7 @@ func (o *Client) logFunc(msgLevel int, f func(int, ...interface{}) (string, erro
 	o.logStr(msgLevel, msg)
 }
 
-// dumpHttpRequest string-ifys an http request according to the desired
+// dumpHttpRequest string-ifys an http.Request according to the desired
 // verbosity of the incoming message (msgLevel) relative to the configured
 // LogLevel.
 // When msgLevel exceeds LogLevel count nothing is returned.
@@ -62,7 +62,7 @@ func (o *Client) dumpHttpRequest(msgLevel int, in ...interface{}) (string, error
 	return string(data), err
 }
 
-// dumpHttpResponse string-ifys an http response according to the desired
+// dumpHttpResponse string-ifys an http.Hesponse according to the desired
 // verbosity of the incoming message (msgLevel) relative to the configured
 // LogLevel
 // When msgLevel exceeds LogLevel nothing is returned.

@@ -460,7 +460,7 @@ func (o *Client) GetAllAgentProfiles(ctx context.Context) ([]AgentProfile, error
 	return o.getAllAgentProfiles(ctx)
 }
 
-// UpdateAgentProfile updates a Agent Profile identified by 'cfg'
+// UpdateAgentProfile updates an Agent Profile identified by 'cfg'
 func (o *Client) UpdateAgentProfile(ctx context.Context, id ObjectId, cfg *AgentProfileConfig) error {
 	return o.updateAgentProfile(ctx, id, cfg)
 }

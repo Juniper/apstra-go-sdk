@@ -57,7 +57,7 @@ func (o *AgentProfileConfig) raw() *rawAgentProfileConfig {
 // Packages is really a map, but k,v are string-joined with "==" here.
 type rawAgentProfileConfig struct {
 	Label       string            `json:"label"`
-	Username    string            `json:"username,omitempty"`
+	Username    string            `json:"username,omitempty""`
 	Password    string            `json:"password,omitempty"`
 	Platform    string            `json:"platform,omitempty"`
 	Packages    rawAgentPackages  `json:"packages"`

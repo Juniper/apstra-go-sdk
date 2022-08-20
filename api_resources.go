@@ -62,7 +62,7 @@ type newAsnRange struct {
 	Last  uint32 `json:"last"`
 }
 
-// rawAsnPool is contains some clunky types (integers as strings, etc), is
+// rawAsnPool contains some clunky types (integers as strings, etc.), is
 // cleaned up into an AsnPool before being presented to callers
 type rawAsnPool struct {
 	Status         string        `json:"status"`
@@ -77,7 +77,7 @@ type rawAsnPool struct {
 	Id             ObjectId      `json:"id"`
 }
 
-// rawAsnRange is contains some clunky types (integers as strings, etc), is
+// rawAsnRange contains some clunky types (integers as strings, etc.), is
 // cleaned up into an AsnPool before being presented to callers
 type rawAsnRange struct {
 	Status         string  `json:"status"`
