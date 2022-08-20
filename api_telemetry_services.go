@@ -22,7 +22,7 @@ type GetTelemetryServiceMappingResult struct {
 	EnablingError []TelemetryServiceMapping `json:"enabling_error"`
 }
 
-func (o Client) GetTelemetryServicesDeviceMapping(ctx context.Context) (*GetTelemetryServiceMappingResult, error) {
+func (o *Client) GetTelemetryServicesDeviceMapping(ctx context.Context) (*GetTelemetryServiceMappingResult, error) {
 	apstraUrl, err := url.Parse(apiUrlTelemetryServices)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlTelemetryServices, err)
