@@ -3,7 +3,6 @@ package goapstra
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"log"
 	"testing"
 )
@@ -23,10 +22,6 @@ const (
       ]
     }`
 )
-
-func (o *mockApstraApi) createVirtualInfraMgrs() error {
-	return json.Unmarshal([]byte(mockVirtualInfraMgrInfo), o.virtualIfraMgrs)
-}
 
 func TestGetVirtualInfraMgrs(t *testing.T) {
 	clients, err := getTestClients()

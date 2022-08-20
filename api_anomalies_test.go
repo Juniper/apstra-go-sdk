@@ -109,13 +109,6 @@ const (
     }`
 )
 
-func (o *mockApstraApi) loadAnomalies() error {
-	for _, s := range []string{singleTypeAnomaly, mixedTypeAnomaly} {
-		o.anomalies = append(o.anomalies, s)
-	}
-	return nil
-}
-
 func TestUnpackAnomaly(t *testing.T) {
 	var a *Anomaly
 	a, err := unpackAnomaly([]byte(mixedTypeAnomaly))

@@ -82,35 +82,6 @@ const (
     ]}`
 )
 
-func (o *mockApstraApi) createMetricdb() error {
-	var err error
-
-	var metricdbClusterHealthInfo metricdbMetricResponse
-	err = json.Unmarshal([]byte(mockGetMetricdbClusterHealthAppPayload), &metricdbClusterHealthInfo)
-	if err != nil {
-		return err
-	}
-
-	var metricdbIbaInfo metricdbMetricResponse
-	o.metricdb.metrics.Items = append(o.metricdb.metrics.Items, metricdbClusterHealthInfo.Items...)
-	err = json.Unmarshal([]byte(mockGetMetricdbIbaAppPayload), &metricdbIbaInfo)
-	if err != nil {
-		return err
-	}
-	o.metricdb.metrics.Items = append(o.metricdb.metrics.Items, metricdbIbaInfo.Items...)
-
-	return nil
-}
-
-func (o *mockApstraApi) createMetricdbIbaData(blueprintId ObjectId, ibaName string, ibaId ObjectId) error {
-	o.metricdb.metrics.Items = append(o.metricdb.metrics.Items, MetricdbMetric{
-		Application: "iba",
-		Namespace:   string(blueprintId) + apiUrlPathDelim + string(ibaId),
-		Name:        ibaName,
-	})
-	return nil
-}
-
 func TestUnmarshalMockMetricdbData(t *testing.T) {
 	result := &metricdbMetricResponse{}
 	for i, s := range []string{
