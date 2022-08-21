@@ -790,6 +790,9 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 	return response.Items, nil
 }
 
+// getTemplate returns one of *TemplateRackBased, *TemplatePodBased or
+// *TemplateL3Collapsed, each of which have getType() method which should be
+// used to cast them into the correct type.
 func (o *Client) getTemplate(ctx context.Context, id ObjectId) (template, error) {
 	rtr := &rawTemplateResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
