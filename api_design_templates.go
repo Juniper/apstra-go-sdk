@@ -310,10 +310,6 @@ func (o rawTemplateResponse) unpack(in interface{}) error {
 	return err
 }
 
-type getAllTemplatesResponse struct {
-	Items []rawTemplateResponse `json:"items"`
-}
-
 type AntiAffinityPolicy struct {
 	Algorithm                string `json:"algorithm"` // heuristic
 	MaxLinksPerPort          int    `json:"max_links_per_port"`
@@ -814,7 +810,9 @@ func (o *Client) getTemplate(ctx context.Context, id ObjectId) (interface{}, err
 }
 
 func (o *Client) getAllTemplates(ctx context.Context) (map[TemplateType][]interface{}, error) {
-	response := &getAllTemplatesResponse{}
+	response := &struct {
+		Items []rawTemplateResponse `json:"items"`
+	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignTemplates,
