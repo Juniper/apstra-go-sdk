@@ -761,7 +761,7 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	}, nil
 }
 
-func polishAnyTemplate(in interface{}) (interface{}, error) {
+func polishAnyTemplate(in interface{}) (template, error) {
 	switch in.(type) {
 	case *rawTemplateRackBased:
 		return in.(*rawTemplateRackBased).polish()
@@ -790,7 +790,7 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 	return response.Items, nil
 }
 
-func (o *Client) getTemplate(ctx context.Context, id ObjectId) (interface{}, error) {
+func (o *Client) getTemplate(ctx context.Context, id ObjectId) (template, error) {
 	rtr := &rawTemplateResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
