@@ -41,7 +41,7 @@ func TestGetTemplate(t *testing.T) {
 				id = x.(*TemplateL3Collapsed).Id
 				name = x.(*TemplateL3Collapsed).DisplayName
 			}
-			log.Printf("template %s %s", id, name)
+			log.Printf("template '%s' '%s'", id, name)
 		}
 	}
 }
