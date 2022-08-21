@@ -969,7 +969,6 @@ type RackType struct {
 	LeafSwitches             []RackElementLeafSwitch
 	GenericSystems           []RackElementGenericSystem
 	AccessSwitches           []RackElementAccessSwitch
-	logicalDevices           []LogicalDevice
 }
 
 type rawRackType struct {
