@@ -9,7 +9,6 @@ import (
 )
 
 func TestGetTemplate(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
@@ -20,16 +19,30 @@ func TestGetTemplate(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		log.Printf("fetching %d templateIds...", len(templateIds))
 
-		id := templateIds[rand.Intn(len(templateIds))]
+		for _, id := range templateIds {
+			log.Printf("testing getTemplate(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
+			x, err := client.client.getTemplate(context.TODO(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		log.Printf("testing getTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		template, err := client.client.getTemplate(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
+			var id ObjectId
+			var name string
+			switch x.(template).getType() {
+			case TemplateTypeRackBased:
+				id = x.(*TemplateRackBased).Id
+				name = x.(*TemplateRackBased).DisplayName
+			case TemplateTypePodBased:
+				id = x.(*TemplatePodBased).Id
+				name = x.(*TemplatePodBased).DisplayName
+			case TemplateTypeL3Collapsed:
+				id = x.(*TemplateL3Collapsed).Id
+				name = x.(*TemplateL3Collapsed).DisplayName
+			}
+			log.Printf("template %s %s", id, name)
 		}
-		log.Println(template.(*TemplateRackBased).Type)
-		log.Println(template.(*TemplateRackBased).Id)
 	}
 }
 
@@ -43,12 +56,6 @@ func TestGetTemplateMethods(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		log.Printf("testing Login() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		err = client.client.Login(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		log.Printf("testing getAllTemplates() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		tmap, err := client.client.getAllTemplates(context.TODO())
 		if err != nil {

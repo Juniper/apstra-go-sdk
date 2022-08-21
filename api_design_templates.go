@@ -310,11 +310,6 @@ func (o rawTemplateResponse) unpack(in interface{}) error {
 	return err
 }
 
-type optionsTemplatesResponse struct {
-	Items   []ObjectId `json:"items"`
-	Methods []string   `json:"methods"`
-}
-
 type getAllTemplatesResponse struct {
 	Items []rawTemplateResponse `json:"items"`
 }
@@ -449,6 +444,10 @@ func (o rawSpine) polish() (*Spine, error) {
 	}, err
 }
 
+type template interface {
+	getType() TemplateType
+}
+
 type TemplateRackBased struct {
 	Id                     ObjectId               `json:"id"`
 	Type                   TemplateType           `json:"type"`
@@ -472,29 +471,9 @@ type TemplateRackBased struct {
 	} `json:"dhcp_service_intent"`
 }
 
-//func (o TemplateRackBased) raw() *rawTemplateRackBased {
-//	var rrt []rawRackType
-//	for _, rt := range o.RackTypes {
-//		rrt = append(rrt, *rt.raw())
-//	}
-//	return &rawTemplateRackBased{
-//		Id:                     o.Id,
-//		Type:                   o.Type.raw(),
-//		DisplayName:            o.DisplayName,
-//		Status:                 o.Status,
-//		AntiAffinityPolicy:     o.AntiAffinityPolicy,
-//		CreatedAt:              o.CreatedAt,
-//		LastModifiedAt:         o.LastModifiedAt,
-//		VirtualNetworkPolicy:   *o.VirtualNetworkPolicy.raw(),
-//		AsnAllocationPolicy:    *o.AsnAllocationPolicy.raw(),
-//		FabricAddressingPolicy: *o.FabricAddressingPolicy.raw(),
-//		Spine:                  *o.Spine.raw(),
-//		RackTypes:              rrt,
-//		RackTypeCounts:         o.RackTypeCounts,
-//		DhcpServiceIntent:      o.DhcpServiceIntent,
-//		Capability:             o.Capability.raw(),
-//	}
-//}
+func (o TemplateRackBased) getType() TemplateType {
+	return o.Type
+}
 
 type rawTemplateRackBased struct {
 	Id                     ObjectId                  `json:"id"`
@@ -622,7 +601,7 @@ type RackBasedTemplateCount struct {
 
 type TemplatePodBased struct {
 	Id                      ObjectId
-	Type                    string
+	Type                    TemplateType
 	Status                  string
 	DisplayName             string
 	AntiAffinityPolicy      AntiAffinityPolicy
@@ -635,30 +614,13 @@ type TemplatePodBased struct {
 	RackBasedTemplateCounts []RackBasedTemplateCount
 }
 
-//func (o TemplatePodBased) raw() *rawTemplatePodBased { // todo
-//	var rrbt []rawTemplateRackBased
-//	for _, rbt := range o.RackBasedTemplates {
-//		rrbt = append(rrbt, *rbt.raw())
-//	}
-//	return &rawTemplatePodBased{
-//		Id:                      o.Id,
-//		Type:                    o.Type,
-//		Status:                  o.Status,
-//		DisplayName:             o.DisplayName,
-//		AntiAffinityPolicy:      o.AntiAffinityPolicy,
-//		FabricAddressingPolicy:  *o.FabricAddressingPolicy.raw(),
-//		Superspine:              *o.Superspine.raw(),
-//		CreatedAt:               o.CreatedAt,
-//		LastModifiedAt:          o.LastModifiedAt,
-//		Capability:              o.Capability.raw(),
-//		RackBasedTemplates:      rrbt,
-//		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
-//	}
-//}
+func (o TemplatePodBased) getType() TemplateType {
+	return o.Type
+}
 
 type rawTemplatePodBased struct {
 	Id                      ObjectId                  `json:"id"`
-	Type                    string                    `json:"type"`
+	Type                    templateType              `json:"type"`
 	Status                  string                    `json:"status"`
 	DisplayName             string                    `json:"display_name"`
 	AntiAffinityPolicy      AntiAffinityPolicy        `json:"anti_affinity_policy"`
@@ -696,9 +658,13 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 		}
 		rbt = append(rbt, *polished)
 	}
+	tType, err := o.Type.parse()
+	if err != nil {
+		return nil, err
+	}
 	return &TemplatePodBased{
 		Id:                      o.Id,
-		Type:                    o.Type,
+		Type:                    TemplateType(tType),
 		Status:                  o.Status,
 		DisplayName:             o.DisplayName,
 		AntiAffinityPolicy:      o.AntiAffinityPolicy,
@@ -714,7 +680,7 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 
 type TemplateL3Collapsed struct {
 	Id                   ObjectId                  `json:"id"`
-	Type                 string                    `json:"type"`
+	Type                 TemplateType              `json:"type"`
 	Status               string                    `json:"status"`
 	DisplayName          string                    `json:"display_name"`
 	AntiAffinityPolicy   AntiAffinityPolicy        `json:"anti_affinity_policy"`
@@ -734,32 +700,13 @@ type TemplateL3Collapsed struct {
 	} `json:"dhcp_service_intent"`
 }
 
-//func (o TemplateL3Collapsed) raw() *rawTemplateL3Collapsed {
-//	var rrt []rawRackType
-//	for _, rt := range o.RackTypes {
-//		rrt = append(rrt, *rt.raw())
-//	}
-//	return &rawTemplateL3Collapsed{
-//		Id:                   o.Id,
-//		Type:                 o.Type,
-//		Status:               o.Status,
-//		DisplayName:          o.DisplayName,
-//		AntiAffinityPolicy:   o.AntiAffinityPolicy,
-//		CreatedAt:            o.CreatedAt,
-//		LastModifiedAt:       o.LastModifiedAt,
-//		RackTypes:            rrt,
-//		Capability:           o.Capability.raw(),
-//		MeshLinkSpeed:        o.MeshLinkSpeed,
-//		VirtualNetworkPolicy: *o.VirtualNetworkPolicy.raw(),
-//		MeshLinkCount:        o.MeshLinkCount,
-//		RackTypeCounts:       o.RackTypeCounts,
-//		DhcpServiceIntent:    o.DhcpServiceIntent,
-//	}
-//}
+func (o TemplateL3Collapsed) getType() TemplateType {
+	return o.Type
+}
 
 type rawTemplateL3Collapsed struct {
 	Id                   ObjectId                  `json:"id"`
-	Type                 string                    `json:"type"`
+	Type                 templateType              `json:"type"`
 	Status               string                    `json:"status"`
 	DisplayName          string                    `json:"display_name"`
 	AntiAffinityPolicy   AntiAffinityPolicy        `json:"anti_affinity_policy"`
@@ -796,9 +743,13 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	if err != nil {
 		return nil, err
 	}
+	tType, err := o.Type.parse()
+	if err != nil {
+		return nil, err
+	}
 	return &TemplateL3Collapsed{
 		Id:                   o.Id,
-		Type:                 o.Type,
+		Type:                 TemplateType(tType),
 		Status:               o.Status,
 		DisplayName:          o.DisplayName,
 		AntiAffinityPolicy:   o.AntiAffinityPolicy,
@@ -829,7 +780,9 @@ func polishAnyTemplate(in interface{}) (interface{}, error) {
 }
 
 func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
-	response := &optionsTemplatesResponse{}
+	response := &struct {
+		Items []ObjectId `json:"items"`
+	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignTemplates,
