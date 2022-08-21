@@ -445,29 +445,30 @@ type Template interface {
 }
 
 type TemplateRackBased struct {
-	Id                     ObjectId               `json:"id"`
-	Type                   TemplateType           `json:"type"`
-	DisplayName            string                 `json:"display_name"`
-	Status                 string                 `json:"status,omitempty"` // inconsistent, ok
-	AntiAffinityPolicy     AntiAffinityPolicy     `json:"anti_affinity_policy"`
-	CreatedAt              time.Time              `json:"created_at"`
-	LastModifiedAt         time.Time              `json:"last_modified_at"`
-	VirtualNetworkPolicy   VirtualNetworkPolicy   `json:"virtual_network_policy"`
-	AsnAllocationPolicy    AsnAllocationPolicy    `json:"asn_allocation_policy"`
-	FabricAddressingPolicy FabricAddressingPolicy `json:"fabric_addressing_policy"`
-	Capability             TemplateCapability     `json:"capability"`
-	Spine                  Spine                  `json:"spine"`
-	RackTypes              []RackType             `json:"rack_types"`
-	RackTypeCounts         []struct {
-		RackTypeId ObjectId `json:"rack_type_id"`
-		Count      int      `json:"count"`
-	} `json:"rack_type_counts"`
-	DhcpServiceIntent struct {
-		Active bool `json:"active"`
-	} `json:"dhcp_service_intent"`
+	Id                     ObjectId
+	Type                   TemplateType
+	DisplayName            string
+	AntiAffinityPolicy     AntiAffinityPolicy
+	CreatedAt              time.Time
+	LastModifiedAt         time.Time
+	VirtualNetworkPolicy   VirtualNetworkPolicy
+	AsnAllocationPolicy    AsnAllocationPolicy
+	FabricAddressingPolicy FabricAddressingPolicy
+	Capability             TemplateCapability
+	Spine                  Spine
+	RackTypes              []RackType
+	RackTypeCounts         []RackTypeCounts
+	DhcpServiceIntent      DhcpServiceIntent `json:"dhcp_service_intent"`
+}
+type RackTypeCounts struct {
+	RackTypeId ObjectId `json:"rack_type_id"`
+	Count      int      `json:"count"`
+}
+type DhcpServiceIntent struct {
+	Active bool `json:"active"`
 }
 
-func (o TemplateRackBased) getType() TemplateType {
+func (o *TemplateRackBased) getType() TemplateType {
 	return o.Type
 }
 
@@ -484,13 +485,8 @@ type rawTemplateRackBased struct {
 	Capability             templateCapability        `json:"capability,omitempty"`
 	Spine                  rawSpine                  `json:"spine"`
 	RackTypes              []rawRackType             `json:"rack_types"`
-	RackTypeCounts         []struct {
-		RackTypeId ObjectId `json:"rack_type_id"`
-		Count      int      `json:"count"`
-	} `json:"rack_type_counts"`
-	DhcpServiceIntent struct {
-		Active bool `json:"active"`
-	} `json:"dhcp_service_intent"`
+	RackTypeCounts         []RackTypeCounts          `json:"rack_type_counts"`
+	DhcpServiceIntent      DhcpServiceIntent         `json:"dhcp_service_intent"`
 }
 
 func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
@@ -607,7 +603,7 @@ type TemplatePodBased struct {
 	RackBasedTemplateCounts []RackBasedTemplateCount
 }
 
-func (o TemplatePodBased) getType() TemplateType {
+func (o *TemplatePodBased) getType() TemplateType {
 	return o.Type
 }
 
