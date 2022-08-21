@@ -475,7 +475,6 @@ type rawTemplateRackBased struct {
 	Id                     ObjectId                  `json:"id"`
 	Type                   templateType              `json:"type"`
 	DisplayName            string                    `json:"display_name"`
-	Status                 string                    `json:"status,omitempty"` // inconsistent, ok
 	AntiAffinityPolicy     AntiAffinityPolicy        `json:"anti_affinity_policy"`
 	CreatedAt              time.Time                 `json:"created_at"`
 	LastModifiedAt         time.Time                 `json:"last_modified_at"`
@@ -531,7 +530,6 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 		Id:                     o.Id,
 		Type:                   TemplateType(tType),
 		DisplayName:            o.DisplayName,
-		Status:                 o.Status,
 		AntiAffinityPolicy:     o.AntiAffinityPolicy,
 		CreatedAt:              o.CreatedAt,
 		LastModifiedAt:         o.LastModifiedAt,
@@ -598,7 +596,6 @@ type RackBasedTemplateCount struct {
 type TemplatePodBased struct {
 	Id                      ObjectId
 	Type                    TemplateType
-	Status                  string
 	DisplayName             string
 	AntiAffinityPolicy      AntiAffinityPolicy
 	FabricAddressingPolicy  FabricAddressingPolicy
@@ -617,7 +614,6 @@ func (o TemplatePodBased) getType() TemplateType {
 type rawTemplatePodBased struct {
 	Id                      ObjectId                  `json:"id"`
 	Type                    templateType              `json:"type"`
-	Status                  string                    `json:"status"`
 	DisplayName             string                    `json:"display_name"`
 	AntiAffinityPolicy      AntiAffinityPolicy        `json:"anti_affinity_policy"`
 	FabricAddressingPolicy  rawFabricAddressingPolicy `json:"fabric_addressing_policy"`
@@ -661,7 +657,6 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 	return &TemplatePodBased{
 		Id:                      o.Id,
 		Type:                    TemplateType(tType),
-		Status:                  o.Status,
 		DisplayName:             o.DisplayName,
 		AntiAffinityPolicy:      o.AntiAffinityPolicy,
 		FabricAddressingPolicy:  *fap,
@@ -677,7 +672,6 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 type TemplateL3Collapsed struct {
 	Id                   ObjectId                  `json:"id"`
 	Type                 TemplateType              `json:"type"`
-	Status               string                    `json:"status"`
 	DisplayName          string                    `json:"display_name"`
 	AntiAffinityPolicy   AntiAffinityPolicy        `json:"anti_affinity_policy"`
 	CreatedAt            time.Time                 `json:"created_at"`
@@ -696,14 +690,13 @@ type TemplateL3Collapsed struct {
 	} `json:"dhcp_service_intent"`
 }
 
-func (o TemplateL3Collapsed) getType() TemplateType {
+func (o *TemplateL3Collapsed) getType() TemplateType {
 	return o.Type
 }
 
 type rawTemplateL3Collapsed struct {
 	Id                   ObjectId                  `json:"id"`
 	Type                 templateType              `json:"type"`
-	Status               string                    `json:"status"`
 	DisplayName          string                    `json:"display_name"`
 	AntiAffinityPolicy   AntiAffinityPolicy        `json:"anti_affinity_policy"`
 	CreatedAt            time.Time                 `json:"created_at"`
@@ -746,7 +739,6 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	return &TemplateL3Collapsed{
 		Id:                   o.Id,
 		Type:                 TemplateType(tType),
-		Status:               o.Status,
 		DisplayName:          o.DisplayName,
 		AntiAffinityPolicy:   o.AntiAffinityPolicy,
 		CreatedAt:            o.CreatedAt,
