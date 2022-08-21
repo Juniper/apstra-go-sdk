@@ -856,7 +856,11 @@ func (o *Client) ListRackTypeIds(ctx context.Context) ([]ObjectId, error) {
 
 // GetRackType returns *RackType detailing the rack type identified by id.
 func (o *Client) GetRackType(ctx context.Context, id ObjectId) (*RackType, error) {
-	return o.getRackType(ctx, id)
+	rt, err := o.getRackType(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return rt.polish()
 }
 
 // GetAllRackTypes returns []RackType representing all rack types configured

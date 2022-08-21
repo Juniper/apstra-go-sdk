@@ -23,7 +23,7 @@ func TestListGetOneRackType(t *testing.T) {
 		_ = rtIds
 
 		log.Printf("testing getRackType() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		rt, err := client.client.getRackType(context.TODO(), rtIds[0])
+		rt, err := client.client.GetRackType(context.TODO(), rtIds[0])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -48,7 +48,7 @@ func TestListGetAllGetRackType(t *testing.T) {
 
 		for _, id := range rackTypeIds {
 			log.Printf("testing getRackType(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
-			rt, err := client.client.getRackType(context.TODO(), id)
+			rt, err := client.client.GetRackType(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -68,7 +68,7 @@ func TestListGetAllGetRackType(t *testing.T) {
 		rand.Seed(time.Now().UnixNano())
 		randRackid := rackTypeIds[rand.Intn(len(rackTypeIds))]
 		log.Printf("testing getRackType() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		rt, err := client.client.getRackType(context.TODO(), randRackid)
+		rt, err := client.client.GetRackType(context.TODO(), randRackid)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -1058,7 +1058,7 @@ func (o *Client) listRackTypeIds(ctx context.Context) ([]ObjectId, error) {
 	return response.Items, nil
 }
 
-func (o *Client) getRackType(ctx context.Context, id ObjectId) (*RackType, error) {
+func (o *Client) getRackType(ctx context.Context, id ObjectId) (*rawRackType, error) {
 	response := &rawRackType{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -1069,7 +1069,7 @@ func (o *Client) getRackType(ctx context.Context, id ObjectId) (*RackType, error
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	return response.polish()
+	return response, nil
 }
 
 func (o *Client) getAllRackTypes(ctx context.Context) ([]RackType, error) {
