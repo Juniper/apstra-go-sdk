@@ -440,7 +440,7 @@ func (o rawSpine) polish() (*Spine, error) {
 	}, err
 }
 
-type template interface {
+type Template interface {
 	getType() TemplateType
 }
 
@@ -761,7 +761,7 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	}, nil
 }
 
-func polishAnyTemplate(in interface{}) (template, error) {
+func polishAnyTemplate(in interface{}) (Template, error) {
 	switch in.(type) {
 	case *rawTemplateRackBased:
 		return in.(*rawTemplateRackBased).polish()
@@ -793,7 +793,7 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 // getTemplate returns one of *TemplateRackBased, *TemplatePodBased or
 // *TemplateL3Collapsed, each of which have getType() method which should be
 // used to cast them into the correct type.
-func (o *Client) getTemplate(ctx context.Context, id ObjectId) (template, error) {
+func (o *Client) getTemplate(ctx context.Context, id ObjectId) (Template, error) {
 	rtr := &rawTemplateResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,

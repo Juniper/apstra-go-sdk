@@ -30,7 +30,7 @@ func TestGetTemplate(t *testing.T) {
 
 			var id ObjectId
 			var name string
-			switch x.(template).getType() {
+			switch x.(Template).getType() {
 			case TemplateTypeRackBased:
 				id = x.(*TemplateRackBased).Id
 				name = x.(*TemplateRackBased).DisplayName
