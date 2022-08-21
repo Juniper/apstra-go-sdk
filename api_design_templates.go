@@ -785,7 +785,7 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response.Items, nil
 }
@@ -798,7 +798,7 @@ func (o *Client) getTemplate(ctx context.Context, id ObjectId) (interface{}, err
 		apiResponse: rtr,
 	})
 	if err != nil {
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	raw, err := rtr.parse()
@@ -819,7 +819,7 @@ func (o *Client) getAllTemplates(ctx context.Context) (map[TemplateType][]interf
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	var rackBasedTemplates []interface{}
