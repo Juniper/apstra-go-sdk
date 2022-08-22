@@ -510,16 +510,29 @@ func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSw
 		tags = append(tags, *tag)
 	}
 
+	var leafLeafL3LinkSpeed LogicalDevicePortSpeed
+	if o.LeafLeafL3LinkSpeed != nil {
+		leafLeafL3LinkSpeed = o.LeafLeafL3LinkSpeed.parse()
+	}
+	var leafLeafLinkSpeed LogicalDevicePortSpeed
+	if o.LeafLeafLinkSpeed != nil {
+		leafLeafLinkSpeed = o.LeafLeafLinkSpeed.parse()
+	}
+	var linkPerSpineSpeed LogicalDevicePortSpeed
+	if o.LinkPerSpineSpeed != nil {
+		linkPerSpineSpeed = o.LinkPerSpineSpeed.parse()
+	}
+
 	result := &RackElementLeafSwitch{
 		Label:                       o.Label,
 		LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
 		LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
-		LeafLeafL3LinkSpeed:         o.LeafLeafL3LinkSpeed.parse(),
+		LeafLeafL3LinkSpeed:         leafLeafL3LinkSpeed,
 		LeafLeafLinkCount:           o.LeafLeafLinkCount,
 		LeafLeafLinkPortChannelId:   o.LeafLeafLinkPortChannelId,
-		LeafLeafLinkSpeed:           o.LeafLeafLinkSpeed.parse(),
+		LeafLeafLinkSpeed:           leafLeafLinkSpeed,
 		LinkPerSpineCount:           o.LinkPerSpineCount,
-		LinkPerSpineSpeed:           o.LinkPerSpineSpeed.parse(),
+		LinkPerSpineSpeed:           linkPerSpineSpeed,
 		MlagVlanId:                  o.MlagVlanId,
 		RedundancyProtocol:          LeafRedundancyProtocol(rp),
 		Panels:                      pld.Panels,
@@ -619,6 +632,11 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 		tags = append(tags, *tag)
 	}
 
+	var accessAccessLinkSpeed LogicalDevicePortSpeed
+	if o.AccessAccessLinkSpeed != nil {
+		accessAccessLinkSpeed = o.AccessAccessLinkSpeed.parse()
+	}
+
 	return &RackElementAccessSwitch{
 		InstanceCount:         o.InstanceCount,
 		RedundancyProtocol:    AccessRedundancyProtocol(rp),
@@ -627,7 +645,7 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 		Panels:                pld.Panels,
 		DisplayName:           pld.DisplayName,
 		AccessAccessLinkCount: o.AccessAccessLinkCount,
-		AccessAccessLinkSpeed: o.AccessAccessLinkSpeed.parse(),
+		AccessAccessLinkSpeed: accessAccessLinkSpeed,
 		Tags:                  tags,
 	}, nil
 }
