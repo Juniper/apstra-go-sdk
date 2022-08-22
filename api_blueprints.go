@@ -389,7 +389,7 @@ func (o *LockInfo) raw() *rawLockInfo {
 	}
 }
 
-func (o *Client) getBlueprintLockLockInfo(ctx context.Context, id ObjectId) (*LockInfo, error) {
+func (o *Client) getBlueprintLockInfo(ctx context.Context, id ObjectId) (*LockInfo, error) {
 	response := &rawLockInfo{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,

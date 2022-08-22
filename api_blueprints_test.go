@@ -59,7 +59,10 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 			Label:      name,
 			TemplateId: "L2_Virtual_EVPN",
 		})
-
+		if err != nil {
+			log.Fatal(err)
+		}
+		
 		log.Printf("got id '%s', deleting blueprint...\n", id)
 		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = client.client.deleteBlueprint(context.TODO(), id)
@@ -145,6 +148,38 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 				t.Fatal(err)
 			}
 			log.Printf("response indicates name changed '%s' -> '%s'", newName, resp.Label)
+		}
+	}
+}
+
+func TestGetLockInfo(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, client := range clients {
+		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		name := randString(10, "hex")
+		id, err := client.client.createBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplate{
+			RefDesign:  RefDesignDatacenter,
+			Label:      name,
+			TemplateId: "L2_Virtual_EVPN",
+		})	
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		l, err := client.client.getBlueprintLockInfo(context.TODO(), id)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(l)
+		log.Printf("got id '%s', deleting blueprint...\n", id)
+		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		err = client.client.deleteBlueprint(context.TODO(), id)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 }
