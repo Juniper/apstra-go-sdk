@@ -87,7 +87,7 @@ func TestGetTemplate(t *testing.T) {
 
 			var id ObjectId
 			var name string
-			switch x.(Template).getType() {
+			switch x.getType() {
 			case TemplateTypeRackBased:
 				id = x.(*TemplateRackBased).Id
 				name = x.(*TemplateRackBased).DisplayName
@@ -114,23 +114,12 @@ func TestGetTemplateMethods(t *testing.T) {
 
 	for _, client := range clients {
 		log.Printf("testing getAllTemplates() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		tmap, err := client.client.getAllTemplates(context.TODO())
+		templates, err := client.client.getAllTemplates(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		keys := make([]TemplateType, len(tmap))
-		templateCount := make([]int, len(tmap))
-		i := 0
-		for k, v := range tmap {
-			keys[i] = k
-			templateCount[i] = len(v)
-			i++
-		}
-
-		for i := 0; i < len(tmap); i++ {
-			log.Printf("  %s template map has %d elements: ", keys[i].String(), templateCount[i])
-		}
+		log.Printf("got %d templates", len(templates))
 
 		// rack-based templates
 		log.Printf("testing getAllRackBasedTemplates() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())

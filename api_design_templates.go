@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"reflect"
 	"time"
 )
 
@@ -360,48 +359,6 @@ func (o templateCapability) parse() (int, error) {
 	}
 }
 
-type rawTemplateResponse map[string]interface{}
-
-func (o rawTemplateResponse) getType() (templateType, bool) {
-	if t, ok := o[templateResponseTypeField]; ok {
-		return templateType(t.(string)), true
-	}
-	return "", false
-}
-
-func (o rawTemplateResponse) parse() (interface{}, error) {
-	t, ok := o.getType()
-	if !ok {
-		return nil, fmt.Errorf("unable to determine template type")
-	}
-
-	switch t {
-	case templateTypeRackBased:
-		raw := &rawTemplateRackBased{}
-		return raw, o.unpack(raw)
-	case templateTypePodBased:
-		raw := &rawTemplatePodBased{}
-		return raw, o.unpack(raw)
-		//return nil, fmt.Errorf(msgTemplateNotImplemented, t)
-	case templateTypeL3Collapsed:
-		raw := &rawTemplateL3Collapsed{}
-		return raw, o.unpack(raw)
-		//return nil, fmt.Errorf(msgTemplateNotImplemented, t)
-	default:
-		return nil, fmt.Errorf(TemplateTypeUnknown, t)
-	}
-
-}
-
-func (o rawTemplateResponse) unpack(in interface{}) error {
-	b, err := json.Marshal(o)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(b, in)
-	return err
-}
-
 type AntiAffinityPolicy struct {
 	Algorithm                AntiAffninityAlgorithm
 	MaxLinksPerPort          int
@@ -423,7 +380,7 @@ func (o *AntiAffinityPolicy) raw() *rawAntiAffinityPolicy {
 }
 
 type rawAntiAffinityPolicy struct {
-	Algorithm                antiAffinityAlgorithm `json:"antiAffinityAlgorithm"` // heuristic
+	Algorithm                antiAffinityAlgorithm `json:"algorithm"` // heuristic
 	MaxLinksPerPort          int                   `json:"max_links_per_port"`
 	MaxLinksPerSlot          int                   `json:"max_links_per_slot"`
 	MaxPerSystemLinksPerPort int                   `json:"max_per_system_links_per_port"`
@@ -920,20 +877,6 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	}, nil
 }
 
-func polishAnyTemplate(in interface{}) (Template, error) {
-	switch in.(type) {
-	case *rawTemplateRackBased:
-		return in.(*rawTemplateRackBased).polish()
-	case *rawTemplatePodBased:
-		polished, err := in.(*rawTemplatePodBased).polish()
-		return polished, err
-	case *rawTemplateL3Collapsed:
-		return in.(*rawTemplateL3Collapsed).polish()
-	default:
-		return nil, fmt.Errorf("unknown raw template type '%s'", reflect.TypeOf(in))
-	}
-}
-
 func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 	response := &struct {
 		Items []ObjectId `json:"items"`
@@ -949,31 +892,63 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 	return response.Items, nil
 }
 
+func rawTemplateToTemplate(in json.RawMessage) (Template, error) {
+	// quick unmarshal just to get the type
+	templateProto := &struct {
+		Type templateType `json:"type"`
+	}{}
+	err := json.Unmarshal(in, templateProto)
+	if err != nil {
+		return nil, err
+	}
+
+	// quick unmarshal just to get the type
+	switch templateProto.Type {
+	case templateTypeRackBased:
+		var t rawTemplateRackBased
+		err = json.Unmarshal(in, &t)
+		if err != nil {
+			return nil, err
+		}
+		return t.polish()
+	case templateTypePodBased:
+		var t rawTemplatePodBased
+		err = json.Unmarshal(in, &t)
+		if err != nil {
+			return nil, err
+		}
+		return t.polish()
+	case templateTypeL3Collapsed:
+		var t rawTemplateL3Collapsed
+		err = json.Unmarshal(in, &t)
+		if err != nil {
+			return nil, err
+		}
+		return t.polish()
+	}
+	return nil, fmt.Errorf(TemplateTypeUnknown, templateProto.Type)
+}
+
 // getTemplate returns one of *TemplateRackBased, *TemplatePodBased or
 // *TemplateL3Collapsed, each of which have getType() method which should be
 // used to cast them into the correct type.
 func (o *Client) getTemplate(ctx context.Context, id ObjectId) (Template, error) {
-	rtr := &rawTemplateResponse{}
+	response := &json.RawMessage{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
-		apiResponse: rtr,
+		apiResponse: response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	raw, err := rtr.parse()
-	if err != nil {
-		return nil, err
-	}
-
-	return polishAnyTemplate(raw)
+	return rawTemplateToTemplate(*response)
 }
 
-func (o *Client) getAllTemplates(ctx context.Context) (map[TemplateType][]interface{}, error) {
+func (o *Client) getAllTemplates(ctx context.Context) ([]Template, error) {
 	response := &struct {
-		Items []rawTemplateResponse `json:"items"`
+		Items []json.RawMessage `json:"items"`
 	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -984,67 +959,36 @@ func (o *Client) getAllTemplates(ctx context.Context) (map[TemplateType][]interf
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	var rackBasedTemplates []interface{}
-	var podBasedTemplates []interface{}
-	var l3CollapsedTemplates []interface{}
-
-	for _, rtr := range response.Items {
-		var tType interface{}
-		var ok bool
-		if tType, ok = rtr[templateResponseTypeField]; !ok {
-			return nil, fmt.Errorf("no template type in response")
-		}
-		switch tType {
-		case string(templateTypeRackBased):
-		case string(templateTypePodBased):
-		case string(templateTypeL3Collapsed):
-		default:
-			return nil, fmt.Errorf("unknown template type '%s'", tType)
-		}
-
-		raw, err := rtr.parse()
+	result := make([]Template, len(response.Items))
+	for i, raw := range response.Items {
+		t, err := rawTemplateToTemplate(raw)
 		if err != nil {
 			return nil, err
 		}
-
-		polished, err := polishAnyTemplate(raw)
-		if err != nil {
-			return nil, err
-		}
-		switch polished.(type) {
-		case *TemplateRackBased:
-			rackBasedTemplates = append(rackBasedTemplates, *polished.(*TemplateRackBased))
-		case *TemplatePodBased:
-			podBasedTemplates = append(podBasedTemplates, *polished.(*TemplatePodBased))
-		case *TemplateL3Collapsed:
-			l3CollapsedTemplates = append(l3CollapsedTemplates, *polished.(*TemplateL3Collapsed))
-		default:
-			return nil, fmt.Errorf("unknown template type '%s'", reflect.TypeOf(polished))
-		}
-
+		result[i] = t
 	}
-
-	return map[TemplateType][]interface{}{
-		TemplateTypeRackBased:   rackBasedTemplates,
-		TemplateTypePodBased:    podBasedTemplates,
-		TemplateTypeL3Collapsed: l3CollapsedTemplates,
-	}, nil
+	return result, nil
 }
 
 func (o *Client) getRackBasedTemplate(ctx context.Context, id ObjectId) (*TemplateRackBased, error) {
 	template, err := o.getTemplate(ctx, id)
+	if template.getType() != TemplateTypeRackBased {
+		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, template.getType(), TemplateTypeRackBased)
+	}
 	return template.(*TemplateRackBased), err
 }
 
 func (o *Client) getAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBased, error) {
-	tMap, err := o.getAllTemplates(ctx)
+	templates, err := o.getAllTemplates(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]TemplateRackBased, len(tMap[TemplateTypeRackBased]))
-	for i, t := range tMap[TemplateTypeRackBased] {
-		result[i] = t.(TemplateRackBased)
+	var result []TemplateRackBased
+	for _, t := range templates {
+		if t.getType() == TemplateTypeRackBased {
+			result = append(result, *t.(*TemplateRackBased))
+		}
 	}
 
 	return result, nil
@@ -1052,18 +996,23 @@ func (o *Client) getAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBa
 
 func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*TemplatePodBased, error) {
 	template, err := o.getTemplate(ctx, id)
+	if template.getType() != TemplateTypePodBased {
+		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, template.getType(), TemplateTypePodBased)
+	}
 	return template.(*TemplatePodBased), err
 }
 
 func (o *Client) getAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBased, error) {
-	tMap, err := o.getAllTemplates(ctx)
+	templates, err := o.getAllTemplates(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]TemplatePodBased, len(tMap[TemplateTypePodBased]))
-	for i, t := range tMap[TemplateTypePodBased] {
-		result[i] = t.(TemplatePodBased)
+	var result []TemplatePodBased
+	for _, t := range templates {
+		if t.getType() == TemplateTypePodBased {
+			result = append(result, *t.(*TemplatePodBased))
+		}
 	}
 
 	return result, nil
@@ -1071,18 +1020,23 @@ func (o *Client) getAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBase
 
 func (o *Client) getL3CollapsedTemplate(ctx context.Context, id ObjectId) (*TemplateL3Collapsed, error) {
 	template, err := o.getTemplate(ctx, id)
+	if template.getType() != TemplateTypeL3Collapsed {
+		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, template.getType(), TemplateTypeL3Collapsed)
+	}
 	return template.(*TemplateL3Collapsed), err
 }
 
 func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Collapsed, error) {
-	tMap, err := o.getAllTemplates(ctx)
+	templates, err := o.getAllTemplates(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]TemplateL3Collapsed, len(tMap[TemplateTypeL3Collapsed]))
-	for i, t := range tMap[TemplateTypeL3Collapsed] {
-		result[i] = t.(TemplateL3Collapsed)
+	var result []TemplateL3Collapsed
+	for _, t := range templates {
+		if t.getType() == TemplateTypeL3Collapsed {
+			result = append(result, *t.(*TemplateL3Collapsed))
+		}
 	}
 
 	return result, nil

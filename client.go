@@ -740,12 +740,12 @@ func (o *Client) ListAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllTemplateIds(ctx)
 }
 
-// GetAllTemplates returns map[TemplateType][]interface{} where each element
+// GetAllTemplates returns []Template where each element
 // is one of these:
-//   []TemplateRackBased
-//   []TemplatePodBased
-//   []TemplateL3Collapsed
-func (o *Client) GetAllTemplates(ctx context.Context) (map[TemplateType][]interface{}, error) {
+//   TemplateRackBased
+//   TemplatePodBased
+//   TemplateL3Collapsed
+func (o *Client) GetAllTemplates(ctx context.Context) ([]Template, error) {
 	return o.getAllTemplates(ctx)
 }
 
