@@ -105,7 +105,7 @@ func TestGetTemplate(t *testing.T) {
 
 func TestGetTemplateMethods(t *testing.T) {
 	var n int
-	rand.Seed(time.Now().UTC().UnixNano())
+	rand.Seed(time.Now().UnixNano())
 
 	clients, err := getTestClients()
 	if err != nil {
