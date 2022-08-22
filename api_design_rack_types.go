@@ -749,11 +749,16 @@ func (o rawRackLink) polish(rack *rawRackType) (*RackLink, error) {
 		tags = append(tags, *tag)
 	}
 
+	var linkSpeed LogicalDevicePortSpeed
+	if o.LinkSpeed != nil {
+		linkSpeed = o.LinkSpeed.parse()
+	}
+
 	return &RackLink{
 		Label:              o.Label,
 		Tags:               tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
-		LinkSpeed:          o.LinkSpeed.parse(),
+		LinkSpeed:          linkSpeed,
 		TargetSwitchLabel:  o.TargetSwitchLabel,
 		AttachmentType:     RackLinkAttachmentType(attachment),
 		LagMode:            RackLinkLagMode(lagMode),
