@@ -131,11 +131,16 @@ func (o *cloudlabsTopology) getGoapstraClient() (*Client, error) {
 		}
 	}
 
+	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+
 	klw, err := keyLogWriterFromEnv(EnvApstraApiKeyLogFile)
 	if err != nil {
 		return nil, err
 	}
-	tlsConfig := &tls.Config{InsecureSkipVerify: true, KeyLogWriter: klw}
+	if klw != nil {
+		tlsConfig.KeyLogWriter = klw
+	}
+
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}
 
 	access, err := o.getVmAccessInfo("aos-vm1", "https")
