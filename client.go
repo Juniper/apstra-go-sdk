@@ -667,7 +667,11 @@ func (o *Client) ListLogicalDeviceIds(ctx context.Context) ([]ObjectId, error) {
 
 // GetLogicalDevice returns the requested *LogicalDevice
 func (o *Client) GetLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDevice, error) {
-	return o.getLogicalDevice(ctx, id)
+	logicalDevice, err := o.getLogicalDevice(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return logicalDevice.polish()
 }
 
 // GetLogicalDeviceByName returns *LogicalDevice matching name if exactly one

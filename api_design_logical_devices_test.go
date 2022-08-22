@@ -79,8 +79,8 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 			t.Fatalf("only got %d ids", len(ids))
 		}
 		for _, id := range ids {
-			log.Printf("testing getLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-			ld, err := client.client.getLogicalDevice(context.TODO(), id)
+			log.Printf("testing GetLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			ld, err := client.client.GetLogicalDevice(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -135,8 +135,8 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			log.Printf("testing getLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-			d, err := client.client.getLogicalDevice(context.TODO(), id[i])
+			log.Printf("testing GetLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			d, err := client.client.GetLogicalDevice(context.TODO(), id[i])
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -150,8 +150,8 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 			}
 
 			if i > 0 {
-				log.Printf("testing getLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-				previous, err := client.client.getLogicalDevice(context.TODO(), id[i-1])
+				log.Printf("testing GetLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+				previous, err := client.client.GetLogicalDevice(context.TODO(), id[i-1])
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -163,8 +163,8 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 				}
 			}
 
-			log.Printf("testing getLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-			_, err = client.client.getLogicalDevice(context.TODO(), id[i])
+			log.Printf("testing GetLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			_, err = client.client.GetLogicalDevice(context.TODO(), id[i])
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -221,8 +221,8 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 		}
 
 		for _, test := range logicalDevices {
-			log.Printf("testing getLogicalDeviceByName() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-			logicalDevice, err := client.client.getLogicalDeviceByName(context.TODO(), test.DisplayName)
+			log.Printf("testing GetLogicalDeviceByName() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			logicalDevice, err := client.client.GetLogicalDeviceByName(context.TODO(), test.DisplayName)
 			var ace ApstraClientErr
 			if err != nil {
 				if !(errors.As(err, &ace) && ace.Type() == ErrMultipleMatch) {

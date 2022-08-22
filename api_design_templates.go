@@ -476,6 +476,16 @@ func (o *rawFabricAddressingPolicy) polish() (*FabricAddressingPolicy, error) {
 	}, nil
 }
 
+type RackTypeCounts struct {
+	RackTypeId ObjectId `json:"rack_type_id"`
+	Count      int      `json:"count"`
+}
+
+type RackBasedTemplateCounts struct {
+	RackBasedTemplateId ObjectId `json:"rack_based_template_id"`
+	Count               int      `json:"count"`
+}
+
 type Spine struct {
 	Count                   int
 	ExternalLinkSpeed       LogicalDevicePortSpeed
@@ -501,7 +511,7 @@ type TemplateElementSpineRequest struct {
 }
 
 func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (*rawSpine, error) {
-	logicalDevice, err := client.GetLogicalDevice(ctx, o.LogicalDevice)
+	logicalDevice, err := client.getLogicalDevice(ctx, o.LogicalDevice)
 	if err != nil {
 		return nil, err
 	}
@@ -517,9 +527,9 @@ func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (
 
 	return &rawSpine{
 		Count:                   o.Count,
-		ExternalLinkSpeed:       *o.ExternalLinkSpeed.raw(),
-		LinkPerSuperspineSpeed:  *o.LinkPerSuperspineSpeed.raw(),
-		LogicalDevice:           logicalDevice.raw(),
+		ExternalLinkSpeed:       o.ExternalLinkSpeed.raw(),
+		LinkPerSuperspineSpeed:  o.LinkPerSuperspineSpeed.raw(),
+		LogicalDevice:           *logicalDevice,
 		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
 		Tags:                    tags,
 		ExternalLinksPerNode:    o.ExternalLinksPerNode,
@@ -529,23 +539,34 @@ func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (
 }
 
 type rawSpine struct {
-	Count                   int                       `json:"count"`
-	ExternalLinkSpeed       rawLogicalDevicePortSpeed `json:"external_link_speed"`
-	LinkPerSuperspineSpeed  rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
-	LogicalDevice           *rawLogicalDevice         `json:"logical_device"`
-	LinkPerSuperspineCount  int                       `json:"link_per_superspine_count"`
-	Tags                    []DesignTag               `json:"tags"`
-	ExternalLinksPerNode    int                       `json:"external_links_per_node"`
-	ExternalFacingNodeCount int                       `json:"external_facing_node_count"`
-	ExternalLinkCount       int                       `json:"external_link_count"`
+	Count                   int                        `json:"count"`
+	ExternalLinkSpeed       *rawLogicalDevicePortSpeed `json:"external_link_speed"`
+	LinkPerSuperspineSpeed  *rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
+	LogicalDevice           rawLogicalDevice           `json:"logical_device"`
+	LinkPerSuperspineCount  int                        `json:"link_per_superspine_count"`
+	Tags                    []DesignTag                `json:"tags"`
+	ExternalLinksPerNode    int                        `json:"external_links_per_node"`
+	ExternalFacingNodeCount int                        `json:"external_facing_node_count"`
+	ExternalLinkCount       int                        `json:"external_link_count"`
 }
 
 func (o rawSpine) polish() (*Spine, error) {
 	ld, err := o.LogicalDevice.polish()
+
+	var externalLinkSpeed LogicalDevicePortSpeed
+	if o.ExternalLinkSpeed != nil {
+		externalLinkSpeed = o.ExternalLinkSpeed.parse()
+	}
+
+	var linkPerSuperspineSpeed LogicalDevicePortSpeed
+	if o.LinkPerSuperspineSpeed != nil {
+		linkPerSuperspineSpeed = o.LinkPerSuperspineSpeed.parse()
+	}
+
 	return &Spine{
 		Count:                   o.Count,
-		ExternalLinkSpeed:       o.ExternalLinkSpeed.parse(),
-		LinkPerSuperspineSpeed:  o.LinkPerSuperspineSpeed.parse(),
+		ExternalLinkSpeed:       externalLinkSpeed,
+		LinkPerSuperspineSpeed:  linkPerSuperspineSpeed,
 		LogicalDevice:           *ld,
 		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
 		Tags:                    o.Tags,
@@ -553,6 +574,83 @@ func (o rawSpine) polish() (*Spine, error) {
 		ExternalFacingNodeCount: o.ExternalFacingNodeCount,
 		ExternalLinkCount:       o.ExternalLinkCount,
 	}, err
+}
+
+// type Spine struct {}
+// type TemplateElementSpineRequest struct {}
+// func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (*rawSpine, error) {}
+// type rawSpine struct {}
+// func (o rawSpine) polish() (*Spine, error) {}
+
+type Superspine struct {
+	PlaneCount         int
+	ExternalLinkCount  int
+	ExternalLinkSpeed  LogicalDevicePortSpeed
+	Tags               []DesignTag
+	SuperspinePerPlane int
+	LogicalDevice      LogicalDevice
+}
+
+type TemplateElementSuperspineRequest struct {
+	PlaneCount         int
+	ExternalLinkCount  int
+	ExternalLinkSpeed  LogicalDevicePortSpeed
+	Tags               []TagLabel
+	SuperspinePerPlane int
+	LogicalDevice      ObjectId
+}
+
+func (o *TemplateElementSuperspineRequest) raw(ctx context.Context, client *Client) (*rawSuperspine, error) {
+	tags := make([]DesignTag, len(o.Tags))
+	for i, label := range o.Tags {
+		tag, err := client.getTagByLabel(ctx, label)
+		if err != nil {
+			return nil, err
+		}
+		tags[i] = *tag
+	}
+
+	logicalDevice, err := client.getLogicalDevice(ctx, o.LogicalDevice)
+	if err != nil {
+		return nil, err
+	}
+
+	return &rawSuperspine{
+		PlaneCount:         o.PlaneCount,
+		ExternalLinkCount:  o.ExternalLinkCount,
+		ExternalLinkSpeed:  o.ExternalLinkSpeed.raw(),
+		Tags:               tags,
+		SuperspinePerPlane: o.SuperspinePerPlane,
+		LogicalDevice:      *logicalDevice,
+	}, nil
+}
+
+type rawSuperspine struct {
+	PlaneCount         int                        `json:"plane_count"`
+	ExternalLinkCount  int                        `json:"external_link_count"`
+	ExternalLinkSpeed  *rawLogicalDevicePortSpeed `json:"external_link_speed"`
+	Tags               []DesignTag                `json:"tags"`
+	SuperspinePerPlane int                        `json:"superspine_per_plane"`
+	LogicalDevice      rawLogicalDevice           `json:"logical_device"`
+}
+
+func (o rawSuperspine) polish() (*Superspine, error) {
+	ld, err := o.LogicalDevice.polish()
+	if err != nil {
+		return nil, err
+	}
+	var externalLinkSpeed LogicalDevicePortSpeed
+	if o.ExternalLinkSpeed != nil {
+		externalLinkSpeed = o.ExternalLinkSpeed.parse()
+	}
+	return &Superspine{
+		PlaneCount:         o.PlaneCount,
+		ExternalLinkCount:  o.ExternalLinkCount,
+		ExternalLinkSpeed:  externalLinkSpeed,
+		Tags:               o.Tags,
+		SuperspinePerPlane: o.SuperspinePerPlane,
+		LogicalDevice:      *ld,
+	}, nil
 }
 
 type Template interface {
@@ -575,10 +673,7 @@ type TemplateRackBased struct {
 	RackTypeCounts         []RackTypeCounts
 	DhcpServiceIntent      DhcpServiceIntent `json:"dhcp_service_intent"`
 }
-type RackTypeCounts struct {
-	RackTypeId ObjectId `json:"rack_type_id"`
-	Count      int      `json:"count"`
-}
+
 type DhcpServiceIntent struct {
 	Active bool `json:"active"`
 }
@@ -660,48 +755,15 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 	}, nil
 }
 
-type Superspine struct {
-	PlaneCount         int
-	ExternalLinkCount  int
-	ExternalLinkSpeed  rawLogicalDevicePortSpeed
-	Tags               []DesignTag
-	SuperspinePerPlane int
-	LogicalDevice      LogicalDevice
-}
-
 func (o Superspine) raw() *rawSuperspine {
 	return &rawSuperspine{
 		PlaneCount:         o.PlaneCount,
 		ExternalLinkCount:  o.ExternalLinkCount,
-		ExternalLinkSpeed:  o.ExternalLinkSpeed,
+		ExternalLinkSpeed:  o.ExternalLinkSpeed.raw(),
 		Tags:               o.Tags,
 		SuperspinePerPlane: o.SuperspinePerPlane,
 		LogicalDevice:      *o.LogicalDevice.raw(),
 	}
-}
-
-type rawSuperspine struct {
-	PlaneCount         int                       `json:"plane_count"`
-	ExternalLinkCount  int                       `json:"external_link_count"`
-	ExternalLinkSpeed  rawLogicalDevicePortSpeed `json:"external_link_speed"`
-	Tags               []DesignTag               `json:"tags"`
-	SuperspinePerPlane int                       `json:"superspine_per_plane"`
-	LogicalDevice      rawLogicalDevice          `json:"logical_device"`
-}
-
-func (o rawSuperspine) polish() (*Superspine, error) {
-	ld, err := o.LogicalDevice.polish()
-	if err != nil {
-		return nil, err
-	}
-	return &Superspine{
-		PlaneCount:         o.PlaneCount,
-		ExternalLinkCount:  o.ExternalLinkCount,
-		ExternalLinkSpeed:  o.ExternalLinkSpeed,
-		Tags:               o.Tags,
-		SuperspinePerPlane: o.SuperspinePerPlane,
-		LogicalDevice:      *ld,
-	}, nil
 }
 
 type RackBasedTemplateCount struct {
@@ -790,17 +852,17 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 }
 
 type TemplateL3Collapsed struct {
-	Id                   ObjectId                  `json:"id"`
-	Type                 TemplateType              `json:"type"`
-	DisplayName          string                    `json:"display_name"`
-	AntiAffinityPolicy   AntiAffinityPolicy        `json:"anti_affinity_policy"`
-	CreatedAt            time.Time                 `json:"created_at"`
-	LastModifiedAt       time.Time                 `json:"last_modified_at"`
-	RackTypes            []RackType                `json:"rack_types"`
-	Capability           TemplateCapability        `json:"capability"`
-	MeshLinkSpeed        rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
-	VirtualNetworkPolicy VirtualNetworkPolicy      `json:"virtual_network_policy"`
-	MeshLinkCount        int                       `json:"mesh_link_count"`
+	Id                   ObjectId                   `json:"id"`
+	Type                 TemplateType               `json:"type"`
+	DisplayName          string                     `json:"display_name"`
+	AntiAffinityPolicy   AntiAffinityPolicy         `json:"anti_affinity_policy"`
+	CreatedAt            time.Time                  `json:"created_at"`
+	LastModifiedAt       time.Time                  `json:"last_modified_at"`
+	RackTypes            []RackType                 `json:"rack_types"`
+	Capability           TemplateCapability         `json:"capability"`
+	MeshLinkSpeed        *rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
+	VirtualNetworkPolicy VirtualNetworkPolicy       `json:"virtual_network_policy"`
+	MeshLinkCount        int                        `json:"mesh_link_count"`
 	RackTypeCounts       []struct {
 		RackTypeId ObjectId `json:"rack_type_id"`
 		Count      int      `json:"count"`
@@ -815,17 +877,17 @@ func (o *TemplateL3Collapsed) getType() TemplateType {
 }
 
 type rawTemplateL3Collapsed struct {
-	Id                   ObjectId                  `json:"id"`
-	Type                 templateType              `json:"type"`
-	DisplayName          string                    `json:"display_name"`
-	AntiAffinityPolicy   rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
-	CreatedAt            time.Time                 `json:"created_at"`
-	LastModifiedAt       time.Time                 `json:"last_modified_at"`
-	RackTypes            []rawRackType             `json:"rack_types"`
-	Capability           templateCapability        `json:"capability"`
-	MeshLinkSpeed        rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
-	VirtualNetworkPolicy rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
-	MeshLinkCount        int                       `json:"mesh_link_count"`
+	Id                   ObjectId                   `json:"id"`
+	Type                 templateType               `json:"type"`
+	DisplayName          string                     `json:"display_name"`
+	AntiAffinityPolicy   rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	CreatedAt            time.Time                  `json:"created_at"`
+	LastModifiedAt       time.Time                  `json:"last_modified_at"`
+	RackTypes            []rawRackType              `json:"rack_types"`
+	Capability           templateCapability         `json:"capability"`
+	MeshLinkSpeed        *rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
+	VirtualNetworkPolicy rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
+	MeshLinkCount        int                        `json:"mesh_link_count"`
 	RackTypeCounts       []struct {
 		RackTypeId ObjectId `json:"rack_type_id"`
 		Count      int      `json:"count"`
@@ -1133,6 +1195,24 @@ func (o *Client) createRackBasedTemplate(ctx context.Context, in *CreateRackBase
 	return response.Id, nil
 }
 
+type rawCreatePodBasedTemplateRequest struct {
+	Type                    templateType              `json:"type"`
+	AntiAffinityPolicy      rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
+	DisplayName             string                    `json:"display_name"`
+	RackBasedTemplates      []rawTemplateRackBased    `json:"rack_based_templates"`
+	FabricAddressingPolicy  rawFabricAddressingPolicy `json:"fabric_addressing_policy"`
+	Superspine              rawSuperspine             `json:"superspine"`
+	CreatedAt               time.Time                 `json:"created_at"`
+	LastModifiedAt          time.Time                 `json:"last_modified_at"`
+	Capability              templateCapability        `json:"capability"`
+	RackBasedTemplateCounts []RackBasedTemplateCounts `json:"rack_based_template_counts"`
+}
+
+//
+//func (o *Client) createPodBasedTemplate(ctx context.Context, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+//
+//}
+//
 func (o *Client) deleteTemplate(ctx context.Context, id ObjectId) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
