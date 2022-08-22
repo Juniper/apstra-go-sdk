@@ -20,6 +20,10 @@ const (
 	msgTemplateUnpackWrongType = "cannot unpack template of type '%s' into '%s'"
 )
 
+type AntiAffninityAlgorithm int
+type antiAffinityAlgorithm string
+type AntiAffinityMode int
+type antiAffinityMode string
 type TemplateType int
 type templateType string
 type AsnAllocationScheme int
@@ -31,6 +35,26 @@ type OverlayControlProtocol int
 type overlayControlProtocol string
 type TemplateCapability int
 type templateCapability string
+
+const (
+	AntiAffinityModeDisabled = AntiAffinityMode(iota)
+	AntiAffinityModeLoose
+	AntiAffinityModeStrict
+	AntiAffinityModeUnknown = "unknown anti affinity mode %s"
+
+	antiAffinityModeDisabled = antiAffinityMode("disabled")
+	antiAffinityModeLoose    = antiAffinityMode("loose")
+	antiAffinityModeStrict   = antiAffinityMode("strict")
+	antiAffinityModeUnknown  = "unknown anti affinity mode %d"
+)
+
+const (
+	AlgorithmHeuristic = AntiAffninityAlgorithm(iota)
+	AlgorithmUnknown   = "unknown anti affinity algorithm '%s'"
+
+	algorithmHeuristic = antiAffinityAlgorithm("heuristic")
+	algorithmUnknown   = "unknown anti affinity algorithm '%d'"
+)
 
 const (
 	TemplateTypeRackBased = TemplateType(iota)
@@ -89,6 +113,74 @@ const (
 	templateCapabilityNone      = templateCapability("")
 	templateCapabilityUnknown   = "unknown template capability '%d'"
 )
+
+func (o AntiAffinityMode) Int() int {
+	return int(o)
+}
+
+func (o AntiAffinityMode) String() string {
+	switch o {
+	case AntiAffinityModeDisabled:
+		return string(antiAffinityModeDisabled)
+	case AntiAffinityModeLoose:
+		return string(antiAffinityModeLoose)
+	case AntiAffinityModeStrict:
+		return string(antiAffinityModeStrict)
+	default:
+		return fmt.Sprintf(antiAffinityModeUnknown, o)
+	}
+}
+
+func (o AntiAffinityMode) raw() antiAffinityMode {
+	return antiAffinityMode(o.String())
+}
+
+func (o antiAffinityMode) string() string {
+	return string(o)
+}
+
+func (o antiAffinityMode) parse() (int, error) {
+	switch o {
+	case antiAffinityModeDisabled:
+		return int(AntiAffinityModeDisabled), nil
+	case antiAffinityModeLoose:
+		return int(AntiAffinityModeLoose), nil
+	case antiAffinityModeStrict:
+		return int(AntiAffinityModeStrict), nil
+	default:
+		return 0, fmt.Errorf(AntiAffinityModeUnknown, o)
+	}
+}
+
+func (o AntiAffninityAlgorithm) Int() int {
+	return int(o)
+}
+
+func (o AntiAffninityAlgorithm) String() string {
+	switch o {
+	case AlgorithmHeuristic:
+		return string(algorithmHeuristic)
+	default:
+		return fmt.Sprintf(algorithmUnknown, o)
+	}
+}
+
+func (o AntiAffninityAlgorithm) raw() antiAffinityAlgorithm {
+	return antiAffinityAlgorithm(o.String())
+}
+
+func (o antiAffinityAlgorithm) string() string {
+	return string(o)
+}
+
+func (o antiAffinityAlgorithm) parse() (int, error) {
+	switch o {
+	case algorithmHeuristic:
+		return int(AlgorithmHeuristic), nil
+	default:
+		return 0, fmt.Errorf(AlgorithmUnknown, o)
+	}
+}
 
 func (o TemplateType) Int() int {
 	return int(o)
@@ -311,12 +403,52 @@ func (o rawTemplateResponse) unpack(in interface{}) error {
 }
 
 type AntiAffinityPolicy struct {
-	Algorithm                string `json:"algorithm"` // heuristic
-	MaxLinksPerPort          int    `json:"max_links_per_port"`
-	MaxLinksPerSlot          int    `json:"max_links_per_slot"`
-	MaxPerSystemLinksPerPort int    `json:"max_per_system_links_per_port"`
-	MaxPerSystemLinksPerSlot int    `json:"max_per_system_links_per_slot"`
-	Mode                     string `json:"mode"` // disabled, enabled_loose, enabled_strict
+	Algorithm                AntiAffninityAlgorithm
+	MaxLinksPerPort          int
+	MaxLinksPerSlot          int
+	MaxPerSystemLinksPerPort int
+	MaxPerSystemLinksPerSlot int
+	Mode                     AntiAffinityMode
+}
+
+func (o *AntiAffinityPolicy) raw() *rawAntiAffinityPolicy {
+	return &rawAntiAffinityPolicy{
+		Algorithm:                o.Algorithm.raw(),
+		MaxLinksPerPort:          o.MaxLinksPerPort,
+		MaxLinksPerSlot:          o.MaxLinksPerSlot,
+		MaxPerSystemLinksPerPort: o.MaxPerSystemLinksPerPort,
+		MaxPerSystemLinksPerSlot: o.MaxPerSystemLinksPerSlot,
+		Mode:                     o.Mode.raw(),
+	}
+}
+
+type rawAntiAffinityPolicy struct {
+	Algorithm                antiAffinityAlgorithm `json:"antiAffinityAlgorithm"` // heuristic
+	MaxLinksPerPort          int                   `json:"max_links_per_port"`
+	MaxLinksPerSlot          int                   `json:"max_links_per_slot"`
+	MaxPerSystemLinksPerPort int                   `json:"max_per_system_links_per_port"`
+	MaxPerSystemLinksPerSlot int                   `json:"max_per_system_links_per_slot"`
+	Mode                     antiAffinityMode      `json:"mode"` // disabled, enabled_loose, enabled_strict
+}
+
+func (o *rawAntiAffinityPolicy) polish() (*AntiAffinityPolicy, error) {
+	algorithm, err := o.Algorithm.parse()
+	if err != nil {
+		return nil, err
+	}
+	mode, err := o.Mode.parse()
+	if err != nil {
+		return nil, err
+	}
+	return &AntiAffinityPolicy{
+		Algorithm:                AntiAffninityAlgorithm(algorithm),
+		MaxLinksPerPort:          o.MaxLinksPerPort,
+		MaxLinksPerSlot:          o.MaxLinksPerSlot,
+		MaxPerSystemLinksPerPort: o.MaxPerSystemLinksPerPort,
+		MaxPerSystemLinksPerSlot: o.MaxPerSystemLinksPerSlot,
+		Mode:                     AntiAffinityMode(mode),
+	}, nil
+
 }
 
 type VirtualNetworkPolicy struct {
@@ -399,18 +531,44 @@ type Spine struct {
 	ExternalLinkCount       int
 }
 
-func (o Spine) raw() *rawSpine {
+type TemplateElementSpineRequest struct {
+	Count                   int
+	ExternalLinkSpeed       LogicalDevicePortSpeed
+	LinkPerSuperspineSpeed  LogicalDevicePortSpeed
+	LogicalDevice           ObjectId
+	LinkPerSuperspineCount  int
+	Tags                    []TagLabel
+	ExternalLinksPerNode    int
+	ExternalFacingNodeCount int
+	ExternalLinkCount       int
+}
+
+func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (*rawSpine, error) {
+	logicalDevice, err := client.GetLogicalDevice(ctx, o.LogicalDevice)
+	if err != nil {
+		return nil, err
+	}
+
+	tags := make([]DesignTag, len(o.Tags))
+	for i, tagId := range o.Tags {
+		tag, err := client.getTagByLabel(ctx, tagId)
+		if err != nil {
+			return nil, err
+		}
+		tags[i] = *tag
+	}
+
 	return &rawSpine{
 		Count:                   o.Count,
 		ExternalLinkSpeed:       *o.ExternalLinkSpeed.raw(),
 		LinkPerSuperspineSpeed:  *o.LinkPerSuperspineSpeed.raw(),
-		LogicalDevice:           o.LogicalDevice.raw(),
+		LogicalDevice:           logicalDevice.raw(),
 		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
-		Tags:                    o.Tags,
+		Tags:                    tags,
 		ExternalLinksPerNode:    o.ExternalLinksPerNode,
 		ExternalFacingNodeCount: o.ExternalFacingNodeCount,
 		ExternalLinkCount:       o.ExternalLinkCount,
-	}
+	}, nil
 }
 
 type rawSpine struct {
@@ -476,7 +634,7 @@ type rawTemplateRackBased struct {
 	Id                     ObjectId                  `json:"id"`
 	Type                   templateType              `json:"type"`
 	DisplayName            string                    `json:"display_name"`
-	AntiAffinityPolicy     AntiAffinityPolicy        `json:"anti_affinity_policy"`
+	AntiAffinityPolicy     rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
 	CreatedAt              time.Time                 `json:"created_at"`
 	LastModifiedAt         time.Time                 `json:"last_modified_at"`
 	VirtualNetworkPolicy   rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
@@ -522,11 +680,16 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 		}
 		rackTypes = append(rackTypes, *prt)
 	}
+	antiAffinityPolicy, err := o.AntiAffinityPolicy.polish()
+	if err != nil {
+		return nil, err
+	}
+
 	return &TemplateRackBased{
 		Id:                     o.Id,
 		Type:                   TemplateType(tType),
 		DisplayName:            o.DisplayName,
-		AntiAffinityPolicy:     o.AntiAffinityPolicy,
+		AntiAffinityPolicy:     *antiAffinityPolicy,
 		CreatedAt:              o.CreatedAt,
 		LastModifiedAt:         o.LastModifiedAt,
 		VirtualNetworkPolicy:   *v,
@@ -611,7 +774,7 @@ type rawTemplatePodBased struct {
 	Id                      ObjectId                  `json:"id"`
 	Type                    templateType              `json:"type"`
 	DisplayName             string                    `json:"display_name"`
-	AntiAffinityPolicy      AntiAffinityPolicy        `json:"anti_affinity_policy"`
+	AntiAffinityPolicy      rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
 	FabricAddressingPolicy  rawFabricAddressingPolicy `json:"fabric_addressing_policy"`
 	Superspine              rawSuperspine             `json:"superspine"`
 	CreatedAt               time.Time                 `json:"created_at"`
@@ -650,11 +813,15 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 	if err != nil {
 		return nil, err
 	}
+	antiAffinityPolicy, err := o.AntiAffinityPolicy.polish()
+	if err != nil {
+		return nil, err
+	}
 	return &TemplatePodBased{
 		Id:                      o.Id,
 		Type:                    TemplateType(tType),
 		DisplayName:             o.DisplayName,
-		AntiAffinityPolicy:      o.AntiAffinityPolicy,
+		AntiAffinityPolicy:      *antiAffinityPolicy,
 		FabricAddressingPolicy:  *fap,
 		Superspine:              *superspine,
 		CreatedAt:               o.CreatedAt,
@@ -694,7 +861,7 @@ type rawTemplateL3Collapsed struct {
 	Id                   ObjectId                  `json:"id"`
 	Type                 templateType              `json:"type"`
 	DisplayName          string                    `json:"display_name"`
-	AntiAffinityPolicy   AntiAffinityPolicy        `json:"anti_affinity_policy"`
+	AntiAffinityPolicy   rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
 	CreatedAt            time.Time                 `json:"created_at"`
 	LastModifiedAt       time.Time                 `json:"last_modified_at"`
 	RackTypes            []rawRackType             `json:"rack_types"`
@@ -732,11 +899,15 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	if err != nil {
 		return nil, err
 	}
+	antiAffinityPolicy, err := o.AntiAffinityPolicy.polish()
+	if err != nil {
+		return nil, err
+	}
 	return &TemplateL3Collapsed{
 		Id:                   o.Id,
 		Type:                 TemplateType(tType),
 		DisplayName:          o.DisplayName,
-		AntiAffinityPolicy:   o.AntiAffinityPolicy,
+		AntiAffinityPolicy:   *antiAffinityPolicy,
 		CreatedAt:            o.CreatedAt,
 		LastModifiedAt:       o.LastModifiedAt,
 		RackTypes:            prt,
@@ -932,4 +1103,89 @@ func (o *Client) getTemplateAndType(ctx context.Context, id ObjectId) (TemplateT
 	default:
 		return 0, template, errors.New("unknown template type at getTemplateAndType()")
 	}
+}
+
+type CreateRackBasedTemplateRequest struct {
+	DisplayName            string
+	Capability             TemplateCapability
+	Spine                  TemplateElementSpineRequest
+	RackTypeIds            []ObjectId
+	RackTypeCounts         []RackTypeCounts
+	DhcpServiceIntent      DhcpServiceIntent
+	AntiAffinityPolicy     AntiAffinityPolicy
+	AsnAllocationPolicy    AsnAllocationPolicy
+	FabricAddressingPolicy FabricAddressingPolicy
+	VirtualNetworkPolicy   VirtualNetworkPolicy
+}
+
+func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreateRackBasedTemplateRequest, error) {
+	spine, err := o.Spine.raw(ctx, client)
+	if err != nil {
+		return nil, err
+	}
+
+	rackTypes := make([]rawRackType, len(o.RackTypeIds))
+	for i, rtId := range o.RackTypeIds {
+		rt, err := client.getRackType(ctx, rtId)
+		if err != nil {
+			return nil, err
+		}
+		rackTypes[i] = *rt
+	}
+	return &rawCreateRackBasedTemplateRequest{
+		Type:                   templateTypeRackBased,
+		DisplayName:            o.DisplayName,
+		Capability:             o.Capability.raw(),
+		Spine:                  *spine,
+		RackTypes:              rackTypes,
+		RackTypeCounts:         o.RackTypeCounts,
+		DhcpServiceIntent:      o.DhcpServiceIntent,
+		AntiAffinityPolicy:     *o.AntiAffinityPolicy.raw(),
+		AsnAllocationPolicy:    *o.AsnAllocationPolicy.raw(),
+		FabricAddressingPolicy: *o.FabricAddressingPolicy.raw(),
+		VirtualNetworkPolicy:   *o.VirtualNetworkPolicy.raw(),
+	}, nil
+}
+
+type rawCreateRackBasedTemplateRequest struct {
+	Type                   templateType              `json:"type"`
+	DisplayName            string                    `json:"display_name"`
+	Capability             templateCapability        `json:"capability"`
+	Spine                  rawSpine                  `json:"spine"`
+	RackTypes              []rawRackType             `json:"rack_types"`
+	RackTypeCounts         []RackTypeCounts          `json:"rack_type_counts"`
+	DhcpServiceIntent      DhcpServiceIntent         `json:"dhcp_service_intent"`
+	AntiAffinityPolicy     rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
+	AsnAllocationPolicy    rawAsnAllocationPolicy    `json:"asn_allocation_policy"`
+	FabricAddressingPolicy rawFabricAddressingPolicy `json:"fabric_addressing_policy"`
+	VirtualNetworkPolicy   rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
+}
+
+func (o *Client) createRackBasedTemplate(ctx context.Context, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+	raw, err := in.raw(ctx, o)
+	if err != nil {
+		return "", err
+	}
+	response := &objectIdResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlDesignTemplates,
+		apiInput:    raw,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
+}
+
+func (o *Client) deleteTemplate(ctx context.Context, id ObjectId) error {
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlDesignTemplateById, id),
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
