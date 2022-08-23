@@ -750,43 +750,97 @@ func (o *Client) ListAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 //   TemplatePodBased
 //   TemplateL3Collapsed
 func (o *Client) GetAllTemplates(ctx context.Context) ([]Template, error) {
-	return o.getAllTemplates(ctx)
+	templates, err := o.getAllTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]Template, len(templates))
+	for i, raw := range templates {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = polished
+	}
+	return result, nil
 }
 
 // GetRackBasedTemplate returns *TemplateRackBased represented by `id`
 func (o *Client) GetRackBasedTemplate(ctx context.Context, id ObjectId) (*TemplateRackBased, error) {
-	return o.getRackBasedTemplate(ctx, id)
+	raw, err := o.getRackBasedTemplate(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // GetAllRackBasedTemplates returns []TemplateRackBased representing all rack_based templates
 func (o *Client) GetAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBased, error) {
-	return o.getAllRackBasedTemplates(ctx)
+	rawTemplates, err := o.getAllRackBasedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]TemplateRackBased, len(rawTemplates))
+	for i, rawTemplate := range rawTemplates {
+		polished, err := rawTemplate.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
 }
 
 // GetPodBasedTemplate returns *TemplatePodBased represented by `id`
 func (o *Client) GetPodBasedTemplate(ctx context.Context, id ObjectId) (*TemplatePodBased, error) {
-	return o.getPodBasedTemplate(ctx, id)
+	raw, err := o.getPodBasedTemplate(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // GetAllPodBasedTemplates returns []TemplatePodBased representing all pod_based templates
 func (o *Client) GetAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBased, error) {
-	return o.getAllPodBasedTemplates(ctx)
+	rawTemplates, err := o.getAllPodBasedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]TemplatePodBased, len(rawTemplates))
+	for i, rawTemplate := range rawTemplates {
+		polished, err := rawTemplate.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
 }
 
 // GetL3CollapsedTemplate returns *TemplateL3Collapsed represented by `id`
 func (o *Client) GetL3CollapsedTemplate(ctx context.Context, id ObjectId) (*TemplateL3Collapsed, error) {
-	return o.getL3CollapsedTemplate(ctx, id)
+	raw, err := o.getL3CollapsedTemplate(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // GetAllL3CollapsedTemplates returns []TemplateL3Collapsed representing all l3_collapsed templates
 func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Collapsed, error) {
-	return o.getAllL3CollapsedTemplates(ctx)
-}
-
-// GetTemplateAndType returns the TemplateType and template object (*TemplateTypeRackBased, *TemplateTypePodBased,
-// *TemplateTypeL3Collapsed) associated with the specified template id.
-func (o *Client) GetTemplateAndType(ctx context.Context, id ObjectId) (TemplateType, interface{}, error) {
-	return o.getTemplateAndType(ctx, id)
+	rawTemplates, err := o.getAllL3CollapsedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]TemplateL3Collapsed, len(rawTemplates))
+	for i, rawTemplate := range rawTemplates {
+		polished, err := rawTemplate.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
 }
 
 // NewQuery returns a *QEQuery with embedded *Client
