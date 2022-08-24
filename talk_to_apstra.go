@@ -52,6 +52,8 @@ func convertTtaeToAceWherePossible(err error) error {
 		switch ttae.Response.StatusCode {
 		case http.StatusNotFound:
 			return ApstraClientErr{errType: ErrNotfound, err: err}
+		case http.StatusConflict:
+			return ApstraClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
 		}
 	}
 	return err
