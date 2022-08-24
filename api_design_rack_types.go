@@ -598,7 +598,7 @@ type RackElementAccessSwitch struct {
 type rawRackElementAccessSwitch struct {
 	InstanceCount         int                        `json:"instance_count"`
 	RedundancyProtocol    accessRedundancyProtocol   `json:"redundancy_protocol,omitempty"`
-	Links                 []RackLink                 `json:"links"`
+	Links                 []rawRackLink              `json:"links"`
 	Label                 string                     `json:"label"`
 	LogicalDevice         ObjectId                   `json:"logical_device"`
 	AccessAccessLinkCount int                        `json:"access_access_link_count"`
@@ -637,10 +637,19 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 		accessAccessLinkSpeed = o.AccessAccessLinkSpeed.parse()
 	}
 
+	links := make([]RackLink, len(o.Links))
+	for i, link := range o.Links {
+		polished, err := link.polish(rack)
+		if err != nil {
+			return nil, err
+		}
+		links[i] = *polished
+	}
+
 	return &RackElementAccessSwitch{
 		InstanceCount:         o.InstanceCount,
 		RedundancyProtocol:    AccessRedundancyProtocol(rp),
-		Links:                 o.Links,
+		Links:                 links,
 		Label:                 o.Label,
 		Panels:                pld.Panels,
 		DisplayName:           pld.DisplayName,
