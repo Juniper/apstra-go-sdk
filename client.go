@@ -843,6 +843,41 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 	return result, nil
 }
 
+// CreateRackBasedTemplate creates a template based on the supplied CreateRackBasedTempalteRequest
+func (o *Client) CreateRackBasedTemplate(ctx context.Context, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+	return o.createRackBasedTemplate(ctx, in)
+}
+
+// UpdateRackBasedTemplate updates a template based on the supplied CreateRackBasedTempalteRequest
+func (o *Client) UpdateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+	return o.updateRackBasedTemplate(ctx, id, in)
+}
+
+// CreatePodBasedTemplate creates a template based on the supplied CreatePodBasedTempalteRequest
+func (o *Client) CreatePodBasedTemplate(ctx context.Context, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+	return o.createPodBasedTemplate(ctx, in)
+}
+
+// UpdatePodBasedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
+func (o *Client) UpdatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+	return o.updatePodBasedTemplate(ctx, id, in)
+}
+
+// CreateL3CollapsedTemplate creates a template based on the supplied CreateL3CollapsedTemplateRequest
+func (o *Client) CreateL3CollapsedTemplate(ctx context.Context, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
+	return o.createL3CollapsedTemplate(ctx, in)
+}
+
+// UpdateL3CollapsedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
+func (o *Client) UpdateL3CollapsedTemplate(ctx context.Context, id ObjectId, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
+	return o.updateL3CollapsedTemplate(ctx, id, in)
+}
+
+// DeleteTemplate deletes the template specified by id
+func (o *Client) DeleteTemplate(ctx context.Context, id ObjectId) error {
+	return o.deleteTemplate(ctx, id)
+}
+
 // NewQuery returns a *QEQuery with embedded *Client
 func (o *Client) NewQuery(blueprint ObjectId) *QEQuery {
 	return o.newQuery(blueprint)

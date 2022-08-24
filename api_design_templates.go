@@ -1232,6 +1232,24 @@ func (o *Client) createRackBasedTemplate(ctx context.Context, in *CreateRackBase
 	return response.Id, nil
 }
 
+func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+	raw, err := in.raw(ctx, o)
+	if err != nil {
+		return "", err
+	}
+	response := &objectIdResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPut,
+		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
+		apiInput:    raw,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
+}
+
 type CreatePodBasedTemplateRequest struct {
 	DisplayName             string
 	Capability              TemplateCapability
@@ -1283,6 +1301,25 @@ func (o *Client) createPodBasedTemplate(ctx context.Context, in *CreatePodBasedT
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTemplates,
+		apiInput:    apiInput,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return response.Id, nil
+}
+
+func (o *Client) updatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+	apiInput, err := in.raw(ctx, o)
+	if err != nil {
+		return "", err
+	}
+	response := &objectIdResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPut,
+		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
 		apiInput:    apiInput,
 		apiResponse: response,
 	})
@@ -1350,6 +1387,25 @@ func (o *Client) createL3CollapsedTemplate(ctx context.Context, in *CreateL3Coll
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTemplates,
+		apiInput:    apiInput,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return response.Id, nil
+}
+
+func (o *Client) updateL3CollapsedTemplate(ctx context.Context, id ObjectId, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
+	apiInput, err := in.raw(ctx, o)
+	if err != nil {
+		return "", err
+	}
+	response := &objectIdResponse{}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPut,
+		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
 		apiInput:    apiInput,
 		apiResponse: response,
 	})
