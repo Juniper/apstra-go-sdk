@@ -120,7 +120,7 @@ func (o *cloudlabsTopology) selfUpdate() error {
 	return nil
 }
 
-func (o *cloudlabsTopology) getGoapstraClient() (*Client, error) {
+func (o *cloudlabsTopology) getGoapstraClientCfg() (*ClientCfg, error) {
 	if o.State != "up" {
 		err := o.selfUpdate()
 		if err != nil {
@@ -148,14 +148,22 @@ func (o *cloudlabsTopology) getGoapstraClient() (*Client, error) {
 		return nil, err
 	}
 
-	return ClientCfg{
+	return &ClientCfg{
 		Scheme:     access.Protocol,
 		Host:       access.Host,
 		Port:       uint16(access.Port),
 		User:       access.Username,
 		Pass:       access.Password,
 		HttpClient: httpClient,
-	}.NewClient()
+	}, nil
+}
+
+func (o *cloudlabsTopology) getGoapstraClient() (*Client, error) {
+	cfg, err := o.getGoapstraClientCfg()
+	if err != nil {
+		return nil, err
+	}
+	return cfg.NewClient()
 }
 
 func getCloudlabsTopology(id string) (*cloudlabsTopology, error) {
@@ -249,25 +257,51 @@ type testClient struct {
 	client     *Client
 }
 
-func getCloudlabsTestClients() ([]testClient, error) {
+type testClientCfg struct {
+	cfgName string
+	cfgType string
+	cfg     *ClientCfg
+}
+
+func getCloudlabsTestClientCfgs() ([]testClientCfg, error) {
 	topologyIds, err := topologyIdsFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]testClient, len(topologyIds))
+	result := make([]testClientCfg, len(topologyIds))
 	for i, id := range topologyIds {
 		topology, err := getCloudlabsTopology(id)
 		if err != nil {
 			return nil, err
 		}
-		client, err := topology.getGoapstraClient()
+		cfg, err := topology.getGoapstraClientCfg()
 		if err != nil {
 			return nil, err
 		}
+		result[i] = testClientCfg{
+			cfgName: id,
+			cfgType: "cloudlabs",
+			cfg:     cfg,
+		}
+	}
+	return result, nil
+}
 
+func getCloudlabsTestClients() ([]testClient, error) {
+	cfgs, err := getCloudlabsTestClientCfgs()
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]testClient, len(cfgs))
+	for i, cfg := range cfgs {
+		client, err := cfg.cfg.NewClient()
+		if err != nil {
+			return nil, err
+		}
 		result[i] = testClient{
-			clientName: id,
+			clientName: cfg.cfgName,
 			clientType: "cloudlabs",
 			client:     client,
 		}
