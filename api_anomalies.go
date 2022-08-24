@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"time"
 )
@@ -203,21 +202,17 @@ func unpackIntOrStringAsString(raw json.RawMessage) (string, error) {
 }
 
 func (o *Client) getAnomalies(ctx context.Context) ([]Anomaly, error) {
-	apstraUrl, err := url.Parse(apiUrlAnomalies)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlAnomalies, err)
-	}
 	response := &struct {
 		Items []json.RawMessage `json:"items"`
 	}{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodGet,
-		url:            apstraUrl,
+		urlStr:         apiUrlAnomalies,
 		apiResponse:    response,
 		unsynchronized: true,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error getting anomalies - %w", err)
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 	var result []Anomaly
 	for _, ra := range response.Items {

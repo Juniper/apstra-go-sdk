@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 const (
@@ -25,14 +24,10 @@ type userLoginResponse struct {
 }
 
 func (o *Client) login(ctx context.Context) error {
-	apstraUrl, err := url.Parse(apiUrlUserLogin)
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogin, err)
-	}
 	response := &userLoginResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPost,
-		url:    apstraUrl,
+		urlStr: apiUrlUserLogin,
 		apiInput: &userLoginRequest{
 			Username: o.cfg.User,
 			Password: o.cfg.Pass,
@@ -63,16 +58,12 @@ func (o *Client) logout(ctx context.Context) error {
 	defer func() {
 		// presence of auth token and taskMonitor go together
 		delete(o.httpHeaders, apstraAuthHeader) // delete the auth token
-		defer close(o.tmQuit)                   // shut down the task monitor gothread
+		close(o.tmQuit)                         // shut down the task monitor gothread
 	}()
 
-	apstraUrl, err := url.Parse(apiUrlUserLogout)
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", apiUrlUserLogout, err)
-	}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:     http.MethodPost,
-		url:        apstraUrl,
+		urlStr:     apiUrlUserLogout,
 		doNotLogin: true,
 	})
 	if err != nil {
