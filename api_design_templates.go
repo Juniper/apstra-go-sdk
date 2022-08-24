@@ -586,7 +586,7 @@ type TemplateElementSuperspineRequest struct {
 	ExternalLinkSpeed  LogicalDevicePortSpeed
 	Tags               []TagLabel
 	SuperspinePerPlane int
-	LogicalDevice      ObjectId
+	LogicalDeviceId    ObjectId
 }
 
 func (o *TemplateElementSuperspineRequest) raw(ctx context.Context, client *Client) (*rawSuperspine, error) {
@@ -599,7 +599,7 @@ func (o *TemplateElementSuperspineRequest) raw(ctx context.Context, client *Clie
 		tags[i] = *tag
 	}
 
-	logicalDevice, err := client.getLogicalDevice(ctx, o.LogicalDevice)
+	logicalDevice, err := client.getLogicalDevice(ctx, o.LogicalDeviceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1253,7 +1253,7 @@ func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *C
 type CreatePodBasedTemplateRequest struct {
 	DisplayName             string
 	Capability              TemplateCapability
-	Superspine              Superspine
+	Superspine              TemplateElementSuperspineRequest
 	RackBasedTemplateIds    []ObjectId
 	RackBasedTemplateCounts []RackBasedTemplateCounts
 	AntiAffinityPolicy      AntiAffinityPolicy
@@ -1261,6 +1261,10 @@ type CreatePodBasedTemplateRequest struct {
 }
 
 func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreatePodBasedTemplateRequest, error) {
+	rawSuperspine, err := o.Superspine.raw(ctx, client)
+	if err != nil {
+		return nil, err
+	}
 	rawRackBasedTemplates := make([]rawTemplateRackBased, len(o.RackBasedTemplateIds))
 	for i, id := range o.RackBasedTemplateIds {
 		rbt, err := client.getRackBasedTemplate(ctx, id)
@@ -1273,7 +1277,7 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		Type:                    templateTypePodBased,
 		DisplayName:             o.DisplayName,
 		Capability:              o.Capability.raw(),
-		Superspine:              *o.Superspine.raw(),
+		Superspine:              *rawSuperspine,
 		RackBasedTemplates:      rawRackBasedTemplates,
 		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
 		AntiAffinityPolicy:      *o.AntiAffinityPolicy.raw(),
