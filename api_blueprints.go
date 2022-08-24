@@ -325,7 +325,7 @@ func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
 type CreateBlueprintFromTemplate struct {
 	RefDesign  RefDesign
 	Label      string
-	TemplateId string
+	TemplateId ObjectId
 }
 
 func (o *CreateBlueprintFromTemplate) raw() *rawCreateBluePrintFromTemplate {
@@ -338,10 +338,10 @@ func (o *CreateBlueprintFromTemplate) raw() *rawCreateBluePrintFromTemplate {
 }
 
 type rawCreateBluePrintFromTemplate struct {
-	RefDesign  string `json:"design"`
-	Label      string `json:"label"`
-	InitType   string `json:"init_type"`
-	TemplateId string `json:"template_id"`
+	RefDesign  string   `json:"design"`
+	Label      string   `json:"label"`
+	InitType   string   `json:"init_type"`
+	TemplateId ObjectId `json:"template_id"`
 }
 
 type rawLockInfo struct {
