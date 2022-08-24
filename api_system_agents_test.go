@@ -3,6 +3,7 @@ package goapstra
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"testing"
 )
@@ -73,9 +74,9 @@ func TestCreateOffboxAgent(t *testing.T) {
 			}
 		}
 
-		agentIds := make([]ObjectId, len(switchInfo))
-		labels := make([]string, len(switchInfo))
-		for i, testSwitch := range switchInfo {
+		var agentIds []ObjectId // do not make fixed length -- some switches might not be available
+		var labels []string     // do not make fixed length -- some switches might not be available
+		for _, testSwitch := range switchInfo {
 			log.Printf("testing CreateAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 			label := randString(5, "hex")
 			id, err := client.client.CreateAgent(context.TODO(), &SystemAgentRequest{
@@ -87,10 +88,19 @@ func TestCreateOffboxAgent(t *testing.T) {
 				AgentTypeOffbox: testSwitch.platform.offbox(),
 			})
 			if err != nil {
-				t.Fatal(err)
+				ace := &ApstraClientErr{}
+				if errors.As(err, ace) && ace.Type() == ErrConflict {
+					log.Printf("skipping switch '%s' because: '%s'", testSwitch.ip, err.Error())
+					continue
+				} else {
+					t.Fatal(err)
+				}
 			}
-			agentIds[i] = id
-			labels[i] = label
+			agentIds = append(agentIds, id)
+			labels = append(labels, label)
+		}
+		if len(agentIds) == 0 {
+			t.Skip("no switches available for testing")
 		}
 
 		// run these jobs in parallel
