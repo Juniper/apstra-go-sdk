@@ -79,7 +79,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 			t.Fatalf("only got %d ids", len(ids))
 		}
 		for _, id := range ids {
-			log.Printf("testing GetLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing GetLogicalDevice(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
 			ld, err := client.client.GetLogicalDevice(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
