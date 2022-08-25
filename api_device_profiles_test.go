@@ -21,8 +21,9 @@ func TestListAndGetAllDeviceProfiles(t *testing.T) {
 		if len(ids) <= 0 {
 			t.Fatalf("only got %d ids", len(ids))
 		}
-		for _, id := range ids {
-			log.Printf("testing getDeviceProfile() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		for _, i := range samples(len(ids)) {
+			id := ids[i]
+			log.Printf("testing getDeviceProfile(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
 			dp, err := client.client.getDeviceProfile(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)

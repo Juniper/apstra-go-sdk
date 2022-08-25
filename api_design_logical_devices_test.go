@@ -78,7 +78,8 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 		if len(ids) <= 0 {
 			t.Fatalf("only got %d ids", len(ids))
 		}
-		for _, id := range ids {
+		for _, i := range samples(len(ids)) {
+			id := ids[i]
 			log.Printf("testing GetLogicalDevice(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
 			ld, err := client.client.GetLogicalDevice(context.TODO(), id)
 			if err != nil {
@@ -220,8 +221,9 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		for _, test := range logicalDevices {
-			log.Printf("testing GetLogicalDeviceByName() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		for _, i := range samples(len(logicalDevices)) {
+			test := logicalDevices[i]
+			log.Printf("testing GetLogicalDeviceByName(%s) against %s %s (%s)", test.DisplayName, client.clientType, client.clientName, client.client.ApiVersion())
 			logicalDevice, err := client.client.GetLogicalDeviceByName(context.TODO(), test.DisplayName)
 			var ace ApstraClientErr
 			if err != nil {
