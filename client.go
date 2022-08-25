@@ -667,7 +667,11 @@ func (o *Client) ListLogicalDeviceIds(ctx context.Context) ([]ObjectId, error) {
 
 // GetLogicalDevice returns the requested *LogicalDevice
 func (o *Client) GetLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDevice, error) {
-	return o.getLogicalDevice(ctx, id)
+	logicalDevice, err := o.getLogicalDevice(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return logicalDevice.polish()
 }
 
 // GetLogicalDeviceByName returns *LogicalDevice matching name if exactly one
@@ -740,49 +744,138 @@ func (o *Client) ListAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllTemplateIds(ctx)
 }
 
-// GetAllTemplates returns map[TemplateType][]interface{} where each element
+// GetAllTemplates returns []Template where each element
 // is one of these:
-//   []TemplateRackBased
-//   []TemplatePodBased
-//   []TemplateL3Collapsed
-func (o *Client) GetAllTemplates(ctx context.Context) (map[TemplateType][]interface{}, error) {
-	return o.getAllTemplates(ctx)
+//   TemplateRackBased
+//   TemplatePodBased
+//   TemplateL3Collapsed
+func (o *Client) GetAllTemplates(ctx context.Context) ([]Template, error) {
+	templates, err := o.getAllTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]Template, len(templates))
+	for i, raw := range templates {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = polished
+	}
+	return result, nil
 }
 
 // GetRackBasedTemplate returns *TemplateRackBased represented by `id`
 func (o *Client) GetRackBasedTemplate(ctx context.Context, id ObjectId) (*TemplateRackBased, error) {
-	return o.getRackBasedTemplate(ctx, id)
+	raw, err := o.getRackBasedTemplate(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // GetAllRackBasedTemplates returns []TemplateRackBased representing all rack_based templates
 func (o *Client) GetAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBased, error) {
-	return o.getAllRackBasedTemplates(ctx)
+	rawTemplates, err := o.getAllRackBasedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]TemplateRackBased, len(rawTemplates))
+	for i, rawTemplate := range rawTemplates {
+		polished, err := rawTemplate.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
 }
 
 // GetPodBasedTemplate returns *TemplatePodBased represented by `id`
 func (o *Client) GetPodBasedTemplate(ctx context.Context, id ObjectId) (*TemplatePodBased, error) {
-	return o.getPodBasedTemplate(ctx, id)
+	raw, err := o.getPodBasedTemplate(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // GetAllPodBasedTemplates returns []TemplatePodBased representing all pod_based templates
 func (o *Client) GetAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBased, error) {
-	return o.getAllPodBasedTemplates(ctx)
+	rawTemplates, err := o.getAllPodBasedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]TemplatePodBased, len(rawTemplates))
+	for i, rawTemplate := range rawTemplates {
+		polished, err := rawTemplate.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
 }
 
 // GetL3CollapsedTemplate returns *TemplateL3Collapsed represented by `id`
 func (o *Client) GetL3CollapsedTemplate(ctx context.Context, id ObjectId) (*TemplateL3Collapsed, error) {
-	return o.getL3CollapsedTemplate(ctx, id)
+	raw, err := o.getL3CollapsedTemplate(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // GetAllL3CollapsedTemplates returns []TemplateL3Collapsed representing all l3_collapsed templates
 func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Collapsed, error) {
-	return o.getAllL3CollapsedTemplates(ctx)
+	rawTemplates, err := o.getAllL3CollapsedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]TemplateL3Collapsed, len(rawTemplates))
+	for i, rawTemplate := range rawTemplates {
+		polished, err := rawTemplate.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
 }
 
-// GetTemplateAndType returns the TemplateType and template object (*TemplateTypeRackBased, *TemplateTypePodBased,
-// *TemplateTypeL3Collapsed) associated with the specified template id.
-func (o *Client) GetTemplateAndType(ctx context.Context, id ObjectId) (TemplateType, interface{}, error) {
-	return o.getTemplateAndType(ctx, id)
+// CreateRackBasedTemplate creates a template based on the supplied CreateRackBasedTempalteRequest
+func (o *Client) CreateRackBasedTemplate(ctx context.Context, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+	return o.createRackBasedTemplate(ctx, in)
+}
+
+// UpdateRackBasedTemplate updates a template based on the supplied CreateRackBasedTempalteRequest
+func (o *Client) UpdateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+	return o.updateRackBasedTemplate(ctx, id, in)
+}
+
+// CreatePodBasedTemplate creates a template based on the supplied CreatePodBasedTempalteRequest
+func (o *Client) CreatePodBasedTemplate(ctx context.Context, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+	return o.createPodBasedTemplate(ctx, in)
+}
+
+// UpdatePodBasedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
+func (o *Client) UpdatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+	return o.updatePodBasedTemplate(ctx, id, in)
+}
+
+// CreateL3CollapsedTemplate creates a template based on the supplied CreateL3CollapsedTemplateRequest
+func (o *Client) CreateL3CollapsedTemplate(ctx context.Context, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
+	return o.createL3CollapsedTemplate(ctx, in)
+}
+
+// UpdateL3CollapsedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
+func (o *Client) UpdateL3CollapsedTemplate(ctx context.Context, id ObjectId, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
+	return o.updateL3CollapsedTemplate(ctx, id, in)
+}
+
+// DeleteTemplate deletes the template specified by id
+func (o *Client) DeleteTemplate(ctx context.Context, id ObjectId) error {
+	return o.deleteTemplate(ctx, id)
 }
 
 // NewQuery returns a *QEQuery with embedded *Client

@@ -510,16 +510,29 @@ func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSw
 		tags = append(tags, *tag)
 	}
 
+	var leafLeafL3LinkSpeed LogicalDevicePortSpeed
+	if o.LeafLeafL3LinkSpeed != nil {
+		leafLeafL3LinkSpeed = o.LeafLeafL3LinkSpeed.parse()
+	}
+	var leafLeafLinkSpeed LogicalDevicePortSpeed
+	if o.LeafLeafLinkSpeed != nil {
+		leafLeafLinkSpeed = o.LeafLeafLinkSpeed.parse()
+	}
+	var linkPerSpineSpeed LogicalDevicePortSpeed
+	if o.LinkPerSpineSpeed != nil {
+		linkPerSpineSpeed = o.LinkPerSpineSpeed.parse()
+	}
+
 	result := &RackElementLeafSwitch{
 		Label:                       o.Label,
 		LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
 		LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
-		LeafLeafL3LinkSpeed:         o.LeafLeafL3LinkSpeed.parse(),
+		LeafLeafL3LinkSpeed:         leafLeafL3LinkSpeed,
 		LeafLeafLinkCount:           o.LeafLeafLinkCount,
 		LeafLeafLinkPortChannelId:   o.LeafLeafLinkPortChannelId,
-		LeafLeafLinkSpeed:           o.LeafLeafLinkSpeed.parse(),
+		LeafLeafLinkSpeed:           leafLeafLinkSpeed,
 		LinkPerSpineCount:           o.LinkPerSpineCount,
-		LinkPerSpineSpeed:           o.LinkPerSpineSpeed.parse(),
+		LinkPerSpineSpeed:           linkPerSpineSpeed,
 		MlagVlanId:                  o.MlagVlanId,
 		RedundancyProtocol:          LeafRedundancyProtocol(rp),
 		Panels:                      pld.Panels,
@@ -585,7 +598,7 @@ type RackElementAccessSwitch struct {
 type rawRackElementAccessSwitch struct {
 	InstanceCount         int                        `json:"instance_count"`
 	RedundancyProtocol    accessRedundancyProtocol   `json:"redundancy_protocol,omitempty"`
-	Links                 []RackLink                 `json:"links"`
+	Links                 []rawRackLink              `json:"links"`
 	Label                 string                     `json:"label"`
 	LogicalDevice         ObjectId                   `json:"logical_device"`
 	AccessAccessLinkCount int                        `json:"access_access_link_count"`
@@ -619,15 +632,29 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 		tags = append(tags, *tag)
 	}
 
+	var accessAccessLinkSpeed LogicalDevicePortSpeed
+	if o.AccessAccessLinkSpeed != nil {
+		accessAccessLinkSpeed = o.AccessAccessLinkSpeed.parse()
+	}
+
+	links := make([]RackLink, len(o.Links))
+	for i, link := range o.Links {
+		polished, err := link.polish(rack)
+		if err != nil {
+			return nil, err
+		}
+		links[i] = *polished
+	}
+
 	return &RackElementAccessSwitch{
 		InstanceCount:         o.InstanceCount,
 		RedundancyProtocol:    AccessRedundancyProtocol(rp),
-		Links:                 o.Links,
+		Links:                 links,
 		Label:                 o.Label,
 		Panels:                pld.Panels,
 		DisplayName:           pld.DisplayName,
 		AccessAccessLinkCount: o.AccessAccessLinkCount,
-		AccessAccessLinkSpeed: o.AccessAccessLinkSpeed.parse(),
+		AccessAccessLinkSpeed: accessAccessLinkSpeed,
 		Tags:                  tags,
 	}, nil
 }
@@ -731,11 +758,16 @@ func (o rawRackLink) polish(rack *rawRackType) (*RackLink, error) {
 		tags = append(tags, *tag)
 	}
 
+	var linkSpeed LogicalDevicePortSpeed
+	if o.LinkSpeed != nil {
+		linkSpeed = o.LinkSpeed.parse()
+	}
+
 	return &RackLink{
 		Label:              o.Label,
 		Tags:               tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
-		LinkSpeed:          o.LinkSpeed.parse(),
+		LinkSpeed:          linkSpeed,
 		TargetSwitchLabel:  o.TargetSwitchLabel,
 		AttachmentType:     RackLinkAttachmentType(attachment),
 		LagMode:            RackLinkLagMode(lagMode),

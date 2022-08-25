@@ -9,6 +9,7 @@ import (
 )
 
 func TestListGetOneRackType(t *testing.T) {
+	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
@@ -20,10 +21,12 @@ func TestListGetOneRackType(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		_ = rtIds
 
-		log.Printf("testing getRackType() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		rt, err := client.client.GetRackType(context.TODO(), rtIds[0])
+		//id := rtIds[rand.Intn(len(rtIds))]
+		id := rtIds[0]
+
+		log.Printf("testing getRackType(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
+		rt, err := client.client.GetRackType(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}

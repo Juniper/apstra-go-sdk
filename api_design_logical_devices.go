@@ -377,7 +377,7 @@ func (o *Client) getAllLogicalDevices(ctx context.Context) ([]LogicalDevice, err
 	return result, nil
 }
 
-func (o *Client) getLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDevice, error) {
+func (o *Client) getLogicalDevice(ctx context.Context, id ObjectId) (*rawLogicalDevice, error) {
 	response := &rawLogicalDevice{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -387,7 +387,7 @@ func (o *Client) getLogicalDevice(ctx context.Context, id ObjectId) (*LogicalDev
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response.polish()
+	return response, nil
 }
 
 func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*LogicalDevice, error) {

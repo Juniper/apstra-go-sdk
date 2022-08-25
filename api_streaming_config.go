@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 const (
 	apiUrlStreamingConfig       = "/api/streaming-config"
-	apiUrlStreamingConfigPrefix = apiUrlStreamingConfig + "/"
-	iotaStringTypesMax          = 50
+	apiUrlStreamingConfigPrefix = apiUrlStreamingConfig + apiUrlPathDelim
+	apiUrlStreamingConfigById   = apiUrlStreamingConfigPrefix + "%s"
 )
 
 const (
@@ -73,38 +72,30 @@ type StreamingConfigParams struct {
 }
 
 func (o *Client) getAllStreamingConfigIds(ctx context.Context) ([]ObjectId, error) {
-	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
-	}
 	result := &getStreamingConfigsOptionsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
-		url:         apstraUrl,
+		urlStr:      apiUrlStreamingConfig,
 		apiInput:    nil,
 		apiResponse: result,
 	})
 	if err != nil {
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	return result.Items, nil
 }
 
 func (o *Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigInfo, error) {
-	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
-	}
 	gscr := &getStreamingConfigsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		url:         apstraUrl,
+		urlStr:      apiUrlStreamingConfig,
 		apiInput:    nil,
 		apiResponse: gscr,
 	})
 	if err != nil {
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
 	var result []StreamingConfigInfo
@@ -116,41 +107,41 @@ func (o *Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigI
 }
 
 func (o *Client) getStreamingConfig(ctx context.Context, id ObjectId) (*StreamingConfigInfo, error) {
-	apstraUrl, err := url.Parse(apiUrlStreamingConfig + string(id))
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+string(id), err)
-	}
 	result := &StreamingConfigInfo{}
-	return result, o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		url:         apstraUrl,
+		urlStr:      fmt.Sprintf(apiUrlStreamingConfigById, id),
 		apiResponse: result,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return result, nil
 }
 
 func (o *Client) newStreamingConfig(ctx context.Context, cfg *StreamingConfigParams) (*objectIdResponse, error) {
-	apstraUrl, err := url.Parse(apiUrlStreamingConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig, err)
-	}
 	result := &objectIdResponse{}
-	return result, o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		url:         apstraUrl,
+		urlStr:      apiUrlStreamingConfig,
 		apiInput:    cfg,
 		apiResponse: result,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return result, nil
 }
 
 func (o *Client) deleteStreamingConfig(ctx context.Context, id ObjectId) error {
-	apstraUrl, err := url.Parse(apiUrlStreamingConfig + "/" + string(id))
-	if err != nil {
-		return fmt.Errorf("error parsing url '%s' - %w", apiUrlStreamingConfig+"/"+string(id), err)
-	}
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		url:    apstraUrl,
+		urlStr: fmt.Sprintf(apiUrlStreamingConfigById, id),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
 
 // todo make public
