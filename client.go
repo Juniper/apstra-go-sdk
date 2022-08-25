@@ -28,19 +28,18 @@ const (
 	defaultScheme  = "https"
 	insecureScheme = "http"
 
-	apstraAuthHeader           = "Authtoken"
-	apstraSupportedApiVersions = "4.1.0, 4.1.1"
-	apstraSupportedVersionSep  = ","
+	apstraAuthHeader = "Authtoken"
 
 	ErrUnknown = iota
-	ErrAsnRangeOverlap
 	ErrAsnOutOfRange
-	ErrNotfound
-	ErrExists
-	ErrConflict
+	ErrAsnRangeOverlap
 	ErrAuthFail
+	ErrCompatibility
+	ErrConflict
+	ErrExists
 	ErrInUse
 	ErrMultipleMatch
+	ErrNotfound
 
 	clientPollingIntervalMs = 1000
 
@@ -243,11 +242,12 @@ func (o ClientCfg) NewClient() (*Client, error) {
 		c.ctx = context.TODO()
 	}
 
-	_, err = c.getApiVersion(c.ctx)
+	v, err := c.getApiVersion(c.ctx)
 	if err != nil {
 		return nil, err
 	}
-	if c.unsupportedApiVersion() {
+
+	if !apstraSupportedApi().Includes(v) {
 		msg := fmt.Sprintf("unsupported API version: '%s'", c.apiVersion)
 		c.logStr(0, msg)
 		if !c.cfg.Experimental {
@@ -272,15 +272,6 @@ func (o *Client) getApiVersion(ctx context.Context) (string, error) {
 	}
 	o.apiVersion = apiVersion.Version
 	return o.apiVersion, nil
-}
-
-func (o *Client) unsupportedApiVersion() bool {
-	for _, v := range strings.Split(apstraSupportedApiVersions, apstraSupportedVersionSep) {
-		if strings.TrimSpace(v) == o.apiVersion {
-			return false
-		}
-	}
-	return true
 }
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
@@ -845,21 +836,37 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 
 // CreateRackBasedTemplate creates a template based on the supplied CreateRackBasedTempalteRequest
 func (o *Client) CreateRackBasedTemplate(ctx context.Context, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+	err := in.validateVersionCompatibility(o.ApiVersion())
+	if err != nil {
+		return "", err
+	}
 	return o.createRackBasedTemplate(ctx, in)
 }
 
 // UpdateRackBasedTemplate updates a template based on the supplied CreateRackBasedTempalteRequest
 func (o *Client) UpdateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+	err := in.validateVersionCompatibility(o.ApiVersion())
+	if err != nil {
+		return "", err
+	}
 	return o.updateRackBasedTemplate(ctx, id, in)
 }
 
 // CreatePodBasedTemplate creates a template based on the supplied CreatePodBasedTempalteRequest
 func (o *Client) CreatePodBasedTemplate(ctx context.Context, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+	err := in.validateVersionCompatibility(o.ApiVersion())
+	if err != nil {
+		return "", err
+	}
 	return o.createPodBasedTemplate(ctx, in)
 }
 
 // UpdatePodBasedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
 func (o *Client) UpdatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+	err := in.validateVersionCompatibility(o.ApiVersion())
+	if err != nil {
+		return "", err
+	}
 	return o.updatePodBasedTemplate(ctx, id, in)
 }
 
