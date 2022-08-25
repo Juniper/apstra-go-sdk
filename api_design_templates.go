@@ -697,7 +697,7 @@ type TemplateRackBased struct {
 	LastModifiedAt         time.Time
 	VirtualNetworkPolicy   VirtualNetworkPolicy
 	AsnAllocationPolicy    AsnAllocationPolicy
-	FabricAddressingPolicy FabricAddressingPolicy
+	FabricAddressingPolicy *FabricAddressingPolicy
 	Capability             TemplateCapability
 	Spine                  Spine
 	RackTypes              []RackType
@@ -714,20 +714,20 @@ func (o *TemplateRackBased) getType() TemplateType {
 }
 
 type rawTemplateRackBased struct {
-	Id                     ObjectId                  `json:"id"`
-	Type                   templateType              `json:"type"`
-	DisplayName            string                    `json:"display_name"`
-	AntiAffinityPolicy     rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
-	CreatedAt              time.Time                 `json:"created_at"`
-	LastModifiedAt         time.Time                 `json:"last_modified_at"`
-	VirtualNetworkPolicy   rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
-	AsnAllocationPolicy    rawAsnAllocationPolicy    `json:"asn_allocation_policy"`
-	FabricAddressingPolicy rawFabricAddressingPolicy `json:"fabric_addressing_policy"`
-	Capability             templateCapability        `json:"capability,omitempty"`
-	Spine                  rawSpine                  `json:"spine"`
-	RackTypes              []rawRackType             `json:"rack_types"`
-	RackTypeCounts         []RackTypeCounts          `json:"rack_type_counts"`
-	DhcpServiceIntent      DhcpServiceIntent         `json:"dhcp_service_intent"`
+	Id                     ObjectId                   `json:"id"`
+	Type                   templateType               `json:"type"`
+	DisplayName            string                     `json:"display_name"`
+	AntiAffinityPolicy     rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	CreatedAt              time.Time                  `json:"created_at"`
+	LastModifiedAt         time.Time                  `json:"last_modified_at"`
+	VirtualNetworkPolicy   rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
+	AsnAllocationPolicy    rawAsnAllocationPolicy     `json:"asn_allocation_policy"`
+	FabricAddressingPolicy *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
+	Capability             templateCapability         `json:"capability,omitempty"`
+	Spine                  rawSpine                   `json:"spine"`
+	RackTypes              []rawRackType              `json:"rack_types"`
+	RackTypeCounts         []RackTypeCounts           `json:"rack_type_counts"`
+	DhcpServiceIntent      DhcpServiceIntent          `json:"dhcp_service_intent"`
 }
 
 func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
@@ -743,9 +743,12 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 	if err != nil {
 		return nil, err
 	}
-	f, err := o.FabricAddressingPolicy.polish()
-	if err != nil {
-		return nil, err
+	var f *FabricAddressingPolicy
+	if o.FabricAddressingPolicy != nil {
+		f, err = o.FabricAddressingPolicy.polish()
+		if err != nil {
+			return nil, err
+		}
 	}
 	c, err := o.Capability.parse()
 	if err != nil {
@@ -777,7 +780,7 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 		LastModifiedAt:         o.LastModifiedAt,
 		VirtualNetworkPolicy:   *v,
 		AsnAllocationPolicy:    *a,
-		FabricAddressingPolicy: *f,
+		FabricAddressingPolicy: f,
 		Capability:             TemplateCapability(c),
 		Spine:                  *s,
 		RackTypes:              rackTypes,
@@ -807,7 +810,7 @@ type TemplatePodBased struct {
 	Type                    TemplateType
 	DisplayName             string
 	AntiAffinityPolicy      AntiAffinityPolicy
-	FabricAddressingPolicy  FabricAddressingPolicy
+	FabricAddressingPolicy  *FabricAddressingPolicy
 	Superspine              Superspine
 	CreatedAt               time.Time
 	LastModifiedAt          time.Time
@@ -821,23 +824,27 @@ func (o *TemplatePodBased) getType() TemplateType {
 }
 
 type rawTemplatePodBased struct {
-	Id                      ObjectId                  `json:"id"`
-	Type                    templateType              `json:"type"`
-	DisplayName             string                    `json:"display_name"`
-	AntiAffinityPolicy      rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
-	FabricAddressingPolicy  rawFabricAddressingPolicy `json:"fabric_addressing_policy"`
-	Superspine              rawSuperspine             `json:"superspine"`
-	CreatedAt               time.Time                 `json:"created_at"`
-	LastModifiedAt          time.Time                 `json:"last_modified_at"`
-	Capability              templateCapability        `json:"capability,omitempty"`
-	RackBasedTemplates      []rawTemplateRackBased    `json:"rack_based_templates"`
-	RackBasedTemplateCounts []RackBasedTemplateCount  `json:"rack_based_template_counts"`
+	Id                      ObjectId                   `json:"id"`
+	Type                    templateType               `json:"type"`
+	DisplayName             string                     `json:"display_name"`
+	AntiAffinityPolicy      rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	FabricAddressingPolicy  *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
+	Superspine              rawSuperspine              `json:"superspine"`
+	CreatedAt               time.Time                  `json:"created_at"`
+	LastModifiedAt          time.Time                  `json:"last_modified_at"`
+	Capability              templateCapability         `json:"capability,omitempty"`
+	RackBasedTemplates      []rawTemplateRackBased     `json:"rack_based_templates"`
+	RackBasedTemplateCounts []RackBasedTemplateCount   `json:"rack_based_template_counts"`
 }
 
 func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
-	fap, err := o.FabricAddressingPolicy.polish()
-	if err != nil {
-		return nil, err
+	var err error
+	var fap *FabricAddressingPolicy
+	if o.FabricAddressingPolicy != nil {
+		fap, err = o.FabricAddressingPolicy.polish()
+		if err != nil {
+			return nil, err
+		}
 	}
 	superspine, err := o.Superspine.polish()
 	if err != nil {
@@ -872,7 +879,7 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 		Type:                    TemplateType(tType),
 		DisplayName:             o.DisplayName,
 		AntiAffinityPolicy:      *antiAffinityPolicy,
-		FabricAddressingPolicy:  *fap,
+		FabricAddressingPolicy:  fap,
 		Superspine:              *superspine,
 		CreatedAt:               o.CreatedAt,
 		LastModifiedAt:          o.LastModifiedAt,
@@ -1161,22 +1168,17 @@ func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]rawTemplateL
 type CreateRackBasedTemplateRequest struct {
 	DisplayName            string
 	Capability             TemplateCapability
-	Spine                  TemplateElementSpineRequest
+	Spine                  *TemplateElementSpineRequest
 	RackTypeIds            []ObjectId
 	RackTypeCounts         []RackTypeCounts
-	DhcpServiceIntent      DhcpServiceIntent
-	AntiAffinityPolicy     AntiAffinityPolicy
-	AsnAllocationPolicy    AsnAllocationPolicy
-	FabricAddressingPolicy FabricAddressingPolicy
-	VirtualNetworkPolicy   VirtualNetworkPolicy
+	DhcpServiceIntent      *DhcpServiceIntent
+	AntiAffinityPolicy     *AntiAffinityPolicy
+	AsnAllocationPolicy    *AsnAllocationPolicy
+	FabricAddressingPolicy *FabricAddressingPolicy
+	VirtualNetworkPolicy   *VirtualNetworkPolicy
 }
 
 func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreateRackBasedTemplateRequest, error) {
-	spine, err := o.Spine.raw(ctx, client)
-	if err != nil {
-		return nil, err
-	}
-
 	rackTypes := make([]rawRackType, len(o.RackTypeIds))
 	for i, rtId := range o.RackTypeIds {
 		rt, err := client.getRackType(ctx, rtId)
@@ -1185,6 +1187,41 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		}
 		rackTypes[i] = *rt
 	}
+
+	var err error
+	var dhcpServiceIntent DhcpServiceIntent
+	if o.DhcpServiceIntent != nil {
+		dhcpServiceIntent = *o.DhcpServiceIntent
+	}
+
+	var spine *rawSpine
+	if o.Spine != nil {
+		spine, err = o.Spine.raw(ctx, client)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var antiAffinityPolicy *rawAntiAffinityPolicy
+	if o.AntiAffinityPolicy != nil {
+		antiAffinityPolicy = o.AntiAffinityPolicy.raw()
+	}
+
+	var asnAllocationPolicy *rawAsnAllocationPolicy
+	if o.AsnAllocationPolicy != nil {
+		asnAllocationPolicy = o.AsnAllocationPolicy.raw()
+	}
+
+	var fabricAddressingPolicy *rawFabricAddressingPolicy
+	if o.FabricAddressingPolicy != nil && !rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion) {
+		fabricAddressingPolicy = o.FabricAddressingPolicy.raw()
+	}
+
+	var virtualNetworkPolicy *rawVirtualNetworkPolicy
+	if o.VirtualNetworkPolicy != nil {
+		virtualNetworkPolicy = o.VirtualNetworkPolicy.raw()
+	}
+
 	return &rawCreateRackBasedTemplateRequest{
 		Type:                   templateTypeRackBased,
 		DisplayName:            o.DisplayName,
@@ -1192,26 +1229,37 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		Spine:                  *spine,
 		RackTypes:              rackTypes,
 		RackTypeCounts:         o.RackTypeCounts,
-		DhcpServiceIntent:      o.DhcpServiceIntent,
-		AntiAffinityPolicy:     *o.AntiAffinityPolicy.raw(),
-		AsnAllocationPolicy:    *o.AsnAllocationPolicy.raw(),
-		FabricAddressingPolicy: *o.FabricAddressingPolicy.raw(),
-		VirtualNetworkPolicy:   *o.VirtualNetworkPolicy.raw(),
+		DhcpServiceIntent:      dhcpServiceIntent,
+		AntiAffinityPolicy:     *antiAffinityPolicy,
+		AsnAllocationPolicy:    *asnAllocationPolicy,
+		FabricAddressingPolicy: fabricAddressingPolicy,
+		VirtualNetworkPolicy:   *virtualNetworkPolicy,
 	}, nil
 }
 
+func (o *CreateRackBasedTemplateRequest) validateVersionCompatibility(version string) error {
+	if o.FabricAddressingPolicy == nil && rackBasedTemplateFabricAddressingPolicyRequired().Includes(version) {
+		return ApstraClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf(rackBasedTemplateFabricAddressingPolicyRequiredErr, version),
+		}
+	}
+
+	return nil
+}
+
 type rawCreateRackBasedTemplateRequest struct {
-	Type                   templateType              `json:"type"`
-	DisplayName            string                    `json:"display_name"`
-	Capability             templateCapability        `json:"capability"`
-	Spine                  rawSpine                  `json:"spine"`
-	RackTypes              []rawRackType             `json:"rack_types"`
-	RackTypeCounts         []RackTypeCounts          `json:"rack_type_counts"`
-	DhcpServiceIntent      DhcpServiceIntent         `json:"dhcp_service_intent"`
-	AntiAffinityPolicy     rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
-	AsnAllocationPolicy    rawAsnAllocationPolicy    `json:"asn_allocation_policy"`
-	FabricAddressingPolicy rawFabricAddressingPolicy `json:"fabric_addressing_policy"`
-	VirtualNetworkPolicy   rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
+	Type                   templateType               `json:"type"`
+	DisplayName            string                     `json:"display_name"`
+	Capability             templateCapability         `json:"capability"`
+	Spine                  rawSpine                   `json:"spine"`
+	RackTypes              []rawRackType              `json:"rack_types"`
+	RackTypeCounts         []RackTypeCounts           `json:"rack_type_counts"`
+	DhcpServiceIntent      DhcpServiceIntent          `json:"dhcp_service_intent"`
+	AntiAffinityPolicy     rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	AsnAllocationPolicy    rawAsnAllocationPolicy     `json:"asn_allocation_policy"`
+	FabricAddressingPolicy *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
+	VirtualNetworkPolicy   rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
 }
 
 func (o *Client) createRackBasedTemplate(ctx context.Context, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
@@ -1253,18 +1301,24 @@ func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *C
 type CreatePodBasedTemplateRequest struct {
 	DisplayName             string
 	Capability              TemplateCapability
-	Superspine              TemplateElementSuperspineRequest
+	Superspine              *TemplateElementSuperspineRequest
 	RackBasedTemplateIds    []ObjectId
 	RackBasedTemplateCounts []RackBasedTemplateCounts
-	AntiAffinityPolicy      AntiAffinityPolicy
-	FabricAddressingPolicy  FabricAddressingPolicy
+	AntiAffinityPolicy      *AntiAffinityPolicy
+	FabricAddressingPolicy  *FabricAddressingPolicy
 }
 
 func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreatePodBasedTemplateRequest, error) {
-	rawSuperspine, err := o.Superspine.raw(ctx, client)
-	if err != nil {
-		return nil, err
+	var err error
+
+	var superspine *rawSuperspine
+	if o.Superspine != nil {
+		superspine, err = o.Superspine.raw(ctx, client)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	rawRackBasedTemplates := make([]rawTemplateRackBased, len(o.RackBasedTemplateIds))
 	for i, id := range o.RackBasedTemplateIds {
 		rbt, err := client.getRackBasedTemplate(ctx, id)
@@ -1273,27 +1327,49 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		}
 		rawRackBasedTemplates[i] = *rbt
 	}
+
+	var antiAffinityPolicy *rawAntiAffinityPolicy
+	if o.AntiAffinityPolicy != nil {
+		antiAffinityPolicy = o.AntiAffinityPolicy.raw()
+	}
+
+	var fabricAddressingPolicy *rawFabricAddressingPolicy
+	if o.FabricAddressingPolicy != nil && !podBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion) {
+		fabricAddressingPolicy = o.FabricAddressingPolicy.raw()
+	}
+
 	return &rawCreatePodBasedTemplateRequest{
 		Type:                    templateTypePodBased,
 		DisplayName:             o.DisplayName,
 		Capability:              o.Capability.raw(),
-		Superspine:              *rawSuperspine,
+		Superspine:              *superspine,
 		RackBasedTemplates:      rawRackBasedTemplates,
 		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
-		AntiAffinityPolicy:      *o.AntiAffinityPolicy.raw(),
-		FabricAddressingPolicy:  *o.FabricAddressingPolicy.raw(),
+		AntiAffinityPolicy:      *antiAffinityPolicy,
+		FabricAddressingPolicy:  fabricAddressingPolicy,
 	}, nil
 }
 
+func (o *CreatePodBasedTemplateRequest) validateVersionCompatibility(version string) error {
+	if o.FabricAddressingPolicy == nil && podBasedTemplateFabricAddressingPolicyRequired().Includes(version) {
+		return ApstraClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf(podBasedTemplateFabricAddressingPolicyRequiredErr, version),
+		}
+	}
+
+	return nil
+}
+
 type rawCreatePodBasedTemplateRequest struct {
-	Type                    templateType              `json:"type"`
-	DisplayName             string                    `json:"display_name"`
-	Capability              templateCapability        `json:"capability"`
-	Superspine              rawSuperspine             `json:"superspine"`
-	RackBasedTemplates      []rawTemplateRackBased    `json:"rack_based_templates"`
-	RackBasedTemplateCounts []RackBasedTemplateCounts `json:"rack_based_template_counts"`
-	AntiAffinityPolicy      rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
-	FabricAddressingPolicy  rawFabricAddressingPolicy `json:"fabric_addressing_policy"`
+	Type                    templateType               `json:"type"`
+	DisplayName             string                     `json:"display_name"`
+	Capability              templateCapability         `json:"capability"`
+	Superspine              rawSuperspine              `json:"superspine"`
+	RackBasedTemplates      []rawTemplateRackBased     `json:"rack_based_templates"`
+	RackBasedTemplateCounts []RackBasedTemplateCounts  `json:"rack_based_template_counts"`
+	AntiAffinityPolicy      rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	FabricAddressingPolicy  *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 }
 
 func (o *Client) createPodBasedTemplate(ctx context.Context, in *CreatePodBasedTemplateRequest) (ObjectId, error) {

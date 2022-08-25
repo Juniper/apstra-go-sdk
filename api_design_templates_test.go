@@ -522,7 +522,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 	req := CreateRackBasedTemplateRequest{
 		DisplayName: dn,
 		Capability:  TemplateCapabilityBlueprint,
-		Spine: TemplateElementSpineRequest{
+		Spine: &TemplateElementSpineRequest{
 			Count:                   2,
 			ExternalLinkSpeed:       "10G",
 			LinkPerSuperspineSpeed:  "10G",
@@ -538,21 +538,21 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			Count:      1,
 			RackTypeId: "evpn-single",
 		}},
-		DhcpServiceIntent:      DhcpServiceIntent{Active: true},
-		AntiAffinityPolicy:     AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-		AsnAllocationPolicy:    AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-		FabricAddressingPolicy: FabricAddressingPolicy{},
-		VirtualNetworkPolicy:   VirtualNetworkPolicy{},
+		DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
+		AntiAffinityPolicy:     &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
+		AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+		FabricAddressingPolicy: &FabricAddressingPolicy{},
+		VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
 	}
 
 	for _, client := range clients {
-		log.Printf("testing createRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		id, err := client.client.createRackBasedTemplate(context.TODO(), &req)
+		log.Printf("testing CreateRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		id, err := client.client.CreateRackBasedTemplate(context.TODO(), &req)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing createRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		template, err := client.client.GetRackBasedTemplate(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
@@ -561,8 +561,8 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, template.DisplayName)
 		}
 
-		log.Printf("testing deleteTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		err = client.client.deleteTemplate(context.TODO(), id)
+		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		err = client.client.DeleteTemplate(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -581,7 +581,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 	rbtr := CreateRackBasedTemplateRequest{
 		DisplayName: rbtdn,
 		Capability:  TemplateCapabilityBlueprint,
-		Spine: TemplateElementSpineRequest{
+		Spine: &TemplateElementSpineRequest{
 			Count:                   2,
 			LinkPerSuperspineSpeed:  "10G",
 			LogicalDevice:           "AOS-7x10-Spine",
@@ -596,16 +596,16 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			Count:      1,
 			RackTypeId: "evpn-single",
 		}},
-		DhcpServiceIntent:      DhcpServiceIntent{Active: true},
-		AntiAffinityPolicy:     AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-		AsnAllocationPolicy:    AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-		FabricAddressingPolicy: FabricAddressingPolicy{},
-		VirtualNetworkPolicy:   VirtualNetworkPolicy{},
+		DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
+		AntiAffinityPolicy:     &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
+		AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+		FabricAddressingPolicy: &FabricAddressingPolicy{},
+		VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
 	}
 
 	for _, client := range clients {
-		log.Printf("testing createRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		rbtid, err := client.client.createRackBasedTemplate(context.TODO(), &rbtr)
+		log.Printf("testing CreateRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		rbtid, err := client.client.CreateRackBasedTemplate(context.TODO(), &rbtr)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -614,7 +614,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 		pbtr := CreatePodBasedTemplateRequest{
 			DisplayName: pbtdn,
 			Capability:  TemplateCapabilityPod,
-			Superspine: TemplateElementSuperspineRequest{
+			Superspine: &TemplateElementSuperspineRequest{
 				PlaneCount:         1,
 				ExternalLinkCount:  0,
 				ExternalLinkSpeed:  "10G",
@@ -627,7 +627,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 				RackBasedTemplateId: rbtid,
 				Count:               1,
 			}},
-			AntiAffinityPolicy: AntiAffinityPolicy{
+			AntiAffinityPolicy: &AntiAffinityPolicy{
 				Algorithm:                AlgorithmHeuristic,
 				MaxLinksPerPort:          1,
 				MaxLinksPerSlot:          1,
@@ -635,7 +635,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 				MaxPerSystemLinksPerSlot: 1,
 				Mode:                     AntiAffinityModeDisabled,
 			},
-			FabricAddressingPolicy: FabricAddressingPolicy{
+			FabricAddressingPolicy: &FabricAddressingPolicy{
 				SpineSuperspineLinks: AddressingSchemeIp4,
 				SpineLeafLinks:       AddressingSchemeIp4,
 			},
