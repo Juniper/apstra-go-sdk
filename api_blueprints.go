@@ -113,10 +113,12 @@ func (o nodeType) parse() (NodeType, error) {
 
 const (
 	RefDesignTwoStageL3Clos = RefDesign(iota)
-	RefDesignDatacenter     = RefDesignTwoStageL3Clos
-	RefDesignUnknown        = "unknown reference design '%s'"
+	RefDesignFreeform
+	RefDesignDatacenter = RefDesignTwoStageL3Clos
+	RefDesignUnknown    = "unknown reference design '%s'"
 
 	refDesignDatacenter = refDesign("two_stage_l3clos")
+	refDesignFreeform   = refDesign("freeform")
 	refDesignUnknown    = refDesign("unknown reference design %d")
 )
 
@@ -127,6 +129,8 @@ func (o RefDesign) String() string {
 	switch o {
 	case RefDesignDatacenter:
 		return string(refDesignDatacenter)
+	case RefDesignFreeform:
+		return string(refDesignFreeform)
 	default:
 		return fmt.Sprintf(string(refDesignUnknown), o)
 	}
@@ -136,6 +140,8 @@ func (o refDesign) parse() (RefDesign, error) {
 	switch o {
 	case refDesignDatacenter:
 		return RefDesignDatacenter, nil
+	case refDesignFreeform:
+		return RefDesignFreeform, nil
 	default:
 		return 0, fmt.Errorf(RefDesignUnknown, o)
 	}
