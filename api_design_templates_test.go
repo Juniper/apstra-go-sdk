@@ -471,6 +471,9 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("testing getRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		log.Printf("  using randomly-selected index %d from the %d available\n", n, len(rackBasedTemplates))
 		rackBasedTemplate, err := client.client.getRackBasedTemplate(context.TODO(), rackBasedTemplates[n].Id)
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Printf("    got template type '%s', ID '%s'\n", rackBasedTemplate.Type, rackBasedTemplate.Id)
 
 		// pod-based templates
@@ -485,6 +488,9 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("testing getPodBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		log.Printf("  using randomly-selected index %d from the %d available\n", n, len(podBasedTemplates))
 		podBasedTemplate, err := client.client.getPodBasedTemplate(context.TODO(), podBasedTemplates[n].Id)
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Printf("    got template type '%s', ID '%s'\n", podBasedTemplate.Type, podBasedTemplate.Id)
 
 		// l3-collapsed templates
@@ -499,6 +505,9 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("testing getL3CollapsedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		log.Printf("  using randomly-selected index %d from the %d available\n", n, len(l3CollapsedTemplates))
 		l3CollapsedTemplate, err := client.client.getL3CollapsedTemplate(context.TODO(), l3CollapsedTemplates[n].Id)
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Printf("    got template type '%s', ID '%s'\n", l3CollapsedTemplate.Type, l3CollapsedTemplate.Id)
 	}
 }

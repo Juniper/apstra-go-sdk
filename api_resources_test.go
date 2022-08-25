@@ -68,6 +68,9 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 
 		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		_, err = client.client.GetAsnPool(context.TODO(), id)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = client.client.DeleteAsnPool(context.TODO(), id)
@@ -273,7 +276,7 @@ func TestGetIp4PoolByName(t *testing.T) {
 		}
 
 		delete(poolNames, "")
-		for name, _ := range poolNames {
+		for name := range poolNames {
 			log.Printf("testing getIp4PoolByName() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 			_, err := client.client.getIp4PoolByName(context.TODO(), name)
 			if err != nil {
@@ -300,6 +303,9 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 		}
 
 		_, s, err := net.ParseCIDR("10.1.2.3/24")
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Printf("testing addSubnetToIp4Pool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = client.client.addSubnetToIp4Pool(context.TODO(), id, s)
 		if err != nil {

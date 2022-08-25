@@ -178,14 +178,9 @@ func (o *taskMonitor) run() {
 				o.mapTaskIdToChan[in.taskId] = in.responseChan
 			}
 
-			// the blueprint referenced by 'in' may already exist
-			if _, found := o.mapBpIdToSliceTaskId[in.bluePrintId]; found {
-				// previously known blueprint, append new task to the existing slice
-				o.mapBpIdToSliceTaskId[in.bluePrintId] = append(o.mapBpIdToSliceTaskId[in.bluePrintId], in.taskId)
-			} else {
-				// new blueprint, create the task slice with this ID as the only element
-				o.mapBpIdToSliceTaskId[in.bluePrintId] = []TaskId{in.taskId}
-			}
+			// add the task Id to the (possibly empty / nonexistent) map entry
+			o.mapBpIdToSliceTaskId[in.bluePrintId] = append(o.mapBpIdToSliceTaskId[in.bluePrintId], in.taskId)
+
 			o.lock.Unlock()
 			o.timer.Reset(taskMonFirstCheckDelay)
 		case <-o.tmQuit: // program exit

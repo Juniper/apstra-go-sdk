@@ -672,9 +672,7 @@ type RackLinkRequest struct {
 
 func (o RackLinkRequest) raw() *rawRackLinkRequest {
 	tags := make([]TagLabel, len(o.Tags))
-	for i, tag := range o.Tags {
-		tags[i] = tag
-	}
+	copy(tags, o.Tags)
 
 	// JSON encoding of lag_mode must be one of the accepted strings or null (nil ptr)
 	var lagModePtr *rackLinkLagMode

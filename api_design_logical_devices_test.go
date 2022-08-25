@@ -56,7 +56,7 @@ func TestParseLogicalDeviceSpeed(t *testing.T) {
 	for _, test := range tests {
 		r := LogicalDevicePortSpeed(test[0]).raw()
 		s1 := fmt.Sprintf("%d%s", r.Value, r.Unit)
-		s2 := fmt.Sprintf("%s", r.parse())
+		s2 := string(r.parse())
 		if s1 != s2 {
 			log.Fatalf("conversion problem: %s %s %s %s", test[0], test[1], s1, s2)
 		}

@@ -27,10 +27,7 @@ func (o DhcpServiceEnabled) raw() dhcpServiceMode {
 }
 
 func (o dhcpServiceMode) parse() DhcpServiceEnabled {
-	if o == dhcpServiceEnabled {
-		return true
-	}
-	return false
+	return o == dhcpServiceEnabled
 }
 
 const (
@@ -49,10 +46,7 @@ func (o L3ConnectivityEnabled) raw() l3ConnectivityMode {
 }
 
 func (o l3ConnectivityMode) parse() L3ConnectivityEnabled {
-	if o == l3ConnectivityEnabled {
-		return true
-	}
-	return false
+	return o == l3ConnectivityEnabled
 }
 
 type SviIpRequirement int
@@ -484,7 +478,7 @@ func (o *TwoStageLThreeClosClient) listAllVirtualNetworkIds(ctx context.Context,
 	}
 	result := make([]ObjectId, len(response.VirtualNetworks))
 	i := 0
-	for id, _ := range response.VirtualNetworks {
+	for id := range response.VirtualNetworks {
 		result[i] = id
 		i++
 	}

@@ -64,7 +64,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	quitChan := make(chan os.Signal)
+	quitChan := make(chan os.Signal, 1)
 	signal.Notify(quitChan, os.Interrupt)
 
 	// tell apstra to send protobuf messages to us
@@ -91,9 +91,9 @@ func main() {
 			}
 			return
 		case msg := <-streamMsgChan:
-			log.Printf(msg.Message.String())
+			log.Println(msg.Message.String())
 		case err := <-streamErrChan:
-			log.Printf(err.Error())
+			log.Println(err.Error())
 		}
 	}
 }

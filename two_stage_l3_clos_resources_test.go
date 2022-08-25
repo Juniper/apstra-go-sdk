@@ -34,6 +34,9 @@ func TestGetResourceAllocation(t *testing.T) {
 			Type: ResourceTypeAsnPool,
 			Name: ResourceGroupNameSpineAsn,
 		})
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Println(spineAsns.PoolIds)
 	}
 }

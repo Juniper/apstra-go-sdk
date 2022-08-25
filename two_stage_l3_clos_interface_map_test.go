@@ -25,6 +25,9 @@ func TestGetSetInterfaceMapAssignments(t *testing.T) {
 
 		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		bpClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), "d7ff0cbb-3cba-48b6-9271-9c6d7aef8b46")
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		log.Printf("testing GetInterfaceMapAssignments() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		ifMapAss, err := bpClient.GetInterfaceMapAssignments(context.TODO())

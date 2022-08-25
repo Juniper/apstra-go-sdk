@@ -76,6 +76,10 @@ func TestKeyLogWriter(t *testing.T) {
 
 	data := randString(100, "b64")
 	_, err = klw.Write([]byte(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = klw.Close()
 	if err != nil {
 		t.Fatal(err)

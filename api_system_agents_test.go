@@ -117,7 +117,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 			}(id, installRunJobResultChan)
 		}
 		installJobStatus := make([]AgentJobStatus, len(agentIds))
-		for i, _ := range agentIds {
+		for i := range agentIds {
 			log.Printf("waiting for SystemAgentRunJob(install) result %d of %d", i+1, len(agentIds))
 			result := <-installRunJobResultChan
 			if result.err != nil {
@@ -178,7 +178,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 			}(agentId, unInstallAgentResultChan)
 		}
 		unInstallJobStatus := make([]AgentJobStatus, len(agentIds))
-		for i, _ := range agentIds {
+		for i := range agentIds {
 			log.Printf("waiting for SystemAgentRunJob(unInstall) result %d of %d", i+1, len(agentIds))
 			result := <-unInstallAgentResultChan
 			if result.err != nil {

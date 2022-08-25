@@ -17,6 +17,9 @@ const (
 	apiUrlSystemAgentInstall    = apiUrlSystemAgentsPrefix + "%s" + "/install-agent"
 	apiUrlSystemAgentUninstall  = apiUrlSystemAgentsPrefix + "%s" + "/uninstall-agent"
 	apiUrlSystemAgentJobHistory = apiUrlSystemAgentsPrefix + "%s" + "/job-history"
+
+	offBox = "offbox"
+	onBox  = "onBox"
 )
 
 const ( // new block resets iota to 0
@@ -97,18 +100,15 @@ type AgentTypeOffbox bool
 
 func (o AgentTypeOffbox) raw() rawAgentType {
 	if o {
-		return "offbox"
+		return offBox
 	}
-	return "onbox"
+	return onBox
 }
 
 type rawAgentType string
 
 func (o rawAgentType) parse() AgentTypeOffbox {
-	if o == "offbox" {
-		return true
-	}
-	return false
+	return o == offBox
 }
 
 type AgentMode int

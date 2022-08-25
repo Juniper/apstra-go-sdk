@@ -31,6 +31,9 @@ func TestListAndGetAllDeviceProfiles(t *testing.T) {
 		}
 		log.Printf("testing getAllDeviceProfiles() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		profiles, err := client.client.getAllDeviceProfiles(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Printf("list found %d, getAll found %d", len(ids), len(profiles))
 	}
 }

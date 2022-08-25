@@ -47,6 +47,9 @@ func TestLogoutAuthFail(t *testing.T) {
 
 	for _, cfg := range clientCfgs {
 		client, err := cfg.cfg.NewClient()
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Printf("testing Login() against %s %s (%s)", cfg.cfgType, cfg.cfgName, client.ApiVersion())
 		err = client.Login(context.TODO())
 		if err != nil {

@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math"
 	"net"
 	"net/http"
 	"strconv"
@@ -282,7 +281,7 @@ func hashAsnPoolRange(in *AsnRange) string {
 	binary.BigEndian.PutUint32(last, in.Last)
 
 	hash := sha256.Sum256(append(first, last...))
-	printable := hex.EncodeToString(hash[0:len(hash)])
+	printable := hex.EncodeToString(hash[:])
 	return printable
 }
 
@@ -312,7 +311,7 @@ func (o *Client) hashAsnPoolRanges(ctx context.Context, poolId ObjectId) (map[st
 }
 
 func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRange) error {
-	if newRange.First <= 0 || newRange.Last > math.MaxUint32 {
+	if newRange.First <= 0 {
 		return ApstraClientErr{
 			errType: ErrAsnOutOfRange,
 			err:     fmt.Errorf("error invalid ASN Range %d-%d", newRange.First, newRange.Last),
@@ -572,7 +571,7 @@ func (o *Client) getIp4PoolByName(ctx context.Context, desiredName string) (*Ip4
 
 	for _, p := range pools {
 		if p.DisplayName == desiredName {
-			if found == true {
+			if found {
 				return nil, ApstraClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("multiple matches for IP Pool with name '%s'", desiredName),
