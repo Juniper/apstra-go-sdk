@@ -22,11 +22,11 @@ func TestGetSystemAgent(t *testing.T) {
 		}
 
 		if len(list) <= 0 {
-			t.Fatalf("cannot get system agent - %d agents exist on this apstra", len(list))
+			t.Skipf("cannot get system agents: %d agents exist on this apstra", len(list))
 		}
 
 		for i := 0; i < len(list); i++ {
-			log.Printf("testing getSystemAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getSystemAgent(%s) against %s %s (%s)", list[i], client.clientType, client.clientName, client.client.ApiVersion())
 			info, err := client.client.getSystemAgent(context.TODO(), list[i])
 			if err != nil {
 				t.Fatal(err)
