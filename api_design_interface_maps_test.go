@@ -170,7 +170,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 		log.Printf("testing deleteInterfaceMap() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = client.client.deleteInterfaceMap(context.TODO(), mapId)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 	}
 }

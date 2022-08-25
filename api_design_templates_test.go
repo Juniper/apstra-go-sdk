@@ -391,13 +391,13 @@ func TestGetTemplate(t *testing.T) {
 				name = rbt.DisplayName
 				rbt2, err := client.client.GetRackBasedTemplate(context.TODO(), id)
 				if err != nil {
-					log.Fatal(err)
+					t.Fatal(err)
 				}
 				if id != rbt2.Id {
-					log.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
 				}
 				if name != rbt2.DisplayName {
-					log.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
 				}
 			case templateTypePodBased:
 				rbt := &rawTemplatePodBased{}
@@ -409,13 +409,13 @@ func TestGetTemplate(t *testing.T) {
 				name = rbt.DisplayName
 				rbt2, err := client.client.GetPodBasedTemplate(context.TODO(), id)
 				if err != nil {
-					log.Fatal(err)
+					t.Fatal(err)
 				}
 				if id != rbt2.Id {
-					log.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
 				}
 				if name != rbt2.DisplayName {
-					log.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
 				}
 			case templateTypeL3Collapsed:
 				rbt := &rawTemplateL3Collapsed{}
@@ -427,13 +427,13 @@ func TestGetTemplate(t *testing.T) {
 				name = rbt.DisplayName
 				rbt2, err := client.client.GetL3CollapsedTemplate(context.TODO(), id)
 				if err != nil {
-					log.Fatal(err)
+					t.Fatal(err)
 				}
 				if id != rbt2.Id {
-					log.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
 				}
 				if name != rbt2.DisplayName {
-					log.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
 				}
 			}
 			log.Printf("template '%s' '%s'", id, name)
@@ -698,13 +698,13 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 		log.Printf("testing CreateL3CollapsedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		id, err := client.client.CreateL3CollapsedTemplate(context.TODO(), req)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 
 		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = client.client.DeleteTemplate(context.TODO(), id)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 	}
 }

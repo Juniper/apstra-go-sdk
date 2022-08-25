@@ -10,7 +10,7 @@ import (
 func TestGetTelemetryServicesDeviceMapping(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {
-		log.Fatalln(err)
+		t.Fatal(err)
 	}
 
 	for _, client := range clients {

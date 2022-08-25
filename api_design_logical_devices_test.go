@@ -58,7 +58,7 @@ func TestParseLogicalDeviceSpeed(t *testing.T) {
 		s1 := fmt.Sprintf("%d%s", r.Value, r.Unit)
 		s2 := string(r.parse())
 		if s1 != s2 {
-			log.Fatalf("conversion problem: %s %s %s %s", test[0], test[1], s1, s2)
+			t.Fatalf("conversion problem: %s %s %s %s", test[0], test[1], s1, s2)
 		}
 	}
 }
@@ -146,7 +146,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 			log.Printf("testing updateLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 			err = client.client.updateLogicalDevice(context.TODO(), d.Id, &devCfg)
 			if err != nil {
-				log.Fatal(err)
+				t.Fatal(err)
 			}
 
 			if i > 0 {
@@ -159,7 +159,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 				log.Printf("testing updateLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 				err = client.client.updateLogicalDevice(context.TODO(), id[i], previous)
 				if err != nil {
-					log.Fatal(err)
+					t.Fatal(err)
 				}
 			}
 
@@ -217,7 +217,7 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 		log.Printf("testing deleteLogicalDevice() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		logicalDevices, err := client.client.getAllLogicalDevices(context.TODO())
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 
 		for _, test := range logicalDevices {
@@ -226,12 +226,12 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 			var ace ApstraClientErr
 			if err != nil {
 				if !(errors.As(err, &ace) && ace.Type() == ErrMultipleMatch) {
-					log.Fatal(err)
+					t.Fatal(err)
 				}
 				continue
 			}
 			if logicalDevice.Id != test.Id {
-				log.Fatal(fmt.Errorf("expected '%s', got '%s'", test.Id, logicalDevice.Id))
+				t.Fatal(fmt.Errorf("expected '%s', got '%s'", test.Id, logicalDevice.Id))
 			}
 		}
 	}

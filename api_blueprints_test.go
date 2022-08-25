@@ -31,7 +31,7 @@ func TestListAllBlueprintIds(t *testing.T) {
 func TestGetAllBlueprintStatus(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	for _, client := range clients {
@@ -48,7 +48,7 @@ func TestGetAllBlueprintStatus(t *testing.T) {
 func TestCreateDeleteBlueprint(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	for _, client := range clients {
@@ -60,14 +60,14 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 			TemplateId: "L2_Virtual_EVPN",
 		})
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
-		
+
 		log.Printf("got id '%s', deleting blueprint...\n", id)
 		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = client.client.deleteBlueprint(context.TODO(), id)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 	}
 }
@@ -155,7 +155,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 func TestGetLockInfo(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	for _, client := range clients {
@@ -165,21 +165,21 @@ func TestGetLockInfo(t *testing.T) {
 			RefDesign:  RefDesignDatacenter,
 			Label:      name,
 			TemplateId: "L2_Virtual_EVPN",
-		})	
+		})
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
-		
+
 		l, err := client.client.getBlueprintLockInfo(context.TODO(), id)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 		log.Println(l)
 		log.Printf("got id '%s', deleting blueprint...\n", id)
 		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = client.client.deleteBlueprint(context.TODO(), id)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 	}
 }

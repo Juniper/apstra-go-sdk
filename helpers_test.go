@@ -53,7 +53,7 @@ func TestKeyLogWriter(t *testing.T) {
 
 	dir, err := ioutil.TempDir("", "")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	defer func() {
 		err := os.RemoveAll(dir)
@@ -118,7 +118,7 @@ func TestOurIpForPeer(t *testing.T) {
 func TestInvertRangesInRange(t *testing.T) {
 	_, err := invertRangesInRange(100, 1, nil)
 	if err == nil {
-		log.Fatalf("expected max/min error")
+		t.Fatalf("expected max/min error")
 	}
 
 	var testBegin, testEnd []uint32
@@ -139,34 +139,34 @@ func TestInvertRangesInRange(t *testing.T) {
 	for i := range testBegin {
 		result, err := invertRangesInRange(testBegin[i], testEnd[i], testUsed[i])
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 		log.Println(result)
 	}
 
 	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 0, Last: 19}, {First: 30, Last: 39}, {First: 90, Last: 100}})
 	if err == nil {
-		log.Fatal(fmt.Errorf("expected to error on minimum range, but did not"))
+		t.Fatal(fmt.Errorf("expected to error on minimum range, but did not"))
 	}
 
 	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 1, Last: 19}, {First: 0, Last: 39}, {First: 90, Last: 100}})
 	if err == nil {
-		log.Fatal(fmt.Errorf("expected to error on minimum range, but did not"))
+		t.Fatal(fmt.Errorf("expected to error on minimum range, but did not"))
 	}
 
 	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 0, Last: 30}, {First: 30, Last: 39}, {First: 90, Last: 100}})
 	if err == nil {
-		log.Fatal(fmt.Errorf("expected to error on range overlap, but did not"))
+		t.Fatal(fmt.Errorf("expected to error on range overlap, but did not"))
 	}
 
 	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 0, Last: 19}, {First: 30, Last: 39}, {First: 90, Last: 101}})
 	if err == nil {
-		log.Fatal(fmt.Errorf("expected to error on maximum range, but did not"))
+		t.Fatal(fmt.Errorf("expected to error on maximum range, but did not"))
 	}
 
 	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 0, Last: 19}, {First: 30, Last: 39}, {First: 90, Last: 101}})
 	if err == nil {
-		log.Fatal(fmt.Errorf("expected to error on maximum range, but did not"))
+		t.Fatal(fmt.Errorf("expected to error on maximum range, but did not"))
 	}
 
 }

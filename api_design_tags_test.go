@@ -76,7 +76,7 @@ func TestCreateGetDeleteTag(t *testing.T) {
 		log.Printf("testing DeleteTag() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		err = client.client.DeleteTag(context.TODO(), id)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 	}
 }
