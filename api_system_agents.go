@@ -19,7 +19,7 @@ const (
 	apiUrlSystemAgentJobHistory = apiUrlSystemAgentsPrefix + "%s" + "/job-history"
 
 	offBox = "offbox"
-	onBox  = "onBox"
+	onBox  = "onbox"
 )
 
 const ( // new block resets iota to 0
