@@ -61,6 +61,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
 		var switchInfo []testSwitchInfo // collect topology-specific switch info here
 
@@ -111,7 +112,8 @@ func TestCreateOffboxAgent(t *testing.T) {
 			labels = append(labels, label)
 		}
 		if len(agentIds) == 0 {
-			t.Skip("no switches available for testing")
+			skipMsg[clientName] = fmt.Sprintf("no switches available in '%s' for testing", clientName)
+			continue
 		}
 
 		// run these jobs in parallel
@@ -172,6 +174,13 @@ func TestCreateOffboxAgent(t *testing.T) {
 				t.Fatal(err)
 			}
 			log.Println("acknowledged!")
+		}
+		if len(skipMsg) > 0 {
+			sb := strings.Builder{}
+			for _, msg := range skipMsg {
+				sb.WriteString(msg + ";")
+			}
+			t.Skip(sb.String())
 		}
 
 		log.Println("uninstalling agents...")
