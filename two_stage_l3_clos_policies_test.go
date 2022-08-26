@@ -244,6 +244,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
 		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
@@ -252,7 +253,8 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		}
 
 		if len(bpIds) == 0 {
-			t.Skip()
+			skipMsg[clientName] = fmt.Sprintf("cannot manipulate policy on '%s' with no blueprints", clientName)
+			continue
 		}
 
 		bpId := bpIds[0]
@@ -289,5 +291,12 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+	if len(skipMsg) > 0 {
+		sb := strings.Builder{}
+		for _, msg := range skipMsg {
+			sb.WriteString(msg + ";")
+		}
+		t.Skip(sb.String())
 	}
 }
