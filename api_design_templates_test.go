@@ -367,14 +367,14 @@ func TestGetTemplate(t *testing.T) {
 		}
 		log.Printf("fetching %d templateIds...", len(templateIds))
 
-		for _, id := range templateIds {
-			log.Printf("testing getTemplate(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
-			x, err := client.client.getTemplate(context.TODO(), id)
+		for _, i := range samples(len(templateIds)) {
+			templateId := templateIds[i]
+			log.Printf("testing getTemplate(%s) against %s %s (%s)", templateId, client.clientType, clientName, client.client.ApiVersion())
+			x, err := client.client.getTemplate(context.TODO(), templateId)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			var id ObjectId
 			var name string
 			tType, err := x.templateType()
 			if err != nil {
@@ -387,14 +387,13 @@ func TestGetTemplate(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				id = rbt.Id
 				name = rbt.DisplayName
-				rbt2, err := client.client.GetRackBasedTemplate(context.TODO(), id)
+				rbt2, err := client.client.GetRackBasedTemplate(context.TODO(), templateId)
 				if err != nil {
 					t.Fatal(err)
 				}
-				if id != rbt2.Id {
-					t.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
+				if templateId != rbt2.Id {
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", templateId, rbt2.Id)
 				}
 				if name != rbt2.DisplayName {
 					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
@@ -405,14 +404,13 @@ func TestGetTemplate(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				id = rbt.Id
 				name = rbt.DisplayName
-				rbt2, err := client.client.GetPodBasedTemplate(context.TODO(), id)
+				rbt2, err := client.client.GetPodBasedTemplate(context.TODO(), templateId)
 				if err != nil {
 					t.Fatal(err)
 				}
-				if id != rbt2.Id {
-					t.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
+				if templateId != rbt2.Id {
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", templateId, rbt2.Id)
 				}
 				if name != rbt2.DisplayName {
 					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
@@ -423,20 +421,19 @@ func TestGetTemplate(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				id = rbt.Id
 				name = rbt.DisplayName
-				rbt2, err := client.client.GetL3CollapsedTemplate(context.TODO(), id)
+				rbt2, err := client.client.GetL3CollapsedTemplate(context.TODO(), templateId)
 				if err != nil {
 					t.Fatal(err)
 				}
-				if id != rbt2.Id {
-					t.Fatalf("template ID mismatch: '%s' vs. '%s", id, rbt2.Id)
+				if templateId != rbt2.Id {
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", templateId, rbt2.Id)
 				}
 				if name != rbt2.DisplayName {
 					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
 				}
 			}
-			log.Printf("template '%s' '%s'", id, name)
+			log.Printf("template '%s' '%s'", templateId, name)
 		}
 	}
 }
