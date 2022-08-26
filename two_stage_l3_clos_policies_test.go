@@ -94,6 +94,7 @@ func TestGetAllPolicies(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
 		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
@@ -102,7 +103,8 @@ func TestGetAllPolicies(t *testing.T) {
 		}
 
 		if len(bpIds) == 0 {
-			t.Skip()
+			skipMsg[clientName] = fmt.Sprintf("cannot get policies from '%s', no blueprints exist", clientName)
+			continue
 		}
 
 		for _, bpId := range bpIds {
@@ -127,6 +129,13 @@ func TestGetAllPolicies(t *testing.T) {
 				log.Printf("policy '%s'\t'%s'", p.Id, p.Label)
 			}
 		}
+	}
+	if len(skipMsg) > 0 {
+		sb := strings.Builder{}
+		for _, msg := range skipMsg {
+			sb.WriteString(msg + ";")
+		}
+		t.Skip(sb.String())
 	}
 }
 
