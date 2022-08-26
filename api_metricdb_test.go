@@ -86,9 +86,6 @@ func TestQueryMetricdb(t *testing.T) {
 			}
 			log.Printf("got %d results for the last hour of %s/%s/%s",
 				len(result.Items), q.metric.Application, q.metric.Namespace, q.metric.Name)
-			for i := range result.Items {
-				log.Println(result.Items[i])
-			}
 		}
 	}
 }
