@@ -71,12 +71,14 @@ const ( // new block resets iota to 0
 	AgentJobStateInit
 	AgentJobStateInProgress
 	AgentJobStateSuccess
+	AgentJobStateFailed
 	AgentJobStateUnknown
 
 	agentJobStateNull       = rawAgentJobState("")
 	agentJobStateInit       = rawAgentJobState("init")
 	agentJobStateInProgress = rawAgentJobState("inprogress")
 	agentJobStateSuccess    = rawAgentJobState("success")
+	agentJobStateFailed     = rawAgentJobState("failed")
 	agentJobStateUnknown    = "system agent job state %d unknown"
 )
 
@@ -177,6 +179,8 @@ func (o AgentJobState) raw() rawAgentJobState {
 func (o AgentJobState) HasExited() bool {
 	switch o {
 	// todo: more states which look like "exited" ?
+	case AgentJobStateFailed:
+		return true
 	case AgentJobStateSuccess:
 		return true
 	}
@@ -748,6 +752,10 @@ type SystemAgentRequest struct {
 }
 
 func (o *SystemAgentRequest) raw() *rawSystemAgentRequest {
+	var platform rawAgentPlatform
+	if o.AgentTypeOffbox {
+		platform = rawAgentPlatform(o.Platform.String())
+	}
 	return &rawSystemAgentRequest{
 		AgentType:           o.AgentTypeOffbox.raw(),
 		ManagementIp:        o.ManagementIp,
@@ -761,7 +769,7 @@ func (o *SystemAgentRequest) raw() *rawSystemAgentRequest {
 		Password:            o.Password,
 		Packages:            o.Packages.raw(),
 		Label:               o.Label,
-		Platform:            rawAgentPlatform(o.Platform.String()),
+		Platform:            platform,
 	}
 }
 
