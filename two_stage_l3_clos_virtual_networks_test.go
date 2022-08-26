@@ -12,6 +12,8 @@ func TestGetAllVirtualNetworks(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipped := true
+
 	for _, client := range clients {
 		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
 		blueprints, err := client.client.listAllBlueprintIds(context.TODO())
@@ -20,42 +22,61 @@ func TestGetAllVirtualNetworks(t *testing.T) {
 		}
 
 		if len(blueprints) == 0 {
-			t.Skip("no blueprints, no test")
+			continue
 		}
 
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), blueprints[0])
-		if err != nil {
-			t.Fatal(err)
-		}
+		skipped = false
 
-		log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-		vns, err := dcClient.listAllVirtualNetworkIds(context.TODO(), BlueprintTypeStaging)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		for _, id := range vns {
-			log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-			vn, err := dcClient.getVirtualNetwork(context.TODO(), id, BlueprintTypeStaging)
+		for i := range samples(len(blueprints)) {
+			id := blueprints[i]
+			bpStatus, err := client.client.getBlueprintStatus(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if vn.Ipv4Subnet != nil {
-				log.Printf("testing getVirtualNetworkBySubnet() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-				vn, err = dcClient.getVirtualNetworkBySubnet(context.TODO(), vn.Ipv4Subnet, vn.SecurityZoneId, BlueprintTypeStaging)
+			switch bpStatus.Design {
+			case RefDesignFreeform:
+				log.Printf("'%s' design is '%s.", id, bpStatus.Design.String())
+				// todo
+			case RefDesignDatacenter:
+				log.Printf("'%s' design is '%s.", id, bpStatus.Design.String())
+				log.Printf("testing NewTwoStageL3ClosClient(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
+				dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), id)
 				if err != nil {
 					t.Fatal(err)
 				}
-			}
-			if vn.Ipv6Subnet != nil {
-				log.Printf("testing getVirtualNetworkBySubnet() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
-				vn, err = dcClient.getVirtualNetworkBySubnet(context.TODO(), vn.Ipv6Subnet, vn.SecurityZoneId, BlueprintTypeStaging)
+
+				log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+				vns, err := dcClient.listAllVirtualNetworkIds(context.TODO(), BlueprintTypeStaging)
 				if err != nil {
 					t.Fatal(err)
 				}
+
+				for _, id := range vns {
+					log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+					vn, err := dcClient.getVirtualNetwork(context.TODO(), id, BlueprintTypeStaging)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if vn.Ipv4Subnet != nil {
+						log.Printf("testing getVirtualNetworkBySubnet() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+						vn, err = dcClient.getVirtualNetworkBySubnet(context.TODO(), vn.Ipv4Subnet, vn.SecurityZoneId, BlueprintTypeStaging)
+						if err != nil {
+							t.Fatal(err)
+						}
+					}
+					if vn.Ipv6Subnet != nil {
+						log.Printf("testing getVirtualNetworkBySubnet() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+						vn, err = dcClient.getVirtualNetworkBySubnet(context.TODO(), vn.Ipv6Subnet, vn.SecurityZoneId, BlueprintTypeStaging)
+						if err != nil {
+							t.Fatal(err)
+						}
+					}
+					log.Printf("vn: %s ipv4: %s, ipv6:%s\n", vn.Id, vn.Ipv4Subnet.String(), vn.Ipv6Subnet.String())
+				}
 			}
-			log.Printf("vn: %s ipv4: %s, ipv6:%s\n", vn.Id, vn.Ipv4Subnet.String(), vn.Ipv6Subnet.String())
 		}
+	}
+	if skipped {
+		t.Skip("no blueprints found on any test system")
 	}
 }

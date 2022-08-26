@@ -290,11 +290,19 @@ type rawBlueprintStatus struct {
 	L3ServerCount          int                       `json:"l3_server_count"`
 	RemoteGatewayCount     int                       `json:"remote_gateway_count"`
 	BuildWarningsCount     int                       `json:"build_warnings_count"`
+	BuildErrorsCount       int                       `json:"build_errors_count"`
 	RootCauseCount         int                       `json:"root_cause_count"`
 	TopLevelRootCauseCount int                       `json:"top_level_root_cause_count"`
-	BuildErrorsCount       int                       `json:"build_errors_count"`
 	DeploymentStatus       BlueprintDeploymentStatus `json:"deployment_status"`
 	AnomalyCounts          BlueprintAnomalyCounts    `json:"anomaly_counts"`
+	// todo 4.1.1 introduced (?) the following:
+	//   "deploy_modes_summary": {
+	//     "ready": 0,
+	//     "undeploy": 0,
+	//     "drain": 0,
+	//     "deploy": 0
+	//   },
+
 }
 
 func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
