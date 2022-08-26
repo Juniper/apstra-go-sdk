@@ -12,15 +12,15 @@ func TestClient_GetAllStreamingConfigs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing GetAllStreamingConfigIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing GetAllStreamingConfigIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		ids, err := client.client.GetAllStreamingConfigIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		for _, id := range ids {
-			log.Printf("testing GetStreamingConfig() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing GetStreamingConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			streamingConfig, err := client.client.GetStreamingConfig(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)

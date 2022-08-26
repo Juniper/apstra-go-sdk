@@ -14,8 +14,8 @@ func TestGetMetricdbMetrics(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing getMetricdbMetrics() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing getMetricdbMetrics() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		_, err = client.client.getMetricdbMetrics(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -62,8 +62,8 @@ func TestQueryMetricdb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing getMetricdbMetrics() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing getMetricdbMetrics() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		metrics, err := client.client.getMetricdbMetrics(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -79,7 +79,7 @@ func TestQueryMetricdb(t *testing.T) {
 				end:    time.Now(),
 			}
 
-			log.Printf("testing QueryMetricdb() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing QueryMetricdb() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			result, err = client.client.QueryMetricdb(context.TODO(), &q)
 			if err != nil {
 				t.Fatal(err)

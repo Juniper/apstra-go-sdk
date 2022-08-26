@@ -15,8 +15,8 @@ func TestListGetOneRackType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listRackTypeIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listRackTypeIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rtIds, err := client.client.listRackTypeIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -25,7 +25,7 @@ func TestListGetOneRackType(t *testing.T) {
 		//id := rtIds[rand.Intn(len(rtIds))]
 		id := rtIds[0]
 
-		log.Printf("testing getRackType(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getRackType(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
 		rt, err := client.client.GetRackType(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
@@ -42,8 +42,8 @@ func TestListGetAllGetRackType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listRackTypeIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listRackTypeIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rackTypeIds, err := client.client.listRackTypeIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -51,7 +51,7 @@ func TestListGetAllGetRackType(t *testing.T) {
 
 		for _, i := range samples(len(rackTypeIds)) {
 			id := rackTypeIds[i]
-			log.Printf("testing getRackType(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getRackType(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
 			rt, err := client.client.GetRackType(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
@@ -59,7 +59,7 @@ func TestListGetAllGetRackType(t *testing.T) {
 			log.Println(rt.Id)
 		}
 
-		log.Printf("testing getAllRackTypes() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getAllRackTypes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rackTypes, err := client.client.getAllRackTypes(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -71,7 +71,7 @@ func TestListGetAllGetRackType(t *testing.T) {
 
 		rand.Seed(time.Now().UnixNano())
 		randRackid := rackTypeIds[rand.Intn(len(rackTypeIds))]
-		log.Printf("testing getRackType() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rt, err := client.client.GetRackType(context.TODO(), randRackid)
 		if err != nil {
 			t.Fatal(err)
@@ -141,10 +141,10 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
+	for clientName, client := range clients {
 		leafLabel := "ll-" + randString(10, "hex")
 
-		log.Printf("testing CreateRackType() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing CreateRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rtr := &RackTypeRequest{
 			DisplayName:              "rdn " + randString(5, "hex"),
 			FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
@@ -182,13 +182,13 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetRackType() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rt, err := client.client.GetRackType(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing DeleteRackType() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing DeleteRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteRackType(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)

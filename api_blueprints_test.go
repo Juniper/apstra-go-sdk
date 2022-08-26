@@ -13,8 +13,8 @@ func TestListAllBlueprintIds(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		blueprints, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -34,8 +34,8 @@ func TestGetAllBlueprintStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing getAllBlueprintStatus() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing getAllBlueprintStatus() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bps, err := client.client.getAllBlueprintStatus(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -51,8 +51,8 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		name := randString(10, "hex")
 		id, err := client.client.createBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplate{
 			RefDesign:  RefDesignDatacenter,
@@ -64,7 +64,7 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 		}
 
 		log.Printf("got id '%s', deleting blueprint...\n", id)
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.deleteBlueprint(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
@@ -78,8 +78,8 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -107,7 +107,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 		nodesB := struct {
 			Nodes map[string]metadataNode `json:"nodes"`
 		}{}
-		log.Printf("testing getNodes() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesA)
 		if err != nil {
 			t.Fatal()
@@ -124,14 +124,14 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 
 			req := metadataNode{Label: newName}
 			resp := &metadataNode{}
-			log.Printf("testing patchNode() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing patchNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err := client.client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
 			if err != nil {
 				t.Fatal(err)
 			}
 			log.Printf("response indicates name changed '%s' -> '%s'", nodeA.Label, resp.Label)
 
-			log.Printf("testing getNodes() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = client.client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesB)
 			if err != nil {
 				t.Fatal()
@@ -142,7 +142,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 			}
 
 			req = metadataNode{Label: nodeA.Label}
-			log.Printf("testing patchNode() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing patchNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = client.client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
 			if err != nil {
 				t.Fatal(err)
@@ -158,8 +158,8 @@ func TestGetLockInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		name := randString(10, "hex")
 		id, err := client.client.createBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplate{
 			RefDesign:  RefDesignDatacenter,
@@ -176,7 +176,7 @@ func TestGetLockInfo(t *testing.T) {
 		}
 		log.Println(l)
 		log.Printf("got id '%s', deleting blueprint...\n", id)
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.deleteBlueprint(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)

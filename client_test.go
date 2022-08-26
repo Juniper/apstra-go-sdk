@@ -13,8 +13,8 @@ func TestLoginEmptyPassword(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing empty password Login() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing empty password Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		client.client.cfg.Pass = ""
 		err := client.client.Login(context.TODO())
 		if err == nil {
@@ -29,8 +29,8 @@ func TestLoginBadPassword(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing bad password Login() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing bad password Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		client.client.cfg.Pass = randString(10, "hex")
 		err = client.client.Login(context.TODO())
 		if err == nil {
@@ -45,12 +45,12 @@ func TestLogoutAuthFail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, cfg := range clientCfgs {
+	for name, cfg := range clientCfgs {
 		client, err := cfg.cfg.NewClient()
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("testing Login() against %s %s (%s)", cfg.cfgType, cfg.cfgName, client.ApiVersion())
+		log.Printf("testing Login() against %s %s (%s)", cfg.cfgType, name, client.ApiVersion())
 		err = client.Login(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -59,7 +59,7 @@ func TestLogoutAuthFail(t *testing.T) {
 		log.Printf("client has this authtoken: '%s'", client.httpHeaders[apstraAuthHeader])
 		client.httpHeaders[apstraAuthHeader] = randJwt()
 		log.Printf("client authtoken changed to: '%s'", client.httpHeaders[apstraAuthHeader])
-		log.Printf("testing failed Logout() against %s %s (%s)", cfg.cfgType, cfg.cfgName, client.ApiVersion())
+		log.Printf("testing failed Logout() against %s %s (%s)", cfg.cfgType, name, client.ApiVersion())
 		err = client.Logout(context.TODO())
 		if err == nil {
 			t.Fatal(fmt.Errorf("tried logging out with bad token, did not get errror"))

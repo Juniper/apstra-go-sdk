@@ -71,8 +71,8 @@ func TestParsingQueryInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -96,7 +96,7 @@ func TestParsingQueryInfo(t *testing.T) {
 				} `json:"n_system"`
 			} `json:"items"`
 		}
-		log.Printf("testing NewQuery() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing NewQuery() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.NewQuery(bpIds[0]).
 			Node([]QEEAttribute{
 				{"type", QEStringVal("system")},

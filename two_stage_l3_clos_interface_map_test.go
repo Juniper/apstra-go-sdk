@@ -12,8 +12,8 @@ func TestGetSetInterfaceMapAssignments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -23,13 +23,13 @@ func TestGetSetInterfaceMapAssignments(t *testing.T) {
 			t.Skip("cannot get interface map assignments with no blueprints")
 		}
 
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), "d7ff0cbb-3cba-48b6-9271-9c6d7aef8b46")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetInterfaceMapAssignments() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetInterfaceMapAssignments() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		ifMapAss, err := bpClient.GetInterfaceMapAssignments(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -41,7 +41,7 @@ func TestGetSetInterfaceMapAssignments(t *testing.T) {
 
 		// todo check length before using in assignment
 
-		log.Printf("testing SetInterfaceMapAssignments() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing SetInterfaceMapAssignments() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.SetInterfaceMapAssignments(context.TODO(), ifMapAss)
 		if err != nil {
 			t.Fatal(err)

@@ -5,34 +5,39 @@ const (
 	clientTypeSlicer    = "slicer"
 )
 
-var testClients []testClient
+var testClients map[string]testClient
 
-func getTestClients() ([]testClient, error) {
+func getTestClients() (map[string]testClient, error) {
 	if testClients != nil {
 		return testClients, nil
 	}
+	testClients = make(map[string]testClient)
 
 	// add cloudlabs clients to testClients slice
 	clTestClients, err := getCloudlabsTestClients()
 	if err != nil {
 		return nil, err
 	}
-	testClients = append(testClients, clTestClients...)
+	for k, v := range clTestClients {
+		testClients[k] = v
+	}
 
 	// add future type clients (slicer?) to testClients slice here
 
 	return testClients, nil
 }
 
-func getTestClientCfgs() ([]testClientCfg, error) {
-	var testClientCfgs []testClientCfg
+func getTestClientCfgs() (map[string]testClientCfg, error) {
+	var testClientCfgs map[string]testClientCfg
 
 	// add cloudlabs clients to testClients slice
 	clTestClientCfgs, err := getCloudlabsTestClientCfgs()
 	if err != nil {
 		return nil, err
 	}
-	testClientCfgs = append(testClientCfgs, clTestClientCfgs...)
+	for k, v := range clTestClientCfgs {
+		testClientCfgs[k] = v
+	}
 
 	// add future type clients (slicer?) to testClients slice here
 

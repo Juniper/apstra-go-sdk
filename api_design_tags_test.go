@@ -12,15 +12,15 @@ func TestGetAllTags(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
+	for clientName, client := range clients {
 
-		log.Printf("testing listAllTags() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing listAllTags() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		idList, err := client.client.listAllTags(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetAllTags() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetAllTags() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		tagList, err := client.client.GetAllTags(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -31,7 +31,7 @@ func TestGetAllTags(t *testing.T) {
 		}
 
 		for _, id := range idList {
-			log.Printf("testing GetTag() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing GetTag() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			tag, err := client.client.GetTag(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
@@ -47,10 +47,10 @@ func TestCreateGetDeleteTag(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
+	for clientName, client := range clients {
 		label := TagLabel(randString(10, "hex"))
 		description := randString(10, "hex")
-		log.Printf("testing CreateTag() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing CreateTag() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		id, err := client.client.CreateTag(context.TODO(), &DesignTag{
 			Label:       label,
 			Description: description,
@@ -59,7 +59,7 @@ func TestCreateGetDeleteTag(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetTag() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetTag() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		tag, err := client.client.GetTag(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
@@ -73,7 +73,7 @@ func TestCreateGetDeleteTag(t *testing.T) {
 			t.Fatalf("description: '%s' != '%s'", tag.Description, description)
 		}
 
-		log.Printf("testing DeleteTag() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing DeleteTag() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteTag(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)

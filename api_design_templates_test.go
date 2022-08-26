@@ -359,8 +359,8 @@ func TestGetTemplate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAllTemplateIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllTemplateIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		templateIds, err := client.client.listAllTemplateIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -368,7 +368,7 @@ func TestGetTemplate(t *testing.T) {
 		log.Printf("fetching %d templateIds...", len(templateIds))
 
 		for _, id := range templateIds {
-			log.Printf("testing getTemplate(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getTemplate(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
 			x, err := client.client.getTemplate(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
@@ -450,8 +450,8 @@ func TestGetTemplateMethods(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing getAllTemplates() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing getAllTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		templates, err := client.client.getAllTemplates(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -460,7 +460,7 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("got %d templates", len(templates))
 
 		// rack-based templates
-		log.Printf("testing getAllRackBasedTemplates() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getAllRackBasedTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rackBasedTemplates, err := client.client.getAllRackBasedTemplates(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -468,7 +468,7 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("    got %d rack-based templates\n", len(rackBasedTemplates))
 
 		n = rand.Intn(len(rackBasedTemplates))
-		log.Printf("testing getRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		log.Printf("  using randomly-selected index %d from the %d available\n", n, len(rackBasedTemplates))
 		rackBasedTemplate, err := client.client.getRackBasedTemplate(context.TODO(), rackBasedTemplates[n].Id)
 		if err != nil {
@@ -477,7 +477,7 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("    got template type '%s', ID '%s'\n", rackBasedTemplate.Type, rackBasedTemplate.Id)
 
 		// pod-based templates
-		log.Printf("testing getAllPodBasedTemplates() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getAllPodBasedTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		podBasedTemplates, err := client.client.getAllPodBasedTemplates(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -485,7 +485,7 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("    got %d pod-based templates\n", len(podBasedTemplates))
 
 		n = rand.Intn(len(podBasedTemplates))
-		log.Printf("testing getPodBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getPodBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		log.Printf("  using randomly-selected index %d from the %d available\n", n, len(podBasedTemplates))
 		podBasedTemplate, err := client.client.getPodBasedTemplate(context.TODO(), podBasedTemplates[n].Id)
 		if err != nil {
@@ -494,7 +494,7 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("    got template type '%s', ID '%s'\n", podBasedTemplate.Type, podBasedTemplate.Id)
 
 		// l3-collapsed templates
-		log.Printf("testing getAllL3CollapsedTemplates() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getAllL3CollapsedTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		l3CollapsedTemplates, err := client.client.getAllL3CollapsedTemplates(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -502,7 +502,7 @@ func TestGetTemplateMethods(t *testing.T) {
 		log.Printf("  got %d pod-based templates\n", len(l3CollapsedTemplates))
 
 		n = rand.Intn(len(l3CollapsedTemplates))
-		log.Printf("testing getL3CollapsedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getL3CollapsedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		log.Printf("  using randomly-selected index %d from the %d available\n", n, len(l3CollapsedTemplates))
 		l3CollapsedTemplate, err := client.client.getL3CollapsedTemplate(context.TODO(), l3CollapsedTemplates[n].Id)
 		if err != nil {
@@ -545,14 +545,14 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 		VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
 	}
 
-	for _, client := range clients {
-		log.Printf("testing CreateRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing CreateRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		id, err := client.client.CreateRackBasedTemplate(context.TODO(), &req)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		template, err := client.client.GetRackBasedTemplate(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
@@ -561,7 +561,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, template.DisplayName)
 		}
 
-		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteTemplate(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
@@ -603,8 +603,8 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 		VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
 	}
 
-	for _, client := range clients {
-		log.Printf("testing CreateRackBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing CreateRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rbtid, err := client.client.CreateRackBasedTemplate(context.TODO(), &rbtr)
 		if err != nil {
 			t.Fatal(err)
@@ -641,13 +641,13 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			},
 		}
 
-		log.Printf("testing createPodBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing createPodBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pbtid, err := client.client.createPodBasedTemplate(context.TODO(), &pbtr)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetPodBasedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetPodBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pbt, err := client.client.GetPodBasedTemplate(context.TODO(), pbtid)
 		if err != nil {
 			t.Fatal(err)
@@ -657,13 +657,13 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, pbt.DisplayName)
 		}
 
-		log.Printf("testing deleteTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing deleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.deleteTemplate(context.TODO(), pbtid)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing deleteTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing deleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.deleteTemplate(context.TODO(), rbtid)
 		if err != nil {
 			t.Fatal(err)
@@ -694,14 +694,14 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 		VirtualNetworkPolicy: VirtualNetworkPolicy{OverlayControlProtocol: OverlayControlProtocolEvpn},
 	}
 
-	for _, client := range clients {
-		log.Printf("testing CreateL3CollapsedTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing CreateL3CollapsedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		id, err := client.client.CreateL3CollapsedTemplate(context.TODO(), req)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteTemplate(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)

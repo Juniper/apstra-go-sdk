@@ -12,20 +12,20 @@ func TestUserLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing Login() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.Login(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing Logout() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing Logout() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.Logout(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing redundant Logout() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing redundant Logout() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.Logout(context.TODO())
 		if err != nil {
 			t.Fatal(err)

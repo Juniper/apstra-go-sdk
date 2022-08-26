@@ -74,8 +74,8 @@ func TestGetAnomalies(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing getAnomalies() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing getAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 
 		anomalies, err := client.client.GetAnomalies(context.TODO())
 		if err != nil {

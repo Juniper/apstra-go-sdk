@@ -252,25 +252,23 @@ func (o *cloudlabsTopology) getSwitchInfo() ([]cloudlabsSwitchInfo, error) {
 }
 
 type testClient struct {
-	clientName string
 	clientType string ``
 	client     *Client
 }
 
 type testClientCfg struct {
-	cfgName string
 	cfgType string
 	cfg     *ClientCfg
 }
 
-func getCloudlabsTestClientCfgs() ([]testClientCfg, error) {
+func getCloudlabsTestClientCfgs() (map[string]testClientCfg, error) {
 	topologyIds, err := topologyIdsFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]testClientCfg, len(topologyIds))
-	for i, id := range topologyIds {
+	result := make(map[string]testClientCfg, len(topologyIds))
+	for _, id := range topologyIds {
 		topology, err := getCloudlabsTopology(id)
 		if err != nil {
 			return nil, err
@@ -279,8 +277,7 @@ func getCloudlabsTestClientCfgs() ([]testClientCfg, error) {
 		if err != nil {
 			return nil, err
 		}
-		result[i] = testClientCfg{
-			cfgName: id,
+		result[id] = testClientCfg{
 			cfgType: "cloudlabs",
 			cfg:     cfg,
 		}
@@ -288,20 +285,19 @@ func getCloudlabsTestClientCfgs() ([]testClientCfg, error) {
 	return result, nil
 }
 
-func getCloudlabsTestClients() ([]testClient, error) {
+func getCloudlabsTestClients() (map[string]testClient, error) {
 	cfgs, err := getCloudlabsTestClientCfgs()
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]testClient, len(cfgs))
-	for i, cfg := range cfgs {
+	result := make(map[string]testClient, len(cfgs))
+	for k, cfg := range cfgs {
 		client, err := cfg.cfg.NewClient()
 		if err != nil {
 			return nil, err
 		}
-		result[i] = testClient{
-			clientName: cfg.cfgName,
+		result[k] = testClient{
 			clientType: "cloudlabs",
 			client:     client,
 		}

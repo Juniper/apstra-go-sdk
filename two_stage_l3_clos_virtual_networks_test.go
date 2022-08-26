@@ -14,8 +14,8 @@ func TestGetAllVirtualNetworks(t *testing.T) {
 
 	skipped := true
 
-	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		blueprints, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -39,33 +39,33 @@ func TestGetAllVirtualNetworks(t *testing.T) {
 				// todo
 			case RefDesignDatacenter:
 				log.Printf("'%s' design is '%s.", id, bpStatus.Design.String())
-				log.Printf("testing NewTwoStageL3ClosClient(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
+				log.Printf("testing NewTwoStageL3ClosClient(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
 				dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), id)
 				if err != nil {
 					t.Fatal(err)
 				}
 
-				log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+				log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 				vns, err := dcClient.listAllVirtualNetworkIds(context.TODO(), BlueprintTypeStaging)
 				if err != nil {
 					t.Fatal(err)
 				}
 
 				for _, id := range vns {
-					log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+					log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 					vn, err := dcClient.getVirtualNetwork(context.TODO(), id, BlueprintTypeStaging)
 					if err != nil {
 						t.Fatal(err)
 					}
 					if vn.Ipv4Subnet != nil {
-						log.Printf("testing getVirtualNetworkBySubnet() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+						log.Printf("testing getVirtualNetworkBySubnet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 						vn, err = dcClient.getVirtualNetworkBySubnet(context.TODO(), vn.Ipv4Subnet, vn.SecurityZoneId, BlueprintTypeStaging)
 						if err != nil {
 							t.Fatal(err)
 						}
 					}
 					if vn.Ipv6Subnet != nil {
-						log.Printf("testing getVirtualNetworkBySubnet() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+						log.Printf("testing getVirtualNetworkBySubnet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 						vn, err = dcClient.getVirtualNetworkBySubnet(context.TODO(), vn.Ipv6Subnet, vn.SecurityZoneId, BlueprintTypeStaging)
 						if err != nil {
 							t.Fatal(err)

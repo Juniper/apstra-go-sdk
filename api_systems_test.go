@@ -11,8 +11,8 @@ func TestListSystems(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, client := range clients {
-		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		systems, err := client.client.listSystems(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -30,14 +30,14 @@ func TestGetAllSystems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		systemIds, err := client.client.listSystems(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing getAllSystemsInfo() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getAllSystemsInfo() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		systems, err := client.client.getAllSystemsInfo(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -55,15 +55,15 @@ func TestGetSystems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		systems, err := client.client.listSystems(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		for _, s := range systems {
-			log.Printf("testing getSystemInfo() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getSystemInfo() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			system, err := client.client.getSystemInfo(context.TODO(), s)
 			if err != nil {
 				t.Fatal(err)

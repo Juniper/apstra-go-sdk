@@ -13,7 +13,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
+	for clientName, client := range clients {
 
 		var cfgs []*AgentProfileConfig
 		for _, p := range []string{
@@ -39,14 +39,14 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 
 		var newIds []ObjectId
 		for _, c := range cfgs {
-			log.Printf("testing createAgentProfile() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing createAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			id, err := client.client.createAgentProfile(context.TODO(), c)
 			if err != nil {
 				t.Fatal(err)
 			}
 			newIds = append(newIds, id)
 
-			log.Printf("testing GetAgentProfileByLabel() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing GetAgentProfileByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			sap, err := client.client.GetAgentProfileByLabel(context.TODO(), c.Label)
 			if err != nil {
 				t.Fatal(err)
@@ -56,13 +56,13 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 			}
 		}
 
-		log.Printf("testing listAgentProfileIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing listAgentProfileIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		apiIds, err := client.client.listAgentProfileIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetAllAgentProfiles() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetAllAgentProfiles() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		allProfiles, err := client.client.GetAllAgentProfiles(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -84,7 +84,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 		}
 
 		for _, id := range newIds {
-			log.Printf("testing deleteAgentProfile() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing deleteAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err := client.client.deleteAgentProfile(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)

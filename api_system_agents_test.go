@@ -14,8 +14,8 @@ func TestGetSystemAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAgents() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAgents() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		list, err := client.client.listAgents(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -26,7 +26,7 @@ func TestGetSystemAgent(t *testing.T) {
 		}
 
 		for i := 0; i < len(list); i++ {
-			log.Printf("testing getSystemAgent(%s) against %s %s (%s)", list[i], client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getSystemAgent(%s) against %s %s (%s)", list[i], client.clientType, clientName, client.client.ApiVersion())
 			info, err := client.client.getSystemAgent(context.TODO(), list[i])
 			if err != nil {
 				t.Fatal(err)
@@ -50,13 +50,13 @@ func TestCreateOffboxAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
+	for clientName, client := range clients {
 		var switchInfo []testSwitchInfo // collect topology-specific switch info here
 
 		switch client.clientType {
 		case clientTypeCloudlabs:
 			// get the topology by name
-			clTopology, err := getCloudlabsTopology(client.clientName)
+			clTopology, err := getCloudlabsTopology(clientName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -77,7 +77,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 		var agentIds []ObjectId // do not make fixed length -- some switches might not be available
 		var labels []string     // do not make fixed length -- some switches might not be available
 		for _, testSwitch := range switchInfo {
-			log.Printf("testing CreateAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing CreateAgent() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			label := randString(5, "hex")
 			id, err := client.client.CreateAgent(context.TODO(), &SystemAgentRequest{
 				ManagementIp:    testSwitch.ip,
@@ -111,7 +111,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 		installRunJobResultChan := make(chan runJobResult, len(switchInfo))
 		for _, id := range agentIds {
 			go func(agentId ObjectId, resultChan chan<- runJobResult) {
-				log.Printf("testing SystemAgentRunJob(install) against agent %s %s %s (%s)", agentId, client.clientType, client.clientName, client.client.ApiVersion())
+				log.Printf("testing SystemAgentRunJob(install) against agent %s %s %s (%s)", agentId, client.clientType, clientName, client.client.ApiVersion())
 				status, err := client.client.SystemAgentRunJob(context.TODO(), agentId, AgentJobTypeInstall)
 				resultChan <- runJobResult{jobStatus: status, err: err}
 			}(id, installRunJobResultChan)
@@ -128,7 +128,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 
 		agents := make([]SystemAgent, len(agentIds))
 		for i, agentId := range agentIds {
-			log.Printf("testing GetSystemAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing GetSystemAgent() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			agent, err := client.client.GetSystemAgent(context.TODO(), agentId)
 			if err != nil {
 				t.Fatal(err)
@@ -145,13 +145,13 @@ func TestCreateOffboxAgent(t *testing.T) {
 			}
 			log.Println(string(jsonAgent))
 
-			log.Printf("testing GetSystemInfo() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing GetSystemInfo() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			systemInfo, err := client.client.GetSystemInfo(context.TODO(), agent.Status.SystemId)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			log.Printf("testing updateSystemByAgentId() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing updateSystemByAgentId() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = client.client.updateSystemByAgentId(context.TODO(), agentId, &SystemUserConfig{
 				AdminState:  SystemAdminStateNormal,
 				AosHclModel: systemInfo.Facts.AosHclModel,
@@ -172,7 +172,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 		unInstallAgentResultChan := make(chan unInstallAgentResult, len(agentIds))
 		for _, agentId := range agentIds {
 			go func(id ObjectId, resultChan chan<- unInstallAgentResult) {
-				log.Printf("testing SystemAgentRunJob(unInstall) against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+				log.Printf("testing SystemAgentRunJob(unInstall) against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 				status, err := client.client.SystemAgentRunJob(context.TODO(), id, AgentJobTypeUninstall)
 				resultChan <- unInstallAgentResult{jobStatus: status, err: err}
 			}(agentId, unInstallAgentResultChan)
@@ -188,13 +188,13 @@ func TestCreateOffboxAgent(t *testing.T) {
 		}
 
 		for _, agent := range agents {
-			log.Printf("testing DeleteSystemAgent() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing DeleteSystemAgent() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = client.client.DeleteSystemAgent(context.TODO(), agent.Id)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			log.Printf("testing deleteSystem() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing deleteSystem() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = client.client.deleteSystem(context.TODO(), agent.Status.SystemId)
 			if err != nil {
 				log.Println(err)

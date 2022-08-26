@@ -92,8 +92,8 @@ func TestGetAllPolicies(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -104,20 +104,20 @@ func TestGetAllPolicies(t *testing.T) {
 		}
 
 		for _, bpId := range bpIds {
-			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), bpId)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			log.Printf("testing getAllPolicies() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getAllPolicies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			policies, err := dcClient.getAllPolicies(context.TODO())
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			for _, policy := range policies {
-				log.Printf("testing getPolicy() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+				log.Printf("testing getPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 				p, err := dcClient.getPolicy(context.TODO(), policy.Id)
 				if err != nil {
 					t.Fatal(err)
@@ -134,8 +134,8 @@ func TestCreatePolicy(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -147,13 +147,13 @@ func TestCreatePolicy(t *testing.T) {
 
 		bpId := bpIds[0]
 
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), bpId)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		vnIds, err := dcClient.listAllVirtualNetworkIds(context.TODO(), BlueprintTypeStaging)
 		if err != nil {
 			t.Fatal(err)
@@ -163,7 +163,7 @@ func TestCreatePolicy(t *testing.T) {
 		var src, dst ObjectId
 		rzToVnId := make(map[ObjectId]ObjectId)
 		for _, vnId := range vnIds {
-			log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			vn, err := dcClient.getVirtualNetwork(context.TODO(), vnId, BlueprintTypeStaging)
 			if err != nil {
 				t.Fatal(err)
@@ -180,7 +180,7 @@ func TestCreatePolicy(t *testing.T) {
 		randStr := randString(5, "hex")
 		label := "label-" + randStr
 		description := "description of " + randStr
-		log.Printf("testing createPolicy() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing createPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		policyId, err := dcClient.createPolicy(context.TODO(), &Policy{
 			Enabled:             true,
 			Label:               label,
@@ -203,8 +203,8 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -216,7 +216,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 
 		bpId := bpIds[0]
 
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), bpId)
 		if err != nil {
 			t.Fatal(err)
@@ -237,13 +237,13 @@ func TestAddDeletePolicyRule(t *testing.T) {
 
 		policyId := ObjectId("lkmWBn_wM9ShK9VCCQk")
 
-		log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		ruleId, err := dcClient.addPolicyRule(context.TODO(), newRule, 0, policyId)
 		if err != nil {
 			t.Fatal(err)
 		}
 		log.Printf("new rule id: '%s'", ruleId)
-		log.Printf("testing deletePolicyRuleById() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing deletePolicyRuleById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = dcClient.deletePolicyRuleById(context.TODO(), policyId, ruleId)
 		if err != nil {
 			t.Fatal(err)

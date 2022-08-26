@@ -13,23 +13,23 @@ func TestGetVersionsServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing getVersionsAosdi() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing getVersionsAosdi() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		aosdi, err := client.client.getVersionsAosdi(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("testing getVersionsApi() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getVersionsApi() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		api, err := client.client.getVersionsApi(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("testing getVersionsBuild() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getVersionsBuild() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		build, err := client.client.getVersionsBuild(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("testing getVersionsServer() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getVersionsServer() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		server, err := client.client.getVersionsServer(context.TODO())
 		if err != nil {
 			t.Fatal(err)

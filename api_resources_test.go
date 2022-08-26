@@ -31,8 +31,8 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing GetAsnPools() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing GetAsnPools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pools, err := client.client.GetAsnPools(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -53,7 +53,7 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 		// todo: make sure there's at least one open hole in the plan
 		name := "test-" + randString(10, "hex")
 		r := rand.Intn(len(openHoles))
-		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		id, err := client.client.CreateAsnPool(context.TODO(), &AsnPool{
 			Ranges: []AsnRange{{
 				First: openHoles[r].First,
@@ -66,13 +66,13 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 		}
 		log.Printf("created ASN pool name %s id %s", name, id)
 
-		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		_, err = client.client.GetAsnPool(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteAsnPool(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
@@ -88,15 +88,15 @@ func TestUpdateEmptyAsnPool(t *testing.T) {
 
 	name := "test-" + randString(10, "hex")
 
-	for _, client := range clients {
-		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		newPoolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPool{DisplayName: name})
 		if err != nil {
 			t.Fatal(err)
 		}
 		log.Printf("created ASN pool name %s id %s", name, newPoolId)
 
-		log.Printf("testing GetAsnPools() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetAsnPools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pools, err := client.client.GetAsnPools(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -122,7 +122,7 @@ func TestUpdateEmptyAsnPool(t *testing.T) {
 		}
 		newDisplayName := "updated-" + name
 		newTags := []string{"updated"}
-		log.Printf("testing updateAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing updateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.updateAsnPool(context.TODO(), newPoolId, &AsnPool{
 			DisplayName: newDisplayName,
 			Ranges:      []AsnRange{newRange},
@@ -132,13 +132,13 @@ func TestUpdateEmptyAsnPool(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		_, err = client.client.GetAsnPool(context.TODO(), newPoolId)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteAsnPool(context.TODO(), newPoolId)
 		if err != nil {
 			t.Fatal(err)
@@ -177,8 +177,8 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 	tags = append(tags, "tag-"+randString(10, "hex"))
 	tags = append(tags, "tag-"+randString(10, "hex"))
 
-	for _, client := range clients {
-		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		poolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPool{
 			DisplayName: name,
 			Tags:        tags,
@@ -193,26 +193,26 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 			b := rand.Intn(1000) + a
 			asnRange.First = uint32(a)
 			asnRange.Last = uint32(b)
-			log.Printf("testing CreateAsnPoolRange() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing CreateAsnPoolRange() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = client.client.CreateAsnPoolRange(context.TODO(), poolId, &asnRange)
 			if err != nil {
 				t.Fatal(err)
 			}
 		}
 
-		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		asnPool, err := client.client.GetAsnPool(context.TODO(), poolId)
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, r := range asnPool.Ranges {
-			log.Printf("testing DeleteAsnPoolRange() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing DeleteAsnPoolRange() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err := client.client.DeleteAsnPoolRange(context.TODO(), asnPool.Id, &r)
 			if err != nil {
 				t.Fatal(err)
 			}
 		}
-		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteAsnPool(context.TODO(), asnPool.Id)
 		if err != nil {
 			t.Fatal(err)
@@ -226,8 +226,8 @@ func TestListIpPools(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listIp4PoolIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listIp4PoolIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		poolIds, err := client.client.listIp4PoolIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -244,8 +244,8 @@ func TestGetAllIpPools(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing getIp4Pools() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing getIp4Pools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pools, err := client.client.getIp4Pools(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -263,8 +263,8 @@ func TestGetIp4PoolByName(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing getIp4Pools() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing getIp4Pools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pools, err := client.client.getIp4Pools(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -277,7 +277,7 @@ func TestGetIp4PoolByName(t *testing.T) {
 
 		delete(poolNames, "")
 		for name := range poolNames {
-			log.Printf("testing getIp4PoolByName() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getIp4PoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			_, err := client.client.getIp4PoolByName(context.TODO(), name)
 			if err != nil {
 				t.Fatal(err)
@@ -292,8 +292,8 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing createIp4Pool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing createIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		id, err := client.client.createIp4Pool(context.TODO(), &NewIp4PoolRequest{
 			DisplayName: randString(10, "hex"),
 			Tags:        []string{"tag one", "tag two"},
@@ -306,26 +306,26 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("testing addSubnetToIp4Pool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing addSubnetToIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.addSubnetToIp4Pool(context.TODO(), id, s)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing getIp4Pool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pool, err := client.client.getIp4Pool(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
 		log.Println(pool.Id, pool.Total)
 
-		log.Printf("testing deleteSubnetFromIp4Pool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing deleteSubnetFromIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.deleteSubnetFromIp4Pool(context.TODO(), id, s)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing deleteIp4Pool() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing deleteIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.deleteIp4Pool(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)

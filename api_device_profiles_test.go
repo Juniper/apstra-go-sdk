@@ -12,8 +12,8 @@ func TestListAndGetAllDeviceProfiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
-		log.Printf("testing listDeviceProfileIds() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+	for clientName, client := range clients {
+		log.Printf("testing listDeviceProfileIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		ids, err := client.client.listDeviceProfileIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
@@ -23,14 +23,14 @@ func TestListAndGetAllDeviceProfiles(t *testing.T) {
 		}
 		for _, i := range samples(len(ids)) {
 			id := ids[i]
-			log.Printf("testing getDeviceProfile(%s) against %s %s (%s)", id, client.clientType, client.clientName, client.client.ApiVersion())
+			log.Printf("testing getDeviceProfile(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
 			dp, err := client.client.getDeviceProfile(context.TODO(), id)
 			if err != nil {
 				t.Fatal(err)
 			}
 			log.Printf("device profile id '%s' label '%s'\n", id, dp.Label)
 		}
-		log.Printf("testing getAllDeviceProfiles() against %s %s (%s)", client.clientType, client.clientName, client.client.ApiVersion())
+		log.Printf("testing getAllDeviceProfiles() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		profiles, err := client.client.getAllDeviceProfiles(context.TODO())
 		if err != nil {
 			t.Fatal(err)
