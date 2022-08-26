@@ -2,7 +2,9 @@ package goapstra
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"testing"
 )
 
@@ -128,72 +130,102 @@ func TestGetAllPolicies(t *testing.T) {
 	}
 }
 
-func TestCreatePolicy(t *testing.T) {
+func TestCreateDatacenterPolicy(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
+
 	for clientName, client := range clients {
+		skipMsg[clientName] = fmt.Sprintf("skipping client %s", clientName)
 		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if len(bpIds) == 0 {
-			t.Skip()
-		}
-
-		bpId := bpIds[0]
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		vnIds, err := dcClient.listAllVirtualNetworkIds(context.TODO(), BlueprintTypeStaging)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		// find two virtual network IDs in the same routing zone
-		var src, dst ObjectId
-		rzToVnId := make(map[ObjectId]ObjectId)
-		for _, vnId := range vnIds {
-			log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			vn, err := dcClient.getVirtualNetwork(context.TODO(), vnId, BlueprintTypeStaging)
+		// reduce bpIds to just "datacenter" blueprints
+		for i, bpId := range bpIds {
+			bpStatus, err := client.client.getBlueprintStatus(context.TODO(), bpId)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if dstVN, found := rzToVnId[vn.SecurityZoneId]; !found {
-				rzToVnId[vn.SecurityZoneId] = vnId
-			} else {
-				src = vnId
-				dst = dstVN
-				break
+			if bpStatus.Design != RefDesignDatacenter {
+				bpIds[i] = bpIds[len(bpIds)-1] // move last element to current position
+				bpIds = bpIds[:len(bpIds)-1]   // remove last element
 			}
 		}
 
-		randStr := randString(5, "hex")
-		label := "label-" + randStr
-		description := "description of " + randStr
-		log.Printf("testing createPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policyId, err := dcClient.createPolicy(context.TODO(), &Policy{
-			Enabled:             true,
-			Label:               label,
-			Description:         description,
-			SrcApplicationPoint: src,
-			DstApplicationPoint: dst,
-			Rules:               nil,
-			Tags:                nil,
-		})
-		if err != nil {
-			t.Fatal(err)
+		if len(bpIds) == 0 {
+			skipMsg[clientName] = fmt.Sprintf("skipping client '%s' because no 'datacenter' blueprints exist", clientName)
+			continue
 		}
-		log.Printf("created policy id: '%s'", policyId)
+
+		for _, bpId := range bpIds {
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), bpId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			vnIds, err := dcClient.listAllVirtualNetworkIds(context.TODO(), BlueprintTypeStaging)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// find two virtual network IDs in the same routing zone
+			var src, dst ObjectId
+			rzToVnId := make(map[ObjectId]ObjectId)
+			for _, vnId := range vnIds {
+				log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				vn, err := dcClient.getVirtualNetwork(context.TODO(), vnId, BlueprintTypeStaging)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if dstVN, found := rzToVnId[vn.SecurityZoneId]; !found {
+					rzToVnId[vn.SecurityZoneId] = vnId
+				} else {
+					src = vnId
+					dst = dstVN
+					break
+				}
+			}
+
+			if src == "" && dst == "" {
+				skipMsg[clientName] = fmt.Sprintf("skipping client '%s' blueprint '%s' because suitable VNs not found", clientName, bpId)
+				continue
+			} else {
+				delete(skipMsg, clientName)
+			}
+
+			randStr := randString(5, "hex")
+			label := "label-" + randStr
+			description := "description of " + randStr
+			log.Printf("testing createPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			policyId, err := dcClient.createPolicy(context.TODO(), &Policy{
+				Enabled:             true,
+				Label:               label,
+				Description:         description,
+				SrcApplicationPoint: src,
+				DstApplicationPoint: dst,
+				Rules:               nil,
+				Tags:                nil,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Printf("created policy id: '%s'", policyId)
+		}
+	}
+	if len(skipMsg) > 0 {
+		sb := strings.Builder{}
+		for _, v := range skipMsg {
+			sb.WriteString(v + ";")
+		}
+		t.Skip(sb.String())
 	}
 }
 
