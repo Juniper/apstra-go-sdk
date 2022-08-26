@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	cloudlabsTopologyUrlById  = "https://cloudlabs.apstra.com/api/v1.0/topologies/%s"
-	envCloudlabsTopologyList  = "CLOUDLABS_TOPOLOGIES"
-	envCloudlabsTopologyIdSep = ":"
+	cloudlabsTopologyUrlById   = "https://cloudlabs.apstra.com/api/v1.0/topologies/%s"
+	envCloudlabsTopologyIdList = "CLOUDLABS_TOPOLOGIES"
+	envCloudlabsTopologyIdSep  = ":"
 
 	vSwitchTypeArista = "veos"
 	vSwitchTypeNexus  = "nxosv"
@@ -205,9 +205,9 @@ func getCloudlabsTopology(id string) (*cloudlabsTopology, error) {
 }
 
 func topologyIdsFromEnv() ([]string, error) {
-	env, found := os.LookupEnv(envCloudlabsTopologyList)
+	env, found := os.LookupEnv(envCloudlabsTopologyIdList)
 	if !found {
-		return nil, fmt.Errorf("env var '%s' not set", envCloudlabsTopologyList)
+		return nil, fmt.Errorf("env var '%s' not set", envCloudlabsTopologyIdList)
 	}
 
 	return strings.Split(env, envCloudlabsTopologyIdSep), nil
@@ -252,7 +252,7 @@ func (o *cloudlabsTopology) getSwitchInfo() ([]cloudlabsSwitchInfo, error) {
 }
 
 type testClient struct {
-	clientType string ``
+	clientType string
 	client     *Client
 }
 
