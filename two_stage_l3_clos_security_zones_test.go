@@ -115,6 +115,7 @@ func TestGetDefaultRoutingZone(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
 		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		blueprints, err := client.client.listAllBlueprintIds(context.TODO())
@@ -123,7 +124,8 @@ func TestGetDefaultRoutingZone(t *testing.T) {
 		}
 
 		if len(blueprints) == 0 {
-			t.Skipf("cannot proceed without at least one blueprint")
+			skipMsg[clientName] = fmt.Sprintf("cannot fetch routing zone from '%s' with no blueprints", clientName)
+			continue
 		}
 
 		for _, bpId := range blueprints {
@@ -140,5 +142,12 @@ func TestGetDefaultRoutingZone(t *testing.T) {
 			}
 			log.Printf("blueprint: %s - default security zone: %s", bpId, sz.Id)
 		}
+	}
+	if len(skipMsg) > 0 {
+		sb := strings.Builder{}
+		for _, msg := range skipMsg {
+			sb.WriteString(msg + ";")
+		}
+		t.Skip(sb.String())
 	}
 }
