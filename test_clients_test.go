@@ -28,7 +28,7 @@ func getTestClients() (map[string]testClient, error) {
 }
 
 func getTestClientCfgs() (map[string]testClientCfg, error) {
-	var testClientCfgs map[string]testClientCfg
+	testClientCfgs := make(map[string]testClientCfg)
 
 	// add cloudlabs clients to testClients slice
 	clTestClientCfgs, err := getCloudlabsTestClientCfgs()
