@@ -3,7 +3,9 @@ package goapstra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
+	"strings"
 	"testing"
 )
 
@@ -78,6 +80,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testSkip := make(map[string]string)
 	for clientName, client := range clients {
 		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
@@ -86,7 +89,8 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 		}
 
 		if len(bpIds) == 0 {
-			t.Skip("no blueprints? no nodes.")
+			testSkip[clientName] = fmt.Sprintf("skipping %s because no blueprints exist", clientName)
+			continue
 		}
 
 		type metadataNode struct {
@@ -101,54 +105,67 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 			Id           ObjectId    `json:"id,omitempty"`
 		}
 
-		nodesA := struct {
-			Nodes map[string]metadataNode `json:"nodes"`
-		}{}
-		nodesB := struct {
-			Nodes map[string]metadataNode `json:"nodes"`
-		}{}
-		log.Printf("testing getNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesA)
-		if err != nil {
-			t.Fatal()
-		}
-
-		if len(nodesA.Nodes) != 1 {
-			t.Fatalf("not expecting %d '%s' nodes", len(nodesA.Nodes), NodeTypeMetadata)
-		}
-
-		newName := randString(10, "hex")
-		// loop should run just once (len check above)
-		for idA, nodeA := range nodesA.Nodes {
-			log.Printf("node id: %s ; label: %s\n", idA, nodeA.Label)
-
-			req := metadataNode{Label: newName}
-			resp := &metadataNode{}
-			log.Printf("testing patchNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err := client.client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
-			if err != nil {
-				t.Fatal(err)
-			}
-			log.Printf("response indicates name changed '%s' -> '%s'", nodeA.Label, resp.Label)
-
+		for _, id := range bpIds {
+			nodesA := struct {
+				Nodes map[string]metadataNode `json:"nodes"`
+			}{}
+			nodesB := struct {
+				Nodes map[string]metadataNode `json:"nodes"`
+			}{}
+			// fetch all metadata nodes into nodesA
 			log.Printf("testing getNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.getNodes(context.TODO(), bpIds[0], NodeTypeMetadata, &nodesB)
+			err = client.client.getNodes(context.TODO(), id, NodeTypeMetadata, &nodesA)
 			if err != nil {
 				t.Fatal()
 			}
-			for idB, nodeB := range nodesB.Nodes {
-				log.Printf("node id: %s ; label: %s\n", idB, nodeB.Label)
 
+			// sanity check
+			if len(nodesA.Nodes) != 1 {
+				t.Fatalf("not expecting %d '%s' nodes", len(nodesA.Nodes), NodeTypeMetadata)
 			}
 
-			req = metadataNode{Label: nodeA.Label}
-			log.Printf("testing patchNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.patchNode(context.TODO(), bpIds[0], nodeA.Id, req, resp)
-			if err != nil {
-				t.Fatal(err)
+			newName := randString(10, "hex")
+			// loop should run just once (len check above)
+			for idA, nodeA := range nodesA.Nodes {
+				log.Printf("node id: %s ; label: %s\n", idA, nodeA.Label)
+
+				// change name to newName
+				req := metadataNode{Label: newName}
+				resp := &metadataNode{}
+				log.Printf("testing patchNode(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
+				err := client.client.patchNode(context.TODO(), id, nodeA.Id, req, resp)
+				if err != nil {
+					t.Fatal(err)
+				}
+				log.Printf("response indicates name changed '%s' -> '%s'", nodeA.Label, resp.Label)
+
+				// fetch changed node(s) (still expecting one) into nodesB
+				log.Printf("testing getNodes(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
+				err = client.client.getNodes(context.TODO(), id, NodeTypeMetadata, &nodesB)
+				if err != nil {
+					t.Fatal()
+				}
+				for idB, nodeB := range nodesB.Nodes {
+					log.Printf("node id: %s ; label: %s\n", idB, nodeB.Label)
+
+				}
+
+				req = metadataNode{Label: nodeA.Label}
+				log.Printf("testing patchNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = client.client.patchNode(context.TODO(), id, nodeA.Id, req, resp)
+				if err != nil {
+					t.Fatal(err)
+				}
+				log.Printf("response indicates name changed '%s' -> '%s'", newName, resp.Label)
 			}
-			log.Printf("response indicates name changed '%s' -> '%s'", newName, resp.Label)
 		}
+	}
+	if len(testSkip) > 0 {
+		sb := strings.Builder{}
+		for _, msg := range testSkip {
+			sb.WriteString(msg + ";")
+		}
+		t.Skip(sb.String())
 	}
 }
 
