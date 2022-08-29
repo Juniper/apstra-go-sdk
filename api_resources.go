@@ -279,31 +279,6 @@ func hashAsnPoolRange(in *AsnRange) string {
 	return printable
 }
 
-func (o *Client) hashAsnPoolRanges(ctx context.Context, poolId ObjectId) (map[string]AsnRange, error) {
-	result := make(map[string]AsnRange)
-	pool, err := o.getAsnPool(ctx, poolId)
-	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) {
-			if ttae.Response.StatusCode == http.StatusNotFound {
-				return nil, ApstraClientErr{
-					errType: ErrNotfound,
-					err:     err,
-				}
-			}
-		} else {
-			return nil, fmt.Errorf("error getting ASN pool info for pool '%s' - %w", poolId, err)
-		}
-	}
-
-	for _, r := range pool.Ranges {
-		rid := hashAsnPoolRange(&r)
-		result[rid] = r
-	}
-
-	return result, nil
-}
-
 func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRange) error {
 	if newRange.First <= 0 {
 		return ApstraClientErr{
