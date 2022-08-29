@@ -87,14 +87,6 @@ type rawAsnRange struct {
 	UsedPercentage float32 `json:"used_percentage"`
 }
 
-type getAsnPoolsResponse struct {
-	Items []rawAsnPool `json:"items"`
-}
-
-type getIp4PoolsResponse struct {
-	Items []rawIp4Pool `json:"items"`
-}
-
 type optionsResourcePoolResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
@@ -120,11 +112,13 @@ func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
-	response := &getAsnPoolsResponse{}
+	var response struct {
+		Items []rawAsnPool `json:"items"`
+	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlResourcesAsnPools,
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -402,18 +396,6 @@ type Ip4Pool struct {
 	Subnets        []Ip4Subnet `json:"subnets"`
 }
 
-func (o *Ip4Pool) ToNew() *NewIp4PoolRequest {
-	var subnets []NewIp4Subnet
-	for _, s := range o.Subnets {
-		subnets = append(subnets, *s.ToNew())
-	}
-	return &NewIp4PoolRequest{
-		DisplayName: o.DisplayName,
-		Tags:        o.Tags,
-		Subnets:     subnets,
-	}
-}
-
 type rawIp4Pool struct {
 	Id             ObjectId       `json:"id"`
 	DisplayName    string         `json:"display_name"`
@@ -469,10 +451,6 @@ type Ip4Subnet struct {
 	UsedPercentage float32
 }
 
-func (o *Ip4Subnet) ToNew() *NewIp4Subnet {
-	return &NewIp4Subnet{Network: o.Network.String()}
-}
-
 type rawIp4Subnet struct {
 	Network        string  `json:"network,omitempty"`
 	Status         string  `json:"status,omitempty"`
@@ -525,11 +503,13 @@ func (o *Client) listIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 func (o *Client) getIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
-	response := &getIp4PoolsResponse{}
+	var response struct {
+		Items []rawIp4Pool `json:"items"`
+	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlResourcesIpPools,
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
