@@ -2,7 +2,9 @@ package goapstra
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"testing"
 )
 
@@ -12,6 +14,7 @@ func TestGetSetInterfaceMapAssignments(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
 		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
@@ -20,7 +23,8 @@ func TestGetSetInterfaceMapAssignments(t *testing.T) {
 		}
 
 		if len(bpIds) == 0 {
-			t.Skip("cannot get interface map assignments with no blueprints")
+			skipMsg[clientName] = fmt.Sprintf("cannot get interface map assignments - no blueprint in '%s'", clientName)
+			continue
 		}
 
 		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -46,5 +50,12 @@ func TestGetSetInterfaceMapAssignments(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+	if len(skipMsg) > 0 {
+		sb := strings.Builder{}
+		for _, msg := range skipMsg {
+			sb.WriteString(msg + ";")
+		}
+		t.Skip(sb.String())
 	}
 }

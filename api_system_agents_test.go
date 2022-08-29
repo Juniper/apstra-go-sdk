@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
+	"strings"
 	"testing"
 )
 
@@ -14,6 +16,7 @@ func TestGetSystemAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
 		log.Printf("testing listAgents() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		list, err := client.client.listAgents(context.TODO())
@@ -22,7 +25,8 @@ func TestGetSystemAgent(t *testing.T) {
 		}
 
 		if len(list) <= 0 {
-			t.Skipf("cannot get system agents: %d agents exist on this apstra", len(list))
+			skipMsg[clientName] = fmt.Sprintf("cannot get system agents because none exist on '%s'", clientName)
+			continue
 		}
 
 		for i := 0; i < len(list); i++ {
@@ -33,6 +37,13 @@ func TestGetSystemAgent(t *testing.T) {
 			}
 			log.Println(info.Id, info.DeviceFacts.DeviceOsFamily, info.Config.ManagementIp, info.Config.AgentTypeOffBox)
 		}
+	}
+	if len(skipMsg) > 0 {
+		sb := strings.Builder{}
+		for _, m := range skipMsg {
+			sb.WriteString(m + ";")
+		}
+		t.Skip(sb.String())
 	}
 }
 
@@ -50,6 +61,7 @@ func TestCreateOffboxAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
 		var switchInfo []testSwitchInfo // collect topology-specific switch info here
 
@@ -100,7 +112,8 @@ func TestCreateOffboxAgent(t *testing.T) {
 			labels = append(labels, label)
 		}
 		if len(agentIds) == 0 {
-			t.Skip("no switches available for testing")
+			skipMsg[clientName] = fmt.Sprintf("no switches available in '%s' for testing", clientName)
+			continue
 		}
 
 		// run these jobs in parallel
@@ -161,6 +174,13 @@ func TestCreateOffboxAgent(t *testing.T) {
 				t.Fatal(err)
 			}
 			log.Println("acknowledged!")
+		}
+		if len(skipMsg) > 0 {
+			sb := strings.Builder{}
+			for _, msg := range skipMsg {
+				sb.WriteString(msg + ";")
+			}
+			t.Skip(sb.String())
 		}
 
 		log.Println("uninstalling agents...")

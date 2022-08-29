@@ -2,7 +2,9 @@ package goapstra
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"testing"
 )
 
@@ -71,6 +73,7 @@ func TestParsingQueryInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
 		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
@@ -79,7 +82,8 @@ func TestParsingQueryInfo(t *testing.T) {
 		}
 
 		if len(bpIds) == 0 {
-			t.Skip("cannot test blueprint query with no blueprint")
+			skipMsg[clientName] = fmt.Sprintf("no blueprints on '%s'", clientName)
+			continue
 		}
 
 		// the type of info we expect the query to return (a slice of these)
@@ -120,5 +124,12 @@ func TestParsingQueryInfo(t *testing.T) {
 		for i, item := range qResponse.Items {
 			log.Printf("  %d id: '%s', label: '%s', logical_device: '%s'", i, item.System.Id, item.System.Label, item.LogicalDevice.Label)
 		}
+	}
+	if len(skipMsg) > 0 {
+		sb := strings.Builder{}
+		for _, msg := range skipMsg {
+			sb.WriteString(msg + ";")
+		}
+		t.Skip(sb.String())
 	}
 }
