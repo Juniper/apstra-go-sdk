@@ -198,7 +198,7 @@ func invertRangesInRange(min, max uint32, used []AsnRange) ([]AsnRange, error) {
 			return nil, fmt.Errorf("'%d' out of of range: min %d, max %d", used[i].First, min, max)
 		}
 		if i != len(used)-1 { // don't look past the end of the slice
-			if AsnOverlap(used[i], used[i+1]) {
+			if AsnOverlap(&used[i], &used[i+1]) {
 				return nil, fmt.Errorf("overlapping ranges %d-%d, %d-%d", used[i].First, used[i].Last, used[i+1].First, used[i+1].Last)
 			}
 			if used[i].Last < used[i+1].First {

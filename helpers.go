@@ -53,28 +53,18 @@ func ourIpForPeer(them net.IP) (*net.IP, error) {
 }
 
 // AsnOverlap returns a bool indicating whether two AsnRange objects overlap
-func AsnOverlap(a, b AsnRange) bool {
-	if a.First >= b.First && a.First <= b.Last { // begin 'a' falls within 'b'
+func AsnOverlap(a, b IntfAsnRange) bool {
+	if a.first() >= b.first() && a.first() <= b.last() { // begin 'a' falls within 'b'
 		return true
 	}
-	if a.Last <= b.Last && a.Last >= b.First { // end 'a' falls within 'b'
+	if a.last() <= b.last() && a.last() >= b.first() { // end 'a' falls within 'b'
 		return true
 	}
-	if b.First >= a.First && b.First <= a.Last { // begin 'b' falls within 'a'
+	if b.first() >= a.first() && b.first() <= a.last() { // begin 'b' falls within 'a'
 		return true
 	}
-	if b.Last <= a.Last && b.Last >= a.First { // end 'b' falls within 'a'
+	if b.last() <= a.last() && b.last() >= a.first() { // end 'b' falls within 'a'
 		return true
 	}
 	return false // no overlap
-}
-
-func AsnPoolRangeInSlice(target *AsnRange, ranges []AsnRange) bool {
-	targetHash := hashAsnPoolRange(target)
-	for _, r := range ranges {
-		if targetHash == hashAsnPoolRange(&r) {
-			return true
-		}
-	}
-	return false
 }
