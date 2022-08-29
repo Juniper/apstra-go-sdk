@@ -1,4 +1,4 @@
-module github.com/chrismarget-j/goapstra
+module bitbucket.org/apstrktr/goapstra
 
 go 1.18
 
