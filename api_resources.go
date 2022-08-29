@@ -87,14 +87,6 @@ type rawAsnRange struct {
 	UsedPercentage float32 `json:"used_percentage"`
 }
 
-type getAsnPoolsResponse struct {
-	Items []rawAsnPool `json:"items"`
-}
-
-type getIp4PoolsResponse struct {
-	Items []rawIp4Pool `json:"items"`
-}
-
 type optionsResourcePoolResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
@@ -120,11 +112,13 @@ func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
-	response := &getAsnPoolsResponse{}
+	var response struct {
+		Items []rawAsnPool `json:"items"`
+	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlResourcesAsnPools,
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -525,11 +519,13 @@ func (o *Client) listIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 func (o *Client) getIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
-	response := &getIp4PoolsResponse{}
+	var response struct {
+		Items []rawIp4Pool `json:"items"`
+	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlResourcesIpPools,
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
