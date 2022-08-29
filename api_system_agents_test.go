@@ -55,7 +55,7 @@ type testSwitchInfo struct {
 	offbox   AgentTypeOffbox
 }
 
-func TestCreateOffboxAgent(t *testing.T) {
+func TestCreateSwitchAgent(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
