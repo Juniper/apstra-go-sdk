@@ -156,8 +156,8 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 		}
 
 		// reduce bpIds to just "datacenter" blueprints
-		for i, bpId := range bpIds {
-			bpStatus, err := client.client.getBlueprintStatus(context.TODO(), bpId)
+		for i := len(bpIds) - 1; i >= 0; i-- {
+			bpStatus, err := client.client.getBlueprintStatus(context.TODO(), bpIds[i])
 			if err != nil {
 				t.Fatal(err)
 			}
