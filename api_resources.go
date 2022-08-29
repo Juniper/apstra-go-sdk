@@ -396,18 +396,6 @@ type Ip4Pool struct {
 	Subnets        []Ip4Subnet `json:"subnets"`
 }
 
-func (o *Ip4Pool) ToNew() *NewIp4PoolRequest {
-	var subnets []NewIp4Subnet
-	for _, s := range o.Subnets {
-		subnets = append(subnets, *s.ToNew())
-	}
-	return &NewIp4PoolRequest{
-		DisplayName: o.DisplayName,
-		Tags:        o.Tags,
-		Subnets:     subnets,
-	}
-}
-
 type rawIp4Pool struct {
 	Id             ObjectId       `json:"id"`
 	DisplayName    string         `json:"display_name"`
@@ -461,10 +449,6 @@ type Ip4Subnet struct {
 	Used           int64
 	Total          int64
 	UsedPercentage float32
-}
-
-func (o *Ip4Subnet) ToNew() *NewIp4Subnet {
-	return &NewIp4Subnet{Network: o.Network.String()}
 }
 
 type rawIp4Subnet struct {
