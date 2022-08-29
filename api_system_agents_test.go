@@ -6,9 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"testing"
 )
+
+const envSkipSwitchAgentTest = "GOAPSTRA_SPEEDY_SKIP_SWITCH_AGENT_TEST"
+const fileSkipSwitchAgentTest = "/tmp/GOAPSTRA_SPEEDY_SKIP_SWITCH_AGENT_TEST"
 
 func TestGetSystemAgent(t *testing.T) {
 	clients, err := getTestClients()
@@ -55,7 +59,14 @@ type testSwitchInfo struct {
 	offbox   AgentTypeOffbox
 }
 
-func TestCreateSwitchAgent(t *testing.T) {
+func TestCreateDeleteSwitchAgent(t *testing.T) {
+	if os.Getenv(envSkipSwitchAgentTest) == "true" {
+		t.Skipf("skipping switch agent tests because '%s' == '%s'", envSkipSwitchAgentTest, "true")
+	}
+	if _, err := os.Stat(fileSkipSwitchAgentTest); !errors.Is(err, os.ErrNotExist) {
+		t.Skipf("skipping switch agent tests because '%s' exists", fileSkipSwitchAgentTest)
+	}
+
 	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
