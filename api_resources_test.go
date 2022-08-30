@@ -41,7 +41,7 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 		var poolBeginEnds []AsnRange
 		for _, p := range pools {
 			for _, r := range p.Ranges {
-				poolBeginEnds = append(poolBeginEnds, AsnRange{First: r.First, Last: r.Last})
+				poolBeginEnds = append(poolBeginEnds, AsnRange{First: r.first(), Last: r.last()})
 			}
 		}
 		openHoles, err := invertRangesInRange(1, math.MaxUint32, poolBeginEnds)
@@ -54,11 +54,12 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 		name := "test-" + randString(10, "hex")
 		r := rand.Intn(len(openHoles))
 		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateAsnPool(context.TODO(), &AsnPool{
-			Ranges: []AsnRange{{
-				First: openHoles[r].First,
-				Last:  openHoles[r].Last,
-			}},
+		arr := AsnRangeRequest{
+			First: openHoles[r].first(),
+			Last:  openHoles[r].last(),
+		}
+		id, err := client.client.CreateAsnPool(context.TODO(), &AsnPoolRequest{
+			Ranges:      []IntfAsnRange{arr},
 			DisplayName: name,
 		})
 		if err != nil {
@@ -81,6 +82,7 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 }
 
 func TestUpdateEmptyAsnPool(t *testing.T) {
+	t.Skip("this test compares ranges across multiple pools -- needs to be revisited")
 	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
@@ -90,7 +92,7 @@ func TestUpdateEmptyAsnPool(t *testing.T) {
 
 	for clientName, client := range clients {
 		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		newPoolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPool{DisplayName: name})
+		newPoolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPoolRequest{DisplayName: name})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -116,16 +118,16 @@ func TestUpdateEmptyAsnPool(t *testing.T) {
 
 		// todo: make sure there's at least one open hole in the plan
 		r := rand.Intn(len(openHoles))
-		newRange := AsnRange{
+		newRange := AsnRangeRequest{
 			First: openHoles[r].First,
 			Last:  openHoles[r].Last,
 		}
 		newDisplayName := "updated-" + name
 		newTags := []string{"updated"}
 		log.Printf("testing updateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.updateAsnPool(context.TODO(), newPoolId, &AsnPool{
+		err = client.client.updateAsnPool(context.TODO(), newPoolId, &AsnPoolRequest{
 			DisplayName: newDisplayName,
-			Ranges:      []AsnRange{newRange},
+			Ranges:      []IntfAsnRange{newRange},
 			Tags:        newTags,
 		})
 		if err != nil {
@@ -154,18 +156,6 @@ func TestUnmarshalPool(t *testing.T) {
 	}
 }
 
-func TestGetAsnPoolRangeHash(t *testing.T) {
-	testRange := AsnRange{
-		First: 66051,    // 0x00 0x01 0x02 0x03,
-		Last:  67438087, // 0x04 0x05 0x06 0x07,
-	}
-	expected := "8a851ff82ee7048ad09ec3847f1ddf44944104d2cbd17ef4e3db22c6785a0d45"
-	result := hashAsnPoolRange(&testRange)
-	if result != expected {
-		t.Fatalf("expected %s, got %s", expected, result)
-	}
-}
-
 func TestCreateDeleteAsnPoolRange(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {
@@ -179,7 +169,7 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 
 	for clientName, client := range clients {
 		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		poolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPool{
+		poolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPoolRequest{
 			DisplayName: name,
 			Tags:        tags,
 		})
@@ -187,7 +177,7 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 			t.Fatal(err)
 		}
 		log.Printf("created ASN pool name %s id %s", name, poolId)
-		var asnRange AsnRange
+		var asnRange AsnRangeRequest
 		for i := 0; i < 3; i++ {
 			a := rand.Intn(1000) + (i * 1000 * 2)
 			b := rand.Intn(1000) + a
@@ -207,7 +197,7 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 		}
 		for _, r := range asnPool.Ranges {
 			log.Printf("testing DeleteAsnPoolRange() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err := client.client.DeleteAsnPoolRange(context.TODO(), asnPool.Id, &r)
+			err := client.client.DeleteAsnPoolRange(context.TODO(), asnPool.Id, &AsnRangeRequest{First: r.First, Last: r.Last})
 			if err != nil {
 				t.Fatal(err)
 			}

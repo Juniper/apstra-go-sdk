@@ -376,7 +376,19 @@ func (o *Client) GetAnomalies(ctx context.Context) ([]Anomaly, error) {
 
 // GetAsnPools returns ASN pools configured on Apstra
 func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
-	return o.getAsnPools(ctx)
+	rawPools, err := o.getAsnPools(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]AsnPool, len(rawPools))
+	for i, raw := range rawPools {
+		p, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *p
+	}
+	return result, nil
 }
 
 // ListAsnPoolIds returns ASN pools configured on Apstra
@@ -385,17 +397,21 @@ func (o *Client) ListAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 // CreateAsnPool adds an ASN pool to Apstra
-func (o *Client) CreateAsnPool(ctx context.Context, in *AsnPool) (ObjectId, error) {
+func (o *Client) CreateAsnPool(ctx context.Context, in *AsnPoolRequest) (ObjectId, error) {
 	response, err := o.createAsnPool(ctx, in)
 	if err != nil {
 		return "", fmt.Errorf("error creating ASN pool - %w", err)
 	}
-	return response.Id, nil
+	return response, nil
 }
 
 // GetAsnPool returns, by ObjectId, a specific ASN pool
 func (o *Client) GetAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) {
-	return o.getAsnPool(ctx, in)
+	raw, err := o.getAsnPool(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // DeleteAsnPool deletes an ASN pool, by ObjectId from Apstra
@@ -404,7 +420,7 @@ func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
 }
 
 // UpdateAsnPool updates an ASN pool by ObjectId with new ASN pool config
-func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPool) error {
+func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPoolRequest) error {
 	// AsnPool "write" operations are not concurrency safe
 	// It is important that this lock is performed in the public method, rather than the private
 	// one below, because other callers of the private method implement their own locking.
@@ -415,7 +431,7 @@ func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPool) e
 }
 
 // CreateAsnPoolRange updates an ASN pool by adding a new AsnRange
-func (o *Client) CreateAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRange) error {
+func (o *Client) CreateAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRangeRequest) error {
 	return o.createAsnPoolRange(ctx, poolId, newRange)
 }
 
@@ -426,7 +442,7 @@ func (o *Client) AsnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 }
 
 // DeleteAsnPoolRange updates an ASN pool by adding a new AsnRange
-func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme *AsnRange) error {
+func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme *AsnRangeRequest) error {
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
 }
 
