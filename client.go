@@ -836,37 +836,21 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 
 // CreateRackBasedTemplate creates a template based on the supplied CreateRackBasedTempalteRequest
 func (o *Client) CreateRackBasedTemplate(ctx context.Context, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
-	err := in.validateVersionCompatibility(o.ApiVersion())
-	if err != nil {
-		return "", err
-	}
 	return o.createRackBasedTemplate(ctx, in)
 }
 
 // UpdateRackBasedTemplate updates a template based on the supplied CreateRackBasedTempalteRequest
 func (o *Client) UpdateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
-	err := in.validateVersionCompatibility(o.ApiVersion())
-	if err != nil {
-		return "", err
-	}
 	return o.updateRackBasedTemplate(ctx, id, in)
 }
 
 // CreatePodBasedTemplate creates a template based on the supplied CreatePodBasedTempalteRequest
 func (o *Client) CreatePodBasedTemplate(ctx context.Context, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
-	err := in.validateVersionCompatibility(o.ApiVersion())
-	if err != nil {
-		return "", err
-	}
 	return o.createPodBasedTemplate(ctx, in)
 }
 
 // UpdatePodBasedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
 func (o *Client) UpdatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
-	err := in.validateVersionCompatibility(o.ApiVersion())
-	if err != nil {
-		return "", err
-	}
 	return o.updatePodBasedTemplate(ctx, id, in)
 }
 
