@@ -1237,17 +1237,6 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 	}, nil
 }
 
-func (o *CreateRackBasedTemplateRequest) validateVersionCompatibility(version string) error {
-	if o.FabricAddressingPolicy == nil && rackBasedTemplateFabricAddressingPolicyRequired().Includes(version) {
-		return ApstraClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf(rackBasedTemplateFabricAddressingPolicyRequiredErr, version),
-		}
-	}
-
-	return nil
-}
-
 type rawCreateRackBasedTemplateRequest struct {
 	Type                   templateType               `json:"type"`
 	DisplayName            string                     `json:"display_name"`
@@ -1348,17 +1337,6 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		AntiAffinityPolicy:      *antiAffinityPolicy,
 		FabricAddressingPolicy:  fabricAddressingPolicy,
 	}, nil
-}
-
-func (o *CreatePodBasedTemplateRequest) validateVersionCompatibility(version string) error {
-	if o.FabricAddressingPolicy == nil && podBasedTemplateFabricAddressingPolicyRequired().Includes(version) {
-		return ApstraClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf(podBasedTemplateFabricAddressingPolicyRequiredErr, version),
-		}
-	}
-
-	return nil
 }
 
 type rawCreatePodBasedTemplateRequest struct {
