@@ -29,7 +29,7 @@ type IntfAsnRange interface {
 }
 
 // AsnRanges is used in AsnPool responses. It exists as a standalone type to
-// facilitate checks with indexOf() and overlaps() methods.
+// facilitate checks with IndexOf() and Overlaps() methods.
 type AsnRanges []AsnRange
 
 // AsnRangeRequest is the public structure found within an AsnPoolRequest.
@@ -85,8 +85,8 @@ type rawAsnPoolRequest struct {
 	Tags        []string             `json:"tags,omitempty"'`
 }
 
-// indexOf returns index of 'b'. If not found, it returns -1
-func (o AsnRanges) indexOf(b IntfAsnRange) int {
+// IndexOf returns index of 'b'. If not found, it returns -1
+func (o AsnRanges) IndexOf(b IntfAsnRange) int {
 	for i, a := range o {
 		if a.first() == b.first() && a.last() == b.last() {
 			return i
@@ -95,7 +95,7 @@ func (o AsnRanges) indexOf(b IntfAsnRange) int {
 	return -1
 }
 
-func (o AsnRanges) overlaps(b IntfAsnRange) bool {
+func (o AsnRanges) Overlaps(b IntfAsnRange) bool {
 	for _, a := range o {
 		if AsnOverlap(a, b) {
 			return true
@@ -109,7 +109,7 @@ func (o AsnRanges) overlaps(b IntfAsnRange) bool {
 type AsnPool struct {
 	Id             ObjectId
 	DisplayName    string
-	Ranges         AsnRanges // use the named slice type so we can call indexOf()
+	Ranges         AsnRanges // use the named slice type so we can call IndexOf()
 	Tags           []string
 	Status         string
 	CreatedAt      time.Time
@@ -342,7 +342,7 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 	}
 
 	// we don't expect to find the "new" range in there already
-	if pool.Ranges.indexOf(newRange) >= 0 {
+	if pool.Ranges.IndexOf(newRange) >= 0 {
 		return ApstraClientErr{
 			errType: ErrExists,
 			err:     fmt.Errorf("ASN range %d-%d in ASN pool '%s' already exists, cannot create", newRange.First, newRange.Last, pool.Id),
@@ -350,7 +350,7 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 	}
 
 	// sanity check: the new range shouldn't overlap any existing range (the API will reject it)
-	if pool.Ranges.overlaps(newRange) {
+	if pool.Ranges.Overlaps(newRange) {
 		return ApstraClientErr{
 			errType: ErrAsnRangeOverlap,
 			err: fmt.Errorf("new ASN range %d-%d overlaps with existing range in ASN Pool '%s'",
@@ -384,7 +384,7 @@ func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 		return false, fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
 	}
 
-	if poolInfo.Ranges.indexOf(asnRange) >= 0 {
+	if poolInfo.Ranges.IndexOf(asnRange) >= 0 {
 		return true, nil
 	}
 	return false, nil
@@ -400,7 +400,7 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 		return fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
 	}
 
-	deleteIdx := pool.Ranges.indexOf(deleteMe)
+	deleteIdx := pool.Ranges.IndexOf(deleteMe)
 	if deleteIdx < 0 {
 		return ApstraClientErr{
 			errType: ErrNotfound,
