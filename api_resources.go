@@ -81,8 +81,7 @@ type rawAsnPoolRequest struct {
 
 type AsnRanges []AsnRange
 
-// contains returns true if the supplied AsnRangeRequest is an exact match
-// (first + last) for an existing range.
+// indexOf returns index of 'b'. If not found, it returns -1
 func (o AsnRanges) indexOf(b IntfAsnRange) int {
 	for i, a := range o {
 		if a.first() == b.first() && a.last() == b.last() {
@@ -195,7 +194,7 @@ func (o AsnRange) last() uint32 {
 }
 
 // rawAsnRange contains some clunky types (integers as strings, etc.), is
-// cleaned up into an AsnPool before being presented to callers
+// cleaned up into an AsnRange before being presented to callers
 type rawAsnRange struct {
 	Status         string  `json:"status"`
 	First          uint32  `json:"first"`
