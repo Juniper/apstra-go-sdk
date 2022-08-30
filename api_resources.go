@@ -47,14 +47,6 @@ type rawAsnRangeRequest struct {
 	Last  uint32 `json:"last"`
 }
 
-func (o rawAsnRangeRequest) first() uint32 {
-	return o.First
-}
-
-func (o rawAsnRangeRequest) last() uint32 {
-	return o.Last
-}
-
 // AsnPoolRequest is the public structure used to create/update an ASN pool.
 type AsnPoolRequest struct {
 	DisplayName string
