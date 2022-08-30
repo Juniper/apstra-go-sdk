@@ -21,6 +21,17 @@ const (
 	apiUrlResourcesIpPoolById     = apiUrlResourcesIpPoolsPrefix + "%s"
 )
 
+// IntfAsnRange allows both AsnRangeRequest (sparse type created by the caller)
+// and AsnRange (detailed type sent by API) to be used in create/update methods
+type IntfAsnRange interface {
+	first() uint32
+	last() uint32
+}
+
+// AsnRanges is used in AsnPool responses. It exists as a standalone type to
+// facilitate checks with indexOf() and overlaps() methods.
+type AsnRanges []AsnRange
+
 // AsnRangeRequest is the public structure found within an AsnPoolRequest.
 type AsnRangeRequest struct {
 	First uint32
@@ -33,11 +44,6 @@ func (o AsnRangeRequest) first() uint32 {
 
 func (o AsnRangeRequest) last() uint32 {
 	return o.Last
-}
-
-type IntfAsnRange interface {
-	first() uint32
-	last() uint32
 }
 
 // rawAsnRangeRequest is the API-friendly structure sent within a
@@ -79,8 +85,6 @@ type rawAsnPoolRequest struct {
 	Tags        []string             `json:"tags,omitempty"'`
 }
 
-type AsnRanges []AsnRange
-
 // indexOf returns index of 'b'. If not found, it returns -1
 func (o AsnRanges) indexOf(b IntfAsnRange) int {
 	for i, a := range o {
@@ -105,7 +109,7 @@ func (o AsnRanges) overlaps(b IntfAsnRange) bool {
 type AsnPool struct {
 	Id             ObjectId
 	DisplayName    string
-	Ranges         AsnRanges
+	Ranges         AsnRanges // use the named slice type so we can call indexOf()
 	Tags           []string
 	Status         string
 	CreatedAt      time.Time
@@ -132,7 +136,7 @@ type rawAsnPool struct {
 
 // polish turns a rawAsnPool from the API into AsnPool for caller consumption
 func (o *rawAsnPool) polish() (*AsnPool, error) {
-	ranges := make([]AsnRange, len(o.Ranges))
+	ranges := make(AsnRanges, len(o.Ranges))
 	for i, r := range o.Ranges {
 		p, err := r.polish()
 		if err != nil {
@@ -364,10 +368,7 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 
 	// fill the first elements with the retrieved data
 	for i, r := range pool.Ranges {
-		req.Ranges[i] = AsnRangeRequest{
-			First: r.First,
-			Last:  r.Last,
-		}
+		req.Ranges[i] = r
 	}
 
 	// populate the final element (index matches length of retrieved data) with
@@ -399,30 +400,23 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 		return fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
 	}
 
-	initialRangeCount := len(pool.Ranges)
-
-	indexOf := pool.Ranges.indexOf(deleteMe)
-	if indexOf < 0 {
-		if initialRangeCount == len(pool.Ranges) {
-			return ApstraClientErr{
-				errType: ErrNotfound,
-				err:     fmt.Errorf("ASN range '%d-%d' not found in ASN Pool '%s'", deleteMe.First, deleteMe.Last, poolId),
-			}
+	deleteIdx := pool.Ranges.indexOf(deleteMe)
+	if deleteIdx < 0 {
+		return ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("ASN range '%d-%d' not found in ASN Pool '%s'", deleteMe.First, deleteMe.Last, poolId),
 		}
 	}
-
-	pool.Ranges = append(pool.Ranges[:indexOf], pool.Ranges[indexOf+1:]...)
 
 	req := &AsnPoolRequest{
 		DisplayName: pool.DisplayName,
 		Tags:        pool.Tags,
 	}
-	req.Ranges = make([]IntfAsnRange, len(pool.Ranges))
 	for i, r := range pool.Ranges {
-		req.Ranges[i] = AsnRangeRequest{
-			First: r.First,
-			Last:  r.Last,
+		if i == deleteIdx {
+			continue
 		}
+		req.Ranges = append(req.Ranges, r)
 	}
 
 	return o.updateAsnPool(ctx, poolId, req)
