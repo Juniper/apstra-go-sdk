@@ -35,19 +35,9 @@ func (o AsnRangeRequest) last() uint32 {
 	return o.Last
 }
 
-// raw() converts an AsnRangeRequest to a rawAsnRangeRequest. Other than tags
-// for the JSON marshaler, these are the same thing.
-func (o AsnRangeRequest) raw() IntfAsnRange {
-	return &rawAsnRangeRequest{
-		First: o.First,
-		Last:  o.Last,
-	}
-}
-
 type IntfAsnRange interface {
 	first() uint32
 	last() uint32
-	raw() IntfAsnRange
 }
 
 // rawAsnRangeRequest is the API-friendly structure sent within a
@@ -63,10 +53,6 @@ func (o rawAsnRangeRequest) first() uint32 {
 
 func (o rawAsnRangeRequest) last() uint32 {
 	return o.Last
-}
-
-func (o rawAsnRangeRequest) raw() IntfAsnRange {
-	return &o
 }
 
 // AsnPoolRequest is the public structure used to create/update an ASN pool.
@@ -214,10 +200,6 @@ func (o AsnRange) first() uint32 {
 
 func (o AsnRange) last() uint32 {
 	return o.Last
-}
-
-func (o AsnRange) raw() IntfAsnRange {
-	return &o
 }
 
 // rawAsnRange contains some clunky types (integers as strings, etc.), is
