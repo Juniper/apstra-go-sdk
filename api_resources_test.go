@@ -54,11 +54,12 @@ func TestGetCreateDeleteAsnPools(t *testing.T) {
 		name := "test-" + randString(10, "hex")
 		r := rand.Intn(len(openHoles))
 		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		arr := AsnRangeRequest{
+			First: openHoles[r].first(),
+			Last:  openHoles[r].last(),
+		}
 		id, err := client.client.CreateAsnPool(context.TODO(), &AsnPoolRequest{
-			Ranges: []AsnRangeRequest{{
-				First: openHoles[r].First,
-				Last:  openHoles[r].Last,
-			}},
+			Ranges:      []IntfAsnRange{arr},
 			DisplayName: name,
 		})
 		if err != nil {
@@ -125,7 +126,7 @@ func TestUpdateEmptyAsnPool(t *testing.T) {
 		log.Printf("testing updateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.updateAsnPool(context.TODO(), newPoolId, &AsnPoolRequest{
 			DisplayName: newDisplayName,
-			Ranges:      []AsnRangeRequest{newRange},
+			Ranges:      []IntfAsnRange{newRange},
 			Tags:        newTags,
 		})
 		if err != nil {

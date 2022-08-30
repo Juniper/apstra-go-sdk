@@ -35,18 +35,19 @@ func (o AsnRangeRequest) last() uint32 {
 	return o.Last
 }
 
-type IntfAsnRange interface {
-	first() uint32
-	last() uint32
-}
-
 // raw() converts an AsnRangeRequest to a rawAsnRangeRequest. Other than tags
 // for the JSON marshaler, these are the same thing.
-func (o *AsnRangeRequest) raw() *rawAsnRangeRequest {
+func (o AsnRangeRequest) raw() IntfAsnRange {
 	return &rawAsnRangeRequest{
 		First: o.First,
 		Last:  o.Last,
 	}
+}
+
+type IntfAsnRange interface {
+	first() uint32
+	last() uint32
+	raw() IntfAsnRange
 }
 
 // rawAsnRangeRequest is the API-friendly structure sent within a
@@ -64,10 +65,14 @@ func (o rawAsnRangeRequest) last() uint32 {
 	return o.Last
 }
 
+func (o rawAsnRangeRequest) raw() IntfAsnRange {
+	return &o
+}
+
 // AsnPoolRequest is the public structure used to create/update an ASN pool.
 type AsnPoolRequest struct {
 	DisplayName string
-	Ranges      []AsnRangeRequest
+	Ranges      []IntfAsnRange
 	Tags        []string
 }
 
@@ -76,7 +81,10 @@ type AsnPoolRequest struct {
 func (o *AsnPoolRequest) raw() *rawAsnPoolRequest {
 	ranges := make([]rawAsnRangeRequest, len(o.Ranges))
 	for i, r := range o.Ranges {
-		ranges[i] = *r.raw()
+		ranges[i] = rawAsnRangeRequest{
+			First: r.first(),
+			Last:  r.last(),
+		}
 	}
 	return &rawAsnPoolRequest{
 		DisplayName: o.DisplayName,
@@ -108,7 +116,7 @@ func (o AsnRanges) indexOf(b IntfAsnRange) int {
 
 func (o AsnRanges) overlaps(b IntfAsnRange) bool {
 	for _, a := range o {
-		if AsnOverlap(&a, b) {
+		if AsnOverlap(a, b) {
 			return true
 		}
 	}
@@ -200,12 +208,16 @@ type AsnRange struct {
 	UsedPercentage float32
 }
 
-func (o *AsnRange) first() uint32 {
+func (o AsnRange) first() uint32 {
 	return o.First
 }
 
-func (o *AsnRange) last() uint32 {
+func (o AsnRange) last() uint32 {
 	return o.Last
+}
+
+func (o AsnRange) raw() IntfAsnRange {
+	return &o
 }
 
 // rawAsnRange contains some clunky types (integers as strings, etc.), is
@@ -375,7 +387,7 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 	}
 
 	// make one extra slice element for the new range element
-	req.Ranges = make([]AsnRangeRequest, len(pool.Ranges)+1)
+	req.Ranges = make([]IntfAsnRange, len(pool.Ranges)+1)
 
 	// fill the first elements with the retrieved data
 	for i, r := range pool.Ranges {
@@ -432,7 +444,7 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 		DisplayName: pool.DisplayName,
 		Tags:        pool.Tags,
 	}
-	req.Ranges = make([]AsnRangeRequest, len(pool.Ranges))
+	req.Ranges = make([]IntfAsnRange, len(pool.Ranges))
 	for i, r := range pool.Ranges {
 		req.Ranges[i] = AsnRangeRequest{
 			First: r.First,
