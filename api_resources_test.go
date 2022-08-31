@@ -3,11 +3,13 @@ package goapstra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
-	"math"
 	"math/rand"
 	"net"
+	"sort"
 	"testing"
+	"time"
 )
 
 const (
@@ -25,125 +27,97 @@ const (
     }`
 )
 
-func TestGetCreateDeleteAsnPools(t *testing.T) {
+func TestEmptyAsnPool(t *testing.T) {
+	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	for clientName, client := range clients {
-		log.Printf("testing GetAsnPools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pools, err := client.client.GetAsnPools(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(pools)
-		var poolBeginEnds []AsnRange
-		for _, p := range pools {
-			for _, r := range p.Ranges {
-				poolBeginEnds = append(poolBeginEnds, AsnRange{First: r.first(), Last: r.last()})
-			}
-		}
-		openHoles, err := invertRangesInRange(1, math.MaxUint32, poolBeginEnds)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println("open holes in ASN resources: ", openHoles)
-
-		// todo: make sure there's at least one open hole in the plan
-		name := "test-" + randString(10, "hex")
-		r := rand.Intn(len(openHoles))
-		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		arr := AsnRangeRequest{
-			First: openHoles[r].first(),
-			Last:  openHoles[r].last(),
-		}
-		id, err := client.client.CreateAsnPool(context.TODO(), &AsnPoolRequest{
-			Ranges:      []IntfAsnRange{arr},
-			DisplayName: name,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("created ASN pool name %s id %s", name, id)
-
-		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = client.client.GetAsnPool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteAsnPool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func TestUpdateEmptyAsnPool(t *testing.T) {
-	t.Skip("this test compares ranges across multiple pools -- needs to be revisited")
-	clients, err := getTestClients()
+	asnRangeCount := rand.Intn(5) + 2 // random number of ASN ranges to add to new pool
+	asnBeginEnds, err := getRandInts(1, 100000000, asnRangeCount*2)
 	if err != nil {
 		t.Fatal(err)
 	}
+	sort.Ints(asnBeginEnds) // sort so that the ASN ranges will be ([0]...[1], [2]...[3], etc.)
+	asnRanges := make([]IntfAsnRange, asnRangeCount)
+	for i := 0; i < asnRangeCount; i++ {
+		asnRanges[i] = AsnRangeRequest{
+			First: uint32(asnBeginEnds[2*i]),
+			Last:  uint32(asnBeginEnds[(2*i)+1]),
+		}
+	}
 
-	name := "test-" + randString(10, "hex")
+	poolName := "test-" + randString(10, "hex")
 
 	for clientName, client := range clients {
 		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		newPoolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPoolRequest{DisplayName: name})
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("created ASN pool name %s id %s", name, newPoolId)
-
-		log.Printf("testing GetAsnPools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pools, err := client.client.GetAsnPools(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(pools)
-		var poolBeginEnds []AsnRange
-		for _, p := range pools {
-			for _, r := range p.Ranges {
-				poolBeginEnds = append(poolBeginEnds, AsnRange{First: r.First, Last: r.Last})
-			}
-		}
-		openHoles, err := invertRangesInRange(1, math.MaxUint32, poolBeginEnds)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println("open holes in ASN resources: ", openHoles)
-
-		// todo: make sure there's at least one open hole in the plan
-		r := rand.Intn(len(openHoles))
-		newRange := AsnRangeRequest{
-			First: openHoles[r].First,
-			Last:  openHoles[r].Last,
-		}
-		newDisplayName := "updated-" + name
-		newTags := []string{"updated"}
-		log.Printf("testing updateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.updateAsnPool(context.TODO(), newPoolId, &AsnPoolRequest{
-			DisplayName: newDisplayName,
-			Ranges:      []IntfAsnRange{newRange},
-			Tags:        newTags,
+		newPoolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPoolRequest{
+			DisplayName: poolName,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
+		log.Printf("created ASN pool name %s id %s", poolName, newPoolId)
 
-		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = client.client.GetAsnPool(context.TODO(), newPoolId)
+		log.Printf("testing GetAsnPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
+		newPool, err := client.client.GetAsnPool(context.TODO(), newPoolId)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteAsnPool(context.TODO(), newPoolId)
-		if err != nil {
-			t.Fatal(err)
+		if poolName != newPool.DisplayName {
+			t.Fatalf("expected pool name '%s', got '%s'", poolName, newPool.DisplayName)
+		}
+		if 0 != len(newPool.Ranges) {
+			t.Fatalf("expected new pool to have 0 ranges, got %d", len(newPool.Ranges))
+		}
+
+		for i := range asnRanges {
+			newName := fmt.Sprintf("%s-%d", poolName, i)
+			err = client.client.updateAsnPool(context.TODO(), newPoolId, &AsnPoolRequest{
+				DisplayName: newName,
+				Ranges:      asnRanges[:i+1],
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing GetAsnPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
+			newPool, err = client.client.GetAsnPool(context.TODO(), newPoolId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if newName != newPool.DisplayName {
+				t.Fatalf("expected pool name '%s', got '%s'", newName, newPool.DisplayName)
+			}
+			if i+1 != len(newPool.Ranges) {
+				t.Fatalf("expected new pool to have %d ranges, got %d", i+1, len(newPool.Ranges))
+			}
+		}
+
+		for i := range asnRanges {
+			// delete one randomly selected range
+			rangeCount := len(newPool.Ranges)
+			deleteMe := newPool.Ranges[rand.Intn(rangeCount)]
+			err = client.client.DeleteAsnPoolRange(context.TODO(), newPoolId, &deleteMe)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing GetAsnPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
+			newPool, err = client.client.GetAsnPool(context.TODO(), newPoolId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if rangeCount-1 != len(newPool.Ranges) {
+				t.Fatalf("expected new pool to have %d ranges, got %d", i+1, len(newPool.Ranges))
+			}
+		}
+
+		if len(newPool.Ranges) != 0 {
+			t.Fatalf("expected new pool to have 0 ranges, got %d", len(newPool.Ranges))
 		}
 	}
 }
