@@ -227,8 +227,12 @@ func (o LogicalDevicePortSpeed) raw() *rawLogicalDevicePortSpeed {
 	}
 }
 
-func (o *LogicalDevicePortSpeed) BitsPerSecond() int64 {
+func (o LogicalDevicePortSpeed) BitsPerSecond() int64 {
 	return o.raw().BitsPerSecond()
+}
+
+func (o LogicalDevicePortSpeed) IsEqual(o2 LogicalDevicePortSpeed) bool {
+	return o.BitsPerSecond() == o2.BitsPerSecond()
 }
 
 type rawLogicalDevicePortSpeed struct {
