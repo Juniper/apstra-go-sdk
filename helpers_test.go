@@ -3,12 +3,10 @@ package goapstra
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net"
 	"os"
 	"path/filepath"
-	"sort"
 	"testing"
 	"time"
 )
@@ -115,100 +113,19 @@ func TestOurIpForPeer(t *testing.T) {
 	}
 }
 
-func TestInvertRangesInRange(t *testing.T) {
-	_, err := invertRangesInRange(100, 1, nil)
-	if err == nil {
-		t.Fatalf("expected max/min error")
+func getRandInts(min, max, count int) ([]int, error) {
+	if max-min+1 < count {
+		return nil, fmt.Errorf("cannot generate %d random numbers between %d and %d inclusive", count, min, max)
 	}
-
-	var testBegin, testEnd []uint32
-	var testUsed [][]AsnRange
-
-	testBegin = append(testBegin, 1)
-	testEnd = append(testEnd, 100)
-	testUsed = append(testUsed, []AsnRange{{First: 10, Last: 19}, {First: 30, Last: 39}, {First: 90, Last: 99}})
-
-	testBegin = append(testBegin, 1)
-	testEnd = append(testEnd, 100)
-	testUsed = append(testUsed, []AsnRange{{First: 1, Last: 19}, {First: 30, Last: 39}, {First: 90, Last: 100}})
-
-	testBegin = append(testBegin, 1)
-	testEnd = append(testEnd, 100)
-	testUsed = append(testUsed, nil)
-
-	for i := range testBegin {
-		result, err := invertRangesInRange(testBegin[i], testEnd[i], testUsed[i])
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(result)
+	intMap := make(map[int]struct{}, count)
+	for len(intMap) < count {
+		intMap[rand.Intn(max+1-min)+min] = struct{}{}
 	}
-
-	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 0, Last: 19}, {First: 30, Last: 39}, {First: 90, Last: 100}})
-	if err == nil {
-		t.Fatal(fmt.Errorf("expected to error on minimum range, but did not"))
+	result := make([]int, count)
+	i := 0
+	for k := range intMap {
+		result[i] = k
+		i++
 	}
-
-	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 1, Last: 19}, {First: 0, Last: 39}, {First: 90, Last: 100}})
-	if err == nil {
-		t.Fatal(fmt.Errorf("expected to error on minimum range, but did not"))
-	}
-
-	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 0, Last: 30}, {First: 30, Last: 39}, {First: 90, Last: 100}})
-	if err == nil {
-		t.Fatal(fmt.Errorf("expected to error on range overlap, but did not"))
-	}
-
-	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 0, Last: 19}, {First: 30, Last: 39}, {First: 90, Last: 101}})
-	if err == nil {
-		t.Fatal(fmt.Errorf("expected to error on maximum range, but did not"))
-	}
-
-	_, err = invertRangesInRange(1, 100, []AsnRange{{First: 0, Last: 19}, {First: 30, Last: 39}, {First: 90, Last: 101}})
-	if err == nil {
-		t.Fatal(fmt.Errorf("expected to error on maximum range, but did not"))
-	}
-
-}
-
-// invertRangesInRange was designed to find free space in ASN pool resources.
-// Valid ASNs are 1-4294967295.
-// If current ASN pools consume 50-100, 64512-65534 and 4200000000-4294967294,
-// we'd expect to get back [{1,49}{101,64511}{65535,4199999999}{4294967295,4294967295}]
-func invertRangesInRange(min, max uint32, used []AsnRange) ([]AsnRange, error) {
-	if min > max {
-		return nil, fmt.Errorf("min > max: %d > %d", min, max) // bad input
-	}
-	if len(used) == 0 {
-		return []AsnRange{{First: min, Last: max}}, nil // nothing used, return entire range
-	}
-	sort.Slice(used, func(i, j int) bool {
-		return used[i].First < used[j].First
-	})
-
-	var result []AsnRange
-	if used[0].First > min { // if there's room, create the first result item
-		result = append(result, AsnRange{First: min, Last: used[0].First - 1})
-	}
-	for i := 0; i <= len(used)-1; i++ {
-		if used[i].First > used[i].Last {
-			return nil, fmt.Errorf("inverted range element: %d-%d", used[i].First, used[i].Last)
-		}
-		if used[i].First < min || used[i].Last > max {
-			return nil, fmt.Errorf("'%d' out of of range: min %d, max %d", used[i].First, min, max)
-		}
-		if i != len(used)-1 { // don't look past the end of the slice
-			if AsnOverlap(&used[i], &used[i+1]) {
-				return nil, fmt.Errorf("overlapping ranges %d-%d, %d-%d", used[i].First, used[i].Last, used[i+1].First, used[i+1].Last)
-			}
-			if used[i].Last < used[i+1].First {
-				result = append(result, AsnRange{First: used[i].Last + 1, Last: used[i+1].First - 1})
-			}
-		}
-	}
-	if used[len(used)-1].Last < max { // if there's room, create the final result item
-		result = append(result, AsnRange{First: used[len(used)-1].Last + 1, Last: max})
-	}
-
 	return result, nil
 }

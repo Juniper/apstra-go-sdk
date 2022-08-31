@@ -390,7 +390,7 @@ func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 	return false, nil
 }
 
-func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe *AsnRangeRequest) error {
+func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe IntfAsnRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
 	o.lock(clientApiResourceAsnPoolRangeMutex)
 	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
@@ -404,7 +404,7 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 	if deleteIdx < 0 {
 		return ApstraClientErr{
 			errType: ErrNotfound,
-			err:     fmt.Errorf("ASN range '%d-%d' not found in ASN Pool '%s'", deleteMe.First, deleteMe.Last, poolId),
+			err:     fmt.Errorf("ASN range '%d-%d' not found in ASN Pool '%s'", deleteMe.first(), deleteMe.last(), poolId),
 		}
 	}
 
