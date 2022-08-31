@@ -48,7 +48,7 @@ func (o *Client) listAllTags(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) getTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
 	response := &DesignTag{}
-	 err :=  o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignTagById, id),
 		apiResponse: response,

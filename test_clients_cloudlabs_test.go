@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package goapstra
 
 import (
@@ -282,26 +285,6 @@ func getCloudlabsTestClientCfgs() (map[string]testClientCfg, error) {
 		result[id] = testClientCfg{
 			cfgType: "cloudlabs",
 			cfg:     cfg,
-		}
-	}
-	return result, nil
-}
-
-func getCloudlabsTestClients() (map[string]testClient, error) {
-	cfgs, err := getCloudlabsTestClientCfgs()
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]testClient, len(cfgs))
-	for k, cfg := range cfgs {
-		client, err := cfg.cfg.NewClient()
-		if err != nil {
-			return nil, err
-		}
-		result[k] = testClient{
-			clientType: "cloudlabs",
-			client:     client,
 		}
 	}
 	return result, nil

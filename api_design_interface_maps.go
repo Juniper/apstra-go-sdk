@@ -91,9 +91,8 @@ type InterfaceStateActive bool
 func (o InterfaceStateActive) raw() rawInterfaceState {
 	if o {
 		return rawInterfaceStateTrue
-	} else {
-		return rawInterfaceStateFalse
 	}
+	return rawInterfaceStateFalse
 }
 
 type rawInterfaceState string

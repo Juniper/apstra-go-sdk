@@ -19,6 +19,7 @@ const (
 type DhcpServiceEnabled bool
 type dhcpServiceMode string
 
+//lint:ignore U1000 keep for future
 func (o DhcpServiceEnabled) raw() dhcpServiceMode {
 	if o {
 		return dhcpServiceEnabled
@@ -38,6 +39,7 @@ const (
 type L3ConnectivityEnabled bool
 type l3ConnectivityMode string
 
+//lint:ignore U1000 keep for future
 func (o L3ConnectivityEnabled) raw() l3ConnectivityMode {
 	if o {
 		return l3ConnectivityEnabled
@@ -283,6 +285,7 @@ type SviIps struct {
 	Ipv6Requirement SviIpRequirement `json:"ipv6_requirement"`
 }
 
+//lint:ignore U1000 keep for future
 func (o *SviIps) raw() *rawSviIps {
 	return &rawSviIps{
 		SystemId:        o.SystemId,

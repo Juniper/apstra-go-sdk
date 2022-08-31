@@ -35,12 +35,14 @@ type versionsBuildResponse struct {
 	BuildDateTime string `json:"build_datetime"`
 }
 
+//lint:ignore U1000 keep for future use
 type versionsDeviceRequest struct {
 	SerialNumber string `json:"serial_number"`
 	Version      string `json:"version"`
 	Platform     string `json:"platform"`
 }
 
+//lint:ignore U1000 keep for future use
 type versionsDeviceResponse struct {
 	Status       string `json:"status"`
 	Url          string `json:"url"`
@@ -48,11 +50,13 @@ type versionsDeviceResponse struct {
 	Cksum        string `json:"cksum"`
 }
 
+//lint:ignore U1000 keep for future use
 type versionsIbaRequest struct {
 	Version  string `json:"version"`
 	SystemId string `json:"system_id"`
 }
 
+//lint:ignore U1000 keep for future use
 type versionsIbaResponse struct {
 	Status       string `json:"status"`
 	Url          string `json:"url"`
@@ -60,12 +64,14 @@ type versionsIbaResponse struct {
 	Cksum        string `json:"cksum"`
 }
 
+//lint:ignore U1000 keep for future use
 type versionsNodeRequest struct {
 	IpAddress string `json:"ip_address"`
 	Version   string `json:"version"`
 	SystemId  string `json:"system_id"`
 }
 
+//lint:ignore U1000 keep for future use
 type versionsNodeResponse struct {
 	Status       string `json:"status"`
 	RetryTimeout int    `json:"retry_timeout"`
@@ -115,6 +121,7 @@ func (o *Client) getVersionsBuild(ctx context.Context) (*versionsBuildResponse, 
 	})
 }
 
+//lint:ignore U1000 keep for future use
 func (o *Client) postVersionsDevice(ctx context.Context, request *versionsDeviceRequest) (*versionsDeviceResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsDevice)
 	if err != nil {
@@ -129,6 +136,7 @@ func (o *Client) postVersionsDevice(ctx context.Context, request *versionsDevice
 	})
 }
 
+//lint:ignore U1000 keep for future use
 func (o *Client) postVersionsIba(ctx context.Context, request *versionsIbaRequest) (*versionsIbaResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsIba)
 	if err != nil {
@@ -143,6 +151,7 @@ func (o *Client) postVersionsIba(ctx context.Context, request *versionsIbaReques
 	})
 }
 
+//lint:ignore U1000 keep for future use
 func (o *Client) postVersionsNode(ctx context.Context, request *versionsNodeRequest) (*versionsNodeResponse, error) {
 	apstraUrl, err := url.Parse(apiUrlVersionsNode)
 	if err != nil {

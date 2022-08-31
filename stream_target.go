@@ -106,15 +106,19 @@ func NewStreamTarget(cfg *StreamTargetCfg) (*StreamTarget, error) {
 // StreamTarget is a listener for AOS streaming objects
 type StreamTarget struct {
 	tlsConfig *tls.Config            // if we're a TLS listener
-	nl        net.Listener           // clients (apstra server) connect here
 	stopChan  chan struct{}          // close to rip everythign down
 	errChan   chan error             // client handlers pass errors here
 	msgChan   chan *StreamingMessage // client handlers pass messages here
 	clientWG  sync.WaitGroup         // keeps track of client handlers
 	cfg       *StreamTargetCfg       // submitted by caller
-	apstraIP  *net.IP                // for filtering incoming connections
 	strmCfgId ObjectId               // AOS streaming ID, populated by Register
 	client    *Client                // populated by Register, we hang onto it for Unregister
+
+	//lint:ignore U1000 keep for future use
+	apstraIP *net.IP // for filtering incoming connections
+
+	//lint:ignore U1000 keep for future use
+	nl net.Listener // clients (apstra server) connect here
 }
 
 // Start loops forever handling new connections from the AOS streaming service
@@ -178,10 +182,9 @@ func (o *StreamTarget) receive(nl net.Listener) {
 			if strings.HasSuffix(err.Error(), errConnClosed) {
 				o.errChan <- err // this is a graceful close, but send the error along anyway
 				return           // that's all folks
-			} else {
-				o.errChan <- err // real error. fire into the channel
 			}
-			continue // go collect the next client
+			o.errChan <- err // real error. fire into the channel
+			continue         // go collect the next client
 		}
 
 		o.clientWG.Add(1)                                 // defered close in handleClientConn

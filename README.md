@@ -64,3 +64,10 @@ func main() {
 
 There's an example program at `cmd/example_streaming/main.go` which implements
 the streaming capability.
+
+### Development
+
+1. Copy `pre-push` script to `.git/hooks` to run fast validations on `git push`;
+2. Use `make` targets to build, run tests or static analysis. This requires that
+   your environment has all the necessary tools, if not - use `ci.Dockerfile`
+   docker image.

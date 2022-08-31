@@ -130,10 +130,6 @@ func (o AgentMode) String() string {
 	}
 }
 
-func (o AgentMode) raw() rawAgentMode {
-	return rawAgentMode(o.String())
-}
-
 type rawAgentMode string
 
 func (o rawAgentMode) string() string {
@@ -172,6 +168,7 @@ func (o AgentJobState) String() string {
 	}
 }
 
+//lint:ignore U1000 linter bug, the method is used
 func (o AgentJobState) raw() rawAgentJobState {
 	return rawAgentJobState(o.String())
 }
@@ -236,6 +233,7 @@ func (o AgentJobType) String() string {
 	}
 }
 
+//lint:ignore U1000 linter bug
 func (o AgentJobType) raw() rawAgentJobType {
 	return rawAgentJobType(o.String())
 }
@@ -289,10 +287,6 @@ func (o AgentPlatform) String() string {
 	}
 }
 
-func (o AgentPlatform) raw() rawAgentPlatform {
-	return rawAgentPlatform(o.String())
-}
-
 func (o AgentPlatform) offbox() AgentTypeOffbox {
 	switch o {
 	case AgentPlatformJunos:
@@ -343,10 +337,6 @@ func (o AgentCxnState) String() string {
 		return fmt.Sprintf(agentCxnStateUnknown, o)
 	}
 
-}
-
-func (o AgentCxnState) raw() rawAgentCxnState {
-	return rawAgentCxnState(o.String())
 }
 
 type rawAgentCxnState string
@@ -445,6 +435,7 @@ type AgentStatus struct {
 	AosVersion        string
 }
 
+//lint:ignore U1000 linter bug
 func (o *AgentStatus) raw() *rawAgentStatus {
 	return &rawAgentStatus{
 		ConnectionState:   rawAgentCxnState(o.ConnectionState.String()),
@@ -514,6 +505,7 @@ type AgentJobStatus struct {
 	Error           string
 }
 
+//lint:ignore U1000 linter bug
 func (o *AgentJobStatus) raw() *rawAgentJobStatus {
 	return &rawAgentJobStatus{
 		Started:        o.Started,
@@ -565,6 +557,7 @@ type TelemetryExtStatus struct {
 	StatusMessage     string        `json:"status_message"`
 }
 
+//lint:ignore U1000 linter bug
 func (o *TelemetryExtStatus) raw() *rawTelemetryExtStatus {
 	return &rawTelemetryExtStatus{
 		PackagesInstalled: o.PackagesInstalled.raw(),
@@ -628,6 +621,7 @@ type SystemAgent struct {
 	PlatformStatus     PlatformStatus     `json:"platform_status"`
 }
 
+//lint:ignore U1000 keep for future use
 func (o SystemAgent) raw() *rawSystemAgent {
 	return &rawSystemAgent{
 		Config:             *o.Config.raw(),
@@ -686,6 +680,7 @@ type SystemAgentConfig struct {
 	AllowedJobTypes     []AgentJobType
 }
 
+//lint:ignore U1000 keep for future use
 func (o *SystemAgentConfig) raw() *rawSystemAgentConfig {
 	return &rawSystemAgentConfig{
 		Profile:             o.Profile,

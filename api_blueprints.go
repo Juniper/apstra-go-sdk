@@ -98,19 +98,6 @@ func (o NodeType) String() string {
 	}
 }
 
-func (o nodeType) parse() (NodeType, error) {
-	switch o {
-	case nodeTypeNone:
-		return NodeTypeNone, nil
-	case nodeTypeMetadata:
-		return NodeTypeMetadata, nil
-	case nodeTypeSystem:
-		return NodeTypeSystem, nil
-	default:
-		return 0, fmt.Errorf(NodeTypeUnknown, o)
-	}
-}
-
 const (
 	RefDesignTwoStageL3Clos = RefDesign(iota)
 	RefDesignFreeform
@@ -391,18 +378,6 @@ type LockInfo struct {
 	LockStatus       LockStatus
 }
 
-func (o *LockInfo) raw() *rawLockInfo {
-	ls := lockStatus(o.LockStatus.String())
-	return &rawLockInfo{
-		UserName:         o.UserName,
-		FirstName:        o.FirstName,
-		LastName:         o.LastName,
-		UserId:           o.UserId,
-		PossibleOverride: o.PossibleOverride,
-		LockStatus:       ls,
-	}
-}
-
 func (o *Client) getBlueprintLockInfo(ctx context.Context, id ObjectId) (*LockInfo, error) {
 	response := &rawLockInfo{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -451,11 +426,10 @@ func (o *Client) getBlueprintIdByName(ctx context.Context, name string) (ObjectI
 	// results
 	if found >= 0 {
 		return blueprintStatuses[found].Id, nil
-	} else {
-		return "", ApstraClientErr{
-			errType: ErrNotfound,
-			err:     fmt.Errorf("found %d blueprints but one named '%s' wasn't among them", len(blueprintStatuses), name),
-		}
+	}
+	return "", ApstraClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("found %d blueprints but one named '%s' wasn't among them", len(blueprintStatuses), name),
 	}
 }
 
@@ -472,6 +446,7 @@ func (o *Client) getBlueprint(ctx context.Context, id ObjectId) (*Blueprint, err
 	return response.polish()
 }
 
+//lint:ignore U1000 keep for future
 func (o *Client) getBlueprintByName(ctx context.Context, name string) (*Blueprint, error) {
 	id, err := o.getBlueprintIdByName(ctx, name)
 	if err != nil {
@@ -541,11 +516,10 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, name string) (*Bl
 
 	if found >= 0 {
 		return &blueprintStatuses[found], nil
-	} else {
-		return nil, ApstraClientErr{
-			errType: ErrNotfound,
-			err:     fmt.Errorf("found %d blueprints but one named '%s' wasn't among them", len(blueprintStatuses), name),
-		}
+	}
+	return nil, ApstraClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("found %d blueprints but one named '%s' wasn't among them", len(blueprintStatuses), name),
 	}
 }
 
