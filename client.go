@@ -442,7 +442,7 @@ func (o *Client) AsnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 }
 
 // DeleteAsnPoolRange updates an ASN pool by adding a new AsnRange
-func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme *AsnRangeRequest) error {
+func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme IntfAsnRange) error {
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
 }
 
