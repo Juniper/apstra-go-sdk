@@ -119,6 +119,12 @@ func TestEmptyAsnPool(t *testing.T) {
 		if len(newPool.Ranges) != 0 {
 			t.Fatalf("expected new pool to have 0 ranges, got %d", len(newPool.Ranges))
 		}
+
+		log.Printf("testing DeleteAsnPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.DeleteAsnPool(context.TODO(), newPoolId)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
