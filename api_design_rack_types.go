@@ -914,7 +914,6 @@ type RackTypeRequest struct {
 	LeafSwitches             []RackElementLeafSwitchRequest
 	GenericSystems           []RackElementGenericSystemRequest
 	AccessSwitches           []RackElementAccessSwitchRequest
-	logicalDevices           []LogicalDevice
 }
 
 func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackTypeRequest, error) {

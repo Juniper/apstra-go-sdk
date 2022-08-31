@@ -31,15 +31,6 @@ func randString(n int, style string) string {
 	return string(b)
 }
 
-func randId() ObjectId {
-	return ObjectId(
-		randString(8, "hex") + "-" +
-			randString(4, "hex") + "-" +
-			randString(4, "hex") + "-" +
-			randString(4, "hex") + "-" +
-			randString(12, "hex"))
-}
-
 func randJwt() string {
 	return randString(36, "b64") + "." +
 		randString(178, "b64") + "." +
