@@ -23,6 +23,23 @@ type userLoginResponse struct {
 	Id    string `json:"id"`
 }
 
+func (o *Client) startTaskMonitor() {
+	if o.tmQuit == nil {
+		o.tmQuit = make(chan struct{})
+		o.Log(2, "starting task monitor")
+		newTaskMonitor(o).start()
+		o.Log(2, "task monitor started")
+	}
+}
+
+func (o *Client) stopTaskMonitor() {
+	if o.tmQuit != nil {
+		close(o.tmQuit)
+		o.tmQuit = nil
+		o.Log(2, "task monitor close requested")
+	}
+}
+
 func (o *Client) login(ctx context.Context) error {
 	response := &userLoginResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -45,10 +62,12 @@ func (o *Client) login(ctx context.Context) error {
 	defer o.unlock(clientAuthTokenMutex)
 	o.httpHeaders[apstraAuthHeader] = response.Token
 
+	o.startTaskMonitor()
 	return nil
 }
 
 func (o *Client) logout(ctx context.Context) error {
+	o.Log(1, "client logging out")
 	// presence of an auth token is proxy for both
 	// - "logged in" state and
 	// - operation of a task monitor routine
@@ -56,9 +75,11 @@ func (o *Client) logout(ctx context.Context) error {
 		return nil
 	}
 	defer func() {
-		// presence of auth token and taskMonitor go together
-		delete(o.httpHeaders, apstraAuthHeader) // delete the auth token
-		close(o.tmQuit)                         // shut down the task monitor gothread
+		o.Log(1, "deleting auth token")
+		delete(o.httpHeaders, apstraAuthHeader)
+
+		o.Log(1, "shutting down the task monitor")
+		o.stopTaskMonitor()
 	}()
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{

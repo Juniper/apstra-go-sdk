@@ -231,7 +231,6 @@ func (o ClientCfg) NewClient() (*Client, error) {
 		httpClient:  httpClient,
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		logger:      logger,
-		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
 		ctx:         o.ctx,
 		sync:        make(map[int]*sync.Mutex),
@@ -254,8 +253,6 @@ func (o ClientCfg) NewClient() (*Client, error) {
 			return nil, errors.New(msg)
 		}
 	}
-
-	newTaskMonitor(c).start()
 
 	c.logStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
 
