@@ -135,14 +135,14 @@ type taskMonitor struct {
 // newTaskMonitor creates a new taskMonitor, but does not start it.
 func newTaskMonitor(c *Client) *taskMonitor {
 	monitor := taskMonitor{
-		timer:                time.NewTimer(0),
+		timer:                time.NewTimer(0), // write dummy event to channel immediately
 		client:               c,
 		taskInChan:           c.taskMonChan,
 		errChan:              c.cfg.ErrChan,
 		mapBpIdToSliceTaskId: make(map[ObjectId][]TaskId),
 		mapTaskIdToChan:      make(map[TaskId]chan<- *taskCompleteInfo),
 	}
-	<-monitor.timer.C
+	<-monitor.timer.C // read dummy event to clear timer channel
 	return &monitor
 }
 
@@ -159,31 +159,47 @@ func (o *taskMonitor) run() {
 		select {
 		// timer event
 		case <-o.timer.C:
+			o.client.Log(1, "task timer fired")
 			go o.check()
 		case in := <-o.taskInChan: // new task event
+			o.client.Log(1, fmt.Sprintf("new task arrived: bp '%s', task '%s'", in.bluePrintId, in.taskId))
 			o.timer.Stop() // timer may be about to fire, but we're already running
+			select {
+			case <-o.timer.C:
+				o.client.Log(1, "snagged a stray timer event after stopping the timer")
+			default:
+				o.client.Log(1, "timer stopped, channel empty")
+			}
+			o.client.Log(1, "locking task monitor")
 			o.lock.Lock()
+			o.client.Log(1, "locked task monitor")
 			// the task referenced by 'in' better not be one we're already tracking
 			// big assumption here: task IDs are globally unique
 			if _, found := o.mapTaskIdToChan[in.taskId]; found {
+				o.client.Log(1, fmt.Sprintf("task ID %s already being tracked", in.taskId))
 				in.responseChan <- &taskCompleteInfo{
 					status: nil,
 					err:    fmt.Errorf("task ID %s already being tracked", in.taskId),
 				}
 				close(in.responseChan)
+				o.client.Log(1, "unlocking task monitor after error")
 				o.lock.Unlock()
+				o.client.Log(1, "unlocked task monitor after error")
 				o.timer.Reset(taskMonFirstCheckDelay)
 				continue
 			} else {
 				o.mapTaskIdToChan[in.taskId] = in.responseChan
 			}
 
-			// add the task Id to the (possibly empty / nonexistent) map entry
+			// add the task ID to the (possibly empty / nonexistent) map entry
 			o.mapBpIdToSliceTaskId[in.bluePrintId] = append(o.mapBpIdToSliceTaskId[in.bluePrintId], in.taskId)
 
+			o.client.Log(1, "unlocking task monitor")
 			o.lock.Unlock()
+			o.client.Log(1, "unlocked task monitor")
 			o.timer.Reset(taskMonFirstCheckDelay)
 		case <-o.tmQuit: // program exit
+			o.client.Log(1, "task monitor exiting")
 			return
 		}
 	}
@@ -272,12 +288,17 @@ TaskLoop:
 //   invokes checkBlueprints
 //             invokes checkTasksInBlueprint
 func (o *taskMonitor) check() {
+	o.client.Log(1, "'check' locking the task monitor")
 	o.lock.Lock()
+	o.client.Log(1, "'check' locked the task monitor")
 	o.checkBlueprints()
 	if len(o.mapBpIdToSliceTaskId) > 0 {
+		o.client.Logf(1, "have %d blueprints with outstanding tasks, resetting timer", len(o.mapBpIdToSliceTaskId))
 		o.timer.Reset(taskMonPollInterval)
 	}
+	o.client.Log(1, "'check' unlocking the task monitor")
 	o.lock.Unlock()
+	o.client.Log(1, "'check' unlocked the task monitor")
 }
 
 // taskListToFilterExpr returns the supplied []ObjectId as a string prepped for
