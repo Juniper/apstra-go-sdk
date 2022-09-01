@@ -984,6 +984,11 @@ func (o *Client) Log(msgLevel int, msg string) {
 	o.logStr(msgLevel, msg)
 }
 
+// Logf causes the message to be logged according to the policy for the selected msgLevel
+func (o *Client) Logf(msgLevel int, msg string, a ...any) {
+	o.logStrf(msgLevel, msg, a...)
+}
+
 // ApiVersion returns the version string reported by the Apstra API
 func (o *Client) ApiVersion() string {
 	return o.apiVersion
