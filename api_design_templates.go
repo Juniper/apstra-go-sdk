@@ -789,17 +789,6 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 	}, nil
 }
 
-func (o Superspine) raw() *rawSuperspine {
-	return &rawSuperspine{
-		PlaneCount:         o.PlaneCount,
-		ExternalLinkCount:  o.ExternalLinkCount,
-		ExternalLinkSpeed:  o.ExternalLinkSpeed.raw(),
-		Tags:               o.Tags,
-		SuperspinePerPlane: o.SuperspinePerPlane,
-		LogicalDevice:      *o.LogicalDevice.raw(),
-	}
-}
-
 type RackBasedTemplateCount struct {
 	RackBasedTemplateId ObjectId `json:"rack_based_template_id"`
 	Count               int      `json:"count"`

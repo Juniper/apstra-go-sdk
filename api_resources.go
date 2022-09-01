@@ -82,7 +82,7 @@ func (o *AsnPoolRequest) raw() *rawAsnPoolRequest {
 type rawAsnPoolRequest struct {
 	DisplayName string               `json:"display_name"`
 	Ranges      []rawAsnRangeRequest `json:"ranges"`
-	Tags        []string             `json:"tags,omitempty"'`
+	Tags        []string             `json:"tags,omitempty"`
 }
 
 // IndexOf returns index of 'b'. If not found, it returns -1
