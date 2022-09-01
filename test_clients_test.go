@@ -46,6 +46,7 @@ func getTestClients() (map[string]testClient, error) {
 
 	for k := range testClients {
 		testClients[k].client.logger = log.New(f, "", log.LstdFlags)
+		testClients[k].client.cfg.LogLevel = 1
 	}
 
 	return testClients, nil
