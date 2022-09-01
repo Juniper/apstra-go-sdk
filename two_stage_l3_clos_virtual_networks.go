@@ -95,18 +95,18 @@ func (o sviIpRequirement) string() string {
 	return string(o)
 }
 
-func (o sviIpRequirement) parse() (SviIpRequirement, error) {
+func (o sviIpRequirement) parse() (int, error) {
 	switch o {
 	case sviIpRequirementNone:
-		return SviIpRequirementNone, nil
+		return int(SviIpRequirementNone), nil
 	case sviIpRequirementOptional:
-		return SviIpRequirementOptional, nil
+		return int(SviIpRequirementOptional), nil
 	case sviIpRequirementForbidden:
-		return SviIpRequirementForbidden, nil
+		return int(SviIpRequirementForbidden), nil
 	case sviIpRequirementMandatory:
-		return SviIpRequirementMandatory, nil
+		return int(SviIpRequirementMandatory), nil
 	case sviIpRequirementIntentionConflict:
-		return SviIpRequirementIntentionConflict, nil
+		return int(SviIpRequirementIntentionConflict), nil
 	default:
 		return 0, fmt.Errorf(SviIpRequirementUnknown, o)
 	}
@@ -127,7 +127,7 @@ const (
 	ipv4ModeUnknown  = "unknown IPv4 mode %d"
 )
 
-func (o Ipv4Mode) string() string {
+func (o Ipv4Mode) String() string {
 	return string(o.raw())
 }
 
@@ -152,14 +152,14 @@ func (o ipv4Mode) string() string {
 	return string(o)
 }
 
-func (o ipv4Mode) parse() (Ipv4Mode, error) {
+func (o ipv4Mode) parse() (int, error) {
 	switch o {
 	case ipv4ModeDisabled:
-		return Ipv4ModeDisabled, nil
+		return int(Ipv4ModeDisabled), nil
 	case ipv4ModeEnabled:
-		return Ipv4ModeEnabled, nil
+		return int(Ipv4ModeEnabled), nil
 	case ipv4ModeForced:
-		return Ipv4ModeForced, nil
+		return int(Ipv4ModeForced), nil
 	default:
 		return 0, fmt.Errorf(Ipv4ModeUnknown, o)
 	}
@@ -182,7 +182,7 @@ const (
 	ipv6ModeUnknown   = "unknown IPv6 mode %d"
 )
 
-func (o Ipv6Mode) string() string {
+func (o Ipv6Mode) String() string {
 	return string(o.raw())
 }
 
@@ -209,16 +209,16 @@ func (o ipv6Mode) string() string {
 	return string(o)
 }
 
-func (o ipv6Mode) parse() (Ipv6Mode, error) {
+func (o ipv6Mode) parse() (int, error) {
 	switch o {
 	case ipv6ModeDisabled:
-		return Ipv6ModeDisabled, nil
+		return int(Ipv6ModeDisabled), nil
 	case ipv6ModeEnabled:
-		return Ipv6ModeEnabled, nil
+		return int(Ipv6ModeEnabled), nil
 	case ipv6ModeLinkLocal:
-		return Ipv6ModeLinkLocal, nil
+		return int(Ipv6ModeLinkLocal), nil
 	case ipv6ModeForced:
-		return Ipv6ModeForced, nil
+		return int(Ipv6ModeForced), nil
 	default:
 		return 0, fmt.Errorf(Ipv6ModeUnknown, o)
 	}
@@ -260,14 +260,14 @@ func (o VnType) raw() vnType {
 func (o vnType) string() string {
 	return string(o)
 }
-func (o vnType) parse() (VnType, error) {
+func (o vnType) parse() (int, error) {
 	switch o {
 	case vnTypeOverlay:
-		return VnTypeOverlay, nil
+		return int(VnTypeOverlay), nil
 	case vnTypeVlan:
-		return VnTypeVlan, nil
+		return int(VnTypeVlan), nil
 	case vnTypeVxlan:
-		return VnTypeVxlan, nil
+		return int(VnTypeVxlan), nil
 	default:
 		return 0, fmt.Errorf(VnTypeUnknown, o)
 	}
@@ -344,11 +344,11 @@ func (o *rawSviIps) parse() (*SviIps, error) {
 	return &SviIps{
 		SystemId:        o.SystemId,
 		Ipv4Addr:        ipv4Addr,
-		Ipv4Mode:        ipv4mode,
-		Ipv4Requirement: ipv4Requirement,
+		Ipv4Mode:        Ipv4Mode(ipv4mode),
+		Ipv4Requirement: SviIpRequirement(ipv4Requirement),
 		Ipv6Addr:        ipv6Addr,
-		Ipv6Mode:        ipv6mode,
-		Ipv6Requirement: ipv6Requirement,
+		Ipv6Mode:        Ipv6Mode(ipv6mode),
+		Ipv6Requirement: SviIpRequirement(ipv6Requirement),
 	}, nil
 }
 
@@ -436,7 +436,7 @@ func (o rawVirtualNetwork) parse() (*VirtualNetwork, error) {
 	return &VirtualNetwork{
 		Id:                        o.Id,
 		Label:                     o.Label,
-		VnType:                    vntype,
+		VnType:                    VnType(vntype),
 		BoundTo:                   o.BoundTo,
 		SviIps:                    sviips,
 		DhcpService:               o.DhcpService.parse(),
