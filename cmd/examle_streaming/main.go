@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bitbucket.org/apstrktr/goapstra"
 	"context"
 	"crypto/tls"
-	"github.com/chrismarget-j/goapstra"
 	"log"
 	"net"
 	"net/http"
