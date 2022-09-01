@@ -199,6 +199,9 @@ func (o *taskMonitor) run() {
 			o.client.Log(1, "unlocked task monitor")
 			o.timer.Reset(taskMonFirstCheckDelay)
 		case <-o.tmQuit: // program exit
+			// todo: don't exit while we have tasks outstanding.
+			//  we need to flag the need to exit (o.lastLap ?) and exit when
+			//  o.mapBpIdToSliceTaskId is empty
 			o.client.Log(1, "task monitor exiting")
 			return
 		}
