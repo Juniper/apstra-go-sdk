@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -96,13 +95,12 @@ type getTaskResponse struct {
 	Id                  TaskId `json:"id"`
 }
 
-// taskMonitorMonReq uniquely identifies an Apstra task which can be tracked
-// using the // /api/blueprint/<id>/tasks and /api/blueprint/<id>/tasks/<id> API
-// endpoints.
-// This structure is submitted by a caller using taskMonitor.taskInChan. When
+// taskMonitorMonReq uniquely identifies an Apstra task which can be tracked at
+// /api/blueprint/<id>/tasks and /api/blueprint/<id>/tasks/<id> API endpoints.
+// This structure is submitted by a caller via taskMonitor's taskInChan. When
 // the task is no longer outstanding (success, timeout, failed), taskMonitor
 // responds via responseChan with the complete getTaskResponse structure received
-// from Apstra (or any errors encountered along the way)
+// from Apstra and an error, if appropriate.
 type taskMonitorMonReq struct {
 	bluePrintId  ObjectId                 // task API calls must reference a blueprint
 	taskId       TaskId                   // tracks the task
@@ -118,29 +116,86 @@ type taskCompleteInfo struct {
 	err    error
 }
 
+// pendingTaskData is a map keyed by blueprintId (ObjectId). Values are maps of TaskId
+// to chan<- *taskCompleteInfo (callers expect API response here).
+// So, it looks like this:
+//
+// 	pendingTaskData{
+//		ObjectId("blueprint_1"): {
+//			TaskId("task_abc"): make(chan<- *taskCompleteInfo),
+//			TaskId("task_def"): make(chan<- *taskCompleteInfo),
+//		},
+//		ObjectId("blueprint_2"): {
+//			TaskId("task_uvw"): make(chan<- *taskCompleteInfo),
+//			TaskId("task_xyz"): make(chan<- *taskCompleteInfo),
+//		},
+//	}
+type pendingTaskData map[ObjectId]map[TaskId]chan<- *taskCompleteInfo
+
+func (o pendingTaskData) add(in *taskMonitorMonReq) {
+	if _, found := o[in.bluePrintId]; !found {
+		// blueprint not found in pendingTaskData - create that blueprint's task map
+		o[in.bluePrintId] = make(map[TaskId]chan<- *taskCompleteInfo)
+	}
+	o[in.bluePrintId][in.taskId] = in.responseChan
+}
+
+func (o pendingTaskData) del(bpId ObjectId, taskId TaskId) {
+	if _, found := o[bpId]; !found {
+		// blueprint not found; nothing to delete; we're done here
+		return
+	}
+	// delete the task from the blueprint->task map
+	delete(o[bpId], taskId)
+
+	if len(o[bpId]) == 0 {
+		// delete the blueprint from the pendingTaskData map
+		delete(o, bpId)
+	}
+}
+
+func (o pendingTaskData) blueprintCount() int {
+	return len(o)
+}
+
+func (o pendingTaskData) isEmpty() bool {
+	return o.blueprintCount() == 0
+}
+
+func (o pendingTaskData) taskListByBlueprint(bpId ObjectId) []TaskId {
+	taskMap := o[bpId]
+	result := make([]TaskId, len(taskMap))
+	i := 0
+	for taskId := range taskMap {
+		result[i] = taskId
+		i++
+	}
+	return result
+}
+
 // a taskMonitor runs as an independent goroutine, accepts task{}s to monitor
 // via taskInChan, closes the task's `done` channel when it detects apstra
 // has completed the task.
 type taskMonitor struct {
-	client               *Client                             // for making Apstra API calls
-	mapBpIdToSliceTaskId map[ObjectId][]TaskId               // track tasks by blueprint
-	mapTaskIdToChan      map[TaskId]chan<- *taskCompleteInfo // track reply channels by task
-	taskInChan           <-chan *taskMonitorMonReq           // for learning about new tasks
-	timer                *time.Timer                         // triggers check()
-	errChan              chan<- error                        // error feedback to main loop
-	lock                 sync.Mutex                          // control access to mapBpIdToTask
-	tmQuit               <-chan struct{}
+	client            *Client                   // for making Apstra API calls
+	taskInChan        <-chan *taskMonitorMonReq // for learning about new tasks
+	timer             *time.Timer               // triggers check()
+	errChan           chan<- error              // error feedback to main loop
+	lock              sync.Mutex                // control access to mapBpIdToTask
+	tmQuit            <-chan struct{}           // taskMonitor initiates shutdown when this closes
+	pendingTaskData   pendingTaskData           // data structure containing monitored task info
+	shutdownRequested bool                      // flag indicating we should exit
+	timerSetTime      time.Time                 // used to calculate time delay for logs (probably remove)
 }
 
 // newTaskMonitor creates a new taskMonitor, but does not start it.
 func newTaskMonitor(c *Client) *taskMonitor {
 	monitor := taskMonitor{
-		timer:                time.NewTimer(0), // write dummy event to channel immediately
-		client:               c,
-		taskInChan:           c.taskMonChan,
-		errChan:              c.cfg.ErrChan,
-		mapBpIdToSliceTaskId: make(map[ObjectId][]TaskId),
-		mapTaskIdToChan:      make(map[TaskId]chan<- *taskCompleteInfo),
+		timer:           time.NewTimer(0), // write dummy event to channel immediately
+		client:          c,
+		taskInChan:      c.taskMonChan,
+		errChan:         c.cfg.ErrChan,
+		pendingTaskData: make(pendingTaskData),
 	}
 	<-monitor.timer.C // read dummy event to clear timer channel
 	return &monitor
@@ -156,83 +211,82 @@ func (o *taskMonitor) start() {
 func (o *taskMonitor) run() {
 	// main loop
 	for {
+		if o.tmShouldExit() {
+			return
+		}
 		select {
 		// timer event
 		case <-o.timer.C:
-			o.client.Log(1, "task timer fired")
+			o.client.Logf(3, "task timer fired after %s", time.Now().Sub(o.timerSetTime).String())
 			go o.check()
 		case in := <-o.taskInChan: // new task event
-			o.client.Log(1, fmt.Sprintf("new task arrived: bp '%s', task '%s'", in.bluePrintId, in.taskId))
-			o.timer.Stop() // timer may be about to fire, but we're already running
-			select {
-			case <-o.timer.C:
-				o.client.Log(1, "snagged a stray timer event after stopping the timer")
-			default:
-				o.client.Log(1, "timer stopped, channel empty")
-			}
-			o.client.Log(1, "locking task monitor")
-			o.lock.Lock()
-			o.client.Log(1, "locked task monitor")
-			// the task referenced by 'in' better not be one we're already tracking
-			// big assumption here: task IDs are globally unique
-			if _, found := o.mapTaskIdToChan[in.taskId]; found {
-				o.client.Log(1, fmt.Sprintf("task ID %s already being tracked", in.taskId))
-				in.responseChan <- &taskCompleteInfo{
-					status: nil,
-					err:    fmt.Errorf("task ID %s already being tracked", in.taskId),
-				}
-				close(in.responseChan)
-				o.client.Log(1, "unlocking task monitor after error")
-				o.lock.Unlock()
-				o.client.Log(1, "unlocked task monitor after error")
-				o.timer.Reset(taskMonFirstCheckDelay)
-				continue
-			} else {
-				o.mapTaskIdToChan[in.taskId] = in.responseChan
-			}
-
-			// add the task ID to the (possibly empty / nonexistent) map entry
-			o.mapBpIdToSliceTaskId[in.bluePrintId] = append(o.mapBpIdToSliceTaskId[in.bluePrintId], in.taskId)
-
-			o.client.Log(1, "unlocking task monitor")
-			o.lock.Unlock()
-			o.client.Log(1, "unlocked task monitor")
-			o.timer.Reset(taskMonFirstCheckDelay)
+			o.client.Log(2, fmt.Sprintf("new task arrived: bp '%s', task '%s'", in.bluePrintId, in.taskId))
+			o.stopTimer()
+			o.acquireLock("tm main loop")
+			o.pendingTaskData.add(in)
+			o.releaseLock("tm main loop")
+			o.startTimer()
 		case <-o.tmQuit: // program exit
-			// todo: don't exit while we have tasks outstanding.
-			//  we need to flag the need to exit (o.lastLap ?) and exit when
-			//  o.mapBpIdToSliceTaskId is empty
 			o.client.Log(1, "task monitor exiting")
-			return
+			o.shutdownRequested = true
 		}
 	}
 }
 
+// tShouldExit returns true when shutdown has been requested
+// and the task monitor queue is empty
+func (o *taskMonitor) tmShouldExit() bool {
+	return o.shutdownRequested && o.pendingTaskData.isEmpty()
+}
+
+// stopTimer stops the timer and drains the timer channel
+func (o *taskMonitor) stopTimer() {
+	o.timer.Stop()
+	select {
+	case <-o.timer.C:
+		o.client.Log(1, "snagged a stray timer event after stopping the timer")
+	default:
+		o.client.Log(1, "timer stopped, channel empty")
+	}
+}
+
+// startTimer starts the timer
+func (o *taskMonitor) startTimer() {
+	o.timerSetTime = time.Now()
+	o.timer.Reset(taskMonFirstCheckDelay)
+}
+
+func (o *taskMonitor) acquireLock(who string) {
+	o.client.Logf(3, "%s locking task monitor", who)
+	o.lock.Lock()
+	o.client.Logf(3, "%s locked task monitor", who)
+}
+
+func (o *taskMonitor) releaseLock(who string) {
+	o.client.Logf(3, "%s unlocking task monitor", who)
+	o.lock.Unlock()
+	o.client.Logf(3, "%s unlocked task monitor", who)
+}
+
 func (o *taskMonitor) checkBlueprints() {
 	// loop over blueprints known to have outstanding tasks
-BlueprintLoop:
-	for bpId, taskIdList := range o.mapBpIdToSliceTaskId {
+	for bpId := range o.pendingTaskData {
+		taskIdList := o.pendingTaskData.taskListByBlueprint(bpId)
 		// get task result info from Apstra
 		taskIdToStatus, err := o.client.getBlueprintTasksStatus(o.client.ctx, bpId, taskIdList)
 		if err != nil {
-			err = fmt.Errorf("error getting tasks for blueprint %s - %w", string(bpId), err)
-			// todo: not happy with this error handling
-			if o.errChan != nil {
-				o.errChan <- err
-			} else {
-				log.Println(err)
-			}
-			continue BlueprintLoop
+			o.handleErr(fmt.Errorf("error getting tasks for blueprint %s - %w", bpId, err))
+			continue
 		}
 		o.checkTasksInBlueprint(bpId, taskIdToStatus)
-	} // BlueprintLoop
+	}
+}
 
-	// after processing all monitored tasks, one or more
-	// per-blueprint lists might be empty. Delete them.
-	for bpId, taskList := range o.mapBpIdToSliceTaskId {
-		if len(taskList) == 0 {
-			delete(o.mapBpIdToSliceTaskId, bpId)
-		}
+func (o *taskMonitor) handleErr(err error) {
+	if o.errChan != nil {
+		o.errChan <- err
+	} else {
+		o.client.Log(0, err.Error())
 	}
 }
 
@@ -241,67 +295,62 @@ BlueprintLoop:
 // detailed API output for any tasks no longer in progress, and return that via
 // the caller specified channel.
 func (o *taskMonitor) checkTasksInBlueprint(bpId ObjectId, mapTaskIdToStatus map[TaskId]string) {
-TaskLoop:
 	// loop over *all* outstanding tasks associated with this blueprint
-	for i, taskId := range o.mapBpIdToSliceTaskId[bpId] {
+	for taskId, responseChan := range o.pendingTaskData[bpId] {
 		// make sure Apstra response (input to this function) includes our taskId
 		if _, found := mapTaskIdToStatus[taskId]; !found {
-			// Apstra response doesn't have our task Id:
+			// Apstra response doesn't have our task ID
 			//   error, delete it from the slice, next task
-			o.mapTaskIdToChan[taskId] <- &taskCompleteInfo{
+			responseChan <- &taskCompleteInfo{
 				err: fmt.Errorf("blueprint '%s' task '%s' unknown to Apstra server", bpId, taskId),
 			}
-			o.mapBpIdToSliceTaskId[bpId] = append(o.mapBpIdToSliceTaskId[bpId][:i], o.mapBpIdToSliceTaskId[bpId][i+1:]...)
-			continue TaskLoop
+			o.pendingTaskData.del(bpId, taskId)
+			continue
 		}
 
 		// What did Apstra say about our taskId?
 		switch mapTaskIdToStatus[taskId] {
 		case taskStatusInit:
-			continue TaskLoop // still working; skip to next task
+			continue // still working; skip to next task
 		case taskStatusOngoing:
-			continue TaskLoop // still working; skip to next task
+			continue // still working; skip to next task
 		case taskStatusFail: // done; fallthrough
 		case taskStatusSuccess: // done; fallthrough
 		case taskStatusTimeout: // done; fallthrough
-		default: // something unexpected
+		default: // something else?
 			// Unexpected task status response from Apstra:
 			//   error, delete it from the slice, next task
-			o.mapTaskIdToChan[taskId] <- &taskCompleteInfo{
+			responseChan <- &taskCompleteInfo{
 				err: fmt.Errorf("blueprint '%s' task '%s' status unexpected: %s", bpId, taskId, mapTaskIdToStatus[taskId]),
 			}
-			o.mapBpIdToSliceTaskId[bpId] = append(o.mapBpIdToSliceTaskId[bpId][:i], o.mapBpIdToSliceTaskId[bpId][i+1:]...)
-			continue TaskLoop
+			o.pendingTaskData.del(bpId, taskId)
+			continue
 		}
 
 		// if we got here, we're able to return a recognized and conclusive
 		// task status result to the caller. Fetch the full details from Apstra.
 		taskInfo, err := o.client.getBlueprintTaskStatusById(o.client.ctx, bpId, taskId)
-		o.mapTaskIdToChan[taskId] <- &taskCompleteInfo{
+		responseChan <- &taskCompleteInfo{
 			status: taskInfo,
 			err:    err,
 		}
 
 		// remove this task from the list of monitored tasks
-		o.mapBpIdToSliceTaskId[bpId] = append(o.mapBpIdToSliceTaskId[bpId][:i], o.mapBpIdToSliceTaskId[bpId][i+1:]...)
-	} // TaskLoop
+		o.pendingTaskData.del(bpId, taskId)
+	}
 }
 
 // check
 //   invokes checkBlueprints
 //             invokes checkTasksInBlueprint
 func (o *taskMonitor) check() {
-	o.client.Log(1, "'check' locking the task monitor")
-	o.lock.Lock()
-	o.client.Log(1, "'check' locked the task monitor")
+	o.acquireLock("check")
 	o.checkBlueprints()
-	if len(o.mapBpIdToSliceTaskId) > 0 {
-		o.client.Logf(1, "have %d blueprints with outstanding tasks, resetting timer", len(o.mapBpIdToSliceTaskId))
+	if !o.pendingTaskData.isEmpty() {
+		o.client.Logf(1, "have %d blueprints with outstanding tasks, resetting timer", o.pendingTaskData.blueprintCount())
 		o.timer.Reset(taskMonPollInterval)
 	}
-	o.client.Log(1, "'check' unlocking the task monitor")
-	o.lock.Unlock()
-	o.client.Log(1, "'check' unlocked the task monitor")
+	o.releaseLock("check")
 }
 
 // taskListToFilterExpr returns the supplied []ObjectId as a string prepped for
@@ -385,6 +434,7 @@ func waitForTaskCompletion(bId ObjectId, tId TaskId, mon chan *taskMonitorMonReq
 	//debugStr(1, fmt.Sprintf("awaiting completion of blueprint '%s' task '%s", bId, tId))
 	// task status update channel (how we'll learn the task is complete
 	reply := make(chan *taskCompleteInfo, 1) // Task Complete Info Channel
+	defer close(reply)
 
 	// submit our task to the task monitor
 	mon <- &taskMonitorMonReq{
