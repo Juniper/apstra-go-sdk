@@ -7,7 +7,7 @@ import (
 )
 
 func TestBlueprintIdFromUrl(t *testing.T) {
-	testBpId := ObjectId("lkasdlfaj")
+	testBpId := ObjectId(randString(10, "hex"))
 	test := "https://host:443" + fmt.Sprintf(apiUrlBlueprintById, testBpId)
 	parsed, err := url.Parse(test)
 	if err != nil {
