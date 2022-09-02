@@ -233,7 +233,7 @@ func (o *taskMonitor) run() {
 	}
 }
 
-// tShouldExit returns true when shutdown has been requested
+// ShouldExit returns true when shutdown has been requested
 // and the task monitor queue is empty
 func (o *taskMonitor) tmShouldExit() bool {
 	return o.shutdownRequested && o.pendingTaskData.isEmpty()
