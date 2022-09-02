@@ -261,6 +261,8 @@ type testClientCfg struct {
 	cfg     *ClientCfg
 }
 
+// getCloudlabsTestClientCfgs returns map[string]testClientCfg keyed by
+// cloudlab topology ID
 func getCloudlabsTestClientCfgs() (map[string]testClientCfg, error) {
 	topologyIds, err := topologyIdsFromEnv()
 	if err != nil {

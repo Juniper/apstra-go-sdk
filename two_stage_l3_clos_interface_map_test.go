@@ -52,8 +52,11 @@ func TestGetSetInterfaceMapAssignments(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			for _, i := range ifMapAss {
-				log.Println(i)
+			for k, v := range ifMapAss {
+				if v == nil {
+					v = "<nil>"
+				}
+				log.Printf("'%s' -> '%s'", k, v)
 			}
 
 			// todo check length before using in assignment

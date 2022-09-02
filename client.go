@@ -231,7 +231,6 @@ func (o ClientCfg) NewClient() (*Client, error) {
 		httpClient:  httpClient,
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		logger:      logger,
-		tmQuit:      make(chan struct{}),
 		taskMonChan: make(chan *taskMonitorMonReq),
 		ctx:         o.ctx,
 		sync:        make(map[int]*sync.Mutex),
@@ -254,8 +253,6 @@ func (o ClientCfg) NewClient() (*Client, error) {
 			return nil, errors.New(msg)
 		}
 	}
-
-	newTaskMonitor(c).start()
 
 	c.logStr(1, fmt.Sprintf("Apstra client for %s created", c.baseUrl.String()))
 
@@ -982,6 +979,11 @@ func (o *Client) DeleteRackType(ctx context.Context, id ObjectId) error {
 // Log causes the message to be logged according to the policy for the selected msgLevel
 func (o *Client) Log(msgLevel int, msg string) {
 	o.logStr(msgLevel, msg)
+}
+
+// Logf causes the message to be logged according to the policy for the selected msgLevel
+func (o *Client) Logf(msgLevel int, msg string, a ...any) {
+	o.logStrf(msgLevel, msg, a...)
 }
 
 // ApiVersion returns the version string reported by the Apstra API

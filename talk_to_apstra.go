@@ -219,9 +219,11 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// no task ID response, so no polling tomfoolery required
 	if !taskResponseFound {
 		if in.apiResponse == nil {
+			o.Log(2, "no task ID response, and caller wants nothing back - talkToApstra done")
 			// caller expects no response, so we're done here
 			return nil
 		} else {
+			o.Log(2, "no task ID response, parse apstra reply for caller")
 			// no task ID, decode response body into the caller-specified structure
 			return json.NewDecoder(resp.Body).Decode(in.apiResponse)
 		}
@@ -245,6 +247,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	case bpId == "":
 		bpId = tIdR.BlueprintId
 	}
+	o.Logf(2, "apstra returned task ID '%s' for blueprint '%s'", tIdR.TaskId, tIdR.BlueprintId)
 
 	// get (wait for) full detailed response on the outstanding task ID
 	taskResponse, err := waitForTaskCompletion(bpId, tIdR.TaskId, o.taskMonChan)

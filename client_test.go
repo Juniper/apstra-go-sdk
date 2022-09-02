@@ -7,6 +7,18 @@ import (
 	"testing"
 )
 
+func TestClientLog(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		client.client.Logf(1, "log test - client '%s'", clientName)
+
+	}
+}
+
 func TestLoginEmptyPassword(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {

@@ -72,11 +72,14 @@ func (o *TwoStageLThreeClosClient) SetResourceAllocation(ctx context.Context, in
 	return o.setResourceAllocation(ctx, in)
 }
 
-// GetInterfaceMapAssignments takes a *InterfaceMapAssignments as input for the
-// ResourceGroupAllocation.Type and ResourceGroupAllocation.Name fields (the
-// ResourceGroupAllocation.PoolIds is ignored). It returns a fully populated
-// *ResourceGroupAllocation with all fields populated based on the Apstra API
-// response.
+// GetInterfaceMapAssignments returns a SystemIdToInterfaceMapAssignment (a map
+// of string (blueprint graph node ID) to interface map ID detailing assignments
+// in the specified blueprint:
+// 	x := SystemIdToInterfaceMapAssignment{
+//		"BeAyAoCIgqx4r3hiFow": nil,
+//		"B3Ym-PBJJEtvXQsnQQM": "VS_SONiC_BUZZNIK_PLUS__slicer-7x10-1",
+//		"4gCWV2NRix6MYPm4PHU": "Arista_vEOS__slicer-7x10-1",
+//	}
 func (o *TwoStageLThreeClosClient) GetInterfaceMapAssignments(ctx context.Context) (SystemIdToInterfaceMapAssignment, error) {
 	return o.getInterfaceMapAssignments(ctx)
 }

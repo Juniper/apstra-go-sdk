@@ -20,6 +20,15 @@ func (o *Client) logStr(msgLevel int, msg string) {
 	o.logger.Println(msg)
 }
 
+// logStrf checks if DebugLevel meets the message verbosity specified in
+// msgLevel. If so, it formats the message and logs it.
+func (o *Client) logStrf(msgLevel int, msg string, a ...any) {
+	if msgLevel > o.cfg.LogLevel {
+		return
+	}
+	o.logger.Println(fmt.Sprintf(msg, a...))
+}
+
 // logFunc checks if DebugLevel meets the message verbosity specified in
 // msgLevel. If so, it runs the supplied function with the supplied params. The
 // string returned by the function is logged. If the function produces an

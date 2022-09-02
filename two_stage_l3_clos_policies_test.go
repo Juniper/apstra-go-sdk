@@ -239,6 +239,8 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 }
 
 func TestAddDeletePolicyRule(t *testing.T) {
+	// todo re-write this test to create required conditions
+	t.Skip("this test needs to be re-written - skipping")
 	clients, err := getTestClients()
 	if err != nil {
 		t.Fatal(err)
