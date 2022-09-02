@@ -217,7 +217,7 @@ func (o *taskMonitor) run() {
 		select {
 		// timer event
 		case <-o.timer.C:
-			o.client.Logf(3, "task timer fired after %s", time.Now().Sub(o.timerSetTime).String())
+			o.client.Logf(3, "task timer fired after %s", time.Since(o.timerSetTime).String())
 			go o.check()
 		case in := <-o.taskInChan: // new task event
 			o.client.Log(2, fmt.Sprintf("new task arrived: bp '%s', task '%s'", in.bluePrintId, in.taskId))
