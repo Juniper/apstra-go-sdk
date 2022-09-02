@@ -222,11 +222,10 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 			o.Log(2, "no task ID response, and caller wants nothing back - talkToApstra done")
 			// caller expects no response, so we're done here
 			return nil
-		} else {
-			o.Log(2, "no task ID response, parse apstra reply for caller")
-			// no task ID, decode response body into the caller-specified structure
-			return json.NewDecoder(resp.Body).Decode(in.apiResponse)
 		}
+		o.Log(2, "no task ID response, parse apstra reply for caller")
+		// no task ID, decode response body into the caller-specified structure
+		return json.NewDecoder(resp.Body).Decode(in.apiResponse)
 	}
 
 	// we got a task ID, instead of the expected response object. tasks are
@@ -252,7 +251,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// get (wait for) full detailed response on the outstanding task ID
 	taskResponse, err := waitForTaskCompletion(bpId, tIdR.TaskId, o.taskMonChan)
 	if err != nil {
-		return fmt.Errorf("error in task monitor - %w\n API result:\n", err)
+		return fmt.Errorf("error in task monitor - %w", err)
 	}
 
 	// there might be errors articulated in the taskResponse body
@@ -356,7 +355,7 @@ func peekParseResponseBodyAsTaskId(resp *http.Response, result *taskIdResponse) 
 	//   There is no error which indicates a problem of any other type.
 	if err != nil {
 		return false, nil // no error; 'false' b/c unmarshal TaskId failed
-	} else { // good unmarshal, but what about the contents?
-		return result.TaskId != "", nil // no error; bool depends on string match
 	}
+	// good unmarshal, but what about the contents?
+	return result.TaskId != "", nil // no error; bool depends on string match
 }

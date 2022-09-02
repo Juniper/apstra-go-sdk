@@ -1,3 +1,4 @@
+// Package goapstra implements API client for Juniper Apstra
 package goapstra
 
 import (
@@ -989,4 +990,19 @@ func (o *Client) Logf(msgLevel int, msg string, a ...any) {
 // ApiVersion returns the version string reported by the Apstra API
 func (o *Client) ApiVersion() string {
 	return o.apiVersion
+}
+
+// CreateDeviceProfile creates device profile
+func (o *Client) CreateDeviceProfile(ctx context.Context, profile DeviceProfile) (ObjectId, error) {
+	return o.createDeviceProfile(ctx, profile)
+}
+
+// UpdateDeviceProfile updates existing device profile
+func (o *Client) UpdateDeviceProfile(ctx context.Context, id ObjectId, profile DeviceProfile) error {
+	return o.updateDeviceProfile(ctx, id, profile)
+}
+
+// DeleteDeviceProfile deletes existing device profile
+func (o *Client) DeleteDeviceProfile(ctx context.Context, id ObjectId) error {
+	return o.deleteDeviceProfile(ctx, id)
 }

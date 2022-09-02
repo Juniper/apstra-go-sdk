@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package goapstra
 
 import (
@@ -69,7 +72,7 @@ func TestEmptyAsnPool(t *testing.T) {
 		if poolName != newPool.DisplayName {
 			t.Fatalf("expected pool name '%s', got '%s'", poolName, newPool.DisplayName)
 		}
-		if 0 != len(newPool.Ranges) {
+		if len(newPool.Ranges) != 0 {
 			t.Fatalf("expected new pool to have 0 ranges, got %d", len(newPool.Ranges))
 		}
 

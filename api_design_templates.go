@@ -195,10 +195,6 @@ func (o TemplateType) String() string {
 	}
 }
 
-func (o TemplateType) raw() templateType {
-	return templateType(o.String())
-}
-
 func (o templateType) string() string {
 	return string(o)
 }

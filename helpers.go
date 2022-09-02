@@ -34,10 +34,8 @@ func keyLogWriterFromEnv(keyLogEnv string) (*os.File, error) {
 func pp(in interface{}, out io.Writer) error {
 	enc := json.NewEncoder(out)
 	enc.SetIndent("", "    ")
-	if err := enc.Encode(in); err != nil {
-		return err
-	}
-	return nil
+	err := enc.Encode(in)
+	return err
 }
 
 // ourIpForPeer returns a *net.IP representing the local interface selected by
