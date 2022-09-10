@@ -55,6 +55,7 @@ func (o BlueprintType) string() string {
 type TwoStageL3ClosClient struct {
 	client      *Client
 	blueprintId ObjectId
+	mutex       *TwoStageL3ClosMutex
 }
 
 // GetResourceAllocation takes a *ResourceGroupAllocation as input for the
