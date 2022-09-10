@@ -2,11 +2,11 @@ package goapstra
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -35,53 +35,6 @@ func randJwt() string {
 	return randString(36, "b64") + "." +
 		randString(178, "b64") + "." +
 		randString(86, "b64")
-}
-
-func TestKeyLogWriter(t *testing.T) {
-	envVarName := randString(10, "hex")
-
-	dir, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		err := os.RemoveAll(dir)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
-
-	testFileName := filepath.Join(dir, randString(10, "b64"))
-
-	err = os.Setenv(envVarName, testFileName)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	klw, err := keyLogWriterFromEnv(envVarName)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	data := randString(100, "b64")
-	_, err = klw.Write([]byte(data))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = klw.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	result, err := ioutil.ReadFile(testFileName)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if string(result) != data {
-		t.Fatal("data read and written do not match")
-	}
 }
 
 func TestOurIpForPeer(t *testing.T) {
@@ -119,4 +72,26 @@ func getRandInts(min, max, count int) ([]int, error) {
 		i++
 	}
 	return result, nil
+}
+
+// keyLogWriterFromEnv takes an environment variable which might name a logfile for
+// exporting TLS session keys. If so, it returns an io.Writer to be used for
+// that purpose, and the name of the logfile file.
+func keyLogWriterFromEnv(keyLogEnv string) (*os.File, error) {
+	fileName, foundKeyLogFile := os.LookupEnv(keyLogEnv)
+	if !foundKeyLogFile {
+		return nil, nil
+	}
+
+	// expand ~ style home directory
+	if strings.HasPrefix(fileName, "~/") {
+		dirname, _ := os.UserHomeDir()
+		fileName = filepath.Join(dirname, fileName[2:])
+	}
+
+	err := os.MkdirAll(filepath.Dir(fileName), os.FileMode(0600))
+	if err != nil {
+		return nil, err
+	}
+	return os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 }
