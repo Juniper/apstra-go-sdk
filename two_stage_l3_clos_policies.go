@@ -302,7 +302,7 @@ func (o PolicyApplicationPointDigest) ObjectId() ObjectId {
 	return o.Id
 }
 
-func (o *TwoStageLThreeClosClient) getAllPolicies(ctx context.Context) ([]Policy, error) {
+func (o *TwoStageL3ClosClient) getAllPolicies(ctx context.Context) ([]Policy, error) {
 	response := &struct {
 		Policies []policyResponse `json:"policies"`
 	}{}
@@ -326,7 +326,7 @@ func (o *TwoStageLThreeClosClient) getAllPolicies(ctx context.Context) ([]Policy
 	return result, nil
 }
 
-func (o *TwoStageLThreeClosClient) getPolicy(ctx context.Context, id ObjectId) (*Policy, error) {
+func (o *TwoStageL3ClosClient) getPolicy(ctx context.Context, id ObjectId) (*Policy, error) {
 	response := &policyResponse{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -340,7 +340,7 @@ func (o *TwoStageLThreeClosClient) getPolicy(ctx context.Context, id ObjectId) (
 	return response.polish()
 }
 
-func (o *TwoStageLThreeClosClient) createPolicy(ctx context.Context, policy *Policy) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) createPolicy(ctx context.Context, policy *Policy) (ObjectId, error) {
 	response := &struct {
 		Id ObjectId `json:"id"`
 	}{}
@@ -356,7 +356,7 @@ func (o *TwoStageLThreeClosClient) createPolicy(ctx context.Context, policy *Pol
 	return response.Id, nil
 }
 
-func (o *TwoStageLThreeClosClient) deletePolicy(ctx context.Context, id ObjectId) error {
+func (o *TwoStageL3ClosClient) deletePolicy(ctx context.Context, id ObjectId) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
@@ -364,7 +364,7 @@ func (o *TwoStageLThreeClosClient) deletePolicy(ctx context.Context, id ObjectId
 	return convertTtaeToAceWherePossible(err)
 }
 
-func (o *TwoStageLThreeClosClient) updatePolicy(ctx context.Context, id ObjectId, policy *Policy) error {
+func (o *TwoStageL3ClosClient) updatePolicy(ctx context.Context, id ObjectId, policy *Policy) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
@@ -373,7 +373,7 @@ func (o *TwoStageLThreeClosClient) updatePolicy(ctx context.Context, id ObjectId
 	return convertTtaeToAceWherePossible(err)
 }
 
-func (o *TwoStageLThreeClosClient) getPolicyRuleIdByLabel(ctx context.Context, policyId ObjectId, label string) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) getPolicyRuleIdByLabel(ctx context.Context, policyId ObjectId, label string) (ObjectId, error) {
 	start := time.Now()
 	for i := 0; i <= dcClientMaxRetries; i++ {
 		time.Sleep(dcClientRetryBackoff * time.Duration(i))
@@ -390,7 +390,7 @@ func (o *TwoStageLThreeClosClient) getPolicyRuleIdByLabel(ctx context.Context, p
 	return "", fmt.Errorf("rule '%s' didn't appear in policy '%s' after %s", label, policyId, time.Since(start))
 }
 
-func (o *TwoStageLThreeClosClient) addPolicyRule(ctx context.Context, rule *PolicyRule, position int, policyId ObjectId) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) addPolicyRule(ctx context.Context, rule *PolicyRule, position int, policyId ObjectId) (ObjectId, error) {
 	policy, err := o.getPolicy(ctx, policyId)
 	if err != nil {
 		return "", err
@@ -427,7 +427,7 @@ func (o *TwoStageLThreeClosClient) addPolicyRule(ctx context.Context, rule *Poli
 	return o.getPolicyRuleIdByLabel(ctx, policyId, rule.Label)
 }
 
-func (o *TwoStageLThreeClosClient) deletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
+func (o *TwoStageL3ClosClient) deletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
 	policy, err := o.getPolicy(ctx, policyId)
 	if err != nil {
 		return err

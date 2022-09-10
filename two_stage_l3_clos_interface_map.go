@@ -20,7 +20,7 @@ type interfaceMapAssignment struct {
 	Assignments SystemIdToInterfaceMapAssignment `json:"assignments"`
 }
 
-func (o *TwoStageLThreeClosClient) getInterfaceMapAssignments(ctx context.Context) (SystemIdToInterfaceMapAssignment, error) {
+func (o *TwoStageL3ClosClient) getInterfaceMapAssignments(ctx context.Context) (SystemIdToInterfaceMapAssignment, error) {
 	response := &interfaceMapAssignment{}
 	return response.Assignments, o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -29,7 +29,7 @@ func (o *TwoStageLThreeClosClient) getInterfaceMapAssignments(ctx context.Contex
 	})
 }
 
-func (o *TwoStageLThreeClosClient) setInterfaceMapAssignments(ctx context.Context, assignments SystemIdToInterfaceMapAssignment) error {
+func (o *TwoStageL3ClosClient) setInterfaceMapAssignments(ctx context.Context, assignments SystemIdToInterfaceMapAssignment) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintInterfaceMapAssignment, o.blueprintId),
