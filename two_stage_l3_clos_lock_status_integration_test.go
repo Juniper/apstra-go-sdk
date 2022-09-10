@@ -27,7 +27,12 @@ func TestGetLockInfo(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		l, err := client.client.getBlueprintLockInfo(context.TODO(), id)
+		bp, err := client.client.NewTwoStageL3ClosClient(context.Background(), id)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		l, err := bp.getLockInfo(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}

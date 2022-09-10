@@ -98,11 +98,11 @@ type LockInfo struct {
 	LockStatus       LockStatus
 }
 
-func (o *Client) getBlueprintLockInfo(ctx context.Context, id ObjectId) (*LockInfo, error) {
+func (o *TwoStageL3ClosClient) getLockInfo(ctx context.Context) (*LockInfo, error) {
 	response := &rawLockInfo{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintLockStatus, id),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintLockStatus, o.blueprintId),
 		apiResponse: response,
 	})
 	if err != nil {
