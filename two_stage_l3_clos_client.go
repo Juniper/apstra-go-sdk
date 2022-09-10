@@ -187,3 +187,12 @@ func (o *TwoStageL3ClosClient) GetVirtualNetwork(ctx context.Context, vnId Objec
 func (o *TwoStageL3ClosClient) GetVirtualNetworkBySubnet(ctx context.Context, desiredNet *net.IPNet, vrf ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
 	return o.getVirtualNetworkBySubnet(ctx, desiredNet, vrf, bpType)
 }
+
+// GetLockInfo returns *LockInfo describing the current state of the blueprint lock
+func (o *TwoStageL3ClosClient) GetLockInfo(ctx context.Context, desiredNet *net.IPNet, vrf ObjectId, bpType BlueprintType) (*LockInfo, error) {
+	li, err := o.getLockInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return li.polish()
+}

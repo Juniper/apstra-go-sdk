@@ -98,7 +98,7 @@ type LockInfo struct {
 	LockStatus       LockStatus
 }
 
-func (o *TwoStageL3ClosClient) getLockInfo(ctx context.Context) (*LockInfo, error) {
+func (o *TwoStageL3ClosClient) getLockInfo(ctx context.Context) (*rawLockInfo, error) {
 	response := &rawLockInfo{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -108,5 +108,5 @@ func (o *TwoStageL3ClosClient) getLockInfo(ctx context.Context) (*LockInfo, erro
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response.polish()
+	return response, nil
 }
