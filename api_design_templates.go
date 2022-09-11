@@ -1127,20 +1127,27 @@ func (o *Client) getTemplateByTypeAndName(ctx context.Context, desiredType templ
 		if foundType != desiredType {
 			continue // wrong type
 		}
+
 		foundName, err := templates[i].displayName()
 		if foundName != desiredName {
 			continue // wrong name
 		}
-		if found != nil {
+		if err != nil {
+			return nil, err
+		}
+
+		if found != nil { // multiple matches!
 			return nil, ApstraClientErr{
 				errType: ErrMultipleMatch,
 				err:     fmt.Errorf("found multiple %s templates named '%s'", desiredType, desiredName),
 			}
 		}
+
+		// record this pointer to detect multiple matches
 		found = &templates[i]
 	}
 
-	if found == nil {
+	if found == nil { // not found!
 		return nil, ApstraClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no %s templates named '%s'", desiredType, desiredName),
