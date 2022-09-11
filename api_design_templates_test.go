@@ -708,3 +708,69 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 		}
 	}
 }
+
+func TestGetL3CollapsedTemplateByName(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "Collapsed Fabric ESI"
+
+	for _, client := range clients {
+		template, err := client.client.GetL3CollapsedTemplateByName(context.Background(), name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if template.Type.String() != templateTypeL3Collapsed.string() {
+			t.Fatalf("expected '%s', got '%s'", template.Type.String(), templateTypeL3Collapsed)
+		}
+		if template.DisplayName != name {
+			t.Fatalf("expected '%s', got '%s'", name, template.DisplayName)
+		}
+	}
+}
+
+func TestGetRackBasedTemplateByName(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "L2 Pod"
+
+	for _, client := range clients {
+		template, err := client.client.GetRackBasedTemplateByName(context.Background(), name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if template.Type.String() != templateTypeRackBased.string() {
+			t.Fatalf("expected '%s', got '%s'", template.Type.String(), templateTypeRackBased)
+		}
+		if template.DisplayName != name {
+			t.Fatalf("expected '%s', got '%s'", name, template.DisplayName)
+		}
+	}
+}
+
+func TestGetPodBasedTemplateByName(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "L2 superspine single plane"
+
+	for _, client := range clients {
+		template, err := client.client.GetPodBasedTemplateByName(context.Background(), name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if template.Type.String() != templateTypePodBased.string() {
+			t.Fatalf("expected '%s', got '%s'", template.Type.String(), templateTypePodBased)
+		}
+		if template.DisplayName != name {
+			t.Fatalf("expected '%s', got '%s'", name, template.DisplayName)
+		}
+	}
+}

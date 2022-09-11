@@ -1060,6 +1060,35 @@ func (o *Client) getAllRackBasedTemplates(ctx context.Context) ([]rawTemplateRac
 	return result, nil
 }
 
+func (o *Client) getRackBasedTemplateByName(ctx context.Context, name string) (*rawTemplateRackBased, error) {
+	templates, err := o.getAllRackBasedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *rawTemplateRackBased
+	for i := range templates {
+		if templates[i].DisplayName == name {
+			if result != nil {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("found multiple %s templates named '%s'", templateTypeRackBased, name),
+				}
+			}
+			result = &templates[i]
+		}
+	}
+
+	if result == nil {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no %s templates named '%s'", templateTypeRackBased, name),
+		}
+	}
+
+	return result, nil
+}
+
 func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemplatePodBased, error) {
 	rawTemplate, err := o.getTemplate(ctx, id)
 	if err != nil {
@@ -1105,6 +1134,35 @@ func (o *Client) getAllPodBasedTemplates(ctx context.Context) ([]rawTemplatePodB
 	return result, nil
 }
 
+func (o *Client) getPodBasedTemplateByName(ctx context.Context, name string) (*rawTemplatePodBased, error) {
+	templates, err := o.getAllPodBasedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *rawTemplatePodBased
+	for i := range templates {
+		if templates[i].DisplayName == name {
+			if result != nil {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("found multiple %s templates named '%s'", templateTypePodBased, name),
+				}
+			}
+			result = &templates[i]
+		}
+	}
+
+	if result == nil {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no %s templates named '%s'", templateTypePodBased, name),
+		}
+	}
+
+	return result, nil
+}
+
 func (o *Client) getL3CollapsedTemplate(ctx context.Context, id ObjectId) (*rawTemplateL3Collapsed, error) {
 	rawTemplate, err := o.getTemplate(ctx, id)
 	if err != nil {
@@ -1145,6 +1203,35 @@ func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]rawTemplateL
 			return nil, err
 		}
 		result = append(result, raw)
+	}
+
+	return result, nil
+}
+
+func (o *Client) getL3CollapsedTemplateByName(ctx context.Context, name string) (*rawTemplateL3Collapsed, error) {
+	templates, err := o.getAllL3CollapsedTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *rawTemplateL3Collapsed
+	for i := range templates {
+		if templates[i].DisplayName == name {
+			if result != nil {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("found multiple %s templates named '%s'", templateTypeL3Collapsed, name),
+				}
+			}
+			result = &templates[i]
+		}
+	}
+
+	if result == nil {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no %s templates named '%s'", templateTypeL3Collapsed, name),
+		}
 	}
 
 	return result, nil

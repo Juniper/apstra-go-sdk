@@ -796,6 +796,16 @@ func (o *Client) GetAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBa
 	return result, nil
 }
 
+// GetRackBasedTemplateByName returns *RackBasedTemplate if exactly one pod_based template uses the
+// specified name. If zero or more than one templates use the name, an error is returned.
+func (o *Client) GetRackBasedTemplateByName(ctx context.Context, name string) (*TemplateRackBased, error) {
+	t, err := o.getRackBasedTemplateByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	return t.polish()
+}
+
 // GetPodBasedTemplate returns *TemplatePodBased represented by `id`
 func (o *Client) GetPodBasedTemplate(ctx context.Context, id ObjectId) (*TemplatePodBased, error) {
 	raw, err := o.getPodBasedTemplate(ctx, id)
@@ -822,6 +832,16 @@ func (o *Client) GetAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBase
 	return result, nil
 }
 
+// GetPodBasedTemplateByName returns *PodBasedTemplate if exactly one pod_based template uses the
+// specified name. If zero or more than one templates use the name, an error is returned.
+func (o *Client) GetPodBasedTemplateByName(ctx context.Context, name string) (*TemplatePodBased, error) {
+	t, err := o.getPodBasedTemplateByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	return t.polish()
+}
+
 // GetL3CollapsedTemplate returns *TemplateL3Collapsed represented by `id`
 func (o *Client) GetL3CollapsedTemplate(ctx context.Context, id ObjectId) (*TemplateL3Collapsed, error) {
 	raw, err := o.getL3CollapsedTemplate(ctx, id)
@@ -846,6 +866,16 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 		result[i] = *polished
 	}
 	return result, nil
+}
+
+// GetL3CollapsedTemplateByName returns *L3CollapsedTemplate if exactly one pod_based template uses the
+// specified name. If zero or more than one templates use the name, an error is returned.
+func (o *Client) GetL3CollapsedTemplateByName(ctx context.Context, name string) (*TemplateL3Collapsed, error) {
+	t, err := o.getL3CollapsedTemplateByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	return t.polish()
 }
 
 // CreateRackBasedTemplate creates a template based on the supplied CreateRackBasedTempalteRequest
