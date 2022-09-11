@@ -3,6 +3,7 @@ package goapstra
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -799,11 +800,16 @@ func (o *Client) GetAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBa
 // GetRackBasedTemplateByName returns *RackBasedTemplate if exactly one pod_based template uses the
 // specified name. If zero or more than one templates use the name, an error is returned.
 func (o *Client) GetRackBasedTemplateByName(ctx context.Context, name string) (*TemplateRackBased, error) {
-	t, err := o.getRackBasedTemplateByName(ctx, name)
+	t, err := o.getTemplateByTypeAndName(ctx, templateTypeRackBased, name)
 	if err != nil {
 		return nil, err
 	}
-	return t.polish()
+	result := &rawTemplateRackBased{}
+	err = json.Unmarshal(*t, result)
+	if err != nil {
+		return nil, err
+	}
+	return result.polish()
 }
 
 // GetPodBasedTemplate returns *TemplatePodBased represented by `id`
@@ -835,11 +841,16 @@ func (o *Client) GetAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBase
 // GetPodBasedTemplateByName returns *PodBasedTemplate if exactly one pod_based template uses the
 // specified name. If zero or more than one templates use the name, an error is returned.
 func (o *Client) GetPodBasedTemplateByName(ctx context.Context, name string) (*TemplatePodBased, error) {
-	t, err := o.getPodBasedTemplateByName(ctx, name)
+	t, err := o.getTemplateByTypeAndName(ctx, templateTypePodBased, name)
 	if err != nil {
 		return nil, err
 	}
-	return t.polish()
+	result := &rawTemplatePodBased{}
+	err = json.Unmarshal(*t, result)
+	if err != nil {
+		return nil, err
+	}
+	return result.polish()
 }
 
 // GetL3CollapsedTemplate returns *TemplateL3Collapsed represented by `id`
@@ -871,11 +882,16 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 // GetL3CollapsedTemplateByName returns *L3CollapsedTemplate if exactly one pod_based template uses the
 // specified name. If zero or more than one templates use the name, an error is returned.
 func (o *Client) GetL3CollapsedTemplateByName(ctx context.Context, name string) (*TemplateL3Collapsed, error) {
-	t, err := o.getL3CollapsedTemplateByName(ctx, name)
+	t, err := o.getTemplateByTypeAndName(ctx, templateTypeL3Collapsed, name)
 	if err != nil {
 		return nil, err
 	}
-	return t.polish()
+	result := &rawTemplateL3Collapsed{}
+	err = json.Unmarshal(*t, result)
+	if err != nil {
+		return nil, err
+	}
+	return result.polish()
 }
 
 // CreateRackBasedTemplate creates a template based on the supplied CreateRackBasedTempalteRequest
