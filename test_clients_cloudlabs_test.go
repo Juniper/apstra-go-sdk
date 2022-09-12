@@ -10,7 +10,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -18,6 +17,7 @@ import (
 
 const (
 	cloudlabsTopologyUrlById   = "https://cloudlabs.apstra.com/api/v1.0/topologies/%s"
+	envApstraApiKeyLogFile     = "APSTRA_API_TLS_LOGFILE"
 	envCloudlabsTopologyIdList = "CLOUDLABS_TOPOLOGIES"
 	envCloudlabsTopologyIdSep  = ":"
 
@@ -136,7 +136,7 @@ func (o *cloudlabsTopology) getGoapstraClientCfg() (*ClientCfg, error) {
 
 	tlsConfig := &tls.Config{InsecureSkipVerify: true}
 
-	klw, err := keyLogWriterFromEnv(EnvApstraApiKeyLogFile)
+	klw, err := keyLogWriterFromEnv(envApstraApiKeyLogFile)
 	if err != nil {
 		return nil, err
 	}
@@ -170,30 +170,11 @@ func (o *cloudlabsTopology) getGoapstraClient() (*Client, error) {
 }
 
 func getCloudlabsTopology(id string) (*cloudlabsTopology, error) {
-	topologyUrl, err := url.Parse(fmt.Sprintf(cloudlabsTopologyUrlById, id))
+	httpResp, err := http.Get(fmt.Sprintf(cloudlabsTopologyUrlById, id))
 	if err != nil {
 		return nil, err
 	}
 
-	tlsConfig := &tls.Config{InsecureSkipVerify: true}
-	klw, err := keyLogWriterFromEnv(EnvApstraApiKeyLogFile)
-	if err != nil {
-		return nil, err
-	}
-	if klw != nil {
-		tlsConfig.KeyLogWriter = klw
-	}
-
-	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}
-	req := &http.Request{
-		Method: http.MethodGet,
-		URL:    topologyUrl,
-		Header: http.Header{"Accept": {"application/json"}},
-	}
-	httpResp, err := httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
 	defer func() {
 		_ = httpResp.Body.Close()
 	}()

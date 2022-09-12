@@ -9,22 +9,12 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 )
 
 const (
-	EnvApstraScheme           = "APSTRA_SCHEME"
-	EnvApstraUser             = "APSTRA_USER"
-	EnvApstraPass             = "APSTRA_PASS"
-	EnvApstraHost             = "APSTRA_HOST"
-	EnvApstraPort             = "APSTRA_PORT"
-	EnvApstraApiKeyLogFile    = "APSTRA_API_TLS_LOGFILE"
-	EnvApstraStreamKeyLogFile = "APSTRA_STREAM_TLS_LOGFILE"
-
 	DefaultTimeout = 10 * time.Second
 	defaultScheme  = "https"
 	insecureScheme = "http"
@@ -126,32 +116,6 @@ type Client struct {
 	syncLock    sync.Mutex              // control access to the 'sync' map
 }
 
-// pullFromEnv tries to pull missing config elements from the environment
-func (o *ClientCfg) pullFromEnv() error {
-	if o.Scheme == "" {
-		o.Scheme = os.Getenv(EnvApstraScheme)
-	}
-	if o.User == "" {
-		o.User = os.Getenv(EnvApstraUser)
-	}
-	if o.Pass == "" {
-		o.Pass = os.Getenv(EnvApstraPass)
-	}
-	if o.Host == "" {
-		o.Host = os.Getenv(EnvApstraHost)
-	}
-	if o.Port == 0 {
-		if portStr, found := os.LookupEnv(EnvApstraPort); found {
-			port, err := strconv.ParseUint(portStr, 10, 16)
-			if err != nil {
-				return fmt.Errorf("error parsing Apstra port - %w", err)
-			}
-			o.Port = uint16(port)
-		}
-	}
-	return nil
-}
-
 func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId ObjectId) (*TwoStageL3ClosClient, error) {
 	bp, err := o.getBlueprintStatus(ctx, blueprintId)
 	if err != nil {
@@ -168,13 +132,6 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 	result.mutex = &TwoStageL3ClosMutex{client: result}
 
 	return result, nil
-}
-
-// applyDefaults sets config elements which have default values
-func (o *ClientCfg) applyDefaults() {
-	if o.Scheme == "" {
-		o.Scheme = defaultScheme
-	}
 }
 
 func (o ClientCfg) validate() error {
@@ -202,14 +159,7 @@ func (o ClientCfg) url() string {
 
 // NewClient creates a Client object
 func (o ClientCfg) NewClient() (*Client, error) {
-	err := o.pullFromEnv()
-	if err != nil {
-		return nil, err
-	}
-
-	o.applyDefaults()
-
-	err = o.validate()
+	err := o.validate()
 	if err != nil {
 		return nil, err
 	}

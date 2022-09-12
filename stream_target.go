@@ -1,14 +1,11 @@
 package goapstra
 
 import (
-	"bytes"
 	"context"
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/binary"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"google.golang.org/protobuf/proto"
@@ -39,6 +36,7 @@ type StreamTargetCfg struct {
 	Protocol          string
 	Port              uint16
 	AosTargetHostname string
+	TlsConfig         *tls.Config
 }
 
 // StreamingMessage is a wrapper structure for messages delivered by both
@@ -56,56 +54,16 @@ type StreamingMessage struct {
 // support (when both x509Cert and privkey are supplied) or using bare TCP
 // (when either x509Cert or privkey are nil)
 func NewStreamTarget(cfg *StreamTargetCfg) (*StreamTarget, error) {
-	var tlsConfig *tls.Config
-
-	keyLog, err := keyLogWriterFromEnv(EnvApstraStreamKeyLogFile)
-	if err != nil {
-		return nil, err
-	}
-
-	if cfg.Certificate != nil && cfg.Key != nil {
-		certBlock := bytes.NewBuffer(nil)
-		err = pem.Encode(certBlock, &pem.Block{
-			Type:  "CERTIFICATE",
-			Bytes: cfg.Certificate.Raw,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to pem encode certificate block - %w", err)
-		}
-
-		privateKeyBlock := bytes.NewBuffer(nil)
-		err = pem.Encode(privateKeyBlock, &pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(cfg.Key),
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to pem encode private key block - %w", err)
-		}
-
-		tlsCert, err := tls.X509KeyPair(certBlock.Bytes(), privateKeyBlock.Bytes())
-		if err != nil {
-			return nil, fmt.Errorf("error parsing tls.Certificate object from cert and key - %w", err)
-		}
-
-		tlsConfig = &tls.Config{
-			KeyLogWriter: keyLog,
-			Rand:         rand.Reader,
-			Certificates: []tls.Certificate{tlsCert},
-		}
-	}
-
 	return &StreamTarget{
-		cfg:       cfg,
-		errChan:   make(chan error),
-		stopChan:  make(chan struct{}),
-		msgChan:   make(chan *StreamingMessage),
-		tlsConfig: tlsConfig,
+		cfg:      cfg,
+		errChan:  make(chan error),
+		stopChan: make(chan struct{}),
+		msgChan:  make(chan *StreamingMessage),
 	}, nil
 }
 
 // StreamTarget is a listener for AOS streaming objects
 type StreamTarget struct {
-	tlsConfig *tls.Config            // if we're a TLS listener
 	stopChan  chan struct{}          // close to rip everythign down
 	errChan   chan error             // client handlers pass errors here
 	msgChan   chan *StreamingMessage // client handlers pass messages here
@@ -129,8 +87,8 @@ func (o *StreamTarget) Start() (msgChan <-chan *StreamingMessage, errChan <-chan
 	var nl net.Listener
 
 	laddr := ":" + strconv.Itoa(int(o.cfg.Port)) // something like ":6000" (a port number)
-	if o.tlsConfig != nil {
-		nl, err = tls.Listen(network, laddr, o.tlsConfig) // if we're doing TLS (tls.listener)
+	if o.cfg.TlsConfig != nil {
+		nl, err = tls.Listen(network, laddr, o.cfg.TlsConfig) // if we're doing TLS (tls.listener)
 	} else {
 		nl, err = net.Listen(network, laddr) // if we're doing raw TCP (net.TCPListener)
 	}
