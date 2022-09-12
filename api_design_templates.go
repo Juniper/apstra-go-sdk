@@ -651,6 +651,13 @@ func (o *template) templateType() (templateType, error) {
 	return templateProto.Type, json.Unmarshal(*o, templateProto)
 }
 
+func (o *template) displayName() (string, error) {
+	templateProto := &struct {
+		DisplayName string `json:"display_name"`
+	}{}
+	return templateProto.DisplayName, json.Unmarshal(*o, templateProto)
+}
+
 func (o *template) polish() (Template, error) {
 	t, err := o.templateType()
 	if err != nil {
@@ -1103,6 +1110,51 @@ func (o *Client) getAllPodBasedTemplates(ctx context.Context) ([]rawTemplatePodB
 	}
 
 	return result, nil
+}
+
+func (o *Client) getTemplateByTypeAndName(ctx context.Context, desiredType templateType, desiredName string) (*template, error) {
+	templates, err := o.getAllTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var found *template
+	for i := range templates {
+		foundType, err := templates[i].templateType()
+		if err != nil {
+			return nil, err
+		}
+		if foundType != desiredType {
+			continue // wrong type
+		}
+
+		foundName, err := templates[i].displayName()
+		if foundName != desiredName {
+			continue // wrong name
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		if found != nil { // multiple matches!
+			return nil, ApstraClientErr{
+				errType: ErrMultipleMatch,
+				err:     fmt.Errorf("found multiple %s templates named '%s'", desiredType, desiredName),
+			}
+		}
+
+		// record this pointer to detect multiple matches
+		found = &templates[i]
+	}
+
+	if found == nil { // not found!
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no %s templates named '%s'", desiredType, desiredName),
+		}
+	}
+
+	return found, nil
 }
 
 func (o *Client) getL3CollapsedTemplate(ctx context.Context, id ObjectId) (*rawTemplateL3Collapsed, error) {
