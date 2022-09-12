@@ -47,7 +47,7 @@ func (o *TwoStageL3ClosMutex) Lock(ctx context.Context, message string) error {
 		}
 	}
 
-	//  create tag mutex here
+	// loop until we acquire the lock or the context deadline (set by caller) expires.
 	for {
 		tagId, err := o.client.client.createTag(ctx, &DesignTag{
 			Label:       TagLabel(lockName),
