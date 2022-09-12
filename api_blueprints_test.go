@@ -171,35 +171,3 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 		t.Skip(sb.String())
 	}
 }
-
-func TestGetLockInfo(t *testing.T) {
-	clients, err := getTestClients()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		name := randString(10, "hex")
-		id, err := client.client.createBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplate{
-			RefDesign:  RefDesignDatacenter,
-			Label:      name,
-			TemplateId: "L2_Virtual_EVPN",
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		l, err := client.client.getBlueprintLockInfo(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(l)
-		log.Printf("got id '%s', deleting blueprint...\n", id)
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-}

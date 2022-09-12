@@ -158,7 +158,7 @@ func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) 
 	}, nil
 }
 
-func (o *TwoStageLThreeClosClient) getResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) (*ResourceGroupAllocation, error) {
+func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) (*ResourceGroupAllocation, error) {
 	response := &rawResourceGroupAllocation{}
 	ttii := talkToApstraIn{
 		method:      http.MethodGet,
@@ -172,7 +172,7 @@ func (o *TwoStageLThreeClosClient) getResourceAllocation(ctx context.Context, rg
 	return response.polish()
 }
 
-func (o *TwoStageLThreeClosClient) setResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) error {
+func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.Type.String(), rga.Name.String()),

@@ -54,6 +54,10 @@ func convertTtaeToAceWherePossible(err error) error {
 			return ApstraClientErr{errType: ErrNotfound, err: err}
 		case http.StatusConflict:
 			return ApstraClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
+		case http.StatusUnprocessableEntity:
+			if strings.Contains(ttae.Msg, "already exists") {
+				return ApstraClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
+			}
 		}
 	}
 	return err
