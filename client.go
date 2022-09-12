@@ -116,7 +116,7 @@ type Client struct {
 	syncLock    sync.Mutex              // control access to the 'sync' map
 }
 
-func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId ObjectId) (*TwoStageLThreeClosClient, error) {
+func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId ObjectId) (*TwoStageL3ClosClient, error) {
 	bp, err := o.getBlueprintStatus(ctx, blueprintId)
 	if err != nil {
 		return nil, err
@@ -125,10 +125,13 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
 			RefDesignTwoStageL3Clos.String(), blueprintId, bp.Design.String())
 	}
-	return &TwoStageLThreeClosClient{
+	result := &TwoStageL3ClosClient{
 		client:      o,
 		blueprintId: blueprintId,
-	}, nil
+	}
+	result.mutex = &TwoStageL3ClosMutex{client: result}
+
+	return result, nil
 }
 
 func (o ClientCfg) validate() error {

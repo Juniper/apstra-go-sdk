@@ -454,7 +454,7 @@ func (o rawVirtualNetwork) parse() (*VirtualNetwork, error) {
 	}, nil
 }
 
-func (o *TwoStageLThreeClosClient) listAllVirtualNetworkIds(ctx context.Context, bpType BlueprintType) ([]ObjectId, error) {
+func (o *TwoStageL3ClosClient) listAllVirtualNetworkIds(ctx context.Context, bpType BlueprintType) ([]ObjectId, error) {
 	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId))
 	if err != nil {
 		return nil, err
@@ -488,7 +488,7 @@ func (o *TwoStageLThreeClosClient) listAllVirtualNetworkIds(ctx context.Context,
 	return result, nil
 }
 
-func (o *TwoStageLThreeClosClient) getVirtualNetwork(ctx context.Context, vnId ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
+func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
 	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, vnId))
 	if err != nil {
 		return nil, err
@@ -515,7 +515,7 @@ func (o *TwoStageLThreeClosClient) getVirtualNetwork(ctx context.Context, vnId O
 	return response.parse()
 }
 
-func (o *TwoStageLThreeClosClient) getVirtualNetworkBySubnet(ctx context.Context, desiredNet *net.IPNet, vrf ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
+func (o *TwoStageL3ClosClient) getVirtualNetworkBySubnet(ctx context.Context, desiredNet *net.IPNet, vrf ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
 	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId))
 	if err != nil {
 		return nil, err

@@ -11,64 +11,16 @@ import (
 )
 
 const (
-	apiUrlBlueprints          = "/api/blueprints"
-	apiUrlPathDelim           = "/"
-	apiUrlBlueprintsPrefix    = apiUrlBlueprints + apiUrlPathDelim
-	apiUrlBlueprintById       = apiUrlBlueprintsPrefix + "%s"
-	apiUrlBlueprintNodes      = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
-	apiUrlBlueprintNodeById   = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
-	apiUrlBlueprintLockStatus = apiUrlBlueprintById + apiUrlPathDelim + "lock-status"
+	apiUrlBlueprints        = "/api/blueprints"
+	apiUrlPathDelim         = "/"
+	apiUrlBlueprintsPrefix  = apiUrlBlueprints + apiUrlPathDelim
+	apiUrlBlueprintById     = apiUrlBlueprintsPrefix + "%s"
+	apiUrlBlueprintNodes    = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
+	apiUrlBlueprintNodeById = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
 
 	initTypeFromTemplate      = "template_reference"
 	nodeQueryNodeTypeUrlParam = "node_type"
 )
-
-type LockStatus int
-type lockStatus string
-
-const (
-	LockStatusUnlocked = LockStatus(iota)
-	LockStatusLockedByRestrictedUser
-	LockStatusLockedByAdmin
-	LockStatusLockedByDeletedUser
-	LockStatusUnknown = "unknown lock status %s"
-
-	lockStatusUnlocked               = lockStatus("unlocked")
-	lockStatusLockedByRestrictedUser = lockStatus("locked_by_restricted_user")
-	lockStatusLockedByAdmin          = lockStatus("locked_by_admin")
-	lockStatusLockedByDeletedUser    = lockStatus("locked_by_deleted_user")
-	lockStatusUnknown                = "unknown lock status %d"
-)
-
-func (o LockStatus) String() string {
-	switch o {
-	case LockStatusUnlocked:
-		return string(lockStatusUnlocked)
-	case LockStatusLockedByRestrictedUser:
-		return string(lockStatusLockedByRestrictedUser)
-	case LockStatusLockedByAdmin:
-		return string(lockStatusLockedByAdmin)
-	case LockStatusLockedByDeletedUser:
-		return string(lockStatusLockedByDeletedUser)
-	default:
-		return fmt.Sprintf(lockStatusUnknown, o)
-	}
-}
-
-func (o lockStatus) parse() (LockStatus, error) {
-	switch o {
-	case lockStatusUnlocked:
-		return LockStatusUnlocked, nil
-	case lockStatusLockedByRestrictedUser:
-		return LockStatusLockedByRestrictedUser, nil
-	case lockStatusLockedByAdmin:
-		return LockStatusLockedByAdmin, nil
-	case lockStatusLockedByDeletedUser:
-		return LockStatusLockedByDeletedUser, nil
-	default:
-		return 0, fmt.Errorf(LockStatusUnknown, o)
-	}
-}
 
 const (
 	NodeTypeNone = NodeType(iota)
@@ -345,51 +297,6 @@ type rawCreateBluePrintFromTemplate struct {
 	TemplateId ObjectId `json:"template_id"`
 }
 
-type rawLockInfo struct {
-	UserName         string     `json:"username"`
-	FirstName        string     `json:"first_name"`
-	LastName         string     `json:"last_name"`
-	UserId           string     `json:"user_id"`
-	PossibleOverride bool       `json:"possible_override"`
-	LockStatus       lockStatus `json:"lock_status"`
-}
-
-func (o *rawLockInfo) polish() (*LockInfo, error) {
-	ls, err := o.LockStatus.parse()
-	if err != nil {
-		return nil, err
-	}
-	return &LockInfo{
-		UserName:         o.UserName,
-		FirstName:        o.FirstName,
-		LastName:         o.LastName,
-		UserId:           o.UserId,
-		PossibleOverride: o.PossibleOverride,
-		LockStatus:       ls,
-	}, nil
-}
-
-type LockInfo struct {
-	UserName         string
-	FirstName        string
-	LastName         string
-	UserId           string
-	PossibleOverride bool
-	LockStatus       LockStatus
-}
-
-func (o *Client) getBlueprintLockInfo(ctx context.Context, id ObjectId) (*LockInfo, error) {
-	response := &rawLockInfo{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintLockStatus, id),
-		apiResponse: response,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-	return response.polish()
-}
 func (o *Client) listAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsBlueprintsResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{

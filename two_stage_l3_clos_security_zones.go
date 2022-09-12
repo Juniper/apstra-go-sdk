@@ -38,7 +38,7 @@ type SecurityZone struct {
 	VlanId          VLAN     `json:"vlan_id"`
 }
 
-func (o *TwoStageLThreeClosClient) createSecurityZone(ctx context.Context, cfg *CreateSecurityZoneCfg) (*objectIdResponse, error) {
+func (o *TwoStageL3ClosClient) createSecurityZone(ctx context.Context, cfg *CreateSecurityZoneCfg) (*objectIdResponse, error) {
 	response := &objectIdResponse{}
 	return response, o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -48,7 +48,7 @@ func (o *TwoStageLThreeClosClient) createSecurityZone(ctx context.Context, cfg *
 	})
 }
 
-func (o *TwoStageLThreeClosClient) getSecurityZone(ctx context.Context, zoneId ObjectId) (*SecurityZone, error) {
+func (o *TwoStageL3ClosClient) getSecurityZone(ctx context.Context, zoneId ObjectId) (*SecurityZone, error) {
 	response := &SecurityZone{}
 	return response, o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -57,7 +57,7 @@ func (o *TwoStageLThreeClosClient) getSecurityZone(ctx context.Context, zoneId O
 	})
 }
 
-func (o *TwoStageLThreeClosClient) getSecurityZoneByName(ctx context.Context, vrfName string) (*SecurityZone, error) {
+func (o *TwoStageL3ClosClient) getSecurityZoneByName(ctx context.Context, vrfName string) (*SecurityZone, error) {
 	zones, err := o.getAllSecurityZones(ctx)
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (o *TwoStageLThreeClosClient) getSecurityZoneByName(ctx context.Context, vr
 	}
 }
 
-func (o *TwoStageLThreeClosClient) getAllSecurityZones(ctx context.Context) ([]SecurityZone, error) {
+func (o *TwoStageL3ClosClient) getAllSecurityZones(ctx context.Context) ([]SecurityZone, error) {
 	response := &struct {
 		Items map[string]SecurityZone `json:"items"`
 	}{}
@@ -95,7 +95,7 @@ func (o *TwoStageLThreeClosClient) getAllSecurityZones(ctx context.Context) ([]S
 	return result, nil
 }
 
-func (o *TwoStageLThreeClosClient) updateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *CreateSecurityZoneCfg) error {
+func (o *TwoStageL3ClosClient) updateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *CreateSecurityZoneCfg) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
@@ -104,7 +104,7 @@ func (o *TwoStageLThreeClosClient) updateSecurityZone(ctx context.Context, zoneI
 
 }
 
-func (o *TwoStageLThreeClosClient) deleteSecurityZone(ctx context.Context, zoneId ObjectId) error {
+func (o *TwoStageL3ClosClient) deleteSecurityZone(ctx context.Context, zoneId ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
