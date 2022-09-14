@@ -96,6 +96,9 @@ func TestCreateTagCollision(t *testing.T) {
 		id1, err := client.client.CreateTag(context.Background(), &DesignTag{
 			Label: label,
 		})
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		id2, err := client.client.CreateTag(context.Background(), &DesignTag{
 			Label: label,
