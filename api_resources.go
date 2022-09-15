@@ -20,31 +20,18 @@ const (
 	apiUrlResourcesIpPoolById     = apiUrlResourcesIpPoolsPrefix + "%s"
 )
 
-// AsnRangeRequest is the public structure found within an AsnPoolRequest.
-type AsnRangeRequest intRangeRequest
-
-func (o AsnRangeRequest) first() uint32 {
-	return o.First
-}
-func (o AsnRangeRequest) last() uint32 {
-	return o.Last
-}
-
 // AsnPoolRequest is the public structure used to create/update an ASN pool.
 type AsnPoolRequest IntPoolRequest
 
 // raw() converts an AsnPoolRequest to rawAsnPoolRequest for consumption by the
 // Apstra API.
 func (o *AsnPoolRequest) raw() *rawIntPoolRequest {
-	return (*IntPoolRequest)(o).raw()
+	return o.raw()
 }
 
 // AsnPool is the public structure used to convey query responses about ASN
 // pools.
 type AsnPool IntPool
-
-// rawAsnPool contains some clunky types (integers as strings, etc.), is
-// cleaned up into an AsnPool before being presented to callers
 
 // polish turns a rawAsnPool from the API into AsnPool for caller consumption
 func (o *rawIntPool) makeAsnPool() (*AsnPool, error) {
@@ -94,11 +81,11 @@ func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, pool *AsnPo
 	return o.updateIntPool(ctx, apiUrlResourcesAsnPoolById, poolId, (*IntPoolRequest)(pool))
 }
 
-func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRangeRequest) error {
+func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
 	o.lock(clientApiResourceAsnPoolRangeMutex)
 	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
-	return o.createIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, (*intRangeRequest)(newRange))
+	return o.createIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, newRange)
 }
 
 func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange IntfIntRange) (bool, error) {

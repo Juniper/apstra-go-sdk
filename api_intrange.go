@@ -21,16 +21,16 @@ type IntfIntRange interface {
 type IntRanges []IntRange
 
 // IntRangeRequest is the public structure found within an IntPoolRequest.
-type intRangeRequest struct {
+type IntRangeRequest struct {
 	First uint32
 	Last  uint32
 }
 
-func (o intRangeRequest) first() uint32 {
+func (o IntRangeRequest) first() uint32 {
 	return o.First
 }
 
-func (o intRangeRequest) last() uint32 {
+func (o IntRangeRequest) last() uint32 {
 	return o.Last
 }
 
@@ -328,7 +328,7 @@ func (o *Client) updateIntPool(ctx context.Context, apiUrlResourcePoolById strin
 	return nil
 }
 
-func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById string, poolId ObjectId, newRange *intRangeRequest) error {
+func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById string, poolId ObjectId, newRange IntfIntRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
 	// read the Int pool info (that's where the configured ranges are found)
 	p, err := o.getIntPool(ctx, apiResourcesPoolById, poolId)
@@ -343,7 +343,7 @@ func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById st
 	if pool.Ranges.IndexOf(newRange) >= 0 {
 		return ApstraClientErr{
 			errType: ErrExists,
-			err:     fmt.Errorf(" range %d-%d in  pool '%s' already exists, cannot create", newRange.First, newRange.Last, pool.Id),
+			err:     fmt.Errorf(" range %d-%d in  pool '%s' already exists, cannot create", newRange.first(), newRange.last(), pool.Id),
 		}
 	}
 
@@ -352,7 +352,7 @@ func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById st
 		return ApstraClientErr{
 			errType: ErrRangeOverlap,
 			err: fmt.Errorf("new range %d-%d overlaps with existing range in  Pool '%s'",
-				newRange.First, newRange.Last, poolId),
+				newRange.first(), newRange.last(), poolId),
 		}
 	}
 
@@ -371,7 +371,7 @@ func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById st
 
 	// populate the final element (index matches length of retrieved data) with
 	// the new range element
-	req.Ranges[len(pool.Ranges)] = *newRange
+	req.Ranges[len(pool.Ranges)] = newRange
 
 	return o.updateIntPool(ctx, apiResourcesPoolById, poolId, req)
 }

@@ -368,7 +368,7 @@ func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPoolReq
 }
 
 // CreateAsnPoolRange updates an ASN pool by adding a new AsnRange
-func (o *Client) CreateAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRangeRequest) error {
+func (o *Client) CreateAsnPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
 	return o.createAsnPoolRange(ctx, poolId, newRange)
 }
 
