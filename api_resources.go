@@ -20,14 +20,6 @@ const (
 	apiUrlResourcesIpPoolById     = apiUrlResourcesIpPoolsPrefix + "%s"
 )
 
-// IntfAsnRange allows both AsnRangeRequest (sparse type created by the caller)
-// and AsnRange (detailed type sent by API) to be used in create/update methods
-type IntfAsnRange intfRange
-
-// AsnRanges is used in AsnPool responses. It exists as a standalone type to
-// facilitate checks with IndexOf() and Overlaps() methods.
-type AsnRanges []AsnRange
-
 // AsnRangeRequest is the public structure found within an AsnPoolRequest.
 type AsnRangeRequest intRangeRequest
 
@@ -47,29 +39,6 @@ func (o *AsnPoolRequest) raw() *rawIntPoolRequest {
 	return (*IntPoolRequest)(o).raw()
 }
 
-// rawAsnPoolRequest is formatted for the Apstra API, and is used to create or
-// update an ASN pool.
-
-// IndexOf returns index of 'b'. If not found, it returns -1
-// IndexOf returns index of 'b'. If not found, it returns -1
-func (o AsnRanges) IndexOf(b IntfAsnRange) int {
-	for i, a := range o {
-		if a.first() == b.first() && a.last() == b.last() {
-			return i
-		}
-	}
-	return -1
-}
-
-func (o AsnRanges) Overlaps(b IntfAsnRange) bool {
-	for _, a := range o {
-		if IntOverlap(a, b) {
-			return true
-		}
-	}
-	return false // no overlap
-}
-
 // AsnPool is the public structure used to convey query responses about ASN
 // pools.
 type AsnPool IntPool
@@ -81,24 +50,6 @@ type AsnPool IntPool
 func (o *rawIntPool) makeAsnPool() (*AsnPool, error) {
 	r, err := o.polish()
 	return (*AsnPool)(r), err
-}
-
-// AsnRange is the public structure found within AsnPool
-type AsnRange IntRange
-
-func (o AsnRange) first() uint32 {
-	return o.First
-}
-
-func (o AsnRange) last() uint32 {
-	return o.Last
-}
-
-// rawAsnRange contains some clunky types (integers as strings, etc.), is
-// cleaned up into an AsnRange before being presented to callers
-func (o *rawIntRange) makeAsnRange() (*AsnRange, error) {
-	r, e := o.polish()
-	return (*AsnRange)(r), e
 }
 
 func (o *Client) createAsnPool(ctx context.Context, in *AsnPoolRequest) (ObjectId, error) {
@@ -150,11 +101,11 @@ func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRan
 	return o.createIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, (*intRangeRequest)(newRange))
 }
 
-func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange IntfAsnRange) (bool, error) {
-	return o.IntPoolRangeExists(ctx, apiUrlResourcesAsnPoolById, poolId, intfRange(asnRange))
+func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange IntfIntRange) (bool, error) {
+	return o.IntPoolRangeExists(ctx, apiUrlResourcesAsnPoolById, poolId, asnRange)
 }
 
-func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe IntfAsnRange) error {
+func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe IntfIntRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
 	o.lock(clientApiResourceAsnPoolRangeMutex)
 	defer o.unlock(clientApiResourceAsnPoolRangeMutex)

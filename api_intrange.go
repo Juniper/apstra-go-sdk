@@ -11,7 +11,7 @@ import (
 
 // IntfIntRange allows both IntRangeRequest (sparse type created by the caller)
 // and IntRange (detailed type sent by API) to be used in create/update methods
-type intfRange interface {
+type IntfIntRange interface {
 	first() uint32
 	last() uint32
 }
@@ -44,7 +44,7 @@ type rawIntRangeRequest struct {
 // IntPoolRequest is the public structure used to create/update an Int pool.
 type IntPoolRequest struct {
 	DisplayName string
-	Ranges      []intfRange
+	Ranges      []IntfIntRange
 	Tags        []string
 }
 
@@ -74,7 +74,7 @@ type rawIntPoolRequest struct {
 }
 
 // IndexOf returns index of 'b'. If not found, it returns -1
-func (o IntRanges) IndexOf(b intfRange) int {
+func (o IntRanges) IndexOf(b IntfIntRange) int {
 	for i, a := range o {
 		if a.first() == b.first() && a.last() == b.last() {
 			return i
@@ -83,7 +83,7 @@ func (o IntRanges) IndexOf(b intfRange) int {
 	return -1
 }
 
-func (o IntRanges) Overlaps(b intfRange) bool {
+func (o IntRanges) Overlaps(b IntfIntRange) bool {
 	for _, a := range o {
 		if IntOverlap(a, b) {
 			return true
@@ -362,7 +362,7 @@ func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById st
 	}
 
 	// make one extra slice element for the new range element
-	req.Ranges = make([]intfRange, len(pool.Ranges)+1)
+	req.Ranges = make([]IntfIntRange, len(pool.Ranges)+1)
 
 	// fill the first elements with the retrieved data
 	for i, r := range pool.Ranges {
@@ -376,7 +376,7 @@ func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById st
 	return o.updateIntPool(ctx, apiResourcesPoolById, poolId, req)
 }
 
-func (o *Client) IntPoolRangeExists(ctx context.Context, apiResourcesPoolById string, poolId ObjectId, IntRange intfRange) (bool, error) {
+func (o *Client) IntPoolRangeExists(ctx context.Context, apiResourcesPoolById string, poolId ObjectId, IntRange IntfIntRange) (bool, error) {
 	poolInfo, err := o.getIntPool(ctx, apiResourcesPoolById, poolId)
 	if err != nil {
 		return false, fmt.Errorf("error getting Int ranges from pool '%s' - %w", poolId, err)
@@ -391,7 +391,7 @@ func (o *Client) IntPoolRangeExists(ctx context.Context, apiResourcesPoolById st
 	return false, nil
 }
 
-func (o *Client) deleteIntPoolRange(ctx context.Context, apiResourcesPoolById string, poolId ObjectId, deleteMe intfRange) error {
+func (o *Client) deleteIntPoolRange(ctx context.Context, apiResourcesPoolById string, poolId ObjectId, deleteMe IntfIntRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
 	// Caller must take a lock
 
@@ -423,7 +423,7 @@ func (o *Client) deleteIntPoolRange(ctx context.Context, apiResourcesPoolById st
 	}
 	return o.updateIntPool(ctx, apiResourcesPoolById, poolId, req)
 }
-func IntOverlap(a, b intfRange) bool {
+func IntOverlap(a, b IntfIntRange) bool {
 	if a.first() >= b.first() && a.first() <= b.last() { // begin 'a' falls within 'b'
 		return true
 	}

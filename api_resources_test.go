@@ -43,7 +43,7 @@ func TestEmptyAsnPool(t *testing.T) {
 		t.Fatal(err)
 	}
 	sort.Ints(asnBeginEnds) // sort so that the ASN ranges will be ([0]...[1], [2]...[3], etc.)
-	asnRanges := make([]intfRange, asnRangeCount)
+	asnRanges := make([]IntfIntRange, asnRangeCount)
 	for i := 0; i < asnRangeCount; i++ {
 		asnRanges[i] = AsnRangeRequest{
 			uint32(asnBeginEnds[2*i]),
