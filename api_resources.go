@@ -2,7 +2,6 @@ package goapstra
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -21,405 +20,83 @@ const (
 	apiUrlResourcesIpPoolById     = apiUrlResourcesIpPoolsPrefix + "%s"
 )
 
-// IntfAsnRange allows both AsnRangeRequest (sparse type created by the caller)
-// and AsnRange (detailed type sent by API) to be used in create/update methods
-type IntfAsnRange interface {
-	first() uint32
-	last() uint32
-}
-
-// AsnRanges is used in AsnPool responses. It exists as a standalone type to
-// facilitate checks with IndexOf() and Overlaps() methods.
-type AsnRanges []AsnRange
-
-// AsnRangeRequest is the public structure found within an AsnPoolRequest.
-type AsnRangeRequest struct {
-	First uint32
-	Last  uint32
-}
-
-func (o AsnRangeRequest) first() uint32 {
-	return o.First
-}
-
-func (o AsnRangeRequest) last() uint32 {
-	return o.Last
-}
-
-// rawAsnRangeRequest is the API-friendly structure sent within a
-// rawAsnPoolRequest.
-type rawAsnRangeRequest struct {
-	First uint32 `json:"first"`
-	Last  uint32 `json:"last"`
-}
-
 // AsnPoolRequest is the public structure used to create/update an ASN pool.
-type AsnPoolRequest struct {
-	DisplayName string
-	Ranges      []IntfAsnRange
-	Tags        []string
-}
+type AsnPoolRequest IntPoolRequest
 
 // raw() converts an AsnPoolRequest to rawAsnPoolRequest for consumption by the
 // Apstra API.
-func (o *AsnPoolRequest) raw() *rawAsnPoolRequest {
-	ranges := make([]rawAsnRangeRequest, len(o.Ranges))
-	for i, r := range o.Ranges {
-		ranges[i] = rawAsnRangeRequest{
-			First: r.first(),
-			Last:  r.last(),
-		}
-	}
-	return &rawAsnPoolRequest{
-		DisplayName: o.DisplayName,
-		Ranges:      ranges,
-		Tags:        o.Tags,
-	}
-}
-
-// rawAsnPoolRequest is formatted for the Apstra API, and is used to create or
-// update an ASN pool.
-type rawAsnPoolRequest struct {
-	DisplayName string               `json:"display_name"`
-	Ranges      []rawAsnRangeRequest `json:"ranges"`
-	Tags        []string             `json:"tags,omitempty"`
-}
-
-// IndexOf returns index of 'b'. If not found, it returns -1
-func (o AsnRanges) IndexOf(b IntfAsnRange) int {
-	for i, a := range o {
-		if a.first() == b.first() && a.last() == b.last() {
-			return i
-		}
-	}
-	return -1
-}
-
-func (o AsnRanges) Overlaps(b IntfAsnRange) bool {
-	for _, a := range o {
-		if AsnOverlap(a, b) {
-			return true
-		}
-	}
-	return false // no overlap
+func (o *AsnPoolRequest) raw() *rawIntPoolRequest {
+	return o.raw()
 }
 
 // AsnPool is the public structure used to convey query responses about ASN
 // pools.
-type AsnPool struct {
-	Id             ObjectId
-	DisplayName    string
-	Ranges         AsnRanges // use the named slice type so we can call IndexOf()
-	Tags           []string
-	Status         string
-	CreatedAt      time.Time
-	LastModifiedAt time.Time
-	Total          uint32
-	Used           uint32
-	UsedPercentage float32
-}
-
-// rawAsnPool contains some clunky types (integers as strings, etc.), is
-// cleaned up into an AsnPool before being presented to callers
-type rawAsnPool struct {
-	Status         string        `json:"status"`
-	Used           string        `json:"used"`
-	DisplayName    string        `json:"display_name"`
-	Tags           []string      `json:"tags"`
-	CreatedAt      time.Time     `json:"created_at"`
-	LastModifiedAt time.Time     `json:"last_modified_at"`
-	Ranges         []rawAsnRange `json:"ranges"`
-	UsedPercentage float32       `json:"used_percentage"`
-	Total          string        `json:"total"`
-	Id             ObjectId      `json:"id"`
-}
+type AsnPool IntPool
 
 // polish turns a rawAsnPool from the API into AsnPool for caller consumption
-func (o *rawAsnPool) polish() (*AsnPool, error) {
-	ranges := make(AsnRanges, len(o.Ranges))
-	for i, r := range o.Ranges {
-		p, err := r.polish()
-		if err != nil {
-			return nil, err
-		}
-		ranges[i] = *p
-	}
-
-	var err error
-	var used uint64
-	if o.Used == "" {
-		used = 0
-	} else {
-		used, err = strconv.ParseUint(o.Used, 10, 32)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing 'used' element of ASN Pool '%s' - %w", o.Id, err)
-		}
-	}
-
-	var total uint64
-	if o.Total == "" {
-		total = 0
-	} else {
-		total, err = strconv.ParseUint(o.Total, 10, 32)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing 'total' element of ASN Pool '%s' - %w", o.Id, err)
-		}
-	}
-	return &AsnPool{
-		Id:             o.Id,
-		DisplayName:    o.DisplayName,
-		Ranges:         ranges,
-		Tags:           o.Tags,
-		Status:         o.Status,
-		CreatedAt:      o.CreatedAt,
-		LastModifiedAt: o.LastModifiedAt,
-		Total:          uint32(total),
-		Used:           uint32(used),
-		UsedPercentage: o.UsedPercentage,
-	}, nil
-}
-
-// AsnRange is the public structure found within AsnPool
-type AsnRange struct {
-	Status         string
-	First          uint32
-	Last           uint32
-	Total          uint32
-	Used           uint32
-	UsedPercentage float32
-}
-
-func (o AsnRange) first() uint32 {
-	return o.First
-}
-
-func (o AsnRange) last() uint32 {
-	return o.Last
-}
-
-// rawAsnRange contains some clunky types (integers as strings, etc.), is
-// cleaned up into an AsnRange before being presented to callers
-type rawAsnRange struct {
-	Status         string  `json:"status"`
-	First          uint32  `json:"first"`
-	Last           uint32  `json:"last"`
-	Total          string  `json:"total"`
-	Used           string  `json:"used"`
-	UsedPercentage float32 `json:"used_percentage"`
-}
-
-func (o *rawAsnRange) polish() (*AsnRange, error) {
-	var err error
-	var used uint64
-	if o.Used == "" {
-		used = 0
-	} else {
-		used, err = strconv.ParseUint(o.Used, 10, 32)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing 'used' element of ASN Pool Range - %w", err)
-		}
-	}
-
-	var total uint64
-	if o.Total == "" {
-		total = 0
-	} else {
-		total, err = strconv.ParseUint(o.Total, 10, 32)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing 'total' element of ASN Pool Range - %w", err)
-		}
-	}
-
-	return &AsnRange{
-		Status:         o.Status,
-		First:          o.First,
-		Last:           o.Last,
-		Total:          uint32(total),
-		Used:           uint32(used),
-		UsedPercentage: o.UsedPercentage,
-	}, nil
+func (o *rawIntPool) makeAsnPool() (*AsnPool, error) {
+	r, err := o.polish()
+	return (*AsnPool)(r), err
 }
 
 func (o *Client) createAsnPool(ctx context.Context, in *AsnPoolRequest) (ObjectId, error) {
-	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      apiUrlResourcesAsnPools,
-		apiInput:    in.raw(),
-		apiResponse: response,
-	})
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
-	}
-	return response.Id, nil
+	id, err := o.createIntPool(ctx, (*IntPoolRequest)(in), apiUrlResourcesAsnPools)
+	return id, err
 }
 
 func (o *Client) listAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
-	var response struct {
-		Items []ObjectId `json:"items"`
-	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodOptions,
-		urlStr:      apiUrlResourcesAsnPools,
-		apiResponse: response,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-	return response.Items, nil
+	r, err := o.listIntPoolIds(ctx, apiUrlResourcesAsnPools)
+	return r, err
 }
 
-func (o *Client) getAsnPools(ctx context.Context) ([]rawAsnPool, error) {
-	var response struct {
-		Items []rawAsnPool `json:"items"`
-	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      apiUrlResourcesAsnPools,
-		apiResponse: &response,
-	})
+func (o *Client) getAsnPools(ctx context.Context) ([]AsnPool, error) {
+	r, err := o.getIntPools(ctx, apiUrlResourcesAsnPools)
+	var r1 []AsnPool
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		return r1, err
 	}
-
-	return response.Items, nil
+	for _, i := range r {
+		a, err := i.makeAsnPool()
+		if err != nil {
+			return r1, err
+		}
+		r1 = append(r1, *a)
+	}
+	return r1, err
 }
 
-func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*rawAsnPool, error) {
-	if poolId == "" {
-		return nil, errors.New("attempt to get ASN Pool info with empty pool ID")
-	}
-	response := &rawAsnPool{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId),
-		apiResponse: response,
-	})
+func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, error) {
+	r, err := o.getIntPool(ctx, apiUrlResourcesAsnPoolById, poolId)
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		return nil, err
 	}
-	return response, nil
+	return r.makeAsnPool()
 }
 
 func (o *Client) deleteAsnPool(ctx context.Context, poolId ObjectId) error {
-	if poolId == "" {
-		return errors.New("attempt to delete ASN Pool with empty pool ID")
-	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId),
-	})
-	if err != nil {
-		return convertTtaeToAceWherePossible(err)
-	}
-	return nil
+	return o.deleteIntPool(ctx, apiUrlResourcesAsnPoolById, poolId)
 }
 
 func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, pool *AsnPoolRequest) error {
-	if poolId == "" {
-		return errors.New("attempt to update ASN Pool with empty pool ID")
-	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlResourcesAsnPoolById, poolId),
-		apiInput: pool.raw(),
-	})
-	if err != nil {
-		return convertTtaeToAceWherePossible(err)
-	}
-	return nil
+	return o.updateIntPool(ctx, apiUrlResourcesAsnPoolById, poolId, (*IntPoolRequest)(pool))
 }
 
-func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange *AsnRangeRequest) error {
+func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
 	o.lock(clientApiResourceAsnPoolRangeMutex)
 	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
-
-	// read the ASN pool info (that's where the configured ranges are found)
-	pool, err := o.GetAsnPool(ctx, poolId)
-	if err != nil {
-		return fmt.Errorf("error getting ASN pool ranges - %w", err)
-	}
-
-	// we don't expect to find the "new" range in there already
-	if pool.Ranges.IndexOf(newRange) >= 0 {
-		return ApstraClientErr{
-			errType: ErrExists,
-			err:     fmt.Errorf("ASN range %d-%d in ASN pool '%s' already exists, cannot create", newRange.First, newRange.Last, pool.Id),
-		}
-	}
-
-	// sanity check: the new range shouldn't overlap any existing range (the API will reject it)
-	if pool.Ranges.Overlaps(newRange) {
-		return ApstraClientErr{
-			errType: ErrAsnRangeOverlap,
-			err: fmt.Errorf("new ASN range %d-%d overlaps with existing range in ASN Pool '%s'",
-				newRange.First, newRange.Last, poolId),
-		}
-	}
-
-	req := &AsnPoolRequest{
-		DisplayName: pool.DisplayName,
-		Tags:        pool.Tags,
-	}
-
-	// make one extra slice element for the new range element
-	req.Ranges = make([]IntfAsnRange, len(pool.Ranges)+1)
-
-	// fill the first elements with the retrieved data
-	for i, r := range pool.Ranges {
-		req.Ranges[i] = r
-	}
-
-	// populate the final element (index matches length of retrieved data) with
-	// the new range element
-	req.Ranges[len(pool.Ranges)] = *newRange
-
-	return o.updateAsnPool(ctx, poolId, req)
+	return o.createIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, newRange)
 }
 
-func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange IntfAsnRange) (bool, error) {
-	poolInfo, err := o.GetAsnPool(ctx, poolId)
-	if err != nil {
-		return false, fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
-	}
-
-	if poolInfo.Ranges.IndexOf(asnRange) >= 0 {
-		return true, nil
-	}
-	return false, nil
+func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange IntfIntRange) (bool, error) {
+	return o.IntPoolRangeExists(ctx, apiUrlResourcesAsnPoolById, poolId, asnRange)
 }
 
-func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe IntfAsnRange) error {
+func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe IntfIntRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
 	o.lock(clientApiResourceAsnPoolRangeMutex)
 	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
-
-	pool, err := o.GetAsnPool(ctx, poolId)
-	if err != nil {
-		return fmt.Errorf("error getting ASN ranges from pool '%s' - %w", poolId, err)
-	}
-
-	deleteIdx := pool.Ranges.IndexOf(deleteMe)
-	if deleteIdx < 0 {
-		return ApstraClientErr{
-			errType: ErrNotfound,
-			err:     fmt.Errorf("ASN range '%d-%d' not found in ASN Pool '%s'", deleteMe.first(), deleteMe.last(), poolId),
-		}
-	}
-
-	req := &AsnPoolRequest{
-		DisplayName: pool.DisplayName,
-		Tags:        pool.Tags,
-	}
-	for i, r := range pool.Ranges {
-		if i == deleteIdx {
-			continue
-		}
-		req.Ranges = append(req.Ranges, r)
-	}
-
-	return o.updateAsnPool(ctx, poolId, req)
+	return o.deleteIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, deleteMe)
 }
 
 type Ip4Pool struct {

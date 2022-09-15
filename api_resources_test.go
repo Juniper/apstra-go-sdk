@@ -43,11 +43,11 @@ func TestEmptyAsnPool(t *testing.T) {
 		t.Fatal(err)
 	}
 	sort.Ints(asnBeginEnds) // sort so that the ASN ranges will be ([0]...[1], [2]...[3], etc.)
-	asnRanges := make([]IntfAsnRange, asnRangeCount)
+	asnRanges := make([]IntfIntRange, asnRangeCount)
 	for i := 0; i < asnRangeCount; i++ {
-		asnRanges[i] = AsnRangeRequest{
-			First: uint32(asnBeginEnds[2*i]),
-			Last:  uint32(asnBeginEnds[(2*i)+1]),
+		asnRanges[i] = IntRangeRequest{
+			uint32(asnBeginEnds[2*i]),
+			uint32(asnBeginEnds[(2*i)+1]),
 		}
 	}
 
@@ -99,7 +99,7 @@ func TestEmptyAsnPool(t *testing.T) {
 			}
 		}
 
-		for i := range asnRanges {
+		for _ = range asnRanges {
 			// delete one randomly selected range
 			rangeCount := len(newPool.Ranges)
 			deleteMe := newPool.Ranges[rand.Intn(rangeCount)]
@@ -115,7 +115,7 @@ func TestEmptyAsnPool(t *testing.T) {
 			}
 
 			if rangeCount-1 != len(newPool.Ranges) {
-				t.Fatalf("expected new pool to have %d ranges, got %d", i+1, len(newPool.Ranges))
+				t.Fatalf("expected new pool to have %d ranges, got %d", rangeCount-1, len(newPool.Ranges))
 			}
 		}
 
@@ -132,7 +132,7 @@ func TestEmptyAsnPool(t *testing.T) {
 }
 
 func TestUnmarshalPool(t *testing.T) {
-	var result rawAsnPool
+	var result rawIntPool
 	err := json.Unmarshal([]byte(testPool1), &result)
 	if err != nil {
 		t.Fatal(err)
@@ -160,7 +160,7 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 			t.Fatal(err)
 		}
 		log.Printf("created ASN pool name %s id %s", name, poolId)
-		var asnRange AsnRangeRequest
+		var asnRange IntRangeRequest
 		for i := 0; i < 3; i++ {
 			a := rand.Intn(1000) + (i * 1000 * 2)
 			b := rand.Intn(1000) + a
@@ -180,7 +180,7 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 		}
 		for _, r := range asnPool.Ranges {
 			log.Printf("testing DeleteAsnPoolRange() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err := client.client.DeleteAsnPoolRange(context.TODO(), asnPool.Id, &AsnRangeRequest{First: r.First, Last: r.Last})
+			err := client.client.DeleteAsnPoolRange(context.TODO(), asnPool.Id, &IntRangeRequest{First: r.First, Last: r.Last})
 			if err != nil {
 				t.Fatal(err)
 			}
