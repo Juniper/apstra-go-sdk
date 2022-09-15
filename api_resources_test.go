@@ -43,11 +43,11 @@ func TestEmptyAsnPool(t *testing.T) {
 		t.Fatal(err)
 	}
 	sort.Ints(asnBeginEnds) // sort so that the ASN ranges will be ([0]...[1], [2]...[3], etc.)
-	asnRanges := make([]IntfAsnRange, asnRangeCount)
+	asnRanges := make([]intfRange, asnRangeCount)
 	for i := 0; i < asnRangeCount; i++ {
 		asnRanges[i] = AsnRangeRequest{
-			First: uint32(asnBeginEnds[2*i]),
-			Last:  uint32(asnBeginEnds[(2*i)+1]),
+			uint32(asnBeginEnds[2*i]),
+			uint32(asnBeginEnds[(2*i)+1]),
 		}
 	}
 
@@ -99,7 +99,7 @@ func TestEmptyAsnPool(t *testing.T) {
 			}
 		}
 
-		for i := range asnRanges {
+		for _ = range asnRanges {
 			// delete one randomly selected range
 			rangeCount := len(newPool.Ranges)
 			deleteMe := newPool.Ranges[rand.Intn(rangeCount)]
@@ -115,7 +115,7 @@ func TestEmptyAsnPool(t *testing.T) {
 			}
 
 			if rangeCount-1 != len(newPool.Ranges) {
-				t.Fatalf("expected new pool to have %d ranges, got %d", i+1, len(newPool.Ranges))
+				t.Fatalf("expected new pool to have %d ranges, got %d", rangeCount-1, len(newPool.Ranges))
 			}
 		}
 
@@ -132,7 +132,7 @@ func TestEmptyAsnPool(t *testing.T) {
 }
 
 func TestUnmarshalPool(t *testing.T) {
-	var result rawAsnPool
+	var result rawIntPool
 	err := json.Unmarshal([]byte(testPool1), &result)
 	if err != nil {
 		t.Fatal(err)

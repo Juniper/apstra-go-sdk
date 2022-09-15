@@ -34,6 +34,7 @@ const (
 	ErrUnknown = iota
 	ErrAsnOutOfRange
 	ErrAsnRangeOverlap
+	ErrRangeOverlap
 	ErrAuthFail
 	ErrCompatibility
 	ErrConflict
@@ -374,19 +375,7 @@ func (o *Client) GetAnomalies(ctx context.Context) ([]Anomaly, error) {
 
 // GetAsnPools returns ASN pools configured on Apstra
 func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
-	rawPools, err := o.getAsnPools(ctx)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]AsnPool, len(rawPools))
-	for i, raw := range rawPools {
-		p, err := raw.polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *p
-	}
-	return result, nil
+	return o.getAsnPools(ctx)
 }
 
 // ListAsnPoolIds returns ASN pools configured on Apstra
@@ -405,11 +394,7 @@ func (o *Client) CreateAsnPool(ctx context.Context, in *AsnPoolRequest) (ObjectI
 
 // GetAsnPool returns, by ObjectId, a specific ASN pool
 func (o *Client) GetAsnPool(ctx context.Context, in ObjectId) (*AsnPool, error) {
-	raw, err := o.getAsnPool(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	return raw.polish()
+	return o.getAsnPool(ctx, in)
 }
 
 // DeleteAsnPool deletes an ASN pool, by ObjectId from Apstra
