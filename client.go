@@ -3,28 +3,19 @@ package goapstra
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
-	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 )
 
 const (
-	EnvApstraScheme           = "APSTRA_SCHEME"
-	EnvApstraUser             = "APSTRA_USER"
-	EnvApstraPass             = "APSTRA_PASS"
-	EnvApstraHost             = "APSTRA_HOST"
-	EnvApstraPort             = "APSTRA_PORT"
-	EnvApstraApiKeyLogFile    = "APSTRA_API_TLS_LOGFILE"
-	EnvApstraStreamKeyLogFile = "APSTRA_STREAM_TLS_LOGFILE"
-
 	DefaultTimeout = 10 * time.Second
 	defaultScheme  = "https"
 	insecureScheme = "http"
@@ -127,33 +118,7 @@ type Client struct {
 	syncLock    sync.Mutex              // control access to the 'sync' map
 }
 
-// pullFromEnv tries to pull missing config elements from the environment
-func (o *ClientCfg) pullFromEnv() error {
-	if o.Scheme == "" {
-		o.Scheme = os.Getenv(EnvApstraScheme)
-	}
-	if o.User == "" {
-		o.User = os.Getenv(EnvApstraUser)
-	}
-	if o.Pass == "" {
-		o.Pass = os.Getenv(EnvApstraPass)
-	}
-	if o.Host == "" {
-		o.Host = os.Getenv(EnvApstraHost)
-	}
-	if o.Port == 0 {
-		if portStr, found := os.LookupEnv(EnvApstraPort); found {
-			port, err := strconv.ParseUint(portStr, 10, 16)
-			if err != nil {
-				return fmt.Errorf("error parsing Apstra port - %w", err)
-			}
-			o.Port = uint16(port)
-		}
-	}
-	return nil
-}
-
-func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId ObjectId) (*TwoStageLThreeClosClient, error) {
+func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId ObjectId) (*TwoStageL3ClosClient, error) {
 	bp, err := o.getBlueprintStatus(ctx, blueprintId)
 	if err != nil {
 		return nil, err
@@ -162,17 +127,13 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
 			RefDesignTwoStageL3Clos.String(), blueprintId, bp.Design.String())
 	}
-	return &TwoStageLThreeClosClient{
+	result := &TwoStageL3ClosClient{
 		client:      o,
 		blueprintId: blueprintId,
-	}, nil
-}
-
-// applyDefaults sets config elements which have default values
-func (o *ClientCfg) applyDefaults() {
-	if o.Scheme == "" {
-		o.Scheme = defaultScheme
 	}
+	result.mutex = &TwoStageL3ClosMutex{client: result}
+
+	return result, nil
 }
 
 func (o ClientCfg) validate() error {
@@ -200,14 +161,7 @@ func (o ClientCfg) url() string {
 
 // NewClient creates a Client object
 func (o ClientCfg) NewClient() (*Client, error) {
-	err := o.pullFromEnv()
-	if err != nil {
-		return nil, err
-	}
-
-	o.applyDefaults()
-
-	err = o.validate()
+	err := o.validate()
 	if err != nil {
 		return nil, err
 	}
@@ -781,6 +735,21 @@ func (o *Client) GetAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBa
 	return result, nil
 }
 
+// GetRackBasedTemplateByName returns *RackBasedTemplate if exactly one pod_based template uses the
+// specified name. If zero or more than one templates use the name, an error is returned.
+func (o *Client) GetRackBasedTemplateByName(ctx context.Context, name string) (*TemplateRackBased, error) {
+	t, err := o.getTemplateByTypeAndName(ctx, templateTypeRackBased, name)
+	if err != nil {
+		return nil, err
+	}
+	result := &rawTemplateRackBased{}
+	err = json.Unmarshal(*t, result)
+	if err != nil {
+		return nil, err
+	}
+	return result.polish()
+}
+
 // GetPodBasedTemplate returns *TemplatePodBased represented by `id`
 func (o *Client) GetPodBasedTemplate(ctx context.Context, id ObjectId) (*TemplatePodBased, error) {
 	raw, err := o.getPodBasedTemplate(ctx, id)
@@ -807,6 +776,21 @@ func (o *Client) GetAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBase
 	return result, nil
 }
 
+// GetPodBasedTemplateByName returns *PodBasedTemplate if exactly one pod_based template uses the
+// specified name. If zero or more than one templates use the name, an error is returned.
+func (o *Client) GetPodBasedTemplateByName(ctx context.Context, name string) (*TemplatePodBased, error) {
+	t, err := o.getTemplateByTypeAndName(ctx, templateTypePodBased, name)
+	if err != nil {
+		return nil, err
+	}
+	result := &rawTemplatePodBased{}
+	err = json.Unmarshal(*t, result)
+	if err != nil {
+		return nil, err
+	}
+	return result.polish()
+}
+
 // GetL3CollapsedTemplate returns *TemplateL3Collapsed represented by `id`
 func (o *Client) GetL3CollapsedTemplate(ctx context.Context, id ObjectId) (*TemplateL3Collapsed, error) {
 	raw, err := o.getL3CollapsedTemplate(ctx, id)
@@ -831,6 +815,21 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 		result[i] = *polished
 	}
 	return result, nil
+}
+
+// GetL3CollapsedTemplateByName returns *L3CollapsedTemplate if exactly one pod_based template uses the
+// specified name. If zero or more than one templates use the name, an error is returned.
+func (o *Client) GetL3CollapsedTemplateByName(ctx context.Context, name string) (*TemplateL3Collapsed, error) {
+	t, err := o.getTemplateByTypeAndName(ctx, templateTypeL3Collapsed, name)
+	if err != nil {
+		return nil, err
+	}
+	result := &rawTemplateL3Collapsed{}
+	err = json.Unmarshal(*t, result)
+	if err != nil {
+		return nil, err
+	}
+	return result.polish()
 }
 
 // CreateRackBasedTemplate creates a template based on the supplied CreateRackBasedTempalteRequest

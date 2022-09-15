@@ -26,10 +26,10 @@ func ourIpForPeer(them net.IP) (*net.IP, error) {
 func main() {
 	// create an apstra client object
 	clientCfg := goapstra.ClientCfg{
-		//Host:      "", // omit to use env var 'APSTRA_HOST'
-		//Port:      "", // omit to use env var 'APSTRA_PORT'
-		//User:      "", // omit to use env var 'APSTRA_USER'
-		//Pass:      "", // omit to use env var 'APSTRA_PASS'
+		Host:       "apstra.example.com",
+		Port:       443,
+		User:       "admin",
+		Pass:       "password",
 		HttpClient: &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
 	}
 	client, err := clientCfg.NewClient()

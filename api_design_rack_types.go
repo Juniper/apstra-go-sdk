@@ -959,11 +959,11 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 	}
 
 	for id := range ldMap {
-		ld, err := client.GetLogicalDevice(ctx, id)
+		ld, err := client.getLogicalDevice(ctx, id)
 		if err != nil {
 			return nil, err
 		}
-		result.LogicalDevices = append(result.LogicalDevices, *ld.raw())
+		result.LogicalDevices = append(result.LogicalDevices, *ld)
 	}
 
 	for tl := range tagMap {

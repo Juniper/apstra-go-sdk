@@ -5,6 +5,7 @@ package goapstra
 
 import (
 	"context"
+	"errors"
 	"log"
 	"testing"
 )
@@ -81,5 +82,38 @@ func TestCreateGetDeleteTag(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestCreateTagCollision(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	label := TagLabel(randString(10, "hex"))
+	for _, client := range clients {
+		id1, err := client.client.CreateTag(context.Background(), &DesignTag{
+			Label: label,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		id2, err := client.client.CreateTag(context.Background(), &DesignTag{
+			Label: label,
+		})
+		if err == nil {
+			_ = client.client.deleteTag(context.Background(), id1)
+			_ = client.client.deleteTag(context.Background(), id2)
+			t.Fatal(errors.New("expected error, got none"))
+		}
+		_ = client.client.deleteTag(context.Background(), id1)
+
+		var ace ApstraClientErr
+		if errors.As(err, &ace) && ace.errType == ErrExists { // this is the error we want
+			continue
+		}
+		t.Fatal(err)
 	}
 }

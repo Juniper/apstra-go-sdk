@@ -52,9 +52,10 @@ package main
 import "github.com/chrismarget-j/goapstra"
 func main() {
   clientCfg := &goapstra.ClientCfg{
-    //Host:      "", // omit to use env var 'APSTRA_HOST'
-    //User:      "", // omit to use env var 'APSTRA_USER'
-    //Pass:      "", // omit to use env var 'APSTRA_PASS'
+	Scheme:    "https"
+    Host:      "apstra.example.com",
+    User:      "admin",
+    Pass:      "password",
     TlsConfig: &tls.Config{InsecureSkipVerify: true},
   }
   client, _ := goapstra.NewClient(clientCfg) //error ignored
