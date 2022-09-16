@@ -23,12 +23,6 @@ const (
 // AsnPoolRequest is the public structure used to create/update an ASN pool.
 type AsnPoolRequest IntPoolRequest
 
-// raw() converts an AsnPoolRequest to rawAsnPoolRequest for consumption by the
-// Apstra API.
-func (o *AsnPoolRequest) raw() *rawIntPoolRequest {
-	return o.raw()
-}
-
 // AsnPool is the public structure used to convey query responses about ASN
 // pools.
 type AsnPool IntPool
