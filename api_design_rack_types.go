@@ -465,7 +465,6 @@ type RackElementLeafSwitch struct {
 	Tags                        []DesignTag
 	Panels                      []LogicalDevicePanel
 	DisplayName                 string
-	LogicalDeviceId             ObjectId
 }
 
 type rawRackElementLeafSwitch struct {
@@ -589,7 +588,6 @@ type RackElementAccessSwitch struct {
 	Label                 string
 	Panels                []LogicalDevicePanel
 	DisplayName           string
-	LogicalDeviceId       ObjectId
 	Tags                  []DesignTag
 	AccessAccessLinkCount int
 	AccessAccessLinkSpeed LogicalDevicePortSpeed
@@ -831,7 +829,6 @@ type RackElementGenericSystem struct {
 	Links            []RackLink
 	Panels           []LogicalDevicePanel
 	DisplayName      string
-	LogicalDeviceId  ObjectId
 }
 
 type rawRackElementGenericSystem struct {
