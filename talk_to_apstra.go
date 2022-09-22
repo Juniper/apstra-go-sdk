@@ -123,6 +123,10 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		ctx = context.TODO()
 	}
 
+	if o == nil {
+		return errors.New("error Client is nil in talkToApstra")
+	}
+
 	// create URL
 	apstraUrl, err := o.craftUrl(in)
 	if err != nil {
