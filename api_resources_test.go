@@ -248,6 +248,24 @@ func TestGetAsnPoolByName(t *testing.T) {
 
 }
 
+func TestListAsnPoolIds(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		log.Printf("testing listAsnPoolIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		poolIds, err := client.client.listAsnPoolIds(context.TODO())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(poolIds) == 0 {
+			t.Fatal("no pool IDs on this system?")
+		}
+	}
+}
+
 func TestListIpPools(t *testing.T) {
 	clients, err := getTestClients()
 	if err != nil {
