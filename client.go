@@ -332,6 +332,11 @@ func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
 	return o.getAsnPools(ctx)
 }
 
+// GetAsnPoolByName returns ASN pools configured on Apstra
+func (o *Client) GetAsnPoolByName(ctx context.Context, desired string) (*AsnPool, error) {
+	return o.getAsnPoolByName(ctx, desired)
+}
+
 // ListAsnPoolIds returns ASN pools configured on Apstra
 func (o *Client) ListAsnPoolIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listAsnPoolIds(ctx)
