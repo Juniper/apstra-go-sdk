@@ -194,7 +194,7 @@ func (o ClientCfg) NewClient() (*Client, error) {
 
 	// set default context if necessary
 	if c.ctx == nil {
-		c.ctx = context.TODO()
+		c.ctx = context.Background()
 	}
 
 	v, err := c.getApiVersion(c.ctx)
