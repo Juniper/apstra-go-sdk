@@ -86,6 +86,10 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 		result = in.url
 	}
 
+	if o == nil {
+		return nil, errors.New("error Client is nil")
+	}
+
 	if o.baseUrl == nil {
 		return nil, errors.New("error - baseUrl is nil")
 	}
