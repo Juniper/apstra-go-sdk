@@ -99,7 +99,7 @@ func TestEmptyAsnPool(t *testing.T) {
 			}
 		}
 
-		for _ = range asnRanges {
+		for range asnRanges {
 			// delete one randomly selected range
 			rangeCount := len(newPool.Ranges)
 			deleteMe := newPool.Ranges[rand.Intn(rangeCount)]
@@ -191,6 +191,61 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+func TestGetAsnPoolByName(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	poolName := randString(10, "hex")
+
+	for clientName, client := range clients {
+		log.Printf("testing getAsnPoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		_, err := client.client.getAsnPoolByName(context.Background(), poolName)
+		if err == nil {
+			t.Fatal("fetching pool with random name should have earned us a 404")
+		}
+
+		log.Printf("testing createAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		id, err := client.client.createAsnPool(context.Background(), &AsnPoolRequest{DisplayName: poolName})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing getAsnPoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		p, err := client.client.getAsnPoolByName(context.Background(), poolName)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if id != p.Id {
+			t.Fatalf("expected '%s', got '%s", id, p.Id)
+		}
+
+		log.Printf("testing createAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		dupId, err := client.client.createAsnPool(context.Background(), &AsnPoolRequest{DisplayName: poolName})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing getAsnPoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		_, err = client.client.getAsnPoolByName(context.Background(), poolName)
+		if err == nil {
+			t.Fatalf("expected error: pool '%s' and '%s' both should be named '%s'", id, dupId, poolName)
+		}
+
+		err = client.client.deleteAsnPool(context.TODO(), id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = client.client.deleteAsnPool(context.TODO(), dupId)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
 }
 
 func TestListIpPools(t *testing.T) {

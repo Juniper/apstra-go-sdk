@@ -67,6 +67,32 @@ func (o *Client) getAsnPool(ctx context.Context, poolId ObjectId) (*AsnPool, err
 	return r.makeAsnPool()
 }
 
+func (o *Client) getAsnPoolByName(ctx context.Context, desired string) (*AsnPool, error) {
+	pools, err := o.getAsnPools(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching all ASN pools - %w", err)
+	}
+	found := -1
+	for i, pool := range pools {
+		if pool.DisplayName == desired {
+			if found >= 0 {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("name '%s' does not uniquely identify an ASN pool", desired),
+				}
+			}
+			found = i
+		}
+	}
+	if found < 0 {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("pool named '%s' not found", desired),
+		}
+	}
+	return &pools[found], nil
+}
+
 func (o *Client) deleteAsnPool(ctx context.Context, poolId ObjectId) error {
 	return o.deleteIntPool(ctx, apiUrlResourcesAsnPoolById, poolId)
 }
@@ -252,28 +278,30 @@ func (o *Client) getIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, err
 	return response.polish()
 }
 
-func (o *Client) getIp4PoolByName(ctx context.Context, desiredName string) (*Ip4Pool, error) {
+func (o *Client) getIp4PoolByName(ctx context.Context, desired string) (*Ip4Pool, error) {
 	pools, err := o.getIp4Pools(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	var pool Ip4Pool
-	var found bool
-
-	for _, p := range pools {
-		if p.DisplayName == desiredName {
-			if found {
+	found := -1
+	for i, pool := range pools {
+		if pool.DisplayName == desired {
+			if found >= 0 {
 				return nil, ApstraClientErr{
 					errType: ErrMultipleMatch,
-					err:     fmt.Errorf("multiple matches for IP Pool with name '%s'", desiredName),
+					err:     fmt.Errorf("name '%s' does not uniquely identify an IPv4 pool", desired),
 				}
 			}
-			pool = p
-			found = true
+			found = i
 		}
 	}
-	return &pool, nil
+	if found < 0 {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("pool named '%s' not found", desired),
+		}
+	}
+	return &pools[found], nil
 }
 
 func (o *Client) createIp4Pool(ctx context.Context, request *NewIp4PoolRequest) (ObjectId, error) {

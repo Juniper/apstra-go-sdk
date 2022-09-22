@@ -194,7 +194,7 @@ func (o ClientCfg) NewClient() (*Client, error) {
 
 	// set default context if necessary
 	if c.ctx == nil {
-		c.ctx = context.TODO()
+		c.ctx = context.Background()
 	}
 
 	v, err := c.getApiVersion(c.ctx)
@@ -330,6 +330,11 @@ func (o *Client) GetAnomalies(ctx context.Context) ([]Anomaly, error) {
 // GetAsnPools returns ASN pools configured on Apstra
 func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
 	return o.getAsnPools(ctx)
+}
+
+// GetAsnPoolByName returns ASN pools configured on Apstra
+func (o *Client) GetAsnPoolByName(ctx context.Context, desired string) (*AsnPool, error) {
+	return o.getAsnPoolByName(ctx, desired)
 }
 
 // ListAsnPoolIds returns ASN pools configured on Apstra
