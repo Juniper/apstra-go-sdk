@@ -90,10 +90,6 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 		return nil, errors.New("error Client is nil")
 	}
 
-	if o.baseUrl == nil {
-		return nil, errors.New("error - baseUrl is nil")
-	}
-
 	if result.Scheme == "" {
 		result.Scheme = o.baseUrl.Scheme // copy baseUrl scheme
 	}
@@ -124,7 +120,11 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	}
 
 	if o == nil {
-		return errors.New("error Client is nil in talkToApstra")
+		if in.url == nil {
+			return fmt.Errorf("error Client is nil in talkToApstra about urlStr '%s'", in.urlStr)
+		} else {
+			return fmt.Errorf("error Client is nil in talkToApstra about url '%s'", in.url)
+		}
 	}
 
 	// create URL
