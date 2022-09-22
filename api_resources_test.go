@@ -99,7 +99,7 @@ func TestEmptyAsnPool(t *testing.T) {
 			}
 		}
 
-		for _ = range asnRanges {
+		for range asnRanges {
 			// delete one randomly selected range
 			rangeCount := len(newPool.Ranges)
 			deleteMe := newPool.Ranges[rand.Intn(rangeCount)]
@@ -203,7 +203,7 @@ func TestGetAsnPoolByName(t *testing.T) {
 
 	for clientName, client := range clients {
 		log.Printf("testing getAsnPoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		p, err := client.client.getAsnPoolByName(context.Background(), poolName)
+		_, err := client.client.getAsnPoolByName(context.Background(), poolName)
 		if err == nil {
 			t.Fatal("fetching pool with random name should have earned us a 404")
 		}
@@ -215,7 +215,7 @@ func TestGetAsnPoolByName(t *testing.T) {
 		}
 
 		log.Printf("testing getAsnPoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		p, err = client.client.getAsnPoolByName(context.Background(), poolName)
+		p, err := client.client.getAsnPoolByName(context.Background(), poolName)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -231,7 +231,7 @@ func TestGetAsnPoolByName(t *testing.T) {
 		}
 
 		log.Printf("testing getAsnPoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		p, err = client.client.getAsnPoolByName(context.Background(), poolName)
+		_, err = client.client.getAsnPoolByName(context.Background(), poolName)
 		if err == nil {
 			t.Fatalf("expected error: pool '%s' and '%s' both should be named '%s'", id, dupId, poolName)
 		}
