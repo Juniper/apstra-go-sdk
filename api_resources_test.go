@@ -324,9 +324,19 @@ func TestGetIp4PoolByName(t *testing.T) {
 		delete(poolNames, "")
 		for name := range poolNames {
 			log.Printf("testing getIp4PoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			_, err := client.client.getIp4PoolByName(context.TODO(), name)
+			pool, err := client.client.getIp4PoolByName(context.TODO(), name)
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			if pool.Used == pool.Total {
+				log.Fatal("every IP in the pool is in use? seems unlikely.")
+			}
+
+			for _, subnet := range pool.Subnets {
+				if subnet.Used == subnet.Total {
+					log.Fatal("every IP in the subnet is in use? seems unlikely.")
+				}
 			}
 		}
 	}

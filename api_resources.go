@@ -201,7 +201,7 @@ func (o *rawIp4Subnet) polish() (*Ip4Subnet, error) {
 		return nil, fmt.Errorf("error parsing subnet field 'used' ('%s') - %w", o.Used, err)
 	}
 
-	total, err := strconv.ParseInt(o.Used, 10, 64)
+	total, err := strconv.ParseInt(o.Total, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing subnet field 'total' ('%s') - %w", o.Total, err)
 	}
