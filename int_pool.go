@@ -259,7 +259,7 @@ func (o *Client) listIntPoolIds(ctx context.Context, apiUrlResourcePool string) 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlResourcePool, //Will be apiUrlResourcesAsnPool or apiUrlResourcesVniPool
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
