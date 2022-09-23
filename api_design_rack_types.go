@@ -534,8 +534,8 @@ func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSw
 		LinkPerSpineSpeed:           linkPerSpineSpeed,
 		MlagVlanId:                  o.MlagVlanId,
 		RedundancyProtocol:          LeafRedundancyProtocol(rp),
-		Panels:                      pld.Panels,
-		DisplayName:                 pld.DisplayName,
+		Panels:                      pld.Data.Panels,
+		DisplayName:                 pld.Data.DisplayName,
 		Tags:                        tags,
 	}
 
@@ -649,8 +649,8 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 		RedundancyProtocol:    AccessRedundancyProtocol(rp),
 		Links:                 links,
 		Label:                 o.Label,
-		Panels:                pld.Panels,
-		DisplayName:           pld.DisplayName,
+		Panels:                pld.Data.Panels,
+		DisplayName:           pld.Data.DisplayName,
 		AccessAccessLinkCount: o.AccessAccessLinkCount,
 		AccessAccessLinkSpeed: accessAccessLinkSpeed,
 		Tags:                  tags,
@@ -899,8 +899,8 @@ func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGen
 		Tags:             tags,
 		Label:            o.Label,
 		Links:            links,
-		Panels:           pld.Panels,
-		DisplayName:      pld.DisplayName,
+		Panels:           pld.Data.Panels,
+		DisplayName:      pld.Data.DisplayName,
 	}, nil
 }
 
