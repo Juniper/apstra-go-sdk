@@ -38,6 +38,7 @@ const (
 
 	clientAuthTokenMutex = iota
 	clientApiResourceAsnPoolRangeMutex
+	clientApiResourceVniPoolRangeMutex
 	clientApiResourceIp4PoolRangeMutex
 	clientApiResourceIp6PoolRangeMutex
 )
@@ -386,6 +387,62 @@ func (o *Client) AsnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 // DeleteAsnPoolRange updates an ASN pool by adding a new AsnRange
 func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme IntfIntRange) error {
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
+}
+
+// GetVniPools returns Vni pools configured on Apstra
+func (o *Client) GetVniPools(ctx context.Context) ([]VniPool, error) {
+	return o.getVniPools(ctx)
+}
+
+// ListVniPoolIds returns Vni pools configured on Apstra
+func (o *Client) ListVniPoolIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listVniPoolIds(ctx)
+}
+
+// CreateVniPool adds an Vni pool to Apstra
+func (o *Client) CreateVniPool(ctx context.Context, in *VniPoolRequest) (ObjectId, error) {
+	response, err := o.createVniPool(ctx, in)
+	if err != nil {
+		return "", fmt.Errorf("error creating Vni pool - %w", err)
+	}
+	return response, nil
+}
+
+// GetVniPool returns, by ObjectId, a specific Vni pool
+func (o *Client) GetVniPool(ctx context.Context, in ObjectId) (*VniPool, error) {
+	return o.getVniPool(ctx, in)
+}
+
+// DeleteVniPool deletes an Vni pool, by ObjectId from Apstra
+func (o *Client) DeleteVniPool(ctx context.Context, in ObjectId) error {
+	return o.deleteVniPool(ctx, in)
+}
+
+// UpdateVniPool updates an Vni pool by ObjectId with new Vni pool config
+func (o *Client) UpdateVniPool(ctx context.Context, id ObjectId, cfg *VniPoolRequest) error {
+	// VniPool "write" operations are not concurrency safe
+	// It is important that this lock is performed in the public method, rather than the private
+	// one below, because other callers of the private method implement their own locking.
+	o.lock(clientApiResourceVniPoolRangeMutex)
+	defer o.unlock(clientApiResourceVniPoolRangeMutex)
+
+	return o.updateVniPool(ctx, id, cfg)
+}
+
+// CreateVniPoolRange updates an Vni pool by adding a new VniRange
+func (o *Client) CreateVniPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
+	return o.createVniPoolRange(ctx, poolId, newRange)
+}
+
+// VniPoolRangeExists reports whether an exact match range (first and last Vni)
+// exists in Vni pool poolId
+func (o *Client) VniPoolRangeExists(ctx context.Context, poolId ObjectId, VniRange IntfIntRange) (bool, error) {
+	return o.vniPoolRangeExists(ctx, poolId, VniRange)
+}
+
+// DeleteVniPoolRange updates an Vni pool by adding a new VniRange
+func (o *Client) DeleteVniPoolRange(ctx context.Context, poolId ObjectId, deleteme IntfIntRange) error {
+	return o.deleteVniPoolRange(ctx, poolId, deleteme)
 }
 
 // CreateAgentProfile creates a new Agent Profile identified by 'cfg'
