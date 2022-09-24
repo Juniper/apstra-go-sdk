@@ -660,7 +660,7 @@ func (o *Client) GetTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
 // string ("Name" in the web UI). This is a case-insensitive search because
 // apstra enforces uniqueness in a case-insensitive manner. An error is returned
 // if no DesignTag objects match the supplied DesignTag.Label.
-func (o *Client) GetTagByLabel(ctx context.Context, label TagLabel) (*DesignTag, error) {
+func (o *Client) GetTagByLabel(ctx context.Context, label string) (*DesignTag, error) {
 	return o.getTagByLabel(ctx, label)
 }
 

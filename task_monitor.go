@@ -416,12 +416,12 @@ func (o *Client) getBlueprintTaskStatusById(ctx context.Context, bpid ObjectId, 
 func blueprintIdFromUrl(in *url.URL) ObjectId {
 	split1 := strings.Split(in.String(), apiUrlBlueprintsPrefix)
 	if len(split1) != 2 {
-		return ObjectId("")
+		return ""
 	}
 
 	split2 := strings.Split(split1[1], apiUrlPathDelim)
 	if len(split1) == 0 {
-		return ObjectId("")
+		return ""
 	}
 
 	return ObjectId(split2[0])

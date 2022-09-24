@@ -224,7 +224,7 @@ type Policy struct {
 	SrcApplicationPoint PolicyApplicationPoint `json:"src_application_point"`
 	DstApplicationPoint PolicyApplicationPoint `json:"dst_application_point"`
 	Rules               []PolicyRule           `json:"rules"`
-	Tags                []TagLabel             `json:"tags"`
+	Tags                []string               `json:"tags"`
 	Id                  ObjectId               `json:"object_id,omitempty"`
 }
 
@@ -252,7 +252,7 @@ type policyRequest struct {
 	SrcApplicationPoint ObjectId        `json:"src_application_point"`
 	DstApplicationPoint ObjectId        `json:"dst_application_point"`
 	Rules               []rawPolicyRule `json:"rules"`
-	Tags                []TagLabel      `json:"tags"`
+	Tags                []string        `json:"tags"`
 	Id                  ObjectId        `json:"object_id,omitempty"`
 }
 
@@ -263,7 +263,7 @@ type policyResponse struct {
 	SrcApplicationPoint PolicyApplicationPointDigest `json:"src_application_point"`
 	DstApplicationPoint PolicyApplicationPointDigest `json:"dst_application_point"`
 	Rules               []rawPolicyRule              `json:"rules"`
-	Tags                []TagLabel                   `json:"tags"`
+	Tags                []string                     `json:"tags"`
 	Id                  ObjectId                     `json:"id,omitempty"`
 }
 

@@ -52,7 +52,7 @@ func TestCreateGetDeleteTag(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		label := TagLabel(randString(10, "hex"))
+		label := randString(10, "hex")
 		description := randString(10, "hex")
 		log.Printf("testing CreateTag() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		id, err := client.client.CreateTag(context.TODO(), &DesignTag{
@@ -91,7 +91,7 @@ func TestCreateTagCollision(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	label := TagLabel(randString(10, "hex"))
+	label := randString(10, "hex")
 	for _, client := range clients {
 		id1, err := client.client.CreateTag(context.Background(), &DesignTag{
 			Label: label,

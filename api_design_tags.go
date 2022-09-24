@@ -14,11 +14,9 @@ const (
 	apiUrlDesignTagById    = apiUrlDesignTagsPrefix + "%s"
 )
 
-type TagLabel string
-
 type DesignTag struct {
 	Id             ObjectId  `json:"id,omitempty"`
-	Label          TagLabel  `json:"label"`
+	Label          string    `json:"label"`
 	Description    string    `json:"description"`
 	CreatedAt      time.Time `json:"created_at"`
 	LastModifiedAt time.Time `json:"last_modified_at"`
@@ -53,16 +51,16 @@ func (o *Client) getTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
 	return response, nil
 }
 
-func (o *Client) getTagByLabel(ctx context.Context, label TagLabel) (*DesignTag, error) {
+func (o *Client) getTagByLabel(ctx context.Context, label string) (*DesignTag, error) {
 	tags, err := o.getAllTags(ctx)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	labelNoCase := strings.ToLower(string(label))
+	labelNoCase := strings.ToLower(label)
 
 	for _, t := range tags {
-		if strings.ToLower(string(t.Label)) == labelNoCase {
+		if strings.ToLower(t.Label) == labelNoCase {
 			return &t, nil
 		}
 	}

@@ -495,7 +495,7 @@ type TemplateElementSpineRequest struct {
 	LinkPerSuperspineSpeed  LogicalDevicePortSpeed
 	LogicalDevice           ObjectId
 	LinkPerSuperspineCount  int
-	Tags                    []TagLabel
+	Tags                    []string
 	ExternalLinksPerNode    int
 	ExternalFacingNodeCount int
 	ExternalLinkCount       int
@@ -580,7 +580,7 @@ type TemplateElementSuperspineRequest struct {
 	PlaneCount         int
 	ExternalLinkCount  int
 	ExternalLinkSpeed  LogicalDevicePortSpeed
-	Tags               []TagLabel
+	Tags               []string
 	SuperspinePerPlane int
 	LogicalDeviceId    ObjectId
 }
