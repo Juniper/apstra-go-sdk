@@ -49,7 +49,7 @@ func (o *TwoStageL3ClosMutex) Lock(ctx context.Context, message string) error {
 
 	// loop until we acquire the lock or the context deadline (set by caller) expires.
 	for {
-		tagId, err := o.client.client.createTag(ctx, &DesignTag{
+		tagId, err := o.client.client.createTag(ctx, &DesignTagRequest{
 			Label:       lockName,
 			Description: message,
 		})

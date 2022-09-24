@@ -55,7 +55,7 @@ func TestCreateGetDeleteTag(t *testing.T) {
 		label := randString(10, "hex")
 		description := randString(10, "hex")
 		log.Printf("testing CreateTag() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateTag(context.TODO(), &DesignTag{
+		id, err := client.client.CreateTag(context.TODO(), &DesignTagRequest{
 			Label:       label,
 			Description: description,
 		})
@@ -69,12 +69,12 @@ func TestCreateGetDeleteTag(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if tag.Label != label {
-			t.Fatalf("label: '%s' != '%s'", tag.Label, label)
+		if tag.Data.Label != label {
+			t.Fatalf("label: '%s' != '%s'", tag.Data.Label, label)
 		}
 
-		if tag.Description != description {
-			t.Fatalf("description: '%s' != '%s'", tag.Description, description)
+		if tag.Data.Description != description {
+			t.Fatalf("description: '%s' != '%s'", tag.Data.Description, description)
 		}
 
 		log.Printf("testing DeleteTag() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -93,14 +93,14 @@ func TestCreateTagCollision(t *testing.T) {
 
 	label := randString(10, "hex")
 	for _, client := range clients {
-		id1, err := client.client.CreateTag(context.Background(), &DesignTag{
+		id1, err := client.client.CreateTag(context.Background(), &DesignTagRequest{
 			Label: label,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		id2, err := client.client.CreateTag(context.Background(), &DesignTag{
+		id2, err := client.client.CreateTag(context.Background(), &DesignTagRequest{
 			Label: label,
 		})
 		if err == nil {

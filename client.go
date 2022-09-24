@@ -653,7 +653,11 @@ func (o *Client) ListAllTags(ctx context.Context) ([]ObjectId, error) {
 
 // GetTag returns *DesignTag describing the specified ObjectId
 func (o *Client) GetTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
-	return o.getTag(ctx, id)
+	raw, err := o.getTag(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish(), nil
 }
 
 // GetTagByLabel returns a *DesignTag matching the supplied DesignTag.Label
@@ -661,25 +665,37 @@ func (o *Client) GetTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
 // apstra enforces uniqueness in a case-insensitive manner. An error is returned
 // if no DesignTag objects match the supplied DesignTag.Label.
 func (o *Client) GetTagByLabel(ctx context.Context, label string) (*DesignTag, error) {
-	return o.getTagByLabel(ctx, label)
+	raw, err := o.getTagByLabel(ctx, label)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish(), nil
 }
 
 // GetAllTags returns []DesignTag describing all DesignTag objects
 func (o *Client) GetAllTags(ctx context.Context) ([]DesignTag, error) {
-	return o.getAllTags(ctx)
+	rawTags, err := o.getAllTags(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]DesignTag, len(rawTags))
+	for i, rawTag := range rawTags {
+		result[i] = *rawTag.polish()
+	}
+	return result, nil
 }
 
 // CreateTag creates a DesignTag and returns its ObjectId. Note that the
 // DesignTag.Label field across all tags is required to be unique and case
 // is not considered when making that comparison.
-func (o *Client) CreateTag(ctx context.Context, in *DesignTag) (ObjectId, error) {
+func (o *Client) CreateTag(ctx context.Context, in *DesignTagRequest) (ObjectId, error) {
 	return o.createTag(ctx, in)
 }
 
 // UpdateTag updates a DesignTag by ObjectId. Note that the DesignTag.Label
 // is required, but cannot be changed, so it's really just DesignTag.Description
 // that we're allowed to monkey around with.
-func (o *Client) UpdateTag(ctx context.Context, id ObjectId, in *DesignTag) (ObjectId, error) {
+func (o *Client) UpdateTag(ctx context.Context, id ObjectId, in *DesignTagRequest) error {
 	return o.updateTag(ctx, id, in)
 }
 
