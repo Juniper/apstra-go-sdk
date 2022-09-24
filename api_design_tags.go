@@ -16,15 +16,6 @@ const (
 
 type TagLabel string
 
-type optionsTagsResponse struct {
-	Items   []ObjectId `json:"items"`
-	Methods []string   `json:"methods"`
-}
-
-type getAllTagsResponse struct {
-	Items []DesignTag `json:"items"`
-}
-
 type DesignTag struct {
 	Id             ObjectId  `json:"id,omitempty"`
 	Label          TagLabel  `json:"label"`
@@ -34,7 +25,10 @@ type DesignTag struct {
 }
 
 func (o *Client) listAllTags(ctx context.Context) ([]ObjectId, error) {
-	response := &optionsTagsResponse{}
+	response := &struct {
+		Items []ObjectId `json:"items"`
+	}{}
+
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignTags,
@@ -80,7 +74,9 @@ func (o *Client) getTagByLabel(ctx context.Context, label TagLabel) (*DesignTag,
 }
 
 func (o *Client) getAllTags(ctx context.Context) ([]DesignTag, error) {
-	response := &getAllTagsResponse{}
+	response := &struct {
+		Items []DesignTag `json:"items"`
+	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignTags,
