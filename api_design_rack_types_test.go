@@ -81,7 +81,7 @@ func TestListGetAllGetRackType(t *testing.T) {
 		}
 
 		log.Printf("randomly selected rack type '%s' (%s) has %d leaf switches, %d access switches, and %d generic systems",
-			rt.DisplayName, rt.Id, len(rt.LeafSwitches), len(rt.AccessSwitches), len(rt.GenericSystems))
+			rt.Data.DisplayName, rt.Id, len(rt.Data.LeafSwitches), len(rt.Data.AccessSwitches), len(rt.Data.GenericSystems))
 	}
 }
 

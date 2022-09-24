@@ -464,8 +464,7 @@ type RackElementLeafSwitch struct {
 	MlagInfo           *LeafMlagInfo
 	RedundancyProtocol LeafRedundancyProtocol
 	Tags               []DesignTag
-	Panels             []LogicalDevicePanel
-	DisplayName        string
+	LogicalDevice      *LogicalDeviceData
 }
 
 type rawRackElementLeafSwitch struct {
@@ -528,9 +527,11 @@ func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSw
 		LinkPerSpineCount:  o.LinkPerSpineCount,
 		LinkPerSpineSpeed:  linkPerSpineSpeed,
 		RedundancyProtocol: LeafRedundancyProtocol(rp),
-		Panels:             pld.Data.Panels,
-		DisplayName:        pld.Data.DisplayName,
 		Tags:               tags,
+		LogicalDevice: &LogicalDeviceData{
+			Panels:      pld.Data.Panels,
+			DisplayName: pld.Data.DisplayName,
+		},
 		MlagInfo: &LeafMlagInfo{
 			LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
 			LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
@@ -545,15 +546,19 @@ func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSw
 	return result, nil
 }
 
-type RackElementAccessSwitchRequest struct {
-	InstanceCount         int
-	RedundancyProtocol    AccessRedundancyProtocol
-	Links                 []RackLinkRequest
-	Label                 string
-	LogicalDeviceId       ObjectId
-	Tags                  []TagLabel
+type EsiLagInfo struct {
 	AccessAccessLinkCount int
 	AccessAccessLinkSpeed LogicalDevicePortSpeed
+}
+
+type RackElementAccessSwitchRequest struct {
+	InstanceCount      int
+	RedundancyProtocol AccessRedundancyProtocol
+	Links              []RackLinkRequest
+	Label              string
+	LogicalDeviceId    ObjectId
+	Tags               []TagLabel
+	EsiLagInfo         *EsiLagInfo
 }
 
 func (o *RackElementAccessSwitchRequest) raw() *rawRackElementAccessSwitchRequest {
@@ -561,13 +566,19 @@ func (o *RackElementAccessSwitchRequest) raw() *rawRackElementAccessSwitchReques
 	for i, l := range o.Links {
 		links[i] = *l.raw()
 	}
+	var accessAccessLinkCount int
+	var accessAccessLinkSpeed *rawLogicalDevicePortSpeed
+	if o.EsiLagInfo != nil {
+		accessAccessLinkCount = o.EsiLagInfo.AccessAccessLinkCount
+		accessAccessLinkSpeed = o.EsiLagInfo.AccessAccessLinkSpeed.raw()
+	}
 	return &rawRackElementAccessSwitchRequest{
 		InstanceCount:         o.InstanceCount,
 		RedundancyProtocol:    o.RedundancyProtocol.raw(),
 		Links:                 links,
 		Label:                 o.Label,
-		AccessAccessLinkCount: o.AccessAccessLinkCount,
-		AccessAccessLinkSpeed: o.AccessAccessLinkSpeed.raw(),
+		AccessAccessLinkCount: accessAccessLinkCount,
+		AccessAccessLinkSpeed: accessAccessLinkSpeed,
 		LogicalDevice:         o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
 		Tags:                  o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
 	}
@@ -585,15 +596,13 @@ type rawRackElementAccessSwitchRequest struct {
 }
 
 type RackElementAccessSwitch struct {
-	InstanceCount         int
-	RedundancyProtocol    AccessRedundancyProtocol
-	Links                 []RackLink
-	Label                 string
-	Panels                []LogicalDevicePanel
-	DisplayName           string
-	Tags                  []DesignTag
-	AccessAccessLinkCount int
-	AccessAccessLinkSpeed LogicalDevicePortSpeed
+	InstanceCount      int
+	RedundancyProtocol AccessRedundancyProtocol
+	Links              []RackLink
+	Label              string
+	Tags               []DesignTag
+	LogicalDevice      *LogicalDeviceData
+	EsiLagInfo         *EsiLagInfo
 }
 
 type rawRackElementAccessSwitch struct {
@@ -647,16 +656,25 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 		links[i] = *polished
 	}
 
+	var esiLagInfo *EsiLagInfo
+	if o.AccessAccessLinkCount > 0 {
+		esiLagInfo = &EsiLagInfo{
+			AccessAccessLinkCount: o.AccessAccessLinkCount,
+			AccessAccessLinkSpeed: accessAccessLinkSpeed,
+		}
+	}
+
 	return &RackElementAccessSwitch{
-		InstanceCount:         o.InstanceCount,
-		RedundancyProtocol:    AccessRedundancyProtocol(rp),
-		Links:                 links,
-		Label:                 o.Label,
-		Panels:                pld.Data.Panels,
-		DisplayName:           pld.Data.DisplayName,
-		AccessAccessLinkCount: o.AccessAccessLinkCount,
-		AccessAccessLinkSpeed: accessAccessLinkSpeed,
-		Tags:                  tags,
+		InstanceCount:      o.InstanceCount,
+		RedundancyProtocol: AccessRedundancyProtocol(rp),
+		Links:              links,
+		Label:              o.Label,
+		EsiLagInfo:         esiLagInfo,
+		Tags:               tags,
+		LogicalDevice: &LogicalDeviceData{
+			Panels:      pld.Data.Panels,
+			DisplayName: pld.Data.DisplayName,
+		},
 	}, nil
 }
 
@@ -830,8 +848,7 @@ type RackElementGenericSystem struct {
 	Tags             []DesignTag
 	Label            string
 	Links            []RackLink
-	Panels           []LogicalDevicePanel
-	DisplayName      string
+	LogicalDevice    *LogicalDeviceData
 }
 
 type rawRackElementGenericSystem struct {
@@ -902,8 +919,10 @@ func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGen
 		Tags:             tags,
 		Label:            o.Label,
 		Links:            links,
-		Panels:           pld.Data.Panels,
-		DisplayName:      pld.Data.DisplayName,
+		LogicalDevice: &LogicalDeviceData{
+			Panels:      pld.Data.Panels,
+			DisplayName: pld.Data.DisplayName,
+		},
 	}, nil
 }
 
@@ -989,12 +1008,16 @@ type rawRackTypeRequest struct {
 }
 
 type RackType struct {
+	Id             ObjectId
+	CreatedAt      time.Time
+	LastModifiedAt time.Time
+	Data           *RackTypeData
+}
+
+type RackTypeData struct {
 	DisplayName              string
 	Description              string
 	FabricConnectivityDesign FabricConnectivityDesign
-	Id                       ObjectId
-	CreatedAt                time.Time
-	LastModifiedAt           time.Time
 	LeafSwitches             []RackElementLeafSwitch
 	GenericSystems           []RackElementGenericSystem
 	AccessSwitches           []RackElementAccessSwitch
@@ -1021,36 +1044,41 @@ func (o *rawRackType) polish() (*RackType, error) {
 	}
 
 	result := &RackType{
-		DisplayName:              o.DisplayName,
-		Description:              o.Description,
-		FabricConnectivityDesign: FabricConnectivityDesign(fcd),
-		Id:                       o.Id,
-		CreatedAt:                o.CreatedAt,
-		LastModifiedAt:           o.LastModifiedAt,
+		Id:             o.Id,
+		CreatedAt:      o.CreatedAt,
+		LastModifiedAt: o.LastModifiedAt,
+		Data: &RackTypeData{
+			DisplayName:              o.DisplayName,
+			Description:              o.Description,
+			FabricConnectivityDesign: FabricConnectivityDesign(fcd),
+			LeafSwitches:             make([]RackElementLeafSwitch, len(o.LeafSwitches)),
+			AccessSwitches:           make([]RackElementAccessSwitch, len(o.AccessSwitches)),
+			GenericSystems:           make([]RackElementGenericSystem, len(o.GenericSystems)),
+		},
 	}
 
-	for _, r := range o.LeafSwitches {
-		p, err := r.polish(o)
+	for i, raw := range o.LeafSwitches {
+		polished, err := raw.polish(o)
 		if err != nil {
 			return nil, err
 		}
-		result.LeafSwitches = append(result.LeafSwitches, *p)
+		result.Data.LeafSwitches[i] = *polished
 	}
 
-	for _, r := range o.AccessSwitches {
-		p, err := r.polish(o)
+	for i, raw := range o.AccessSwitches {
+		polished, err := raw.polish(o)
 		if err != nil {
 			return nil, err
 		}
-		result.AccessSwitches = append(result.AccessSwitches, *p)
+		result.Data.AccessSwitches[i] = *polished
 	}
 
-	for _, r := range o.GenericSystems {
-		p, err := r.polish(o)
+	for i, raw := range o.GenericSystems {
+		polished, err := raw.polish(o)
 		if err != nil {
 			return nil, err
 		}
-		result.GenericSystems = append(result.GenericSystems, *p)
+		result.Data.GenericSystems[i] = *polished
 	}
 
 	return result, nil
@@ -1131,7 +1159,7 @@ func (o *Client) getRackTypeByName(ctx context.Context, name string) (*RackType,
 		return nil, err
 	}
 	for _, rackType := range rackTypes {
-		if rackType.DisplayName == name {
+		if rackType.Data.DisplayName == name {
 			return &rackType, nil
 		}
 	}
