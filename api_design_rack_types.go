@@ -400,38 +400,45 @@ type optionsRackTypeResponse struct {
 	Methods []string   `json:"methods"`
 }
 
-type RackElementLeafSwitchRequest struct {
-	Label                       string
+type LeafMlagInfo struct {
 	LeafLeafL3LinkCount         int
 	LeafLeafL3LinkPortChannelId int
 	LeafLeafL3LinkSpeed         LogicalDevicePortSpeed
 	LeafLeafLinkCount           int
 	LeafLeafLinkPortChannelId   int
 	LeafLeafLinkSpeed           LogicalDevicePortSpeed
-	LinkPerSpineCount           int
-	LinkPerSpineSpeed           LogicalDevicePortSpeed
 	MlagVlanId                  int
-	RedundancyProtocol          LeafRedundancyProtocol
-	Tags                        []TagLabel
-	LogicalDeviceId             ObjectId
+}
+
+type RackElementLeafSwitchRequest struct {
+	Label              string
+	MlagInfo           *LeafMlagInfo
+	LinkPerSpineCount  int
+	LinkPerSpineSpeed  LogicalDevicePortSpeed
+	RedundancyProtocol LeafRedundancyProtocol
+	Tags               []TagLabel
+	LogicalDeviceId    ObjectId
 }
 
 func (o *RackElementLeafSwitchRequest) raw() *rawRackElementLeafSwitchRequest {
-	return &rawRackElementLeafSwitchRequest{
-		Label:                       o.Label,
-		LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
-		LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
-		LeafLeafL3LinkSpeed:         o.LeafLeafL3LinkSpeed.raw(),
-		LeafLeafLinkCount:           o.LeafLeafLinkCount,
-		LeafLeafLinkPortChannelId:   o.LeafLeafLinkPortChannelId,
-		LeafLeafLinkSpeed:           o.LeafLeafLinkSpeed.raw(),
-		LinkPerSpineCount:           o.LinkPerSpineCount,
-		LinkPerSpineSpeed:           o.LinkPerSpineSpeed.raw(),
-		MlagVlanId:                  o.MlagVlanId,
-		RedundancyProtocol:          o.RedundancyProtocol.raw(),
-		LogicalDevice:               o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
-		Tags:                        o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
+	result := &rawRackElementLeafSwitchRequest{
+		Label:              o.Label,
+		LinkPerSpineCount:  o.LinkPerSpineCount,
+		LinkPerSpineSpeed:  o.LinkPerSpineSpeed.raw(),
+		RedundancyProtocol: o.RedundancyProtocol.raw(),
+		LogicalDevice:      o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
+		Tags:               o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
 	}
+	if o.MlagInfo != nil {
+		result.LeafLeafL3LinkCount = o.MlagInfo.LeafLeafL3LinkCount
+		result.LeafLeafL3LinkPortChannelId = o.MlagInfo.LeafLeafL3LinkPortChannelId
+		result.LeafLeafL3LinkSpeed = o.MlagInfo.LeafLeafL3LinkSpeed.raw()
+		result.LeafLeafLinkCount = o.MlagInfo.LeafLeafLinkCount
+		result.LeafLeafLinkPortChannelId = o.MlagInfo.LeafLeafLinkPortChannelId
+		result.LeafLeafLinkSpeed = o.MlagInfo.LeafLeafLinkSpeed.raw()
+		result.MlagVlanId = o.MlagInfo.MlagVlanId
+	}
+	return result
 }
 
 type rawRackElementLeafSwitchRequest struct {
@@ -451,20 +458,14 @@ type rawRackElementLeafSwitchRequest struct {
 }
 
 type RackElementLeafSwitch struct {
-	Label                       string
-	LeafLeafL3LinkCount         int
-	LeafLeafL3LinkPortChannelId int
-	LeafLeafL3LinkSpeed         LogicalDevicePortSpeed
-	LeafLeafLinkCount           int
-	LeafLeafLinkPortChannelId   int
-	LeafLeafLinkSpeed           LogicalDevicePortSpeed
-	LinkPerSpineCount           int
-	LinkPerSpineSpeed           LogicalDevicePortSpeed
-	MlagVlanId                  int
-	RedundancyProtocol          LeafRedundancyProtocol
-	Tags                        []DesignTag
-	Panels                      []LogicalDevicePanel
-	DisplayName                 string
+	Label              string
+	LinkPerSpineCount  int
+	LinkPerSpineSpeed  LogicalDevicePortSpeed
+	MlagInfo           *LeafMlagInfo
+	RedundancyProtocol LeafRedundancyProtocol
+	Tags               []DesignTag
+	Panels             []LogicalDevicePanel
+	DisplayName        string
 }
 
 type rawRackElementLeafSwitch struct {
@@ -523,20 +524,22 @@ func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSw
 	}
 
 	result := &RackElementLeafSwitch{
-		Label:                       o.Label,
-		LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
-		LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
-		LeafLeafL3LinkSpeed:         leafLeafL3LinkSpeed,
-		LeafLeafLinkCount:           o.LeafLeafLinkCount,
-		LeafLeafLinkPortChannelId:   o.LeafLeafLinkPortChannelId,
-		LeafLeafLinkSpeed:           leafLeafLinkSpeed,
-		LinkPerSpineCount:           o.LinkPerSpineCount,
-		LinkPerSpineSpeed:           linkPerSpineSpeed,
-		MlagVlanId:                  o.MlagVlanId,
-		RedundancyProtocol:          LeafRedundancyProtocol(rp),
-		Panels:                      pld.Data.Panels,
-		DisplayName:                 pld.Data.DisplayName,
-		Tags:                        tags,
+		Label:              o.Label,
+		LinkPerSpineCount:  o.LinkPerSpineCount,
+		LinkPerSpineSpeed:  linkPerSpineSpeed,
+		RedundancyProtocol: LeafRedundancyProtocol(rp),
+		Panels:             pld.Data.Panels,
+		DisplayName:        pld.Data.DisplayName,
+		Tags:               tags,
+		MlagInfo: &LeafMlagInfo{
+			LeafLeafL3LinkCount:         o.LeafLeafL3LinkCount,
+			LeafLeafL3LinkPortChannelId: o.LeafLeafL3LinkPortChannelId,
+			LeafLeafL3LinkSpeed:         leafLeafL3LinkSpeed,
+			LeafLeafLinkCount:           o.LeafLeafLinkCount,
+			LeafLeafLinkPortChannelId:   o.LeafLeafLinkPortChannelId,
+			LeafLeafLinkSpeed:           leafLeafLinkSpeed,
+			MlagVlanId:                  o.MlagVlanId,
+		},
 	}
 
 	return result, nil
