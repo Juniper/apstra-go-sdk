@@ -171,7 +171,7 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 							TargetSwitchLabel:  leafLabel,
 							AttachmentType:     RackLinkAttachmentTypeSingle,
 							LagMode:            RackLinkLagModeNone,
-							Tags:               []TagLabel{"Hypervisor"},
+							Tags:               []string{"Hypervisor"},
 						},
 					},
 					LogicalDeviceId: "AOS-1x10-1",

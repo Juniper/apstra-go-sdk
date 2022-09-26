@@ -416,7 +416,7 @@ type RackElementLeafSwitchRequest struct {
 	LinkPerSpineCount  int
 	LinkPerSpineSpeed  LogicalDevicePortSpeed
 	RedundancyProtocol LeafRedundancyProtocol
-	Tags               []TagLabel
+	Tags               []string
 	LogicalDeviceId    ObjectId
 }
 
@@ -454,7 +454,7 @@ type rawRackElementLeafSwitchRequest struct {
 	LogicalDevice               ObjectId                   `json:"logical_device"`
 	MlagVlanId                  int                        `json:"mlag_vlan_id"`
 	RedundancyProtocol          leafRedundancyProtocol     `json:"redundancy_protocol,omitempty"`
-	Tags                        []TagLabel                 `json:"tags,omitempty"`
+	Tags                        []string                   `json:"tags,omitempty"`
 }
 
 type RackElementLeafSwitch struct {
@@ -463,7 +463,7 @@ type RackElementLeafSwitch struct {
 	LinkPerSpineSpeed  LogicalDevicePortSpeed
 	MlagInfo           *LeafMlagInfo
 	RedundancyProtocol LeafRedundancyProtocol
-	Tags               []DesignTag
+	Tags               []DesignTagData
 	LogicalDevice      *LogicalDeviceData
 }
 
@@ -480,7 +480,7 @@ type rawRackElementLeafSwitch struct {
 	LogicalDevice               ObjectId                   `json:"logical_device"`
 	MlagVlanId                  int                        `json:"mlag_vlan_id"`
 	RedundancyProtocol          leafRedundancyProtocol     `json:"redundancy_protocol,omitempty"`
-	Tags                        []TagLabel                 `json:"tags"`
+	Tags                        []string                   `json:"tags"`
 }
 
 func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSwitch, error) {
@@ -500,8 +500,8 @@ func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSw
 		return nil, err
 	}
 
-	var tags []DesignTag
-	var tag *DesignTag
+	var tags []DesignTagData
+	var tag *DesignTagData
 	for _, label := range o.Tags {
 		if tag, found = rack.tagByLabel(label); !found {
 			return nil, fmt.Errorf("design tag '%s' not found in rack type '%s' definition", label, rack.Id)
@@ -557,7 +557,7 @@ type RackElementAccessSwitchRequest struct {
 	Links              []RackLinkRequest
 	Label              string
 	LogicalDeviceId    ObjectId
-	Tags               []TagLabel
+	Tags               []string
 	EsiLagInfo         *EsiLagInfo
 }
 
@@ -592,7 +592,7 @@ type rawRackElementAccessSwitchRequest struct {
 	LogicalDevice         ObjectId                   `json:"logical_device"`
 	AccessAccessLinkCount int                        `json:"access_access_link_count"`
 	AccessAccessLinkSpeed *rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
-	Tags                  []TagLabel                 `json:"tags,omitempty"`
+	Tags                  []string                   `json:"tags,omitempty"`
 }
 
 type RackElementAccessSwitch struct {
@@ -600,7 +600,7 @@ type RackElementAccessSwitch struct {
 	RedundancyProtocol AccessRedundancyProtocol
 	Links              []RackLink
 	Label              string
-	Tags               []DesignTag
+	Tags               []DesignTagData
 	LogicalDevice      *LogicalDeviceData
 	EsiLagInfo         *EsiLagInfo
 }
@@ -613,7 +613,7 @@ type rawRackElementAccessSwitch struct {
 	LogicalDevice         ObjectId                   `json:"logical_device"`
 	AccessAccessLinkCount int                        `json:"access_access_link_count"`
 	AccessAccessLinkSpeed *rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
-	Tags                  []TagLabel                 `json:"tags"`
+	Tags                  []string                   `json:"tags"`
 }
 
 func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAccessSwitch, error) {
@@ -633,8 +633,8 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 		return nil, err
 	}
 
-	var tags []DesignTag
-	var tag *DesignTag
+	var tags []DesignTagData
+	var tag *DesignTagData
 	for _, label := range o.Tags {
 		if tag, found = rack.tagByLabel(label); !found {
 			return nil, fmt.Errorf("design tag '%s' not found in rack type '%s' definition", label, rack.Id)
@@ -680,7 +680,7 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 
 type RackLinkRequest struct {
 	Label              string                 // `json:"label"`
-	Tags               []TagLabel             // `json:"tags"`
+	Tags               []string               // `json:"tags"`
 	LinkPerSwitchCount int                    // `json:"link_per_switch_count"`
 	LinkSpeed          LogicalDevicePortSpeed // `json:"link_speed"`
 	TargetSwitchLabel  string                 // `json:"target_switch_label"`
@@ -690,7 +690,7 @@ type RackLinkRequest struct {
 }
 
 func (o RackLinkRequest) raw() *rawRackLinkRequest {
-	tags := make([]TagLabel, len(o.Tags))
+	tags := make([]string, len(o.Tags))
 	copy(tags, o.Tags)
 
 	// JSON encoding of lag_mode must be one of the accepted strings or null (nil ptr)
@@ -721,18 +721,18 @@ type rawRackLinkRequest struct {
 	AttachmentType     rackLinkAttachmentType     `json:"attachment_type"`
 	LagMode            *rackLinkLagMode           `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
 	SwitchPeer         rackLinkSwitchPeer         `json:"switch_peer,omitempty"`
-	Tags               []TagLabel                 `json:"tags"` // needs to be fetched from API, cloned into rack type on create() / update()
+	Tags               []string                   `json:"tags"` // needs to be fetched from API, cloned into rack type on create() / update()
 }
 
 type RackLink struct {
-	Label              string                 // `json:"label"`
-	LinkPerSwitchCount int                    // `json:"link_per_switch_count"`
-	LinkSpeed          LogicalDevicePortSpeed // `json:"link_speed"`
-	TargetSwitchLabel  string                 // `json:"target_switch_label"`
-	AttachmentType     RackLinkAttachmentType // `json:"attachment_type"`
-	LagMode            RackLinkLagMode        // `json:"lag_mode"`
-	SwitchPeer         RackLinkSwitchPeer     // `json:"switch_peer"`
-	Tags               []DesignTag            // `json:"tags"`
+	Label              string
+	LinkPerSwitchCount int
+	LinkSpeed          LogicalDevicePortSpeed
+	TargetSwitchLabel  string
+	AttachmentType     RackLinkAttachmentType
+	LagMode            RackLinkLagMode
+	SwitchPeer         RackLinkSwitchPeer
+	Tags               []DesignTagData
 }
 
 type rawRackLink struct {
@@ -743,7 +743,7 @@ type rawRackLink struct {
 	AttachmentType     rackLinkAttachmentType     `json:"attachment_type"`
 	LagMode            *rackLinkLagMode           `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
 	SwitchPeer         rackLinkSwitchPeer         `json:"switch_peer,omitempty"`
-	Tags               []TagLabel                 `json:"tags"`
+	Tags               []string                   `json:"tags"`
 }
 
 func (o rawRackLink) polish(rack *rawRackType) (*RackLink, error) {
@@ -766,8 +766,8 @@ func (o rawRackLink) polish(rack *rawRackType) (*RackLink, error) {
 	}
 
 	var found bool
-	var tags []DesignTag
-	var tag *DesignTag
+	var tags []DesignTagData
+	var tag *DesignTagData
 	for _, label := range o.Tags {
 		if tag, found = rack.tagByLabel(label); !found {
 			return nil, fmt.Errorf("link '%s' in rack '%s' has tag '%s' but tag missing from rack definition", o.Label, rack.Id, label)
@@ -799,7 +799,7 @@ type RackElementGenericSystemRequest struct {
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Loopback         FeatureSwitch
-	Tags             []TagLabel
+	Tags             []string
 	Label            string
 	Links            []RackLinkRequest
 	LogicalDeviceId  ObjectId
@@ -835,7 +835,7 @@ type rawRackElementGenericSystemRequest struct {
 	Label            string                       `json:"label"`
 	LogicalDevice    ObjectId                     `json:"logical_device"`
 	Links            []rawRackLinkRequest         `json:"links"`
-	Tags             []TagLabel                   `json:"tags,omitempty"`
+	Tags             []string                     `json:"tags,omitempty"`
 }
 
 type RackElementGenericSystem struct {
@@ -845,7 +845,7 @@ type RackElementGenericSystem struct {
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Loopback         FeatureSwitch
-	Tags             []DesignTag
+	Tags             []DesignTagData
 	Label            string
 	Links            []RackLink
 	LogicalDevice    *LogicalDeviceData
@@ -858,7 +858,7 @@ type rawRackElementGenericSystem struct {
 	PortChannelIdMin int                          `json:"port_channel_id_min"`
 	PortChannelIdMax int                          `json:"port_channel_id_max"`
 	Loopback         featureSwitch                `json:"loopback"`
-	Tags             []TagLabel                   `json:"tags"`
+	Tags             []string                     `json:"tags"`
 	Label            string                       `json:"label"`
 	LogicalDevice    ObjectId                     `json:"logical_device"`
 	Links            []rawRackLink                `json:"links"`
@@ -900,8 +900,8 @@ func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGen
 		return nil, err
 	}
 
-	var tags []DesignTag
-	var tag *DesignTag
+	var tags []DesignTagData
+	var tag *DesignTagData
 	for _, label := range o.Tags {
 		if tag, found = rack.tagByLabel(label); !found {
 			return nil, fmt.Errorf("design tag '%s' not found in rack type '%s' definition", label, rack.Id)
@@ -945,8 +945,8 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 		//LeafSwitches: make([]RackElementLeafSwitchRequest, len(o.LeafSwitches)), // todo: init array with correct size?
 	}
 
-	ldMap := make(map[ObjectId]struct{})  // collect IDs of all logical devices relevant to this rack
-	tagMap := make(map[TagLabel]struct{}) // collect labels of all tags relevant to this rack
+	ldMap := make(map[ObjectId]struct{}) // collect IDs of all logical devices relevant to this rack
+	tagMap := make(map[string]struct{})  // collect labels of all tags relevant to this rack
 
 	for _, s := range o.LeafSwitches {
 		result.LeafSwitches = append(result.LeafSwitches, *s.raw())
@@ -1000,7 +1000,7 @@ type rawRackTypeRequest struct {
 	DisplayName              string                               `json:"display_name"`
 	Description              string                               `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign             `json:"fabric_connectivity_design"`
-	Tags                     []DesignTag                          `json:"tags,omitempty"`
+	Tags                     []rawDesignTag                       `json:"tags,omitempty"`
 	LogicalDevices           []rawLogicalDevice                   `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystemRequest `json:"generic_systems,omitempty"`
 	LeafSwitches             []rawRackElementLeafSwitchRequest    `json:"leafs,omitempty"`
@@ -1028,7 +1028,7 @@ type rawRackType struct {
 	DisplayName              string                        `json:"display_name"`
 	Description              string                        `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
-	Tags                     []DesignTag                   `json:"tags,omitempty"`
+	Tags                     []DesignTagData               `json:"tags,omitempty"`
 	CreatedAt                time.Time                     `json:"created_at"`
 	LastModifiedAt           time.Time                     `json:"last_modified_at"`
 	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
@@ -1084,7 +1084,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 	return result, nil
 }
 
-func (o rawRackType) logicalDeviceById(desired ObjectId) (*rawLogicalDevice, bool) {
+func (o *rawRackType) logicalDeviceById(desired ObjectId) (*rawLogicalDevice, bool) {
 	for _, ld := range o.LogicalDevices {
 		if ld.Id == desired {
 			return &ld, true
@@ -1093,7 +1093,7 @@ func (o rawRackType) logicalDeviceById(desired ObjectId) (*rawLogicalDevice, boo
 	return nil, false
 }
 
-func (o rawRackType) tagByLabel(desired TagLabel) (*DesignTag, bool) {
+func (o *rawRackType) tagByLabel(desired string) (*DesignTagData, bool) {
 	for _, tag := range o.Tags {
 		if tag.Label == desired {
 			return &tag, true

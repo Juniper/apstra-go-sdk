@@ -483,7 +483,7 @@ type Spine struct {
 	LinkPerSuperspineSpeed  LogicalDevicePortSpeed
 	LogicalDevice           LogicalDevice
 	LinkPerSuperspineCount  int
-	Tags                    []DesignTag
+	Tags                    []DesignTagData
 	ExternalLinksPerNode    int
 	ExternalFacingNodeCount int
 	ExternalLinkCount       int
@@ -495,7 +495,7 @@ type TemplateElementSpineRequest struct {
 	LinkPerSuperspineSpeed  LogicalDevicePortSpeed
 	LogicalDevice           ObjectId
 	LinkPerSuperspineCount  int
-	Tags                    []TagLabel
+	Tags                    []string
 	ExternalLinksPerNode    int
 	ExternalFacingNodeCount int
 	ExternalLinkCount       int
@@ -507,13 +507,13 @@ func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (
 		return nil, err
 	}
 
-	tags := make([]DesignTag, len(o.Tags))
+	tags := make([]DesignTagData, len(o.Tags))
 	for i, tagId := range o.Tags {
-		tag, err := client.getTagByLabel(ctx, tagId)
+		rawTag, err := client.getTagByLabel(ctx, tagId)
 		if err != nil {
 			return nil, err
 		}
-		tags[i] = *tag
+		tags[i] = *rawTag.polish().Data
 	}
 
 	return &rawSpine{
@@ -535,7 +535,7 @@ type rawSpine struct {
 	LinkPerSuperspineSpeed  *rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
 	LogicalDevice           rawLogicalDevice           `json:"logical_device"`
 	LinkPerSuperspineCount  int                        `json:"link_per_superspine_count"`
-	Tags                    []DesignTag                `json:"tags"`
+	Tags                    []DesignTagData            `json:"tags"`
 	ExternalLinksPerNode    int                        `json:"external_links_per_node"`
 	ExternalFacingNodeCount int                        `json:"external_facing_node_count"`
 	ExternalLinkCount       int                        `json:"external_link_count"`
@@ -571,7 +571,7 @@ type Superspine struct {
 	PlaneCount         int
 	ExternalLinkCount  int
 	ExternalLinkSpeed  LogicalDevicePortSpeed
-	Tags               []DesignTag
+	Tags               []DesignTagData
 	SuperspinePerPlane int
 	LogicalDevice      LogicalDevice
 }
@@ -580,19 +580,19 @@ type TemplateElementSuperspineRequest struct {
 	PlaneCount         int
 	ExternalLinkCount  int
 	ExternalLinkSpeed  LogicalDevicePortSpeed
-	Tags               []TagLabel
+	Tags               []string
 	SuperspinePerPlane int
 	LogicalDeviceId    ObjectId
 }
 
 func (o *TemplateElementSuperspineRequest) raw(ctx context.Context, client *Client) (*rawSuperspine, error) {
-	tags := make([]DesignTag, len(o.Tags))
+	tags := make([]DesignTagData, len(o.Tags))
 	for i, label := range o.Tags {
-		tag, err := client.getTagByLabel(ctx, label)
+		rawTag, err := client.getTagByLabel(ctx, label)
 		if err != nil {
 			return nil, err
 		}
-		tags[i] = *tag
+		tags[i] = *rawTag.polish().Data
 	}
 
 	logicalDevice, err := client.getLogicalDevice(ctx, o.LogicalDeviceId)
@@ -614,7 +614,7 @@ type rawSuperspine struct {
 	PlaneCount         int                        `json:"plane_count"`
 	ExternalLinkCount  int                        `json:"external_link_count"`
 	ExternalLinkSpeed  *rawLogicalDevicePortSpeed `json:"external_link_speed"`
-	Tags               []DesignTag                `json:"tags"`
+	Tags               []DesignTagData            `json:"tags"`
 	SuperspinePerPlane int                        `json:"superspine_per_plane"`
 	LogicalDevice      rawLogicalDevice           `json:"logical_device"`
 }
