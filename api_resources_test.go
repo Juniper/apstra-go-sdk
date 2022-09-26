@@ -273,12 +273,12 @@ func TestEmptyVniPool(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	vniRangeCount := rand.Intn(5) + 2 // random number of ASN ranges to add to new pool
+	vniRangeCount := rand.Intn(5) + 2 // random number of VNI ranges to add to new pool
 	vniBeginEnds, err := getRandInts(4096, 16777214, vniRangeCount*2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	sort.Ints(vniBeginEnds) // sort so that the ASN ranges will be ([0]...[1], [2]...[3], etc.)
+	sort.Ints(vniBeginEnds) // sort so that the VNI ranges will be ([0]...[1], [2]...[3], etc.)
 	vniRanges := make([]IntfIntRange, vniRangeCount)
 	for i := 0; i < vniRangeCount; i++ {
 		vniRanges[i] = IntRangeRequest{
@@ -297,7 +297,7 @@ func TestEmptyVniPool(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("created ASN pool name %s id %s", poolName, newPoolId)
+		log.Printf("created VNI pool name %s id %s", poolName, newPoolId)
 
 		log.Printf("testing GetVniPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
 		newPool, err := client.client.GetVniPool(context.TODO(), newPoolId)
@@ -387,7 +387,7 @@ func TestCreateDeleteVniPoolRange(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("created ASN pool name %s id %s", name, poolId)
+		log.Printf("created VNI pool name %s id %s", name, poolId)
 		var vniRange IntRangeRequest
 		for i := 0; i < 3; i++ {
 			a := rand.Intn(1000) + (i * 1000 * 2) + 4096
