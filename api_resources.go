@@ -122,18 +122,13 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 	return o.deleteIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, deleteMe)
 }
 
-// This code will take care of vni
-// VniPool is the public structure used to convey query responses about Vni
-// pools.
-// AsnPoolRequest is the public structure used to create/update an ASN pool.
+// Following code will take care of VNI Pools
+
+// VniPoolRequest is the public structure used to create/update an ASN pool.
 type VniPoolRequest IntPoolRequest
 
-// raw() converts an AsnPoolRequest to rawAsnPoolRequest for consumption by the
-// Apstra API.
-func (o *VniPoolRequest) raw() *rawIntPoolRequest {
-	return o.raw()
-}
-
+// VniPool is the public structure used to convey query responses about Vni
+// pools.
 type VniPool IntPool
 
 // polish turns a rawVniPool from the API into VniPool for caller consumption
