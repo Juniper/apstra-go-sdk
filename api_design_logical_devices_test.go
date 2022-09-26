@@ -89,7 +89,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			log.Printf("logical device id '%s' name '%s'\n", id, ld.DisplayName)
+			log.Printf("logical device id '%s' name '%s'\n", id, ld.Data.DisplayName)
 		}
 	}
 }
@@ -100,35 +100,39 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	indexingTypes := []string{
+		PortIndexingVerticalFirst,
+		PortIndexingHorizontalFirst,
+	}
+
 	for clientName, client := range clients {
-		var deviceConfigs []LogicalDevice
-		for i, indexing := range []string{
-			PortIndexingVerticalFirst,
-			PortIndexingHorizontalFirst,
-		} {
-			deviceConfigs = append(deviceConfigs, LogicalDevice{
-				DisplayName: fmt.Sprintf("AAAA-%s-%d", t.Name(), i),
-				Panels: []LogicalDevicePanel{
-					{
-						PanelLayout: LogicalDevicePanelLayout{
-							RowCount:    2,
-							ColumnCount: 2,
-						},
-						PortIndexing: LogicalDevicePortIndexing{
-							Order:      indexing,
-							StartIndex: 0,
-							Schema:     "absolute",
-						},
-						PortGroups: []LogicalDevicePortGroup{
-							{
-								Count: 4,
-								Speed: "10G",
-								Roles: LogicalDevicePortRoleUnused,
+		deviceConfigs := make([]LogicalDevice, len(indexingTypes))
+		for i, indexing := range indexingTypes {
+			deviceConfigs[i] = LogicalDevice{
+				Data: &LogicalDeviceData{
+					DisplayName: fmt.Sprintf("AAAA-%s-%d", t.Name(), i),
+					Panels: []LogicalDevicePanel{
+						{
+							PanelLayout: LogicalDevicePanelLayout{
+								RowCount:    2,
+								ColumnCount: 2,
+							},
+							PortIndexing: LogicalDevicePortIndexing{
+								Order:      indexing,
+								StartIndex: 0,
+								Schema:     "absolute",
+							},
+							PortGroups: []LogicalDevicePortGroup{
+								{
+									Count: 4,
+									Speed: "10G",
+									Roles: LogicalDevicePortRoleUnused,
+								},
 							},
 						},
 					},
 				},
-			})
+			}
 		}
 
 		id := make([]ObjectId, len(deviceConfigs))
@@ -147,7 +151,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 			}
 
 			log.Println(d.Id)
-			devCfg.Panels[0].PortIndexing.StartIndex = 1
+			devCfg.Data.Panels[0].PortIndexing.StartIndex = 1
 			log.Printf("testing updateLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = client.client.updateLogicalDevice(context.TODO(), d.Id, &devCfg)
 			if err != nil {
@@ -186,27 +190,29 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 
 func TestRawIfy(t *testing.T) {
 	testDev := LogicalDevice{
-		DisplayName: "name",
-		Id:          "id",
-		Panels: []LogicalDevicePanel{{
-
-			PanelLayout: LogicalDevicePanelLayout{
-				RowCount:    3,
-				ColumnCount: 3,
-			},
-			PortIndexing: LogicalDevicePortIndexing{
-				Order:      PortIndexingVerticalFirst,
-				StartIndex: 0,
-				Schema:     PortIndexingSchemaAbsolute,
-			},
-			PortGroups: []LogicalDevicePortGroup{{
-				Count: 9,
-				Speed: "10G",
-				Roles: LogicalDevicePortRoleAccess | LogicalDevicePortRoleSpine,
-			}},
-		}},
+		Id:             "id",
 		CreatedAt:      time.Now().Add(-time.Hour * 24),
 		LastModifiedAt: time.Now(),
+		Data: &LogicalDeviceData{
+			DisplayName: "name",
+			Panels: []LogicalDevicePanel{{
+
+				PanelLayout: LogicalDevicePanelLayout{
+					RowCount:    3,
+					ColumnCount: 3,
+				},
+				PortIndexing: LogicalDevicePortIndexing{
+					Order:      PortIndexingVerticalFirst,
+					StartIndex: 0,
+					Schema:     PortIndexingSchemaAbsolute,
+				},
+				PortGroups: []LogicalDevicePortGroup{{
+					Count: 9,
+					Speed: "10G",
+					Roles: LogicalDevicePortRoleAccess | LogicalDevicePortRoleSpine,
+				}},
+			}},
+		},
 	}
 	raw := testDev.raw()
 	log.Println(raw.Panels[0].PortGroups[0].Roles)
@@ -227,8 +233,8 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 
 		for _, i := range samples(len(logicalDevices)) {
 			test := logicalDevices[i]
-			log.Printf("testing GetLogicalDeviceByName(%s) against %s %s (%s)", test.DisplayName, client.clientType, clientName, client.client.ApiVersion())
-			logicalDevice, err := client.client.GetLogicalDeviceByName(context.TODO(), test.DisplayName)
+			log.Printf("testing GetLogicalDeviceByName(%s) against %s %s (%s)", test.Data.DisplayName, client.clientType, clientName, client.client.ApiVersion())
+			logicalDevice, err := client.client.GetLogicalDeviceByName(context.TODO(), test.Data.DisplayName)
 			var ace ApstraClientErr
 			if err != nil {
 				if !(errors.As(err, &ace) && ace.Type() == ErrMultipleMatch) {

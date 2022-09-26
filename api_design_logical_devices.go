@@ -133,6 +133,11 @@ type getLogicalDevicesResponse struct {
 	Items []rawLogicalDevice `json:"items"`
 }
 
+type LogicalDeviceData struct {
+	DisplayName string
+	Panels      []LogicalDevicePanel
+}
+
 type LogicalDevicePanelLayout struct {
 	RowCount    int `json:"row_count"`
 	ColumnCount int `json:"column_count"`
@@ -298,21 +303,20 @@ func (o rawLogicalDevicePanel) parse() (*LogicalDevicePanel, error) {
 }
 
 type LogicalDevice struct {
-	DisplayName    string
 	Id             ObjectId
-	Panels         []LogicalDevicePanel
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
+	Data           *LogicalDeviceData
 }
 
 func (o LogicalDevice) raw() *rawLogicalDevice {
 	var panels []rawLogicalDevicePanel
-	for _, panel := range o.Panels {
+	for _, panel := range o.Data.Panels {
 		panels = append(panels, *panel.raw())
 	}
 
 	return &rawLogicalDevice{
-		DisplayName:    o.DisplayName,
+		DisplayName:    o.Data.DisplayName,
 		Id:             o.Id,
 		Panels:         panels,
 		CreatedAt:      o.CreatedAt,
@@ -329,21 +333,23 @@ type rawLogicalDevice struct {
 }
 
 func (o rawLogicalDevice) polish() (*LogicalDevice, error) {
-	var panels []LogicalDevicePanel
-	for _, panel := range o.Panels {
+	panels := make([]LogicalDevicePanel, len(o.Panels))
+	for i, panel := range o.Panels {
 		parsed, err := panel.parse()
 		if err != nil {
 			return nil, err
 		}
-		panels = append(panels, *parsed)
+		panels[i] = *parsed
 	}
 
 	return &LogicalDevice{
-		DisplayName:    o.DisplayName,
 		Id:             o.Id,
-		Panels:         panels,
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
+		Data: &LogicalDeviceData{
+			DisplayName: o.DisplayName,
+			Panels:      panels,
+		},
 	}, nil
 }
 
@@ -406,7 +412,7 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 	for _, ld := range logicalDevices {
 		foo := &ld
 		_ = foo
-		if ld.DisplayName == name {
+		if ld.Data.DisplayName == name {
 			if found {
 				return nil, ApstraClientErr{
 					errType: ErrMultipleMatch,
