@@ -28,21 +28,6 @@ type DesignTag struct {
 	Data           *DesignTagData
 }
 
-func (o *DesignTag) raw() *rawDesignTag {
-	var label, description string
-	if o.Data != nil {
-		label = o.Data.Label
-		description = o.Data.Description
-	}
-	return &rawDesignTag{
-		Id:             o.Id,
-		Label:          label,
-		Description:    description,
-		CreatedAt:      o.CreatedAt,
-		LastModifiedAt: o.LastModifiedAt,
-	}
-}
-
 type rawDesignTag struct {
 	Id             ObjectId  `json:"id,omitempty"`
 	Label          string    `json:"label"`
