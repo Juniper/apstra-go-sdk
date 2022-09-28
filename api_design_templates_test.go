@@ -398,8 +398,8 @@ func TestGetTemplate(t *testing.T) {
 				if templateId != rbt2.Id {
 					t.Fatalf("template ID mismatch: '%s' vs. '%s", templateId, rbt2.Id)
 				}
-				if name != rbt2.DisplayName {
-					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
+				if name != rbt2.Data.DisplayName {
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.Data.DisplayName)
 				}
 			case templateTypePodBased:
 				rbt := &rawTemplatePodBased{}
@@ -415,8 +415,8 @@ func TestGetTemplate(t *testing.T) {
 				if templateId != rbt2.Id {
 					t.Fatalf("template ID mismatch: '%s' vs. '%s", templateId, rbt2.Id)
 				}
-				if name != rbt2.DisplayName {
-					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
+				if name != rbt2.Data.DisplayName {
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.Data.DisplayName)
 				}
 			case templateTypeL3Collapsed:
 				rbt := &rawTemplateL3Collapsed{}
@@ -432,8 +432,8 @@ func TestGetTemplate(t *testing.T) {
 				if templateId != rbt2.Id {
 					t.Fatalf("template ID mismatch: '%s' vs. '%s", templateId, rbt2.Id)
 				}
-				if name != rbt2.DisplayName {
-					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.DisplayName)
+				if name != rbt2.Data.DisplayName {
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.Data.DisplayName)
 				}
 			}
 			log.Printf("template '%s' '%s'", templateId, name)
@@ -553,12 +553,12 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 		}
 
 		log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		template, err := client.client.GetRackBasedTemplate(context.TODO(), id)
+		rbt, err := client.client.GetRackBasedTemplate(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if template.DisplayName != dn {
-			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, template.DisplayName)
+		if rbt.Data.DisplayName != dn {
+			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, rbt.Data.DisplayName)
 		}
 
 		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -653,8 +653,8 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if pbt.DisplayName != pbtdn {
-			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, pbt.DisplayName)
+		if pbt.Data.DisplayName != pbtdn {
+			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, pbt.Data.DisplayName)
 		}
 
 		log.Printf("testing deleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -718,15 +718,15 @@ func TestGetL3CollapsedTemplateByName(t *testing.T) {
 	name := "Collapsed Fabric ESI"
 
 	for _, client := range clients {
-		template, err := client.client.GetL3CollapsedTemplateByName(context.Background(), name)
+		l3ct, err := client.client.GetL3CollapsedTemplateByName(context.Background(), name)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if template.Type.String() != templateTypeL3Collapsed.string() {
-			t.Fatalf("expected '%s', got '%s'", template.Type.String(), templateTypeL3Collapsed)
+		if l3ct.Type.String() != templateTypeL3Collapsed.string() {
+			t.Fatalf("expected '%s', got '%s'", l3ct.Type.String(), templateTypeL3Collapsed)
 		}
-		if template.DisplayName != name {
-			t.Fatalf("expected '%s', got '%s'", name, template.DisplayName)
+		if l3ct.Data.DisplayName != name {
+			t.Fatalf("expected '%s', got '%s'", name, l3ct.Data.DisplayName)
 		}
 	}
 }
@@ -740,15 +740,15 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 	name := "L2 Pod"
 
 	for _, client := range clients {
-		template, err := client.client.GetRackBasedTemplateByName(context.Background(), name)
+		rbt, err := client.client.GetRackBasedTemplateByName(context.Background(), name)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if template.Type.String() != templateTypeRackBased.string() {
-			t.Fatalf("expected '%s', got '%s'", template.Type.String(), templateTypeRackBased)
+		if rbt.Type.String() != templateTypeRackBased.string() {
+			t.Fatalf("expected '%s', got '%s'", rbt.Type.String(), templateTypeRackBased)
 		}
-		if template.DisplayName != name {
-			t.Fatalf("expected '%s', got '%s'", name, template.DisplayName)
+		if rbt.Data.DisplayName != name {
+			t.Fatalf("expected '%s', got '%s'", name, rbt.Data.DisplayName)
 		}
 	}
 }
@@ -762,15 +762,15 @@ func TestGetPodBasedTemplateByName(t *testing.T) {
 	name := "L2 superspine single plane"
 
 	for _, client := range clients {
-		template, err := client.client.GetPodBasedTemplateByName(context.Background(), name)
+		pbt, err := client.client.GetPodBasedTemplateByName(context.Background(), name)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if template.Type.String() != templateTypePodBased.string() {
-			t.Fatalf("expected '%s', got '%s'", template.Type.String(), templateTypePodBased)
+		if pbt.Type.String() != templateTypePodBased.string() {
+			t.Fatalf("expected '%s', got '%s'", pbt.Type.String(), templateTypePodBased)
 		}
-		if template.DisplayName != name {
-			t.Fatalf("expected '%s', got '%s'", name, template.DisplayName)
+		if pbt.Data.DisplayName != name {
+			t.Fatalf("expected '%s', got '%s'", name, pbt.Data.DisplayName)
 		}
 	}
 }

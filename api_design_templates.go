@@ -692,12 +692,16 @@ func (o *template) polish() (Template, error) {
 }
 
 type TemplateRackBased struct {
-	Id                     ObjectId
-	Type                   TemplateType
+	Id             ObjectId
+	CreatedAt      time.Time
+	LastModifiedAt time.Time
+	Type           TemplateType
+	Data           *TemplateRackBasedData
+}
+
+type TemplateRackBasedData struct {
 	DisplayName            string
 	AntiAffinityPolicy     AntiAffinityPolicy
-	CreatedAt              time.Time
-	LastModifiedAt         time.Time
 	VirtualNetworkPolicy   VirtualNetworkPolicy
 	AsnAllocationPolicy    AsnAllocationPolicy
 	FabricAddressingPolicy *FabricAddressingPolicy
@@ -775,20 +779,22 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 	}
 
 	return &TemplateRackBased{
-		Id:                     o.Id,
-		Type:                   TemplateType(tType),
-		DisplayName:            o.DisplayName,
-		AntiAffinityPolicy:     *antiAffinityPolicy,
-		CreatedAt:              o.CreatedAt,
-		LastModifiedAt:         o.LastModifiedAt,
-		VirtualNetworkPolicy:   *v,
-		AsnAllocationPolicy:    *a,
-		FabricAddressingPolicy: f,
-		Capability:             TemplateCapability(c),
-		Spine:                  *s,
-		RackTypes:              rackTypes,
-		RackTypeCounts:         o.RackTypeCounts,
-		DhcpServiceIntent:      o.DhcpServiceIntent,
+		Id:             o.Id,
+		Type:           TemplateType(tType),
+		CreatedAt:      o.CreatedAt,
+		LastModifiedAt: o.LastModifiedAt,
+		Data: &TemplateRackBasedData{
+			DisplayName:            o.DisplayName,
+			AntiAffinityPolicy:     *antiAffinityPolicy,
+			VirtualNetworkPolicy:   *v,
+			AsnAllocationPolicy:    *a,
+			FabricAddressingPolicy: f,
+			Capability:             TemplateCapability(c),
+			Spine:                  *s,
+			RackTypes:              rackTypes,
+			RackTypeCounts:         o.RackTypeCounts,
+			DhcpServiceIntent:      o.DhcpServiceIntent,
+		},
 	}, nil
 }
 
@@ -798,14 +804,18 @@ type RackBasedTemplateCount struct {
 }
 
 type TemplatePodBased struct {
-	Id                      ObjectId
-	Type                    TemplateType
+	Id             ObjectId
+	Type           TemplateType
+	CreatedAt      time.Time
+	LastModifiedAt time.Time
+	Data           *TemplatePodBasedData
+}
+
+type TemplatePodBasedData struct {
 	DisplayName             string
 	AntiAffinityPolicy      AntiAffinityPolicy
 	FabricAddressingPolicy  *FabricAddressingPolicy
 	Superspine              Superspine
-	CreatedAt               time.Time
-	LastModifiedAt          time.Time
 	Capability              TemplateCapability
 	RackBasedTemplates      []TemplateRackBased
 	RackBasedTemplateCounts []RackBasedTemplateCount
@@ -867,27 +877,33 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 		return nil, err
 	}
 	return &TemplatePodBased{
-		Id:                      o.Id,
-		Type:                    TemplateType(tType),
-		DisplayName:             o.DisplayName,
-		AntiAffinityPolicy:      *antiAffinityPolicy,
-		FabricAddressingPolicy:  fap,
-		Superspine:              *superspine,
-		CreatedAt:               o.CreatedAt,
-		LastModifiedAt:          o.LastModifiedAt,
-		Capability:              TemplateCapability(capability),
-		RackBasedTemplates:      rbt,
-		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
+		Id:             o.Id,
+		Type:           TemplateType(tType),
+		CreatedAt:      o.CreatedAt,
+		LastModifiedAt: o.LastModifiedAt,
+		Data: &TemplatePodBasedData{
+			DisplayName:             o.DisplayName,
+			AntiAffinityPolicy:      *antiAffinityPolicy,
+			FabricAddressingPolicy:  fap,
+			Superspine:              *superspine,
+			Capability:              TemplateCapability(capability),
+			RackBasedTemplates:      rbt,
+			RackBasedTemplateCounts: o.RackBasedTemplateCounts,
+		},
 	}, nil
 }
 
 type TemplateL3Collapsed struct {
-	Id                   ObjectId                   `json:"id"`
-	Type                 TemplateType               `json:"type"`
+	Id             ObjectId     `json:"id"`
+	Type           TemplateType `json:"type"`
+	CreatedAt      time.Time    `json:"created_at"`
+	LastModifiedAt time.Time    `json:"last_modified_at"`
+	Data           *TemplateL3CollapsedData
+}
+
+type TemplateL3CollapsedData struct {
 	DisplayName          string                     `json:"display_name"`
 	AntiAffinityPolicy   AntiAffinityPolicy         `json:"anti_affinity_policy"`
-	CreatedAt            time.Time                  `json:"created_at"`
-	LastModifiedAt       time.Time                  `json:"last_modified_at"`
 	RackTypes            []RackType                 `json:"rack_types"`
 	Capability           TemplateCapability         `json:"capability"`
 	MeshLinkSpeed        *rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
@@ -953,19 +969,21 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 		return nil, err
 	}
 	return &TemplateL3Collapsed{
-		Id:                   o.Id,
-		Type:                 TemplateType(tType),
-		DisplayName:          o.DisplayName,
-		AntiAffinityPolicy:   *antiAffinityPolicy,
-		CreatedAt:            o.CreatedAt,
-		LastModifiedAt:       o.LastModifiedAt,
-		RackTypes:            prt,
-		Capability:           TemplateCapability(capability),
-		MeshLinkSpeed:        o.MeshLinkSpeed,
-		VirtualNetworkPolicy: *vnp,
-		MeshLinkCount:        o.MeshLinkCount,
-		RackTypeCounts:       o.RackTypeCounts,
-		DhcpServiceIntent:    o.DhcpServiceIntent,
+		Id:             o.Id,
+		Type:           TemplateType(tType),
+		CreatedAt:      o.CreatedAt,
+		LastModifiedAt: o.LastModifiedAt,
+		Data: &TemplateL3CollapsedData{
+			DisplayName:          o.DisplayName,
+			AntiAffinityPolicy:   *antiAffinityPolicy,
+			RackTypes:            prt,
+			Capability:           TemplateCapability(capability),
+			MeshLinkSpeed:        o.MeshLinkSpeed,
+			VirtualNetworkPolicy: *vnp,
+			MeshLinkCount:        o.MeshLinkCount,
+			RackTypeCounts:       o.RackTypeCounts,
+			DhcpServiceIntent:    o.DhcpServiceIntent,
+		},
 	}, nil
 }
 
