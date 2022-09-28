@@ -1047,10 +1047,5 @@ func (o *Client) DeleteDeviceProfile(ctx context.Context, id ObjectId) error {
 }
 
 func (o *Client) ServerName() string {
-	u, err := url.Parse(o.cfg.Url)
-	if err != nil {
-		fmt.Errorf("could not parse %s", o.cfg.Url)
-		return "No Hostname"
-	}
-	return u.Host
+	return o.baseUrl.Host
 }
