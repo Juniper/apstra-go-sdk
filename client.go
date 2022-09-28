@@ -10,19 +10,14 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"strings"
 	"sync"
 	"time"
 )
 
 const (
-	DefaultTimeout = 10 * time.Second
-	defaultScheme  = "https"
-	insecureScheme = "http"
-
+	DefaultTimeout   = 10 * time.Second
 	apstraAuthHeader = "Authtoken"
-
-	ErrUnknown = iota
+	ErrUnknown       = iota
 	ErrAsnOutOfRange
 	ErrAsnRangeOverlap
 	ErrRangeOverlap
@@ -75,9 +70,7 @@ type apstraHttpClient interface {
 // ErrChan, when not nil, is used by async operations to deliver any errors to
 // the caller's code.
 type ClientCfg struct {
-	Scheme       string          // "https", probably
-	Host         string          // "apstra.company.com" or "192.168.10.10"
-	Port         uint16          // zero value for default httpClient behavior
+	Url          string          // URL to access Apstra
 	User         string          // Apstra API/UI username
 	Pass         string          // Apstra API/UI password
 	LogLevel     int             // set < 0 for no logging
@@ -139,25 +132,14 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 
 func (o ClientCfg) validate() error {
 	switch {
-	case strings.ToLower(o.Scheme) != defaultScheme && strings.ToLower(o.Scheme) != insecureScheme:
-		return fmt.Errorf("error invalid URL scheme for Apstra service '%s'", o.Scheme)
-	case o.Host == "":
-		return errors.New("error hostname for Apstra service cannot be empty")
+	case o.Url == "":
+		return errors.New("error Url for Apstra Service cannot be empty")
 	case o.User == "":
 		return errors.New("error username for Apstra service cannot be empty")
 	case o.Pass == "":
 		return errors.New("error password for Apstra service cannot be empty")
 	}
-
 	return nil
-}
-
-func (o ClientCfg) url() string {
-	var portStr string
-	if o.Port > 0 { // Go default == "unset" for our purposes; this should be safe b/c rfc6335
-		portStr = fmt.Sprintf(":%d", o.Port)
-	}
-	return fmt.Sprintf("%s://%s%s", o.Scheme, o.Host, portStr)
 }
 
 // NewClient creates a Client object
@@ -172,9 +154,9 @@ func (o ClientCfg) NewClient() (*Client, error) {
 		logger = log.Default()
 	}
 
-	baseUrl, err := url.Parse(o.url())
+	baseUrl, err := url.Parse(o.Url)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", o.url(), err)
+		return nil, fmt.Errorf("error parsing url '%s' - %w", o.Url, err)
 	}
 
 	httpClient := o.HttpClient
@@ -248,11 +230,6 @@ func (o *Client) lock(id int) {
 // unlock releases the named *sync.Mutex in Client.sync
 func (o *Client) unlock(id int) {
 	o.sync[id].Unlock()
-}
-
-// ServerName returns the name of the AOS server this client has been configured to use
-func (o *Client) ServerName() string {
-	return o.cfg.Host
 }
 
 // Login submits username and password from the ClientCfg (Client.cfg) to the
@@ -1067,4 +1044,13 @@ func (o *Client) UpdateDeviceProfile(ctx context.Context, id ObjectId, profile D
 // DeleteDeviceProfile deletes existing device profile
 func (o *Client) DeleteDeviceProfile(ctx context.Context, id ObjectId) error {
 	return o.deleteDeviceProfile(ctx, id)
+}
+
+func (o *Client) ServerName() string {
+	u, err := url.Parse(o.cfg.Url)
+	if err != nil {
+		fmt.Errorf("could not parse %s", o.cfg.Url)
+		return "No Hostname"
+	}
+	return u.Host
 }

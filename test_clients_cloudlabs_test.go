@@ -152,9 +152,7 @@ func (o *cloudlabsTopology) getGoapstraClientCfg() (*ClientCfg, error) {
 	}
 
 	return &ClientCfg{
-		Scheme:     access.Protocol,
-		Host:       access.Host,
-		Port:       uint16(access.Port),
+		Url:        fmt.Sprintf("%s://%s:%d", access.Protocol, access.Host, access.Port),
 		User:       access.Username,
 		Pass:       access.Password,
 		HttpClient: httpClient,
@@ -319,8 +317,7 @@ func TestGetCloudlabsClients(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		log.Printf("Apstra at '%s://%s:%s@%s:%d' has the following switches:\n",
-			client.cfg.Scheme, client.cfg.User, client.cfg.Pass, client.cfg.Host, client.cfg.Port)
+		log.Printf("Apstra at '%s' has the following switches:\n", client.cfg.Url)
 		for _, si := range switchInfo {
 			log.Printf("  %s  \t%s\t %s:%s\t offbox platform: '%s'", si.name, si.sshIp, si.sshUser, si.sshPass, si.deviceType.platform())
 		}
