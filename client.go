@@ -961,12 +961,12 @@ func (o *Client) GetInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMa
 }
 
 // CreateInterfaceMap creates an interface map, returns its ObjectId
-func (o *Client) CreateInterfaceMap(ctx context.Context, in *InterfaceMap) (ObjectId, error) {
+func (o *Client) CreateInterfaceMap(ctx context.Context, in *InterfaceMapData) (ObjectId, error) {
 	return o.createInterfaceMap(ctx, in)
 }
 
 // UpdateInterfaceMap updates the interface map represented by id, with the details in ifMap
-func (o *Client) UpdateInterfaceMap(ctx context.Context, id ObjectId, ifMap *InterfaceMap) error {
+func (o *Client) UpdateInterfaceMap(ctx context.Context, id ObjectId, ifMap *InterfaceMapData) error {
 	return o.updateInterfaceMap(ctx, id, ifMap)
 }
 

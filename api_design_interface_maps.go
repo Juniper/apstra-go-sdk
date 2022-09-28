@@ -43,11 +43,6 @@ const (
 //                      '(panel ID, port ID) in the logical device '
 //                      'is this interface coming from')})
 
-type optionsInterfaceMapsResponse struct {
-	Items   []ObjectId `json:"items"`
-	Methods []string   `json:"methods"`
-}
-
 type InterfaceSettingParam struct {
 	Global struct {
 		Breakout bool   `json:"breakout"`
@@ -165,17 +160,21 @@ func (o *rawInterfaceMapInterface) polish() (*InterfaceMapInterface, error) {
 	}, nil
 }
 
-type InterfaceMap struct {
+type InterfaceMapData struct {
 	LogicalDeviceId ObjectId
 	DeviceProfileId ObjectId
-	CreatedAt       time.Time
-	LastModifiedAt  time.Time
-	Id              ObjectId
 	Label           string
 	Interfaces      []InterfaceMapInterface
 }
 
-func (o *InterfaceMap) raw() *rawInterfaceMap {
+type InterfaceMap struct {
+	Id             ObjectId
+	CreatedAt      time.Time
+	LastModifiedAt time.Time
+	Data           *InterfaceMapData
+}
+
+func (o *InterfaceMapData) raw() *rawInterfaceMap {
 	rawInterfaces := make([]rawInterfaceMapInterface, len(o.Interfaces))
 	for i, intf := range o.Interfaces {
 		rawInterfaces[i] = *intf.raw()
@@ -184,9 +183,6 @@ func (o *InterfaceMap) raw() *rawInterfaceMap {
 	return &rawInterfaceMap{
 		LogicalDeviceId: o.LogicalDeviceId,
 		DeviceProfileId: o.DeviceProfileId,
-		CreatedAt:       o.CreatedAt,
-		LastModifiedAt:  o.LastModifiedAt,
-		Id:              o.Id,
 		Label:           o.Label,
 		Interfaces:      rawInterfaces,
 	}
@@ -212,18 +208,22 @@ func (o *rawInterfaceMap) polish() (*InterfaceMap, error) {
 		interfaces[i] = *polished
 	}
 	return &InterfaceMap{
-		LogicalDeviceId: o.LogicalDeviceId,
-		DeviceProfileId: o.DeviceProfileId,
-		CreatedAt:       o.CreatedAt,
-		LastModifiedAt:  o.LastModifiedAt,
-		Id:              o.Id,
-		Label:           o.Label,
-		Interfaces:      interfaces,
+		Id:             o.Id,
+		CreatedAt:      o.CreatedAt,
+		LastModifiedAt: o.LastModifiedAt,
+		Data: &InterfaceMapData{
+			LogicalDeviceId: o.LogicalDeviceId,
+			DeviceProfileId: o.DeviceProfileId,
+			Label:           o.Label,
+			Interfaces:      interfaces,
+		},
 	}, nil
 }
 
 func (o *Client) listAllInterfaceMapIds(ctx context.Context) ([]ObjectId, error) {
-	response := &optionsInterfaceMapsResponse{}
+	response := &struct {
+		Items []ObjectId `json:"items"`
+	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignInterfaceMaps,
@@ -248,7 +248,7 @@ func (o *Client) getInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMa
 	return response.polish()
 }
 
-func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMap) (ObjectId, error) {
+func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMapData) (ObjectId, error) {
 	response := &objectIdResponse{}
 	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -258,7 +258,7 @@ func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMap) (Obje
 	})
 }
 
-func (o *Client) updateInterfaceMap(ctx context.Context, id ObjectId, in *InterfaceMap) error {
+func (o *Client) updateInterfaceMap(ctx context.Context, id ObjectId, in *InterfaceMapData) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignInterfaceMapById, id),
