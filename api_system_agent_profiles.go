@@ -29,12 +29,12 @@ type optionsAgentProfilesResponse struct {
 
 // AgentProfileConfig is used when creating or updating an Agent Profile
 type AgentProfileConfig struct {
-	Label       string            `json:"label"`
-	Username    string            `json:"username,omitempty"`
-	Password    string            `json:"password,omitempty"`
-	Platform    string            `json:"platform,omitempty"`
-	Packages    AgentPackages     `json:"packages"`
-	OpenOptions map[string]string `json:"open_options"`
+	Label       string
+	Username    string
+	Password    string
+	Platform    string
+	Packages    AgentPackages
+	OpenOptions map[string]string
 }
 
 // raw turns a *AgentProfile (from our caller) into a rawAgentProfile
@@ -59,7 +59,7 @@ type rawAgentProfileConfig struct {
 	Label       string            `json:"label"`
 	Username    string            `json:"username,omitempty"`
 	Password    string            `json:"password,omitempty"`
-	Platform    string            `json:"platform,omitempty"`
+	Platform    string            `json:"platform"`
 	Packages    rawAgentPackages  `json:"packages"`
 	OpenOptions map[string]string `json:"open_options"`
 }
