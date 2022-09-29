@@ -362,28 +362,16 @@ func (o *Client) getBlueprintByName(ctx context.Context, name string) (*Blueprin
 	return o.getBlueprint(ctx, id)
 }
 
-func (o *Client) getAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, error) {
+func (o *Client) getAllBlueprintStatus(ctx context.Context) ([]rawBlueprintStatus, error) {
 	response := &getBluePrintsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	return response.Items, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlBlueprints,
 		apiResponse: response,
 	})
-	if err != nil {
-		return nil, err
-	}
-	result := make([]BlueprintStatus, len(response.Items))
-	for i, item := range response.Items {
-		p, err := item.polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *p
-	}
-	return result, nil
 }
 
-func (o *Client) getBlueprintStatus(ctx context.Context, id ObjectId) (*BlueprintStatus, error) {
+func (o *Client) getBlueprintStatus(ctx context.Context, id ObjectId) (*rawBlueprintStatus, error) {
 	blueprintStatuses, err := o.getAllBlueprintStatus(ctx)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -401,32 +389,43 @@ func (o *Client) getBlueprintStatus(ctx context.Context, id ObjectId) (*Blueprin
 	}
 }
 
-func (o *Client) getBlueprintStatusByName(ctx context.Context, name string) (*BlueprintStatus, error) {
+func (o *Client) getBlueprintStatusesByName(ctx context.Context, desired string) ([]rawBlueprintStatus, error) {
 	blueprintStatuses, err := o.getAllBlueprintStatus(ctx)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	// try to find the requested blueprint
-	found := -1
-	for i, bps := range blueprintStatuses {
-		if bps.Label == name {
-			if found > 0 {
-				return nil, ApstraClientErr{
-					errType: ErrMultipleMatch,
-					err:     fmt.Errorf("multiple blueprints have name '%s'", name),
-				}
-			}
-			found = i
+	i := 0
+	for i <= len(blueprintStatuses) {
+		if blueprintStatuses[i].Label != desired { // element not desired. delete element.
+			// copy last element to current position
+			blueprintStatuses[i] = blueprintStatuses[len(blueprintStatuses)-1]
+			// delete last element
+			blueprintStatuses = blueprintStatuses[:len(blueprintStatuses)-1]
 		}
 	}
+	return blueprintStatuses, nil
+}
 
-	if found >= 0 {
-		return &blueprintStatuses[found], nil
+func (o *Client) getBlueprintStatusByName(ctx context.Context, desired string) (*rawBlueprintStatus, error) {
+	blueprintStatuses, err := o.getBlueprintStatusesByName(ctx, desired)
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return nil, ApstraClientErr{
-		errType: ErrNotfound,
-		err:     fmt.Errorf("found %d blueprints but one named '%s' wasn't among them", len(blueprintStatuses), name),
+
+	switch len(blueprintStatuses) {
+	case 0:
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("blueprint with name '%s' not found", desired),
+		}
+	case 1:
+		return &blueprintStatuses[1], nil
+	default:
+		return nil, ApstraClientErr{
+			errType: ErrMultipleMatch,
+			err:     fmt.Errorf("multiple blueprints with name '%s' found", desired),
+		}
 	}
 }
 

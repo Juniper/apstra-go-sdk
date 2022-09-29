@@ -154,7 +154,7 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 			LeafSwitches: []RackElementLeafSwitchRequest{
 				{
 					Label:             leafLabel,
-					LogicalDeviceId:   "slicer-7x10-1",
+					LogicalDeviceId:   "AOS-48x10_6x40-leaf_spine",
 					LinkPerSpineCount: 2,
 					LinkPerSpineSpeed: "10G",
 				},

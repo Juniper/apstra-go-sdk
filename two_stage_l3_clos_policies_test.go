@@ -164,7 +164,7 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if bpStatus.Design != RefDesignDatacenter {
+			if bpStatus.Design != refDesignDatacenter {
 				bpIds[i] = bpIds[len(bpIds)-1] // move last element to current position
 				bpIds = bpIds[:len(bpIds)-1]   // remove last element
 			}
