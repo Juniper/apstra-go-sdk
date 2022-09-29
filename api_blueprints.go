@@ -420,7 +420,7 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, desired string) (
 			err:     fmt.Errorf("blueprint with name '%s' not found", desired),
 		}
 	case 1:
-		return &blueprintStatuses[1], nil
+		return &blueprintStatuses[0], nil
 	default:
 		return nil, ApstraClientErr{
 			errType: ErrMultipleMatch,
