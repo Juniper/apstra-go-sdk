@@ -40,6 +40,6 @@ else
 fi
 
 echo "Run 'make verify'"
-docker run --rm -v "$(pwd)":/go/src ${DOCKER_IMAGE_TAG} make --keep-going fast-check
+docker run --rm -w /go/src -v "$(pwd)":/go/src ${DOCKER_IMAGE_TAG} make --keep-going fast-check
 
 exit $?
