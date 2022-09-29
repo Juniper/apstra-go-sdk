@@ -91,11 +91,11 @@ func TestGetAllVirtualNetworks(t *testing.T) {
 				t.Fatal(err)
 			}
 			switch bpStatus.Design {
-			case RefDesignFreeform:
-				log.Printf("'%s' design is '%s.", id, bpStatus.Design.String())
+			case refDesignFreeform:
+				log.Printf("'%s' design is '%s.", id, bpStatus.Design)
 				// todo
-			case RefDesignDatacenter:
-				log.Printf("'%s' design is '%s.", id, bpStatus.Design.String())
+			case refDesignDatacenter:
+				log.Printf("'%s' design is '%s.", id, bpStatus.Design)
 				log.Printf("testing NewTwoStageL3ClosClient(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
 				dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), id)
 				if err != nil {

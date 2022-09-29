@@ -117,9 +117,9 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 	if err != nil {
 		return nil, err
 	}
-	if bp.Design != RefDesignTwoStageL3Clos {
+	if bp.Design != refDesignDatacenter {
 		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
-			RefDesignTwoStageL3Clos.String(), blueprintId, bp.Design.String())
+			RefDesignTwoStageL3Clos.String(), blueprintId, bp.Design)
 	}
 	result := &TwoStageL3ClosClient{
 		client:      o,
@@ -571,6 +571,23 @@ func (o *Client) ListAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllBlueprintIds(ctx)
 }
 
+// GetAllBlueprintStatus returns []BlueprintStatus summarizing blueprints configured on Apstra
+func (o *Client) GetAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, error) {
+	rawBpStatuses, err := o.getAllBlueprintStatus(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]BlueprintStatus, len(rawBpStatuses))
+	for i, bps := range rawBpStatuses {
+		polished, err := bps.polish()
+		if err != nil {
+			return nil, fmt.Errorf("error polishing blueprint status - %w", err)
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
 // CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
 func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBlueprintFromTemplate) (ObjectId, error) {
 	return o.createBlueprintFromTemplate(ctx, cfg)
@@ -578,12 +595,20 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBlu
 
 // GetBlueprintStatus returns *BlueprintStatus for the specified blueprint ID
 func (o *Client) GetBlueprintStatus(ctx context.Context, id ObjectId) (*BlueprintStatus, error) {
-	return o.getBlueprintStatus(ctx, id)
+	raw, err := o.getBlueprintStatus(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching blueprint status - %w", err)
+	}
+	return raw.polish()
 }
 
 // GetBlueprintStatusByName returns *BlueprintStatus for the specified blueprint name
 func (o *Client) GetBlueprintStatusByName(ctx context.Context, name string) (*BlueprintStatus, error) {
-	return o.getBlueprintStatusByName(ctx, name)
+	raw, err := o.getBlueprintStatusByName(ctx, name)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching blueprint status by name - %w", err)
+	}
+	return raw.polish()
 }
 
 // DeleteBlueprint deletes the specified blueprint
