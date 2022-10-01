@@ -1095,6 +1095,7 @@ func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemp
 		return nil, fmt.Errorf("error unmarshaling raw pod-based template - %w", err)
 	}
 
+	// force 'type' field of included rack-based templates to "rack_based" b/c Apstra rejects empty string.
 	for i, rbt := range result.RackBasedTemplates {
 		switch rbt.Type {
 		case "":
