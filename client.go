@@ -1103,7 +1103,7 @@ func (o *Client) GetTemplateType(ctx context.Context, id ObjectId) (TemplateType
 // GetTemplateIdsTypesByName returns map[ObjectId]TemplateType including all
 // templates with the desired name found in the apstra global catalog.
 func (o *Client) GetTemplateIdsTypesByName(ctx context.Context, desired string) (map[ObjectId]TemplateType, error) {
-	return o.GetTemplateIdsTypesByName(ctx, desired)
+	return o.getTemplateIdsTypesByName(ctx, desired)
 }
 
 // GetTemplateIdTypeByName returns the ObjectId and TemplateType of the single
