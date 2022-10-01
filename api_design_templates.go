@@ -467,12 +467,12 @@ func (o *rawFabricAddressingPolicy) polish() (*FabricAddressingPolicy, error) {
 	}, nil
 }
 
-type RackTypeCounts struct {
+type RackTypeCount struct {
 	RackTypeId ObjectId `json:"rack_type_id"`
 	Count      int      `json:"count"`
 }
 
-type RackBasedTemplateCounts struct {
+type RackBasedTemplateCount struct {
 	RackBasedTemplateId ObjectId `json:"rack_based_template_id"`
 	Count               int      `json:"count"`
 }
@@ -708,7 +708,7 @@ type TemplateRackBasedData struct {
 	Capability             TemplateCapability
 	Spine                  Spine
 	RackTypes              []RackType
-	RackTypeCounts         []RackTypeCounts
+	RackTypeCounts         []RackTypeCount
 	DhcpServiceIntent      DhcpServiceIntent `json:"dhcp_service_intent"`
 }
 
@@ -733,7 +733,7 @@ type rawTemplateRackBased struct {
 	Capability             templateCapability         `json:"capability,omitempty"`
 	Spine                  rawSpine                   `json:"spine"`
 	RackTypes              []rawRackType              `json:"rack_types"`
-	RackTypeCounts         []RackTypeCounts           `json:"rack_type_counts"`
+	RackTypeCounts         []RackTypeCount            `json:"rack_type_counts"`
 	DhcpServiceIntent      DhcpServiceIntent          `json:"dhcp_service_intent"`
 }
 
@@ -796,11 +796,6 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 			DhcpServiceIntent:      o.DhcpServiceIntent,
 		},
 	}, nil
-}
-
-type RackBasedTemplateCount struct {
-	RackBasedTemplateId ObjectId `json:"rack_based_template_id"`
-	Count               int      `json:"count"`
 }
 
 type TemplatePodBased struct {
@@ -909,11 +904,8 @@ type TemplateL3CollapsedData struct {
 	MeshLinkSpeed        *rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
 	VirtualNetworkPolicy VirtualNetworkPolicy       `json:"virtual_network_policy"`
 	MeshLinkCount        int                        `json:"mesh_link_count"`
-	RackTypeCounts       []struct {
-		RackTypeId ObjectId `json:"rack_type_id"`
-		Count      int      `json:"count"`
-	} `json:"rack_type_counts"`
-	DhcpServiceIntent struct {
+	RackTypeCounts       []RackTypeCount            `json:"rack_type_counts"`
+	DhcpServiceIntent    struct {
 		Active bool `json:"active"`
 	} `json:"dhcp_service_intent"`
 }
@@ -934,11 +926,8 @@ type rawTemplateL3Collapsed struct {
 	MeshLinkSpeed        *rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
 	VirtualNetworkPolicy rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
 	MeshLinkCount        int                        `json:"mesh_link_count"`
-	RackTypeCounts       []struct {
-		RackTypeId ObjectId `json:"rack_type_id"`
-		Count      int      `json:"count"`
-	} `json:"rack_type_counts"`
-	DhcpServiceIntent struct {
+	RackTypeCounts       []RackTypeCount            `json:"rack_type_counts"`
+	DhcpServiceIntent    struct {
 		Active bool `json:"active"`
 	} `json:"dhcp_service_intent"`
 }
@@ -1100,8 +1089,23 @@ func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemp
 		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypePodBased)
 	}
 
-	template := &rawTemplatePodBased{}
-	return template, json.Unmarshal(rawTemplate, template)
+	result := &rawTemplatePodBased{}
+	err = json.Unmarshal(rawTemplate, result)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling raw pod-based template - %w", err)
+	}
+
+	for i, rbt := range result.RackBasedTemplates {
+		switch rbt.Type {
+		case "":
+			result.RackBasedTemplates[i].Type = templateTypeRackBased
+		case templateTypeRackBased: //fallthrough
+		default:
+			return nil, fmt.Errorf("rack-based template '%s' within pod-based template '%s' claims to be type '%s', expected '%s'",
+				rbt.DisplayName, result.Id, rbt.Type, templateTypeRackBased)
+		}
+	}
+	return result, nil
 }
 
 func (o *Client) getAllPodBasedTemplates(ctx context.Context) ([]rawTemplatePodBased, error) {
@@ -1225,7 +1229,7 @@ type CreateRackBasedTemplateRequest struct {
 	Capability             TemplateCapability
 	Spine                  *TemplateElementSpineRequest
 	RackTypeIds            []ObjectId
-	RackTypeCounts         []RackTypeCounts
+	RackTypeCounts         []RackTypeCount
 	DhcpServiceIntent      *DhcpServiceIntent
 	AntiAffinityPolicy     *AntiAffinityPolicy
 	AsnAllocationPolicy    *AsnAllocationPolicy
@@ -1298,7 +1302,7 @@ type rawCreateRackBasedTemplateRequest struct {
 	Capability             templateCapability         `json:"capability"`
 	Spine                  rawSpine                   `json:"spine"`
 	RackTypes              []rawRackType              `json:"rack_types"`
-	RackTypeCounts         []RackTypeCounts           `json:"rack_type_counts"`
+	RackTypeCounts         []RackTypeCount            `json:"rack_type_counts"`
 	DhcpServiceIntent      DhcpServiceIntent          `json:"dhcp_service_intent"`
 	AntiAffinityPolicy     rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
 	AsnAllocationPolicy    rawAsnAllocationPolicy     `json:"asn_allocation_policy"`
@@ -1306,16 +1310,12 @@ type rawCreateRackBasedTemplateRequest struct {
 	VirtualNetworkPolicy   rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
 }
 
-func (o *Client) createRackBasedTemplate(ctx context.Context, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
-	raw, err := in.raw(ctx, o)
-	if err != nil {
-		return "", err
-	}
+func (o *Client) createRackBasedTemplate(ctx context.Context, in *rawCreateRackBasedTemplateRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTemplates,
-		apiInput:    raw,
+		apiInput:    in,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -1347,7 +1347,7 @@ type CreatePodBasedTemplateRequest struct {
 	Capability              TemplateCapability
 	Superspine              *TemplateElementSuperspineRequest
 	RackBasedTemplateIds    []ObjectId
-	RackBasedTemplateCounts []RackBasedTemplateCounts
+	RackBasedTemplateCounts []RackBasedTemplateCount
 	AntiAffinityPolicy      *AntiAffinityPolicy
 	FabricAddressingPolicy  *FabricAddressingPolicy
 }
@@ -1366,6 +1366,7 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 	rawRackBasedTemplates := make([]rawTemplateRackBased, len(o.RackBasedTemplateIds))
 	for i, id := range o.RackBasedTemplateIds {
 		rbt, err := client.getRackBasedTemplate(ctx, id)
+		rbt.Type = templateTypeRackBased
 		if err != nil {
 			return nil, err
 		}
@@ -1400,21 +1401,17 @@ type rawCreatePodBasedTemplateRequest struct {
 	Capability              templateCapability         `json:"capability"`
 	Superspine              rawSuperspine              `json:"superspine"`
 	RackBasedTemplates      []rawTemplateRackBased     `json:"rack_based_templates"`
-	RackBasedTemplateCounts []RackBasedTemplateCounts  `json:"rack_based_template_counts"`
+	RackBasedTemplateCounts []RackBasedTemplateCount   `json:"rack_based_template_counts"`
 	AntiAffinityPolicy      rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
 	FabricAddressingPolicy  *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 }
 
-func (o *Client) createPodBasedTemplate(ctx context.Context, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
-	apiInput, err := in.raw(ctx, o)
-	if err != nil {
-		return "", err
-	}
+func (o *Client) createPodBasedTemplate(ctx context.Context, in *rawCreatePodBasedTemplateRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTemplates,
-		apiInput:    apiInput,
+		apiInput:    in,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -1449,7 +1446,7 @@ type CreateL3CollapsedTemplateRequest struct {
 	MeshLinkCount        int                    `json:"mesh_link_count"`
 	MeshLinkSpeed        LogicalDevicePortSpeed `json:"mesh_link_speed"`
 	RackTypeIds          []ObjectId             `json:"rack_types"`
-	RackTypeCounts       []RackTypeCounts       `json:"rack_type_counts"`
+	RackTypeCounts       []RackTypeCount        `json:"rack_type_counts"`
 	DhcpServiceIntent    DhcpServiceIntent      `json:"dhcp_service_intent"`
 	AntiAffinityPolicy   AntiAffinityPolicy     `json:"anti_affinity_policy"`
 	VirtualNetworkPolicy VirtualNetworkPolicy   `json:"virtual_network_policy"`
@@ -1485,22 +1482,18 @@ type rawCreateL3CollapsedTemplateRequest struct {
 	MeshLinkCount        int                       `json:"mesh_link_count"`
 	MeshLinkSpeed        rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
 	RackTypes            []rawRackType             `json:"rack_types"`
-	RackTypeCounts       []RackTypeCounts          `json:"rack_type_counts"`
+	RackTypeCounts       []RackTypeCount           `json:"rack_type_counts"`
 	DhcpServiceIntent    DhcpServiceIntent         `json:"dhcp_service_intent"`
 	AntiAffinityPolicy   rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
 	VirtualNetworkPolicy rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
 }
 
-func (o *Client) createL3CollapsedTemplate(ctx context.Context, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
-	apiInput, err := in.raw(ctx, o)
-	if err != nil {
-		return "", err
-	}
+func (o *Client) createL3CollapsedTemplate(ctx context.Context, in *rawCreateL3CollapsedTemplateRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTemplates,
-		apiInput:    apiInput,
+		apiInput:    in,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -1538,4 +1531,72 @@ func (o *Client) deleteTemplate(ctx context.Context, id ObjectId) error {
 		return convertTtaeToAceWherePossible(err)
 	}
 	return nil
+}
+
+func (o *Client) getTemplateType(ctx context.Context, id ObjectId) (templateType, error) {
+	response := &struct {
+		Type templateType `tfsdk:"type"`
+	}{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Type, nil
+}
+
+func (o *Client) getTemplateIdsTypesByName(ctx context.Context, desired string) (map[ObjectId]TemplateType, error) {
+	response := &struct {
+		Items []struct {
+			Id          ObjectId     `json:"id"`
+			Type        templateType `json:"type"`
+			DisplayName string       `json:"display_name"`
+		} `json:"Items"`
+	}{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlDesignTemplates,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	result := make(map[ObjectId]TemplateType)
+	for _, t := range response.Items {
+		if t.DisplayName == desired {
+			parsed, err := t.Type.parse()
+			if err != nil {
+				return nil, fmt.Errorf("error parsing type of template '%s' - %w", t.Id, err)
+			}
+			result[t.Id] = TemplateType(parsed)
+		}
+	}
+	return result, nil
+}
+
+func (o *Client) getTemplateIdTypeByName(ctx context.Context, desired string) (ObjectId, TemplateType, error) {
+	idToType, err := o.getTemplateIdsTypesByName(ctx, desired)
+	if err != nil {
+		return "", -1, fmt.Errorf("error fetching templates by name - %w", err)
+	}
+
+	switch len(idToType) {
+	case 0:
+		return "", -1, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("template named '%s' not found", desired),
+		}
+	case 1:
+		for k, v := range idToType {
+			return k, v, nil
+		}
+	}
+	return "", -1, ApstraClientErr{
+		errType: ErrMultipleMatch,
+		err:     fmt.Errorf("found multiple templates named '%s'", desired),
+	}
 }
