@@ -30,23 +30,35 @@ const (
 	ResourceGroupNameSuperspineAsn = ResourceGroupName(iota)
 	ResourceGroupNameSpineAsn
 	ResourceGroupNameLeafAsn
+	ResourceGroupNameAccessAsn
 	ResourceGroupNameSuperspineIps
 	ResourceGroupNameSpineIps
 	ResourceGroupNameLeafIps
+	ResourceGroupNameAccessIps
 	ResourceGroupNameSuperspineSpineIps
+	ResourceGroupNameSuperspineSpine6Ips
 	ResourceGroupNameSpineLeafIps
+	ResourceGroupNameSpineLeaf6Ips
+	ResourceGroupNameAccessAccessIps
 	ResourceGroupNameMlagDomainSviSubnets
+	ResourceGroupNameVtepIps
 	ResourceGroupNameUnknown
 
 	resourceGroupNameSuperspineAsn        = resourceGroupName("superspine_asns")
 	resourceGroupNameSpineAsn             = resourceGroupName("spine_asns")
 	resourceGroupNameLeafAsn              = resourceGroupName("leaf_asns")
+	resourceGroupNameAccessAsn            = resourceGroupName("access_asns")
 	resourceGroupNameSuperspineIps        = resourceGroupName("superspine_loopback_ips")
 	resourceGroupNameSpineIps             = resourceGroupName("spine_loopback_ips")
 	resourceGroupNameLeafIps              = resourceGroupName("leaf_loopback_ips")
+	resourceGroupNameAccessIps            = resourceGroupName("access_loopback_ips")
 	resourceGroupNameSuperspineSpineIps   = resourceGroupName("spine_superspine_link_ips")
+	resourceGroupNameSuperspineSpine6Ips  = resourceGroupName("ipv6_spine_superspine_link_ips")
 	resourceGroupNameSpineLeafIps         = resourceGroupName("spine_leaf_link_ips")
+	resourceGroupNameSpineLeaf6Ips        = resourceGroupName("ipv6_spine_leaf_link_ips")
 	resourceGroupNameMlagDomainSviSubnets = resourceGroupName("mlag_domain_svi_subnets")
+	resourceGroupNameAccessAccessIps      = resourceGroupName("access_l3_peer_link_link_ips")
+	resourceGroupNameVtepIps              = resourceGroupName("vtep_ips")
 	resourceGroupNameUnknown              = "group name %d unknown"
 )
 
@@ -64,18 +76,30 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameSpineAsn
 	case ResourceGroupNameLeafAsn:
 		return resourceGroupNameLeafAsn
+	case ResourceGroupNameAccessAsn:
+		return resourceGroupNameAccessAsn
 	case ResourceGroupNameSuperspineIps:
 		return resourceGroupNameSuperspineIps
 	case ResourceGroupNameSpineIps:
 		return resourceGroupNameSpineIps
 	case ResourceGroupNameLeafIps:
 		return resourceGroupNameLeafIps
+	case ResourceGroupNameAccessIps:
+		return resourceGroupNameAccessIps
 	case ResourceGroupNameSuperspineSpineIps:
 		return resourceGroupNameSuperspineSpineIps
+	case ResourceGroupNameSuperspineSpine6Ips:
+		return resourceGroupNameSuperspineSpine6Ips
 	case ResourceGroupNameSpineLeafIps:
 		return resourceGroupNameSpineLeafIps
+	case ResourceGroupNameSpineLeaf6Ips:
+		return resourceGroupNameSpineLeaf6Ips
+	case ResourceGroupNameAccessAccessIps:
+		return resourceGroupNameAccessAccessIps
 	case ResourceGroupNameMlagDomainSviSubnets:
 		return resourceGroupNameMlagDomainSviSubnets
+	case ResourceGroupNameVtepIps:
+		return resourceGroupNameVtepIps
 	default:
 		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
@@ -91,18 +115,26 @@ func (o resourceGroupName) parse() (ResourceGroupName, error) {
 		return ResourceGroupNameSpineAsn, nil
 	case resourceGroupNameLeafAsn:
 		return ResourceGroupNameLeafAsn, nil
+	case resourceGroupNameAccessAsn:
+		return ResourceGroupNameAccessAsn, nil
 	case resourceGroupNameSuperspineIps:
 		return ResourceGroupNameSuperspineIps, nil
 	case resourceGroupNameSpineIps:
 		return ResourceGroupNameSpineIps, nil
 	case resourceGroupNameLeafIps:
 		return ResourceGroupNameLeafIps, nil
+	case resourceGroupNameAccessIps:
+		return ResourceGroupNameAccessIps, nil
 	case resourceGroupNameSuperspineSpineIps:
 		return ResourceGroupNameSuperspineSpineIps, nil
 	case resourceGroupNameSpineLeafIps:
 		return ResourceGroupNameSpineLeafIps, nil
+	case resourceGroupNameAccessAccessIps:
+		return ResourceGroupNameAccessAccessIps, nil
 	case resourceGroupNameMlagDomainSviSubnets:
 		return ResourceGroupNameMlagDomainSviSubnets, nil
+	case resourceGroupNameVtepIps:
+		return ResourceGroupNameVtepIps, nil
 	default:
 		return ResourceGroupNameUnknown, fmt.Errorf("unknown group name '%s'", o)
 	}
