@@ -6,8 +6,10 @@ package goapstra
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 )
@@ -534,7 +536,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			ExternalLinkCount:       0,
 		},
 		RackTypeIds: []ObjectId{"access_switch"},
-		RackTypeCounts: []RackTypeCounts{{
+		RackTypeCounts: []RackTypeCount{{
 			Count:      1,
 			RackTypeId: "access_switch",
 		}},
@@ -592,7 +594,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			ExternalLinkCount:       0,
 		},
 		RackTypeIds: []ObjectId{"access_switch"},
-		RackTypeCounts: []RackTypeCounts{{
+		RackTypeCounts: []RackTypeCount{{
 			Count:      1,
 			RackTypeId: "access_switch",
 		}},
@@ -623,7 +625,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 				LogicalDeviceId:    "AOS-4x40_8x10-1",
 			},
 			RackBasedTemplateIds: []ObjectId{rbtid},
-			RackBasedTemplateCounts: []RackBasedTemplateCounts{{
+			RackBasedTemplateCounts: []RackBasedTemplateCount{{
 				RackBasedTemplateId: rbtid,
 				Count:               1,
 			}},
@@ -642,7 +644,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 		}
 
 		log.Printf("testing createPodBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pbtid, err := client.client.createPodBasedTemplate(context.TODO(), &pbtr)
+		pbtid, err := client.client.CreatePodBasedTemplate(context.TODO(), &pbtr)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -685,7 +687,7 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 		MeshLinkCount: 1,
 		MeshLinkSpeed: "10G",
 		RackTypeIds:   []ObjectId{"L3_collapsed_acs"},
-		RackTypeCounts: []RackTypeCounts{{
+		RackTypeCounts: []RackTypeCount{{
 			RackTypeId: "L3_collapsed_acs",
 			Count:      1,
 		}},
@@ -771,6 +773,182 @@ func TestGetPodBasedTemplateByName(t *testing.T) {
 		}
 		if pbt.Data.DisplayName != name {
 			t.Fatalf("expected '%s', got '%s'", name, pbt.Data.DisplayName)
+		}
+	}
+}
+
+func TestGetTemplateType(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type testData struct {
+		templateId   ObjectId
+		templateType templateType
+	}
+
+	data := []testData{
+		{"pod1", templateTypeRackBased},
+		{"L2_superspine_multi_plane", templateTypePodBased},
+		{"L3_Collapsed_ACS", templateTypeL3Collapsed},
+	}
+
+	for clientName, client := range clients {
+		for _, d := range data {
+			log.Printf("testing getTemplateType(%s) against %s %s (%s)", d.templateType, client.clientType, clientName, client.client.ApiVersion())
+			ttype, err := client.client.getTemplateType(context.Background(), d.templateId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if ttype != d.templateType {
+				t.Fatalf("expected '%s', got '%s'", ttype.string(), d.templateType)
+			}
+		}
+	}
+}
+
+func TestGetTemplateIdsTypesByName(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	templateName := randString(10, "hex")
+	for clientName, client := range clients {
+		// fetch all template IDs
+		templateIds, err := client.client.listAllTemplateIds(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// choose a random template for cloning
+		cloneMeId := templateIds[rand.Intn(len(templateIds))]
+		cloneMeType, err := client.client.getTemplateType(context.Background(), cloneMeId)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("cloning template '%s' (%s) for this test", cloneMeId, cloneMeType)
+
+		cloneCount := rand.Intn(5) + 2
+		cloneIds := make([]ObjectId, cloneCount)
+		for i := 0; i < cloneCount; i++ {
+			switch cloneMeType {
+			case templateTypeRackBased:
+				cloneMe, err := client.client.getRackBasedTemplate(context.Background(), cloneMeId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				id, err := client.client.createRackBasedTemplate(context.Background(), &rawCreateRackBasedTemplateRequest{
+					Type:                   cloneMe.Type,
+					DisplayName:            templateName,
+					Capability:             cloneMe.Capability,
+					Spine:                  cloneMe.Spine,
+					RackTypes:              cloneMe.RackTypes,
+					RackTypeCounts:         cloneMe.RackTypeCounts,
+					DhcpServiceIntent:      cloneMe.DhcpServiceIntent,
+					AntiAffinityPolicy:     cloneMe.AntiAffinityPolicy,
+					AsnAllocationPolicy:    cloneMe.AsnAllocationPolicy,
+					FabricAddressingPolicy: cloneMe.FabricAddressingPolicy,
+					VirtualNetworkPolicy:   cloneMe.VirtualNetworkPolicy,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				cloneIds[i] = id
+			case templateTypePodBased:
+				cloneMe, err := client.client.getPodBasedTemplate(context.Background(), cloneMeId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				id, err := client.client.createPodBasedTemplate(context.Background(), &rawCreatePodBasedTemplateRequest{
+					Type:                    cloneMe.Type,
+					DisplayName:             templateName,
+					Capability:              cloneMe.Capability,
+					Superspine:              cloneMe.Superspine,
+					RackBasedTemplates:      cloneMe.RackBasedTemplates,
+					RackBasedTemplateCounts: cloneMe.RackBasedTemplateCounts,
+					AntiAffinityPolicy:      cloneMe.AntiAffinityPolicy,
+					FabricAddressingPolicy:  cloneMe.FabricAddressingPolicy,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				cloneIds[i] = id
+			case templateTypeL3Collapsed:
+				cloneMe, err := client.client.getL3CollapsedTemplate(context.Background(), cloneMeId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				id, err := client.client.createL3CollapsedTemplate(context.Background(), &rawCreateL3CollapsedTemplateRequest{
+					Type:                 cloneMe.Type,
+					DisplayName:          templateName,
+					Capability:           cloneMe.Capability,
+					MeshLinkCount:        cloneMe.MeshLinkCount,
+					MeshLinkSpeed:        *cloneMe.MeshLinkSpeed,
+					RackTypes:            cloneMe.RackTypes,
+					RackTypeCounts:       cloneMe.RackTypeCounts,
+					DhcpServiceIntent:    cloneMe.DhcpServiceIntent,
+					AntiAffinityPolicy:   cloneMe.AntiAffinityPolicy,
+					VirtualNetworkPolicy: cloneMe.VirtualNetworkPolicy,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				cloneIds[i] = id
+			}
+		}
+		clones := make([]string, len(cloneIds))
+		for i, clone := range cloneIds {
+			clones[i] = string(clone)
+		}
+		log.Printf("clone IDs: '%s'", strings.Join(clones, ", "))
+
+		log.Printf("testing getTemplateIdsTypesByName(%s) against %s %s (%s)", templateName, client.clientType, clientName, client.client.ApiVersion())
+		templateIdsToType, err := client.client.getTemplateIdsTypesByName(context.Background(), templateName)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cloneCount != len(templateIdsToType) {
+			t.Fatalf("expected %d, got %d", cloneCount, len(templateIdsToType))
+		}
+		for _, v := range templateIdsToType {
+			parsed, err := cloneMeType.parse()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if parsed != v.Int() {
+				t.Fatalf("expected %d, got %d", parsed, v.Int())
+			}
+		}
+
+		_, _, err = client.client.getTemplateIdTypeByName(context.Background(), templateName)
+		var ace ApstraClientErr
+		if err == nil || !errors.As(err, &ace) || ace.errType != ErrMultipleMatch {
+			t.Fatal("this should have produced a multiple match error")
+		}
+
+		for i, cloneId := range cloneIds {
+			if i+1 == len(cloneIds) { // last one before they're all deleted
+				log.Printf("testing getTemplateIdTypeByName(%s) against %s %s (%s)", templateName, client.clientType, clientName, client.client.ApiVersion())
+				tId, tType, err := client.client.getTemplateIdTypeByName(context.Background(), templateName)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if cloneId != tId {
+					t.Fatalf("expected template id '%s', got '%s'", cloneIds, tId)
+				}
+				if cloneMeType != templateType(tType.String()) {
+					t.Fatalf("expected template type '%s', got '%s'", cloneMeType, tType.String())
+				}
+
+			}
+			log.Printf("deleting clone '%s'", cloneId)
+			err = client.client.deleteTemplate(context.Background(), cloneId)
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 }

@@ -1005,7 +1005,11 @@ func (o *Client) GetL3CollapsedTemplateByName(ctx context.Context, name string) 
 
 // CreateRackBasedTemplate creates a template based on the supplied CreateRackBasedTempalteRequest
 func (o *Client) CreateRackBasedTemplate(ctx context.Context, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
-	return o.createRackBasedTemplate(ctx, in)
+	raw, err := in.raw(ctx, o)
+	if err != nil {
+		return "", fmt.Errorf("error preparing template request - %w", err)
+	}
+	return o.createRackBasedTemplate(ctx, raw)
 }
 
 // UpdateRackBasedTemplate updates a template based on the supplied CreateRackBasedTempalteRequest
@@ -1015,7 +1019,11 @@ func (o *Client) UpdateRackBasedTemplate(ctx context.Context, id ObjectId, in *C
 
 // CreatePodBasedTemplate creates a template based on the supplied CreatePodBasedTempalteRequest
 func (o *Client) CreatePodBasedTemplate(ctx context.Context, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
-	return o.createPodBasedTemplate(ctx, in)
+	raw, err := in.raw(ctx, o)
+	if err != nil {
+		return "", fmt.Errorf("error preparing template request - %w", err)
+	}
+	return o.createPodBasedTemplate(ctx, raw)
 }
 
 // UpdatePodBasedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
@@ -1025,7 +1033,11 @@ func (o *Client) UpdatePodBasedTemplate(ctx context.Context, id ObjectId, in *Cr
 
 // CreateL3CollapsedTemplate creates a template based on the supplied CreateL3CollapsedTemplateRequest
 func (o *Client) CreateL3CollapsedTemplate(ctx context.Context, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
-	return o.createL3CollapsedTemplate(ctx, in)
+	raw, err := in.raw(ctx, o)
+	if err != nil {
+		return "", fmt.Errorf("error preparing template request - %w", err)
+	}
+	return o.createL3CollapsedTemplate(ctx, raw)
 }
 
 // UpdateL3CollapsedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
@@ -1162,6 +1174,32 @@ func (o *Client) DeleteDeviceProfile(ctx context.Context, id ObjectId) error {
 	return o.deleteDeviceProfile(ctx, id)
 }
 
+// ServerName returns the hostname (or IP address string) by which the client
+// knows the Apstra server. It's mostly useful when setting up streaming event
+// receivers.
 func (o *Client) ServerName() string {
 	return o.baseUrl.Host
+}
+
+// GetTemplateType returns the TemplateType of the template known by id
+func (o *Client) GetTemplateType(ctx context.Context, id ObjectId) (TemplateType, error) {
+	t, err := o.getTemplateType(ctx, id)
+	if err != nil {
+		return -1, err
+	}
+	T, err := t.parse()
+	return TemplateType(T), err
+}
+
+// GetTemplateIdsTypesByName returns map[ObjectId]TemplateType including all
+// templates with the desired name found in the apstra global catalog.
+func (o *Client) GetTemplateIdsTypesByName(ctx context.Context, desired string) (map[ObjectId]TemplateType, error) {
+	return o.getTemplateIdsTypesByName(ctx, desired)
+}
+
+// GetTemplateIdTypeByName returns the ObjectId and TemplateType of the single
+// template in the apstra global catalog which uses the name 'desired'. If
+// zero templates or more than 1 templates use the name, an error is returned.
+func (o *Client) GetTemplateIdTypeByName(ctx context.Context, desired string) (ObjectId, TemplateType, error) {
+	return o.getTemplateIdTypeByName(ctx, desired)
 }
