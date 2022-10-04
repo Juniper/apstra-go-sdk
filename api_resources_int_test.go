@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"net"
 	"sort"
 	"testing"
 	"time"
@@ -435,129 +434,6 @@ func TestListVniPoolIds(t *testing.T) {
 		}
 		if len(poolIds) == 0 {
 			t.Fatal("no pool IDs on this system?")
-		}
-	}
-}
-
-func TestListIpPools(t *testing.T) {
-	clients, err := getTestClients()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		log.Printf("testing listIp4PoolIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		poolIds, err := client.client.listIp4PoolIds(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(poolIds) <= 0 {
-			t.Fatalf("only got %d pools", len(poolIds))
-		}
-	}
-}
-
-func TestGetAllIpPools(t *testing.T) {
-	clients, err := getTestClients()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		log.Printf("testing getIp4Pools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pools, err := client.client.getIp4Pools(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(pools) <= 0 {
-			t.Fatalf("only got %d pools", len(pools))
-		}
-		log.Printf("pool count: %d", len(pools))
-	}
-}
-
-func TestGetIp4PoolByName(t *testing.T) {
-	clients, err := getTestClients()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		log.Printf("testing getIp4Pools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pools, err := client.client.getIp4Pools(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		poolNames := make(map[string]struct{})
-		for _, p := range pools {
-			poolNames[p.DisplayName] = struct{}{}
-		}
-
-		delete(poolNames, "")
-		for name := range poolNames {
-			log.Printf("testing getIp4PoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			pool, err := client.client.getIp4PoolByName(context.TODO(), name)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if pool.Used == pool.Total {
-				log.Fatal("every IP in the pool is in use? seems unlikely.")
-			}
-
-			for _, subnet := range pool.Subnets {
-				if subnet.Used == subnet.Total {
-					log.Fatal("every IP in the subnet is in use? seems unlikely.")
-				}
-			}
-		}
-	}
-}
-
-func TestCreateGetDeleteIp4Pool(t *testing.T) {
-	clients, err := getTestClients()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		log.Printf("testing createIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.createIp4Pool(context.TODO(), &NewIp4PoolRequest{
-			DisplayName: randString(10, "hex"),
-			Tags:        []string{"tag one", "tag two"},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		_, s, err := net.ParseCIDR("10.1.2.3/24")
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing addSubnetToIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.addSubnetToIp4Pool(context.TODO(), id, s)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing getIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pool, err := client.client.getIp4Pool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(pool.Id, pool.Total)
-
-		log.Printf("testing deleteSubnetFromIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteSubnetFromIp4Pool(context.TODO(), id, s)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteIp4Pool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
 		}
 	}
 }
