@@ -27,8 +27,7 @@ const (
 )
 
 const (
-	x = ResourceGroupName(iota)
-	ResourceGroupNameSuperspineAsn
+	ResourceGroupNameSuperspineAsn = ResourceGroupName(iota)
 	ResourceGroupNameSpineAsn
 	ResourceGroupNameLeafAsn
 	ResourceGroupNameSuperspineIps
