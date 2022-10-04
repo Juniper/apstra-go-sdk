@@ -27,19 +27,39 @@ const (
 )
 
 const (
-	ResourceGroupNameLeafAsn = ResourceGroupName(iota)
-	ResourceGroupNameLeafIps
-	ResourceGroupNameLinkIps
+	ResourceGroupNameSuperspineAsn = ResourceGroupName(iota)
 	ResourceGroupNameSpineAsn
-	ResourceGroupNameSpineIps
+	ResourceGroupNameLeafAsn
+	ResourceGroupNameAccessAsn
+	ResourceGroupNameSuperspineIp4
+	ResourceGroupNameSpineIp4
+	ResourceGroupNameLeafIp4
+	ResourceGroupNameAccessIp4
+	ResourceGroupNameSuperspineSpineIp4
+	ResourceGroupNameSuperspineSpineIp6
+	ResourceGroupNameSpineLeafIp4
+	ResourceGroupNameSpineLeafIp6
+	ResourceGroupNameAccessAccessIps
+	ResourceGroupNameMlagDomainSviSubnets
+	ResourceGroupNameVtepIps
 	ResourceGroupNameUnknown
 
-	resourceGroupNameLeafAsn  = resourceGroupName("leaf_asns")
-	resourceGroupNameLeafIps  = resourceGroupName("leaf_loopback_ips")
-	resourceGroupNameLinkIps  = resourceGroupName("spine_leaf_link_ips")
-	resourceGroupNameSpineAsn = resourceGroupName("spine_asns")
-	resourceGroupNameSpineIps = resourceGroupName("spine_loopback_ips")
-	resourceGroupNameUnknown  = "group name %d unknown"
+	resourceGroupNameSuperspineAsn        = resourceGroupName("superspine_asns")
+	resourceGroupNameSpineAsn             = resourceGroupName("spine_asns")
+	resourceGroupNameLeafAsn              = resourceGroupName("leaf_asns")
+	resourceGroupNameAccessAsn            = resourceGroupName("access_asns")
+	resourceGroupNameSuperspineIp4        = resourceGroupName("superspine_loopback_ips")
+	resourceGroupNameSpineIp4             = resourceGroupName("spine_loopback_ips")
+	resourceGroupNameLeafIp4              = resourceGroupName("leaf_loopback_ips")
+	resourceGroupNameAccessIp4            = resourceGroupName("access_loopback_ips")
+	resourceGroupNameSuperspineSpineIp4   = resourceGroupName("spine_superspine_link_ips")
+	resourceGroupNameSuperspineSpineIp6   = resourceGroupName("ipv6_spine_superspine_link_ips")
+	resourceGroupNameSpineLeafIp4         = resourceGroupName("spine_leaf_link_ips")
+	resourceGroupNameSpineLeafIp6         = resourceGroupName("ipv6_spine_leaf_link_ips")
+	resourceGroupNameMlagDomainSviSubnets = resourceGroupName("mlag_domain_svi_subnets")
+	resourceGroupNameAccessAccessIps      = resourceGroupName("access_l3_peer_link_link_ips")
+	resourceGroupNameVtepIps              = resourceGroupName("vtep_ips")
+	resourceGroupNameUnknown              = "group name %d unknown"
 )
 
 type ResourceGroupName int
@@ -50,16 +70,36 @@ func (o ResourceGroupName) String() string {
 
 func (o ResourceGroupName) raw() resourceGroupName {
 	switch o {
-	case ResourceGroupNameLeafAsn:
-		return resourceGroupNameLeafAsn
-	case ResourceGroupNameLeafIps:
-		return resourceGroupNameLeafIps
-	case ResourceGroupNameLinkIps:
-		return resourceGroupNameLinkIps
+	case ResourceGroupNameSuperspineAsn:
+		return resourceGroupNameSuperspineAsn
 	case ResourceGroupNameSpineAsn:
 		return resourceGroupNameSpineAsn
-	case ResourceGroupNameSpineIps:
-		return resourceGroupNameSpineIps
+	case ResourceGroupNameLeafAsn:
+		return resourceGroupNameLeafAsn
+	case ResourceGroupNameAccessAsn:
+		return resourceGroupNameAccessAsn
+	case ResourceGroupNameSuperspineIp4:
+		return resourceGroupNameSuperspineIp4
+	case ResourceGroupNameSpineIp4:
+		return resourceGroupNameSpineIp4
+	case ResourceGroupNameLeafIp4:
+		return resourceGroupNameLeafIp4
+	case ResourceGroupNameAccessIp4:
+		return resourceGroupNameAccessIp4
+	case ResourceGroupNameSuperspineSpineIp4:
+		return resourceGroupNameSuperspineSpineIp4
+	case ResourceGroupNameSuperspineSpineIp6:
+		return resourceGroupNameSuperspineSpineIp6
+	case ResourceGroupNameSpineLeafIp4:
+		return resourceGroupNameSpineLeafIp4
+	case ResourceGroupNameSpineLeafIp6:
+		return resourceGroupNameSpineLeafIp6
+	case ResourceGroupNameAccessAccessIps:
+		return resourceGroupNameAccessAccessIps
+	case ResourceGroupNameMlagDomainSviSubnets:
+		return resourceGroupNameMlagDomainSviSubnets
+	case ResourceGroupNameVtepIps:
+		return resourceGroupNameVtepIps
 	default:
 		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
@@ -69,16 +109,32 @@ type resourceGroupName string
 
 func (o resourceGroupName) parse() (ResourceGroupName, error) {
 	switch o {
-	case resourceGroupNameLeafAsn:
-		return ResourceGroupNameLeafAsn, nil
-	case resourceGroupNameLeafIps:
-		return ResourceGroupNameLeafIps, nil
-	case resourceGroupNameLinkIps:
-		return ResourceGroupNameLinkIps, nil
+	case resourceGroupNameSuperspineAsn:
+		return ResourceGroupNameSuperspineAsn, nil
 	case resourceGroupNameSpineAsn:
 		return ResourceGroupNameSpineAsn, nil
-	case resourceGroupNameSpineIps:
-		return ResourceGroupNameSpineIps, nil
+	case resourceGroupNameLeafAsn:
+		return ResourceGroupNameLeafAsn, nil
+	case resourceGroupNameAccessAsn:
+		return ResourceGroupNameAccessAsn, nil
+	case resourceGroupNameSuperspineIp4:
+		return ResourceGroupNameSuperspineIp4, nil
+	case resourceGroupNameSpineIp4:
+		return ResourceGroupNameSpineIp4, nil
+	case resourceGroupNameLeafIp4:
+		return ResourceGroupNameLeafIp4, nil
+	case resourceGroupNameAccessIp4:
+		return ResourceGroupNameAccessIp4, nil
+	case resourceGroupNameSuperspineSpineIp4:
+		return ResourceGroupNameSuperspineSpineIp4, nil
+	case resourceGroupNameSpineLeafIp4:
+		return ResourceGroupNameSpineLeafIp4, nil
+	case resourceGroupNameAccessAccessIps:
+		return ResourceGroupNameAccessAccessIps, nil
+	case resourceGroupNameMlagDomainSviSubnets:
+		return ResourceGroupNameMlagDomainSviSubnets, nil
+	case resourceGroupNameVtepIps:
+		return ResourceGroupNameVtepIps, nil
 	default:
 		return ResourceGroupNameUnknown, fmt.Errorf("unknown group name '%s'", o)
 	}
