@@ -43,7 +43,7 @@ const (
 	resourceGroupNameSuperspineIps      = resourceGroupName("superspine_loopback_ips")
 	resourceGroupNameSpineIps           = resourceGroupName("spine_loopback_ips")
 	resourceGroupNameLeafIps            = resourceGroupName("leaf_loopback_ips")
-	resourceGroupNameSuperspineSpineIps = resourceGroupName("superspine_spine_link_ips")
+	resourceGroupNameSuperspineSpineIps = resourceGroupName("spine_superspine_link_ips")
 	resourceGroupNameSpineLeafIps       = resourceGroupName("spine_leaf_link_ips")
 	resourceGroupNameUnknown            = "group name %d unknown"
 )
