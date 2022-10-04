@@ -43,7 +43,7 @@ const (
 	resourceGroupNameSuperspineIps      = resourceGroupName("superspine_loopback_ips")
 	resourceGroupNameSpineIps           = resourceGroupName("spine_loopback_ips")
 	resourceGroupNameLeafIps            = resourceGroupName("leaf_loopback_ips")
-	resourceGroupNameSuperspineSpineIps = resourceGroupName("spine_leaf_link_ips")
+	resourceGroupNameSuperspineSpineIps = resourceGroupName("superspine_spine_link_ips")
 	resourceGroupNameSpineLeafIps       = resourceGroupName("spine_leaf_link_ips")
 	resourceGroupNameUnknown            = "group name %d unknown"
 )
@@ -81,16 +81,22 @@ type resourceGroupName string
 
 func (o resourceGroupName) parse() (ResourceGroupName, error) {
 	switch o {
-	case resourceGroupNameLeafAsn:
-		return ResourceGroupNameLeafAsn, nil
-	case resourceGroupNameLeafIps:
-		return ResourceGroupNameLeafIps, nil
-	case resourceGroupNameSpineLeafIps:
-		return ResourceGroupNameSpineLeafIps, nil
+	case resourceGroupNameSuperspineAsn:
+		return ResourceGroupNameSuperspineAsn, nil
 	case resourceGroupNameSpineAsn:
 		return ResourceGroupNameSpineAsn, nil
+	case resourceGroupNameLeafAsn:
+		return ResourceGroupNameLeafAsn, nil
+	case resourceGroupNameSuperspineIps:
+		return ResourceGroupNameSuperspineIps, nil
 	case resourceGroupNameSpineIps:
 		return ResourceGroupNameSpineIps, nil
+	case resourceGroupNameLeafIps:
+		return ResourceGroupNameLeafIps, nil
+	case resourceGroupNameSuperspineSpineIps:
+		return ResourceGroupNameSuperspineSpineIps, nil
+	case resourceGroupNameSpineLeafIps:
+		return ResourceGroupNameSpineLeafIps, nil
 	default:
 		return ResourceGroupNameUnknown, fmt.Errorf("unknown group name '%s'", o)
 	}
