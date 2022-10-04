@@ -31,14 +31,14 @@ const (
 	ResourceGroupNameSpineAsn
 	ResourceGroupNameLeafAsn
 	ResourceGroupNameAccessAsn
-	ResourceGroupNameSuperspineIps
-	ResourceGroupNameSpineIps
-	ResourceGroupNameLeafIps
-	ResourceGroupNameAccessIps
-	ResourceGroupNameSuperspineSpineIps
-	ResourceGroupNameSuperspineSpine6Ips
-	ResourceGroupNameSpineLeafIps
-	ResourceGroupNameSpineLeaf6Ips
+	ResourceGroupNameSuperspineIp4
+	ResourceGroupNameSpineIp4
+	ResourceGroupNameLeafIp4
+	ResourceGroupNameAccessIp4
+	ResourceGroupNameSuperspineSpineIp4
+	ResourceGroupNameSuperspineSpineIp6
+	ResourceGroupNameSpineLeafIp4
+	ResourceGroupNameSpineLeafIp6
 	ResourceGroupNameAccessAccessIps
 	ResourceGroupNameMlagDomainSviSubnets
 	ResourceGroupNameVtepIps
@@ -48,14 +48,14 @@ const (
 	resourceGroupNameSpineAsn             = resourceGroupName("spine_asns")
 	resourceGroupNameLeafAsn              = resourceGroupName("leaf_asns")
 	resourceGroupNameAccessAsn            = resourceGroupName("access_asns")
-	resourceGroupNameSuperspineIps        = resourceGroupName("superspine_loopback_ips")
-	resourceGroupNameSpineIps             = resourceGroupName("spine_loopback_ips")
-	resourceGroupNameLeafIps              = resourceGroupName("leaf_loopback_ips")
-	resourceGroupNameAccessIps            = resourceGroupName("access_loopback_ips")
-	resourceGroupNameSuperspineSpineIps   = resourceGroupName("spine_superspine_link_ips")
-	resourceGroupNameSuperspineSpine6Ips  = resourceGroupName("ipv6_spine_superspine_link_ips")
-	resourceGroupNameSpineLeafIps         = resourceGroupName("spine_leaf_link_ips")
-	resourceGroupNameSpineLeaf6Ips        = resourceGroupName("ipv6_spine_leaf_link_ips")
+	resourceGroupNameSuperspineIp4        = resourceGroupName("superspine_loopback_ips")
+	resourceGroupNameSpineIp4             = resourceGroupName("spine_loopback_ips")
+	resourceGroupNameLeafIp4              = resourceGroupName("leaf_loopback_ips")
+	resourceGroupNameAccessIp4            = resourceGroupName("access_loopback_ips")
+	resourceGroupNameSuperspineSpineIp4   = resourceGroupName("spine_superspine_link_ips")
+	resourceGroupNameSuperspineSpineIp6   = resourceGroupName("ipv6_spine_superspine_link_ips")
+	resourceGroupNameSpineLeafIp4         = resourceGroupName("spine_leaf_link_ips")
+	resourceGroupNameSpineLeafIp6         = resourceGroupName("ipv6_spine_leaf_link_ips")
 	resourceGroupNameMlagDomainSviSubnets = resourceGroupName("mlag_domain_svi_subnets")
 	resourceGroupNameAccessAccessIps      = resourceGroupName("access_l3_peer_link_link_ips")
 	resourceGroupNameVtepIps              = resourceGroupName("vtep_ips")
@@ -78,22 +78,22 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameLeafAsn
 	case ResourceGroupNameAccessAsn:
 		return resourceGroupNameAccessAsn
-	case ResourceGroupNameSuperspineIps:
-		return resourceGroupNameSuperspineIps
-	case ResourceGroupNameSpineIps:
-		return resourceGroupNameSpineIps
-	case ResourceGroupNameLeafIps:
-		return resourceGroupNameLeafIps
-	case ResourceGroupNameAccessIps:
-		return resourceGroupNameAccessIps
-	case ResourceGroupNameSuperspineSpineIps:
-		return resourceGroupNameSuperspineSpineIps
-	case ResourceGroupNameSuperspineSpine6Ips:
-		return resourceGroupNameSuperspineSpine6Ips
-	case ResourceGroupNameSpineLeafIps:
-		return resourceGroupNameSpineLeafIps
-	case ResourceGroupNameSpineLeaf6Ips:
-		return resourceGroupNameSpineLeaf6Ips
+	case ResourceGroupNameSuperspineIp4:
+		return resourceGroupNameSuperspineIp4
+	case ResourceGroupNameSpineIp4:
+		return resourceGroupNameSpineIp4
+	case ResourceGroupNameLeafIp4:
+		return resourceGroupNameLeafIp4
+	case ResourceGroupNameAccessIp4:
+		return resourceGroupNameAccessIp4
+	case ResourceGroupNameSuperspineSpineIp4:
+		return resourceGroupNameSuperspineSpineIp4
+	case ResourceGroupNameSuperspineSpineIp6:
+		return resourceGroupNameSuperspineSpineIp6
+	case ResourceGroupNameSpineLeafIp4:
+		return resourceGroupNameSpineLeafIp4
+	case ResourceGroupNameSpineLeafIp6:
+		return resourceGroupNameSpineLeafIp6
 	case ResourceGroupNameAccessAccessIps:
 		return resourceGroupNameAccessAccessIps
 	case ResourceGroupNameMlagDomainSviSubnets:
@@ -117,18 +117,18 @@ func (o resourceGroupName) parse() (ResourceGroupName, error) {
 		return ResourceGroupNameLeafAsn, nil
 	case resourceGroupNameAccessAsn:
 		return ResourceGroupNameAccessAsn, nil
-	case resourceGroupNameSuperspineIps:
-		return ResourceGroupNameSuperspineIps, nil
-	case resourceGroupNameSpineIps:
-		return ResourceGroupNameSpineIps, nil
-	case resourceGroupNameLeafIps:
-		return ResourceGroupNameLeafIps, nil
-	case resourceGroupNameAccessIps:
-		return ResourceGroupNameAccessIps, nil
-	case resourceGroupNameSuperspineSpineIps:
-		return ResourceGroupNameSuperspineSpineIps, nil
-	case resourceGroupNameSpineLeafIps:
-		return ResourceGroupNameSpineLeafIps, nil
+	case resourceGroupNameSuperspineIp4:
+		return ResourceGroupNameSuperspineIp4, nil
+	case resourceGroupNameSpineIp4:
+		return ResourceGroupNameSpineIp4, nil
+	case resourceGroupNameLeafIp4:
+		return ResourceGroupNameLeafIp4, nil
+	case resourceGroupNameAccessIp4:
+		return ResourceGroupNameAccessIp4, nil
+	case resourceGroupNameSuperspineSpineIp4:
+		return ResourceGroupNameSuperspineSpineIp4, nil
+	case resourceGroupNameSpineLeafIp4:
+		return ResourceGroupNameSpineLeafIp4, nil
 	case resourceGroupNameAccessAccessIps:
 		return ResourceGroupNameAccessAccessIps, nil
 	case resourceGroupNameMlagDomainSviSubnets:
