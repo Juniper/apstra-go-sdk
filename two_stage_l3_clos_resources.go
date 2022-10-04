@@ -35,17 +35,19 @@ const (
 	ResourceGroupNameLeafIps
 	ResourceGroupNameSuperspineSpineIps
 	ResourceGroupNameSpineLeafIps
+	ResourceGroupNameMlagDomainSviSubnets
 	ResourceGroupNameUnknown
 
-	resourceGroupNameSuperspineAsn      = resourceGroupName("superspine_asns")
-	resourceGroupNameSpineAsn           = resourceGroupName("spine_asns")
-	resourceGroupNameLeafAsn            = resourceGroupName("leaf_asns")
-	resourceGroupNameSuperspineIps      = resourceGroupName("superspine_loopback_ips")
-	resourceGroupNameSpineIps           = resourceGroupName("spine_loopback_ips")
-	resourceGroupNameLeafIps            = resourceGroupName("leaf_loopback_ips")
-	resourceGroupNameSuperspineSpineIps = resourceGroupName("spine_superspine_link_ips")
-	resourceGroupNameSpineLeafIps       = resourceGroupName("spine_leaf_link_ips")
-	resourceGroupNameUnknown            = "group name %d unknown"
+	resourceGroupNameSuperspineAsn        = resourceGroupName("superspine_asns")
+	resourceGroupNameSpineAsn             = resourceGroupName("spine_asns")
+	resourceGroupNameLeafAsn              = resourceGroupName("leaf_asns")
+	resourceGroupNameSuperspineIps        = resourceGroupName("superspine_loopback_ips")
+	resourceGroupNameSpineIps             = resourceGroupName("spine_loopback_ips")
+	resourceGroupNameLeafIps              = resourceGroupName("leaf_loopback_ips")
+	resourceGroupNameSuperspineSpineIps   = resourceGroupName("spine_superspine_link_ips")
+	resourceGroupNameSpineLeafIps         = resourceGroupName("spine_leaf_link_ips")
+	resourceGroupNameMlagDomainSviSubnets = resourceGroupName("mlag_domain_svi_subnets")
+	resourceGroupNameUnknown              = "group name %d unknown"
 )
 
 type ResourceGroupName int
@@ -72,6 +74,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameSuperspineSpineIps
 	case ResourceGroupNameSpineLeafIps:
 		return resourceGroupNameSpineLeafIps
+	case ResourceGroupNameMlagDomainSviSubnets:
+		return resourceGroupNameMlagDomainSviSubnets
 	default:
 		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
@@ -97,6 +101,8 @@ func (o resourceGroupName) parse() (ResourceGroupName, error) {
 		return ResourceGroupNameSuperspineSpineIps, nil
 	case resourceGroupNameSpineLeafIps:
 		return ResourceGroupNameSpineLeafIps, nil
+	case resourceGroupNameMlagDomainSviSubnets:
+		return ResourceGroupNameMlagDomainSviSubnets, nil
 	default:
 		return ResourceGroupNameUnknown, fmt.Errorf("unknown group name '%s'", o)
 	}
