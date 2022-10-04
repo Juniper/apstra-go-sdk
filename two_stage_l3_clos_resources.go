@@ -27,19 +27,26 @@ const (
 )
 
 const (
-	ResourceGroupNameLeafAsn = ResourceGroupName(iota)
-	ResourceGroupNameLeafIps
-	ResourceGroupNameLinkIps
+	x = ResourceGroupName(iota)
+	ResourceGroupNameSuperspineAsn
 	ResourceGroupNameSpineAsn
+	ResourceGroupNameLeafAsn
+	ResourceGroupNameSuperspineIps
 	ResourceGroupNameSpineIps
+	ResourceGroupNameLeafIps
+	ResourceGroupNameSuperspineSpineIps
+	ResourceGroupNameSpineLeafIps
 	ResourceGroupNameUnknown
 
-	resourceGroupNameLeafAsn  = resourceGroupName("leaf_asns")
-	resourceGroupNameLeafIps  = resourceGroupName("leaf_loopback_ips")
-	resourceGroupNameLinkIps  = resourceGroupName("spine_leaf_link_ips")
-	resourceGroupNameSpineAsn = resourceGroupName("spine_asns")
-	resourceGroupNameSpineIps = resourceGroupName("spine_loopback_ips")
-	resourceGroupNameUnknown  = "group name %d unknown"
+	resourceGroupNameSuperspineAsn      = resourceGroupName("superspine_asns")
+	resourceGroupNameSpineAsn           = resourceGroupName("spine_asns")
+	resourceGroupNameLeafAsn            = resourceGroupName("leaf_asns")
+	resourceGroupNameSuperspineIps      = resourceGroupName("superspine_loopback_ips")
+	resourceGroupNameSpineIps           = resourceGroupName("spine_loopback_ips")
+	resourceGroupNameLeafIps            = resourceGroupName("leaf_loopback_ips")
+	resourceGroupNameSuperspineSpineIps = resourceGroupName("spine_leaf_link_ips")
+	resourceGroupNameSpineLeafIps       = resourceGroupName("spine_leaf_link_ips")
+	resourceGroupNameUnknown            = "group name %d unknown"
 )
 
 type ResourceGroupName int
@@ -50,16 +57,22 @@ func (o ResourceGroupName) String() string {
 
 func (o ResourceGroupName) raw() resourceGroupName {
 	switch o {
-	case ResourceGroupNameLeafAsn:
-		return resourceGroupNameLeafAsn
-	case ResourceGroupNameLeafIps:
-		return resourceGroupNameLeafIps
-	case ResourceGroupNameLinkIps:
-		return resourceGroupNameLinkIps
+	case ResourceGroupNameSuperspineAsn:
+		return resourceGroupNameSuperspineAsn
 	case ResourceGroupNameSpineAsn:
 		return resourceGroupNameSpineAsn
+	case ResourceGroupNameLeafAsn:
+		return resourceGroupNameLeafAsn
+	case ResourceGroupNameSuperspineIps:
+		return resourceGroupNameSuperspineIps
 	case ResourceGroupNameSpineIps:
 		return resourceGroupNameSpineIps
+	case ResourceGroupNameLeafIps:
+		return resourceGroupNameLeafIps
+	case ResourceGroupNameSuperspineSpineIps:
+		return resourceGroupNameSuperspineSpineIps
+	case ResourceGroupNameSpineLeafIps:
+		return resourceGroupNameSpineLeafIps
 	default:
 		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
@@ -73,8 +86,8 @@ func (o resourceGroupName) parse() (ResourceGroupName, error) {
 		return ResourceGroupNameLeafAsn, nil
 	case resourceGroupNameLeafIps:
 		return ResourceGroupNameLeafIps, nil
-	case resourceGroupNameLinkIps:
-		return ResourceGroupNameLinkIps, nil
+	case resourceGroupNameSpineLeafIps:
+		return ResourceGroupNameSpineLeafIps, nil
 	case resourceGroupNameSpineAsn:
 		return ResourceGroupNameSpineAsn, nil
 	case resourceGroupNameSpineIps:
