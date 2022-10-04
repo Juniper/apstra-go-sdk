@@ -34,8 +34,7 @@ const (
 	clientAuthTokenMutex = iota
 	clientApiResourceAsnPoolRangeMutex
 	clientApiResourceVniPoolRangeMutex
-	clientApiResourceIp4PoolRangeMutex
-	clientApiResourceIp6PoolRangeMutex
+	clientApiResourceIpPoolRangeMutex
 )
 
 type ApstraClientErr struct {
@@ -617,55 +616,147 @@ func (o *Client) DeleteBlueprint(ctx context.Context, id ObjectId) error {
 }
 
 // CreateIp4Pool creates an IPv4 resource pool
-func (o *Client) CreateIp4Pool(ctx context.Context, in *NewIp4PoolRequest) (ObjectId, error) {
-	return o.createIp4Pool(ctx, in)
+func (o *Client) CreateIp4Pool(ctx context.Context, in *NewIpPoolRequest) (ObjectId, error) {
+	return o.createIpPool(ctx, false, in)
 }
 
 // ListIp4PoolIds returns []ObjectId representing all IPv4 resource pools
 func (o *Client) ListIp4PoolIds(ctx context.Context) ([]ObjectId, error) {
-	return o.listIp4PoolIds(ctx)
+	return o.listIpPoolIds(ctx, apiUrlResourcesIp4Pools)
 }
 
 // GetIp4Pools returns all IPv4 pools configured on Apstra
-func (o *Client) GetIp4Pools(ctx context.Context) ([]Ip4Pool, error) {
-	return o.getIp4Pools(ctx)
+func (o *Client) GetIp4Pools(ctx context.Context) ([]IpPool, error) {
+	pools, err := o.getIpPools(ctx, apiUrlResourcesIp4Pools)
+	if err != nil {
+		return nil, err
+	}
+	polished := make([]IpPool, len(pools))
+	for i, raw := range pools {
+		p, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		polished[i] = *p
+	}
+	return polished, nil
 }
 
 // GetIp4Pool returns an IPv4 resource pool
-func (o *Client) GetIp4Pool(ctx context.Context, poolId ObjectId) (*Ip4Pool, error) {
-	return o.getIp4Pool(ctx, poolId)
+func (o *Client) GetIp4Pool(ctx context.Context, poolId ObjectId) (*IpPool, error) {
+	raw, err := o.getIpPool(ctx, fmt.Sprintf(apiUrlResourcesIp4PoolById, poolId))
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // GetIp4PoolByName returns an IPv4 resource pool
-func (o *Client) GetIp4PoolByName(ctx context.Context, desiredName string) (*Ip4Pool, error) {
-	return o.getIp4PoolByName(ctx, desiredName)
+func (o *Client) GetIp4PoolByName(ctx context.Context, desiredName string) (*IpPool, error) {
+	raw, err := o.getIpPoolByName(ctx, apiUrlResourcesIp4Pools, desiredName)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // DeleteIp4Pool deletes the specified IPv4 resource pool
 func (o *Client) DeleteIp4Pool(ctx context.Context, id ObjectId) error {
-	return o.deleteIp4Pool(ctx, id)
+	return o.deleteIpPool(ctx, apiUrlResourcesIp4PoolById, id)
 }
 
-// UpdateIp4Pool updates (full replace) an existing IPv4 address pool using a NewIp4PoolRequest object
-func (o *Client) UpdateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIp4PoolRequest) error {
+// UpdateIp4Pool updates (full replace) an existing IPv4 address pool using a NewIpPoolRequest object
+func (o *Client) UpdateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIpPoolRequest) error {
 	// Ip4Pool "write" operations are not concurrency safe.
 	// It is important that this lock is performed in the public method, rather than the private
 	// one below, because other callers of the private method implement their own locking.
-	o.lock(clientApiResourceIp4PoolRangeMutex)
-	defer o.unlock(clientApiResourceIp4PoolRangeMutex)
-	return o.updateIp4Pool(ctx, poolId, request)
+	o.lock(clientApiResourceIpPoolRangeMutex)
+	defer o.unlock(clientApiResourceIpPoolRangeMutex)
+	return o.updateIpPool(ctx, fmt.Sprintf(apiUrlResourcesIp4PoolById, poolId), request)
 }
 
 // AddSubnetToIp4Pool adds a subnet to an IPv4 resource pool. Overlap with an existing subnet will
 // produce an error
 func (o *Client) AddSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *net.IPNet) error {
-	return o.addSubnetToIp4Pool(ctx, poolId, new)
+	return o.addSubnetToIpPool(ctx, poolId, new)
 }
 
 // DeleteSubnetFromIp4Pool deletes a subnet from an IPv4 resource pool. If the subnet does not exist,
 // an ApstraClientErr with type ErrNotfound will be returned.
 func (o *Client) DeleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
-	return o.deleteSubnetFromIp4Pool(ctx, poolId, target)
+	return o.deleteSubnetFromIpPool(ctx, poolId, target)
+}
+
+// CreateIp6Pool creates an IPv6 resource pool
+func (o *Client) CreateIp6Pool(ctx context.Context, in *NewIpPoolRequest) (ObjectId, error) {
+	return o.createIpPool(ctx, true, in)
+}
+
+// ListIp6PoolIds returns []ObjectId representing all IPv6 resource pools
+func (o *Client) ListIp6PoolIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listIpPoolIds(ctx, apiUrlResourcesIp6Pools)
+}
+
+// GetIp6Pools returns all IPv6 pools configured on Apstra
+func (o *Client) GetIp6Pools(ctx context.Context) ([]IpPool, error) {
+	pools, err := o.getIpPools(ctx, apiUrlResourcesIp6Pools)
+	if err != nil {
+		return nil, err
+	}
+	polished := make([]IpPool, len(pools))
+	for i, raw := range pools {
+		p, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		polished[i] = *p
+	}
+	return polished, nil
+}
+
+// GetIp6Pool returns an IPv6 resource pool
+func (o *Client) GetIp6Pool(ctx context.Context, poolId ObjectId) (*IpPool, error) {
+	raw, err := o.getIpPool(ctx, fmt.Sprintf(apiUrlResourcesIp6PoolById, poolId))
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
+}
+
+// GetIp6PoolByName returns an IPv6 resource pool
+func (o *Client) GetIp6PoolByName(ctx context.Context, desiredName string) (*IpPool, error) {
+	raw, err := o.getIpPoolByName(ctx, apiUrlResourcesIp6Pools, desiredName)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
+}
+
+// DeleteIp6Pool deletes the specified IPv6 resource pool
+func (o *Client) DeleteIp6Pool(ctx context.Context, id ObjectId) error {
+	return o.deleteIpPool(ctx, apiUrlResourcesIp6PoolById, id)
+}
+
+// UpdateIp6Pool updates (full replace) an existing IPv6 address pool using a NewIpPoolRequest object
+func (o *Client) UpdateIp6Pool(ctx context.Context, poolId ObjectId, request *NewIpPoolRequest) error {
+	// Ip6Pool "write" operations are not concurrency safe.
+	// It is important that this lock is performed in the public method, rather than the private
+	// one below, because other callers of the private method implement their own locking.
+	o.lock(clientApiResourceIpPoolRangeMutex)
+	defer o.unlock(clientApiResourceIpPoolRangeMutex)
+	return o.updateIpPool(ctx, fmt.Sprintf(apiUrlResourcesIp4PoolById, poolId), request)
+}
+
+// AddSubnetToIp6Pool adds a subnet to an IPv6 resource pool. Overlap with an existing subnet will
+// produce an error
+func (o *Client) AddSubnetToIp6Pool(ctx context.Context, poolId ObjectId, new *net.IPNet) error {
+	return o.addSubnetToIpPool(ctx, poolId, new)
+}
+
+// DeleteSubnetFromIp6Pool deletes a subnet from an IPv6 resource pool. If the subnet does not exist,
+// an ApstraClientErr with type ErrNotfound will be returned.
+func (o *Client) DeleteSubnetFromIp6Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
+	return o.deleteSubnetFromIpPool(ctx, poolId, target)
 }
 
 // ListLogicalDeviceIds returns a list of logical device IDs configured in Apstra
