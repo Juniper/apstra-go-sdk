@@ -58,6 +58,11 @@ type TwoStageL3ClosClient struct {
 	mutex       *TwoStageL3ClosMutex
 }
 
+// Id returns the client's Blueprint ID
+func (o *TwoStageL3ClosClient) Id() ObjectId {
+	return o.blueprintId
+}
+
 // GetResourceAllocation takes a *ResourceGroupAllocation as input for the
 // ResourceGroupAllocation.Type and ResourceGroupAllocation.Name fields (the
 // ResourceGroupAllocation.PoolIds is ignored). It returns a fully populated
