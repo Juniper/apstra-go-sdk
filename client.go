@@ -1080,19 +1080,6 @@ func (o *Client) DeleteInterfaceMap(ctx context.Context, id ObjectId) error {
 	return o.deleteInterfaceMap(ctx, id)
 }
 
-// GetNodes fetches the node of the specified type, unpacks the API response
-// into 'response'
-func (o *Client) GetNodes(ctx context.Context, blueprint ObjectId, nodeType NodeType, response interface{}) error {
-	return o.getNodes(ctx, blueprint, nodeType, response)
-}
-
-// PatchNode patches (only submitted fields are changed) the specified node
-// using the contents of 'request', the server's response (whole node info
-// without map wrapper?) is returned in 'response'
-func (o *Client) PatchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
-	return o.patchNode(ctx, blueprint, node, request, response)
-}
-
 // CreateRackType creates an Apstra Rack Type based on the contents of the
 // supplied RackTypeRequest.
 // Consistent with the Apstra UI and documentation, logical devices (switches,
