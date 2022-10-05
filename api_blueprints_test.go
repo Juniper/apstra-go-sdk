@@ -115,9 +115,14 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 			nodesB := struct {
 				Nodes map[string]metadataNode `json:"nodes"`
 			}{}
+
+			bp, err := client.client.NewTwoStageL3ClosClient(context.Background(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
 			// fetch all metadata nodes into nodesA
 			log.Printf("testing getNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.getNodes(context.TODO(), id, NodeTypeMetadata, &nodesA)
+			err = bp.GetNodes(context.TODO(), NodeTypeMetadata, &nodesA)
 			if err != nil {
 				t.Fatal()
 			}
@@ -136,7 +141,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 				req := metadataNode{Label: newName}
 				resp := &metadataNode{}
 				log.Printf("testing patchNode(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
-				err := client.client.patchNode(context.TODO(), id, nodeA.Id, req, resp)
+				err := bp.PatchNode(context.TODO(), nodeA.Id, req, resp)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -144,7 +149,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 
 				// fetch changed node(s) (still expecting one) into nodesB
 				log.Printf("testing getNodes(%s) against %s %s (%s)", id, client.clientType, clientName, client.client.ApiVersion())
-				err = client.client.getNodes(context.TODO(), id, NodeTypeMetadata, &nodesB)
+				err = bp.GetNodes(context.TODO(), NodeTypeMetadata, &nodesB)
 				if err != nil {
 					t.Fatal()
 				}
@@ -155,7 +160,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 
 				req = metadataNode{Label: nodeA.Label}
 				log.Printf("testing patchNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = client.client.patchNode(context.TODO(), id, nodeA.Id, req, resp)
+				err = bp.PatchNode(context.TODO(), nodeA.Id, req, resp)
 				if err != nil {
 					t.Fatal(err)
 				}
