@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -208,32 +206,12 @@ func (o *TwoStageL3ClosClient) GetLockInfo(ctx context.Context) (*LockInfo, erro
 // GetNodes fetches the node of the specified type, unpacks the API response
 // into 'response'
 func (o *TwoStageL3ClosClient) GetNodes(ctx context.Context, nodeType NodeType, response interface{}) error {
-	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintNodes, o.blueprintId))
-	if err != nil {
-		return err
-	}
-
-	if nodeType != NodeTypeNone {
-		params := apstraUrl.Query()
-		params.Set(nodeQueryNodeTypeUrlParam, nodeType.String())
-		apstraUrl.RawQuery = params.Encode()
-	}
-
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		url:         apstraUrl,
-		apiResponse: response,
-	})
+	return o.client.getNodes(ctx, o.blueprintId, nodeType, response)
 }
 
 // PatchNode patches (only submitted fields are changed) the specified node
 // using the contents of 'request', the server's response (whole node info
 // without map wrapper?) is returned in 'response'
 func (o *TwoStageL3ClosClient) PatchNode(ctx context.Context, node ObjectId, request interface{}, response interface{}) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPatch,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, o.blueprintId, node),
-		apiInput:    request,
-		apiResponse: response,
-	})
+	return o.client.PatchNode(ctx, o.blueprintId, node, request, response)
 }

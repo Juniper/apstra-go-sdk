@@ -108,7 +108,15 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 			Id           ObjectId    `json:"id,omitempty"`
 		}
 
+	BLUEPRINT:
 		for _, id := range bpIds {
+			bpStatus, err := client.client.getBlueprintStatus(context.Background(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if bpStatus.Design != refDesignDatacenter {
+				continue BLUEPRINT
+			}
 			nodesA := struct {
 				Nodes map[string]metadataNode `json:"nodes"`
 			}{}
