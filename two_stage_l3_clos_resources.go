@@ -40,6 +40,7 @@ const (
 	ResourceGroupNameSpineLeafIp4
 	ResourceGroupNameSpineLeafIp6
 	ResourceGroupNameAccessAccessIps
+	ResourceGroupNameLeafLeafIp4
 	ResourceGroupNameMlagDomainSviSubnets
 	ResourceGroupNameVtepIps
 	ResourceGroupNameUnknown
@@ -56,6 +57,7 @@ const (
 	resourceGroupNameSuperspineSpineIp6   = resourceGroupName("ipv6_spine_superspine_link_ips")
 	resourceGroupNameSpineLeafIp4         = resourceGroupName("spine_leaf_link_ips")
 	resourceGroupNameSpineLeafIp6         = resourceGroupName("ipv6_spine_leaf_link_ips")
+	resourceGroupNameLeafLeafIp4          = resourceGroupName("leaf_leaf_link_ips")
 	resourceGroupNameMlagDomainSviSubnets = resourceGroupName("mlag_domain_svi_subnets")
 	resourceGroupNameAccessAccessIps      = resourceGroupName("access_l3_peer_link_link_ips")
 	resourceGroupNameVtepIps              = resourceGroupName("vtep_ips")
@@ -96,6 +98,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameSpineLeafIp6
 	case ResourceGroupNameAccessAccessIps:
 		return resourceGroupNameAccessAccessIps
+	case ResourceGroupNameLeafLeafIp4:
+		return resourceGroupNameLeafLeafIp4
 	case ResourceGroupNameMlagDomainSviSubnets:
 		return resourceGroupNameMlagDomainSviSubnets
 	case ResourceGroupNameVtepIps:
@@ -131,6 +135,8 @@ func (o resourceGroupName) parse() (ResourceGroupName, error) {
 		return ResourceGroupNameSpineLeafIp4, nil
 	case resourceGroupNameAccessAccessIps:
 		return ResourceGroupNameAccessAccessIps, nil
+	case resourceGroupNameLeafLeafIp4:
+		return ResourceGroupNameLeafLeafIp4, nil
 	case resourceGroupNameMlagDomainSviSubnets:
 		return ResourceGroupNameMlagDomainSviSubnets, nil
 	case resourceGroupNameVtepIps:
