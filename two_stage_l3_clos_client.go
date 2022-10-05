@@ -65,13 +65,15 @@ func (o *TwoStageL3ClosClient) Id() ObjectId {
 	return o.blueprintId
 }
 
-// GetResourceAllocation takes a *ResourceGroupAllocation as input for the
-// ResourceGroupAllocation.Type and ResourceGroupAllocation.Name fields (the
-// ResourceGroupAllocation.PoolIds is ignored). It returns a fully populated
-// *ResourceGroupAllocation with all fields populated based on the Apstra API
+// GetResourceAllocation takes a *ResourceGroup and returns a
+// *ResourceGroupAllocation with fields populated based on the Apstra API
 // response.
-func (o *TwoStageL3ClosClient) GetResourceAllocation(ctx context.Context, in *ResourceGroupAllocation) (*ResourceGroupAllocation, error) {
-	return o.getResourceAllocation(ctx, in)
+func (o *TwoStageL3ClosClient) GetResourceAllocation(ctx context.Context, in *ResourceGroup) (*ResourceGroupAllocation, error) {
+	rga, err := o.getResourceAllocation(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return rga.polish()
 }
 
 // SetResourceAllocation sets the supplied resource allocation, overwriting any

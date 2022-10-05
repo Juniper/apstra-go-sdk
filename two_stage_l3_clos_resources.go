@@ -182,16 +182,20 @@ func (o resourceType) parse() (ResourceType, error) {
 	}
 }
 
+type ResourceGroup struct {
+	Type ResourceType      `json:"type"`
+	Name ResourceGroupName `json:"name"`
+}
+
 type ResourceGroupAllocation struct {
-	Type    ResourceType      `json:"type"`
-	Name    ResourceGroupName `json:"name"`
-	PoolIds []ObjectId        `json:"pool_ids"`
+	ResourceGroup ResourceGroup
+	PoolIds       []ObjectId `json:"pool_ids"`
 }
 
 func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
 	return &rawResourceGroupAllocation{
-		Type:    o.Type.raw(),
-		Name:    o.Name.raw(),
+		Type:    o.ResourceGroup.Type.raw(),
+		Name:    o.ResourceGroup.Name.raw(),
 		PoolIds: o.PoolIds,
 	}
 }
@@ -214,30 +218,32 @@ func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) 
 	}
 
 	return &ResourceGroupAllocation{
-		Type:    t,
-		Name:    n,
+		ResourceGroup: ResourceGroup{
+			Type: t,
+			Name: n,
+		},
 		PoolIds: o.PoolIds,
 	}, nil
 }
 
-func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) (*ResourceGroupAllocation, error) {
+func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg *ResourceGroup) (*rawResourceGroupAllocation, error) {
 	response := &rawResourceGroupAllocation{}
 	ttii := talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.Type.String(), rga.Name.String()),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rg.Type.String(), rg.Name.String()),
 		apiResponse: response,
 	}
 	err := o.client.talkToApstra(ctx, &ttii)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response.polish()
+	return response, nil
 }
 
 func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.Type.String(), rga.Name.String()),
+		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.ResourceGroup.Type.String(), rga.ResourceGroup.Name.String()),
 		apiInput: rga.raw(),
 	})
 }
