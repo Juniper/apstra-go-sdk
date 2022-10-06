@@ -19,7 +19,7 @@ func TestLockUnlockBlueprintMutex(t *testing.T) {
 
 	bpName := randString(5, "hex")
 	for _, client := range clients {
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplate{
+		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 			RefDesign:  RefDesignDatacenter,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
@@ -59,7 +59,7 @@ func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 
 	bpName := randString(5, "hex")
 	for _, client := range clients {
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplate{
+		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 			RefDesign:  RefDesignDatacenter,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
