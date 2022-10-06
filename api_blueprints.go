@@ -275,26 +275,33 @@ func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
 	}, nil
 }
 
-type CreateBlueprintFromTemplate struct {
-	RefDesign  RefDesign
-	Label      string
-	TemplateId ObjectId
+type CreateBlueprintFromTemplateRequest struct {
+	RefDesign              RefDesign
+	Label                  string
+	TemplateId             ObjectId
+	FabricAddressingPolicy *FabricAddressingPolicy
 }
 
-func (o *CreateBlueprintFromTemplate) raw() *rawCreateBluePrintFromTemplate {
-	return &rawCreateBluePrintFromTemplate{
-		RefDesign:  o.RefDesign.String(),
-		Label:      o.Label,
-		InitType:   initTypeFromTemplate,
-		TemplateId: o.TemplateId,
+func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTemplateRequest {
+	var fap *rawFabricAddressingPolicy
+	if o.FabricAddressingPolicy != nil {
+		fap = o.FabricAddressingPolicy.raw()
+	}
+	return &rawCreateBlueprintFromTemplateRequest{
+		RefDesign:              o.RefDesign.String(),
+		Label:                  o.Label,
+		InitType:               initTypeFromTemplate,
+		TemplateId:             o.TemplateId,
+		FabricAddressingPolicy: fap,
 	}
 }
 
-type rawCreateBluePrintFromTemplate struct {
-	RefDesign  string   `json:"design"`
-	Label      string   `json:"label"`
-	InitType   string   `json:"init_type"`
-	TemplateId ObjectId `json:"template_id"`
+type rawCreateBlueprintFromTemplateRequest struct {
+	RefDesign              string                     `json:"design"`
+	Label                  string                     `json:"label"`
+	InitType               string                     `json:"init_type"`
+	TemplateId             ObjectId                   `json:"template_id"`
+	FabricAddressingPolicy *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 }
 
 func (o *Client) listAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
@@ -429,12 +436,12 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, desired string) (
 	}
 }
 
-func (o *Client) createBlueprintFromTemplate(ctx context.Context, cfg *CreateBlueprintFromTemplate) (ObjectId, error) {
+func (o *Client) createBlueprintFromTemplate(ctx context.Context, req *rawCreateBlueprintFromTemplateRequest) (ObjectId, error) {
 	response := &postBlueprintsResponse{}
 	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlBlueprints,
-		apiInput:    cfg.raw(),
+		apiInput:    req,
 		apiResponse: response,
 	})
 }

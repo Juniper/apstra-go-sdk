@@ -588,8 +588,8 @@ func (o *Client) GetAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, 
 }
 
 // CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
-func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, cfg *CreateBlueprintFromTemplate) (ObjectId, error) {
-	return o.createBlueprintFromTemplate(ctx, cfg)
+func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlueprintFromTemplateRequest) (ObjectId, error) {
+	return o.createBlueprintFromTemplate(ctx, req.raw())
 }
 
 // GetBlueprintStatus returns *BlueprintStatus for the specified blueprint ID
