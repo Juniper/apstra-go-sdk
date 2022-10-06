@@ -1203,3 +1203,15 @@ func (o *Client) GetTemplateIdsTypesByName(ctx context.Context, desired string) 
 func (o *Client) GetTemplateIdTypeByName(ctx context.Context, desired string) (ObjectId, TemplateType, error) {
 	return o.getTemplateIdTypeByName(ctx, desired)
 }
+
+// GetSystemAgentManagerConfig returns *SystemAgentManagerConfig representing the Advanced Settings
+// found on the Managed Devices page of the Web UI.
+func (o *Client) GetSystemAgentManagerConfig(ctx context.Context) (*SystemAgentManagerConfig, error) {
+	return o.getSystemAgentManagerConfig(ctx)
+}
+
+// SetSystemAgentManagerConfig uses a *SystemAgentManagerConfig object to configure the Advanced Settings
+// found on the Managed Devices page of the Web UI.
+func (o *Client) SetSystemAgentManagerConfig(ctx context.Context, cfg *SystemAgentManagerConfig) error {
+	return o.setSystemAgentManagerConfig(ctx, cfg)
+}
