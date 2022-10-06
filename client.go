@@ -96,6 +96,10 @@ func (o ObjectId) ObjectId() ObjectId {
 	return o
 }
 
+func (o ObjectId) String() string {
+	return string(o)
+}
+
 // Client interacts with an AOS API server
 type Client struct {
 	apiVersion  string                  // as reported by apstra API
