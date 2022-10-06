@@ -471,3 +471,31 @@ func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuer
 		unsynchronized: true,
 	})
 }
+
+func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType NodeType, response interface{}) error {
+	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintNodes, blueprint))
+	if err != nil {
+		return err
+	}
+
+	if nodeType != NodeTypeNone {
+		params := apstraUrl.Query()
+		params.Set(nodeQueryNodeTypeUrlParam, nodeType.String())
+		apstraUrl.RawQuery = params.Encode()
+	}
+
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		url:         apstraUrl,
+		apiResponse: response,
+	})
+}
+
+func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPatch,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, blueprint, node),
+		apiInput:    request,
+		apiResponse: response,
+	})
+}
