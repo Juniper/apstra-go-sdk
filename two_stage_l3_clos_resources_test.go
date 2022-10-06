@@ -25,19 +25,32 @@ func TestGetResourceAllocation(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if len(blueprintIds) == 0 {
-			skipMsg[clientName] = fmt.Sprintf("cannot test resource allocation in '%s' - no blueprints", clientName)
+		var bpId *ObjectId
+	BLUEPRINTS:
+		for _, id := range blueprintIds {
+			bpStatus, err := client.client.GetBlueprintStatus(context.Background(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if bpStatus.Design == RefDesignDatacenter {
+				bpId = &id
+				break BLUEPRINTS
+			}
+		}
+
+		if bpId == nil {
+			skipMsg[clientName] = fmt.Sprintf("cannot test resource allocation in '%s' - no datacenter blueprints", clientName)
 			continue
 		}
 
 		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), blueprintIds[0])
+		bpClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), *bpId)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing getResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		spineAsns, err := bpClient.getResourceAllocation(context.TODO(), &ResourceGroupAllocation{
+		spineAsns, err := bpClient.getResourceAllocation(context.TODO(), &ResourceGroup{
 			Type: ResourceTypeAsnPool,
 			Name: ResourceGroupNameSpineAsn,
 		})
