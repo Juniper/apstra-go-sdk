@@ -281,8 +281,8 @@ type CreateBlueprintFromTemplate struct {
 	TemplateId ObjectId
 }
 
-func (o *CreateBlueprintFromTemplate) raw() *rawCreateBluePrintFromTemplate {
-	return &rawCreateBluePrintFromTemplate{
+func (o *CreateBlueprintFromTemplate) raw() *rawCreatebluePrintFromTemplate {
+	return &rawCreatebluePrintFromTemplate{
 		RefDesign:  o.RefDesign.String(),
 		Label:      o.Label,
 		InitType:   initTypeFromTemplate,
@@ -290,7 +290,7 @@ func (o *CreateBlueprintFromTemplate) raw() *rawCreateBluePrintFromTemplate {
 	}
 }
 
-type rawCreateBluePrintFromTemplate struct {
+type rawCreatebluePrintFromTemplate struct {
 	RefDesign  string   `json:"design"`
 	Label      string   `json:"label"`
 	InitType   string   `json:"init_type"`
