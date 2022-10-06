@@ -429,12 +429,12 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, desired string) (
 	}
 }
 
-func (o *Client) createBlueprintFromTemplate(ctx context.Context, cfg *CreateBlueprintFromTemplateRequest) (ObjectId, error) {
+func (o *Client) createBlueprintFromTemplate(ctx context.Context, req *rawCreateBlueprintFromTemplateRequest) (ObjectId, error) {
 	response := &postBlueprintsResponse{}
 	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlBlueprints,
-		apiInput:    cfg.raw(),
+		apiInput:    req,
 		apiResponse: response,
 	})
 }
