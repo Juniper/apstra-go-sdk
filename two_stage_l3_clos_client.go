@@ -63,6 +63,24 @@ func (o *TwoStageL3ClosClient) Id() ObjectId {
 	return o.blueprintId
 }
 
+// GetAllResourceAllocations returns []ResourceGroupAllocation representing
+// assignments of resource pools to blueprint requirements
+func (o *TwoStageL3ClosClient) GetAllResourceAllocations(ctx context.Context) ([]ResourceGroupAllocation, error) {
+	rawRgaSlice, err := o.getAllResourceAllocations(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]ResourceGroupAllocation, len(rawRgaSlice))
+	for i, raw := range rawRgaSlice {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
 // GetResourceAllocation takes a *ResourceGroup and returns a
 // *ResourceGroupAllocation with fields populated based on the Apstra API
 // response.
