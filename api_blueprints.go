@@ -276,31 +276,32 @@ func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
 }
 
 type CreateBlueprintFromTemplateRequest struct {
-	RefDesign                 RefDesign
-	Label                     string
-	TemplateId                ObjectId
-	SuperspineSpineAddressing FabricAddressingPolicy
-	SpineLeafAddressing       FabricAddressingPolicy
+	RefDesign              RefDesign
+	Label                  string
+	TemplateId             ObjectId
+	FabricAddressingPolicy *FabricAddressingPolicy
 }
 
 func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTemplateRequest {
+	var fap *rawFabricAddressingPolicy
+	if o.FabricAddressingPolicy != nil {
+		fap = o.FabricAddressingPolicy.raw()
+	}
 	return &rawCreateBlueprintFromTemplateRequest{
-		RefDesign:                 o.RefDesign.String(),
-		Label:                     o.Label,
-		InitType:                  initTypeFromTemplate,
-		TemplateId:                o.TemplateId,
-		SuperspineSpineAddressing: *o.SuperspineSpineAddressing.raw(),
-		SpineLeafAddressing:       *o.SpineLeafAddressing.raw(),
+		RefDesign:              o.RefDesign.String(),
+		Label:                  o.Label,
+		InitType:               initTypeFromTemplate,
+		TemplateId:             o.TemplateId,
+		FabricAddressingPolicy: fap,
 	}
 }
 
 type rawCreateBlueprintFromTemplateRequest struct {
-	RefDesign                 string                    `json:"design"`
-	Label                     string                    `json:"label"`
-	InitType                  string                    `json:"init_type"`
-	TemplateId                ObjectId                  `json:"template_id"`
-	SuperspineSpineAddressing rawFabricAddressingPolicy `json:"spine_superspine_links,omitempty"`
-	SpineLeafAddressing       rawFabricAddressingPolicy `json:"spine_leaf_links,omitempty"`
+	RefDesign              string                     `json:"design"`
+	Label                  string                     `json:"label"`
+	InitType               string                     `json:"init_type"`
+	TemplateId             ObjectId                   `json:"template_id"`
+	FabricAddressingPolicy *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 }
 
 func (o *Client) listAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
