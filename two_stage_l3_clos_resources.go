@@ -187,6 +187,19 @@ type ResourceGroup struct {
 	Name ResourceGroupName `json:"name"`
 }
 
+type ResourceGroupAllocations []ResourceGroupAllocation
+
+// Get returns the ResourceGroupAllocation for the requested ResourceGroup, or nil
+// if no matching ResourceGroupAllocation exists in this ResourceGroupAllocations
+func (o ResourceGroupAllocations) Get(requested *ResourceGroup) *ResourceGroupAllocation {
+	for _, rg := range o {
+		if rg.ResourceGroup.Name == requested.Name && rg.ResourceGroup.Type == requested.Type {
+			return &rg
+		}
+	}
+	return nil
+}
+
 type ResourceGroupAllocation struct {
 	ResourceGroup ResourceGroup
 	PoolIds       []ObjectId `json:"pool_ids"`
@@ -198,6 +211,10 @@ func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
 		Name:    o.ResourceGroup.Name.raw(),
 		PoolIds: o.PoolIds,
 	}
+}
+
+func (o *ResourceGroupAllocation) IsEmpty() bool {
+	return len(o.PoolIds) == 0
 }
 
 type rawResourceGroupAllocation struct {
