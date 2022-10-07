@@ -232,7 +232,7 @@ func (o *TwoStageL3ClosClient) getAllResourceAllocations(ctx context.Context) ([
 	}{}
 	return response.Items, o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      apiUrlBlueprintResourceGroups,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroups, o.blueprintId),
 		apiResponse: response,
 	})
 }
