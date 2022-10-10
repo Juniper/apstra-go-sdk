@@ -121,18 +121,18 @@ type SystemContainerStatus struct {
 }
 
 type SystemFacts struct {
-	AosHclModel      string `json:"aos_hcl_model"`
-	AosServer        string `json:"aos_server"`
-	AosVersion       string `json:"aos_version"`
-	ChassisMacRanges string `json:"chassis_mac_ranges"`
-	HwModel          string `json:"hw_model"`
-	HwVersion        string `json:"hw_version"`
-	MgmtIfname       string `json:"mgmt_ifname"`
-	MgmtIpaddr       string `json:"mgmt_ipaddr"`
-	MgmtMacaddr      string `json:"mgmt_macaddr"`
-	OsArch           string `json:"os_arch"`
-	OsFamily         string `json:"os_family"`
-	OsVersion        string `json:"os_version"`
+	AosHclModel      ObjectId `json:"aos_hcl_model"`
+	AosServer        string   `json:"aos_server"`
+	AosVersion       string   `json:"aos_version"`
+	ChassisMacRanges string   `json:"chassis_mac_ranges"`
+	HwModel          string   `json:"hw_model"`
+	HwVersion        string   `json:"hw_version"`
+	MgmtIfname       string   `json:"mgmt_ifname"`
+	MgmtIpaddr       string   `json:"mgmt_ipaddr"`
+	MgmtMacaddr      string   `json:"mgmt_macaddr"`
+	OsArch           string   `json:"os_arch"`
+	OsFamily         string   `json:"os_family"`
+	OsVersion        string   `json:"os_version"`
 	OsVersionInfo    struct {
 		Build string `json:"build"`
 		Major string `json:"major"`
@@ -181,7 +181,7 @@ type systemUpdate struct {
 
 type SystemUserConfig struct {
 	AdminState  SystemAdminState `json:"admin_state,omitempty"`
-	AosHclModel string           `json:"aos_hcl_model,omitempty"`
+	AosHclModel ObjectId         `json:"aos_hcl_model,omitempty"`
 	Location    string           `json:"location,omitempty"`
 }
 
@@ -195,7 +195,7 @@ func (o *SystemUserConfig) raw() *rawSystemUserConfig {
 
 type rawSystemUserConfig struct {
 	AdminState  rawSystemAdminState `json:"admin_state,omitempty"`
-	AosHclModel string              `json:"aos_hcl_model,omitempty"`
+	AosHclModel ObjectId            `json:"aos_hcl_model,omitempty"`
 	Location    string              `json:"location,omitempty"`
 }
 
