@@ -63,14 +63,14 @@ func (o *TwoStageL3ClosClient) Id() ObjectId {
 	return o.blueprintId
 }
 
-// GetAllResourceAllocations returns []ResourceGroupAllocation representing
-// assignments of resource pools to blueprint requirements
-func (o *TwoStageL3ClosClient) GetAllResourceAllocations(ctx context.Context) ([]ResourceGroupAllocation, error) {
+// GetResourceAllocations returns ResourceGroupAllocations representing
+// all allocations of resource pools to blueprint requirements
+func (o *TwoStageL3ClosClient) GetResourceAllocations(ctx context.Context) (ResourceGroupAllocations, error) {
 	rawRgaSlice, err := o.getAllResourceAllocations(ctx)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]ResourceGroupAllocation, len(rawRgaSlice))
+	result := make(ResourceGroupAllocations, len(rawRgaSlice))
 	for i, raw := range rawRgaSlice {
 		polished, err := raw.polish()
 		if err != nil {
