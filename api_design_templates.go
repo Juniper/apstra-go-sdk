@@ -78,12 +78,12 @@ const (
 	AddressingSchemeIp4 = AddressingScheme(iota)
 	AddressingSchemeIp6
 	AddressingSchemeIp46
-	AddressingSchemeUnknown = "unknown asn allocation scheme '%s'"
+	AddressingSchemeUnknown = "unknown addressing scheme '%s'"
 
 	addressingSchemeIp4     = addressingScheme("ipv4")
 	addressingSchemeIp6     = addressingScheme("ipv6")
 	addressingSchemeIp46    = addressingScheme("ipv4_ipv6")
-	addressingSchemeUnknown = "unknown asn allocation scheme '%d'"
+	addressingSchemeUnknown = "unknown addressing scheme '%d'"
 )
 
 const (
