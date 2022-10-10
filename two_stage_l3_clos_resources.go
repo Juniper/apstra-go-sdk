@@ -226,6 +226,17 @@ func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) 
 	}, nil
 }
 
+func (o *TwoStageL3ClosClient) getAllResourceAllocations(ctx context.Context) ([]rawResourceGroupAllocation, error) {
+	response := &struct {
+		Items []rawResourceGroupAllocation `json:"items"`
+	}{}
+	return response.Items, o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroups, o.blueprintId),
+		apiResponse: response,
+	})
+}
+
 func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg *ResourceGroup) (*rawResourceGroupAllocation, error) {
 	response := &rawResourceGroupAllocation{}
 	ttii := talkToApstraIn{
