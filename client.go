@@ -1219,3 +1219,25 @@ func (o *Client) GetSystemAgentManagerConfig(ctx context.Context) (*SystemAgentM
 func (o *Client) SetSystemAgentManagerConfig(ctx context.Context, cfg *SystemAgentManagerConfig) error {
 	return o.setSystemAgentManagerConfig(ctx, cfg)
 }
+
+// GetInterfaceMapDigest returns *InterfaceMapDigest representing the supplied ObjectId
+func (o *Client) GetInterfaceMapDigest(ctx context.Context, id ObjectId) (*InterfaceMapDigest, error) {
+	return o.getInterfaceMapDigest(ctx, id)
+}
+
+// GetInterfaceMapDigests returns []InterfaceMapDigest representing all interface maps
+func (o *Client) GetInterfaceMapDigests(ctx context.Context) ([]InterfaceMapDigest, error) {
+	return o.getInterfaceMapDigests(ctx)
+}
+
+// GetInterfaceMapDigestsByDeviceProfile returns []InterfaceMapDigest
+// representing all interface maps which reference the desired DeviceProfile ID
+func (o *Client) GetInterfaceMapDigestsByDeviceProfile(ctx context.Context, desired ObjectId) ([]InterfaceMapDigest, error) {
+	return o.getInterfaceMapDigestsByDeviceProfile(ctx, desired)
+}
+
+// GetInterfaceMapDigestsByLogicalDevice returns []InterfaceMapDigest
+// representing all interface maps which reference the desired LogicalDevice ID
+func (o *Client) GetInterfaceMapDigestsByLogicalDevice(ctx context.Context, desired ObjectId) ([]InterfaceMapDigest, error) {
+	return o.getInterfaceMapDigestsByLogicalDevice(ctx, desired)
+}
