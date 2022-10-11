@@ -1226,18 +1226,18 @@ func (o *Client) GetInterfaceMapDigest(ctx context.Context, id ObjectId) (*Inter
 }
 
 // GetInterfaceMapDigests returns []InterfaceMapDigest representing all interface maps
-func (o *Client) GetInterfaceMapDigests(ctx context.Context) ([]InterfaceMapDigest, error) {
+func (o *Client) GetInterfaceMapDigests(ctx context.Context) (InterfaceMapDigests, error) {
 	return o.getInterfaceMapDigests(ctx)
 }
 
 // GetInterfaceMapDigestsByDeviceProfile returns []InterfaceMapDigest
 // representing all interface maps which reference the desired DeviceProfile ID
-func (o *Client) GetInterfaceMapDigestsByDeviceProfile(ctx context.Context, desired ObjectId) ([]InterfaceMapDigest, error) {
+func (o *Client) GetInterfaceMapDigestsByDeviceProfile(ctx context.Context, desired ObjectId) (InterfaceMapDigests, error) {
 	return o.getInterfaceMapDigestsByDeviceProfile(ctx, desired)
 }
 
 // GetInterfaceMapDigestsByLogicalDevice returns []InterfaceMapDigest
 // representing all interface maps which reference the desired LogicalDevice ID
-func (o *Client) GetInterfaceMapDigestsByLogicalDevice(ctx context.Context, desired ObjectId) ([]InterfaceMapDigest, error) {
+func (o *Client) GetInterfaceMapDigestsByLogicalDevice(ctx context.Context, desired ObjectId) (InterfaceMapDigests, error) {
 	return o.getInterfaceMapDigestsByLogicalDevice(ctx, desired)
 }
