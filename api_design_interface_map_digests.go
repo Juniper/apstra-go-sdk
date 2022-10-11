@@ -121,3 +121,24 @@ func (o *Client) getInterfaceMapDigestsByLogicalDevice(ctx context.Context, desi
 	}
 	return response.Items, nil
 }
+
+func (o *Client) getInterfaceMapDigestsLogicalDeviceAndDeviceProfile(ctx context.Context, ldId ObjectId, dpId ObjectId) (InterfaceMapDigests, error) {
+	response := &struct {
+		Items InterfaceMapDigests `json:"items"`
+	}{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlDesignInterfaceMapDigests,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for i := len(response.Items) - 1; i >= 0; i-- {
+		if response.Items[i].LogicalDevice.Id != ldId || response.Items[i].DeviceProfile.Id != dpId {
+			response.Items[i] = response.Items[len(response.Items)-1] // move last item to position [i]
+			response.Items = response.Items[:len(response.Items)-1]   // trim last element
+		}
+	}
+	return response.Items, nil
+}
