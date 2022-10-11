@@ -61,9 +61,9 @@ func (o *Client) getInterfaceMapDigest(ctx context.Context, id ObjectId) (*Inter
 	return response, nil
 }
 
-func (o *Client) getInterfaceMapDigests(ctx context.Context) ([]InterfaceMapDigest, error) {
+func (o *Client) getInterfaceMapDigests(ctx context.Context) (InterfaceMapDigests, error) {
 	response := &struct {
-		Items []InterfaceMapDigest `json:"items"`
+		Items InterfaceMapDigests `json:"items"`
 	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -76,9 +76,9 @@ func (o *Client) getInterfaceMapDigests(ctx context.Context) ([]InterfaceMapDige
 	return response.Items, nil
 }
 
-func (o *Client) getInterfaceMapDigestsByDeviceProfile(ctx context.Context, desired ObjectId) ([]InterfaceMapDigest, error) {
+func (o *Client) getInterfaceMapDigestsByDeviceProfile(ctx context.Context, desired ObjectId) (InterfaceMapDigests, error) {
 	response := &struct {
-		Items []InterfaceMapDigest `json:"items"`
+		Items InterfaceMapDigests `json:"items"`
 	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -97,9 +97,9 @@ func (o *Client) getInterfaceMapDigestsByDeviceProfile(ctx context.Context, desi
 	return response.Items, nil
 }
 
-func (o *Client) getInterfaceMapDigestsByLogicalDevice(ctx context.Context, desired ObjectId) ([]InterfaceMapDigest, error) {
+func (o *Client) getInterfaceMapDigestsByLogicalDevice(ctx context.Context, desired ObjectId) (InterfaceMapDigests, error) {
 	response := &struct {
-		Items []InterfaceMapDigest `json:"items"`
+		Items InterfaceMapDigests `json:"items"`
 	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
