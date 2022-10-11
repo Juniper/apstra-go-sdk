@@ -28,6 +28,26 @@ type InterfaceMapDigest struct {
 	LastModifiedAt time.Time `json:"last_modified_at"`
 }
 
+type InterfaceMapDigests []InterfaceMapDigest
+
+func (o *InterfaceMapDigests) SupportsDeviceProfile(id ObjectId) bool {
+	for _, imd := range *o {
+		if imd.DeviceProfile.Id == id {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *InterfaceMapDigests) SupportsLogicalDevice(id ObjectId) bool {
+	for _, imd := range *o {
+		if imd.LogicalDevice.Id == id {
+			return true
+		}
+	}
+	return false
+}
+
 func (o *Client) getInterfaceMapDigest(ctx context.Context, id ObjectId) (*InterfaceMapDigest, error) {
 	response := &InterfaceMapDigest{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
