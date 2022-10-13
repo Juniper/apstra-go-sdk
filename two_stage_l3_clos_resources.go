@@ -19,10 +19,12 @@ const (
 	ResourceTypeVniPool
 	ResourceTypeUnknown
 
+	// .../aos/reference_design/extension/resource_allocation/__init__.py says:
+	// RESOURCE_TYPES = ['ip', 'ipv6', 'asn', 'vlan', 'vni']
 	resourceTypeAsnPool = "asn"
 	resourceTypeIp4Pool = "ip"
-	resourceTypeIp6Pool = "y" // todo
-	resourceTypeVniPool = "z" // todo
+	resourceTypeIp6Pool = "ipv6"
+	resourceTypeVniPool = "vni"
 	resourceTypeUnknown = "resource type %d unknown"
 )
 
