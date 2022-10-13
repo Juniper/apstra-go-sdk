@@ -58,9 +58,9 @@ func (o *Client) login(ctx context.Context) error {
 
 	// stash auth token in client's default set of apstra http httpHeaders
 	// and start the tasskMonitor (these go together)
-	o.lock(clientAuthTokenMutex)
-	defer o.unlock(clientAuthTokenMutex)
+	o.lock(clientHttpHeadersMutex)
 	o.httpHeaders[apstraAuthHeader] = response.Token
+	o.unlock(clientHttpHeadersMutex)
 
 	o.startTaskMonitor()
 	return nil
@@ -71,13 +71,17 @@ func (o *Client) logout(ctx context.Context) error {
 	// presence of an auth token is proxy for both
 	// - "logged in" state and
 	// - operation of a task monitor routine
+	o.lock(clientHttpHeadersMutex)
 	if _, tokenFound := o.httpHeaders[apstraAuthHeader]; !tokenFound {
 		return nil
 	}
+	o.unlock(clientHttpHeadersMutex)
+
 	defer func() {
 		o.Log(1, "deleting auth token")
+		o.lock(clientHttpHeadersMutex)
 		delete(o.httpHeaders, apstraAuthHeader)
-
+		o.unlock(clientHttpHeadersMutex)
 		o.Log(1, "shutting down the task monitor")
 		o.stopTaskMonitor()
 	}()

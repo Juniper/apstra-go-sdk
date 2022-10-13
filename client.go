@@ -31,7 +31,7 @@ const (
 
 	clientPollingIntervalMs = 1000
 
-	clientAuthTokenMutex = iota
+	clientHttpHeadersMutex = iota
 	clientApiResourceAsnPoolRangeMutex
 	clientApiResourceVniPoolRangeMutex
 	clientApiResourceIpPoolRangeMutex
