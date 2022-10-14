@@ -1247,3 +1247,8 @@ func (o *Client) GetInterfaceMapDigestsByLogicalDevice(ctx context.Context, desi
 func (o *Client) GetInterfaceMapDigestsLogicalDeviceAndDeviceProfile(ctx context.Context, ldId ObjectId, dpId ObjectId) (InterfaceMapDigests, error) {
 	return o.getInterfaceMapDigestsLogicalDeviceAndDeviceProfile(ctx, ldId, dpId)
 }
+
+// AssignAgentProfile assigns an AgentProfile to each SystemAgent enumerated in AssignAgentProfileRequest
+func (o *Client) AssignAgentProfile(ctx context.Context, req *AssignAgentProfileRequest) error {
+	return o.assignAgentProfile(ctx, req)
+}

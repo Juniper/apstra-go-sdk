@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	apiUrlSystemAgentProfiles     = "/api/system-agent-profiles"
-	apiUrlSystemAgentProfilesById = apiUrlSystemAgentProfiles + apiUrlPathDelim + "%s"
+	apiUrlSystemAgentProfiles           = "/api/system-agent-profiles"
+	apiUrlSystemAgentProfilesById       = apiUrlSystemAgentProfiles + apiUrlPathDelim + "%s"
+	apiUrlSystemAgentProfilesAssignById = apiUrlSystemAgentProfiles + apiUrlPathDelim + "%s" + "/assign"
 
 	apstraAgentPlatformJunos = "junos"
 	apstraAgentPlatformEOS   = "eos"
@@ -25,6 +26,13 @@ const (
 type optionsAgentProfilesResponse struct {
 	Items   []ObjectId `json:"items"`
 	Methods []string   `json:"methods"`
+}
+
+type AssignAgentProfileRequest struct {
+	SystemAgents     []ObjectId `json:"system_agents"`
+	ProfileId        ObjectId   `json:"profile_id"`
+	ClearPackages    bool       `json:"clear_packages"`
+	ClearOpenOptions bool       `json:"clear_open_options"`
 }
 
 // AgentProfileConfig is used when creating or updating an Agent Profile
@@ -243,4 +251,16 @@ func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*Age
 		}
 	}
 	return response.Items[found].polish(), nil
+}
+
+func (o *Client) assignAgentProfile(ctx context.Context, req *AssignAgentProfileRequest) error {
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPost,
+		urlStr:   fmt.Sprintf(apiUrlSystemAgentProfilesAssignById, req.ProfileId),
+		apiInput: req,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
