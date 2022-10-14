@@ -256,7 +256,7 @@ func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*Age
 func (o *Client) assignAgentProfile(ctx context.Context, req *AssignAgentProfileRequest) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPost,
-		urlStr:   apiUrlSystemAgentProfiles,
+		urlStr:   fmt.Sprintf(apiUrlSystemAgentProfilesAssignById, req.ProfileId),
 		apiInput: req,
 	})
 	if err != nil {
