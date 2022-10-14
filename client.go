@@ -1248,7 +1248,7 @@ func (o *Client) GetInterfaceMapDigestsLogicalDeviceAndDeviceProfile(ctx context
 	return o.getInterfaceMapDigestsLogicalDeviceAndDeviceProfile(ctx, ldId, dpId)
 }
 
-// AssignAgentProfileToAgents assigns an AgentProfile to each SystemAgent in the slice
-func (o *Client) AssignAgentProfileToAgents(ctx context.Context, req *AgentProfileAssignmentRequest) error {
-	return o.assignAgentProfileToAgents(ctx, req)
+// AssignAgentProfile assigns an AgentProfile to each SystemAgent in the slice
+func (o *Client) AssignAgentProfile(ctx context.Context, req *AssignAgentProfileRequest) error {
+	return o.assignAgentProfile(ctx, req)
 }

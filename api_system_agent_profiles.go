@@ -28,7 +28,7 @@ type optionsAgentProfilesResponse struct {
 	Methods []string   `json:"methods"`
 }
 
-type AgentProfileAssignmentRequest struct {
+type AssignAgentProfileRequest struct {
 	SystemAgents     []ObjectId `json:"system_agents"`
 	ProfileId        ObjectId   `json:"profile_id"`
 	ClearPackages    bool       `json:"clear_packages"`
@@ -253,7 +253,7 @@ func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*Age
 	return response.Items[found].polish(), nil
 }
 
-func (o *Client) assignAgentProfileToAgents(ctx context.Context, req *AgentProfileAssignmentRequest) error {
+func (o *Client) assignAgentProfile(ctx context.Context, req *AssignAgentProfileRequest) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   apiUrlSystemAgentProfiles,
