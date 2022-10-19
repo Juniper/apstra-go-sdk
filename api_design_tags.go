@@ -97,6 +97,39 @@ func (o *Client) getTagByLabel(ctx context.Context, label string) (*rawDesignTag
 	}
 }
 
+func (o *Client) getTagsByLabels(ctx context.Context, labels []string) ([]rawDesignTag, error) {
+	requestedLabels := make(map[string]struct{}, len(labels))
+	for _, label := range labels {
+		requestedLabels[strings.ToLower(label)] = struct{}{}
+	}
+	if len(requestedLabels) != len(labels) {
+		return nil, fmt.Errorf("requested labels must contain no duplicates after flattening to lowercase")
+	}
+
+	tags, err := o.getAllTags(ctx)
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	allTagsMap := make(map[string]rawDesignTag, len(tags))
+	for _, tag := range tags {
+		allTagsMap[strings.ToLower(tag.Label)] = tag
+	}
+
+	var result []rawDesignTag
+	for requestedLabel := range requestedLabels {
+		if tag, ok := allTagsMap[requestedLabel]; ok {
+			result = append(result, tag)
+		} else {
+			return nil, ApstraClientErr{
+				errType: ErrNotfound,
+				err:     fmt.Errorf("tag with label '%s' not found", requestedLabel),
+			}
+		}
+	}
+	return result, nil
+}
+
 func (o *Client) getAllTags(ctx context.Context) ([]rawDesignTag, error) {
 	response := &struct {
 		Items []rawDesignTag `json:"items"`

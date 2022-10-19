@@ -826,6 +826,21 @@ func (o *Client) GetTagByLabel(ctx context.Context, label string) (*DesignTag, e
 	return raw.polish(), nil
 }
 
+// GetTagsByLabels returns []DesignTag matching the supplied slice of labels
+// which must contain no duplicates after flattening to lowercase. Any tag
+// found to not exist produces an error.
+func (o *Client) GetTagsByLabels(ctx context.Context, labels []string) ([]DesignTag, error) {
+	raw, err := o.getTagsByLabels(ctx, labels)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]DesignTag, len(raw))
+	for i, tag := range raw {
+		result[i] = *tag.polish()
+	}
+	return result, nil
+}
+
 // GetAllTags returns []DesignTag describing all DesignTag objects
 func (o *Client) GetAllTags(ctx context.Context) ([]DesignTag, error) {
 	rawTags, err := o.getAllTags(ctx)
