@@ -117,3 +117,39 @@ func TestCreateTagCollision(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestGetTagsByLabels(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var labels []string
+	labels = append(labels, randString(5, "hex"))
+	labels = append(labels, randString(5, "hex"))
+
+	for _, client := range clients {
+		labelIds := make([]ObjectId, len(labels))
+		for i := range labels {
+			id, err := client.client.CreateTag(context.Background(), &DesignTagRequest{Label: labels[i]})
+			if err != nil {
+				t.Fatal()
+			}
+			labelIds[i] = id
+		}
+
+		tags, err := client.client.getTagsByLabels(context.Background(), labels)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(labels) != len(tags) {
+			t.Fatalf("expecting %d tags, got %d tags", len(labels), len(tags))
+		}
+
+		for _, id := range labelIds {
+			err = client.client.DeleteTag(context.Background(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+}
