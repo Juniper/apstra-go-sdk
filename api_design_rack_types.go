@@ -119,7 +119,7 @@ const (
 	RackLinkSwitchPeerNone = RackLinkSwitchPeer(iota)
 	RackLinkSwitchPeerFirst
 	RackLinkSwitchPeerSecond
-	RackLinkSwitchPeerUnknown = "unknown lag mode '%s'"
+	RackLinkSwitchPeerUnknown = "unknown switch peer '%s'"
 
 	rackLinkSwitchPeerNone    = rackLinkSwitchPeer("")
 	rackLinkSwitchPeerFirst   = rackLinkSwitchPeer("first")

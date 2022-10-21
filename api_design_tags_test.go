@@ -137,7 +137,7 @@ func TestGetTagsByLabels(t *testing.T) {
 			labelIds[i] = id
 		}
 
-		tags, err := client.client.getTagsByLabels(context.Background(), labels)
+		tags, err := client.client.GetTagsByLabels(context.Background(), labels)
 		if err != nil {
 			t.Fatal(err)
 		}
