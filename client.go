@@ -815,7 +815,7 @@ func (o *Client) GetTag(ctx context.Context, id ObjectId) (*DesignTag, error) {
 }
 
 // GetTagByLabel returns a *DesignTag matching the supplied DesignTag.Label
-// string ("Name" in the web UI). This is a case-insensitive search because
+// string ("Name" in the web UI). This is a case-sensitive search even though
 // apstra enforces uniqueness in a case-insensitive manner. An error is returned
 // if no DesignTag objects match the supplied DesignTag.Label.
 func (o *Client) GetTagByLabel(ctx context.Context, label string) (*DesignTag, error) {
@@ -827,8 +827,8 @@ func (o *Client) GetTagByLabel(ctx context.Context, label string) (*DesignTag, e
 }
 
 // GetTagsByLabels returns []DesignTag matching the supplied slice of labels
-// which must contain no duplicates after flattening to lowercase. Any tag
-// found to not exist produces an error.
+// which may not contain duplicates. If any tag does not exist, an error is
+// returned.
 func (o *Client) GetTagsByLabels(ctx context.Context, labels []string) ([]DesignTag, error) {
 	raw, err := o.getTagsByLabels(ctx, labels)
 	if err != nil {
