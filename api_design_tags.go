@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -83,10 +82,8 @@ func (o *Client) getTagByLabel(ctx context.Context, label string) (*rawDesignTag
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	labelNoCase := strings.ToLower(label)
-
 	for _, t := range tags {
-		if strings.ToLower(t.Label) == labelNoCase {
+		if t.Label == label {
 			return &t, nil
 		}
 	}
@@ -100,10 +97,11 @@ func (o *Client) getTagByLabel(ctx context.Context, label string) (*rawDesignTag
 func (o *Client) getTagsByLabels(ctx context.Context, labels []string) ([]rawDesignTag, error) {
 	requestedLabels := make(map[string]struct{}, len(labels))
 	for _, label := range labels {
-		requestedLabels[strings.ToLower(label)] = struct{}{}
+		requestedLabels[label] = struct{}{}
 	}
+
 	if len(requestedLabels) != len(labels) {
-		return nil, fmt.Errorf("requested labels must contain no duplicates after flattening to lowercase")
+		return nil, fmt.Errorf("slice of requested labels contains duplicate entries")
 	}
 
 	tags, err := o.getAllTags(ctx)
@@ -113,7 +111,7 @@ func (o *Client) getTagsByLabels(ctx context.Context, labels []string) ([]rawDes
 
 	allTagsMap := make(map[string]rawDesignTag, len(tags))
 	for _, tag := range tags {
-		allTagsMap[strings.ToLower(tag.Label)] = tag
+		allTagsMap[tag.Label] = tag
 	}
 
 	var result []rawDesignTag
