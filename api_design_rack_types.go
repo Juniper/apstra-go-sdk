@@ -942,30 +942,32 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 		FabricConnectivityDesign: o.FabricConnectivityDesign.raw(),
 		Tags:                     nil, // populated by API calls below
 		LogicalDevices:           nil, // populated by API calls below
-		//LeafSwitches: make([]RackElementLeafSwitchRequest, len(o.LeafSwitches)), // todo: init array with correct size?
+		LeafSwitches:             make([]rawRackElementLeafSwitchRequest, len(o.LeafSwitches)),
+		AccessSwitches:           make([]rawRackElementAccessSwitchRequest, len(o.AccessSwitches)),
+		GenericSystems:           make([]rawRackElementGenericSystemRequest, len(o.GenericSystems)),
 	}
 
 	ldMap := make(map[ObjectId]struct{}) // collect IDs of all logical devices relevant to this rack
 	tagMap := make(map[string]struct{})  // collect labels of all tags relevant to this rack
 
-	for _, s := range o.LeafSwitches {
-		result.LeafSwitches = append(result.LeafSwitches, *s.raw())
+	for i, s := range o.LeafSwitches {
+		result.LeafSwitches[i] = *s.raw()
 		ldMap[s.LogicalDeviceId] = struct{}{}
 		for _, t := range s.Tags {
 			tagMap[t] = struct{}{}
 		}
 	}
 
-	for _, s := range o.AccessSwitches {
-		result.AccessSwitches = append(result.AccessSwitches, *s.raw())
+	for i, s := range o.AccessSwitches {
+		result.AccessSwitches[i] = *s.raw()
 		ldMap[s.LogicalDeviceId] = struct{}{}
 		for _, t := range s.Tags {
 			tagMap[t] = struct{}{}
 		}
 	}
 
-	for _, s := range o.GenericSystems {
-		result.GenericSystems = append(result.GenericSystems, *s.raw())
+	for i, s := range o.GenericSystems {
+		result.GenericSystems[i] = *s.raw()
 		ldMap[s.LogicalDeviceId] = struct{}{}
 		for _, t := range s.Tags {
 			tagMap[t] = struct{}{}
@@ -990,7 +992,10 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 		if err != nil {
 			return nil, err
 		}
-		result.Tags = append(result.Tags, *tag)
+		result.Tags = append(result.Tags, DesignTagData{
+			Label:       tag.Label,
+			Description: tag.Description,
+		})
 	}
 
 	return result, nil
@@ -1000,7 +1005,7 @@ type rawRackTypeRequest struct {
 	DisplayName              string                               `json:"display_name"`
 	Description              string                               `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign             `json:"fabric_connectivity_design"`
-	Tags                     []rawDesignTag                       `json:"tags,omitempty"`
+	Tags                     []DesignTagData                      `json:"tags,omitempty"`
 	LogicalDevices           []rawLogicalDevice                   `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystemRequest `json:"generic_systems,omitempty"`
 	LeafSwitches             []rawRackElementLeafSwitchRequest    `json:"leafs,omitempty"`
