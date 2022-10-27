@@ -416,18 +416,27 @@ type RackElementLeafSwitchRequest struct {
 	LinkPerSpineCount  int
 	LinkPerSpineSpeed  LogicalDevicePortSpeed
 	RedundancyProtocol LeafRedundancyProtocol
-	Tags               []string
+	Tags               []ObjectId
 	LogicalDeviceId    ObjectId
 }
 
-func (o *RackElementLeafSwitchRequest) raw() *rawRackElementLeafSwitchRequest {
+func (o *RackElementLeafSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementLeafSwitchRequest, error) {
+	tags := make([]string, len(o.Tags))
+	for i, tagId := range o.Tags {
+		if tagData, found := tagMap[tagId]; found {
+			tags[i] = tagData.Label
+		} else {
+			return nil, fmt.Errorf("tagMap input to RackElementLeafSwitchRequest.raw() missing required tag ID: '%s'", tagId)
+		}
+	}
+
 	result := &rawRackElementLeafSwitchRequest{
 		Label:              o.Label,
 		LinkPerSpineCount:  o.LinkPerSpineCount,
 		LinkPerSpineSpeed:  o.LinkPerSpineSpeed.raw(),
 		RedundancyProtocol: o.RedundancyProtocol.raw(),
-		LogicalDevice:      o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
-		Tags:               o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
+		LogicalDevice:      o.LogicalDeviceId,
+		Tags:               tags,
 	}
 	if o.MlagInfo != nil {
 		result.LeafLeafL3LinkCount = o.MlagInfo.LeafLeafL3LinkCount
@@ -438,7 +447,7 @@ func (o *RackElementLeafSwitchRequest) raw() *rawRackElementLeafSwitchRequest {
 		result.LeafLeafLinkSpeed = o.MlagInfo.LeafLeafLinkSpeed.raw()
 		result.MlagVlanId = o.MlagInfo.MlagVlanId
 	}
-	return result
+	return result, nil
 }
 
 type rawRackElementLeafSwitchRequest struct {
@@ -557,15 +566,29 @@ type RackElementAccessSwitchRequest struct {
 	Links              []RackLinkRequest
 	Label              string
 	LogicalDeviceId    ObjectId
-	Tags               []string
+	Tags               []ObjectId
 	EsiLagInfo         *EsiLagInfo
 }
 
-func (o *RackElementAccessSwitchRequest) raw() *rawRackElementAccessSwitchRequest {
+func (o *RackElementAccessSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementAccessSwitchRequest, error) {
+	tags := make([]string, len(o.Tags))
+	for i, tagId := range o.Tags {
+		if tagData, found := tagMap[tagId]; found {
+			tags[i] = tagData.Label
+		} else {
+			return nil, fmt.Errorf("tagMap input to RackElementAccessSwitchRequest.raw() missing required tag ID: '%s'", tagId)
+		}
+	}
+
 	links := make([]rawRackLinkRequest, len(o.Links))
 	for i, l := range o.Links {
-		links[i] = *l.raw()
+		rawLink, err := l.raw(tagMap)
+		if err != nil {
+			return nil, err
+		}
+		links[i] = *rawLink
 	}
+
 	var accessAccessLinkCount int
 	var accessAccessLinkSpeed *rawLogicalDevicePortSpeed
 	if o.EsiLagInfo != nil {
@@ -579,9 +602,9 @@ func (o *RackElementAccessSwitchRequest) raw() *rawRackElementAccessSwitchReques
 		Label:                 o.Label,
 		AccessAccessLinkCount: accessAccessLinkCount,
 		AccessAccessLinkSpeed: accessAccessLinkSpeed,
-		LogicalDevice:         o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
-		Tags:                  o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
-	}
+		LogicalDevice:         o.LogicalDeviceId,
+		Tags:                  tags,
+	}, nil
 }
 
 type rawRackElementAccessSwitchRequest struct {
@@ -680,7 +703,7 @@ func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAcce
 
 type RackLinkRequest struct {
 	Label              string                 // `json:"label"`
-	Tags               []string               // `json:"tags"`
+	Tags               []ObjectId             // `json:"tags"`
 	LinkPerSwitchCount int                    // `json:"link_per_switch_count"`
 	LinkSpeed          LogicalDevicePortSpeed // `json:"link_speed"`
 	TargetSwitchLabel  string                 // `json:"target_switch_label"`
@@ -689,9 +712,15 @@ type RackLinkRequest struct {
 	SwitchPeer         RackLinkSwitchPeer     // `json:"switch_peer"`
 }
 
-func (o RackLinkRequest) raw() *rawRackLinkRequest {
+func (o RackLinkRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackLinkRequest, error) {
 	tags := make([]string, len(o.Tags))
-	copy(tags, o.Tags)
+	for i, tagId := range o.Tags {
+		if tagData, found := tagMap[tagId]; found {
+			tags[i] = tagData.Label
+		} else {
+			return nil, fmt.Errorf("tagMap input to RackLinkRequest.raw() missing required tag ID '%s'", tagId)
+		}
+	}
 
 	// JSON encoding of lag_mode must be one of the accepted strings or null (nil ptr)
 	var lagModePtr *rackLinkLagMode
@@ -710,7 +739,7 @@ func (o RackLinkRequest) raw() *rawRackLinkRequest {
 		AttachmentType:     rackLinkAttachmentType(o.AttachmentType.String()),
 		LagMode:            lagModePtr,
 		SwitchPeer:         rackLinkSwitchPeer(o.SwitchPeer.String()),
-	}
+	}, nil
 }
 
 type rawRackLinkRequest struct {
@@ -721,7 +750,7 @@ type rawRackLinkRequest struct {
 	AttachmentType     rackLinkAttachmentType     `json:"attachment_type"`
 	LagMode            *rackLinkLagMode           `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
 	SwitchPeer         rackLinkSwitchPeer         `json:"switch_peer,omitempty"`
-	Tags               []string                   `json:"tags"` // needs to be fetched from API, cloned into rack type on create() / update()
+	Tags               []string                   `json:"tags"`
 }
 
 type RackLink struct {
@@ -799,16 +828,29 @@ type RackElementGenericSystemRequest struct {
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Loopback         FeatureSwitch
-	Tags             []string
+	Tags             []ObjectId
 	Label            string
 	Links            []RackLinkRequest
 	LogicalDeviceId  ObjectId
 }
 
-func (o *RackElementGenericSystemRequest) raw() *rawRackElementGenericSystemRequest {
-	var links []rawRackLinkRequest
-	for _, link := range o.Links {
-		links = append(links, *link.raw())
+func (o *RackElementGenericSystemRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementGenericSystemRequest, error) {
+	tags := make([]string, len(o.Tags))
+	for i, tagId := range o.Tags {
+		if tagData, found := tagMap[tagId]; found {
+			tags[i] = tagData.Label
+		} else {
+			return nil, fmt.Errorf("tagMap input to RackElementGenericSystemRequest.raw() missing required tag ID: '%s'", tagId)
+		}
+	}
+
+	links := make([]rawRackLinkRequest, len(o.Links))
+	for i, l := range o.Links {
+		rawLink, err := l.raw(tagMap)
+		if err != nil {
+			return nil, err
+		}
+		links[i] = *rawLink
 	}
 
 	return &rawRackElementGenericSystemRequest{
@@ -820,9 +862,9 @@ func (o *RackElementGenericSystemRequest) raw() *rawRackElementGenericSystemRequ
 		Loopback:         featureSwitch(o.Loopback.String()),
 		Label:            o.Label,
 		Links:            links,
-		LogicalDevice:    o.LogicalDeviceId, // needs to be fetched from API, cloned into rack type on create() / update()
-		Tags:             o.Tags,            // needs to be fetched from API, cloned into rack type on create() / update()
-	}
+		LogicalDevice:    o.LogicalDeviceId,
+		Tags:             tags,
+	}, nil
 }
 
 type rawRackElementGenericSystemRequest struct {
@@ -931,8 +973,8 @@ type RackTypeRequest struct {
 	Description              string
 	FabricConnectivityDesign FabricConnectivityDesign
 	LeafSwitches             []RackElementLeafSwitchRequest
-	GenericSystems           []RackElementGenericSystemRequest
 	AccessSwitches           []RackElementAccessSwitchRequest
+	GenericSystems           []RackElementGenericSystemRequest
 }
 
 func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackTypeRequest, error) {
@@ -940,62 +982,141 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 		DisplayName:              o.DisplayName,
 		Description:              o.Description,
 		FabricConnectivityDesign: o.FabricConnectivityDesign.raw(),
-		Tags:                     nil, // populated by API calls below
-		LogicalDevices:           nil, // populated by API calls below
+		LogicalDevices:           nil, // populated based on ldMap below
+		Tags:                     nil, // populated based on tagMap below
 		LeafSwitches:             make([]rawRackElementLeafSwitchRequest, len(o.LeafSwitches)),
 		AccessSwitches:           make([]rawRackElementAccessSwitchRequest, len(o.AccessSwitches)),
 		GenericSystems:           make([]rawRackElementGenericSystemRequest, len(o.GenericSystems)),
 	}
 
-	ldMap := make(map[ObjectId]struct{}) // collect IDs of all logical devices relevant to this rack
-	tagMap := make(map[string]struct{})  // collect labels of all tags relevant to this rack
+	// collect IDs of all logical devices relevant to this rack as a "set" of Object IDs
+	ldMap := make(map[ObjectId]struct{})
 
-	for i, s := range o.LeafSwitches {
-		result.LeafSwitches[i] = *s.raw()
-		ldMap[s.LogicalDeviceId] = struct{}{}
-		for _, t := range s.Tags {
-			tagMap[t] = struct{}{}
+	// collect all DesignTagData objects relevant to this rack, keyed by tag ID
+	tagMap := make(map[ObjectId]DesignTagData)
+
+	// getLabelAndCacheTagById populates tagMap (map[tagId]DesignTagData) by
+	// calling the Apstra tag API each time it's called with a previously-unseen
+	// tag ID. It returns the tag's label (used as a key within the rack-type
+	// JSON) and squirrels away the tag payload (DesignTagData) for subsequent
+	// use in the rawRackTypeRequest.
+	getLabelAndCacheTagById := func(id ObjectId) (string, error) {
+		var tagData DesignTagData
+		var found bool
+		if tagData, found = tagMap[id]; !found {
+			tag, err := client.GetTag(ctx, id)
+			if err != nil {
+				return "", err
+			}
+			tagMap[id] = *tag.Data
+			return tag.Data.Label, nil
 		}
+		return tagData.Label, nil
 	}
 
-	for i, s := range o.AccessSwitches {
-		result.AccessSwitches[i] = *s.raw()
-		ldMap[s.LogicalDeviceId] = struct{}{}
-		for _, t := range s.Tags {
-			tagMap[t] = struct{}{}
+	// each leaf switch: logical device and tags
+	for i, req := range o.LeafSwitches {
+		tagLabels := make([]string, len(req.Tags))
+		for j, tagId := range req.Tags {
+			label, err := getLabelAndCacheTagById(tagId) // fetch the tag label / cache the payload
+			if err != nil {
+				return nil, err
+			}
+			tagLabels[j] = label
 		}
+
+		raw, err := req.raw(tagMap) // raw-ify the leaf switch request
+		if err != nil {
+			return nil, err
+		}
+
+		ldMap[req.LogicalDeviceId] = struct{}{} // Add the logical device to our set
+		result.LeafSwitches[i] = *raw           // Add the raw leaf switch request to the result
 	}
 
-	for i, s := range o.GenericSystems {
-		result.GenericSystems[i] = *s.raw()
-		ldMap[s.LogicalDeviceId] = struct{}{}
-		for _, t := range s.Tags {
-			tagMap[t] = struct{}{}
+	// each access switch: logical device, tags and link tags
+	for i, req := range o.AccessSwitches {
+		tagLabels := make([]string, len(req.Tags))
+		for j, tagId := range req.Tags {
+			label, err := getLabelAndCacheTagById(tagId) // fetch the tag label / cache the payload
+			if err != nil {
+				return nil, err
+			}
+			tagLabels[j] = label
 		}
-		for _, l := range s.Links {
-			for _, t := range l.Tags {
-				tagMap[t] = struct{}{}
+
+		// populate map with tags used by each access switch link
+		for _, linkReq := range req.Links {
+			for _, tagId := range linkReq.Tags {
+				_, err := getLabelAndCacheTagById(tagId) // fetch the tag label / cache the payload
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
+
+		raw, err := req.raw(tagMap) // raw-ify the access switch request
+		if err != nil {
+			return nil, err
+		}
+
+		ldMap[req.LogicalDeviceId] = struct{}{} // Add the logical device to our set
+		result.AccessSwitches[i] = *raw         // Add the raw access switch request to the result
 	}
 
+	// each generic system: logical device, tags and link tags
+	for i, req := range o.GenericSystems {
+		tagLabels := make([]string, len(req.Tags))
+		for j, tagId := range req.Tags {
+			label, err := getLabelAndCacheTagById(tagId) // fetch the tag label / cache the payload
+			if err != nil {
+				return nil, err
+			}
+			tagLabels[j] = label
+		}
+
+		// populate map with tags used by each generic system link
+		for _, linkReq := range req.Links {
+			for _, tagId := range linkReq.Tags {
+				_, err := getLabelAndCacheTagById(tagId) // fetch the tag label / cache the payload
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		raw, err := req.raw(tagMap) // raw-ify the generic system request
+		if err != nil {
+			return nil, err
+		}
+
+		ldMap[req.LogicalDeviceId] = struct{}{} // Add the logical device to our set
+		result.GenericSystems[i] = *raw         // Add the raw generic system request to the result
+	}
+
+	// prepare the []rawLogicalDevice we'll submit when creating the rack type
+	// using ldMap, which is the set of logical device IDs representing every
+	// device in the rack (leaf, access, generic)
+	result.LogicalDevices = make([]rawLogicalDevice, len(ldMap))
+	i := 0
 	for id := range ldMap {
 		ld, err := client.getLogicalDevice(ctx, id)
 		if err != nil {
 			return nil, err
 		}
-		result.LogicalDevices = append(result.LogicalDevices, *ld)
+		result.LogicalDevices[i] = *ld
+		i++
 	}
 
-	for tl := range tagMap {
-		tag, err := client.getTagByLabel(ctx, tl)
-		if err != nil {
-			return nil, err
-		}
-		result.Tags = append(result.Tags, DesignTagData{
-			Label:       tag.Label,
-			Description: tag.Description,
-		})
+	// prepare the []DesignTagData we'll submit when creating the rack type
+	// using tagMap, which is the set of DesignTagData representing every tag
+	// applied to every device (leaf, access, generic) and link (from access or
+	// generic) found in the rack
+	result.Tags = make([]DesignTagData, len(tagMap))
+	i = 0
+	for _, tagData := range tagMap {
+		result.Tags[i] = tagData
+		i++
 	}
 
 	return result, nil
