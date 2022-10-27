@@ -897,14 +897,14 @@ type TemplateL3Collapsed struct {
 }
 
 type TemplateL3CollapsedData struct {
-	DisplayName          string                     `json:"display_name"`
-	AntiAffinityPolicy   AntiAffinityPolicy         `json:"anti_affinity_policy"`
-	RackTypes            []RackType                 `json:"rack_types"`
-	Capability           TemplateCapability         `json:"capability"`
-	MeshLinkSpeed        *rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
-	VirtualNetworkPolicy VirtualNetworkPolicy       `json:"virtual_network_policy"`
-	MeshLinkCount        int                        `json:"mesh_link_count"`
-	RackTypeCounts       []RackTypeCount            `json:"rack_type_counts"`
+	DisplayName          string                 `json:"display_name"`
+	AntiAffinityPolicy   AntiAffinityPolicy     `json:"anti_affinity_policy"`
+	RackTypes            []RackType             `json:"rack_types"`
+	Capability           TemplateCapability     `json:"capability"`
+	MeshLinkSpeed        LogicalDevicePortSpeed `json:"mesh_link_speed"`
+	VirtualNetworkPolicy VirtualNetworkPolicy   `json:"virtual_network_policy"`
+	MeshLinkCount        int                    `json:"mesh_link_count"`
+	RackTypeCounts       []RackTypeCount        `json:"rack_type_counts"`
 	DhcpServiceIntent    struct {
 		Active bool `json:"active"`
 	} `json:"dhcp_service_intent"`
@@ -967,7 +967,7 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 			AntiAffinityPolicy:   *antiAffinityPolicy,
 			RackTypes:            prt,
 			Capability:           TemplateCapability(capability),
-			MeshLinkSpeed:        o.MeshLinkSpeed,
+			MeshLinkSpeed:        o.MeshLinkSpeed.parse(),
 			VirtualNetworkPolicy: *vnp,
 			MeshLinkCount:        o.MeshLinkCount,
 			RackTypeCounts:       o.RackTypeCounts,
