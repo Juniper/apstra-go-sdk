@@ -85,7 +85,7 @@ func (o IntRanges) IndexOf(b IntfIntRange) int {
 
 func (o IntRanges) Overlaps(b IntfIntRange) bool {
 	for _, a := range o {
-		if IntOverlap(a, b) {
+		if IntRangeOverlap(a, b) {
 			return true
 		}
 	}
@@ -423,7 +423,8 @@ func (o *Client) deleteIntPoolRange(ctx context.Context, apiResourcesPoolById st
 	}
 	return o.updateIntPool(ctx, apiResourcesPoolById, poolId, req)
 }
-func IntOverlap(a, b IntfIntRange) bool {
+
+func IntRangeOverlap(a, b IntfIntRange) bool {
 	if a.first() >= b.first() && a.first() <= b.last() { // begin 'a' falls within 'b'
 		return true
 	}
@@ -437,4 +438,14 @@ func IntOverlap(a, b IntfIntRange) bool {
 		return true
 	}
 	return false // no overlap
+}
+
+func IntRangeEqual(a, b IntfIntRange) bool {
+	if a.first() != b.first() {
+		return false
+	}
+	if a.last() != b.last() {
+		return false
+	}
+	return true
 }
