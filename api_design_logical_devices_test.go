@@ -106,28 +106,26 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		deviceConfigs := make([]LogicalDevice, len(indexingTypes))
+		deviceConfigs := make([]LogicalDeviceData, len(indexingTypes))
 		for i, indexing := range indexingTypes {
-			deviceConfigs[i] = LogicalDevice{
-				Data: &LogicalDeviceData{
-					DisplayName: fmt.Sprintf("AAAA-%s-%d", t.Name(), i),
-					Panels: []LogicalDevicePanel{
-						{
-							PanelLayout: LogicalDevicePanelLayout{
-								RowCount:    2,
-								ColumnCount: 2,
-							},
-							PortIndexing: LogicalDevicePortIndexing{
-								Order:      indexing,
-								StartIndex: 0,
-								Schema:     "absolute",
-							},
-							PortGroups: []LogicalDevicePortGroup{
-								{
-									Count: 4,
-									Speed: "10G",
-									Roles: LogicalDevicePortRoleUnused,
-								},
+			deviceConfigs[i] = LogicalDeviceData{
+				DisplayName: fmt.Sprintf("AAAA-%s-%d", t.Name(), i),
+				Panels: []LogicalDevicePanel{
+					{
+						PanelLayout: LogicalDevicePanelLayout{
+							RowCount:    2,
+							ColumnCount: 2,
+						},
+						PortIndexing: LogicalDevicePortIndexing{
+							Order:      indexing,
+							StartIndex: 0,
+							Schema:     "absolute",
+						},
+						PortGroups: []LogicalDevicePortGroup{
+							{
+								Count: 4,
+								Speed: "10G",
+								Roles: LogicalDevicePortRoleUnused,
 							},
 						},
 					},
@@ -136,10 +134,9 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 		}
 
 		id := make([]ObjectId, len(deviceConfigs))
-		//for i := 0; i < len(deviceConfigs); i++ {
 		for i, devCfg := range deviceConfigs {
 			log.Printf("testing createLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			id[i], err = client.client.createLogicalDevice(context.TODO(), &devCfg)
+			id[i], err = client.client.createLogicalDevice(context.TODO(), devCfg.raw())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -151,9 +148,9 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 			}
 
 			log.Println(d.Id)
-			devCfg.Data.Panels[0].PortIndexing.StartIndex = 1
+			devCfg.Panels[0].PortIndexing.StartIndex = 1
 			log.Printf("testing updateLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.updateLogicalDevice(context.TODO(), d.Id, &devCfg)
+			err = client.client.updateLogicalDevice(context.TODO(), d.Id, devCfg.raw())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -166,7 +163,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 				}
 
 				log.Printf("testing updateLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = client.client.updateLogicalDevice(context.TODO(), id[i], previous)
+				err = client.client.updateLogicalDevice(context.TODO(), id[i], previous.Data.raw())
 				if err != nil {
 					t.Fatal(err)
 				}

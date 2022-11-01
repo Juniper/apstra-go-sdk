@@ -462,11 +462,11 @@ func (o *Client) createLogicalDevice(ctx context.Context, in *rawLogicalDeviceDa
 	return response.Id, nil
 }
 
-func (o *Client) updateLogicalDevice(ctx context.Context, id ObjectId, in *LogicalDevice) error {
+func (o *Client) updateLogicalDevice(ctx context.Context, id ObjectId, in *rawLogicalDeviceData) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignLogicalDeviceById, id),
-		apiInput: in.raw(),
+		apiInput: in,
 	})
 }
 

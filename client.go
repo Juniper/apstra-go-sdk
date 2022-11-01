@@ -791,8 +791,8 @@ func (o *Client) CreateLogicalDevice(ctx context.Context, in *LogicalDeviceData)
 
 // UpdateLogicalDevice replaces the whole logical device configuration specified
 // by id with the supplied details.
-func (o *Client) UpdateLogicalDevice(ctx context.Context, id ObjectId, in *LogicalDevice) error {
-	return o.updateLogicalDevice(ctx, id, in)
+func (o *Client) UpdateLogicalDevice(ctx context.Context, id ObjectId, in *LogicalDeviceData) error {
+	return o.updateLogicalDevice(ctx, id, in.raw())
 }
 
 // DeleteLogicalDevice deletes the specified logical device
