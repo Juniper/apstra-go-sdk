@@ -233,6 +233,15 @@ func (o fabricConnectivityDesign) parse() (int, error) {
 	}
 }
 
+func (o *FabricConnectivityDesign) FromString(in string) error {
+	i, err := fabricConnectivityDesign(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = FabricConnectivityDesign(i)
+	return nil
+}
+
 func (o FeatureSwitch) Int() int {
 	return int(o)
 }
