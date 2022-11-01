@@ -45,33 +45,33 @@ const (
 	logicalDevicePortRoleUnused     = logicalDevicePortRole("unused")
 )
 
-func (o LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
+func (o *LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
 	var result []logicalDevicePortRole
-	if o&LogicalDevicePortRoleAccess != 0 {
+	if *o&LogicalDevicePortRoleAccess != 0 {
 		result = append(result, logicalDevicePortRoleAccess)
 	}
-	if o&LogicalDevicePortRoleGeneric != 0 {
+	if *o&LogicalDevicePortRoleGeneric != 0 {
 		result = append(result, logicalDevicePortRoleGeneric)
 	}
-	if o&LogicalDevicePortRoleL3Server != 0 {
+	if *o&LogicalDevicePortRoleL3Server != 0 {
 		result = append(result, logicalDevicePortRoleL3Server)
 	}
-	if o&LogicalDevicePortRoleLeaf != 0 {
+	if *o&LogicalDevicePortRoleLeaf != 0 {
 		result = append(result, logicalDevicePortRoleLeaf)
 	}
-	if o&LogicalDevicePortRolePeer != 0 {
+	if *o&LogicalDevicePortRolePeer != 0 {
 		result = append(result, logicalDevicePortRolePeer)
 	}
-	if o&LogicalDevicePortRoleServer != 0 {
+	if *o&LogicalDevicePortRoleServer != 0 {
 		result = append(result, logicalDevicePortRoleServer)
 	}
-	if o&LogicalDevicePortRoleSpine != 0 {
+	if *o&LogicalDevicePortRoleSpine != 0 {
 		result = append(result, logicalDevicePortRoleSpine)
 	}
-	if o&LogicalDevicePortRoleSuperspine != 0 {
+	if *o&LogicalDevicePortRoleSuperspine != 0 {
 		result = append(result, logicalDevicePortRoleSuperspine)
 	}
-	if o&LogicalDevicePortRoleUnused != 0 {
+	if *o&LogicalDevicePortRoleUnused != 0 {
 		result = append(result, logicalDevicePortRoleUnused)
 	}
 	return result
@@ -83,6 +83,18 @@ func (o *LogicalDevicePortRoleFlags) Strings() []string {
 		result = append(result, string(role))
 	}
 	return result
+}
+
+func (o *LogicalDevicePortRoleFlags) FromStrings(in []string) error {
+	*o = 0
+	for _, s := range in {
+		f, err := logicalDevicePortRole(s).parse()
+		if err != nil {
+			return err
+		}
+		*o = *o & f
+	}
+	return nil
 }
 
 func (o logicalDevicePortRole) parse() (LogicalDevicePortRoleFlags, error) {
