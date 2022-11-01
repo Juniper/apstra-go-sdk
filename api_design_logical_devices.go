@@ -92,7 +92,7 @@ func (o *LogicalDevicePortRoleFlags) FromStrings(in []string) error {
 		if err != nil {
 			return err
 		}
-		*o = *o & f
+		*o = *o | f
 	}
 	return nil
 }
