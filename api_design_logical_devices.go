@@ -138,6 +138,22 @@ type LogicalDeviceData struct {
 	Panels      []LogicalDevicePanel
 }
 
+func (o *LogicalDeviceData) raw() *rawLogicalDeviceData {
+	panels := make([]rawLogicalDevicePanel, len(o.Panels))
+	for i := range o.Panels {
+		panels[i] = *o.Panels[i].raw()
+	}
+	return &rawLogicalDeviceData{
+		DisplayName: o.DisplayName,
+		Panels:      panels,
+	}
+}
+
+type rawLogicalDeviceData struct {
+	DisplayName string                  `json:"display_name"`
+	Panels      []rawLogicalDevicePanel `json:"panels"`
+}
+
 type LogicalDevicePanelLayout struct {
 	RowCount    int `json:"row_count"`
 	ColumnCount int `json:"column_count"`
@@ -432,12 +448,12 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 	}
 }
 
-func (o *Client) createLogicalDevice(ctx context.Context, in *LogicalDevice) (ObjectId, error) {
+func (o *Client) createLogicalDevice(ctx context.Context, in *rawLogicalDeviceData) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignLogicalDevices,
-		apiInput:    in.raw(),
+		apiInput:    in,
 		apiResponse: response,
 	})
 	if err != nil {
