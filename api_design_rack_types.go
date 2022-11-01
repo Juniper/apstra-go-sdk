@@ -199,6 +199,15 @@ func (o leafRedundancyProtocol) parse() (int, error) {
 	}
 }
 
+func (o *LeafRedundancyProtocol) FromString(in string) error {
+	i, err := leafRedundancyProtocol(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = LeafRedundancyProtocol(i)
+	return nil
+}
+
 func (o FabricConnectivityDesign) Int() int {
 	return int(o)
 }
