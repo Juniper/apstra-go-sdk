@@ -161,6 +161,15 @@ func (o accessRedundancyProtocol) parse() (int, error) {
 	}
 }
 
+func (o *AccessRedundancyProtocol) FromString(in string) error {
+	i, err := accessRedundancyProtocol(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = AccessRedundancyProtocol(i)
+	return nil
+}
+
 func (o LeafRedundancyProtocol) Int() int {
 	return int(o)
 }
