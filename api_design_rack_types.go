@@ -416,6 +416,15 @@ func (o RackLinkSwitchPeer) String() string {
 	}
 }
 
+func (o *RackLinkSwitchPeer) FromString(in string) error {
+	i, err := rackLinkSwitchPeer(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = RackLinkSwitchPeer(i)
+	return nil
+}
+
 func (o rackLinkSwitchPeer) string() string {
 	return string(o)
 }
