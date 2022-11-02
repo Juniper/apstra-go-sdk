@@ -785,14 +785,14 @@ func (o *Client) GetLogicalDeviceByName(ctx context.Context, name string) (*Logi
 }
 
 // CreateLogicalDevice creates a new logical device, returns its ObjectId
-func (o *Client) CreateLogicalDevice(ctx context.Context, in *LogicalDevice) (ObjectId, error) {
-	return o.createLogicalDevice(ctx, in)
+func (o *Client) CreateLogicalDevice(ctx context.Context, in *LogicalDeviceData) (ObjectId, error) {
+	return o.createLogicalDevice(ctx, in.raw())
 }
 
 // UpdateLogicalDevice replaces the whole logical device configuration specified
 // by id with the supplied details.
-func (o *Client) UpdateLogicalDevice(ctx context.Context, id ObjectId, in *LogicalDevice) error {
-	return o.updateLogicalDevice(ctx, id, in)
+func (o *Client) UpdateLogicalDevice(ctx context.Context, id ObjectId, in *LogicalDeviceData) error {
+	return o.updateLogicalDevice(ctx, id, in.raw())
 }
 
 // DeleteLogicalDevice deletes the specified logical device

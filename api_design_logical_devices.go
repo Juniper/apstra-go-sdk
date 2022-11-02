@@ -45,33 +45,33 @@ const (
 	logicalDevicePortRoleUnused     = logicalDevicePortRole("unused")
 )
 
-func (o LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
+func (o *LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
 	var result []logicalDevicePortRole
-	if o&LogicalDevicePortRoleAccess != 0 {
+	if *o&LogicalDevicePortRoleAccess != 0 {
 		result = append(result, logicalDevicePortRoleAccess)
 	}
-	if o&LogicalDevicePortRoleGeneric != 0 {
+	if *o&LogicalDevicePortRoleGeneric != 0 {
 		result = append(result, logicalDevicePortRoleGeneric)
 	}
-	if o&LogicalDevicePortRoleL3Server != 0 {
+	if *o&LogicalDevicePortRoleL3Server != 0 {
 		result = append(result, logicalDevicePortRoleL3Server)
 	}
-	if o&LogicalDevicePortRoleLeaf != 0 {
+	if *o&LogicalDevicePortRoleLeaf != 0 {
 		result = append(result, logicalDevicePortRoleLeaf)
 	}
-	if o&LogicalDevicePortRolePeer != 0 {
+	if *o&LogicalDevicePortRolePeer != 0 {
 		result = append(result, logicalDevicePortRolePeer)
 	}
-	if o&LogicalDevicePortRoleServer != 0 {
+	if *o&LogicalDevicePortRoleServer != 0 {
 		result = append(result, logicalDevicePortRoleServer)
 	}
-	if o&LogicalDevicePortRoleSpine != 0 {
+	if *o&LogicalDevicePortRoleSpine != 0 {
 		result = append(result, logicalDevicePortRoleSpine)
 	}
-	if o&LogicalDevicePortRoleSuperspine != 0 {
+	if *o&LogicalDevicePortRoleSuperspine != 0 {
 		result = append(result, logicalDevicePortRoleSuperspine)
 	}
-	if o&LogicalDevicePortRoleUnused != 0 {
+	if *o&LogicalDevicePortRoleUnused != 0 {
 		result = append(result, logicalDevicePortRoleUnused)
 	}
 	return result
@@ -83,6 +83,18 @@ func (o *LogicalDevicePortRoleFlags) Strings() []string {
 		result = append(result, string(role))
 	}
 	return result
+}
+
+func (o *LogicalDevicePortRoleFlags) FromStrings(in []string) error {
+	*o = 0
+	for _, s := range in {
+		f, err := logicalDevicePortRole(s).parse()
+		if err != nil {
+			return err
+		}
+		*o = *o | f
+	}
+	return nil
 }
 
 func (o logicalDevicePortRole) parse() (LogicalDevicePortRoleFlags, error) {
@@ -136,6 +148,22 @@ type getLogicalDevicesResponse struct {
 type LogicalDeviceData struct {
 	DisplayName string
 	Panels      []LogicalDevicePanel
+}
+
+func (o *LogicalDeviceData) raw() *rawLogicalDeviceData {
+	panels := make([]rawLogicalDevicePanel, len(o.Panels))
+	for i := range o.Panels {
+		panels[i] = *o.Panels[i].raw()
+	}
+	return &rawLogicalDeviceData{
+		DisplayName: o.DisplayName,
+		Panels:      panels,
+	}
+}
+
+type rawLogicalDeviceData struct {
+	DisplayName string                  `json:"display_name"`
+	Panels      []rawLogicalDevicePanel `json:"panels"`
 }
 
 type LogicalDevicePanelLayout struct {
@@ -432,12 +460,12 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 	}
 }
 
-func (o *Client) createLogicalDevice(ctx context.Context, in *LogicalDevice) (ObjectId, error) {
+func (o *Client) createLogicalDevice(ctx context.Context, in *rawLogicalDeviceData) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignLogicalDevices,
-		apiInput:    in.raw(),
+		apiInput:    in,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -446,11 +474,11 @@ func (o *Client) createLogicalDevice(ctx context.Context, in *LogicalDevice) (Ob
 	return response.Id, nil
 }
 
-func (o *Client) updateLogicalDevice(ctx context.Context, id ObjectId, in *LogicalDevice) error {
+func (o *Client) updateLogicalDevice(ctx context.Context, id ObjectId, in *rawLogicalDeviceData) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignLogicalDeviceById, id),
-		apiInput: in.raw(),
+		apiInput: in,
 	})
 }
 
