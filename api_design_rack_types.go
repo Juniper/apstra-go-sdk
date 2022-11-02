@@ -161,6 +161,15 @@ func (o accessRedundancyProtocol) parse() (int, error) {
 	}
 }
 
+func (o *AccessRedundancyProtocol) FromString(in string) error {
+	i, err := accessRedundancyProtocol(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = AccessRedundancyProtocol(i)
+	return nil
+}
+
 func (o LeafRedundancyProtocol) Int() int {
 	return int(o)
 }
@@ -199,6 +208,15 @@ func (o leafRedundancyProtocol) parse() (int, error) {
 	}
 }
 
+func (o *LeafRedundancyProtocol) FromString(in string) error {
+	i, err := leafRedundancyProtocol(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = LeafRedundancyProtocol(i)
+	return nil
+}
+
 func (o FabricConnectivityDesign) Int() int {
 	return int(o)
 }
@@ -231,6 +249,15 @@ func (o fabricConnectivityDesign) parse() (int, error) {
 	default:
 		return 0, fmt.Errorf(FabricConnectivityDesignUnknown, o)
 	}
+}
+
+func (o *FabricConnectivityDesign) FromString(in string) error {
+	i, err := fabricConnectivityDesign(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = FabricConnectivityDesign(i)
+	return nil
 }
 
 func (o FeatureSwitch) Int() int {
@@ -344,6 +371,16 @@ func (o RackLinkLagMode) String() string {
 	}
 }
 
+func (o *RackLinkLagMode) FromString(in string) error {
+	i, err := rackLinkLagMode(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = RackLinkLagMode(i)
+	return nil
+
+}
+
 func (o rackLinkLagMode) string() string {
 	return string(o)
 }
@@ -377,6 +414,15 @@ func (o RackLinkSwitchPeer) String() string {
 	default:
 		return fmt.Sprintf(rackLinkSwitchPeerUnknown, o)
 	}
+}
+
+func (o *RackLinkSwitchPeer) FromString(in string) error {
+	i, err := rackLinkSwitchPeer(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = RackLinkSwitchPeer(i)
+	return nil
 }
 
 func (o rackLinkSwitchPeer) string() string {
