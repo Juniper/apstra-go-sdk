@@ -371,6 +371,16 @@ func (o RackLinkLagMode) String() string {
 	}
 }
 
+func (o *RackLinkLagMode) FromString(in string) error {
+	i, err := rackLinkLagMode(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = RackLinkLagMode(i)
+	return nil
+
+}
+
 func (o rackLinkLagMode) string() string {
 	return string(o)
 }
