@@ -1143,14 +1143,18 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 	// prepare the []rawLogicalDevice we'll submit when creating the rack type
 	// using ldMap, which is the set of logical device IDs representing every
 	// device in the rack (leaf, access, generic)
-	result.LogicalDevices = make([]rawLogicalDevice, len(ldMap))
+	result.LogicalDevices = make([]rawLogicalDeviceData, len(ldMap))
 	i := 0
 	for id := range ldMap {
 		ld, err := client.getLogicalDevice(ctx, id)
 		if err != nil {
 			return nil, err
 		}
-		result.LogicalDevices[i] = *ld
+
+		result.LogicalDevices[i] = rawLogicalDeviceData{
+			DisplayName: ld.DisplayName,
+			Panels:      ld.Panels,
+		}
 		i++
 	}
 
@@ -1173,7 +1177,7 @@ type rawRackTypeRequest struct {
 	Description              string                               `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign             `json:"fabric_connectivity_design"`
 	Tags                     []DesignTagData                      `json:"tags,omitempty"`
-	LogicalDevices           []rawLogicalDevice                   `json:"logical_devices,omitempty"`
+	LogicalDevices           []rawLogicalDeviceData               `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystemRequest `json:"generic_systems,omitempty"`
 	LeafSwitches             []rawRackElementLeafSwitchRequest    `json:"leafs,omitempty"`
 	AccessSwitches           []rawRackElementAccessSwitchRequest  `json:"access_switches,omitempty"`
@@ -1341,16 +1345,12 @@ func (o *Client) getRackTypeByName(ctx context.Context, name string) (*RackType,
 	}
 }
 
-func (o *Client) createRackType(ctx context.Context, request *RackTypeRequest) (ObjectId, error) {
-	rawRequest, err := request.raw(ctx, o)
-	if err != nil {
-		return "", err
-	}
+func (o *Client) createRackType(ctx context.Context, request *rawRackTypeRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignRackTypes,
-		apiInput:    rawRequest,
+		apiInput:    request,
 		apiResponse: response,
 	})
 	if err != nil {
