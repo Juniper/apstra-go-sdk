@@ -235,7 +235,22 @@ func (o *Client) listAllInterfaceMapIds(ctx context.Context) ([]ObjectId, error)
 	return response.Items, nil
 }
 
-func (o *Client) getInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMap, error) {
+func (o *Client) getAllInterfaceMaps(ctx context.Context) ([]rawInterfaceMap, error) {
+	response := &struct {
+		Items []rawInterfaceMap `json:"items"`
+	}{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      apiUrlDesignInterfaceMaps,
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response.Items, nil
+}
+
+func (o *Client) getInterfaceMap(ctx context.Context, id ObjectId) (*rawInterfaceMap, error) {
 	response := &rawInterfaceMap{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -243,9 +258,44 @@ func (o *Client) getInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMa
 		apiResponse: &response,
 	})
 	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response, nil
+}
+
+func (o *Client) getInterfaceMapsByName(ctx context.Context, desired string) ([]rawInterfaceMap, error) {
+	interfaceMaps, err := o.getAllInterfaceMaps(ctx)
+	if err != nil {
 		return nil, err
 	}
-	return response.polish()
+	var result []rawInterfaceMap
+	for _, interfaceMap := range interfaceMaps {
+		if interfaceMap.Label == desired {
+			result = append(result, interfaceMap)
+		}
+	}
+	return result, nil
+}
+
+func (o *Client) getInterfaceMapByName(ctx context.Context, desired string) (*rawInterfaceMap, error) {
+	interfaceMaps, err := o.getInterfaceMapsByName(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+	switch len(interfaceMaps) {
+	case 0:
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no interface map named '%s' found", desired),
+		}
+	case 1:
+		return &interfaceMaps[0], nil
+	default:
+		return nil, ApstraClientErr{
+			errType: ErrMultipleMatch,
+			err:     fmt.Errorf("found multiple interface maps named '%s' found", desired),
+		}
+	}
 }
 
 func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMapData) (ObjectId, error) {
