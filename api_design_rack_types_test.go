@@ -202,3 +202,23 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 		log.Printf("id: '%s'\n", rt.Id)
 	}
 }
+
+func TestFoo(t *testing.T) {
+	topology, err := getCloudlabsTopology("621c9c21-3360-47af-a62d-4207e196d89e")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := topology.getGoapstraClientCfg()
+	if err != nil {
+		t.Fatal(err)
+	}
+	client, err := cfg.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	rt, err := client.GetRackType(context.Background(), "ckoq-6-0qbumharsbeqica")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = rt
+}

@@ -1081,7 +1081,39 @@ func (o *Client) ListAllInterfaceMapIds(ctx context.Context) ([]ObjectId, error)
 
 // GetInterfaceMap returns *InterfaceMap representing the interface map identified by id
 func (o *Client) GetInterfaceMap(ctx context.Context, id ObjectId) (*InterfaceMap, error) {
-	return o.getInterfaceMap(ctx, id)
+	interfaceMap, err := o.getInterfaceMap(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return interfaceMap.polish()
+}
+
+// GetAllInterfaceMaps returns []InterfaceMap representing all interface maps
+// configured on Apstra
+func (o *Client) GetAllInterfaceMaps(ctx context.Context) ([]InterfaceMap, error) {
+	interfaceMaps, err := o.getAllInterfaceMaps(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]InterfaceMap, len(interfaceMaps))
+	for i := range interfaceMaps {
+		polished, err := interfaceMaps[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
+// GetInterfaceMapByName returns *Interface map where exactly one interface map
+// uses the desired name.
+func (o *Client) GetInterfaceMapByName(ctx context.Context, desired string) (*InterfaceMap, error) {
+	raw, err := o.getInterfaceMapByName(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // CreateInterfaceMap creates an interface map, returns its ObjectId

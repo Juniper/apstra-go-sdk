@@ -107,7 +107,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 		}
 
 		log.Printf("testing getInterfaceMap() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		asCreated, err := client.client.getInterfaceMap(context.TODO(), mapId)
+		asCreated, err := client.client.GetInterfaceMap(context.TODO(), mapId)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -176,4 +176,23 @@ func TestCreateInterfaceMap(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+func TestGetInterfaceMapByName(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	desired := "Juniper_QFX5120-32C_Junos__AOS-32x100-1"
+
+	for clientName, client := range clients {
+		log.Printf("testing getInterfaceMapByName(%s) against %s %s (%s)", desired, client.clientType, clientName, client.client.ApiVersion())
+		interfaceMap, err := client.client.GetInterfaceMapByName(context.Background(), desired)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Printf("%s <---> %s", interfaceMap.Data.LogicalDeviceId, interfaceMap.Data.DeviceProfileId)
+	}
+
 }
