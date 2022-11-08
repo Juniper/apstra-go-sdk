@@ -1119,7 +1119,11 @@ func (o *Client) PatchNode(ctx context.Context, blueprint ObjectId, node ObjectI
 // items found in the global catalog. Changes to global catalog items will not
 // propagate into previously-created rack types.
 func (o *Client) CreateRackType(ctx context.Context, request *RackTypeRequest) (ObjectId, error) {
-	return o.createRackType(ctx, request)
+	raw, err := request.raw(ctx, o)
+	if err != nil {
+		return "", err
+	}
+	return o.createRackType(ctx, raw)
 }
 
 // UpdateRackType updates the Apstra Rack Type identified by id, based on the

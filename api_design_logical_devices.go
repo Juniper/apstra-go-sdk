@@ -155,6 +155,7 @@ func (o *LogicalDeviceData) raw() *rawLogicalDeviceData {
 	for i := range o.Panels {
 		panels[i] = *o.Panels[i].raw()
 	}
+
 	return &rawLogicalDeviceData{
 		DisplayName: o.DisplayName,
 		Panels:      panels,
