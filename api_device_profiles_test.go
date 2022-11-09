@@ -5,6 +5,7 @@ package goapstra
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"testing"
 )
@@ -81,6 +82,33 @@ func TestGetDeviceProfileByName(t *testing.T) {
 		}
 		if dp.Id != desiredId {
 			t.Fatalf("expected '%s', got '%s'", desiredId, dp.Id)
+		}
+	}
+}
+
+func TestGetTransformCandidates(t *testing.T) {
+	clients, err := getTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dpId := ObjectId("Cisco_3172PQ_NXOS")
+	intfName := "Ethernet1/1"
+	intfSpeed := LogicalDevicePortSpeed("10G")
+
+	for clientName, client := range clients {
+		log.Printf("testing GetDeviceProfileByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		dp, err := client.client.GetDeviceProfile(context.Background(), dpId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		candidates := dp.TransformationCandidates(intfName, intfSpeed)
+		for i := range candidates {
+			dump, err := json.MarshalIndent(&candidates[i], "", "  ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Print(string(dump))
 		}
 	}
 }
