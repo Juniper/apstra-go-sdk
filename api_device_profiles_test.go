@@ -58,8 +58,8 @@ func TestGetDeviceProfile(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if dp.Label != desiredLabel {
-			t.Fatalf("expected '%s', got '%s'", desiredLabel, dp.Label)
+		if dp.Data.Label != desiredLabel {
+			t.Fatalf("expected '%s', got '%s'", desiredLabel, dp.Data.Label)
 		}
 	}
 

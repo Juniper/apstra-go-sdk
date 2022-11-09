@@ -197,17 +197,57 @@ func (o *rawTransformInterface) polish() *TransformInterface {
 }
 
 type DeviceProfile struct {
-	Id                   ObjectId
+	Id             ObjectId
+	CreatedAt      time.Time
+	LastModifiedAt time.Time
+	Data           *DeviceProfileData
+}
+
+type DeviceProfileData struct {
 	Label                string
 	DeviceProfileType    string
-	CreatedAt            time.Time
-	LastModifiedAt       time.Time
 	ChassisProfileId     string
 	ChassisCount         int
 	SlotCount            int
 	HardwareCapabilities HardwareCapabilities
 	SoftwareCapabilities SoftwareCapabilities
 	Ports                []PortInfo
+	Selector             DeviceSelector
+	ChassisInfo          DeviceProfileChassisInfo
+	LinecardsInfo        []DeviceProfileLinecardInfo
+	SlotConfiguration    []DeviceProfileSlotConfiguration
+}
+
+func (o *DeviceProfileData) raw() *rawDeviceProfileData {
+	ports := make([]rawPortInfo, len(o.Ports))
+	for i := range o.Ports {
+		ports[i] = *o.Ports[i].raw()
+	}
+	return &rawDeviceProfileData{
+		Label:                o.Label,
+		DeviceProfileType:    o.DeviceProfileType,
+		ChassisProfileId:     o.ChassisProfileId,
+		ChassisCount:         o.ChassisCount,
+		SlotCount:            o.SlotCount,
+		HardwareCapabilities: o.HardwareCapabilities,
+		SoftwareCapabilities: o.SoftwareCapabilities,
+		Ports:                ports,
+		Selector:             o.Selector,
+		ChassisInfo:          o.ChassisInfo,
+		LinecardsInfo:        o.LinecardsInfo,
+		SlotConfiguration:    nil,
+	}
+}
+
+type rawDeviceProfileData struct {
+	Label                string
+	DeviceProfileType    string
+	ChassisProfileId     string
+	ChassisCount         int
+	SlotCount            int
+	HardwareCapabilities HardwareCapabilities
+	SoftwareCapabilities SoftwareCapabilities
+	Ports                []rawPortInfo
 	Selector             DeviceSelector
 	ChassisInfo          DeviceProfileChassisInfo
 	LinecardsInfo        []DeviceProfileLinecardInfo
@@ -230,28 +270,6 @@ type DeviceProfileLinecardInfo struct {
 type DeviceProfileSlotConfiguration struct {
 	LinecardProfileId string `json:"linecard_profile_id"`
 	SlotId            int    `json:"slot_id"`
-}
-
-func (o *DeviceProfile) raw() *rawDeviceProfile {
-	ports := make([]rawPortInfo, len(o.Ports))
-	for i := range o.Ports {
-		ports[i] = *o.Ports[i].raw()
-	}
-	return &rawDeviceProfile{
-		Id:                   o.Id,
-		Label:                o.Label,
-		DeviceProfileType:    o.DeviceProfileType,
-		ChassisProfileId:     o.ChassisProfileId,
-		ChassisCount:         o.ChassisCount,
-		SlotCount:            o.SlotCount,
-		HardwareCapabilities: o.HardwareCapabilities,
-		SoftwareCapabilities: o.SoftwareCapabilities,
-		Ports:                ports,
-		Selector:             o.Selector,
-		ChassisInfo:          o.ChassisInfo,
-		LinecardsInfo:        o.LinecardsInfo,
-		SlotConfiguration:    nil,
-	}
 }
 
 type rawDeviceProfile struct {
@@ -277,22 +295,25 @@ func (o *rawDeviceProfile) polish() *DeviceProfile {
 	for i := range o.Ports {
 		ports[i] = *o.Ports[i].polish()
 	}
+
 	return &DeviceProfile{
-		Id:                   o.Id,
-		Label:                o.Label,
-		DeviceProfileType:    o.DeviceProfileType,
-		CreatedAt:            o.CreatedAt,
-		LastModifiedAt:       o.LastModifiedAt,
-		ChassisProfileId:     o.ChassisProfileId,
-		ChassisCount:         o.ChassisCount,
-		SlotCount:            o.SlotCount,
-		HardwareCapabilities: o.HardwareCapabilities,
-		SoftwareCapabilities: o.SoftwareCapabilities,
-		Ports:                ports,
-		Selector:             o.Selector,
-		ChassisInfo:          o.ChassisInfo,
-		LinecardsInfo:        o.LinecardsInfo,
-		SlotConfiguration:    o.SlotConfiguration,
+		Id:             o.Id,
+		CreatedAt:      o.CreatedAt,
+		LastModifiedAt: o.LastModifiedAt,
+		Data: &DeviceProfileData{
+			Label:                o.Label,
+			DeviceProfileType:    o.DeviceProfileType,
+			ChassisProfileId:     o.ChassisProfileId,
+			ChassisCount:         o.ChassisCount,
+			SlotCount:            o.SlotCount,
+			HardwareCapabilities: o.HardwareCapabilities,
+			SoftwareCapabilities: o.SoftwareCapabilities,
+			Ports:                ports,
+			Selector:             o.Selector,
+			ChassisInfo:          o.ChassisInfo,
+			LinecardsInfo:        o.LinecardsInfo,
+			SlotConfiguration:    o.SlotConfiguration,
+		},
 	}
 }
 
@@ -301,7 +322,7 @@ func (o *rawDeviceProfile) polish() *DeviceProfile {
 // transformations matching the specified interface name and speed are returned.
 func (o *DeviceProfile) TransformationCandidates(intfName string, intfSpeed LogicalDevicePortSpeed) map[int][]Transformation {
 	result := make(map[int][]Transformation)
-	for _, port := range o.Ports {
+	for _, port := range o.Data.Ports {
 		var transformations []Transformation
 		for _, transformation := range port.Transformations {
 			for _, intf := range transformation.Interfaces {
@@ -390,7 +411,7 @@ func (o *Client) getDeviceProfile(ctx context.Context, id ObjectId) (*rawDeviceP
 	return response, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) createDeviceProfile(ctx context.Context, profile *rawDeviceProfile) (ObjectId, error) {
+func (o *Client) createDeviceProfile(ctx context.Context, profile *rawDeviceProfileData) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -404,7 +425,7 @@ func (o *Client) createDeviceProfile(ctx context.Context, profile *rawDeviceProf
 	return response.Id, nil
 }
 
-func (o *Client) updateDeviceProfile(ctx context.Context, id ObjectId, profile *rawDeviceProfile) error {
+func (o *Client) updateDeviceProfile(ctx context.Context, id ObjectId, profile *rawDeviceProfileData) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDeviceProfileById, id),
