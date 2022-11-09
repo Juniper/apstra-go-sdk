@@ -146,6 +146,41 @@ func (o *Client) getAllDeviceProfiles(ctx context.Context) ([]DeviceProfile, err
 	return response.Items, convertTtaeToAceWherePossible(err)
 }
 
+func (o *Client) getDeviceProfilesByName(ctx context.Context, desired string) ([]DeviceProfile, error) {
+	deviceProfiles, err := o.getAllDeviceProfiles(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var result []DeviceProfile
+	for _, deviceProfile := range deviceProfiles {
+		if deviceProfile.Label == desired {
+			result = append(result, deviceProfile)
+		}
+	}
+	return result, nil
+}
+
+func (o *Client) getDeviceProfileByName(ctx context.Context, desired string) (*DeviceProfile, error) {
+	deviceProfiles, err := o.getDeviceProfilesByName(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+	switch len(deviceProfiles) {
+	case 0:
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no device profile named '%s' found", desired),
+		}
+	case 1:
+		return &deviceProfiles[0], nil
+	default:
+		return nil, ApstraClientErr{
+			errType: ErrMultipleMatch,
+			err:     fmt.Errorf("found multiple device profiles named '%s'", desired),
+		}
+	}
+}
+
 func (o *Client) getDeviceProfile(ctx context.Context, id ObjectId) (*DeviceProfile, error) {
 	response := &DeviceProfile{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
