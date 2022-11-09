@@ -357,17 +357,17 @@ func (o *DeviceProfile) PortByInterfaceName(desired string) (*PortInfo, error) {
 }
 
 // TransformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
-// and returns a []Transformation populated with candidate transformations
-// available according to the PortInfo. Only "active" transformations are
-// considered.
-func (o *PortInfo) TransformationCandidates(intfName string, intfSpeed LogicalDevicePortSpeed) []Transformation {
-	var result []Transformation
+// and returns a map[int]Transformation populated with candidate transformations
+// available according to the PortInfo and keyed by the transformation ID. Only
+// "active" transformations are returned.
+func (o *PortInfo) TransformationCandidates(intfName string, intfSpeed LogicalDevicePortSpeed) map[int]Transformation {
+	result := make(map[int]Transformation)
 	for _, transformation := range o.Transformations {
 		for _, intf := range transformation.Interfaces {
 			if intf.Name == intfName &&
 				intf.State == "active" &&
 				intf.Speed.IsEqual(intfSpeed) {
-				result = append(result, transformation)
+				result[transformation.TransformationId] = transformation
 			}
 		}
 	}
