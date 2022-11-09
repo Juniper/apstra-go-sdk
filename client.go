@@ -1216,23 +1216,47 @@ func (o *Client) ApiVersion() string {
 
 // GetDeviceProfile returns device profile
 func (o *Client) GetDeviceProfile(ctx context.Context, id ObjectId) (*DeviceProfile, error) {
-	return o.getDeviceProfile(ctx, id)
+	raw, err := o.getDeviceProfile(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish(), nil
 }
 
 // GetAllDeviceProfiles returns []DeviceProfile
 func (o *Client) GetAllDeviceProfiles(ctx context.Context) ([]DeviceProfile, error) {
-	return o.getAllDeviceProfiles(ctx)
+	raw, err := o.getAllDeviceProfiles(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]DeviceProfile, len(raw))
+	for i := range raw {
+		result[i] = *raw[i].polish()
+	}
+	return result, nil
 }
 
 // GetDeviceProfilesByName returns []DeviceProfile including all profiles using the desired name
 func (o *Client) GetDeviceProfilesByName(ctx context.Context, desired string) ([]DeviceProfile, error) {
-	return o.getDeviceProfilesByName(ctx, desired)
+	raw, err := o.getDeviceProfilesByName(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]DeviceProfile, len(raw))
+	for i := range raw {
+		result[i] = *raw[i].polish()
+	}
+	return result, nil
 }
 
 // GetDeviceProfileByName returns *DeviceProfile indicating the device profile which uses the
 // desired name, or an error if 0 or > 1 device profiles match.
 func (o *Client) GetDeviceProfileByName(ctx context.Context, desired string) (*DeviceProfile, error) {
-	return o.getDeviceProfileByName(ctx, desired)
+	raw, err := o.getDeviceProfileByName(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish(), nil
 }
 
 // CreateDeviceProfile creates device profile

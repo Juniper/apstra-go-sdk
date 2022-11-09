@@ -18,10 +18,6 @@ type optionsDeviceProfilessResponse struct {
 	Methods []string   `json:"methods"`
 }
 
-type getAllDeviceProfilesResponse struct {
-	Items []DeviceProfile
-}
-
 type HardwareCapabilities struct {
 	FormFactor     string `json:"form_factor"`
 	Cpu            string `json:"cpu"`
@@ -69,58 +65,241 @@ type DeviceSelector struct {
 }
 
 type PortInfo struct {
-	DisplayId       int    `json:"display_id"`
-	PanelId         int    `json:"panel_id"`
-	SlotId          int    `json:"slot_id"`
-	ConnectorType   string `json:"connector_type"`
-	RowId           int    `json:"row_id"`
-	Transformations []struct {
-		IsDefault  bool `json:"is_default"`
-		Interfaces []struct {
-			State   string `json:"state"`
-			Setting string `json:"setting"`
-			Speed   struct {
-				Unit  string `json:"unit"`
-				Value int    `json:"value"`
-			} `json:"speed"`
-			Name        string `json:"name"`
-			InterfaceId int    `json:"interface_id"`
-		} `json:"interfaces"`
-		TransformationId int `json:"transformation_id"`
-	} `json:"transformations"`
-	PortId          int `json:"port_id"`
-	FailureDomainId int `json:"failure_domain_id"`
-	ColumnId        int `json:"column_id"`
+	DisplayId       int
+	PanelId         int
+	SlotId          int
+	ConnectorType   string
+	RowId           int
+	Transformations []Transformation
+	PortId          int
+	FailureDomainId int
+	ColumnId        int
+}
+
+func (o *PortInfo) raw() *rawPortInfo {
+	transformations := make([]rawTransformation, len(o.Transformations))
+	for i := range o.Transformations {
+		transformations[i] = *o.Transformations[i].raw()
+	}
+	return &rawPortInfo{
+		DisplayId:       o.DisplayId,
+		PanelId:         o.PanelId,
+		SlotId:          o.SlotId,
+		ConnectorType:   o.ConnectorType,
+		RowId:           o.RowId,
+		Transformations: transformations,
+		PortId:          o.PortId,
+		FailureDomainId: o.FailureDomainId,
+		ColumnId:        o.ColumnId,
+	}
+}
+
+type rawPortInfo struct {
+	DisplayId       int                 `json:"display_id"`
+	PanelId         int                 `json:"panel_id"`
+	SlotId          int                 `json:"slot_id"`
+	ConnectorType   string              `json:"connector_type"`
+	RowId           int                 `json:"row_id"`
+	Transformations []rawTransformation `json:"transformations"`
+	PortId          int                 `json:"port_id"`
+	FailureDomainId int                 `json:"failure_domain_id"`
+	ColumnId        int                 `json:"column_id"`
+}
+
+func (o *rawPortInfo) polish() *PortInfo {
+	transformations := make([]Transformation, len(o.Transformations))
+	for i := range o.Transformations {
+		transformations[i] = *o.Transformations[i].polish()
+	}
+	return &PortInfo{
+		DisplayId:       o.DisplayId,
+		PanelId:         o.PanelId,
+		SlotId:          o.SlotId,
+		ConnectorType:   o.ConnectorType,
+		RowId:           o.RowId,
+		Transformations: transformations,
+		PortId:          o.PortId,
+		FailureDomainId: o.FailureDomainId,
+		ColumnId:        o.ColumnId,
+	}
+}
+
+type Transformation struct {
+	IsDefault        bool
+	Interfaces       []TransformInterface
+	TransformationId int
+}
+
+func (o *Transformation) raw() *rawTransformation {
+	interfaces := make([]rawTransformInterface, len(o.Interfaces))
+	for i := range o.Interfaces {
+		interfaces[i] = *o.Interfaces[i].raw()
+	}
+	return &rawTransformation{
+		IsDefault:        o.IsDefault,
+		Interfaces:       interfaces,
+		TransformationId: o.TransformationId,
+	}
+}
+
+type rawTransformation struct {
+	IsDefault        bool                    `json:"is_default"`
+	Interfaces       []rawTransformInterface `json:"interfaces"`
+	TransformationId int                     `json:"transformation_id"`
+}
+
+func (o *rawTransformation) polish() *Transformation {
+	interfaces := make([]TransformInterface, len(o.Interfaces))
+	for i := range o.Interfaces {
+		interfaces[i] = TransformInterface{
+			State:       o.Interfaces[i].State,
+			Setting:     o.Interfaces[i].Setting,
+			Speed:       o.Interfaces[i].Speed.parse(),
+			Name:        o.Interfaces[i].Name,
+			InterfaceId: o.Interfaces[i].InterfaceId,
+		}
+	}
+	return &Transformation{
+		IsDefault:        o.IsDefault,
+		Interfaces:       interfaces,
+		TransformationId: o.TransformationId,
+	}
+}
+
+type TransformInterface struct {
+	State       string
+	Setting     string
+	Speed       LogicalDevicePortSpeed
+	Name        string
+	InterfaceId int
+}
+
+func (o *TransformInterface) raw() *rawTransformInterface {
+	return &rawTransformInterface{
+		State:       o.State,
+		Setting:     o.Setting,
+		Speed:       *o.Speed.raw(),
+		Name:        o.Name,
+		InterfaceId: o.InterfaceId,
+	}
+}
+
+type rawTransformInterface struct {
+	State       string
+	Setting     string
+	Speed       rawLogicalDevicePortSpeed
+	Name        string
+	InterfaceId int
+}
+
+func (o *rawTransformInterface) polish() *TransformInterface {
+	return &TransformInterface{
+		State:       o.State,
+		Setting:     o.Setting,
+		Speed:       o.Speed.parse(),
+		Name:        o.Name,
+		InterfaceId: o.InterfaceId,
+	}
 }
 
 type DeviceProfile struct {
-	Id                   ObjectId             `json:"id"`
-	Label                string               `json:"label"`
-	DeviceProfileType    string               `json:"device_profile_type"`
-	CreatedAt            time.Time            `json:"created_at"`
-	LastModifiedAt       time.Time            `json:"last_modified_at"`
+	Id                   ObjectId
+	Label                string
+	DeviceProfileType    string
+	CreatedAt            time.Time
+	LastModifiedAt       time.Time
+	ChassisProfileId     string
+	ChassisCount         int
+	SlotCount            int
+	HardwareCapabilities HardwareCapabilities
+	SoftwareCapabilities SoftwareCapabilities
+	Ports                []PortInfo
+	Selector             DeviceSelector
+	ChassisInfo          DeviceProfileChassisInfo
+	LinecardsInfo        []DeviceProfileLinecardInfo
+	SlotConfiguration    []DeviceProfileSlotConfiguration
+}
+
+type DeviceProfileChassisInfo struct {
 	ChassisProfileId     string               `json:"chassis_profile_id"`
-	ChassisCount         int                  `json:"chassis_count"`
-	SlotCount            int                  `json:"slot_count"`
 	HardwareCapabilities HardwareCapabilities `json:"hardware_capabilities"`
 	SoftwareCapabilities SoftwareCapabilities `json:"software_capabilities"`
-	Ports                []PortInfo           `json:"ports"`
 	Selector             DeviceSelector       `json:"selector"`
-	ChassisInfo          struct {
-		ChassisProfileId     string               `json:"chassis_profile_id"`
-		HardwareCapabilities HardwareCapabilities `json:"hardware_capabilities"`
-		SoftwareCapabilities SoftwareCapabilities `json:"software_capabilities"`
-		Selector             DeviceSelector       `json:"selector"`
-	} `json:"chassis_info"`
-	LinecardsInfo []struct {
-		HardwareCapabilities HardwareCapabilities `json:"hardware_capabilities"`
-		LinecardProfileId    string               `json:"linecard_profile_id"`
-		Selector             DeviceSelector       `json:"selector"`
-	} `json:"linecards_info"`
-	SlotConfiguration []struct {
-		LinecardProfileId string `json:"linecard_profile_id"`
-		SlotId            int    `json:"slot_id"`
-	} `json:"slot_configuration"`
+}
+
+type DeviceProfileLinecardInfo struct {
+	HardwareCapabilities HardwareCapabilities `json:"hardware_capabilities"`
+	LinecardProfileId    string               `json:"linecard_profile_id"`
+	Selector             DeviceSelector       `json:"selector"`
+}
+
+type DeviceProfileSlotConfiguration struct {
+	LinecardProfileId string `json:"linecard_profile_id"`
+	SlotId            int    `json:"slot_id"`
+}
+
+func (o *DeviceProfile) raw() *rawDeviceProfile {
+	ports := make([]rawPortInfo, len(o.Ports))
+	for i := range o.Ports {
+		ports[i] = *o.Ports[i].raw()
+	}
+	return &rawDeviceProfile{
+		Id:                   o.Id,
+		Label:                o.Label,
+		DeviceProfileType:    o.DeviceProfileType,
+		ChassisProfileId:     o.ChassisProfileId,
+		ChassisCount:         o.ChassisCount,
+		SlotCount:            o.SlotCount,
+		HardwareCapabilities: o.HardwareCapabilities,
+		SoftwareCapabilities: o.SoftwareCapabilities,
+		Ports:                ports,
+		Selector:             o.Selector,
+		ChassisInfo:          o.ChassisInfo,
+		LinecardsInfo:        o.LinecardsInfo,
+		SlotConfiguration:    nil,
+	}
+}
+
+type rawDeviceProfile struct {
+	Id                   ObjectId                         `json:"id"`
+	Label                string                           `json:"label"`
+	DeviceProfileType    string                           `json:"device_profile_type"`
+	CreatedAt            time.Time                        `json:"created_at"`
+	LastModifiedAt       time.Time                        `json:"last_modified_at"`
+	ChassisProfileId     string                           `json:"chassis_profile_id"`
+	ChassisCount         int                              `json:"chassis_count"`
+	SlotCount            int                              `json:"slot_count"`
+	HardwareCapabilities HardwareCapabilities             `json:"hardware_capabilities"`
+	SoftwareCapabilities SoftwareCapabilities             `json:"software_capabilities"`
+	Ports                []rawPortInfo                    `json:"ports"`
+	Selector             DeviceSelector                   `json:"selector"`
+	ChassisInfo          DeviceProfileChassisInfo         `json:"chassis_info"`
+	LinecardsInfo        []DeviceProfileLinecardInfo      `json:"linecards_info"`
+	SlotConfiguration    []DeviceProfileSlotConfiguration `json:"slot_configuration"`
+}
+
+func (o *rawDeviceProfile) polish() *DeviceProfile {
+	ports := make([]PortInfo, len(o.Ports))
+	for i := range o.Ports {
+		ports[i] = *o.Ports[i].polish()
+	}
+	return &DeviceProfile{
+		Id:                   o.Id,
+		Label:                o.Label,
+		DeviceProfileType:    o.DeviceProfileType,
+		CreatedAt:            o.CreatedAt,
+		LastModifiedAt:       o.LastModifiedAt,
+		ChassisProfileId:     o.ChassisProfileId,
+		ChassisCount:         o.ChassisCount,
+		SlotCount:            o.SlotCount,
+		HardwareCapabilities: o.HardwareCapabilities,
+		SoftwareCapabilities: o.SoftwareCapabilities,
+		Ports:                ports,
+		Selector:             o.Selector,
+		ChassisInfo:          o.ChassisInfo,
+		LinecardsInfo:        o.LinecardsInfo,
+		SlotConfiguration:    o.SlotConfiguration,
+	}
 }
 
 func (o *Client) listDeviceProfileIds(ctx context.Context) ([]ObjectId, error) {
@@ -136,8 +315,11 @@ func (o *Client) listDeviceProfileIds(ctx context.Context) ([]ObjectId, error) {
 	return response.Items, nil
 }
 
-func (o *Client) getAllDeviceProfiles(ctx context.Context) ([]DeviceProfile, error) {
-	response := &getAllDeviceProfilesResponse{}
+func (o *Client) getAllDeviceProfiles(ctx context.Context) ([]rawDeviceProfile, error) {
+	response := &struct {
+		Items []rawDeviceProfile
+	}{}
+
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDeviceProfiles,
@@ -146,12 +328,12 @@ func (o *Client) getAllDeviceProfiles(ctx context.Context) ([]DeviceProfile, err
 	return response.Items, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) getDeviceProfilesByName(ctx context.Context, desired string) ([]DeviceProfile, error) {
+func (o *Client) getDeviceProfilesByName(ctx context.Context, desired string) ([]rawDeviceProfile, error) {
 	deviceProfiles, err := o.getAllDeviceProfiles(ctx)
 	if err != nil {
 		return nil, err
 	}
-	var result []DeviceProfile
+	var result []rawDeviceProfile
 	for _, deviceProfile := range deviceProfiles {
 		if deviceProfile.Label == desired {
 			result = append(result, deviceProfile)
@@ -160,7 +342,7 @@ func (o *Client) getDeviceProfilesByName(ctx context.Context, desired string) ([
 	return result, nil
 }
 
-func (o *Client) getDeviceProfileByName(ctx context.Context, desired string) (*DeviceProfile, error) {
+func (o *Client) getDeviceProfileByName(ctx context.Context, desired string) (*rawDeviceProfile, error) {
 	deviceProfiles, err := o.getDeviceProfilesByName(ctx, desired)
 	if err != nil {
 		return nil, err
@@ -176,13 +358,13 @@ func (o *Client) getDeviceProfileByName(ctx context.Context, desired string) (*D
 	default:
 		return nil, ApstraClientErr{
 			errType: ErrMultipleMatch,
-			err:     fmt.Errorf("found multiple device profiles named '%s'"),
+			err:     fmt.Errorf("found multiple device profiles named '%s'", desired),
 		}
 	}
 }
 
-func (o *Client) getDeviceProfile(ctx context.Context, id ObjectId) (*DeviceProfile, error) {
-	response := &DeviceProfile{}
+func (o *Client) getDeviceProfile(ctx context.Context, id ObjectId) (*rawDeviceProfile, error) {
+	response := &rawDeviceProfile{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDeviceProfileById, id),
