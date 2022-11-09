@@ -179,11 +179,11 @@ func (o *TransformInterface) raw() *rawTransformInterface {
 }
 
 type rawTransformInterface struct {
-	State       string
-	Setting     string
-	Speed       rawLogicalDevicePortSpeed
-	Name        string
-	InterfaceId int
+	State       string                    `json:"state"`
+	Setting     string                    `json:"setting"`
+	Speed       rawLogicalDevicePortSpeed `json:"speed"`
+	Name        string                    `json:"name"`
+	InterfaceId int                       `json:"interface_id"`
 }
 
 func (o *rawTransformInterface) polish() *TransformInterface {
