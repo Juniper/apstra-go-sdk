@@ -300,16 +300,20 @@ func (o *rawDeviceProfile) polish() *DeviceProfile {
 // and returns a map[int][]Transformation keyed by PortId. Only "active"
 // transformations matching the specified interface name and speed are returned.
 func (o *DeviceProfile) TransformationCandidates(intfName string, intfSpeed LogicalDevicePortSpeed) map[int][]Transformation {
-	var result []Transformation
+	result := make(map[int][]Transformation)
 	for _, port := range o.Ports {
+		var transformations []Transformation
 		for _, transformation := range port.Transformations {
 			for _, intf := range transformation.Interfaces {
 				if intf.Name == intfName &&
 					intf.State == "active" &&
 					intf.Speed.IsEqual(intfSpeed) {
-					result = append(result, transformation)
+					transformations = append(transformations, transformation)
 				}
 			}
+		}
+		if transformations != nil {
+			result[port.PortId] = transformations
 		}
 	}
 	return result

@@ -103,12 +103,12 @@ func TestGetTransformCandidates(t *testing.T) {
 			t.Fatal(err)
 		}
 		candidates := dp.TransformationCandidates(intfName, intfSpeed)
-		for i := range candidates {
-			dump, err := json.MarshalIndent(&candidates[i], "", "  ")
+		for k, v := range candidates {
+			dump, err := json.MarshalIndent(&v, "", "  ")
 			if err != nil {
 				t.Fatal(err)
 			}
-			log.Print(string(dump))
+			log.Printf("port %d (%s) transformations: %s", k, intfName, string(dump))
 		}
 	}
 }
