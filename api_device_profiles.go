@@ -176,7 +176,7 @@ func (o *Client) getDeviceProfileByName(ctx context.Context, desired string) (*D
 	default:
 		return nil, ApstraClientErr{
 			errType: ErrMultipleMatch,
-			err:     fmt.Errorf("found multiple device profiles named '%s'"),
+			err:     fmt.Errorf("found multiple device profiles named '%s'", desired),
 		}
 	}
 }
