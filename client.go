@@ -1214,6 +1214,27 @@ func (o *Client) ApiVersion() string {
 	return o.apiVersion
 }
 
+// GetDeviceProfile returns device profile
+func (o *Client) GetDeviceProfile(ctx context.Context, id ObjectId) (*DeviceProfile, error) {
+	return o.getDeviceProfile(ctx, id)
+}
+
+// GetAllDeviceProfiles returns []DeviceProfile
+func (o *Client) GetAllDeviceProfiles(ctx context.Context) ([]DeviceProfile, error) {
+	return o.getAllDeviceProfiles(ctx)
+}
+
+// GetDeviceProfilesByName returns []DeviceProfile including all profiles using the desired name
+func (o *Client) GetDeviceProfilesByName(ctx context.Context, desired string) ([]DeviceProfile, error) {
+	return o.getDeviceProfilesByName(ctx, desired)
+}
+
+// GetDeviceProfileByName returns *DeviceProfile indicating the device profile which uses the
+// desired name, or an error if 0 or > 1 device profiles match.
+func (o *Client) GetDeviceProfileByName(ctx context.Context, desired string) (*DeviceProfile, error) {
+	return o.getDeviceProfileByName(ctx, desired)
+}
+
 // CreateDeviceProfile creates device profile
 func (o *Client) CreateDeviceProfile(ctx context.Context, profile DeviceProfile) (ObjectId, error) {
 	return o.createDeviceProfile(ctx, profile)
