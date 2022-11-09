@@ -373,7 +373,7 @@ func (o *Client) getDeviceProfile(ctx context.Context, id ObjectId) (*rawDeviceP
 	return response, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) createDeviceProfile(ctx context.Context, profile DeviceProfile) (ObjectId, error) {
+func (o *Client) createDeviceProfile(ctx context.Context, profile *rawDeviceProfile) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -387,7 +387,7 @@ func (o *Client) createDeviceProfile(ctx context.Context, profile DeviceProfile)
 	return response.Id, nil
 }
 
-func (o *Client) updateDeviceProfile(ctx context.Context, id ObjectId, profile DeviceProfile) error {
+func (o *Client) updateDeviceProfile(ctx context.Context, id ObjectId, profile *rawDeviceProfile) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDeviceProfileById, id),

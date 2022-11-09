@@ -1260,13 +1260,13 @@ func (o *Client) GetDeviceProfileByName(ctx context.Context, desired string) (*D
 }
 
 // CreateDeviceProfile creates device profile
-func (o *Client) CreateDeviceProfile(ctx context.Context, profile DeviceProfile) (ObjectId, error) {
-	return o.createDeviceProfile(ctx, profile)
+func (o *Client) CreateDeviceProfile(ctx context.Context, profile *DeviceProfile) (ObjectId, error) {
+	return o.createDeviceProfile(ctx, profile.raw())
 }
 
 // UpdateDeviceProfile updates existing device profile
-func (o *Client) UpdateDeviceProfile(ctx context.Context, id ObjectId, profile DeviceProfile) error {
-	return o.updateDeviceProfile(ctx, id, profile)
+func (o *Client) UpdateDeviceProfile(ctx context.Context, id ObjectId, profile *DeviceProfile) error {
+	return o.updateDeviceProfile(ctx, id, profile.raw())
 }
 
 // DeleteDeviceProfile deletes existing device profile
