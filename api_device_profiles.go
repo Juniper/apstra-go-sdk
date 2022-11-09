@@ -151,13 +151,7 @@ type rawTransformation struct {
 func (o *rawTransformation) polish() *Transformation {
 	interfaces := make([]TransformInterface, len(o.Interfaces))
 	for i := range o.Interfaces {
-		interfaces[i] = TransformInterface{
-			State:       o.Interfaces[i].State,
-			Setting:     o.Interfaces[i].Setting,
-			Speed:       o.Interfaces[i].Speed.parse(),
-			Name:        o.Interfaces[i].Name,
-			InterfaceId: o.Interfaces[i].InterfaceId,
-		}
+		interfaces[i] = *o.Interfaces[i].polish()
 	}
 	return &Transformation{
 		IsDefault:        o.IsDefault,
