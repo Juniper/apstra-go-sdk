@@ -76,6 +76,15 @@ type PortInfo struct {
 	ColumnId        int
 }
 
+func (o *PortInfo) DefaultTransform() *Transformation {
+	for _, t := range o.Transformations {
+		if t.IsDefault {
+			return &t
+		}
+	}
+	return nil
+}
+
 func (o *PortInfo) raw() *rawPortInfo {
 	transformations := make([]rawTransformation, len(o.Transformations))
 	for i := range o.Transformations {
