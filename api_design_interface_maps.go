@@ -72,13 +72,77 @@ type InterfaceMapMapping struct {
 }
 
 func (o *InterfaceMapMapping) raw() *rawInterfaceMapping {
-	return &rawInterfaceMapping{o.DPPortId, o.DPTransformId, o.DPInterfaceId, o.LDPanel, o.LDPort}
+	var dPPortIdPtr, dPTransformIdPtr, dPInterfaceIdPtr, lDPanelPtr, lDPortPtr *int
+	var dPPortId, dPTransformId, dPInterfaceId, lDPanel, lDPort int
+
+	// device profile port/interface/transform IDs all seem to be 1-indexed
+	// logical device panel/port IDs all seem to be 1-indexed
+	// still using "-1" as the invalid/null here for safer compatibility with future versions
+	if o.DPPortId < 0 {
+		dPPortIdPtr = nil
+	} else {
+		dPPortId = o.DPPortId
+		dPPortIdPtr = &dPPortId
+	}
+
+	if o.DPInterfaceId < 0 {
+		dPInterfaceIdPtr = nil
+	} else {
+		dPInterfaceId = o.DPInterfaceId
+		dPInterfaceIdPtr = &dPInterfaceId
+	}
+
+	if o.DPTransformId < 0 {
+		dPTransformIdPtr = nil
+	} else {
+		dPTransformId = o.DPTransformId
+		dPTransformIdPtr = &dPTransformId
+	}
+
+	if o.LDPanel < 0 {
+		lDPanelPtr = nil
+	} else {
+		lDPanel = o.LDPanel
+		lDPanelPtr = &lDPanel
+	}
+
+	if o.LDPort < 0 {
+		lDPortPtr = nil
+	} else {
+		lDPort = o.LDPort
+		lDPortPtr = &lDPort
+	}
+
+	return &rawInterfaceMapping{dPPortIdPtr, dPTransformIdPtr, dPInterfaceIdPtr, lDPanelPtr, lDPortPtr}
 }
 
-type rawInterfaceMapping []int
+type rawInterfaceMapping []*int
 
 func (o rawInterfaceMapping) polish() *InterfaceMapMapping {
-	return &InterfaceMapMapping{DPPortId: o[0], DPTransformId: o[1], DPInterfaceId: o[2], LDPanel: o[3], LDPort: o[4]}
+	dPPortId, dPTransformId, dPInterfaceId, lDPanel, lDPort := -1, -1, -1, -1, -1
+	if o[0] != nil {
+		dPPortId = *o[0]
+	}
+	if o[1] != nil {
+		dPTransformId = *o[0]
+	}
+	if o[2] != nil {
+		dPInterfaceId = *o[0]
+	}
+	if o[3] != nil {
+		lDPanel = *o[0]
+	}
+	if o[4] != nil {
+		lDPort = *o[0]
+	}
+
+	return &InterfaceMapMapping{
+		DPPortId:      dPPortId,
+		DPTransformId: dPTransformId,
+		DPInterfaceId: dPInterfaceId,
+		LDPanel:       lDPanel,
+		LDPort:        lDPort,
+	}
 }
 
 type InterfaceStateActive bool
