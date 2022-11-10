@@ -179,11 +179,11 @@ func (o *TransformInterface) raw() *rawTransformInterface {
 }
 
 type rawTransformInterface struct {
-	State       string
-	Setting     string
-	Speed       rawLogicalDevicePortSpeed
-	Name        string
-	InterfaceId int
+	State       string                    `json:"state"`
+	Setting     string                    `json:"setting"`
+	Speed       rawLogicalDevicePortSpeed `json:"speed"`
+	Name        string                    `json:"name"`
+	InterfaceId int                       `json:"interface_id"`
 }
 
 func (o *rawTransformInterface) polish() *TransformInterface {
@@ -317,24 +317,58 @@ func (o *rawDeviceProfile) polish() *DeviceProfile {
 	}
 }
 
-// TransformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
-// and returns a map[int][]Transformation keyed by PortId. Only "active"
-// transformations matching the specified interface name and speed are returned.
-func (o *DeviceProfile) TransformationCandidates(intfName string, intfSpeed LogicalDevicePortSpeed) map[int][]Transformation {
-	result := make(map[int][]Transformation)
+// PortsByInterfaceName returns []PortInfo containing all
+// ports/transformations/interfaces which match the desired name string
+func (o *DeviceProfile) PortsByInterfaceName(desired string) []PortInfo {
+	var result []PortInfo
+portLoop:
 	for _, port := range o.Data.Ports {
-		var transformations []Transformation
 		for _, transformation := range port.Transformations {
 			for _, intf := range transformation.Interfaces {
-				if intf.Name == intfName &&
-					intf.State == "active" &&
-					intf.Speed.IsEqual(intfSpeed) {
-					transformations = append(transformations, transformation)
+				if intf.Name == desired {
+					result = append(result, port)
+					continue portLoop
 				}
 			}
 		}
-		if transformations != nil {
-			result[port.PortId] = transformations
+	}
+	return result
+}
+
+// PortByInterfaceName returns *PortInfo describing the port which has an
+// interface/transform that uses the desired name. If zero ports  or
+// multiple ports use the desired name, an error is returned.
+func (o *DeviceProfile) PortByInterfaceName(desired string) (*PortInfo, error) {
+	ports := o.PortsByInterfaceName(desired)
+	switch len(ports) {
+	case 0:
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no port in device profile '%s' has an interface named '%s'", o.Id, desired),
+		}
+	case 1:
+		return &ports[0], nil
+	default:
+		return nil, ApstraClientErr{
+			errType: ErrMultipleMatch,
+			err:     fmt.Errorf("device profile '%s' has multiple ports with interfaces named '%s'", o.Id, desired),
+		}
+	}
+}
+
+// TransformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
+// and returns a map[int]Transformation populated with candidate transformations
+// available according to the PortInfo and keyed by the transformation ID. Only
+// "active" transformations are returned.
+func (o *PortInfo) TransformationCandidates(intfName string, intfSpeed LogicalDevicePortSpeed) map[int]Transformation {
+	result := make(map[int]Transformation)
+	for _, transformation := range o.Transformations {
+		for _, intf := range transformation.Interfaces {
+			if intf.Name == intfName &&
+				intf.State == "active" &&
+				intf.Speed.IsEqual(intfSpeed) {
+				result[transformation.TransformationId] = transformation
+			}
 		}
 	}
 	return result

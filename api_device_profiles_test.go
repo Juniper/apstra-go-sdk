@@ -92,9 +92,9 @@ func TestGetTransformCandidates(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	dpId := ObjectId("Cisco_3172PQ_NXOS")
-	intfName := "Ethernet1/1"
-	intfSpeed := LogicalDevicePortSpeed("10G")
+	dpId := ObjectId("Juniper_QFX5120-48T_Junos")
+	intfName := "et-0/0/48"
+	intfSpeed := LogicalDevicePortSpeed("40G")
 
 	for clientName, client := range clients {
 		log.Printf("testing GetDeviceProfileByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -102,7 +102,13 @@ func TestGetTransformCandidates(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		candidates := dp.TransformationCandidates(intfName, intfSpeed)
+
+		portInfo, err := dp.PortByInterfaceName(intfName)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		candidates := portInfo.TransformationCandidates(intfName, intfSpeed)
 		for k, v := range candidates {
 			dump, err := json.MarshalIndent(&v, "", "  ")
 			if err != nil {
