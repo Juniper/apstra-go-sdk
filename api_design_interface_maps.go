@@ -124,16 +124,16 @@ func (o rawInterfaceMapping) polish() *InterfaceMapMapping {
 		dPPortId = *o[0]
 	}
 	if o[1] != nil {
-		dPTransformId = *o[0]
+		dPTransformId = *o[1]
 	}
 	if o[2] != nil {
-		dPInterfaceId = *o[0]
+		dPInterfaceId = *o[2]
 	}
 	if o[3] != nil {
-		lDPanel = *o[0]
+		lDPanel = *o[3]
 	}
 	if o[4] != nil {
-		lDPort = *o[0]
+		lDPort = *o[4]
 	}
 
 	return &InterfaceMapMapping{
