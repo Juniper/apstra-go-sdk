@@ -709,7 +709,7 @@ type TemplateRackBasedData struct {
 	Spine                  Spine
 	RackTypes              []RackType
 	RackTypeCounts         []RackTypeCount
-	DhcpServiceIntent      DhcpServiceIntent `json:"dhcp_service_intent"`
+	DhcpServiceIntent      DhcpServiceIntent
 }
 
 type DhcpServiceIntent struct {
