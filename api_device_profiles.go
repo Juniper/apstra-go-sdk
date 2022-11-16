@@ -85,7 +85,7 @@ func (o *PortInfo) DefaultTransform() *Transformation {
 	return nil
 }
 
-func (o *PortInfo) Transform(desired int) (*Transformation, error) {
+func (o *PortInfo) Transformation(desired int) (*Transformation, error) {
 	for _, t := range o.Transformations {
 		if t.TransformationId == desired {
 			return &t, nil
