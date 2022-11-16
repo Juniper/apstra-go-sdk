@@ -85,6 +85,18 @@ func (o *PortInfo) DefaultTransform() *Transformation {
 	return nil
 }
 
+func (o *PortInfo) Transform(desired int) (*Transformation, error) {
+	for _, t := range o.Transformations {
+		if t.TransformationId == desired {
+			return &t, nil
+		}
+	}
+	return nil, ApstraClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("transform id %d not found", desired),
+	}
+}
+
 func (o *PortInfo) raw() *rawPortInfo {
 	transformations := make([]rawTransformation, len(o.Transformations))
 	for i := range o.Transformations {
