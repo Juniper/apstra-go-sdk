@@ -151,6 +151,14 @@ func (o *Transformation) raw() *rawTransformation {
 	}
 }
 
+func (o *Transformation) InterfaceIds() []int {
+	result := make([]int, len(o.Interfaces))
+	for i, intf := range o.Interfaces {
+		result[i] = intf.InterfaceId
+	}
+	return result
+}
+
 type rawTransformation struct {
 	IsDefault        bool                    `json:"is_default"`
 	Interfaces       []rawTransformInterface `json:"interfaces"`
