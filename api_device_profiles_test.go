@@ -103,7 +103,7 @@ func TestGetTransformCandidates(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		portInfo, err := dp.PortByInterfaceName(intfName)
+		portInfo, err := dp.Data.PortByInterfaceName(intfName)
 		if err != nil {
 			t.Fatal(err)
 		}
