@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"net/http"
 	"net/url"
@@ -336,7 +335,7 @@ func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, 
 	// use first part of response body if errMsg empty
 	if errMsg == "" {
 		peekAbleBodyReader := bufio.NewReader(resp.Body)
-		resp.Body = ioutil.NopCloser(peekAbleBodyReader)
+		resp.Body = io.NopCloser(peekAbleBodyReader)
 		peek, _ := peekAbleBodyReader.Peek(errResponseStringLimit)
 		errMsg = string(peek)
 	}
