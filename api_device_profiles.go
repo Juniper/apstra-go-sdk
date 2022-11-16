@@ -256,6 +256,57 @@ func (o *DeviceProfileData) raw() *rawDeviceProfileData {
 	}
 }
 
+// PortsByInterfaceName returns []PortInfo containing all
+// ports/transformations/interfaces which match the desired name string
+func (o *DeviceProfileData) PortsByInterfaceName(desired string) []PortInfo {
+	var result []PortInfo
+portLoop:
+	for _, port := range o.Ports {
+		for _, transformation := range port.Transformations {
+			for _, intf := range transformation.Interfaces {
+				if intf.Name == desired {
+					result = append(result, port)
+					continue portLoop
+				}
+			}
+		}
+	}
+	return result
+}
+
+// PortByInterfaceName returns *PortInfo describing the port which has an
+// interface/transform that uses the desired name. If zero ports  or
+// multiple ports use the desired name, an error is returned.
+func (o *DeviceProfileData) PortByInterfaceName(desired string) (*PortInfo, error) {
+	ports := o.PortsByInterfaceName(desired)
+	switch len(ports) {
+	case 0:
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no port matching name '%s' could be found", desired),
+		}
+	case 1:
+		return &ports[0], nil
+	default:
+		return nil, ApstraClientErr{
+			errType: ErrMultipleMatch,
+			err:     fmt.Errorf("multiple ports matching name '%s' found", desired),
+		}
+	}
+}
+
+func (o *DeviceProfileData) PortById(desired int) (*PortInfo, error) {
+	for _, portInfo := range o.Ports {
+		if portInfo.PortId == desired {
+			return &portInfo, nil
+		}
+	}
+	return nil, ApstraClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("no port with ID %d found", desired),
+	}
+}
+
 type rawDeviceProfileData struct {
 	Label                string
 	DeviceProfileType    string
@@ -331,45 +382,6 @@ func (o *rawDeviceProfile) polish() *DeviceProfile {
 			LinecardsInfo:        o.LinecardsInfo,
 			SlotConfiguration:    o.SlotConfiguration,
 		},
-	}
-}
-
-// PortsByInterfaceName returns []PortInfo containing all
-// ports/transformations/interfaces which match the desired name string
-func (o *DeviceProfile) PortsByInterfaceName(desired string) []PortInfo {
-	var result []PortInfo
-portLoop:
-	for _, port := range o.Data.Ports {
-		for _, transformation := range port.Transformations {
-			for _, intf := range transformation.Interfaces {
-				if intf.Name == desired {
-					result = append(result, port)
-					continue portLoop
-				}
-			}
-		}
-	}
-	return result
-}
-
-// PortByInterfaceName returns *PortInfo describing the port which has an
-// interface/transform that uses the desired name. If zero ports  or
-// multiple ports use the desired name, an error is returned.
-func (o *DeviceProfile) PortByInterfaceName(desired string) (*PortInfo, error) {
-	ports := o.PortsByInterfaceName(desired)
-	switch len(ports) {
-	case 0:
-		return nil, ApstraClientErr{
-			errType: ErrNotfound,
-			err:     fmt.Errorf("no port in device profile '%s' has an interface named '%s'", o.Id, desired),
-		}
-	case 1:
-		return &ports[0], nil
-	default:
-		return nil, ApstraClientErr{
-			errType: ErrMultipleMatch,
-			err:     fmt.Errorf("device profile '%s' has multiple ports with interfaces named '%s'", o.Id, desired),
-		}
 	}
 }
 
