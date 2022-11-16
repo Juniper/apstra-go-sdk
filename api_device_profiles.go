@@ -171,6 +171,18 @@ func (o *Transformation) InterfaceIds() []int {
 	return result
 }
 
+func (o *Transformation) Interface(desired int) (*TransformInterface, error) {
+	for _, intf := range o.Interfaces {
+		if intf.InterfaceId == desired {
+			return &intf, nil
+		}
+	}
+	return nil, ApstraClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("interface %d not found in transformation", desired),
+	}
+}
+
 type rawTransformation struct {
 	IsDefault        bool                    `json:"is_default"`
 	Interfaces       []rawTransformInterface `json:"interfaces"`
