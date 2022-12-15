@@ -84,8 +84,6 @@ func (o *Client) getConfiglet(ctx context.Context, id ObjectId) (*rawConfiglet, 
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	//log.Println(id)
-	//log.Println(response)
 	return response, nil
 }
 

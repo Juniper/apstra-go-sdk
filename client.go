@@ -886,12 +886,10 @@ func (o *Client) DeleteConfiglet(ctx context.Context, in ObjectId) error {
 // GetConfiglet Accepts an ID and returns the Configlet object
 func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, error) {
 	r, err := o.getConfiglet(ctx, in)
-	var c *Configlet
-	if err == nil {
-		log.Println(r)
-		c = r.polish()
+	if err != nil {
+		return nil, err
 	}
-	return c, err
+	return r.polish(), nil
 }
 
 //UpdateConfiglet updates a configlet
