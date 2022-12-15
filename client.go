@@ -894,17 +894,17 @@ func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, err
 	return c, err
 }
 
-// UpdateConfiglet updates a configlet
+//UpdateConfiglet updates a configlet
 func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletRequest) error {
 	return o.updateConfiglet(ctx, id, in)
 }
 
-//Get List of All configlets
+//ListAllConfiglets gets the List of All configlets' ids
 func (o *Client) ListAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllConfiglets(ctx)
 }
 
-//Get a configlet by Name
+//GetConfigletByname gets a configlet by Name
 func (o *Client) GetConfigletByName(ctx context.Context, Name string) (*Configlet, error) {
 	c, err := o.getConfigletByName(ctx, Name)
 	if err != nil {
