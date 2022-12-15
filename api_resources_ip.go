@@ -1,4 +1,4 @@
-package goapstra
+package goapstraw
 
 import (
 	"context"
