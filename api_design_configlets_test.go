@@ -36,6 +36,10 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Println(id1)
 		log.Println("Getting now")
 		c, err := client.client.GetConfiglet(context.Background(), id1)

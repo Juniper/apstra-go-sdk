@@ -899,12 +899,12 @@ func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *Configlet
 	return o.updateConfiglet(ctx, id, in)
 }
 
-//Get List of All Configlets
+//Get List of All configlets
 func (o *Client) ListAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllConfiglets(ctx)
 }
 
-//Get a Configlet by Name
+//Get a configlet by Name
 func (o *Client) GetConfigletByName(ctx context.Context, Name string) (*Configlet, error) {
 	c, err := o.getConfigletByName(ctx, Name)
 	if err != nil {
