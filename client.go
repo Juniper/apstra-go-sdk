@@ -904,7 +904,7 @@ func (o *Client) ListAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllConfiglets(ctx)
 }
 
-//GetConfigletByname gets a configlet by Name
+//GetConfigletByName gets a configlet by Name
 func (o *Client) GetConfigletByName(ctx context.Context, Name string) (*Configlet, error) {
 	c, err := o.getConfigletByName(ctx, Name)
 	if err != nil {
