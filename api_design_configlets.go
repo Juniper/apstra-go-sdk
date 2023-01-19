@@ -118,7 +118,7 @@ func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
 	cg.TemplateText = o.TemplateText
 	cg.Filename = o.Filename
 	cg.NegationTemplateText = o.NegationTemplateText
-	cg.ConfigStyle = o.ConfigStyle.raw()
+	cg.ConfigStyle = o.ConfigStyle.raw().string()
 	cg.Section = string(ApstraConfigletSection(o.Section).raw())
 
 	return &cg
