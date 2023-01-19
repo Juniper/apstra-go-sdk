@@ -76,23 +76,24 @@ func (o *ConfigletRequest) raw() *rawConfigletRequest {
 	return &rawcr
 }
 
-func (o *rawConfigletRequest) polish() *ConfigletRequest {
-	cr := ConfigletRequest{}
-	cr.DisplayName = o.DisplayName
-	cr.RefArchs = make([]RefDesign, len(o.RefArchs))
-	cr.Generators = make([]ConfigletGenerator, len(o.Generators))
-	for i, j := range o.RefArchs {
-		var err error
-		cr.RefArchs[i], err = refDesign(j).parse()
-		if err != nil {
-			log.Fatalf("unsupported architecture %s error was %s", j, err)
-		}
-	}
-	for i, j := range o.Generators {
-		cr.Generators[i] = *j.polish()
-	}
-	return &cr
-}
+//
+//func (o *rawConfigletRequest) polish() *ConfigletRequest {
+//	cr := ConfigletRequest{}
+//	cr.DisplayName = o.DisplayName
+//	cr.RefArchs = make([]RefDesign, len(o.RefArchs))
+//	cr.Generators = make([]ConfigletGenerator, len(o.Generators))
+//	for i, j := range o.RefArchs {
+//		var err error
+//		cr.RefArchs[i], err = refDesign(j).parse()
+//		if err != nil {
+//			log.Fatalf("unsupported architecture %s error was %s", j, err)
+//		}
+//	}
+//	for i, j := range o.Generators {
+//		cr.Generators[i] = *j.polish()
+//	}
+//	return &cr
+//}
 
 func (o *rawConfigletGenerator) polish() *ConfigletGenerator {
 	cg := ConfigletGenerator{}
@@ -117,7 +118,7 @@ func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
 	cg.TemplateText = o.TemplateText
 	cg.Filename = o.Filename
 	cg.NegationTemplateText = o.NegationTemplateText
-	cg.ConfigStyle = o.ConfigStyle.String()
+	cg.ConfigStyle = o.ConfigStyle.raw()
 	cg.Section = string(ApstraConfigletSection(o.Section).raw())
 
 	return &cg
