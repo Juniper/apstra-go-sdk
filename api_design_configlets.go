@@ -3,6 +3,7 @@ package goapstra
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -14,6 +15,14 @@ const (
 )
 
 type ConfigletGenerator struct {
+	ConfigStyle          ApstraPlatformOS
+	Section              ApstraConfigletSection
+	TemplateText         string
+	NegationTemplateText string
+	Filename             string
+}
+
+type rawConfigletGenerator struct {
 	ConfigStyle          string `json:"config_style"`
 	Section              string `json:"section"`
 	TemplateText         string `json:"template_text"`
@@ -29,34 +38,116 @@ type Configlet struct {
 }
 
 type ConfigletData struct {
-	RefArchs    []string             `json:"ref_archs"`
-	Generators  []ConfigletGenerator `json:"generators"`
-	DisplayName string               `json:"display_name"`
+	RefArchs    []RefDesign
+	Generators  []ConfigletGenerator
+	DisplayName string
+}
+
+type rawConfigletData struct {
+	RefArchs    []string                `json:"ref_archs"`
+	Generators  []rawConfigletGenerator `json:"generators"`
+	DisplayName string                  `json:"display_name"`
 }
 
 type rawConfiglet struct {
-	RefArchs       []string             `json:"ref_archs"`
-	Generators     []ConfigletGenerator `json:"generators"`
-	CreatedAt      time.Time            `json:"created_at"`
-	Id             ObjectId             `json:"id,omitempty"`
-	LastModifiedAt time.Time            `json:"last_modified_at"`
-	DisplayName    string               `json:"display_name"`
+	RefArchs       []string                `json:"ref_archs"`
+	Generators     []rawConfigletGenerator `json:"generators"`
+	CreatedAt      time.Time               `json:"created_at"`
+	Id             ObjectId                `json:"id,omitempty"`
+	LastModifiedAt time.Time               `json:"last_modified_at"`
+	DisplayName    string                  `json:"display_name"`
+}
+
+type ConfigletRequest ConfigletData
+type rawConfigletRequest rawConfigletData
+
+func (o *ConfigletRequest) raw() *rawConfigletRequest {
+	rawcr := rawConfigletRequest{}
+	rawcr.DisplayName = o.DisplayName
+	rawcr.RefArchs = make([]string, len(o.RefArchs))
+	rawcr.Generators = make([]rawConfigletGenerator, len(o.Generators))
+	for i, j := range o.RefArchs {
+		rawcr.RefArchs[i] = j.String()
+	}
+	for i, j := range o.Generators {
+		rawcr.Generators[i] = *j.raw()
+	}
+
+	return &rawcr
+}
+
+func (o *rawConfigletRequest) polish() *ConfigletRequest {
+	cr := ConfigletRequest{}
+	cr.DisplayName = o.DisplayName
+	cr.RefArchs = make([]RefDesign, len(o.RefArchs))
+	cr.Generators = make([]ConfigletGenerator, len(o.Generators))
+	for i, j := range o.RefArchs {
+		var err error
+		cr.RefArchs[i], err = refDesign(j).parse()
+		if err != nil {
+			log.Fatalf("unsupported architecture %s error was %s", j, err)
+		}
+	}
+	for i, j := range o.Generators {
+		cr.Generators[i] = *j.polish()
+	}
+	return &cr
+}
+
+func (o *rawConfigletGenerator) polish() *ConfigletGenerator {
+	cg := ConfigletGenerator{}
+	cg.TemplateText = o.TemplateText
+	cg.Filename = o.Filename
+	cg.NegationTemplateText = o.NegationTemplateText
+	i, err := apstraPlatformOS(o.ConfigStyle).parse()
+	if err != nil {
+		log.Fatalf("unexpected platform OS from server %d, error %s", i, err)
+	}
+	cg.ConfigStyle = ApstraPlatformOS(i)
+	j, err := apstraConfigletSection(o.Section).parse()
+	cg.Section = ApstraConfigletSection(j)
+	if err != nil {
+		log.Fatalf("unexpected section from server %s, error %s", o.Section, err)
+	}
+	return &cg
+}
+
+func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
+	cg := rawConfigletGenerator{}
+	cg.TemplateText = o.TemplateText
+	cg.Filename = o.Filename
+	cg.NegationTemplateText = o.NegationTemplateText
+	cg.ConfigStyle = o.ConfigStyle.String()
+	cg.Section = string(ApstraConfigletSection(o.Section).raw())
+
+	return &cg
 }
 
 func (o *rawConfiglet) polish() *Configlet {
+	ra := make([]RefDesign, len(o.RefArchs))
+	for i, j := range o.RefArchs {
+		var err error
+		ra[i], err = refDesign(j).parse()
+		if err != nil {
+			log.Fatalf("unexpected reference architecture from server %s, error %s", j, err)
+		}
+	}
+	gs := make([]ConfigletGenerator, len(o.Generators))
+	for i, j := range o.Generators {
+		gs[i] = *j.polish()
+	}
+
 	return &Configlet{
 		Id:             o.Id,
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &ConfigletData{
-			RefArchs:    o.RefArchs,
-			Generators:  o.Generators,
+			RefArchs:    ra,
+			Generators:  gs,
 			DisplayName: o.DisplayName,
 		},
 	}
 }
-
-type ConfigletRequest ConfigletData
 
 func (o *Client) listAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 	response := &struct {
@@ -121,11 +212,14 @@ func (o *Client) getAllConfiglets(ctx context.Context) ([]rawConfiglet, error) {
 }
 
 func (o *Client) createConfiglet(ctx context.Context, in *ConfigletRequest) (ObjectId, error) {
+
+	cr := in.raw()
 	response := &objectIdResponse{}
+
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignConfiglets,
-		apiInput:    in,
+		apiInput:    cr,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -135,10 +229,12 @@ func (o *Client) createConfiglet(ctx context.Context, in *ConfigletRequest) (Obj
 }
 
 func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *ConfigletRequest) error {
+	cr := in.raw()
+
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignConfigletsById, id),
-		apiInput: in,
+		apiInput: cr,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
