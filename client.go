@@ -873,6 +873,44 @@ func (o *Client) DeleteTag(ctx context.Context, id ObjectId) error {
 	return o.deleteTag(ctx, id)
 }
 
+// CreateConfiglet creates a Configlet and returns its ObjectId.
+func (o *Client) CreateConfiglet(ctx context.Context, in *ConfigletRequest) (ObjectId, error) {
+	return o.createConfiglet(ctx, in)
+}
+
+// DeleteConfiglet deletes a configlet.
+func (o *Client) DeleteConfiglet(ctx context.Context, in ObjectId) error {
+	return o.deleteConfiglet(ctx, in)
+}
+
+// GetConfiglet Accepts an ID and returns the Configlet object
+func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, error) {
+	r, err := o.getConfiglet(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return r.polish(), nil
+}
+
+//UpdateConfiglet updates a configlet
+func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletRequest) error {
+	return o.updateConfiglet(ctx, id, in)
+}
+
+//ListAllConfiglets gets the List of All configlets' ids
+func (o *Client) ListAllConfiglets(ctx context.Context) ([]ObjectId, error) {
+	return o.listAllConfiglets(ctx)
+}
+
+//GetConfigletByName gets a configlet by Name
+func (o *Client) GetConfigletByName(ctx context.Context, Name string) (*Configlet, error) {
+	c, err := o.getConfigletByName(ctx, Name)
+	if err != nil {
+		return nil, err
+	}
+	return c.polish(), nil
+}
+
 // ListAllTemplateIds returns []ObjectId representing all blueprint templates
 func (o *Client) ListAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllTemplateIds(ctx)
