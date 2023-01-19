@@ -13,7 +13,7 @@ import (
 
 func TestListGetOneRackType(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func TestListGetOneRackType(t *testing.T) {
 }
 
 func TestListGetAllGetRackType(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +139,7 @@ func TestRackTypeStrings(t *testing.T) {
 }
 
 func TestCreateGetRackDeleteRackType(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

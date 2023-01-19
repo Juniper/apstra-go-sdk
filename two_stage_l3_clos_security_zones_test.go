@@ -12,7 +12,7 @@ import (
 )
 
 func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 }
 
 func TestGetDefaultRoutingZone(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -12,7 +12,7 @@ import (
 )
 
 func TestGetInterfaceMapDigest(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func TestGetInterfaceMapDigest(t *testing.T) {
 
 func TestGetInterfaceMapDigestsByLogicalDevice(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func TestGetInterfaceMapDigestsByLogicalDevice(t *testing.T) {
 
 func TestGetInterfaceMapDigestsByDeviceProfile(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

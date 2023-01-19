@@ -64,7 +64,7 @@ func TestTwoStageL3ClosVirtualNetworkStrings(t *testing.T) {
 }
 
 func TestGetAllVirtualNetworks(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

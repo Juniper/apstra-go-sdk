@@ -11,7 +11,7 @@ import (
 )
 
 func TestClientLog(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +23,7 @@ func TestClientLog(t *testing.T) {
 }
 
 func TestLoginEmptyPassword(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func TestLoginEmptyPassword(t *testing.T) {
 }
 
 func TestLoginBadPassword(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func TestLoginBadPassword(t *testing.T) {
 }
 
 func TestLogoutAuthFail(t *testing.T) {
-	clientCfgs, err := getTestClientCfgs()
+	clientCfgs, err := getTestClientCfgs(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

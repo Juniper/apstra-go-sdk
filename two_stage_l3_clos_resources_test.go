@@ -12,7 +12,7 @@ import (
 )
 
 func TestGetResourceAllocation(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

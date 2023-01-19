@@ -4,6 +4,7 @@
 package goapstra
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -28,12 +29,12 @@ type testClient struct {
 
 var testClients map[string]testClient
 
-func getTestClients() (map[string]testClient, error) {
+func getTestClients(ctx context.Context) (map[string]testClient, error) {
 	if testClients != nil {
 		return testClients, nil
 	}
 
-	clientCfgs, err := getTestClientCfgs()
+	clientCfgs, err := getTestClientCfgs(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func getTestClients() (map[string]testClient, error) {
 
 // getTestClientCfgs returns map[string]testClientCfg keyed by
 // the test environment name (e.g. cloudlabs topology ID).
-func getTestClientCfgs() (map[string]testClientCfg, error) {
+func getTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 	testClientCfgs := make(map[string]testClientCfg)
 
 	// add cloudlabs clients to testClients slice
