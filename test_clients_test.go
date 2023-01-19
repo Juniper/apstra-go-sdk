@@ -12,8 +12,19 @@ import (
 
 const (
 	clientTypeCloudlabs = "cloudlabs"
-	clientTypeSlicer    = "slicer"
+
+	envCloudlabsTopologyIdSep = ":"
 )
+
+type testClientCfg struct {
+	cfgType string
+	cfg     *ClientCfg
+}
+
+type testClient struct {
+	clientType string
+	client     *Client
+}
 
 var testClients map[string]testClient
 

@@ -19,7 +19,6 @@ const (
 	cloudlabsTopologyUrlById   = "https://cloudlabs.apstra.com/api/v1.0/topologies/%s"
 	envApstraApiKeyLogFile     = "APSTRA_API_TLS_LOGFILE"
 	envCloudlabsTopologyIdList = "CLOUDLABS_TOPOLOGIES"
-	envCloudlabsTopologyIdSep  = ":"
 
 	vSwitchTypeArista = "veos"
 	vSwitchTypeNexus  = "nxosv"
@@ -186,13 +185,8 @@ func getCloudlabsTopology(id string) (*cloudlabsTopology, error) {
 	return topology, json.NewDecoder(httpResp.Body).Decode(topology)
 }
 
-func topologyIdsFromEnv() ([]string, error) {
-	env, found := os.LookupEnv(envCloudlabsTopologyIdList)
-	if !found {
-		return nil, fmt.Errorf("env var '%s' not set", envCloudlabsTopologyIdList)
-	}
-
-	return strings.Split(env, envCloudlabsTopologyIdSep), nil
+func cloudLabsTopologyIdsFromEnv() []string {
+	return strings.Split(os.Getenv(envCloudlabsTopologyIdList), envCloudlabsTopologyIdSep)
 }
 
 type cloudlabsSwitchInfo struct {
@@ -233,23 +227,10 @@ func (o *cloudlabsTopology) getSwitchInfo() ([]cloudlabsSwitchInfo, error) {
 	return result, nil
 }
 
-type testClient struct {
-	clientType string
-	client     *Client
-}
-
-type testClientCfg struct {
-	cfgType string
-	cfg     *ClientCfg
-}
-
 // getCloudlabsTestClientCfgs returns map[string]testClientCfg keyed by
 // cloudlab topology ID
 func getCloudlabsTestClientCfgs() (map[string]testClientCfg, error) {
-	topologyIds, err := topologyIdsFromEnv()
-	if err != nil {
-		return nil, err
-	}
+	topologyIds := cloudLabsTopologyIdsFromEnv()
 
 	result := make(map[string]testClientCfg, len(topologyIds))
 	for _, id := range topologyIds {
@@ -270,10 +251,7 @@ func getCloudlabsTestClientCfgs() (map[string]testClientCfg, error) {
 }
 
 func TestGetCloudlabsTopologies(t *testing.T) {
-	topologyIds, err := topologyIdsFromEnv()
-	if err != nil {
-		t.Fatal(err)
-	}
+	topologyIds := cloudLabsTopologyIdsFromEnv()
 
 	for _, id := range topologyIds {
 		topology, err := getCloudlabsTopology(id)
@@ -284,17 +262,14 @@ func TestGetCloudlabsTopologies(t *testing.T) {
 	}
 
 	bogusId := "bogus"
-	_, err = getCloudlabsTopology(bogusId)
+	_, err := getCloudlabsTopology(bogusId)
 	if err == nil {
 		t.Fatalf("topology id '%s' did not produce an error", bogusId)
 	}
 }
 
 func TestGetCloudlabsClients(t *testing.T) {
-	topologyIds, err := topologyIdsFromEnv()
-	if err != nil {
-		t.Fatal(err)
-	}
+	topologyIds := cloudLabsTopologyIdsFromEnv()
 
 	topologies := make([]*cloudlabsTopology, len(topologyIds))
 	for i, id := range topologyIds {
