@@ -18,7 +18,6 @@ import (
 
 const (
 	cloudlabsTopologyUrlById   = "https://cloudlabs.apstra.com/api/v1.0/topologies/%s"
-	envApstraApiKeyLogFile     = "APSTRA_API_TLS_LOGFILE"
 	envCloudlabsTopologyIdList = "CLOUDLABS_TOPOLOGIES"
 
 	vSwitchTypeArista = "veos"

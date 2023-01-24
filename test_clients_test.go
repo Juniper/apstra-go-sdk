@@ -17,6 +17,7 @@ const (
 	clientTypeAws       = "aws"
 
 	envCloudlabsTopologyIdSep = ":"
+	envApstraApiKeyLogFile    = "APSTRA_API_TLS_LOGFILE"
 )
 
 type testClientCfg struct {
