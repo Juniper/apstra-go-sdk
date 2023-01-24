@@ -82,7 +82,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 		switch client.clientType {
 		case clientTypeCloudlabs:
 			// get the topology by name
-			clTopology, err := getCloudlabsTopology(clientName)
+			clTopology, err := getCloudlabsTopology(context.Background(), clientName)
 			if err != nil {
 				t.Fatal(err)
 			}

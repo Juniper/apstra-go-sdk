@@ -8,11 +8,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"testing"
 	"time"
 )
 
 const (
 	clientTypeCloudlabs = "cloudlabs"
+	clientTypeAws       = "aws"
 
 	envCloudlabsTopologyIdSep = ":"
 )
@@ -73,7 +75,7 @@ func getTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 	testClientCfgs := make(map[string]testClientCfg)
 
 	// add cloudlabs clients to testClients slice
-	clTestClientCfgs, err := getCloudlabsTestClientCfgs()
+	clTestClientCfgs, err := getCloudlabsTestClientCfgs(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +83,24 @@ func getTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 		testClientCfgs[k] = v
 	}
 
+	// add aws clients to testClients slice
+	awsTestClientCfgs, err := getAwsTestClientCfgs(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range awsTestClientCfgs {
+		testClientCfgs[k] = v
+	}
+
 	// add future type clients (slicer?) to testClients slice here
 
 	return testClientCfgs, nil
+}
+
+func TestFoo(t *testing.T) {
+	clients, err := getAwsTestClientCfgs(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Print(clients)
 }

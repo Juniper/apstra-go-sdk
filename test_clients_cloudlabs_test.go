@@ -4,6 +4,7 @@
 package goapstra
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -96,8 +97,8 @@ func (o *cloudlabsTopology) getVmAccessInfo(name string, proto string) (*cloudla
 	return nil, fmt.Errorf("vm named %s with access protocol %s not found in topology %s", name, proto, o.Uuid)
 }
 
-func (o *cloudlabsTopology) selfUpdate() error {
-	current, err := getCloudlabsTopology(o.Uuid)
+func (o *cloudlabsTopology) selfUpdate(ctx context.Context) error {
+	current, err := getCloudlabsTopology(ctx, o.Uuid)
 	if err != nil {
 		return err
 	}
@@ -122,9 +123,9 @@ func (o *cloudlabsTopology) selfUpdate() error {
 	return nil
 }
 
-func (o *cloudlabsTopology) getGoapstraClientCfg() (*ClientCfg, error) {
+func (o *cloudlabsTopology) getGoapstraClientCfg(ctx context.Context) (*ClientCfg, error) {
 	if o.State != "up" {
-		err := o.selfUpdate()
+		err := o.selfUpdate(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -158,18 +159,23 @@ func (o *cloudlabsTopology) getGoapstraClientCfg() (*ClientCfg, error) {
 	}, nil
 }
 
-func (o *cloudlabsTopology) getGoapstraClient() (*Client, error) {
-	cfg, err := o.getGoapstraClientCfg()
+func (o *cloudlabsTopology) getGoapstraClient(ctx context.Context) (*Client, error) {
+	cfg, err := o.getGoapstraClientCfg(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return cfg.NewClient()
 }
 
-func getCloudlabsTopology(id string) (*cloudlabsTopology, error) {
-	httpResp, err := http.Get(fmt.Sprintf(cloudlabsTopologyUrlById, id))
+func getCloudlabsTopology(ctx context.Context, id string) (*cloudlabsTopology, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf(cloudlabsTopologyUrlById, id), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing http request for cloudlabs topology - %w", err)
+	}
+
+	httpResp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error requesting cloudlabs topology info - %w", err)
 	}
 
 	defer func() {
@@ -186,7 +192,11 @@ func getCloudlabsTopology(id string) (*cloudlabsTopology, error) {
 }
 
 func cloudLabsTopologyIdsFromEnv() []string {
-	return strings.Split(os.Getenv(envCloudlabsTopologyIdList), envCloudlabsTopologyIdSep)
+	ids := os.Getenv(envCloudlabsTopologyIdList)
+	if ids == "" {
+		return nil
+	}
+	return strings.Split(ids, envCloudlabsTopologyIdSep)
 }
 
 type cloudlabsSwitchInfo struct {
@@ -229,16 +239,16 @@ func (o *cloudlabsTopology) getSwitchInfo() ([]cloudlabsSwitchInfo, error) {
 
 // getCloudlabsTestClientCfgs returns map[string]testClientCfg keyed by
 // cloudlab topology ID
-func getCloudlabsTestClientCfgs() (map[string]testClientCfg, error) {
+func getCloudlabsTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 	topologyIds := cloudLabsTopologyIdsFromEnv()
 
 	result := make(map[string]testClientCfg, len(topologyIds))
 	for _, id := range topologyIds {
-		topology, err := getCloudlabsTopology(id)
+		topology, err := getCloudlabsTopology(ctx, id)
 		if err != nil {
 			return nil, err
 		}
-		cfg, err := topology.getGoapstraClientCfg()
+		cfg, err := topology.getGoapstraClientCfg(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -251,10 +261,11 @@ func getCloudlabsTestClientCfgs() (map[string]testClientCfg, error) {
 }
 
 func TestGetCloudlabsTopologies(t *testing.T) {
+	ctx := context.Background()
 	topologyIds := cloudLabsTopologyIdsFromEnv()
 
 	for _, id := range topologyIds {
-		topology, err := getCloudlabsTopology(id)
+		topology, err := getCloudlabsTopology(ctx, id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -262,18 +273,19 @@ func TestGetCloudlabsTopologies(t *testing.T) {
 	}
 
 	bogusId := "bogus"
-	_, err := getCloudlabsTopology(bogusId)
+	_, err := getCloudlabsTopology(ctx, bogusId)
 	if err == nil {
 		t.Fatalf("topology id '%s' did not produce an error", bogusId)
 	}
 }
 
 func TestGetCloudlabsClients(t *testing.T) {
+	ctx := context.Background()
 	topologyIds := cloudLabsTopologyIdsFromEnv()
 
 	topologies := make([]*cloudlabsTopology, len(topologyIds))
 	for i, id := range topologyIds {
-		topology, err := getCloudlabsTopology(id)
+		topology, err := getCloudlabsTopology(ctx, id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -282,7 +294,7 @@ func TestGetCloudlabsClients(t *testing.T) {
 	}
 
 	for _, topology := range topologies {
-		client, err := topology.getGoapstraClient()
+		client, err := topology.getGoapstraClient(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
