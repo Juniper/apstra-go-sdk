@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"testing"
 	"time"
 )
 
@@ -96,12 +95,4 @@ func getTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 	// add future type clients (slicer?) to testClients slice here
 
 	return testClientCfgs, nil
-}
-
-func TestFoo(t *testing.T) {
-	clients, err := getAwsTestClientCfgs(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Print(clients)
 }
