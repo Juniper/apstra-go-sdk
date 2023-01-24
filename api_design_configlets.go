@@ -76,25 +76,6 @@ func (o *ConfigletRequest) raw() *rawConfigletRequest {
 	return &rawcr
 }
 
-//
-//func (o *rawConfigletRequest) polish() *ConfigletRequest {
-//	cr := ConfigletRequest{}
-//	cr.DisplayName = o.DisplayName
-//	cr.RefArchs = make([]RefDesign, len(o.RefArchs))
-//	cr.Generators = make([]ConfigletGenerator, len(o.Generators))
-//	for i, j := range o.RefArchs {
-//		var err error
-//		cr.RefArchs[i], err = refDesign(j).parse()
-//		if err != nil {
-//			log.Fatalf("unsupported architecture %s error was %s", j, err)
-//		}
-//	}
-//	for i, j := range o.Generators {
-//		cr.Generators[i] = *j.polish()
-//	}
-//	return &cr
-//}
-
 func (o *rawConfigletGenerator) polish() *ConfigletGenerator {
 	cg := ConfigletGenerator{}
 	cg.TemplateText = o.TemplateText
