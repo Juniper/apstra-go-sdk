@@ -120,7 +120,7 @@ type taskCompleteInfo struct {
 // to chan<- *taskCompleteInfo (callers expect API response here).
 // So, it looks like this:
 //
-// 	pendingTaskData{
+//	pendingTaskData{
 //		ObjectId("blueprint_1"): {
 //			TaskId("task_abc"): make(chan<- *taskCompleteInfo),
 //			TaskId("task_def"): make(chan<- *taskCompleteInfo),
@@ -341,8 +341,9 @@ func (o *taskMonitor) checkTasksInBlueprint(bpId ObjectId, mapTaskIdToStatus map
 }
 
 // check
-//   invokes checkBlueprints
-//             invokes checkTasksInBlueprint
+//
+//	invokes checkBlueprints
+//	          invokes checkTasksInBlueprint
 func (o *taskMonitor) check() {
 	o.acquireLock("check")
 	o.checkBlueprints()

@@ -892,17 +892,17 @@ func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, err
 	return r.polish(), nil
 }
 
-//UpdateConfiglet updates a configlet
+// UpdateConfiglet updates a configlet
 func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletRequest) error {
 	return o.updateConfiglet(ctx, id, in)
 }
 
-//ListAllConfiglets gets the List of All configlets' ids
+// ListAllConfiglets gets the List of All configlets' ids
 func (o *Client) ListAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllConfiglets(ctx)
 }
 
-//GetConfigletByName gets a configlet by Name
+// GetConfigletByName gets a configlet by Name
 func (o *Client) GetConfigletByName(ctx context.Context, Name string) (*Configlet, error) {
 	c, err := o.getConfigletByName(ctx, Name)
 	if err != nil {
@@ -918,9 +918,10 @@ func (o *Client) ListAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 
 // GetAllTemplates returns []Template where each element
 // is one of these:
-//   TemplateRackBased
-//   TemplatePodBased
-//   TemplateL3Collapsed
+//
+//	TemplateRackBased
+//	TemplatePodBased
+//	TemplateL3Collapsed
 func (o *Client) GetAllTemplates(ctx context.Context) ([]Template, error) {
 	templates, err := o.getAllTemplates(ctx)
 	if err != nil {
@@ -1386,3 +1387,30 @@ func (o *Client) GetInterfaceMapDigestsLogicalDeviceAndDeviceProfile(ctx context
 func (o *Client) AssignAgentProfile(ctx context.Context, req *AssignAgentProfileRequest) error {
 	return o.assignAgentProfile(ctx, req)
 }
+
+// Ready returns an error if the Apstra service isn't ready to go
+func (o *Client) Ready(ctx context.Context) error {
+	return o.ready(ctx)
+}
+
+// WaitUntilReady blocks until the Apstra service is ready to go, the context
+// is cancelled, or a non-retryable error occurs.
+func (o *Client) WaitUntilReady(ctx context.Context) error {
+	return o.waitUntilReady(ctx)
+}
+
+// GetAuditConfig returns current Audit Configuration as *AuditConfig
+func (o *Client) GetAuditConfig(ctx context.Context) (*AuditConfig, error) {
+	return o.getAuditConfig(ctx)
+}
+
+// PutAuditConfig sets Audit Configuration according to passed *AuditConfig
+func (o *Client) PutAuditConfig(ctx context.Context, cfg *AuditConfig) error {
+	return o.putAuditConfig(ctx, cfg)
+}
+
+// Private method added for Client.ready(), public wrapper not currently needed.
+//// GetTelemetryQuery returns *TelemetryQuery
+//func (o *Client) GetTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error){
+//	return o.getTelemetryQuery(ctx)
+//}

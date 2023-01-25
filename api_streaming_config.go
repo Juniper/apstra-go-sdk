@@ -34,8 +34,8 @@ type getStreamingConfigsOptionsResponse struct {
 
 // StreamingConfigInfo is returned by Apstra in response to
 // both:
-//  - 'GET apiUrlStreamingConfig' (as a member of list 'Items')
-//  - 'GET apiUrlStreamingConfigPrefix + {id}'
+//   - 'GET apiUrlStreamingConfig' (as a member of list 'Items')
+//   - 'GET apiUrlStreamingConfigPrefix + {id}'
 type StreamingConfigInfo struct {
 	Status struct {
 		ConnectionLog []struct {
