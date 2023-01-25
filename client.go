@@ -1399,17 +1399,15 @@ func (o *Client) WaitUntilReady(ctx context.Context) error {
 	return o.waitUntilReady(ctx)
 }
 
-// Private method added for Client.ready(), public wrapper not currently needed.
-//// GetAuditConfig returns current Audit Configuration as *AuditConfig
-//func (o *Client) GetAuditConfig(ctx context.Context) (*AuditConfig, error) {
-//	return o.getAuditConfig(ctx)
-//}
+// GetAuditConfig returns current Audit Configuration as *AuditConfig
+func (o *Client) GetAuditConfig(ctx context.Context) (*AuditConfig, error) {
+	return o.getAuditConfig(ctx)
+}
 
-// Private method added for Client.ready(), public wrapper not currently needed.
-//// PutAuditConfig sets Audit Configuration according to passed *AuditConfig
-//func (o *Client) PutAuditConfig(ctx context.Context, cfg *AuditConfig) error {
-//	return o.putAuditConfig(ctx, cfg)
-//}
+// PutAuditConfig sets Audit Configuration according to passed *AuditConfig
+func (o *Client) PutAuditConfig(ctx context.Context, cfg *AuditConfig) error {
+	return o.putAuditConfig(ctx, cfg)
+}
 
 // Private method added for Client.ready(), public wrapper not currently needed.
 //// GetTelemetryQuery returns *TelemetryQuery
