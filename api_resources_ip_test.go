@@ -11,7 +11,7 @@ import (
 )
 
 func TestListIp4Pools(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func TestListIp4Pools(t *testing.T) {
 }
 
 func TestGetAllIp4Pools(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestGetAllIp4Pools(t *testing.T) {
 }
 
 func TestGetIp4PoolByName(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestGetIp4PoolByName(t *testing.T) {
 }
 
 func TestCreateGetDeleteIp4Pool(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 }
 
 func TestListIp6Pools(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +152,7 @@ func TestListIp6Pools(t *testing.T) {
 }
 
 func TestGetAllIp6Pools(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,7 +171,7 @@ func TestGetAllIp6Pools(t *testing.T) {
 }
 
 func TestGetIp6PoolByName(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +210,7 @@ func TestGetIp6PoolByName(t *testing.T) {
 }
 
 func TestCreateGetDeleteIp6Pool(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

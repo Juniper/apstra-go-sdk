@@ -72,7 +72,7 @@ func TestUnpackAnomaly(t *testing.T) {
 }
 
 func TestGetAnomalies(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

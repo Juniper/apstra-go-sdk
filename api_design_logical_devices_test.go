@@ -68,7 +68,7 @@ func TestParseLogicalDeviceSpeed(t *testing.T) {
 }
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 }
 
 func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,7 +216,7 @@ func TestRawIfy(t *testing.T) {
 }
 
 func TestGetLogicalDeviceByName(t *testing.T) {
-	clients, err := getTestClients()
+	clients, err := getTestClients(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
