@@ -101,7 +101,8 @@ func (o *TwoStageL3ClosClient) SetResourceAllocation(ctx context.Context, in *Re
 // GetInterfaceMapAssignments returns a SystemIdToInterfaceMapAssignment (a map
 // of string (blueprint graph node ID) to interface map ID detailing assignments
 // in the specified blueprint:
-// 	x := SystemIdToInterfaceMapAssignment{
+//
+//	x := SystemIdToInterfaceMapAssignment{
 //		"BeAyAoCIgqx4r3hiFow": nil,
 //		"B3Ym-PBJJEtvXQsnQQM": "VS_SONiC_BUZZNIK_PLUS__slicer-7x10-1",
 //		"4gCWV2NRix6MYPm4PHU": "Arista_vEOS__slicer-7x10-1",
