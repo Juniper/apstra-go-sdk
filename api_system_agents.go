@@ -379,10 +379,7 @@ func (o *AgentPackages) raw() rawAgentPackages {
 type rawAgentPackages []string
 
 func (o rawAgentPackages) polish() AgentPackages {
-	var polish AgentPackages
-	if len(o) > 0 {
-		polish = make(map[string]string)
-	}
+	var polish AgentPackages = make(map[string]string)
 	for _, s := range o {
 		kv := strings.SplitN(s, apstraSystemAgentPlatformStringSep, 2)
 		switch len(kv) {
