@@ -3,6 +3,7 @@ package goapstra
 import (
 	"context"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -95,6 +96,10 @@ func (o *LogicalDevicePortRoleFlags) FromStrings(in []string) error {
 		*o = *o | f
 	}
 	return nil
+}
+
+func (o *LogicalDevicePortRoleFlags) SetAll() {
+	*o = LogicalDevicePortRoleFlags(math.MaxUint16)
 }
 
 func (o logicalDevicePortRole) parse() (LogicalDevicePortRoleFlags, error) {
