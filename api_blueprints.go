@@ -410,6 +410,7 @@ func (o *Client) getBlueprintStatusesByName(ctx context.Context, desired string)
 			// delete last element
 			blueprintStatuses = blueprintStatuses[:len(blueprintStatuses)-1]
 		}
+		i++
 	}
 	return blueprintStatuses, nil
 }
