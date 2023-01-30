@@ -403,12 +403,14 @@ func (o *Client) getBlueprintStatusesByName(ctx context.Context, desired string)
 	}
 
 	i := 0
-	for i <= len(blueprintStatuses) {
+	for i < len(blueprintStatuses) {
 		if blueprintStatuses[i].Label != desired { // element not desired. delete element.
 			// copy last element to current position
 			blueprintStatuses[i] = blueprintStatuses[len(blueprintStatuses)-1]
 			// delete last element
 			blueprintStatuses = blueprintStatuses[:len(blueprintStatuses)-1]
+		} else {
+			i++
 		}
 	}
 	return blueprintStatuses, nil
