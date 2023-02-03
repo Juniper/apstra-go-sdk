@@ -75,6 +75,14 @@ func (o RefDesign) String() string {
 	}
 }
 
+func (o *RefDesign) FromString(s string) {
+	i, err := refDesign(s).parse()
+	if err != nil {
+		log.Fatal("Unknown Design " + s)
+	}
+	*o = RefDesign(i)
+}
+
 func (o refDesign) parse() (RefDesign, error) {
 	switch o {
 	case refDesignDatacenter:
