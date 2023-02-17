@@ -576,7 +576,7 @@ type Superspine struct {
 	ExternalLinkSpeed  LogicalDevicePortSpeed
 	Tags               []DesignTagData
 	SuperspinePerPlane int
-	LogicalDevice      LogicalDevice
+	LogicalDevice      LogicalDeviceData
 }
 
 type TemplateElementSuperspineRequest struct {
@@ -637,7 +637,10 @@ func (o rawSuperspine) polish() (*Superspine, error) {
 		ExternalLinkSpeed:  externalLinkSpeed,
 		Tags:               o.Tags,
 		SuperspinePerPlane: o.SuperspinePerPlane,
-		LogicalDevice:      *ld,
+		LogicalDevice: LogicalDeviceData{
+			DisplayName: ld.Data.DisplayName,
+			Panels:      ld.Data.Panels,
+		},
 	}, nil
 }
 
