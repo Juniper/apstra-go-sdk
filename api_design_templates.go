@@ -481,7 +481,7 @@ type Spine struct {
 	Count                   int
 	ExternalLinkSpeed       LogicalDevicePortSpeed
 	LinkPerSuperspineSpeed  LogicalDevicePortSpeed
-	LogicalDevice           LogicalDevice
+	LogicalDevice           LogicalDeviceData
 	LinkPerSuperspineCount  int
 	Tags                    []DesignTagData
 	ExternalLinksPerNode    int
@@ -555,10 +555,13 @@ func (o rawSpine) polish() (*Spine, error) {
 	}
 
 	return &Spine{
-		Count:                   o.Count,
-		ExternalLinkSpeed:       externalLinkSpeed,
-		LinkPerSuperspineSpeed:  linkPerSuperspineSpeed,
-		LogicalDevice:           *ld,
+		Count:                  o.Count,
+		ExternalLinkSpeed:      externalLinkSpeed,
+		LinkPerSuperspineSpeed: linkPerSuperspineSpeed,
+		LogicalDevice: LogicalDeviceData{
+			DisplayName: ld.Data.DisplayName,
+			Panels:      ld.Data.Panels,
+		},
 		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
 		Tags:                    o.Tags,
 		ExternalLinksPerNode:    o.ExternalLinksPerNode,
@@ -573,7 +576,7 @@ type Superspine struct {
 	ExternalLinkSpeed  LogicalDevicePortSpeed
 	Tags               []DesignTagData
 	SuperspinePerPlane int
-	LogicalDevice      LogicalDevice
+	LogicalDevice      LogicalDeviceData
 }
 
 type TemplateElementSuperspineRequest struct {
@@ -634,7 +637,10 @@ func (o rawSuperspine) polish() (*Superspine, error) {
 		ExternalLinkSpeed:  externalLinkSpeed,
 		Tags:               o.Tags,
 		SuperspinePerPlane: o.SuperspinePerPlane,
-		LogicalDevice:      *ld,
+		LogicalDevice: LogicalDeviceData{
+			DisplayName: ld.Data.DisplayName,
+			Panels:      ld.Data.Panels,
+		},
 	}, nil
 }
 
