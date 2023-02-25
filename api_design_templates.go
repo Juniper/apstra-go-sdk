@@ -718,31 +718,6 @@ type TemplateRackBasedData struct {
 	DhcpServiceIntent      DhcpServiceIntent
 }
 
-func (o TemplateRackBasedData) GetRackTypeCount(in ObjectId) (int, *RackType) {
-	var count *int
-	var rackType *RackType
-
-	for _, rtc := range o.RackTypeCounts {
-		if rtc.RackTypeId == in {
-			count = &rtc.Count
-			break
-		}
-	}
-
-	for _, rt := range o.RackTypes {
-		if rt.Id == in {
-			rackType = &rt
-			break
-		}
-	}
-
-	if count == nil || rackType == nil || *count == 0 {
-		return 0, nil
-	}
-
-	return *count, rackType
-}
-
 type DhcpServiceIntent struct {
 	Active bool `json:"active"`
 }
