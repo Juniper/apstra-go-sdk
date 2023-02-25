@@ -713,14 +713,13 @@ type TemplateRackBasedData struct {
 	FabricAddressingPolicy *FabricAddressingPolicy
 	Capability             TemplateCapability
 	Spine                  Spine
-	RackTypes              []RackType
-	RackTypeCounts         []RackTypeCount
+	RackInfo               []TemplateRackBasedRackInfo
 	DhcpServiceIntent      DhcpServiceIntent
 }
 
 type TemplateRackBasedRackInfo struct {
 	Count        int
-	RackTypeData RackTypeData
+	RackTypeData *RackTypeData
 }
 
 type DhcpServiceIntent struct {
@@ -789,6 +788,30 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 		return nil, err
 	}
 
+	if len(o.RackTypes) != len(o.RackTypeCounts) {
+		return nil, fmt.Errorf("template '%s' has %d rack_types and %d rack_type_counts - these should match",
+			o.Id, len(o.RackTypes), len(o.RackTypeCounts))
+	}
+
+	rackTypeInfos := make([]TemplateRackBasedRackInfo, len(o.RackTypes))
+OUTER:
+	for i, rrt := range o.RackTypes {
+		prt, err := rrt.polish()
+		if err != nil {
+			return nil, err
+		}
+		for _, rtc := range o.RackTypeCounts {
+			if prt.Id == rtc.RackTypeId {
+				rackTypeInfos[i] = TemplateRackBasedRackInfo{
+					Count:        o.RackTypeCounts[i].Count,
+					RackTypeData: prt.Data,
+				}
+				continue OUTER
+			}
+		}
+		return nil, fmt.Errorf("template contains rack_type '%s' which does not appear among rack_type_counts", rrt.Id)
+	}
+
 	return &TemplateRackBased{
 		Id:             o.Id,
 		Type:           TemplateType(tType),
@@ -802,8 +825,7 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 			FabricAddressingPolicy: f,
 			Capability:             TemplateCapability(c),
 			Spine:                  *s,
-			RackTypes:              rackTypes,
-			RackTypeCounts:         o.RackTypeCounts,
+			RackInfo:               rackTypeInfos,
 			DhcpServiceIntent:      o.DhcpServiceIntent,
 		},
 	}, nil
