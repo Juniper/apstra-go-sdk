@@ -775,14 +775,7 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 	if err != nil {
 		return nil, err
 	}
-	var rackTypes []RackType
-	for _, rt := range o.RackTypes {
-		prt, err := rt.polish()
-		if err != nil {
-			return nil, err
-		}
-		rackTypes = append(rackTypes, *prt)
-	}
+
 	antiAffinityPolicy, err := o.AntiAffinityPolicy.polish()
 	if err != nil {
 		return nil, err
@@ -795,12 +788,12 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 
 	rackTypeInfos := make([]TemplateRackBasedRackInfo, len(o.RackTypes))
 OUTER:
-	for i, rrt := range o.RackTypes {
+	for i, rrt := range o.RackTypes { // loop over raw rack types
 		prt, err := rrt.polish()
 		if err != nil {
 			return nil, err
 		}
-		for _, rtc := range o.RackTypeCounts {
+		for _, rtc := range o.RackTypeCounts { // loop over rack type counts looking for matching ID
 			if prt.Id == rtc.RackTypeId {
 				rackTypeInfos[i] = TemplateRackBasedRackInfo{
 					Count:        o.RackTypeCounts[i].Count,
