@@ -718,6 +718,11 @@ type TemplateRackBasedData struct {
 	DhcpServiceIntent      DhcpServiceIntent
 }
 
+type TemplateRackBasedRackInfo struct {
+	Count        int
+	RackTypeData RackTypeData
+}
+
 type DhcpServiceIntent struct {
 	Active bool `json:"active"`
 }
