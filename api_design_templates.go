@@ -718,6 +718,7 @@ type TemplateRackBasedData struct {
 }
 
 type TemplateRackBasedRackInfo struct {
+	Id           ObjectId
 	Count        int
 	RackTypeData *RackTypeData
 }
@@ -796,6 +797,7 @@ OUTER:
 		for _, rtc := range o.RackTypeCounts { // loop over rack type counts looking for matching ID
 			if prt.Id == rtc.RackTypeId {
 				rackTypeInfos[i] = TemplateRackBasedRackInfo{
+					Id:           rtc.RackTypeId,
 					Count:        o.RackTypeCounts[i].Count,
 					RackTypeData: prt.Data,
 				}
