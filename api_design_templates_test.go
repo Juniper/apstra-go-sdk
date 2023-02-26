@@ -535,7 +535,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			ExternalFacingNodeCount: 0,
 			ExternalLinkCount:       0,
 		},
-		RackInfo: []TemplateRackBasedRackInfo{
+		RackInfos: []TemplateRackBasedRackInfo{
 			{
 				Id:    "access_switch",
 				Count: 1,
@@ -594,7 +594,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			ExternalFacingNodeCount: 0,
 			ExternalLinkCount:       0,
 		},
-		RackInfo: []TemplateRackBasedRackInfo{
+		RackInfos: []TemplateRackBasedRackInfo{
 			{
 				Id:    "access_switch",
 				Count: 1,

@@ -1256,9 +1256,9 @@ func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]rawTemplateL
 type CreateRackBasedTemplateRequest struct {
 	DisplayName            string
 	Capability             TemplateCapability
-	Spine                  *TemplateElementSpineRequest
-	RackInfo               []TemplateRackBasedRackInfo
-	DhcpServiceIntent      *DhcpServiceIntent
+	Spine             *TemplateElementSpineRequest
+	RackInfos         []TemplateRackBasedRackInfo
+	DhcpServiceIntent *DhcpServiceIntent
 	AntiAffinityPolicy     *AntiAffinityPolicy
 	AsnAllocationPolicy    *AsnAllocationPolicy
 	FabricAddressingPolicy *FabricAddressingPolicy
@@ -1266,9 +1266,9 @@ type CreateRackBasedTemplateRequest struct {
 }
 
 func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreateRackBasedTemplateRequest, error) {
-	rackTypes := make([]rawRackType, len(o.RackInfo))
-	rackTypeCounts := make([]RackTypeCount, len(o.RackInfo))
-	for i, ri := range o.RackInfo {
+	rackTypes := make([]rawRackType, len(o.RackInfos))
+	rackTypeCounts := make([]RackTypeCount, len(o.RackInfos))
+	for i, ri := range o.RackInfos {
 		if ri.RackTypeData != nil {
 			return nil, fmt.Errorf("the RackTypeData field must be nil when creating a rack-based template")
 		}
