@@ -583,15 +583,15 @@ type TemplateElementSuperspineRequest struct {
 	PlaneCount         int
 	ExternalLinkCount  int
 	ExternalLinkSpeed  LogicalDevicePortSpeed
-	Tags               []string
+	Tags               []ObjectId
 	SuperspinePerPlane int
 	LogicalDeviceId    ObjectId
 }
 
 func (o *TemplateElementSuperspineRequest) raw(ctx context.Context, client *Client) (*rawSuperspine, error) {
 	tags := make([]DesignTagData, len(o.Tags))
-	for i, label := range o.Tags {
-		rawTag, err := client.getTagByLabel(ctx, label)
+	for i, tagId := range o.Tags {
+		rawTag, err := client.getTag(ctx, tagId)
 		if err != nil {
 			return nil, err
 		}
