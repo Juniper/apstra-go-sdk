@@ -531,14 +531,14 @@ func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (
 
 type rawSpine struct {
 	Count                   int                        `json:"count"`
-	ExternalLinkSpeed       *rawLogicalDevicePortSpeed `json:"external_link_speed"`
+	ExternalLinkSpeed       *rawLogicalDevicePortSpeed `json:"external_link_speed,omitempty"`
 	LinkPerSuperspineSpeed  *rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
 	LogicalDevice           rawLogicalDevice           `json:"logical_device"`
 	LinkPerSuperspineCount  int                        `json:"link_per_superspine_count"`
 	Tags                    []DesignTagData            `json:"tags"`
-	ExternalLinksPerNode    int                        `json:"external_links_per_node"`
-	ExternalFacingNodeCount int                        `json:"external_facing_node_count"`
-	ExternalLinkCount       int                        `json:"external_link_count"`
+	ExternalLinksPerNode    int                        `json:"external_links_per_node,omitempty"`
+	ExternalFacingNodeCount int                        `json:"external_facing_node_count,omitempty"`
+	ExternalLinkCount       int                        `json:"external_link_count,omitempty"`
 }
 
 func (o rawSpine) polish() (*Spine, error) {
