@@ -1256,9 +1256,9 @@ func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]rawTemplateL
 type CreateRackBasedTemplateRequest struct {
 	DisplayName            string
 	Capability             TemplateCapability
-	Spine             *TemplateElementSpineRequest
-	RackInfos         []TemplateRackBasedRackInfo
-	DhcpServiceIntent *DhcpServiceIntent
+	Spine                  *TemplateElementSpineRequest
+	RackInfos              []TemplateRackBasedRackInfo
+	DhcpServiceIntent      *DhcpServiceIntent
 	AntiAffinityPolicy     *AntiAffinityPolicy
 	AsnAllocationPolicy    *AsnAllocationPolicy
 	FabricAddressingPolicy *FabricAddressingPolicy
