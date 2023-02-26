@@ -393,6 +393,11 @@ func (o *Client) GetVniPool(ctx context.Context, in ObjectId) (*VniPool, error) 
 	return o.getVniPool(ctx, in)
 }
 
+// GetVniPoolByName returns *VniPool for the specified VNI pool name
+func (o *Client) GetVniPoolByName(ctx context.Context, name string) (*VniPool, error) {
+	return o.getVniPoolByName(ctx, name)
+}
+
 // DeleteVniPool deletes an Vni pool, by ObjectId from Apstra
 func (o *Client) DeleteVniPool(ctx context.Context, in ObjectId) error {
 	return o.deleteVniPool(ctx, in)

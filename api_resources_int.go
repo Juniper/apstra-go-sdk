@@ -163,6 +163,32 @@ func (o *Client) getVniPool(ctx context.Context, poolId ObjectId) (*VniPool, err
 	return r.makeVniPool()
 }
 
+func (o *Client) getVniPoolByName(ctx context.Context, desired string) (*VniPool, error) {
+	pools, err := o.getVniPools(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching all VNI pools - %w", err)
+	}
+	found := -1
+	for i, pool := range pools {
+		if pool.DisplayName == desired {
+			if found >= 0 {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("name '%s' does not uniquely identify an VNI pool", desired),
+				}
+			}
+			found = i
+		}
+	}
+	if found < 0 {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("pool named '%s' not found", desired),
+		}
+	}
+	return &pools[found], nil
+}
+
 func (o *Client) deleteVniPool(ctx context.Context, poolId ObjectId) error {
 	return o.deleteIntPool(ctx, apiUrlResourcesVniPoolById, poolId)
 }
