@@ -535,11 +535,12 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			ExternalFacingNodeCount: 0,
 			ExternalLinkCount:       0,
 		},
-		RackTypeIds: []ObjectId{"access_switch"},
-		RackTypeCounts: []RackTypeCount{{
-			Count:      1,
-			RackTypeId: "access_switch",
-		}},
+		RackInfo: []TemplateRackBasedRackInfo{
+			{
+				Id:    "access_switch",
+				Count: 1,
+			},
+		},
 		DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
 		AntiAffinityPolicy:     &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
 		AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
@@ -593,11 +594,12 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			ExternalFacingNodeCount: 0,
 			ExternalLinkCount:       0,
 		},
-		RackTypeIds: []ObjectId{"access_switch"},
-		RackTypeCounts: []RackTypeCount{{
-			Count:      1,
-			RackTypeId: "access_switch",
-		}},
+		RackInfo: []TemplateRackBasedRackInfo{
+			{
+				Id:    "access_switch",
+				Count: 1,
+			},
+		},
 		DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
 		AntiAffinityPolicy:     &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
 		AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
