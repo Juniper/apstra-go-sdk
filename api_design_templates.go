@@ -495,7 +495,7 @@ type TemplateElementSpineRequest struct {
 	LinkPerSuperspineSpeed  LogicalDevicePortSpeed
 	LogicalDevice           ObjectId
 	LinkPerSuperspineCount  int
-	Tags                    []string
+	Tags                    []ObjectId
 	ExternalLinksPerNode    int
 	ExternalFacingNodeCount int
 	ExternalLinkCount       int
@@ -509,7 +509,7 @@ func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (
 
 	tags := make([]DesignTagData, len(o.Tags))
 	for i, tagId := range o.Tags {
-		rawTag, err := client.getTagByLabel(ctx, tagId)
+		rawTag, err := client.getTag(ctx, tagId)
 		if err != nil {
 			return nil, err
 		}
