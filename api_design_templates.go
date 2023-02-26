@@ -1328,7 +1328,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 type rawCreateRackBasedTemplateRequest struct {
 	Type                   templateType               `json:"type"`
 	DisplayName            string                     `json:"display_name"`
-	Capability             templateCapability         `json:"capability"`
+	Capability             templateCapability         `json:"capability,omitempty"`
 	Spine                  rawSpine                   `json:"spine"`
 	RackTypes              []rawRackType              `json:"rack_types"`
 	RackTypeCounts         []RackTypeCount            `json:"rack_type_counts"`
