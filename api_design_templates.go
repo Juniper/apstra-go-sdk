@@ -816,7 +816,7 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 			o.Id, len(o.RackTypes), len(o.RackTypeCounts))
 	}
 
-	rackTypeInfos := make(map[string]TemplateRackBasedRackInfo, len(o.RackTypes))
+	rackTypeInfos := make(map[ObjectId]TemplateRackBasedRackInfo, len(o.RackTypes))
 OUTER:
 	for _, rrt := range o.RackTypes { // loop over raw rack types
 		prt, err := rrt.polish()
@@ -825,7 +825,7 @@ OUTER:
 		}
 		for _, rtc := range o.RackTypeCounts { // loop over rack type counts looking for matching ID
 			if prt.Id == rtc.RackTypeId {
-				rackTypeInfos[string(rtc.RackTypeId)] = TemplateRackBasedRackInfo{
+				rackTypeInfos[rtc.RackTypeId] = TemplateRackBasedRackInfo{
 					Count:        rtc.Count,
 					RackTypeData: prt.Data,
 				}
