@@ -1397,12 +1397,10 @@ func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *C
 	if err != nil {
 		return err
 	}
-	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPut,
-		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
-		apiInput:    raw,
-		apiResponse: response,
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlDesignTemplateById, id),
+		apiInput: raw,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
@@ -1494,12 +1492,10 @@ func (o *Client) updatePodBasedTemplate(ctx context.Context, id ObjectId, in *Cr
 	if err != nil {
 		return err
 	}
-	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPut,
-		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
-		apiInput:    apiInput,
-		apiResponse: response,
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlDesignTemplateById, id),
+		apiInput: apiInput,
 	})
 	if err != nil {
 		return err
@@ -1576,12 +1572,10 @@ func (o *Client) updateL3CollapsedTemplate(ctx context.Context, id ObjectId, in 
 	if err != nil {
 		return err
 	}
-	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPut,
-		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
-		apiInput:    apiInput,
-		apiResponse: response,
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlDesignTemplateById, id),
+		apiInput: apiInput,
 	})
 	if err != nil {
 		return err
