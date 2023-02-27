@@ -743,7 +743,7 @@ type TemplateRackBasedData struct {
 	FabricAddressingPolicy *FabricAddressingPolicy
 	Capability             TemplateCapability
 	Spine                  Spine
-	RackInfo               map[string]TemplateRackBasedRackInfo
+	RackInfo               map[ObjectId]TemplateRackBasedRackInfo
 	DhcpServiceIntent      DhcpServiceIntent
 }
 
