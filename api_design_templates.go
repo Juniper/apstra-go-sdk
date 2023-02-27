@@ -1257,8 +1257,7 @@ type CreateRackBasedTemplateRequest struct {
 	DisplayName            string
 	Capability             TemplateCapability
 	Spine                  *TemplateElementSpineRequest
-	RackTypeIds            []ObjectId
-	RackTypeCounts         []RackTypeCount
+	RackInfos              []TemplateRackBasedRackInfo
 	DhcpServiceIntent      *DhcpServiceIntent
 	AntiAffinityPolicy     *AntiAffinityPolicy
 	AsnAllocationPolicy    *AsnAllocationPolicy
@@ -1267,13 +1266,19 @@ type CreateRackBasedTemplateRequest struct {
 }
 
 func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreateRackBasedTemplateRequest, error) {
-	rackTypes := make([]rawRackType, len(o.RackTypeIds))
-	for i, rtId := range o.RackTypeIds {
-		rt, err := client.getRackType(ctx, rtId)
+	rackTypes := make([]rawRackType, len(o.RackInfos))
+	rackTypeCounts := make([]RackTypeCount, len(o.RackInfos))
+	for i, ri := range o.RackInfos {
+		if ri.RackTypeData != nil {
+			return nil, fmt.Errorf("the RackTypeData field must be nil when creating a rack-based template")
+		}
+		rt, err := client.getRackType(ctx, ri.Id)
 		if err != nil {
 			return nil, err
 		}
 		rackTypes[i] = *rt
+		rackTypeCounts[i].RackTypeId = ri.Id
+		rackTypeCounts[i].Count = ri.Count
 	}
 
 	var err error
@@ -1316,7 +1321,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		Capability:             o.Capability.raw(),
 		Spine:                  *spine,
 		RackTypes:              rackTypes,
-		RackTypeCounts:         o.RackTypeCounts,
+		RackTypeCounts:         rackTypeCounts,
 		DhcpServiceIntent:      dhcpServiceIntent,
 		AntiAffinityPolicy:     *antiAffinityPolicy,
 		AsnAllocationPolicy:    *asnAllocationPolicy,
