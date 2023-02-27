@@ -1287,7 +1287,7 @@ type CreateRackBasedTemplateRequest struct {
 	DisplayName            string
 	Capability             TemplateCapability
 	Spine                  *TemplateElementSpineRequest
-	RackInfos              []TemplateRackBasedRackInfo
+	RackInfos              map[string]TemplateRackBasedRackInfo
 	DhcpServiceIntent      *DhcpServiceIntent
 	AntiAffinityPolicy     *AntiAffinityPolicy
 	AsnAllocationPolicy    *AsnAllocationPolicy
@@ -1298,16 +1298,24 @@ type CreateRackBasedTemplateRequest struct {
 func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreateRackBasedTemplateRequest, error) {
 	rackTypes := make([]rawRackType, len(o.RackInfos))
 	rackTypeCounts := make([]RackTypeCount, len(o.RackInfos))
-	for i, ri := range o.RackInfos {
+	var i int
+	for k, ri := range o.RackInfos {
 		if ri.RackTypeData != nil {
 			return nil, fmt.Errorf("the RackTypeData field must be nil when creating a rack-based template")
 		}
+		// grab the rack type from the API using its actual ObjectId and stash it in rackTypes
 		rt, err := client.getRackType(ctx, ri.Id)
 		if err != nil {
 			return nil, err
 		}
 		rackTypes[i] = *rt
-		rackTypeCounts[i].RackTypeId = ri.Id
+
+		// change the ID field in the rack type to the caller's map key
+		rackTypes[i].Id = ObjectId(k)
+
+		// prep the rackTypeCount object using the caller's map key as the
+		// link between the racktype data copy and the racktypecount
+		rackTypeCounts[i].RackTypeId = ObjectId(k)
 		rackTypeCounts[i].Count = ri.Count
 	}
 
