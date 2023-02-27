@@ -530,7 +530,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			LinkPerSuperspineSpeed:  "10G",
 			LogicalDevice:           "AOS-7x10-Spine",
 			LinkPerSuperspineCount:  1,
-			Tags:                    nil,
+			Tags:                    []ObjectId{"firewall", "hypervisor"},
 			ExternalLinksPerNode:    0,
 			ExternalFacingNodeCount: 0,
 			ExternalLinkCount:       0,
