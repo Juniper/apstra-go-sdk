@@ -233,6 +233,15 @@ func (o AsnAllocationScheme) raw() asnAllocationScheme {
 	return asnAllocationScheme(o.String())
 }
 
+func (o *AsnAllocationScheme) FromString(in string) error {
+	i, err := asnAllocationScheme(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = AsnAllocationScheme(i)
+	return nil
+}
+
 func (o asnAllocationScheme) string() string {
 	return string(o)
 }
@@ -269,6 +278,15 @@ func (o AddressingScheme) raw() addressingScheme {
 	return addressingScheme(o.String())
 }
 
+func (o *AddressingScheme) FromString(in string) error {
+	i, err := addressingScheme(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = AddressingScheme(i)
+	return nil
+}
+
 func (o addressingScheme) string() string {
 	return string(o)
 }
@@ -289,6 +307,7 @@ func (o addressingScheme) parse() (int, error) {
 func (o OverlayControlProtocol) Int() int {
 	return int(o)
 }
+
 func (o OverlayControlProtocol) String() string {
 	switch o {
 	case OverlayControlProtocolNone:
@@ -299,9 +318,20 @@ func (o OverlayControlProtocol) String() string {
 		return fmt.Sprintf(overlayControlProtocolUnknown, o)
 	}
 }
+
 func (o OverlayControlProtocol) raw() overlayControlProtocol {
 	return overlayControlProtocol(o.String())
 }
+
+func (o *OverlayControlProtocol) FromString(in string) error {
+	i, err := overlayControlProtocol(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = OverlayControlProtocol(i)
+	return nil
+}
+
 func (o overlayControlProtocol) string() string {
 	return string(o)
 }
