@@ -1392,10 +1392,10 @@ func (o *Client) createRackBasedTemplate(ctx context.Context, in *rawCreateRackB
 	return response.Id, nil
 }
 
-func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) error {
 	raw, err := in.raw(ctx, o)
 	if err != nil {
-		return "", err
+		return err
 	}
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
@@ -1405,9 +1405,9 @@ func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *C
 		apiResponse: response,
 	})
 	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
+		return convertTtaeToAceWherePossible(err)
 	}
-	return response.Id, nil
+	return nil
 }
 
 type CreatePodBasedTemplateRequest struct {
@@ -1489,10 +1489,10 @@ func (o *Client) createPodBasedTemplate(ctx context.Context, in *rawCreatePodBas
 	return response.Id, nil
 }
 
-func (o *Client) updatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+func (o *Client) updatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) error {
 	apiInput, err := in.raw(ctx, o)
 	if err != nil {
-		return "", err
+		return err
 	}
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
@@ -1502,10 +1502,10 @@ func (o *Client) updatePodBasedTemplate(ctx context.Context, id ObjectId, in *Cr
 		apiResponse: response,
 	})
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return response.Id, nil
+	return nil
 }
 
 type CreateL3CollapsedTemplateRequest struct {
@@ -1571,10 +1571,10 @@ func (o *Client) createL3CollapsedTemplate(ctx context.Context, in *rawCreateL3C
 	return response.Id, nil
 }
 
-func (o *Client) updateL3CollapsedTemplate(ctx context.Context, id ObjectId, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
+func (o *Client) updateL3CollapsedTemplate(ctx context.Context, id ObjectId, in *CreateL3CollapsedTemplateRequest) error {
 	apiInput, err := in.raw(ctx, o)
 	if err != nil {
-		return "", err
+		return err
 	}
 	response := &objectIdResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
@@ -1584,10 +1584,10 @@ func (o *Client) updateL3CollapsedTemplate(ctx context.Context, id ObjectId, in 
 		apiResponse: response,
 	})
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return response.Id, nil
+	return nil
 }
 
 func (o *Client) deleteTemplate(ctx context.Context, id ObjectId) error {
