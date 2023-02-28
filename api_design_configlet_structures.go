@@ -1,6 +1,8 @@
 package goapstra
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //CONFIGLET_OS_SECTION_SUPPORT = {
 //'cumulus': ('system', 'interface', 'file', 'frr', 'ospf'),
@@ -48,6 +50,15 @@ func (o ApstraPlatformOS) String() string {
 	default:
 		return fmt.Sprintf(apstraPlatformOSUnknown, o)
 	}
+}
+
+func (o *ApstraPlatformOS) FromString(s string) error {
+	i, err := apstraPlatformOS(s).parse()
+	if err != nil {
+		return err
+	}
+	*o = ApstraPlatformOS(i)
+	return nil
 }
 
 func (o ApstraPlatformOS) raw() apstraPlatformOS {
@@ -162,4 +173,13 @@ func (o apstraConfigletSection) parse() (int, error) {
 	default:
 		return 0, fmt.Errorf(ApstraConfigletSectionUnknown, o)
 	}
+}
+
+func (o *ApstraConfigletSection) FromString(s string) error {
+	i, err := apstraConfigletSection(s).parse()
+	if err != nil {
+		return err
+	}
+	*o = ApstraConfigletSection(i)
+	return nil
 }

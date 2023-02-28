@@ -75,6 +75,15 @@ func (o RefDesign) String() string {
 	}
 }
 
+func (o *RefDesign) FromString(s string) error {
+	i, err := refDesign(s).parse()
+	if err != nil {
+		return err
+	}
+	*o = RefDesign(i)
+	return nil
+}
+
 func (o refDesign) parse() (RefDesign, error) {
 	switch o {
 	case refDesignDatacenter:
