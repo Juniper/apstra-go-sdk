@@ -75,12 +75,13 @@ func (o RefDesign) String() string {
 	}
 }
 
-func (o *RefDesign) FromString(s string) {
+func (o *RefDesign) FromString(s string) error {
 	i, err := refDesign(s).parse()
 	if err != nil {
-		log.Fatal("Unknown Design " + s)
+		return err
 	}
 	*o = RefDesign(i)
+	return nil
 }
 
 func (o refDesign) parse() (RefDesign, error) {
