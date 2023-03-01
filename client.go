@@ -1076,7 +1076,7 @@ func (o *Client) CreateRackBasedTemplate(ctx context.Context, in *CreateRackBase
 }
 
 // UpdateRackBasedTemplate updates a template based on the supplied CreateRackBasedTempalteRequest
-func (o *Client) UpdateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) (ObjectId, error) {
+func (o *Client) UpdateRackBasedTemplate(ctx context.Context, id ObjectId, in *CreateRackBasedTemplateRequest) error {
 	return o.updateRackBasedTemplate(ctx, id, in)
 }
 
@@ -1090,7 +1090,7 @@ func (o *Client) CreatePodBasedTemplate(ctx context.Context, in *CreatePodBasedT
 }
 
 // UpdatePodBasedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
-func (o *Client) UpdatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) (ObjectId, error) {
+func (o *Client) UpdatePodBasedTemplate(ctx context.Context, id ObjectId, in *CreatePodBasedTemplateRequest) error {
 	return o.updatePodBasedTemplate(ctx, id, in)
 }
 
@@ -1104,7 +1104,7 @@ func (o *Client) CreateL3CollapsedTemplate(ctx context.Context, in *CreateL3Coll
 }
 
 // UpdateL3CollapsedTemplate updates a template based on the supplied CreatePodBasedTempalteRequest
-func (o *Client) UpdateL3CollapsedTemplate(ctx context.Context, id ObjectId, in *CreateL3CollapsedTemplateRequest) (ObjectId, error) {
+func (o *Client) UpdateL3CollapsedTemplate(ctx context.Context, id ObjectId, in *CreateL3CollapsedTemplateRequest) error {
 	return o.updateL3CollapsedTemplate(ctx, id, in)
 }
 
