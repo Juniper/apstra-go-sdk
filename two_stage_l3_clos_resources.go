@@ -72,6 +72,15 @@ func (o ResourceGroupName) String() string {
 	return string(o.raw())
 }
 
+func (o *ResourceGroupName) FromString(in string) error {
+	i, err := resourceGroupName(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = i
+	return nil
+}
+
 func (o ResourceGroupName) raw() resourceGroupName {
 	switch o {
 	case ResourceGroupNameSuperspineAsn:
@@ -167,6 +176,15 @@ func (o ResourceType) raw() resourceType {
 	default:
 		return resourceType(fmt.Sprintf(resourceTypeUnknown, o))
 	}
+}
+
+func (o *ResourceType) FromString(in string) error {
+	i, err := resourceType(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = i
+	return nil
 }
 
 type resourceType string
