@@ -58,14 +58,6 @@ type PropertySet struct {
 	Data      *PropertySetData
 }
 
-func (o *PropertySetData) raw() *rawPropertySet {
-	return &rawPropertySet{
-		Label:      o.Label,
-		Values:     o.Values,
-		Blueprints: o.Blueprints,
-	}
-}
-
 func (o *Client) listAllPropertySets(ctx context.Context) ([]ObjectId, error) {
 	response := &struct {
 		Items []ObjectId `json:"items"`
