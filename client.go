@@ -1414,6 +1414,64 @@ func (o *Client) PutAuditConfig(ctx context.Context, cfg *AuditConfig) error {
 	return o.putAuditConfig(ctx, cfg)
 }
 
+// ListAllPropertySets returns []ObjectId representing all property sets configured on Apstra
+func (o *Client) ListAllPropertySets(ctx context.Context) ([]ObjectId, error) {
+	return o.listAllPropertySets(ctx)
+}
+
+// GetAllPropertySets returns []PropertySet representing all property sets configured on Apstra
+func (o *Client) GetAllPropertySets(ctx context.Context) ([]PropertySet, error) {
+	ps, err := o.getAllPropertySets(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]PropertySet, len(ps))
+	for i := range ps {
+		polished, err := ps[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
+// GetPropertySet returns *PropertySet representing the property set with the given ID
+func (o *Client) GetPropertySet(ctx context.Context, id ObjectId) (*PropertySet, error) {
+	ps, err := o.getPropertySet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ps.polish()
+}
+
+// GetPropertySetsByLabel returns []PropertySet representing all property sets with the given label
+func (o *Client) GetPropertySetsByLabel(ctx context.Context, in string) ([]PropertySet, error) {
+	ps, err := o.getPropertySetsByLabel(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]PropertySet, len(ps))
+	for i := range ps {
+		polished, err := ps[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
+// GetPropertySetByLabel returns *PropertySet representing the only property set with the given label,
+// or an error if multiple property sets share the label.
+func (o *Client) GetPropertySetByLabel(ctx context.Context, in string) (*PropertySet, error) {
+	ps, err := o.getPropertySetByLabel(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return ps.polish()
+}
+
 // Private method added for Client.ready(), public wrapper not currently needed.
 //// GetTelemetryQuery returns *TelemetryQuery
 //func (o *Client) GetTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error){
