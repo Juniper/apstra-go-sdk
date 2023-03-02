@@ -81,6 +81,20 @@ func (o *ResourceGroupName) FromString(in string) error {
 	return nil
 }
 
+// AllResourceGroupNames returns the []ResourceGroupName representing
+// all supported ResourceGroupName
+func AllResourceGroupNames() []ResourceGroupName {
+	i := 0
+	var result []ResourceGroupName
+	for {
+		var rgn ResourceGroupName
+		err := rgn.FromString(ResourceGroupName(i).String())
+		if err != nil {
+			return result[:i]
+		}
+	}
+}
+
 func (o ResourceGroupName) raw() resourceGroupName {
 	switch o {
 	case ResourceGroupNameSuperspineAsn:
@@ -185,6 +199,20 @@ func (o *ResourceType) FromString(in string) error {
 	}
 	*o = i
 	return nil
+}
+
+// AllResourceTypes returns the []ResourceType representing
+// all supported ResourceType
+func AllResourceTypes() []ResourceType {
+	i := 0
+	var result []ResourceType
+	for {
+		var rgn ResourceType
+		err := rgn.FromString(ResourceType(i).String())
+		if err != nil {
+			return result[:i]
+		}
+	}
 }
 
 type resourceType string
