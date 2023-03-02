@@ -81,6 +81,44 @@ func (o *ResourceGroupName) FromString(in string) error {
 	return nil
 }
 
+func (o *ResourceGroupName) Type() ResourceType {
+	switch *o {
+	case ResourceGroupNameSuperspineAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameSpineAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameLeafAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameAccessAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameSuperspineIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameSpineIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameLeafIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameAccessIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameSuperspineSpineIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameSuperspineSpineIp6:
+		return ResourceTypeIp6Pool
+	case ResourceGroupNameSpineLeafIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameSpineLeafIp6:
+		return ResourceTypeIp6Pool
+	case ResourceGroupNameAccessAccessIps:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameLeafLeafIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameMlagDomainSviSubnets:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameVtepIps:
+		return ResourceTypeIp4Pool
+	}
+	return ResourceTypeUnknown
+}
+
 // AllResourceGroupNames returns the []ResourceGroupName representing
 // all supported ResourceGroupName
 func AllResourceGroupNames() []ResourceGroupName {
