@@ -130,6 +130,7 @@ func AllResourceGroupNames() []ResourceGroupName {
 		if err != nil {
 			return result[:i]
 		}
+		result = append(result, rgn)
 		i++
 	}
 }
