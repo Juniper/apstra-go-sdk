@@ -196,8 +196,12 @@ func (o resourceGroupName) parse() (ResourceGroupName, error) {
 		return ResourceGroupNameAccessIp4, nil
 	case resourceGroupNameSuperspineSpineIp4:
 		return ResourceGroupNameSuperspineSpineIp4, nil
+	case resourceGroupNameSuperspineSpineIp6:
+		return ResourceGroupNameSuperspineSpineIp6, nil
 	case resourceGroupNameSpineLeafIp4:
 		return ResourceGroupNameSpineLeafIp4, nil
+	case resourceGroupNameSpineLeafIp6:
+		return ResourceGroupNameSpineLeafIp6, nil
 	case resourceGroupNameAccessAccessIps:
 		return ResourceGroupNameAccessAccessIps, nil
 	case resourceGroupNameLeafLeafIp4:
