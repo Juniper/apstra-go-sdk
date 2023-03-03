@@ -298,10 +298,17 @@ type ResourceGroupAllocation struct {
 }
 
 func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
+	var poolIds []ObjectId
+	if o.PoolIds == nil {
+		poolIds = make([]ObjectId, 0)
+	} else {
+		poolIds = o.PoolIds
+	}
+
 	return &rawResourceGroupAllocation{
 		Type:    o.ResourceGroup.Type.raw(),
 		Name:    o.ResourceGroup.Name.raw(),
-		PoolIds: o.PoolIds,
+		PoolIds: poolIds,
 	}
 }
 
