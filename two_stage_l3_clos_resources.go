@@ -72,6 +72,69 @@ func (o ResourceGroupName) String() string {
 	return string(o.raw())
 }
 
+func (o *ResourceGroupName) FromString(in string) error {
+	i, err := resourceGroupName(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = i
+	return nil
+}
+
+func (o *ResourceGroupName) Type() ResourceType {
+	switch *o {
+	case ResourceGroupNameSuperspineAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameSpineAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameLeafAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameAccessAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameSuperspineIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameSpineIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameLeafIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameAccessIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameSuperspineSpineIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameSuperspineSpineIp6:
+		return ResourceTypeIp6Pool
+	case ResourceGroupNameSpineLeafIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameSpineLeafIp6:
+		return ResourceTypeIp6Pool
+	case ResourceGroupNameAccessAccessIps:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameLeafLeafIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameMlagDomainSviSubnets:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameVtepIps:
+		return ResourceTypeIp4Pool
+	}
+	return ResourceTypeUnknown
+}
+
+// AllResourceGroupNames returns the []ResourceGroupName representing
+// all supported ResourceGroupName
+func AllResourceGroupNames() []ResourceGroupName {
+	i := 0
+	var result []ResourceGroupName
+	for {
+		var rgn ResourceGroupName
+		err := rgn.FromString(ResourceGroupName(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		result = append(result, rgn)
+		i++
+	}
+}
+
 func (o ResourceGroupName) raw() resourceGroupName {
 	switch o {
 	case ResourceGroupNameSuperspineAsn:
@@ -133,8 +196,12 @@ func (o resourceGroupName) parse() (ResourceGroupName, error) {
 		return ResourceGroupNameAccessIp4, nil
 	case resourceGroupNameSuperspineSpineIp4:
 		return ResourceGroupNameSuperspineSpineIp4, nil
+	case resourceGroupNameSuperspineSpineIp6:
+		return ResourceGroupNameSuperspineSpineIp6, nil
 	case resourceGroupNameSpineLeafIp4:
 		return ResourceGroupNameSpineLeafIp4, nil
+	case resourceGroupNameSpineLeafIp6:
+		return ResourceGroupNameSpineLeafIp6, nil
 	case resourceGroupNameAccessAccessIps:
 		return ResourceGroupNameAccessAccessIps, nil
 	case resourceGroupNameLeafLeafIp4:
@@ -166,6 +233,29 @@ func (o ResourceType) raw() resourceType {
 		return resourceTypeVniPool
 	default:
 		return resourceType(fmt.Sprintf(resourceTypeUnknown, o))
+	}
+}
+
+func (o *ResourceType) FromString(in string) error {
+	i, err := resourceType(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = i
+	return nil
+}
+
+// AllResourceTypes returns the []ResourceType representing
+// all supported ResourceType
+func AllResourceTypes() []ResourceType {
+	i := 0
+	var result []ResourceType
+	for {
+		var rgn ResourceType
+		err := rgn.FromString(ResourceType(i).String())
+		if err != nil {
+			return result[:i]
+		}
 	}
 }
 
