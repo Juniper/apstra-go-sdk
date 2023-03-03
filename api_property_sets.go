@@ -126,18 +126,20 @@ func (o *Client) getPropertySetsByLabel(ctx context.Context, label string) ([]ra
 }
 
 func (o *Client) getAllPropertySets(ctx context.Context) ([]rawPropertySet, error) {
-	response := &struct {
-		Items []rawPropertySet `json:"items"`
-	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      apiUrlPropertySets,
-		apiResponse: response,
-	})
+	ids, err := o.listAllPropertySets(ctx)
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		return nil, err
 	}
-	return response.Items, nil
+
+	result := make([]rawPropertySet, len(ids))
+	for i := range ids {
+		ps, err := o.getPropertySet(ctx, ids[i])
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *ps
+	}
+	return result, nil
 }
 
 func (o *Client) createPropertySet(ctx context.Context, in *PropertySetData) (ObjectId, error) {
