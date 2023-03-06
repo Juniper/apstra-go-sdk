@@ -236,3 +236,8 @@ func (o *TwoStageL3ClosClient) GetNodes(ctx context.Context, nodeType NodeType, 
 func (o *TwoStageL3ClosClient) PatchNode(ctx context.Context, node ObjectId, request interface{}, response interface{}) error {
 	return o.client.PatchNode(ctx, o.blueprintId, node, request, response)
 }
+
+// Client returns the embedded *Client
+func (o *TwoStageL3ClosClient) Client() *Client {
+	return o.client
+}
