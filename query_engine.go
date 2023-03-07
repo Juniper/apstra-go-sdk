@@ -152,6 +152,10 @@ func (o *QEQuery) SetType(t BlueprintType) *QEQuery {
 	return o
 }
 
+func (o *QEQuery) String() string {
+	return o.string()
+}
+
 func (o *QEQuery) string() string {
 	sb := strings.Builder{}
 	if o.firstElement != nil {
