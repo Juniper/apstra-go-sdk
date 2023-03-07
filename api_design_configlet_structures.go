@@ -65,6 +65,49 @@ func (o ApstraPlatformOS) raw() apstraPlatformOS {
 	return apstraPlatformOS(o.String())
 }
 
+func (o ApstraPlatformOS) ValidSections() []ApstraConfigletSection {
+	switch o {
+	case ApstraPlatformOSCumulus:
+		return []ApstraConfigletSection{
+			ApstraConfigletSectionFile,
+			ApstraConfigletSectionFRR,
+			ApstraConfigletSectionInterface,
+			ApstraConfigletSectionOSPF,
+			ApstraConfigletSectionSystem,
+		}
+	case ApstraPlatformOSEos:
+		return []ApstraConfigletSection{
+			ApstraConfigletSectionInterface,
+			ApstraConfigletSectionOSPF,
+			ApstraConfigletSectionSystem,
+			ApstraConfigletSectionSystemTop,
+		}
+	case ApstraPlatformOSJunos:
+		return []ApstraConfigletSection{
+			ApstraConfigletSectionInterface,
+			ApstraConfigletSectionDeleteBasedInterface,
+			ApstraConfigletSectionSetBasedInterface,
+			ApstraConfigletSectionSystem,
+			ApstraConfigletSectionSetBasedSystem,
+		}
+	case ApstraPlatformOSNxos:
+		return []ApstraConfigletSection{
+			ApstraConfigletSectionSystem,
+			ApstraConfigletSectionInterface,
+			ApstraConfigletSectionSystemTop,
+			ApstraConfigletSectionOSPF,
+		}
+	case ApstraPlatformOSSonic:
+		return []ApstraConfigletSection{
+			ApstraConfigletSectionFile,
+			ApstraConfigletSectionFRR,
+			ApstraConfigletSectionOSPF,
+			ApstraConfigletSectionSystem,
+		}
+	}
+	return nil
+}
+
 func (o apstraPlatformOS) string() string {
 	return string(o)
 }
