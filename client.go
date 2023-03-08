@@ -1477,3 +1477,8 @@ func (o *Client) GetPropertySetByLabel(ctx context.Context, in string) (*Propert
 //func (o *Client) GetTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error){
 //	return o.getTelemetryQuery(ctx)
 //}
+
+// DeployBlueprint commits the staging blueprint to the active blueprint
+func (o *Client) DeployBlueprint(ctx context.Context, in *BlueprintCommit) error {
+	return o.deployBlueprint(ctx, in)
+}
