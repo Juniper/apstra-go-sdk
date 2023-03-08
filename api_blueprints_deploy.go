@@ -10,13 +10,13 @@ const (
 	apiUrlBlueprintDeploy = apiUrlBlueprintById + apiUrlPathDelim + "deploy"
 )
 
-type BlueprintCommit struct {
+type BlueprintDeploy struct {
 	Id          ObjectId
 	Description string
 	Version     int
 }
 
-func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintCommit) error {
+func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeploy) error {
 	deploy := &struct {
 		Description string `json:"description"`
 		Version     int    `json:"version"`
