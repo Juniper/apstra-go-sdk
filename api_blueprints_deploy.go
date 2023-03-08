@@ -73,13 +73,32 @@ type BlueprintDeployRequest struct {
 	Version     int
 }
 
-type BlueprintDeployResponse struct {
-	State   string `json:"state"`
-	Version int    `json:"version"`
-	Error   string `json:"error"`
+type rawBlueprintDeployResponse struct {
+	Status  deployStatus `json:"state"`
+	Version int          `json:"version"`
+	Error   *string      `json:"error,omitempty"`
 }
 
-func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeployRequest) (*BlueprintDeployResponse, error) {
+func (o *rawBlueprintDeployResponse) polish() (*BlueprintDeployResponse, error) {
+	status, err := o.Status.parse()
+	if err != nil {
+		return nil, err
+	}
+
+	return &BlueprintDeployResponse{
+		Status:  DeployStatus(status),
+		Version: o.Version,
+		Error:   o.Error,
+	}, nil
+}
+
+type BlueprintDeployResponse struct {
+	Status  DeployStatus `json:"state"`
+	Version int          `json:"version"`
+	Error   *string      `json:"error,omitempty"`
+}
+
+func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeployRequest) (*rawBlueprintDeployResponse, error) {
 	request := &struct {
 		Description string `json:"description"`
 		Version     int    `json:"version"`
@@ -102,7 +121,7 @@ func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeployRequest
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	response := &BlueprintDeployResponse{}
+	response := &rawBlueprintDeployResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         url,

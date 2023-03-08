@@ -1480,5 +1480,9 @@ func (o *Client) GetPropertySetByLabel(ctx context.Context, in string) (*Propert
 
 // DeployBlueprint commits the staging blueprint to the active blueprint
 func (o *Client) DeployBlueprint(ctx context.Context, in *BlueprintDeployRequest) (*BlueprintDeployResponse, error) {
-	return o.deployBlueprint(ctx, in)
+	response, err := o.deployBlueprint(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return response.polish()
 }
