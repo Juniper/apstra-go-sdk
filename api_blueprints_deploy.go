@@ -11,6 +11,62 @@ const (
 	apiUrlBlueprintDeploy = apiUrlBlueprintById + apiUrlPathDelim + "deploy"
 )
 
+type DeployStatus int
+type deployStatus string
+
+const (
+	DeployStatusSuccess = DeployStatus(iota)
+	DeployStatusFailure
+	DeployStatusUnknown = "unknown deploy status '%s'"
+
+	deployStatusSuccess = deployStatus("success")
+	deployStatusFailure = deployStatus("failure")
+	deployStatusUnknown = "unknown redundancy protocol '%d'"
+)
+
+func (o DeployStatus) Int() int {
+	return int(o)
+}
+
+func (o DeployStatus) String() string {
+	switch o {
+	case DeployStatusSuccess:
+		return string(deployStatusSuccess)
+	case DeployStatusFailure:
+		return string(deployStatusFailure)
+	default:
+		return fmt.Sprintf(deployStatusUnknown, o)
+	}
+}
+
+func (o DeployStatus) raw() deployStatus {
+	return deployStatus(o.String())
+}
+
+func (o deployStatus) string() string {
+	return string(o)
+}
+
+func (o deployStatus) parse() (int, error) {
+	switch o {
+	case deployStatusSuccess:
+		return int(DeployStatusSuccess), nil
+	case deployStatusFailure:
+		return int(DeployStatusFailure), nil
+	default:
+		return 0, fmt.Errorf(DeployStatusUnknown, o)
+	}
+}
+
+//func (o *DeployStatus) FromString(in string) error {
+//	i, err := deployStatus(in).parse()
+//	if err != nil {
+//		return err
+//	}
+//	*o = DeployStatus(i)
+//	return nil
+//}
+
 type BlueprintDeployRequest struct {
 	Id          ObjectId
 	Description string
