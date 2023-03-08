@@ -3,12 +3,16 @@ package goapstra
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 )
 
 const (
-	apiUrlBlueprintDeploy = apiUrlBlueprintById + apiUrlPathDelim + "deploy"
+	apiUrlBlueprintDeploy    = apiUrlBlueprintById + apiUrlPathDelim + "deploy"
+	apiUrlBlueprintRevisions = apiUrlBlueprintById + apiUrlPathDelim + "revisions"
 )
 
 type DeployStatus int
@@ -57,15 +61,6 @@ func (o deployStatus) parse() (int, error) {
 		return 0, fmt.Errorf(DeployStatusUnknown, o)
 	}
 }
-
-//func (o *DeployStatus) FromString(in string) error {
-//	i, err := deployStatus(in).parse()
-//	if err != nil {
-//		return err
-//	}
-//	*o = DeployStatus(i)
-//	return nil
-//}
 
 type BlueprintDeployRequest struct {
 	Id          ObjectId
@@ -129,4 +124,54 @@ func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeployRequest
 	})
 
 	return response, convertTtaeToAceWherePossible(err)
+}
+
+type rawBlueprintRevision struct {
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	AutoSaved   bool      `json:"auto_saved"`
+	UserSaved   bool      `json:"user_saved"`
+	UserIp      string    `json:"user_ip"`
+	User        string    `json:"user"`
+	RevisionId  string    `json:"revision_id"`
+}
+
+func (o *rawBlueprintRevision) polish() (*BlueprintRevision, error) {
+	revisionId, err := strconv.Atoi(o.RevisionId)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing blueprint revision %q to integer - %w",
+			o.RevisionId, err)
+	}
+
+	return &BlueprintRevision{
+		Description: o.Description,
+		CreatedAt:   o.CreatedAt,
+		AutoSaved:   o.AutoSaved,
+		UserSaved:   o.UserSaved,
+		UserIp:      net.ParseIP(o.UserIp),
+		User:        o.User,
+		RevisionId:  revisionId,
+	}, nil
+}
+
+type BlueprintRevision struct {
+	Description string
+	CreatedAt   time.Time
+	AutoSaved   bool
+	UserSaved   bool
+	UserIp      net.IP
+	User        string
+	RevisionId  int
+}
+
+func (o *Client) getBlueprintRevisions(ctx context.Context, id ObjectId) ([]rawBlueprintRevision, error) {
+	result := &struct {
+		Items []rawBlueprintRevision `json:"items"`
+	}{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintRevisions, id),
+		apiResponse: result,
+	})
+	return result.Items, convertTtaeToAceWherePossible(err)
 }
