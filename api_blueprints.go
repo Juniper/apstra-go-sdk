@@ -481,13 +481,14 @@ func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuer
 		Query string `json:"query"`
 	}{Query: query.string()}
 
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodPost,
 		url:            apstraUrl,
 		apiInput:       apiInput,
 		apiResponse:    response,
 		unsynchronized: true,
 	})
+	return convertTtaeToAceWherePossible(err)
 }
 
 func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType NodeType, response interface{}) error {
