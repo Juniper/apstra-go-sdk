@@ -1477,3 +1477,86 @@ func (o *Client) GetPropertySetByLabel(ctx context.Context, in string) (*Propert
 //func (o *Client) GetTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error){
 //	return o.getTelemetryQuery(ctx)
 //}
+
+// DeployBlueprint commits the staging blueprint to the active blueprint
+func (o *Client) DeployBlueprint(ctx context.Context, in *BlueprintDeployRequest) (*BlueprintDeployResponse, error) {
+	response, err := o.deployBlueprint(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return response.polish()
+}
+
+// GetRevisions returns []BlueprintRevision of blueprint 'id' representing
+// recent revisions available for rollback
+func (o *Client) GetRevisions(ctx context.Context, id ObjectId) ([]BlueprintRevision, error) {
+	raw, err := o.getBlueprintRevisions(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]BlueprintRevision, len(raw))
+	for i := range raw {
+		polished, err := raw[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
+// GetRevision returns *BlueprintRevision representing a specific
+// recent blueprint revision number 'rev' of blueprint 'id'
+func (o *Client) GetRevision(ctx context.Context, id ObjectId, rev int) (*BlueprintRevision, error) {
+	revisions, err := o.getBlueprintRevisions(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range revisions {
+		polished, err := revisions[i].polish()
+		if err != nil {
+			return nil, err
+		}
+
+		if polished.RevisionId == rev {
+			return polished, nil
+		}
+	}
+
+	return nil, ApstraClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("blueprint %q revision %d not available in rollback history", id, rev),
+	}
+}
+
+// GetLastDeployedRevision returns *BlueprintRevision representing the most
+// recent deployment of blueprint 'id'
+func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*BlueprintRevision, error) {
+	revisions, err := o.getBlueprintRevisions(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	highestRevNum := -1
+	var highestRevPtr *BlueprintRevision
+	for i := range revisions {
+		polished, err := revisions[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		if polished.RevisionId > highestRevNum {
+			highestRevPtr = polished
+		}
+	}
+
+	if highestRevPtr == nil {
+		err = ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no commits/deployments of blueprint %q found", id),
+		}
+	}
+
+	return highestRevPtr, err
+}
