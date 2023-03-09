@@ -1554,7 +1554,7 @@ func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*Blu
 	if highestRevPtr == nil {
 		err = ApstraClientErr{
 			errType: ErrNotfound,
-			err:     fmt.Errorf("no revisions of blueprint %q found", id),
+			err:     fmt.Errorf("no commits/deployments of blueprint %q found", id),
 		}
 	}
 
