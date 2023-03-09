@@ -1530,3 +1530,33 @@ func (o *Client) GetRevision(ctx context.Context, id ObjectId, rev int) (*Bluepr
 		err:     fmt.Errorf("blueprint %q revision %d not available in rollback history", id, rev),
 	}
 }
+
+// GetLastDeployedRevision returns *BlueprintRevision representing the most
+// recent deployment of blueprint 'id'
+func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*BlueprintRevision, error) {
+	revisions, err := o.getBlueprintRevisions(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	highestRevNum := -1
+	var highestRevPtr *BlueprintRevision
+	for i := range revisions {
+		polished, err := revisions[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		if polished.RevisionId > highestRevNum {
+			highestRevPtr = polished
+		}
+	}
+
+	if highestRevPtr == nil {
+		err = ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no revisions of blueprint %q found", id),
+		}
+	}
+
+	return highestRevPtr, err
+}
