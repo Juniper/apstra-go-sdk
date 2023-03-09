@@ -43,10 +43,6 @@ func (o DeployStatus) String() string {
 	}
 }
 
-func (o DeployStatus) raw() deployStatus {
-	return deployStatus(o.String())
-}
-
 func (o deployStatus) string() string {
 	return string(o)
 }
