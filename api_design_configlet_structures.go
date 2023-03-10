@@ -130,7 +130,7 @@ func (o platformOS) parse() (int, error) {
 	}
 }
 
-// AllPlatformOS returns the []PlatformOS representing
+// AllPlatformOSes returns the []PlatformOS representing
 // each supported PlatformOS
 func AllPlatformOSes() []PlatformOS {
 	i := 0
