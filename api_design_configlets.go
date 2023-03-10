@@ -14,8 +14,8 @@ const (
 )
 
 type ConfigletGenerator struct {
-	ConfigStyle          ApstraPlatformOS
-	Section              ApstraConfigletSection
+	ConfigStyle          PlatformOS
+	Section              ConfigletSection
 	TemplateText         string
 	NegationTemplateText string
 	Filename             string
@@ -76,19 +76,19 @@ func (o *ConfigletRequest) raw() *rawConfigletRequest {
 }
 
 func (o *rawConfigletGenerator) polish() (*ConfigletGenerator, error) {
-	platform, err := apstraPlatformOS(o.ConfigStyle).parse()
+	platform, err := platformOS(o.ConfigStyle).parse()
 	if err != nil {
 		return nil, err
 	}
 
-	section, err := apstraConfigletSection(o.Section).parse()
+	section, err := configletSection(o.Section).parse()
 	if err != nil {
 		return nil, err
 	}
 
 	return &ConfigletGenerator{
-		ConfigStyle:          ApstraPlatformOS(platform),
-		Section:              ApstraConfigletSection(section),
+		ConfigStyle:          PlatformOS(platform),
+		Section:              ConfigletSection(section),
 		TemplateText:         o.TemplateText,
 		NegationTemplateText: o.NegationTemplateText,
 		Filename:             o.Filename,
@@ -101,7 +101,7 @@ func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
 	cg.Filename = o.Filename
 	cg.NegationTemplateText = o.NegationTemplateText
 	cg.ConfigStyle = o.ConfigStyle.raw().string()
-	cg.Section = string(ApstraConfigletSection(o.Section).raw())
+	cg.Section = string(ConfigletSection(o.Section).raw())
 
 	return &cg
 }
