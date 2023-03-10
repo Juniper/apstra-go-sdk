@@ -67,3 +67,11 @@ func TestGetResourceAllocation(t *testing.T) {
 		t.Skip(sb.String())
 	}
 }
+
+func TestAllResourceGroupNames(t *testing.T) {
+	all := AllResourceGroupNames()
+	expected := 16
+	if len(all) != expected {
+		t.Fatalf("expected %d resource group names, got %d", expected, len(all))
+	}
+}

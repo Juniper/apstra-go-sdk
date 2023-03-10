@@ -141,3 +141,19 @@ func TestConfigletStrings(t *testing.T) {
 		}
 	}
 }
+
+func TestAllPlatformOSes(t *testing.T) {
+	all := AllPlatformOSes()
+	expected := 5
+	if len(all) != expected {
+		t.Fatalf("expected %d platform OSes, got %d", expected, len(all))
+	}
+}
+
+func TestAllConfigletSections(t *testing.T) {
+	all := AllConfigletSections()
+	expected := 9
+	if len(all) != expected {
+		t.Fatalf("expected %d configlet sections, got %d", expected, len(all))
+	}
+}
