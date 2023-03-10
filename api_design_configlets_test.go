@@ -20,8 +20,8 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 		var cg []ConfigletGenerator
 
 		cg = append(cg, ConfigletGenerator{
-			ConfigStyle:  ApstraPlatformOSJunos,
-			Section:      ApstraConfigletSectionSystem,
+			ConfigStyle:  PlatformOSJunos,
+			Section:      ConfigletSectionSystem,
 			TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
 		})
 		var refarchs []RefDesign
@@ -49,8 +49,8 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 		log.Println(c)
 		g1 := len(c.Data.Generators)
 		c.Data.Generators = append(c.Data.Generators, ConfigletGenerator{
-			ConfigStyle:  ApstraPlatformOSJunos,
-			Section:      ApstraConfigletSectionSystem,
+			ConfigStyle:  PlatformOSJunos,
+			Section:      ConfigletSectionSystem,
 			TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
 		})
 		log.Println("Update Config")
@@ -108,21 +108,21 @@ func TestConfigletStrings(t *testing.T) {
 		stringType apiIotaString
 	}
 	testData := []stringTestData{
-		{stringVal: "system", intType: ApstraConfigletSectionSystem, stringType: apstraConfigletSectionSystem},
-		{stringVal: "interface", intType: ApstraConfigletSectionInterface, stringType: apstraConfigletSectionInterface},
-		{stringVal: "file", intType: ApstraConfigletSectionFile, stringType: apstraConfigletSectionFile},
-		{stringVal: "frr", intType: ApstraConfigletSectionFRR, stringType: apstraConfigletSectionFRR},
-		{stringVal: "ospf", intType: ApstraConfigletSectionOSPF, stringType: apstraConfigletSectionOSPF},
-		{stringVal: "system_top", intType: ApstraConfigletSectionSystemTop, stringType: apstraConfigletSectionSystemTop},
-		{stringVal: "set_based_system", intType: ApstraConfigletSectionSetBasedSystem, stringType: apstraConfigletSectionSetBasedSystem},
-		{stringVal: "set_based_interface", intType: ApstraConfigletSectionSetBasedInterface, stringType: apstraConfigletSectionSetBasedInterface},
-		{stringVal: "delete_based_interface", intType: ApstraConfigletSectionDeleteBasedInterface, stringType: apstraConfigletSectionDeleteBasedInterface},
+		{stringVal: "system", intType: ConfigletSectionSystem, stringType: configletSectionSystem},
+		{stringVal: "interface", intType: ConfigletSectionInterface, stringType: configletSectionInterface},
+		{stringVal: "file", intType: ConfigletSectionFile, stringType: configletSectionFile},
+		{stringVal: "frr", intType: ConfigletSectionFRR, stringType: configletSectionFRR},
+		{stringVal: "ospf", intType: ConfigletSectionOSPF, stringType: configletSectionOSPF},
+		{stringVal: "system_top", intType: ConfigletSectionSystemTop, stringType: configletSectionSystemTop},
+		{stringVal: "set_based_system", intType: ConfigletSectionSetBasedSystem, stringType: configletSectionSetBasedSystem},
+		{stringVal: "set_based_interface", intType: ConfigletSectionSetBasedInterface, stringType: configletSectionSetBasedInterface},
+		{stringVal: "delete_based_interface", intType: ConfigletSectionDeleteBasedInterface, stringType: configletSectionDeleteBasedInterface},
 
-		{stringVal: "cumulus", intType: ApstraPlatformOSCumulus, stringType: apstraPlatformOSCumulus},
-		{stringVal: "nxos", intType: ApstraPlatformOSNxos, stringType: apstraPlatformOSNxos},
-		{stringVal: "eos", intType: ApstraPlatformOSEos, stringType: apstraPlatformOSEos},
-		{stringVal: "junos", intType: ApstraPlatformOSJunos, stringType: apstraPlatformOSJunos},
-		{stringVal: "sonic", intType: ApstraPlatformOSSonic, stringType: apstraPlatformOSSonic},
+		{stringVal: "cumulus", intType: PlatformOSCumulus, stringType: platformOSCumulus},
+		{stringVal: "nxos", intType: PlatformOSNxos, stringType: platformOSNxos},
+		{stringVal: "eos", intType: PlatformOSEos, stringType: platformOSEos},
+		{stringVal: "junos", intType: PlatformOSJunos, stringType: platformOSJunos},
+		{stringVal: "sonic", intType: PlatformOSSonic, stringType: platformOSSonic},
 	}
 
 	for i, td := range testData {

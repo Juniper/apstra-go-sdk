@@ -13,216 +13,247 @@ import (
 //'sonic': ('system', 'file', 'frr', 'ospf'),
 //}
 
-type ApstraPlatformOS int
-type apstraPlatformOS string
+type PlatformOS int
+type platformOS string
 
 const (
-	ApstraPlatformOSCumulus = ApstraPlatformOS(iota)
-	ApstraPlatformOSNxos
-	ApstraPlatformOSEos
-	ApstraPlatformOSJunos
-	ApstraPlatformOSSonic
-	ApstraPlatformOSUnknown = "unknown os '%s'"
-	apstraPlatformOSCumulus = apstraPlatformOS("cumulus")
-	apstraPlatformOSNxos    = apstraPlatformOS("nxos")
-	apstraPlatformOSEos     = apstraPlatformOS("eos")
-	apstraPlatformOSJunos   = apstraPlatformOS("junos")
-	apstraPlatformOSSonic   = apstraPlatformOS("sonic")
-	apstraPlatformOSUnknown = "unknown type %d"
+	PlatformOSCumulus = PlatformOS(iota)
+	PlatformOSNxos
+	PlatformOSEos
+	PlatformOSJunos
+	PlatformOSSonic
+	PlatformOSUnknown = "unknown os '%s'"
+
+	platformOSCumulus = platformOS("cumulus")
+	platformOSNxos    = platformOS("nxos")
+	platformOSEos     = platformOS("eos")
+	platformOSJunos   = platformOS("junos")
+	platformOSSonic   = platformOS("sonic")
+	platformOSUnknown = "unknown type %d"
 )
 
-func (o ApstraPlatformOS) Int() int {
+func (o PlatformOS) Int() int {
 	return int(o)
 }
 
-func (o ApstraPlatformOS) String() string {
+func (o PlatformOS) String() string {
 	switch o {
-	case ApstraPlatformOSCumulus:
-		return string(apstraPlatformOSCumulus)
-	case ApstraPlatformOSNxos:
-		return string(apstraPlatformOSNxos)
-	case ApstraPlatformOSEos:
-		return string(apstraPlatformOSEos)
-	case ApstraPlatformOSJunos:
-		return string(apstraPlatformOSJunos)
-	case ApstraPlatformOSSonic:
-		return string(apstraPlatformOSSonic)
+	case PlatformOSCumulus:
+		return string(platformOSCumulus)
+	case PlatformOSNxos:
+		return string(platformOSNxos)
+	case PlatformOSEos:
+		return string(platformOSEos)
+	case PlatformOSJunos:
+		return string(platformOSJunos)
+	case PlatformOSSonic:
+		return string(platformOSSonic)
 	default:
-		return fmt.Sprintf(apstraPlatformOSUnknown, o)
+		return fmt.Sprintf(platformOSUnknown, o)
 	}
 }
 
-func (o *ApstraPlatformOS) FromString(s string) error {
-	i, err := apstraPlatformOS(s).parse()
+func (o *PlatformOS) FromString(s string) error {
+	i, err := platformOS(s).parse()
 	if err != nil {
 		return err
 	}
-	*o = ApstraPlatformOS(i)
+	*o = PlatformOS(i)
 	return nil
 }
 
-func (o ApstraPlatformOS) raw() apstraPlatformOS {
-	return apstraPlatformOS(o.String())
+func (o PlatformOS) raw() platformOS {
+	return platformOS(o.String())
 }
 
-func (o ApstraPlatformOS) ValidSections() []ApstraConfigletSection {
+func (o PlatformOS) ValidSections() []ConfigletSection {
 	switch o {
-	case ApstraPlatformOSCumulus:
-		return []ApstraConfigletSection{
-			ApstraConfigletSectionFile,
-			ApstraConfigletSectionFRR,
-			ApstraConfigletSectionInterface,
-			ApstraConfigletSectionOSPF,
-			ApstraConfigletSectionSystem,
+	case PlatformOSCumulus:
+		return []ConfigletSection{
+			ConfigletSectionFile,
+			ConfigletSectionFRR,
+			ConfigletSectionInterface,
+			ConfigletSectionOSPF,
+			ConfigletSectionSystem,
 		}
-	case ApstraPlatformOSEos:
-		return []ApstraConfigletSection{
-			ApstraConfigletSectionInterface,
-			ApstraConfigletSectionOSPF,
-			ApstraConfigletSectionSystem,
-			ApstraConfigletSectionSystemTop,
+	case PlatformOSEos:
+		return []ConfigletSection{
+			ConfigletSectionInterface,
+			ConfigletSectionOSPF,
+			ConfigletSectionSystem,
+			ConfigletSectionSystemTop,
 		}
-	case ApstraPlatformOSJunos:
-		return []ApstraConfigletSection{
-			ApstraConfigletSectionInterface,
-			ApstraConfigletSectionDeleteBasedInterface,
-			ApstraConfigletSectionSetBasedInterface,
-			ApstraConfigletSectionSystem,
-			ApstraConfigletSectionSetBasedSystem,
+	case PlatformOSJunos:
+		return []ConfigletSection{
+			ConfigletSectionInterface,
+			ConfigletSectionDeleteBasedInterface,
+			ConfigletSectionSetBasedInterface,
+			ConfigletSectionSystem,
+			ConfigletSectionSetBasedSystem,
 		}
-	case ApstraPlatformOSNxos:
-		return []ApstraConfigletSection{
-			ApstraConfigletSectionSystem,
-			ApstraConfigletSectionInterface,
-			ApstraConfigletSectionSystemTop,
-			ApstraConfigletSectionOSPF,
+	case PlatformOSNxos:
+		return []ConfigletSection{
+			ConfigletSectionSystem,
+			ConfigletSectionInterface,
+			ConfigletSectionSystemTop,
+			ConfigletSectionOSPF,
 		}
-	case ApstraPlatformOSSonic:
-		return []ApstraConfigletSection{
-			ApstraConfigletSectionFile,
-			ApstraConfigletSectionFRR,
-			ApstraConfigletSectionOSPF,
-			ApstraConfigletSectionSystem,
+	case PlatformOSSonic:
+		return []ConfigletSection{
+			ConfigletSectionFile,
+			ConfigletSectionFRR,
+			ConfigletSectionOSPF,
+			ConfigletSectionSystem,
 		}
 	}
 	return nil
 }
 
-func (o apstraPlatformOS) string() string {
+func (o platformOS) string() string {
 	return string(o)
 }
 
-func (o apstraPlatformOS) parse() (int, error) {
+func (o platformOS) parse() (int, error) {
 	switch o {
-	case apstraPlatformOSCumulus:
-		return int(ApstraPlatformOSCumulus), nil
-	case apstraPlatformOSNxos:
-		return int(ApstraPlatformOSNxos), nil
-	case apstraPlatformOSEos:
-		return int(ApstraPlatformOSEos), nil
-	case apstraPlatformOSJunos:
-		return int(ApstraPlatformOSJunos), nil
-	case apstraPlatformOSSonic:
-		return int(ApstraPlatformOSSonic), nil
+	case platformOSCumulus:
+		return int(PlatformOSCumulus), nil
+	case platformOSNxos:
+		return int(PlatformOSNxos), nil
+	case platformOSEos:
+		return int(PlatformOSEos), nil
+	case platformOSJunos:
+		return int(PlatformOSJunos), nil
+	case platformOSSonic:
+		return int(PlatformOSSonic), nil
 	default:
-		return 0, fmt.Errorf(ApstraPlatformOSUnknown, o)
+		return 0, fmt.Errorf(PlatformOSUnknown, o)
 	}
 }
 
-type ApstraConfigletSection int
-type apstraConfigletSection string
+// AllPlatformOSes returns the []PlatformOS representing
+// each supported PlatformOS
+func AllPlatformOSes() []PlatformOS {
+	i := 0
+	var result []PlatformOS
+	for {
+		var sec PlatformOS
+		err := sec.FromString(PlatformOS(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		i++
+	}
+}
+
+type ConfigletSection int
+type configletSection string
 
 const (
-	ApstraConfigletSectionSystem = ApstraConfigletSection(iota)
-	ApstraConfigletSectionInterface
-	ApstraConfigletSectionFile
-	ApstraConfigletSectionFRR
-	ApstraConfigletSectionOSPF
-	ApstraConfigletSectionSystemTop
-	ApstraConfigletSectionSetBasedSystem
-	ApstraConfigletSectionSetBasedInterface
-	ApstraConfigletSectionDeleteBasedInterface
-	ApstraConfigletSectionUnknown = "unknown section '%s'"
+	ConfigletSectionSystem = ConfigletSection(iota)
+	ConfigletSectionInterface
+	ConfigletSectionFile
+	ConfigletSectionFRR
+	ConfigletSectionOSPF
+	ConfigletSectionSystemTop
+	ConfigletSectionSetBasedSystem
+	ConfigletSectionSetBasedInterface
+	ConfigletSectionDeleteBasedInterface
+	ConfigletSectionUnknown = "unknown section '%s'"
 
-	apstraConfigletSectionSystem               = apstraConfigletSection("system")
-	apstraConfigletSectionInterface            = apstraConfigletSection("interface")
-	apstraConfigletSectionFile                 = apstraConfigletSection("file")
-	apstraConfigletSectionFRR                  = apstraConfigletSection("frr")
-	apstraConfigletSectionOSPF                 = apstraConfigletSection("ospf")
-	apstraConfigletSectionSystemTop            = apstraConfigletSection("system_top")
-	apstraConfigletSectionSetBasedSystem       = apstraConfigletSection("set_based_system")
-	apstraConfigletSectionSetBasedInterface    = apstraConfigletSection("set_based_interface")
-	apstraConfigletSectionDeleteBasedInterface = apstraConfigletSection("delete_based_interface")
-	apstraConfigletSectionUnknown              = "unknown section %d"
+	configletSectionSystem               = configletSection("system")
+	configletSectionInterface            = configletSection("interface")
+	configletSectionFile                 = configletSection("file")
+	configletSectionFRR                  = configletSection("frr")
+	configletSectionOSPF                 = configletSection("ospf")
+	configletSectionSystemTop            = configletSection("system_top")
+	configletSectionSetBasedSystem       = configletSection("set_based_system")
+	configletSectionSetBasedInterface    = configletSection("set_based_interface")
+	configletSectionDeleteBasedInterface = configletSection("delete_based_interface")
+	configletSectionUnknown              = "unknown section %d"
 )
 
-func (o ApstraConfigletSection) Int() int {
+func (o ConfigletSection) Int() int {
 	return int(o)
 }
 
-func (o ApstraConfigletSection) String() string {
+func (o ConfigletSection) String() string {
 	switch o {
-	case ApstraConfigletSectionSystem:
-		return string(apstraConfigletSectionSystem)
-	case ApstraConfigletSectionInterface:
-		return string(apstraConfigletSectionInterface)
-	case ApstraConfigletSectionFile:
-		return string(apstraConfigletSectionFile)
-	case ApstraConfigletSectionFRR:
-		return string(apstraConfigletSectionFRR)
-	case ApstraConfigletSectionOSPF:
-		return string(apstraConfigletSectionOSPF)
-	case ApstraConfigletSectionSystemTop:
-		return string(apstraConfigletSectionSystemTop)
-	case ApstraConfigletSectionSetBasedSystem:
-		return string(apstraConfigletSectionSetBasedSystem)
-	case ApstraConfigletSectionSetBasedInterface:
-		return string(apstraConfigletSectionSetBasedInterface)
-	case ApstraConfigletSectionDeleteBasedInterface:
-		return string(apstraConfigletSectionDeleteBasedInterface)
+	case ConfigletSectionSystem:
+		return string(configletSectionSystem)
+	case ConfigletSectionInterface:
+		return string(configletSectionInterface)
+	case ConfigletSectionFile:
+		return string(configletSectionFile)
+	case ConfigletSectionFRR:
+		return string(configletSectionFRR)
+	case ConfigletSectionOSPF:
+		return string(configletSectionOSPF)
+	case ConfigletSectionSystemTop:
+		return string(configletSectionSystemTop)
+	case ConfigletSectionSetBasedSystem:
+		return string(configletSectionSetBasedSystem)
+	case ConfigletSectionSetBasedInterface:
+		return string(configletSectionSetBasedInterface)
+	case ConfigletSectionDeleteBasedInterface:
+		return string(configletSectionDeleteBasedInterface)
 	default:
-		return fmt.Sprintf(apstraConfigletSectionUnknown, o)
+		return fmt.Sprintf(configletSectionUnknown, o)
 	}
 }
 
-func (o ApstraConfigletSection) raw() apstraConfigletSection {
-	return apstraConfigletSection(o.String())
+func (o ConfigletSection) raw() configletSection {
+	return configletSection(o.String())
 }
 
-func (o apstraConfigletSection) string() string {
+func (o configletSection) string() string {
 	return string(o)
 }
 
-func (o apstraConfigletSection) parse() (int, error) {
+func (o configletSection) parse() (int, error) {
 	switch o {
-	case apstraConfigletSectionSystem:
-		return int(ApstraConfigletSectionSystem), nil
-	case apstraConfigletSectionInterface:
-		return int(ApstraConfigletSectionInterface), nil
-	case apstraConfigletSectionFile:
-		return int(ApstraConfigletSectionFile), nil
-	case apstraConfigletSectionFRR:
-		return int(ApstraConfigletSectionFRR), nil
-	case apstraConfigletSectionOSPF:
-		return int(ApstraConfigletSectionOSPF), nil
-	case apstraConfigletSectionSystemTop:
-		return int(ApstraConfigletSectionSystemTop), nil
-	case apstraConfigletSectionSetBasedSystem:
-		return int(ApstraConfigletSectionSetBasedSystem), nil
-	case apstraConfigletSectionSetBasedInterface:
-		return int(ApstraConfigletSectionSetBasedInterface), nil
-	case apstraConfigletSectionDeleteBasedInterface:
-		return int(ApstraConfigletSectionDeleteBasedInterface), nil
+	case configletSectionSystem:
+		return int(ConfigletSectionSystem), nil
+	case configletSectionInterface:
+		return int(ConfigletSectionInterface), nil
+	case configletSectionFile:
+		return int(ConfigletSectionFile), nil
+	case configletSectionFRR:
+		return int(ConfigletSectionFRR), nil
+	case configletSectionOSPF:
+		return int(ConfigletSectionOSPF), nil
+	case configletSectionSystemTop:
+		return int(ConfigletSectionSystemTop), nil
+	case configletSectionSetBasedSystem:
+		return int(ConfigletSectionSetBasedSystem), nil
+	case configletSectionSetBasedInterface:
+		return int(ConfigletSectionSetBasedInterface), nil
+	case configletSectionDeleteBasedInterface:
+		return int(ConfigletSectionDeleteBasedInterface), nil
 	default:
-		return 0, fmt.Errorf(ApstraConfigletSectionUnknown, o)
+		return 0, fmt.Errorf(ConfigletSectionUnknown, o)
 	}
 }
 
-func (o *ApstraConfigletSection) FromString(s string) error {
-	i, err := apstraConfigletSection(s).parse()
+func (o *ConfigletSection) FromString(s string) error {
+	i, err := configletSection(s).parse()
 	if err != nil {
 		return err
 	}
-	*o = ApstraConfigletSection(i)
+	*o = ConfigletSection(i)
 	return nil
+}
+
+// AllConfigletSections returns the []ConfigletSection representing
+// each supported ConfigletSection
+func AllConfigletSections() []ConfigletSection {
+	i := 0
+	var result []ConfigletSection
+	for {
+		var sec ConfigletSection
+		err := sec.FromString(ConfigletSection(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		i++
+	}
 }

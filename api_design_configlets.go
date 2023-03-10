@@ -3,7 +3,6 @@ package goapstra
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 )
@@ -15,8 +14,8 @@ const (
 )
 
 type ConfigletGenerator struct {
-	ConfigStyle          ApstraPlatformOS
-	Section              ApstraConfigletSection
+	ConfigStyle          PlatformOS
+	Section              ConfigletSection
 	TemplateText         string
 	NegationTemplateText string
 	Filename             string
@@ -76,22 +75,24 @@ func (o *ConfigletRequest) raw() *rawConfigletRequest {
 	return &rawcr
 }
 
-func (o *rawConfigletGenerator) polish() *ConfigletGenerator {
-	cg := ConfigletGenerator{}
-	cg.TemplateText = o.TemplateText
-	cg.Filename = o.Filename
-	cg.NegationTemplateText = o.NegationTemplateText
-	i, err := apstraPlatformOS(o.ConfigStyle).parse()
+func (o *rawConfigletGenerator) polish() (*ConfigletGenerator, error) {
+	platform, err := platformOS(o.ConfigStyle).parse()
 	if err != nil {
-		log.Fatalf("unexpected platform OS from server %d, error %s", i, err)
+		return nil, err
 	}
-	cg.ConfigStyle = ApstraPlatformOS(i)
-	j, err := apstraConfigletSection(o.Section).parse()
-	cg.Section = ApstraConfigletSection(j)
+
+	section, err := configletSection(o.Section).parse()
 	if err != nil {
-		log.Fatalf("unexpected section from server %s, error %s", o.Section, err)
+		return nil, err
 	}
-	return &cg
+
+	return &ConfigletGenerator{
+		ConfigStyle:          PlatformOS(platform),
+		Section:              ConfigletSection(section),
+		TemplateText:         o.TemplateText,
+		NegationTemplateText: o.NegationTemplateText,
+		Filename:             o.Filename,
+	}, nil
 }
 
 func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
@@ -100,23 +101,29 @@ func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
 	cg.Filename = o.Filename
 	cg.NegationTemplateText = o.NegationTemplateText
 	cg.ConfigStyle = o.ConfigStyle.raw().string()
-	cg.Section = string(ApstraConfigletSection(o.Section).raw())
+	cg.Section = string(ConfigletSection(o.Section).raw())
 
 	return &cg
 }
 
-func (o *rawConfiglet) polish() *Configlet {
-	ra := make([]RefDesign, len(o.RefArchs))
-	for i, j := range o.RefArchs {
-		var err error
-		ra[i], err = refDesign(j).parse()
+func (o *rawConfiglet) polish() (*Configlet, error) {
+	var err error
+
+	refArchs := make([]RefDesign, len(o.RefArchs))
+	for i, refArch := range o.RefArchs {
+		refArchs[i], err = refDesign(refArch).parse()
 		if err != nil {
-			log.Fatalf("unexpected reference architecture from server %s, error %s", j, err)
+			return nil, err
 		}
 	}
-	gs := make([]ConfigletGenerator, len(o.Generators))
-	for i, j := range o.Generators {
-		gs[i] = *j.polish()
+
+	generators := make([]ConfigletGenerator, len(o.Generators))
+	for i, generator := range o.Generators {
+		polished, err := generator.polish()
+		if err != nil {
+			return nil, err
+		}
+		generators[i] = *polished
 	}
 
 	return &Configlet{
@@ -124,11 +131,11 @@ func (o *rawConfiglet) polish() *Configlet {
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &ConfigletData{
-			RefArchs:    ra,
-			Generators:  gs,
+			RefArchs:    refArchs,
+			Generators:  generators,
 			DisplayName: o.DisplayName,
 		},
-	}
+	}, nil
 }
 
 func (o *Client) listAllConfiglets(ctx context.Context) ([]ObjectId, error) {

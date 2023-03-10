@@ -894,12 +894,31 @@ func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, err
 	if err != nil {
 		return nil, err
 	}
-	return r.polish(), nil
+	return r.polish()
 }
 
 // UpdateConfiglet updates a configlet
 func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletRequest) error {
 	return o.updateConfiglet(ctx, id, in)
+}
+
+// GetAllConfiglets returns []Configlet representing all configlets
+func (o *Client) GetAllConfiglets(ctx context.Context) ([]Configlet, error) {
+	rawConfiglets, err := o.getAllConfiglets(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]Configlet, len(rawConfiglets))
+	for i := range rawConfiglets {
+		polished, err := rawConfiglets[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+
+	return result, nil
 }
 
 // ListAllConfiglets gets the List of All configlets' ids
@@ -913,7 +932,7 @@ func (o *Client) GetConfigletByName(ctx context.Context, Name string) (*Configle
 	if err != nil {
 		return nil, err
 	}
-	return c.polish(), nil
+	return c.polish()
 }
 
 // ListAllTemplateIds returns []ObjectId representing all blueprint templates
