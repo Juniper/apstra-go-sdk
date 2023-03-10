@@ -136,11 +136,12 @@ func AllPlatformOSes() []PlatformOS {
 	i := 0
 	var result []PlatformOS
 	for {
-		var sec PlatformOS
-		err := sec.FromString(PlatformOS(i).String())
+		var os PlatformOS
+		err := os.FromString(PlatformOS(i).String())
 		if err != nil {
 			return result[:i]
 		}
+		result = append(result, os)
 		i++
 	}
 }
@@ -254,6 +255,7 @@ func AllConfigletSections() []ConfigletSection {
 		if err != nil {
 			return result[:i]
 		}
+		result = append(result, sec)
 		i++
 	}
 }
