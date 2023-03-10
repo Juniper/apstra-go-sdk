@@ -894,7 +894,7 @@ func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, err
 	if err != nil {
 		return nil, err
 	}
-	return r.polish(), nil
+	return r.polish()
 }
 
 // UpdateConfiglet updates a configlet
@@ -913,7 +913,7 @@ func (o *Client) GetConfigletByName(ctx context.Context, Name string) (*Configle
 	if err != nil {
 		return nil, err
 	}
-	return c.polish(), nil
+	return c.polish()
 }
 
 // ListAllTemplateIds returns []ObjectId representing all blueprint templates
