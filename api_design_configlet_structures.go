@@ -129,6 +129,21 @@ func (o apstraPlatformOS) parse() (int, error) {
 	}
 }
 
+// AllPlatformOS returns the []ApstraPlatformOS representing
+// each supported ApstraPlatformOS
+func AllPlatformOS() []ApstraPlatformOS {
+	i := 0
+	var result []ApstraPlatformOS
+	for {
+		var sec ApstraPlatformOS
+		err := sec.FromString(ApstraPlatformOS(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		i++
+	}
+}
+
 type ApstraConfigletSection int
 type apstraConfigletSection string
 
@@ -225,4 +240,19 @@ func (o *ApstraConfigletSection) FromString(s string) error {
 	}
 	*o = ApstraConfigletSection(i)
 	return nil
+}
+
+// AllConfigletSections returns the []ApstraConfigletSection representing
+// each supported ApstraConfigletSection
+func AllConfigletSections() []ApstraConfigletSection {
+	i := 0
+	var result []ApstraConfigletSection
+	for {
+		var sec ApstraConfigletSection
+		err := sec.FromString(ApstraConfigletSection(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		i++
+	}
 }
