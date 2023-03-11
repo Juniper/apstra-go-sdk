@@ -1015,9 +1015,7 @@ type TemplateL3CollapsedData struct {
 	VirtualNetworkPolicy VirtualNetworkPolicy
 	MeshLinkCount        int
 	RackTypeCounts       []RackTypeCount
-	DhcpServiceIntent    struct {
-		Active bool
-	}
+	DhcpServiceIntent    DhcpServiceIntent
 }
 
 type rawTemplateL3Collapsed struct {
@@ -1033,9 +1031,7 @@ type rawTemplateL3Collapsed struct {
 	VirtualNetworkPolicy rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
 	MeshLinkCount        int                        `json:"mesh_link_count"`
 	RackTypeCounts       []RackTypeCount            `json:"rack_type_counts"`
-	DhcpServiceIntent    struct {
-		Active bool `json:"active"`
-	} `json:"dhcp_service_intent"`
+	DhcpServiceIntent    DhcpServiceIntent          `json:"dhcp_service_intent"`
 }
 
 func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
