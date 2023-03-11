@@ -23,7 +23,7 @@ const (
 type IpPool struct {
 	Id             ObjectId   `json:"id"`
 	DisplayName    string     `json:"display_name"`
-	Status         string     `json:"status"`
+	Status         PoolStatus `json:"status"`
 	Tags           []string   `json:"tags"`
 	Used           big.Int    `json:"used"`
 	Total          big.Int    `json:"total"`
@@ -36,7 +36,7 @@ type IpPool struct {
 type rawIpPool struct {
 	Id             ObjectId      `json:"id"`
 	DisplayName    string        `json:"display_name"`
-	Status         string        `json:"status"`
+	Status         poolStatus    `json:"status"`
 	Tags           []string      `json:"tags"`
 	Used           string        `json:"used"`
 	Total          string        `json:"total"`
@@ -50,11 +50,11 @@ func (o *rawIpPool) polish() (*IpPool, error) {
 	var used, total big.Int
 	_, ok := used.SetString(o.Used, 10)
 	if !ok {
-		return nil, fmt.Errorf("failed parsing IP Pool field 'used' ('%s')", o.Used)
+		return nil, fmt.Errorf("failed parsing IP Pool field 'used' (%q)", o.Used)
 	}
 	_, ok = total.SetString(o.Total, 10)
 	if !ok {
-		return nil, fmt.Errorf("failed parsing IP Pool field 'used' ('%s')", o.Total)
+		return nil, fmt.Errorf("failed parsing IP Pool field 'total' (%q)", o.Total)
 	}
 
 	subnets := make([]IpSubnet, len(o.Subnets))
@@ -66,10 +66,15 @@ func (o *rawIpPool) polish() (*IpPool, error) {
 		subnets[i] = *ps
 	}
 
+	status, err := o.Status.parse()
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing pool status %q - %w", o.Status, err)
+	}
+
 	return &IpPool{
 		Id:             o.Id,
 		DisplayName:    o.DisplayName,
-		Status:         o.Status,
+		Status:         PoolStatus(status),
 		Tags:           o.Tags,
 		Used:           used,
 		Total:          total,
