@@ -195,6 +195,15 @@ func (o TemplateType) String() string {
 	}
 }
 
+func (o *TemplateType) FromString(s string) error {
+	i, err := templateType(s).parse()
+	if err != nil {
+		return err
+	}
+	*o = TemplateType(i)
+	return nil
+}
+
 func (o templateType) string() string {
 	return string(o)
 }
@@ -1660,5 +1669,39 @@ func (o *Client) getTemplateIdTypeByName(ctx context.Context, desired string) (O
 	return "", -1, ApstraClientErr{
 		errType: ErrMultipleMatch,
 		err:     fmt.Errorf("found multiple templates named '%s'", desired),
+	}
+}
+
+// AllTemplateTypes returns the []TemplateType representing
+// each supported TemplateType
+func AllTemplateTypes() []TemplateType {
+	i := 0
+	var result []TemplateType
+	for {
+		var tType TemplateType
+		err := tType.FromString(TemplateType(i).String())
+		if err != nil {
+			return result
+		}
+		if tType != TemplateTypeNone {
+			result = append(result, tType)
+		}
+		i++
+	}
+}
+
+// AllOverlayControlProtocols returns the []OverlayControlProtocol representing
+// each supported OverlayControlProtocol
+func AllOverlayControlProtocols() []OverlayControlProtocol {
+	i := 0
+	var result []OverlayControlProtocol
+	for {
+		var ocp OverlayControlProtocol
+		err := ocp.FromString(OverlayControlProtocol(i).String())
+		if err != nil {
+			return result
+		}
+		result = append(result, ocp)
+		i++
 	}
 }
