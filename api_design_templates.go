@@ -1143,7 +1143,10 @@ func (o *Client) getRackBasedTemplate(ctx context.Context, id ObjectId) (*rawTem
 	}
 
 	if tType != templateTypeRackBased {
-		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeRackBased)
+		return nil, ApstraClientErr{
+			errType: ErrWrongType,
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeRackBased),
+		}
 	}
 
 	template := &rawTemplateRackBased{}
@@ -1188,7 +1191,10 @@ func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemp
 	}
 
 	if tType != templateTypePodBased {
-		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypePodBased)
+		return nil, ApstraClientErr{
+			errType: ErrWrongType,
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypePodBased),
+		}
 	}
 
 	result := &rawTemplatePodBased{}
@@ -1294,7 +1300,10 @@ func (o *Client) getL3CollapsedTemplate(ctx context.Context, id ObjectId) (*rawT
 	}
 
 	if tType != templateTypeL3Collapsed {
-		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeL3Collapsed)
+		return nil, ApstraClientErr{
+			errType: ErrWrongType,
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeL3Collapsed),
+		}
 	}
 
 	template := &rawTemplateL3Collapsed{}
