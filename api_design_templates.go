@@ -684,7 +684,7 @@ func (o rawSuperspine) polish() (*Superspine, error) {
 }
 
 type Template interface {
-	getType() TemplateType
+	GetType() TemplateType
 }
 
 type template json.RawMessage
@@ -765,7 +765,7 @@ type DhcpServiceIntent struct {
 	Active bool `json:"active"`
 }
 
-func (o *TemplateRackBased) getType() TemplateType {
+func (o *TemplateRackBased) GetType() TemplateType {
 	return o.Type
 }
 
@@ -881,7 +881,7 @@ type TemplatePodBasedData struct {
 	RackBasedTemplateCounts []RackBasedTemplateCount
 }
 
-func (o *TemplatePodBased) getType() TemplateType {
+func (o *TemplatePodBased) GetType() TemplateType {
 	return o.Type
 }
 
@@ -975,7 +975,7 @@ type TemplateL3CollapsedData struct {
 	} `json:"dhcp_service_intent"`
 }
 
-func (o *TemplateL3Collapsed) getType() TemplateType {
+func (o *TemplateL3Collapsed) GetType() TemplateType {
 	return o.Type
 }
 
@@ -1057,7 +1057,7 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 // getTemplate returns one of *TemplateRackBased, *TemplatePodBased or
-// *TemplateL3Collapsed, each of which have getType() method which should be
+// *TemplateL3Collapsed, each of which have GetType() method which should be
 // used to cast them into the correct type.
 func (o *Client) getTemplate(ctx context.Context, id ObjectId) (template, error) {
 	rawMsg := &json.RawMessage{}
