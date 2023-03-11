@@ -757,7 +757,7 @@ func (o *TemplateRackBased) ID() ObjectId {
 }
 
 func (o *TemplateRackBased) OverlayControlProtocol() OverlayControlProtocol {
-	if o.Data == nil {
+	if o == nil || o.Data == nil {
 		return OverlayControlProtocolNone
 	}
 	return o.Data.VirtualNetworkPolicy.OverlayControlProtocol
@@ -897,8 +897,10 @@ func (o *TemplatePodBased) ID() ObjectId {
 }
 
 func (o *TemplatePodBased) OverlayControlProtocol() OverlayControlProtocol {
-	// todo - this can't possibly be right
-	return OverlayControlProtocolEvpn
+	if o == nil || o.Data == nil || len(o.Data.RackBasedTemplates) == 0 || o.Data.RackBasedTemplates[0].Data == nil {
+		return OverlayControlProtocolNone
+	}
+	return o.Data.RackBasedTemplates[0].Data.VirtualNetworkPolicy.OverlayControlProtocol
 }
 
 type TemplatePodBasedData struct {
@@ -982,10 +984,10 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 var _ Template = &TemplatePodBased{}
 
 type TemplateL3Collapsed struct {
-	Id             ObjectId     `json:"id"`
-	templateType   TemplateType `json:"type"`
-	CreatedAt      time.Time    `json:"created_at"`
-	LastModifiedAt time.Time    `json:"last_modified_at"`
+	Id             ObjectId
+	templateType   TemplateType
+	CreatedAt      time.Time
+	LastModifiedAt time.Time
 	Data           *TemplateL3CollapsedData
 }
 
@@ -998,24 +1000,24 @@ func (o *TemplateL3Collapsed) ID() ObjectId {
 }
 
 func (o *TemplateL3Collapsed) OverlayControlProtocol() OverlayControlProtocol {
-	if o.Data == nil {
+	if o == nil || o.Data == nil {
 		return OverlayControlProtocolNone
 	}
 	return o.Data.VirtualNetworkPolicy.OverlayControlProtocol
 }
 
 type TemplateL3CollapsedData struct {
-	DisplayName          string                 `json:"display_name"`
-	AntiAffinityPolicy   AntiAffinityPolicy     `json:"anti_affinity_policy"`
-	RackTypes            []RackType             `json:"rack_types"`
-	Capability           TemplateCapability     `json:"capability"`
-	MeshLinkSpeed        LogicalDevicePortSpeed `json:"mesh_link_speed"`
-	VirtualNetworkPolicy VirtualNetworkPolicy   `json:"virtual_network_policy"`
-	MeshLinkCount        int                    `json:"mesh_link_count"`
-	RackTypeCounts       []RackTypeCount        `json:"rack_type_counts"`
+	DisplayName          string
+	AntiAffinityPolicy   AntiAffinityPolicy
+	RackTypes            []RackType
+	Capability           TemplateCapability
+	MeshLinkSpeed        LogicalDevicePortSpeed
+	VirtualNetworkPolicy VirtualNetworkPolicy
+	MeshLinkCount        int
+	RackTypeCounts       []RackTypeCount
 	DhcpServiceIntent    struct {
-		Active bool `json:"active"`
-	} `json:"dhcp_service_intent"`
+		Active bool
+	}
 }
 
 type rawTemplateL3Collapsed struct {
