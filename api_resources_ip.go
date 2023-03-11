@@ -109,7 +109,7 @@ func (o *rawIpSubnet) polish() (*IpSubnet, error) {
 	}
 	_, ok = total.SetString(o.Total, 10)
 	if !ok {
-		return nil, fmt.Errorf("failed parsing IP Pool field 'used' ('%s')", o.Total)
+		return nil, fmt.Errorf("failed parsing IP Pool field 'total' ('%s')", o.Total)
 	}
 
 	_, parsed, err := net.ParseCIDR(o.Network)
