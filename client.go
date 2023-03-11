@@ -753,7 +753,7 @@ func (o *Client) UpdateIp6Pool(ctx context.Context, poolId ObjectId, request *Ne
 	// one below, because other callers of the private method implement their own locking.
 	o.lock(clientApiResourceIpPoolRangeMutex)
 	defer o.unlock(clientApiResourceIpPoolRangeMutex)
-	return o.updateIpPool(ctx, fmt.Sprintf(apiUrlResourcesIp4PoolById, poolId), request)
+	return o.updateIpPool(ctx, fmt.Sprintf(apiUrlResourcesIp6PoolById, poolId), request)
 }
 
 // AddSubnetToIp6Pool adds a subnet to an IPv6 resource pool. Overlap with an existing subnet will
