@@ -724,8 +724,8 @@ func TestGetL3CollapsedTemplateByName(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if l3ct.Type.String() != templateTypeL3Collapsed.string() {
-			t.Fatalf("expected '%s', got '%s'", l3ct.Type.String(), templateTypeL3Collapsed)
+		if l3ct.templateType.String() != templateTypeL3Collapsed.string() {
+			t.Fatalf("expected '%s', got '%s'", l3ct.templateType.String(), templateTypeL3Collapsed)
 		}
 		if l3ct.Data.DisplayName != name {
 			t.Fatalf("expected '%s', got '%s'", name, l3ct.Data.DisplayName)
@@ -746,8 +746,8 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if rbt.Type.String() != templateTypeRackBased.string() {
-			t.Fatalf("expected '%s', got '%s'", rbt.Type.String(), templateTypeRackBased)
+		if rbt.templateType.String() != templateTypeRackBased.string() {
+			t.Fatalf("expected '%s', got '%s'", rbt.templateType.String(), templateTypeRackBased)
 		}
 		if rbt.Data.DisplayName != name {
 			t.Fatalf("expected '%s', got '%s'", name, rbt.Data.DisplayName)
@@ -768,8 +768,8 @@ func TestGetPodBasedTemplateByName(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if pbt.Type.String() != templateTypePodBased.string() {
-			t.Fatalf("expected '%s', got '%s'", pbt.Type.String(), templateTypePodBased)
+		if pbt.templateType.String() != templateTypePodBased.string() {
+			t.Fatalf("expected '%s', got '%s'", pbt.templateType.String(), templateTypePodBased)
 		}
 		if pbt.Data.DisplayName != name {
 			t.Fatalf("expected '%s', got '%s'", name, pbt.Data.DisplayName)
