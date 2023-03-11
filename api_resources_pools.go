@@ -38,10 +38,6 @@ func (o PoolStatus) String() string {
 	}
 }
 
-func (o PoolStatus) raw() poolStatus {
-	return poolStatus(o.String())
-}
-
 func (o poolStatus) string() string {
 	return string(o)
 }
