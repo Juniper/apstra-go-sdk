@@ -195,6 +195,15 @@ func (o TemplateType) String() string {
 	}
 }
 
+func (o *TemplateType) FromString(s string) error {
+	i, err := templateType(s).parse()
+	if err != nil {
+		return err
+	}
+	*o = TemplateType(i)
+	return nil
+}
+
 func (o templateType) string() string {
 	return string(o)
 }
@@ -675,7 +684,7 @@ func (o rawSuperspine) polish() (*Superspine, error) {
 }
 
 type Template interface {
-	getType() TemplateType
+	GetType() TemplateType
 }
 
 type template json.RawMessage
@@ -756,7 +765,7 @@ type DhcpServiceIntent struct {
 	Active bool `json:"active"`
 }
 
-func (o *TemplateRackBased) getType() TemplateType {
+func (o *TemplateRackBased) GetType() TemplateType {
 	return o.Type
 }
 
@@ -872,7 +881,7 @@ type TemplatePodBasedData struct {
 	RackBasedTemplateCounts []RackBasedTemplateCount
 }
 
-func (o *TemplatePodBased) getType() TemplateType {
+func (o *TemplatePodBased) GetType() TemplateType {
 	return o.Type
 }
 
@@ -966,7 +975,7 @@ type TemplateL3CollapsedData struct {
 	} `json:"dhcp_service_intent"`
 }
 
-func (o *TemplateL3Collapsed) getType() TemplateType {
+func (o *TemplateL3Collapsed) GetType() TemplateType {
 	return o.Type
 }
 
@@ -1048,7 +1057,7 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 // getTemplate returns one of *TemplateRackBased, *TemplatePodBased or
-// *TemplateL3Collapsed, each of which have getType() method which should be
+// *TemplateL3Collapsed, each of which have GetType() method which should be
 // used to cast them into the correct type.
 func (o *Client) getTemplate(ctx context.Context, id ObjectId) (template, error) {
 	rawMsg := &json.RawMessage{}
@@ -1660,5 +1669,39 @@ func (o *Client) getTemplateIdTypeByName(ctx context.Context, desired string) (O
 	return "", -1, ApstraClientErr{
 		errType: ErrMultipleMatch,
 		err:     fmt.Errorf("found multiple templates named '%s'", desired),
+	}
+}
+
+// AllTemplateTypes returns the []TemplateType representing
+// each supported TemplateType
+func AllTemplateTypes() []TemplateType {
+	i := 0
+	var result []TemplateType
+	for {
+		var tType TemplateType
+		err := tType.FromString(TemplateType(i).String())
+		if err != nil {
+			return result
+		}
+		if tType != TemplateTypeNone {
+			result = append(result, tType)
+		}
+		i++
+	}
+}
+
+// AllOverlayControlProtocols returns the []OverlayControlProtocol representing
+// each supported OverlayControlProtocol
+func AllOverlayControlProtocols() []OverlayControlProtocol {
+	i := 0
+	var result []OverlayControlProtocol
+	for {
+		var ocp OverlayControlProtocol
+		err := ocp.FromString(OverlayControlProtocol(i).String())
+		if err != nil {
+			return result
+		}
+		result = append(result, ocp)
+		i++
 	}
 }

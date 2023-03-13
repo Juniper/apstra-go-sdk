@@ -99,7 +99,7 @@ type IntPool struct {
 	DisplayName    string
 	Ranges         IntRanges // use the named slice type so we can call IndexOf()
 	Tags           []string
-	Status         string
+	Status         PoolStatus
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
 	Total          uint32
@@ -110,7 +110,7 @@ type IntPool struct {
 // rawIntPool contains some clunky types (integers as strings, etc.), is
 // cleaned up into an IntPool before being presented to callers
 type rawIntPool struct {
-	Status         string        `json:"status"`
+	Status         poolStatus    `json:"status"`
 	Used           string        `json:"used"`
 	DisplayName    string        `json:"display_name"`
 	Tags           []string      `json:"tags"`
@@ -140,7 +140,7 @@ func (o *rawIntPool) polish() (*IntPool, error) {
 	} else {
 		used, err = strconv.ParseUint(o.Used, 10, 32)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing 'used' element of Int Pool '%s' - %w", o.Id, err)
+			return nil, fmt.Errorf("failed parsing 'used' element of Int Pool %q - %w", o.Id, err)
 		}
 	}
 
@@ -150,15 +150,21 @@ func (o *rawIntPool) polish() (*IntPool, error) {
 	} else {
 		total, err = strconv.ParseUint(o.Total, 10, 32)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing 'total' element of Int Pool '%s' - %w", o.Id, err)
+			return nil, fmt.Errorf("failed parsing 'total' element of Int Pool %q - %w", o.Id, err)
 		}
 	}
+
+	status, err := o.Status.parse()
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing pool status %q - %w", o.Status, err)
+	}
+
 	return &IntPool{
 		Id:             o.Id,
 		DisplayName:    o.DisplayName,
 		Ranges:         ranges,
 		Tags:           o.Tags,
-		Status:         o.Status,
+		Status:         PoolStatus(status),
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Total:          uint32(total),

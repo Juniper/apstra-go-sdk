@@ -952,3 +952,20 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 		}
 	}
 }
+
+func TestAllTemplateTypes(t *testing.T) {
+	all := AllTemplateTypes()
+	expected := 3
+	if len(all) != expected {
+		t.Fatalf("expected %d template types, got %d", expected, len(all))
+	}
+}
+
+func TestAllOverlayControlProtocols(t *testing.T) {
+	all := AllOverlayControlProtocols()
+	expected := 2
+	if len(all) != expected {
+		log.Println(all)
+		t.Fatalf("expected %d overlay control protocols, got %d", expected, len(all))
+	}
+}
