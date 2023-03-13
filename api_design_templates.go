@@ -684,7 +684,9 @@ func (o rawSuperspine) polish() (*Superspine, error) {
 }
 
 type Template interface {
-	GetType() TemplateType
+	Type() TemplateType
+	ID() ObjectId
+	OverlayControlProtocol() OverlayControlProtocol
 }
 
 type template json.RawMessage
@@ -736,12 +738,29 @@ func (o *template) polish() (Template, error) {
 	return nil, fmt.Errorf(TemplateTypeUnknown, t)
 }
 
+var _ Template = &TemplateRackBased{}
+
 type TemplateRackBased struct {
 	Id             ObjectId
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
-	Type           TemplateType
+	templateType   TemplateType
 	Data           *TemplateRackBasedData
+}
+
+func (o *TemplateRackBased) Type() TemplateType {
+	return o.templateType
+}
+
+func (o *TemplateRackBased) ID() ObjectId {
+	return o.Id
+}
+
+func (o *TemplateRackBased) OverlayControlProtocol() OverlayControlProtocol {
+	if o == nil || o.Data == nil {
+		return OverlayControlProtocolNone
+	}
+	return o.Data.VirtualNetworkPolicy.OverlayControlProtocol
 }
 
 type TemplateRackBasedData struct {
@@ -763,10 +782,6 @@ type TemplateRackBasedRackInfo struct {
 
 type DhcpServiceIntent struct {
 	Active bool `json:"active"`
-}
-
-func (o *TemplateRackBased) GetType() TemplateType {
-	return o.Type
 }
 
 type rawTemplateRackBased struct {
@@ -846,7 +861,7 @@ OUTER:
 
 	return &TemplateRackBased{
 		Id:             o.Id,
-		Type:           TemplateType(tType),
+		templateType:   TemplateType(tType),
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplateRackBasedData{
@@ -863,12 +878,29 @@ OUTER:
 	}, nil
 }
 
+var _ Template = &TemplatePodBased{}
+
 type TemplatePodBased struct {
 	Id             ObjectId
-	Type           TemplateType
+	templateType   TemplateType
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
 	Data           *TemplatePodBasedData
+}
+
+func (o *TemplatePodBased) Type() TemplateType {
+	return o.templateType
+}
+
+func (o *TemplatePodBased) ID() ObjectId {
+	return o.Id
+}
+
+func (o *TemplatePodBased) OverlayControlProtocol() OverlayControlProtocol {
+	if o == nil || o.Data == nil || len(o.Data.RackBasedTemplates) == 0 || o.Data.RackBasedTemplates[0].Data == nil {
+		return OverlayControlProtocolNone
+	}
+	return o.Data.RackBasedTemplates[0].Data.VirtualNetworkPolicy.OverlayControlProtocol
 }
 
 type TemplatePodBasedData struct {
@@ -879,10 +911,6 @@ type TemplatePodBasedData struct {
 	Capability              TemplateCapability
 	RackBasedTemplates      []TemplateRackBased
 	RackBasedTemplateCounts []RackBasedTemplateCount
-}
-
-func (o *TemplatePodBased) GetType() TemplateType {
-	return o.Type
 }
 
 type rawTemplatePodBased struct {
@@ -938,7 +966,7 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 	}
 	return &TemplatePodBased{
 		Id:             o.Id,
-		Type:           TemplateType(tType),
+		templateType:   TemplateType(tType),
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplatePodBasedData{
@@ -953,30 +981,41 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 	}, nil
 }
 
+var _ Template = &TemplatePodBased{}
+
 type TemplateL3Collapsed struct {
-	Id             ObjectId     `json:"id"`
-	Type           TemplateType `json:"type"`
-	CreatedAt      time.Time    `json:"created_at"`
-	LastModifiedAt time.Time    `json:"last_modified_at"`
+	Id             ObjectId
+	templateType   TemplateType
+	CreatedAt      time.Time
+	LastModifiedAt time.Time
 	Data           *TemplateL3CollapsedData
 }
 
-type TemplateL3CollapsedData struct {
-	DisplayName          string                 `json:"display_name"`
-	AntiAffinityPolicy   AntiAffinityPolicy     `json:"anti_affinity_policy"`
-	RackTypes            []RackType             `json:"rack_types"`
-	Capability           TemplateCapability     `json:"capability"`
-	MeshLinkSpeed        LogicalDevicePortSpeed `json:"mesh_link_speed"`
-	VirtualNetworkPolicy VirtualNetworkPolicy   `json:"virtual_network_policy"`
-	MeshLinkCount        int                    `json:"mesh_link_count"`
-	RackTypeCounts       []RackTypeCount        `json:"rack_type_counts"`
-	DhcpServiceIntent    struct {
-		Active bool `json:"active"`
-	} `json:"dhcp_service_intent"`
+func (o *TemplateL3Collapsed) Type() TemplateType {
+	return o.templateType
 }
 
-func (o *TemplateL3Collapsed) GetType() TemplateType {
-	return o.Type
+func (o *TemplateL3Collapsed) ID() ObjectId {
+	return o.Id
+}
+
+func (o *TemplateL3Collapsed) OverlayControlProtocol() OverlayControlProtocol {
+	if o == nil || o.Data == nil {
+		return OverlayControlProtocolNone
+	}
+	return o.Data.VirtualNetworkPolicy.OverlayControlProtocol
+}
+
+type TemplateL3CollapsedData struct {
+	DisplayName          string
+	AntiAffinityPolicy   AntiAffinityPolicy
+	RackTypes            []RackType
+	Capability           TemplateCapability
+	MeshLinkSpeed        LogicalDevicePortSpeed
+	VirtualNetworkPolicy VirtualNetworkPolicy
+	MeshLinkCount        int
+	RackTypeCounts       []RackTypeCount
+	DhcpServiceIntent    DhcpServiceIntent
 }
 
 type rawTemplateL3Collapsed struct {
@@ -992,9 +1031,7 @@ type rawTemplateL3Collapsed struct {
 	VirtualNetworkPolicy rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
 	MeshLinkCount        int                        `json:"mesh_link_count"`
 	RackTypeCounts       []RackTypeCount            `json:"rack_type_counts"`
-	DhcpServiceIntent    struct {
-		Active bool `json:"active"`
-	} `json:"dhcp_service_intent"`
+	DhcpServiceIntent    DhcpServiceIntent          `json:"dhcp_service_intent"`
 }
 
 func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
@@ -1024,7 +1061,7 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	}
 	return &TemplateL3Collapsed{
 		Id:             o.Id,
-		Type:           TemplateType(tType),
+		templateType:   TemplateType(tType),
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplateL3CollapsedData{
@@ -1057,7 +1094,7 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 }
 
 // getTemplate returns one of *TemplateRackBased, *TemplatePodBased or
-// *TemplateL3Collapsed, each of which have GetType() method which should be
+// *TemplateL3Collapsed, each of which have Type() method which should be
 // used to cast them into the correct type.
 func (o *Client) getTemplate(ctx context.Context, id ObjectId) (template, error) {
 	rawMsg := &json.RawMessage{}
@@ -1106,7 +1143,10 @@ func (o *Client) getRackBasedTemplate(ctx context.Context, id ObjectId) (*rawTem
 	}
 
 	if tType != templateTypeRackBased {
-		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeRackBased)
+		return nil, ApstraClientErr{
+			errType: ErrWrongType,
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeRackBased),
+		}
 	}
 
 	template := &rawTemplateRackBased{}
@@ -1151,7 +1191,10 @@ func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemp
 	}
 
 	if tType != templateTypePodBased {
-		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypePodBased)
+		return nil, ApstraClientErr{
+			errType: ErrWrongType,
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypePodBased),
+		}
 	}
 
 	result := &rawTemplatePodBased{}
@@ -1257,7 +1300,10 @@ func (o *Client) getL3CollapsedTemplate(ctx context.Context, id ObjectId) (*rawT
 	}
 
 	if tType != templateTypeL3Collapsed {
-		return nil, fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeL3Collapsed)
+		return nil, ApstraClientErr{
+			errType: ErrWrongType,
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeL3Collapsed),
+		}
 	}
 
 	template := &rawTemplateL3Collapsed{}

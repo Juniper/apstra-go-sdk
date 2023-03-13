@@ -28,6 +28,7 @@ const (
 	ErrInUse
 	ErrMultipleMatch
 	ErrNotfound
+	ErrWrongType
 
 	clientPollingIntervalMs = 1000
 
