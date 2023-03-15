@@ -134,7 +134,9 @@ func (o *TwoStageL3ClosMutex) Unlock(ctx context.Context) error {
 // inspection by the caller.
 // When the attempt to lock is blocked by Apstra's user-based blueprint lock
 // the return values are <false, nil, nil>
-func (o *TwoStageL3ClosMutex) TryLock(ctx context.Context) (bool, *TwoStageL3ClosMutex, error) {
+// Setting ignoreApstraLock causes the check of the user-based blueprint
+// lock to be skipped.
+func (o *TwoStageL3ClosMutex) TryLock(ctx context.Context, ignoreApstraLock bool) (bool, *TwoStageL3ClosMutex, error) {
 	if o.readOnly {
 		return false, nil, ApstraClientErr{
 			errType: ErrReadOnly,
@@ -158,13 +160,15 @@ func (o *TwoStageL3ClosMutex) TryLock(ctx context.Context) (bool, *TwoStageL3Clo
 		return true, nil, nil
 	}
 
-	// refuse to lock this mutex if the apstra blueprint lock exists
-	li, err := o.client.GetLockInfo(ctx)
-	if err != nil {
-		return false, nil, err
-	}
-	if li.LockStatus != LockStatusUnlocked {
-		return false, nil, nil
+	if !ignoreApstraLock {
+		// refuse to lock this mutex if the apstra blueprint lock exists
+		li, err := o.client.GetLockInfo(ctx)
+		if err != nil {
+			return false, nil, err
+		}
+		if li.LockStatus != LockStatusUnlocked {
+			return false, nil, nil
+		}
 	}
 
 	tagId, err := o.client.client.createTag(ctx, &DesignTagRequest{
