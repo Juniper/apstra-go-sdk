@@ -280,7 +280,7 @@ func TestLockTryLockBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err := bpB.Mutex.TryLock(context.Background())
+		ok, reason, err := bpB.Mutex.TryLock(context.Background(), false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -359,7 +359,7 @@ func TestTryLockTryLockBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err := bpA.Mutex.TryLock(context.Background())
+		ok, reason, err := bpA.Mutex.TryLock(context.Background(), false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -371,7 +371,7 @@ func TestTryLockTryLockBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err = bpB.Mutex.TryLock(context.Background())
+		ok, reason, err = bpB.Mutex.TryLock(context.Background(), false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -456,7 +456,7 @@ func TestLockBlockTrylockUnlLockTrylockBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err := bpB.Mutex.TryLock(context.Background())
+		ok, reason, err := bpB.Mutex.TryLock(context.Background(), false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -545,7 +545,7 @@ func TestReadOnlyBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err := bpB.Mutex.TryLock(context.Background())
+		ok, reason, err := bpB.Mutex.TryLock(context.Background(), false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -603,7 +603,7 @@ func TestReadOnlyBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() with read-only mutex against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, _, err = reason.TryLock(context.Background())
+		_, _, err = reason.TryLock(context.Background(), false)
 		if err == nil {
 			t.Fatal("TryLock() of read-only mutex should have failed")
 		}
