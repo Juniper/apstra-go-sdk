@@ -29,6 +29,7 @@ const (
 	ErrMultipleMatch
 	ErrNotfound
 	ErrWrongType
+	ErrReadOnly
 
 	clientPollingIntervalMs = 1000
 
@@ -129,7 +130,7 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 		client:      o,
 		blueprintId: blueprintId,
 	}
-	result.mutex = &TwoStageL3ClosMutex{client: result}
+	result.Mutex = &TwoStageL3ClosMutex{client: result}
 
 	return result, nil
 }
