@@ -627,3 +627,77 @@ func TestReadOnlyBlueprintMutex(t *testing.T) {
 		}
 	}
 }
+
+// TestLockClearBlueprintMutex is a simple test of Lock() followed by ClearUnsafely()
+func TestLockClearBlueprintMutex(t *testing.T) {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	clients, err := getTestClients(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpName := randString(5, "hex")
+	for clientName, client := range clients {
+		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+			RefDesign:  RefDesignDatacenter,
+			Label:      bpName,
+			TemplateId: "L3_Collapsed_ESI",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = bpA.Mutex.SetMessage("locked by goapstra test client A")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = bpB.Mutex.SetMessage("locked by goapstra test client B")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpA.Mutex.Lock(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing ClearUnsafely() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpB.Mutex.ClearUnsafely(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpB.Mutex.Lock(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpB.Mutex.Unlock(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.deleteBlueprint(context.Background(), bpId)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}

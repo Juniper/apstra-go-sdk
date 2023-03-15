@@ -193,3 +193,32 @@ func (o *TwoStageL3ClosMutex) TryLock(ctx context.Context, ignoreApstraLock bool
 	o.tagId = tagId
 	return true, nil, nil
 }
+
+// ClearUnsafely deletes the mutex regardless of whether we originally held it.
+// This method should be used in exceptional circumstances only. NOT SAFE!
+func (o *TwoStageL3ClosMutex) ClearUnsafely(ctx context.Context) error {
+	lockName := fmt.Sprintf(lockTagName, o.client.blueprintId)
+	if len(lockName) > tagNameLenMax {
+		return fmt.Errorf("lock name %q exceeds limit (max %d characters)", lockName, tagNameLenMax)
+	}
+
+	tag, err := o.client.client.GetTagByLabel(ctx, lockName)
+	if err != nil {
+		var ace ApstraClientErr
+		if errors.As(err, &ace) && ace.errType == ErrNotfound {
+			return nil
+		}
+		return fmt.Errorf("error while fetching tag with name %q - %w", lockName, err)
+	}
+
+	err = o.client.client.DeleteTag(ctx, tag.Id)
+	if err != nil {
+		var ace ApstraClientErr
+		if errors.As(err, &ace) && ace.errType == ErrNotfound {
+			return nil
+		}
+		return fmt.Errorf("error while fetching tag with id %q - %w", tag.Id, err)
+	}
+
+	return nil
+}
