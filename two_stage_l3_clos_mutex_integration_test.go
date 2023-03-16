@@ -489,6 +489,9 @@ func TestLockBlockTrylockUnlLockTrylockBlueprintMutex(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		if reason != nil {
+			t.Fatal("TryLock returned a failure reason when it should have succeeded")
+		}
 		if !ok {
 			t.Fatal("TryLock returned not OK when blueprint should have been unlocked")
 		}
