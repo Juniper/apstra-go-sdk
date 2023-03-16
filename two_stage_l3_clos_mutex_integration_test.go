@@ -484,6 +484,21 @@ func TestLockBlockTrylockUnlLockTrylockBlueprintMutex(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		ok, reason, err = bpB.Mutex.TryLock(context.Background(), false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !ok {
+			t.Fatal("TryLock returned not OK when blueprint should have been unlocked")
+		}
+
+		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpB.Mutex.Unlock(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.deleteBlueprint(context.Background(), bpId)
 		if err != nil {
