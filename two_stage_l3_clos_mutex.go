@@ -44,6 +44,11 @@ func (o *TwoStageL3ClosMutex) ID() ObjectId {
 	return o.tagId
 }
 
+// BlueprintID returns the Blueprint ID
+func (o *TwoStageL3ClosMutex) BlueprintID() ObjectId {
+	return o.client.blueprintId
+}
+
 // Lock blocks until the mutex is locked or the context expires/is canceled.
 func (o *TwoStageL3ClosMutex) Lock(ctx context.Context) error {
 	if o.tagId != "" {
