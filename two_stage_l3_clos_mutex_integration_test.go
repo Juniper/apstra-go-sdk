@@ -74,7 +74,7 @@ func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 
 	bpName := randString(5, "hex")
 	for clientName, client := range clients {
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 			RefDesign:  RefDesignDatacenter,
 			Label:      bpName,
@@ -85,18 +85,29 @@ func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bp, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
+		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		err = bp.Mutex.SetMessage("locked by goapstra test")
+		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = bpA.Mutex.SetMessage("locked by test client A")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = bpB.Mutex.SetMessage("locked by test client B")
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bp.Mutex.Lock(context.Background())
+		err = bpA.Mutex.Lock(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -106,16 +117,8 @@ func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 		timeoutCtx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 
-		saved := bp.Mutex.tagId // save tag ID because...
-		bp.Mutex.tagId = ""     // bypass local re-lock safety check
-
-		err = bp.Mutex.SetMessage("re-locked by goapstra test")
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bp.Mutex.Lock(timeoutCtx)
+		err = bpB.Mutex.Lock(timeoutCtx)
 		if err != nil && !strings.Contains(err.Error(), "context deadline exceeded") {
 			t.Fatal(err)
 		}
@@ -125,10 +128,8 @@ func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 			t.Fatalf("we should have waited %s for lock, but only %s has elapsed", timeout.String(), elapsed.String())
 		}
 
-		bp.Mutex.tagId = saved // restore tag ID
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bp.Mutex.Unlock(context.Background())
+		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpA.Mutex.Unlock(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -280,22 +281,23 @@ func TestLockTryLockBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err := bpB.Mutex.TryLock(context.Background(), false)
-		if err != nil {
-			t.Fatal(err)
+		err = bpB.Mutex.TryLock(context.Background())
+		if err == nil {
+			t.Fatal("TryLock should have returned an error")
 		}
-		if ok {
-			t.Fatal("TryLock should have failed but reports OK")
+		var mutexErr MutexErr
+		if !errors.As(err, &mutexErr) {
+			t.Fatal("TryLock should have returned a MutexErr")
+		} else {
+			log.Printf("got expected MutexErr: %s", mutexErr.Error())
 		}
-		if reason == nil {
-			t.Fatal("TryLock should have failed, but reason is nil")
+		if mutexErr.LockInfo != nil {
+			t.Fatal("mutexErr's LockInfo should be nil")
 		}
-
-		if reason.ID() != bpA.Mutex.ID() {
-			t.Fatal("reason and original lock IDs do not match")
+		if mutexErr.Mutex == nil {
+			t.Fatal("mutexErr's Mutex should not be nil")
 		}
-
-		if reason.GetMessage() != bpA.Mutex.GetMessage() {
+		if mutexErr.Mutex.GetMessage() != bpA.Mutex.GetMessage() {
 			t.Fatal("reason and original lock messages do not match")
 		}
 
@@ -359,35 +361,29 @@ func TestTryLockTryLockBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err := bpA.Mutex.TryLock(context.Background(), false)
+		err = bpA.Mutex.TryLock(context.Background())
 		if err != nil {
 			t.Fatal(err)
-		}
-		if !ok {
-			t.Fatal("TryLock should have succeeded but reports not OK")
-		}
-		if reason != nil {
-			t.Fatal("TryLock should have succeeded, but reason is not nil")
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err = bpB.Mutex.TryLock(context.Background(), false)
-		if err != nil {
-			t.Fatal(err)
+		err = bpB.Mutex.TryLock(context.Background())
+		if err == nil {
+			t.Fatal("TryLock should have returned an error")
 		}
-		if ok {
-			t.Fatal("TryLock should have failed but reports OK")
+		var mutexErr MutexErr
+		if !errors.As(err, &mutexErr) {
+			t.Fatal("TryLock should have returned a MutexErr")
 		}
-		if reason == nil {
-			t.Fatal("TryLock should have failed, but reason is nil")
+		if mutexErr.Mutex == nil {
+			t.Fatal("TryLock returned a MutexErr with nil Mutex")
+		}
+		if mutexErr.LockInfo != nil {
+			t.Fatal("TryLock returned a MutexEerr with non-nil LockInfo")
 		}
 
-		if reason.ID() != bpA.Mutex.ID() {
-			t.Fatal("reason and original lock IDs do not match")
-		}
-
-		if reason.GetMessage() != bpA.Mutex.GetMessage() {
-			t.Fatal("reason and original lock messages do not match")
+		if mutexErr.Mutex.GetMessage() != bpA.Mutex.GetMessage() {
+			t.Fatal("blocking mutex and original messages do not match")
 		}
 
 		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -406,7 +402,7 @@ func TestTryLockTryLockBlueprintMutex(t *testing.T) {
 
 // TestLockBlockTrylockUnlLockTrylockBlueprintMutex ensures that TryLock() fails
 // against a locked blueprint, then succeeds after the lock is released.
-func TestLockBlockTrylockUnlLockTrylockBlueprintMutex(t *testing.T) {
+func TestLockUnlLockTrylockBlueprintMutex(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	clients, err := getTestClients(context.Background())
 	if err != nil {
@@ -455,29 +451,6 @@ func TestLockBlockTrylockUnlLockTrylockBlueprintMutex(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err := bpB.Mutex.TryLock(context.Background(), false)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if ok {
-			t.Fatal("TryLock returned OK when blueprint should have been locked")
-		} else {
-			log.Printf("trylock failed (good) with reason: %q (tagId: %s)", reason.GetMessage(), reason.ID())
-		}
-
-		if reason == nil {
-			t.Fatal("reason is nil when blueprint should have been locked")
-		}
-
-		if reason.ID() != bpA.Mutex.ID() {
-			t.Fatal("tagIDs of blocking lock and reported reason do not match")
-		}
-
-		if reason.GetMessage() != bpA.Mutex.GetMessage() {
-			t.Fatal("messages in blocking lock and reported reason do not match")
-		}
-
 		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpA.Mutex.Unlock(context.Background())
 		if err != nil {
@@ -485,15 +458,9 @@ func TestLockBlockTrylockUnlLockTrylockBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err = bpB.Mutex.TryLock(context.Background(), false)
+		err = bpB.Mutex.TryLock(context.Background())
 		if err != nil {
 			t.Fatal(err)
-		}
-		if reason != nil {
-			t.Fatal("TryLock returned a failure reason when it should have succeeded")
-		}
-		if !ok {
-			t.Fatal("TryLock returned not OK when blueprint should have been unlocked")
 		}
 
 		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -563,151 +530,58 @@ func TestReadOnlyBlueprintMutex(t *testing.T) {
 		}
 
 		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ok, reason, err := bpB.Mutex.TryLock(context.Background(), false)
-		if err != nil {
-			t.Fatal(err)
+		err = bpB.Mutex.TryLock(context.Background())
+		if err == nil {
+			t.Fatal("TryLock should have returned an error")
 		}
-		if ok {
-			t.Fatal("TryLock should have failed but reports OK")
+		var mutexErr MutexErr
+		if !errors.As(err, &mutexErr) {
+			t.Fatal("TryLock should have returned a MutexErr")
 		}
-		if reason == nil {
-			t.Fatal("TryLock should have failed, but reason is nil")
-		}
-
-		if reason.ID() != bpA.Mutex.ID() {
-			t.Fatal("reason and original lock IDs do not match")
+		if mutexErr.Mutex == nil {
+			t.Fatal("TryLock should have returned a *Mutex")
 		}
 
-		if reason.GetMessage() != bpA.Mutex.GetMessage() {
-			t.Fatal("reason and original lock messages do not match")
+		roMutex := mutexErr.Mutex
+
+		log.Printf("testing Lock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = roMutex.Lock(context.Background())
+		if err == nil {
+			t.Fatal("locking a read-only Mutex should return an error")
+		}
+		if !strings.Contains(err.Error(), "read") {
+			t.Fatal("locking a read-only Mutex complain about it being read-only")
+		}
+
+		log.Printf("testing TryLock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = roMutex.TryLock(context.Background())
+		if err == nil {
+			t.Fatal("try-locking a read-only Mutex should return an error")
+		}
+		if !strings.Contains(err.Error(), "read") {
+			t.Fatal("try-locking a read-only Mutex complain about it being read-only")
+		}
+
+		log.Printf("testing Unlock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = roMutex.Unlock(context.Background())
+		if err == nil {
+			t.Fatal("unlocking a read-only Mutex should return an error")
+		}
+		if !strings.Contains(err.Error(), "read") {
+			t.Fatal("unlocking a read-only Mutex complain about it being read-only")
+		}
+
+		log.Printf("testing SetMessage() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = roMutex.SetMessage("fail please")
+		if err == nil {
+			t.Fatal("setting message of a read-only Mutex should return an error")
+		}
+		if !strings.Contains(err.Error(), "read") {
+			t.Fatal("setting message of a read-only Mutex complain about it being read-only")
 		}
 
 		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpA.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		var ace ApstraClientErr
-
-		log.Printf("testing Unlock() with read-only mutex against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = reason.Unlock(context.Background())
-		if err == nil {
-			t.Fatal("Unlock() of read-only mutex should have failed")
-		}
-		if !errors.As(err, &ace) {
-			t.Fatal("Unlock() of read-only mutex should have produced an ApstraClientErr")
-		}
-		if ace.errType != ErrReadOnly {
-			t.Fatal("Unlock() of read-only mutex should have produced an ApstraClientErr of type ErrReadOnly")
-		}
-
-		log.Printf("testing Lock() with read-only mutex against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err2 := reason.Lock(context.Background())
-		if err2 == nil {
-			t.Fatal("Lock() of read-only mutex should have failed")
-		}
-		if !errors.As(err2, &ace) {
-			t.Fatal("Lock() of read-only mutex should have produced an ApstraClientErr")
-		}
-		if ace.errType != ErrReadOnly {
-			t.Fatal("Lock() of read-only mutex should have produced an ApstraClientErr of type ErrReadOnly")
-		}
-
-		log.Printf("testing TryLock() with read-only mutex against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, _, err = reason.TryLock(context.Background(), false)
-		if err == nil {
-			t.Fatal("TryLock() of read-only mutex should have failed")
-		}
-		if !errors.As(err, &ace) {
-			t.Fatal("TryLock() of read-only mutex should have produced an ApstraClientErr")
-		}
-		if ace.errType != ErrReadOnly {
-			t.Fatal("TryLock() of read-only mutex should have produced an ApstraClientErr of type ErrReadOnly")
-		}
-
-		log.Printf("testing SetMessage() with read-only mutex against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = reason.SetMessage("")
-		if err == nil {
-			t.Fatal("SetMessage() of read-only mutex should have failed")
-		}
-		if !errors.As(err, &ace) {
-			t.Fatal("SetMessage() of read-only mutex should have produced an ApstraClientErr")
-		}
-		if ace.errType != ErrReadOnly {
-			t.Fatal("SetMessage() of read-only mutex should have produced an ApstraClientErr of type ErrReadOnly")
-		}
-	}
-}
-
-// TestLockClearBlueprintMutex is a simple test of Lock() followed by ClearUnsafely()
-func TestLockClearBlueprintMutex(t *testing.T) {
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	bpName := randString(5, "hex")
-	for clientName, client := range clients {
-		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
-			Label:      bpName,
-			TemplateId: "L3_Collapsed_ESI",
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = bpA.Mutex.SetMessage("locked by goapstra test client A")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = bpB.Mutex.SetMessage("locked by goapstra test client B")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Lock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing ClearUnsafely() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.ClearUnsafely(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.Lock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.Unlock(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
