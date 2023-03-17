@@ -98,6 +98,11 @@ type LockInfo struct {
 	LockStatus       LockStatus
 }
 
+func (o *LockInfo) String() string {
+	return fmt.Sprintf("Lock status %q by %q (%s) override possible: %t",
+		o.LockStatus, o.UserName, o.UserId, o.PossibleOverride)
+}
+
 func (o *TwoStageL3ClosClient) getLockInfo(ctx context.Context) (*rawLockInfo, error) {
 	response := &rawLockInfo{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
