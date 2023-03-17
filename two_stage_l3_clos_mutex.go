@@ -154,10 +154,9 @@ func (o *TwoStageL3ClosMutex) lock(ctx context.Context, nonBlocking bool) error 
 						message:  tag.Description,
 					},
 				}
-			} else {
-				// some other tag creation error
-				return err
 			}
+			// some other tag creation error
+			return err
 		}
 	}
 
