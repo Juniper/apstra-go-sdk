@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net"
+	"time"
 )
 
 func pp(in interface{}, out io.Writer) error {
@@ -23,4 +24,18 @@ func ourIpForPeer(them net.IP) (*net.IP, error) {
 	}
 
 	return &c.LocalAddr().(*net.UDPAddr).IP, c.Close()
+}
+
+func immediateTicker(interval time.Duration) *time.Ticker {
+	nc := make(chan time.Time, 1)
+	ticker := time.NewTicker(interval)
+	oc := ticker.C
+	go func() {
+		nc <- time.Now()
+		for tm := range oc {
+			nc <- tm
+		}
+	}()
+	ticker.C = nc
+	return ticker
 }
