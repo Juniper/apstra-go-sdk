@@ -97,6 +97,11 @@ func (o *TwoStageL3ClosMutex) lock(ctx context.Context, nonBlocking bool) error 
 			return err
 		}
 
+		// Pass when locked by our own ID.
+		if li.UserId == o.client.client.ID() {
+			break
+		}
+
 		if nonBlocking && li.LockStatus != LockStatusUnlocked {
 			return MutexErr{
 				LockInfo: li,
