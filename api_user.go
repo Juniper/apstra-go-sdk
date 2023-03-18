@@ -19,8 +19,8 @@ type userLoginRequest struct {
 
 // userLoginResponse token returned by the apiUrlUserLogin API endpoint
 type userLoginResponse struct {
-	Token string `json:"token"`
-	Id    string `json:"id"`
+	Token string   `json:"token"`
+	Id    ObjectId `json:"id"`
 }
 
 func (o *Client) startTaskMonitor() {
@@ -62,6 +62,7 @@ func (o *Client) login(ctx context.Context) error {
 	o.httpHeaders[apstraAuthHeader] = response.Token
 	o.unlock(clientHttpHeadersMutex)
 
+	o.id = response.Id
 	o.startTaskMonitor()
 	return nil
 }
