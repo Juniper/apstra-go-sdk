@@ -1,6 +1,7 @@
 package goapstra
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
@@ -137,4 +138,26 @@ func TestImmediateTickerSecondTick(t *testing.T) {
 	}
 	log.Printf("second tick after %q within expected zone %q - %q", elapsed, threshold1, threshold2)
 	log.Printf("start %s first tick %s second tick %s", start, firstTick, secondTick)
+}
+
+func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignDatacenter,
+		Label:      randString(5, "hex"),
+		TemplateId: "L3_Collapsed_ESI",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpDeleteFunc := func() error {
+		return client.deleteBlueprint(ctx, bpId)
+	}
+
+	return bpClient, bpDeleteFunc
 }
