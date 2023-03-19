@@ -291,7 +291,7 @@ func TestRoutingPolicies(t *testing.T) {
 		if err != nil {
 			t.Fatal()
 		}
-		exportFilters = append(importFilters, f)
+		exportFilters = append(exportFilters, f)
 
 		policyData.ExpectDefaultIpv4Route = true
 		policyData.ExpectDefaultIpv6Route = true
