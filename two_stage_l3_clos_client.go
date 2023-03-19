@@ -55,7 +55,7 @@ func (o BlueprintType) string() string {
 type TwoStageL3ClosClient struct {
 	client      *Client
 	blueprintId ObjectId
-	Mutex       *TwoStageL3ClosMutex
+	Mutex       Mutex
 }
 
 // Id returns the client's Blueprint ID
@@ -119,8 +119,8 @@ func (o *TwoStageL3ClosClient) SetInterfaceMapAssignments(ctx context.Context, a
 }
 
 // CreateSecurityZone creates an Apstra Routing Zone / Security Zone / VRF
-func (o *TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg *CreateSecurityZoneCfg) (ObjectId, error) {
-	response, err := o.createSecurityZone(ctx, cfg)
+func (o *TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg *SecurityZoneData) (ObjectId, error) {
+	response, err := o.createSecurityZone(ctx, cfg.raw())
 	if err != nil {
 		return "", err
 	}
@@ -132,33 +132,52 @@ func (o *TwoStageL3ClosClient) DeleteSecurityZone(ctx context.Context, zoneId Ob
 	return o.deleteSecurityZone(ctx, zoneId)
 }
 
-// GetSecurityZones returns all Apstra Routing Zones / Security Zones / VRFs
-// associated with the specified blueprint
-func (o *TwoStageL3ClosClient) GetSecurityZones(ctx context.Context) ([]SecurityZone, error) {
-	return o.getAllSecurityZones(ctx)
-}
-
 // GetSecurityZone fetches the Security Zone / Routing Zone / VRF with the given
 // zoneId.
 func (o *TwoStageL3ClosClient) GetSecurityZone(ctx context.Context, zoneId ObjectId) (*SecurityZone, error) {
-	return o.getSecurityZone(ctx, zoneId)
+	raw, err := o.getSecurityZone(ctx, zoneId)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
-// GetSecurityZoneByName fetches the Security Zone / Routing Zone / VRF with
+// GetSecurityZoneByVrfName fetches the Security Zone / Routing Zone / VRF with
 // the given label.
-func (o *TwoStageL3ClosClient) GetSecurityZoneByName(ctx context.Context, label string) (*SecurityZone, error) {
-	return o.getSecurityZoneByName(ctx, label)
+func (o *TwoStageL3ClosClient) GetSecurityZoneByVrfName(ctx context.Context, vrfName string) (*SecurityZone, error) {
+	raw, err := o.getSecurityZoneByVrfName(ctx, vrfName)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
 // GetAllSecurityZones returns []SecurityZone representing all Security Zones /
 // Routing Zones / VRFs on the system.
 func (o *TwoStageL3ClosClient) GetAllSecurityZones(ctx context.Context) ([]SecurityZone, error) {
-	return o.getAllSecurityZones(ctx)
+	response, err := o.getAllSecurityZones(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// This API endpoint returns a map. Convert to list for consistency with other 'GetAll' functions.
+	result := make([]SecurityZone, len(response))
+	var i int
+	for k := range response {
+		polished, err := response[k].polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+		i++
+	}
+
+	return result, nil
 }
 
 // UpdateSecurityZone replaces the configuration of zone zoneId with the supplied CreateSecurityZoneCfg
-func (o *TwoStageL3ClosClient) UpdateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *CreateSecurityZoneCfg) error {
-	return o.updateSecurityZone(ctx, zoneId, cfg)
+func (o *TwoStageL3ClosClient) UpdateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *SecurityZoneData) error {
+	return o.updateSecurityZone(ctx, zoneId, cfg.raw())
 }
 
 // GetAllPolicies returns []Policy representing all policies configured within the DC blueprint

@@ -1,7 +1,9 @@
 package goapstra
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -94,4 +96,68 @@ func keyLogWriterFromEnv(keyLogEnv string) (*os.File, error) {
 		return nil, err
 	}
 	return os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+}
+
+// First tick should come immediately, certainly
+// before half of the interval has expired.
+func TestImmediateTickerFirstTick(t *testing.T) {
+	interval := time.Second
+	threshold := interval / 2
+
+	start := time.Now()
+	ticker := immediateTicker(time.Second)
+	defer ticker.Stop()
+	firstTick := <-ticker.C
+
+	elapsed := firstTick.Sub(start)
+	if elapsed > threshold {
+		t.Fatalf("first tick after %q exceeds threshold %q", elapsed, threshold)
+	}
+	log.Printf("first tick after %q within threshold %q", elapsed, threshold)
+	log.Printf("start %s first tick %s", start, firstTick)
+}
+
+// Second tick should come between .5 and 1.5 intervals
+func TestImmediateTickerSecondTick(t *testing.T) {
+	interval := time.Second
+	threshold1 := interval / 2
+	threshold2 := interval + interval/2
+
+	start := time.Now()
+	ticker := immediateTicker(time.Second)
+	defer ticker.Stop()
+	firstTick := <-ticker.C
+	secondTick := <-ticker.C
+
+	elapsed := secondTick.Sub(start)
+	if elapsed < threshold1 {
+		t.Fatalf("second tick after only %q doesn't meet threshold %q", elapsed, threshold1)
+	}
+	if elapsed > threshold2 {
+		t.Fatalf("second tick after %q exceeds threshold %q", elapsed, threshold2)
+	}
+	log.Printf("second tick after %q within expected zone %q - %q", elapsed, threshold1, threshold2)
+	log.Printf("start %s first tick %s second tick %s", start, firstTick, secondTick)
+}
+
+func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignDatacenter,
+		Label:      randString(5, "hex"),
+		TemplateId: "L3_Collapsed_ESI",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpDeleteFunc := func() error {
+		return client.deleteBlueprint(ctx, bpId)
+	}
+
+	return bpClient, bpDeleteFunc
 }

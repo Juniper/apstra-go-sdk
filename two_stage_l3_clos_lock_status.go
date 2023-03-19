@@ -69,7 +69,7 @@ type rawLockInfo struct {
 	UserName         string     `json:"username"`
 	FirstName        string     `json:"first_name"`
 	LastName         string     `json:"last_name"`
-	UserId           string     `json:"user_id"`
+	UserId           ObjectId   `json:"user_id"`
 	PossibleOverride bool       `json:"possible_override"`
 	LockStatus       lockStatus `json:"lock_status"`
 }
@@ -93,9 +93,14 @@ type LockInfo struct {
 	UserName         string
 	FirstName        string
 	LastName         string
-	UserId           string
+	UserId           ObjectId
 	PossibleOverride bool
 	LockStatus       LockStatus
+}
+
+func (o *LockInfo) String() string {
+	return fmt.Sprintf("Lock status %q by %q (%s) override possible: %t",
+		o.LockStatus, o.UserName, o.UserId, o.PossibleOverride)
 }
 
 func (o *TwoStageL3ClosClient) getLockInfo(ctx context.Context) (*rawLockInfo, error) {

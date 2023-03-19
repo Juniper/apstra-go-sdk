@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	tagNameLenMax = 64                    // apstra 4.1.0 limit
-	lockTagName   = "blueprint %s locked" // BP GUID is 36 char, this should fit
+	tagNameLenMax    = 64                    // apstra 4.1.0 limit
+	lockTagName      = "blueprint %s locked" // BP GUID is 36 char, this should fit
+	lockPollInterval = 500 * time.Millisecond
 )
 
 type TwoStageL3ClosMutex struct {
@@ -39,24 +40,36 @@ func (o *TwoStageL3ClosMutex) SetMessage(msg string) error {
 	return nil
 }
 
-// ID returns the lock ID
-func (o *TwoStageL3ClosMutex) ID() ObjectId {
-	return o.tagId
+// BlueprintID returns the Blueprint ID
+func (o *TwoStageL3ClosMutex) BlueprintID() ObjectId {
+	return o.client.blueprintId
 }
 
-// Lock blocks until the mutex is locked or the context expires/is canceled.
+// Lock attempts to assert the blueprint mutex, repeatedly trying until the
+// context.Context expires or it encounters an error.
 func (o *TwoStageL3ClosMutex) Lock(ctx context.Context) error {
-	if o.tagId != "" {
-		return ApstraClientErr{
-			errType: ErrReadOnly,
-			err:     fmt.Errorf("attempt to lock previously locked mutex - previous lock ID %q", o.tagId),
-		}
-	}
+	return o.lock(ctx, false)
+}
+
+// TryLock attempts to assert the blueprint mutex without blocking.
+func (o *TwoStageL3ClosMutex) TryLock(ctx context.Context) error {
+	return o.lock(ctx, true)
+}
+
+// lock's behavior is controlled by the nonBlocking boolean. When called with
+// nonBlocking == false, it will block until it asserts the mutex/tag, or an
+// error is encountered. When called with nonBlocking == true, it will return
+// a MutexErr populated with either a *LockInfo, indicating an Apstra blueprint
+// lock was in place, or a *Mutex indicating somebody else has asserted the
+// tag/mutex. In either case, the caller can inspect the MutexErr to learn
+// exactly what went wrong.
+func (o *TwoStageL3ClosMutex) lock(ctx context.Context, nonBlocking bool) error {
 	if o.readOnly {
-		return ApstraClientErr{
-			errType: ErrReadOnly,
-			err:     errors.New("attempt to lock read-only mutex"),
-		}
+		return errors.New("attempt to lock read-only mutex")
+	}
+
+	if o.tagId != "" {
+		return fmt.Errorf("attempt to lock previously locked mutex - previous lock ID %q", o.tagId)
 	}
 
 	lockName := fmt.Sprintf(lockTagName, o.client.blueprintId)
@@ -67,47 +80,88 @@ func (o *TwoStageL3ClosMutex) Lock(ctx context.Context) error {
 	// set initial LockStatus to bogus value b/c desired state is "0"
 	li := &LockInfo{LockStatus: -1}
 
-	// refuse to lock this mutex while the apstra blueprint lock is asserted
 	var err error
+	tickerA := immediateTicker(lockPollInterval)
+	defer tickerA.Stop()
+
 	for li.LockStatus != LockStatusUnlocked {
-		// mind the timeout
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context cancelled while waiting for lock status %q - %w",
 				LockStatusUnlocked.String(), ctx.Err())
-		default:
+		case <-tickerA.C:
 		}
 
 		li, err = o.client.GetLockInfo(ctx)
 		if err != nil {
 			return err
 		}
+
+		// Pass when locked by our own ID.
+		if li.UserId == o.client.client.ID() {
+			break
+		}
+
+		if nonBlocking && li.LockStatus != LockStatusUnlocked {
+			return MutexErr{
+				LockInfo: li,
+				err:      fmt.Errorf("blueprint %q: %s", o.client.blueprintId, li.String()),
+			}
+		}
 	}
 
 	// loop until we acquire the lock or the context deadline (set by caller) expires.
-	for {
-		// mind the timeout
+	tickerB := immediateTicker(lockPollInterval)
+	defer tickerB.Stop()
+	var ace ApstraClientErr
+	var tagID ObjectId
+	for tagID == "" {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context cancelled while trying to establish lock - %w", ctx.Err())
-		default:
+		case <-tickerB.C:
 		}
 
-		tagId, err := o.client.client.createTag(ctx, &DesignTagRequest{
+		tagID, err = o.client.client.createTag(ctx, &DesignTagRequest{
 			Label:       lockName,
 			Description: o.message,
 		})
 		if err != nil {
-			var ace ApstraClientErr
 			if errors.As(err, &ace) && ace.errType == ErrExists {
-				time.Sleep(clientPollingIntervalMs * time.Millisecond)
-				continue
+				// mutex already exists
+				if !nonBlocking {
+					// caller specified blocking behavior; nothing to do but try again
+					continue
+				}
+
+				// retrieve the offending tag so we can inform the caller about it
+				tag, err := o.client.client.getTagByLabel(ctx, lockName)
+				if err != nil {
+					if errors.As(err, &ace) {
+						// offending tag deleted in the last few milliseconds? Try again.
+						continue
+					}
+					// error retrieving the offending tag. blow up in the caller's face.
+					return err
+				}
+				tagURL := fmt.Sprintf(apiUrlDesignTagById, tagID)
+				return MutexErr{
+					err: fmt.Errorf("unable to lock blueprint mutex due to: %q", tagURL),
+					Mutex: &TwoStageL3ClosMutex{
+						client:   o.client,
+						tagId:    tag.Id,
+						readOnly: true,
+						message:  tag.Description,
+					},
+				}
 			}
+			// some other tag creation error
 			return err
 		}
-		o.tagId = tagId
-		return nil
 	}
+
+	o.tagId = tagID
+	return nil
 }
 
 // Unlock releases the mutex
@@ -118,74 +172,15 @@ func (o *TwoStageL3ClosMutex) Unlock(ctx context.Context) error {
 			err:     errors.New("attempt to unlock read-only mutex"),
 		}
 	}
+
 	err := o.client.client.deleteTag(ctx, o.tagId)
 	if err != nil {
-		return err
+		var ace ApstraClientErr
+		if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
+			return err
+		}
 	}
+
 	o.tagId = ""
 	return nil
-}
-
-// TryLock attempts to lock the mutex without blocking until success. The
-// returned boolean indicates the success of the lock attempt. On success,
-// the returned values are <true, nil, nil>.
-// When the attempt to lock is blocked by a different TwoStageL3ClosMutex,
-// a read-only copy of the offender is returned as *TwoStageL3ClosMutex for
-// inspection by the caller.
-// When the attempt to lock is blocked by Apstra's user-based blueprint lock
-// the return values are <false, nil, nil>
-func (o *TwoStageL3ClosMutex) TryLock(ctx context.Context) (bool, *TwoStageL3ClosMutex, error) {
-	if o.readOnly {
-		return false, nil, ApstraClientErr{
-			errType: ErrReadOnly,
-			err:     errors.New("attempt to unlock read-only mutex"),
-		}
-	}
-
-	lockName := fmt.Sprintf(lockTagName, o.client.blueprintId)
-	if len(lockName) > tagNameLenMax {
-		return false, nil, fmt.Errorf("lock name %q exceeds limit (max %d characters)", lockName, tagNameLenMax)
-	}
-
-	if o.tagId != "" {
-		err := o.client.client.UpdateTag(ctx, o.tagId, &DesignTagRequest{
-			Label:       lockName,
-			Description: o.message,
-		})
-		if err != nil {
-			return false, nil, fmt.Errorf("error updating tag/lock %q - %w", o.tagId, err)
-		}
-		return true, nil, nil
-	}
-
-	// refuse to lock this mutex if the apstra blueprint lock exists
-	li, err := o.client.GetLockInfo(ctx)
-	if err != nil {
-		return false, nil, err
-	}
-	if li.LockStatus != LockStatusUnlocked {
-		return false, nil, nil
-	}
-
-	tagId, err := o.client.client.createTag(ctx, &DesignTagRequest{
-		Label:       lockName,
-		Description: o.message,
-	})
-	if err != nil {
-		var ace ApstraClientErr
-		if errors.As(err, &ace) && ace.errType == ErrExists {
-			blockingTag, err := o.client.client.GetTagByLabel(ctx, lockName)
-			if err != nil {
-				return false, nil, err
-			}
-			return false, &TwoStageL3ClosMutex{
-				tagId:    blockingTag.Id,
-				readOnly: true,
-				message:  blockingTag.Data.Description,
-			}, nil
-		}
-		return false, nil, err
-	}
-	o.tagId = tagId
-	return true, nil, nil
 }

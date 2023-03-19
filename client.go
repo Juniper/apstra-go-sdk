@@ -107,6 +107,7 @@ type Client struct {
 	apiVersion  string                  // as reported by apstra API
 	baseUrl     *url.URL                // everything up to the file path, generated based on env and cfg
 	cfg         ClientCfg               // passed by the caller when creating Client
+	id          ObjectId                // Apstra user ID
 	httpClient  apstraHttpClient        // used when talking to apstra
 	httpHeaders map[string]string       // default set of http headers
 	tmQuit      chan struct{}           // task monitor exit trigger
@@ -115,6 +116,11 @@ type Client struct {
 	logger      Logger                  // logs sent here
 	sync        map[int]*sync.Mutex     // some client operations are not concurrency safe. Their locks live here.
 	syncLock    sync.Mutex              // control access to the 'sync' map
+}
+
+// ID returns the Apstra User ID associated with the client or an empty string if not logged in.
+func (o *Client) ID() ObjectId {
+	return o.id
 }
 
 func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId ObjectId) (*TwoStageL3ClosClient, error) {
