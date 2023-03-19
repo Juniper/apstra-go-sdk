@@ -350,6 +350,23 @@ type DcRoutingPolicyData struct {
 }
 
 func (o *DcRoutingPolicyData) raw() *rawDcRoutingPolicy {
+	extraImportRoutes := make([]rawPrefixFilter, len(o.ExtraImportRoutes))
+	for i := range o.ExtraImportRoutes {
+		f := o.ExtraImportRoutes[i].raw()
+		extraImportRoutes[i] = *f
+	}
+
+	extraExportRoutes := make([]rawPrefixFilter, len(o.ExtraExportRoutes))
+	for i := range o.ExtraExportRoutes {
+		f := o.ExtraExportRoutes[i].raw()
+		extraExportRoutes[i] = *f
+	}
+
+	aggregatePrefixes := make([]string, len(o.AggregatePrefixes))
+	for i := range o.AggregatePrefixes {
+		aggregatePrefixes[i] = o.AggregatePrefixes[i].String()
+	}
+
 	return &rawDcRoutingPolicy{
 		Label:        o.Label,
 		Description:  o.Description,
@@ -365,6 +382,9 @@ func (o *DcRoutingPolicyData) raw() *rawDcRoutingPolicy {
 		},
 		ExpectDefaultIpv4Route: o.ExpectDefaultIpv4Route,
 		ExpectDefaultIpv6Route: o.ExpectDefaultIpv6Route,
+		AggregatePrefixes:      aggregatePrefixes,
+		ExtraImportRoutes:      extraImportRoutes,
+		ExtraExportRoutes:      extraExportRoutes,
 	}
 }
 
