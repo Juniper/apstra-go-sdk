@@ -122,6 +122,66 @@ func TestRoutingPolicies(t *testing.T) {
 			t.Fatalf("default policy type is %q", defaultPolicy.Data.PolicyType.String())
 		}
 
+		var aggregatePrefixes []net.IPNet
+		for _, s := range []string{"1.0.0.0/8", "2.0.0.0/7"} {
+			_, ipNet, err := net.ParseCIDR(s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			aggregatePrefixes = append(aggregatePrefixes, *ipNet)
+		}
+
+		var f PrefixFilter
+		var ipNet *net.IPNet
+
+		var importFilters []PrefixFilter
+		_, ipNet, err = net.ParseCIDR("100.0.0.0/10")
+		f = PrefixFilter{
+			Action: PrefixFilterActionPermit,
+			Prefix: *ipNet,
+			GeMask: 11,
+			LeMask: 13,
+		}
+		if err != nil {
+			t.Fatal()
+		}
+		importFilters = append(importFilters, f)
+		_, ipNet, err = net.ParseCIDR("100.32.0.0/10")
+		f = PrefixFilter{
+			Action: PrefixFilterActionDeny,
+			Prefix: *ipNet,
+			GeMask: 12,
+			LeMask: 14,
+		}
+		if err != nil {
+			t.Fatal()
+		}
+		importFilters = append(importFilters, f)
+
+		var exportFilters []PrefixFilter
+		_, ipNet, err = net.ParseCIDR("200.0.0.0/10")
+		f = PrefixFilter{
+			Action: PrefixFilterActionPermit,
+			Prefix: *ipNet,
+			GeMask: 11,
+			LeMask: 13,
+		}
+		if err != nil {
+			t.Fatal()
+		}
+		exportFilters = append(exportFilters, f)
+		_, ipNet, err = net.ParseCIDR("200.32.0.0/10")
+		f = PrefixFilter{
+			Action: PrefixFilterActionDeny,
+			Prefix: *ipNet,
+			GeMask: 12,
+			LeMask: 14,
+		}
+		if err != nil {
+			t.Fatal()
+		}
+		exportFilters = append(importFilters, f)
+
 		policyData := &DcRoutingPolicyData{
 			Label:        label,
 			Description:  description,
@@ -137,9 +197,9 @@ func TestRoutingPolicies(t *testing.T) {
 			},
 			ExpectDefaultIpv4Route: false,
 			ExpectDefaultIpv6Route: false,
-			AggregatePrefixes:      nil,
-			ExtraImportRoutes:      nil,
-			ExtraExportRoutes:      nil,
+			AggregatePrefixes:      aggregatePrefixes,
+			ExtraImportRoutes:      importFilters,
+			ExtraExportRoutes:      exportFilters,
 		}
 
 		log.Printf("testing CreateRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -187,6 +247,56 @@ func TestRoutingPolicies(t *testing.T) {
 				policy.Id, policies[0].Id.String(), policies[1].Id.String())
 		}
 
+		_, ipNet, err = net.ParseCIDR("110.0.0.0/10")
+		f = PrefixFilter{
+			Action: PrefixFilterActionPermit,
+			Prefix: *ipNet,
+			GeMask: 11,
+			LeMask: 13,
+		}
+		if err != nil {
+			t.Fatal()
+		}
+		importFilters = append(importFilters, f)
+		_, ipNet, err = net.ParseCIDR("110.32.0.0/10")
+		f = PrefixFilter{
+			Action: PrefixFilterActionDeny,
+			Prefix: *ipNet,
+			GeMask: 12,
+			LeMask: 14,
+		}
+		if err != nil {
+			t.Fatal()
+		}
+		importFilters = append(importFilters, f)
+
+		_, ipNet, err = net.ParseCIDR("210.0.0.0/10")
+		f = PrefixFilter{
+			Action: PrefixFilterActionPermit,
+			Prefix: *ipNet,
+			GeMask: 11,
+			LeMask: 13,
+		}
+		if err != nil {
+			t.Fatal()
+		}
+		exportFilters = append(exportFilters, f)
+		_, ipNet, err = net.ParseCIDR("210.32.0.0/10")
+		f = PrefixFilter{
+			Action: PrefixFilterActionDeny,
+			Prefix: *ipNet,
+			GeMask: 12,
+			LeMask: 14,
+		}
+		if err != nil {
+			t.Fatal()
+		}
+		exportFilters = append(importFilters, f)
+
+		policyData.ExpectDefaultIpv4Route = true
+		policyData.ExpectDefaultIpv6Route = true
+		policyData.ExtraImportRoutes = importFilters
+		policyData.ExtraExportRoutes = exportFilters
 		policyData.ImportPolicy = DcRoutingPolicyImportPolicyDefaultOnly
 		policyData.ExportPolicy = DcRoutingExportPolicy{
 			StaticRoutes:         true,
