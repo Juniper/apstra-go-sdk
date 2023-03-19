@@ -260,3 +260,60 @@ func (o *TwoStageL3ClosClient) PatchNode(ctx context.Context, node ObjectId, req
 func (o *TwoStageL3ClosClient) Client() *Client {
 	return o.client
 }
+
+// GetAllRoutingPolicies returns []DcRoutingPolicy representing all routing
+// policies in the blueprint.
+func (o *TwoStageL3ClosClient) GetAllRoutingPolicies(ctx context.Context) ([]DcRoutingPolicy, error) {
+	raw, err := o.getAllRoutingPolicies(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]DcRoutingPolicy, len(raw))
+	for i := range raw {
+		polished, err := raw[i].polish()
+		if err != nil {
+			return nil, err
+		}
+
+		result[i] = *polished
+	}
+	return result, nil
+}
+
+// GetRoutingPolicy returns *DcRoutingPolicy representing the specified policy.
+func (o *TwoStageL3ClosClient) GetRoutingPolicy(ctx context.Context, id ObjectId) (*DcRoutingPolicy, error) {
+	raw, err := o.getRoutingPolicy(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
+}
+
+// GetDefaultRoutingPolicy returns *DcRoutingPolicy representing the
+// "default_immutable" routing policy attached to the blueprint.
+func (o *TwoStageL3ClosClient) GetDefaultRoutingPolicy(ctx context.Context) (*DcRoutingPolicy, error) {
+	raw, err := o.getDefaultRoutingPolicy(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
+}
+
+// CreateRoutingPolicy creates a blueprint routing policy according to the
+// supplied *DcRoutingPolicyData.
+func (o *TwoStageL3ClosClient) CreateRoutingPolicy(ctx context.Context, in *DcRoutingPolicyData) (ObjectId, error) {
+	return o.createRoutingPolicy(ctx, in.raw())
+}
+
+// UpdateRoutingPolicy modifies the blueprint routing policy specified by 'id'
+// according to the supplied *DcRoutingPolicyData.
+func (o *TwoStageL3ClosClient) UpdateRoutingPolicy(ctx context.Context, id ObjectId, in *DcRoutingPolicyData) error {
+	return o.updateRoutingPolicy(ctx, id, in.raw())
+}
+
+// DeleteRoutingPolicy deletes the routing policy specified by id.
+func (o *TwoStageL3ClosClient) DeleteRoutingPolicy(ctx context.Context, id ObjectId) error {
+	return o.deleteRoutingPolicy(ctx, id)
+}
