@@ -100,10 +100,6 @@ func TestRoutingPolicies(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	randStr := randString(5, "hex")
-	label := "test-label-" + randStr
-	description := "test-description-" + randStr
-
 	for clientName, client := range clients {
 		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
 		defer func() {
@@ -182,9 +178,10 @@ func TestRoutingPolicies(t *testing.T) {
 		}
 		exportFilters = append(exportFilters, f)
 
+		randStr := randString(5, "hex")
 		policyData := &DcRoutingPolicyData{
-			Label:        label,
-			Description:  description,
+			Label:        "test-label-" + randStr,
+			Description:  "test-description-" + randStr,
 			PolicyType:   DcRoutingPolicyTypeUser,
 			ImportPolicy: DcRoutingPolicyImportPolicyAll,
 			ExportPolicy: DcRoutingExportPolicy{
@@ -293,6 +290,9 @@ func TestRoutingPolicies(t *testing.T) {
 		}
 		exportFilters = append(exportFilters, f)
 
+		randStr = randString(5, "hex")
+		policyData.Label = "test-label-" + randStr
+		policyData.Description = "test-description-" + randStr
 		policyData.ExpectDefaultIpv4Route = true
 		policyData.ExpectDefaultIpv6Route = true
 		policyData.ExtraImportRoutes = importFilters
