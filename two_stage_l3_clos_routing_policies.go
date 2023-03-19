@@ -137,6 +137,22 @@ func (o prefixFilterAction) parse() (int, error) {
 	}
 }
 
+// AllPrefixFilterActions returns the []PrefixFilterAction representing
+// each possible PrefixFilterAction
+func AllPrefixFilterActions() []PrefixFilterAction {
+	i := 0
+	var result []PrefixFilterAction
+	for {
+		var v PrefixFilterAction
+		err := v.FromString(PrefixFilterAction(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		result = append(result, v)
+		i++
+	}
+}
+
 type DcRoutingPolicyImportPolicy int
 type dcRoutingPolicyImportPolicy string
 
@@ -202,6 +218,22 @@ func (o dcRoutingPolicyImportPolicy) parse() (int, error) {
 		return int(DcRoutingPolicyImportPolicyExtraOnly), nil
 	default:
 		return 0, fmt.Errorf(DcRoutingPolicyImportPolicyUnknown, o)
+	}
+}
+
+// AllDcRoutingPolicyImportPolicy returns the []DcRoutingPolicyImportPolicy
+// representing each possible DcRoutingPolicyImportPolicy
+func AllDcRoutingPolicyImportPolicy() []DcRoutingPolicyImportPolicy {
+	i := 0
+	var result []DcRoutingPolicyImportPolicy
+	for {
+		var v DcRoutingPolicyImportPolicy
+		err := v.FromString(DcRoutingPolicyImportPolicy(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		result = append(result, v)
+		i++
 	}
 }
 

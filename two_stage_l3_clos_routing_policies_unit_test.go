@@ -1,6 +1,8 @@
 package goapstra
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestDcRoutingPoliciesStrings(t *testing.T) {
 	type apiStringIota interface {
@@ -46,6 +48,32 @@ func TestDcRoutingPoliciesStrings(t *testing.T) {
 			td.stringType.string() != td.stringVal {
 			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
 				i, ii, sp, is, ss, td.stringVal)
+		}
+	}
+}
+
+func TestAllDcRoutingPolicyImportPolicy(t *testing.T) {
+	result := AllDcRoutingPolicyImportPolicy()
+	if len(result) != 4 {
+		t.Fatalf("expected 4 results, got %d", len(result))
+	}
+	expected := []DcRoutingPolicyImportPolicy{0, 1, 2, 3}
+	for i := range result {
+		if result[i] != expected[i] {
+			t.Fatalf("index %d expected %q, got %q", i, expected[i], result[i])
+		}
+	}
+}
+
+func TestAllPrefixFilterActions(t *testing.T) {
+	result := AllPrefixFilterActions()
+	if len(result) != 3 {
+		t.Fatalf("expected 4 results, got %d", len(result))
+	}
+	expected := []PrefixFilterAction{0, 1, 2}
+	for i := range result {
+		if result[i] != expected[i] {
+			t.Fatalf("index %d expected %q, got %q", i, expected[i], result[i])
 		}
 	}
 }
