@@ -180,7 +180,7 @@ func TestRoutingPolicies(t *testing.T) {
 		if err != nil {
 			t.Fatal()
 		}
-		exportFilters = append(importFilters, f)
+		exportFilters = append(exportFilters, f)
 
 		policyData := &DcRoutingPolicyData{
 			Label:        label,
