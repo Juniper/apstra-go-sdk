@@ -1,0 +1,229 @@
+//go:build integration
+// +build integration
+
+package goapstra
+
+import (
+	"context"
+	"log"
+	"net"
+	"testing"
+)
+
+func compareDcRoutingExportPolicies(t *testing.T, a, b DcRoutingExportPolicy) {
+	if a.StaticRoutes != b.StaticRoutes {
+		t.Fatal()
+	}
+	if a.Loopbacks != b.Loopbacks {
+		t.Fatal()
+	}
+	if a.SpineSuperspineLinks != b.SpineSuperspineLinks {
+		t.Fatal()
+	}
+	if a.L3EdgeServerLinks != b.L3EdgeServerLinks {
+		t.Fatal()
+	}
+	if a.SpineLeafLinks != b.SpineLeafLinks {
+		t.Fatal()
+	}
+	if a.L2EdgeSubnets != b.L2EdgeSubnets {
+		t.Fatal()
+	}
+}
+
+func comparePrefixSlices(t *testing.T, a, b []net.IPNet) {
+	if len(a) != len(b) {
+		t.Fatal()
+	}
+	for i := range a {
+		if a[i].String() != b[i].String() {
+			t.Fatal()
+		}
+	}
+}
+
+func comparePrefixFilters(t *testing.T, a, b PrefixFilter) {
+	if a.Action != b.Action {
+		t.Fatal()
+	}
+	if a.Prefix.String() != b.Prefix.String() {
+		t.Fatal()
+	}
+	if a.GeMask != b.GeMask {
+		t.Fatal()
+	}
+	if a.LeMask != b.LeMask {
+		t.Fatal()
+	}
+}
+
+func comparePrefixFilterSlices(t *testing.T, a, b []PrefixFilter) {
+	if len(a) != len(b) {
+		t.Fatal()
+	}
+
+	for i := range a {
+		comparePrefixFilters(t, a[i], b[i])
+	}
+}
+
+func compareDcRoutingPolicyData(t *testing.T, a, b *DcRoutingPolicyData) {
+	if a.Label != b.Label {
+		t.Fatal()
+	}
+	if a.Description != b.Description {
+		t.Fatal()
+	}
+	if a.PolicyType != b.PolicyType {
+		t.Fatal()
+	}
+	if a.ImportPolicy != b.ImportPolicy {
+		t.Fatal()
+	}
+	compareDcRoutingExportPolicies(t, a.ExportPolicy, b.ExportPolicy)
+	if a.ExpectDefaultIpv4Route != b.ExpectDefaultIpv4Route {
+		t.Fatal()
+	}
+	if a.ExpectDefaultIpv6Route != b.ExpectDefaultIpv6Route {
+		t.Fatal()
+	}
+	comparePrefixSlices(t, a.AggregatePrefixes, b.AggregatePrefixes)
+	comparePrefixFilterSlices(t, a.ExtraImportRoutes, b.ExtraImportRoutes)
+	comparePrefixFilterSlices(t, a.ExtraExportRoutes, b.ExtraExportRoutes)
+}
+
+func TestRoutingPolicies(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	randStr := randString(5, "hex")
+	label := "test-label-" + randStr
+	description := "test-description-" + randStr
+
+	for clientName, client := range clients {
+		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		defer func() {
+			err := bpDel()
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		log.Printf("testing GetDefaultRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		defaultPolicy, err := bpClient.GetDefaultRoutingPolicy(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if defaultPolicy.Data.PolicyType != DcRoutingPolicyTypeDefault {
+			t.Fatalf("default policy type is %q", defaultPolicy.Data.PolicyType.String())
+		}
+
+		policyData := &DcRoutingPolicyData{
+			Label:        label,
+			Description:  description,
+			PolicyType:   DcRoutingPolicyTypeUser,
+			ImportPolicy: DcRoutingPolicyImportPolicyAll,
+			ExportPolicy: DcRoutingExportPolicy{
+				StaticRoutes:         false,
+				Loopbacks:            false,
+				SpineSuperspineLinks: false,
+				L3EdgeServerLinks:    false,
+				SpineLeafLinks:       false,
+				L2EdgeSubnets:        false,
+			},
+			ExpectDefaultIpv4Route: false,
+			ExpectDefaultIpv6Route: false,
+			AggregatePrefixes:      nil,
+			ExtraImportRoutes:      nil,
+			ExtraExportRoutes:      nil,
+		}
+
+		log.Printf("testing CreateRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		policyId, err := bpClient.CreateRoutingPolicy(ctx, policyData)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing GetRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		policy, err := bpClient.GetRoutingPolicy(ctx, policyId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if policy.Id != policyId {
+			t.Fatalf("policy IDs don't match %q vs. %q", policy.Id, policyId)
+		}
+		compareDcRoutingPolicyData(t, policyData, policy.Data)
+
+		log.Printf("testing GetAllRoutingPolicies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		policies, err := bpClient.GetAllRoutingPolicies(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(policies) != 2 {
+			t.Fatalf("expected 2 policies, got %d", len(policies))
+		}
+
+		if policies[0].Data.PolicyType != DcRoutingPolicyTypeDefault && policies[1].Data.PolicyType != DcRoutingPolicyTypeDefault {
+			t.Fatalf("neither policy has type %q, got %q and %q",
+				DcRoutingPolicyTypeDefault, policies[0].Data.PolicyType.String(), policies[1].Data.PolicyType.String())
+		}
+
+		if policies[0].Data.PolicyType != DcRoutingPolicyTypeUser && policies[1].Data.PolicyType != DcRoutingPolicyTypeUser {
+			t.Fatalf("neither policy has type %q, got %q and %q",
+				DcRoutingPolicyTypeUser, policies[0].Data.PolicyType.String(), policies[1].Data.PolicyType.String())
+		}
+
+		if policies[0].Id != defaultPolicy.Id && policies[1].Id != defaultPolicy.Id {
+			t.Fatalf("neither policy has ID %q, got %q and %q",
+				defaultPolicy.Id, policies[0].Id.String(), policies[1].Id.String())
+		}
+
+		if policies[0].Id != policy.Id && policies[1].Id != policy.Id {
+			t.Fatalf("neither policy has ID %q, got %q and %q",
+				policy.Id, policies[0].Id.String(), policies[1].Id.String())
+		}
+
+		policyData.ImportPolicy = DcRoutingPolicyImportPolicyDefaultOnly
+		policyData.ExportPolicy = DcRoutingExportPolicy{
+			StaticRoutes:         true,
+			Loopbacks:            true,
+			SpineSuperspineLinks: true,
+			L3EdgeServerLinks:    true,
+			SpineLeafLinks:       true,
+			L2EdgeSubnets:        true,
+		}
+
+		log.Printf("testing UpdateRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.UpdateRoutingPolicy(ctx, policy.Id, policyData)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Printf("testing GetRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		updatedPolicy, err := bpClient.GetRoutingPolicy(ctx, policy.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		compareDcRoutingPolicyData(t, policyData, updatedPolicy.Data)
+
+		log.Printf("testing DeleteRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.DeleteRoutingPolicy(ctx, policy.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Printf("testing GetAllRoutingPolicies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		policies, err = bpClient.GetAllRoutingPolicies(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(policies) != 1 {
+			t.Fatalf("expected 1 policies, got %d", len(policies))
+		}
+		if policies[0].Id != defaultPolicy.Id {
+			t.Fatalf("surviving policy ID %q does not match previously noted default policy ID %q", policies[0].Id, defaultPolicy.Id)
+		}
+	}
+}
