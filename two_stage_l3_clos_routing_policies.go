@@ -221,9 +221,9 @@ func (o dcRoutingPolicyImportPolicy) parse() (int, error) {
 	}
 }
 
-// AllDcRoutingPolicyImportPolicy returns the []DcRoutingPolicyImportPolicy
+// AllDcRoutingPolicyImportPolicies returns the []DcRoutingPolicyImportPolicy
 // representing each possible DcRoutingPolicyImportPolicy
-func AllDcRoutingPolicyImportPolicy() []DcRoutingPolicyImportPolicy {
+func AllDcRoutingPolicyImportPolicies() []DcRoutingPolicyImportPolicy {
 	i := 0
 	var result []DcRoutingPolicyImportPolicy
 	for {

@@ -53,7 +53,7 @@ func TestDcRoutingPoliciesStrings(t *testing.T) {
 }
 
 func TestAllDcRoutingPolicyImportPolicy(t *testing.T) {
-	result := AllDcRoutingPolicyImportPolicy()
+	result := AllDcRoutingPolicyImportPolicies()
 	if len(result) != 4 {
 		t.Fatalf("expected 4 results, got %d", len(result))
 	}
