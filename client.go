@@ -1587,3 +1587,37 @@ func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*Blu
 
 	return highestRevPtr, err
 }
+
+func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectId) (OverlayControlProtocol, error) {
+	var result struct {
+		Items []struct {
+			VirtualNetworkPolicy struct {
+				OverlayControlProtocol overlayControlProtocol `json:"overlay_control_protocol"`
+			} `json:"n_virtual_network_policy"`
+		} `json:"items"`
+	}
+
+	query := o.NewQuery(id).
+		SetContext(ctx).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("virtual_network_policy")},
+			{"name", QEStringVal("n_virtual_network_policy")},
+		})
+
+	err := query.Do(&result)
+	if err != nil {
+		return 0, fmt.Errorf("error querying blueprint virtual network policy - %w", err)
+	}
+
+	if len(result.Items) != 1 {
+		return 0, fmt.Errorf("expected 1 overlay_control_protocol node, got %d", len(result.Items))
+	}
+
+	ocp, err := result.Items[0].VirtualNetworkPolicy.OverlayControlProtocol.parse()
+	if err != nil {
+		return 0, fmt.Errorf("error parsing overlay control protocol %q - %w",
+			result.Items[0].VirtualNetworkPolicy.OverlayControlProtocol, err)
+	}
+
+	return OverlayControlProtocol(ocp), nil
+}

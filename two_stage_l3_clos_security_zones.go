@@ -161,21 +161,29 @@ func (o rawSecurityZone) polish() (*SecurityZone, error) {
 
 func (o *TwoStageL3ClosClient) createSecurityZone(ctx context.Context, cfg *rawSecurityZone) (*objectIdResponse, error) {
 	response := &objectIdResponse{}
-	return response, o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintSecurityZones, o.blueprintId),
 		apiInput:    cfg,
 		apiResponse: response,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response, nil
 }
 
 func (o *TwoStageL3ClosClient) getSecurityZone(ctx context.Context, zoneId ObjectId) (*rawSecurityZone, error) {
 	response := &rawSecurityZone{}
-	return response, o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
 		apiResponse: response,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response, nil
 }
 
 func (o *TwoStageL3ClosClient) getSecurityZoneByVrfName(ctx context.Context, vrfName string) (*rawSecurityZone, error) {
@@ -213,17 +221,18 @@ func (o *TwoStageL3ClosClient) getAllSecurityZones(ctx context.Context) (map[str
 }
 
 func (o *TwoStageL3ClosClient) updateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *rawSecurityZone) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
 		apiInput: cfg,
 	})
-
+	return convertTtaeToAceWherePossible(err)
 }
 
 func (o *TwoStageL3ClosClient) deleteSecurityZone(ctx context.Context, zoneId ObjectId) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
 	})
+	return convertTtaeToAceWherePossible(err)
 }
