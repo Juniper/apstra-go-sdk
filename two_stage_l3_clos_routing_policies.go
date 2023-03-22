@@ -238,10 +238,10 @@ func AllDcRoutingPolicyImportPolicies() []DcRoutingPolicyImportPolicy {
 }
 
 type PrefixFilter struct {
-	Action PrefixFilterAction `json:"action"`
-	Prefix net.IPNet          `json:"prefix"`
-	GeMask int                `json:"ge_mask"`
-	LeMask int                `json:"le_mask"`
+	Action PrefixFilterAction
+	Prefix net.IPNet
+	GeMask *int
+	LeMask *int
 }
 
 func (o *PrefixFilter) raw() *rawPrefixFilter {
