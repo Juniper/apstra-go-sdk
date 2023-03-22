@@ -245,19 +245,28 @@ type PrefixFilter struct {
 }
 
 func (o *PrefixFilter) raw() *rawPrefixFilter {
+	var geMask, leMask *int
+	if o.GeMask != nil {
+		m := *o.GeMask
+		geMask = &m
+	}
+	if o.LeMask != nil {
+		m := *o.LeMask
+		leMask = &m
+	}
 	return &rawPrefixFilter{
 		Action: o.Action.raw(),
 		Prefix: o.Prefix.String(),
-		GeMask: o.GeMask,
-		LeMask: o.LeMask,
+		GeMask: geMask,
+		LeMask: leMask,
 	}
 }
 
 type rawPrefixFilter struct {
 	Action prefixFilterAction `json:"action"`
 	Prefix string             `json:"prefix"`
-	GeMask int                `json:"ge_mask"`
-	LeMask int                `json:"le_mask"`
+	GeMask *int               `json:"ge_mask,omitempty"`
+	LeMask *int               `json:"le_mask,omitempty"`
 }
 
 func (o *rawPrefixFilter) polish() (*PrefixFilter, error) {
@@ -274,11 +283,21 @@ func (o *rawPrefixFilter) polish() (*PrefixFilter, error) {
 		return nil, fmt.Errorf("result of parsing prefix %q is nil", o.Prefix)
 	}
 
+	var geMask, leMask *int
+	if o.GeMask != nil {
+		m := *o.GeMask
+		geMask = &m
+	}
+	if o.LeMask != nil {
+		m := *o.LeMask
+		leMask = &m
+	}
+
 	return &PrefixFilter{
 		Action: PrefixFilterAction(action),
 		Prefix: *ipNet,
-		GeMask: o.GeMask,
-		LeMask: o.LeMask,
+		GeMask: geMask,
+		LeMask: leMask,
 	}, nil
 }
 
