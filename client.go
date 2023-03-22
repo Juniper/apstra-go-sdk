@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 )
@@ -168,6 +169,10 @@ func (o ClientCfg) NewClient() (*Client, error) {
 	baseUrl, err := url.Parse(o.Url)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", o.Url, err)
+	}
+
+	for strings.HasSuffix(baseUrl.Path, apiUrlPathDelim) {
+		strings.TrimSuffix(baseUrl.Path, apiUrlPathDelim)
 	}
 
 	httpClient := o.HttpClient
