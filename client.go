@@ -172,7 +172,7 @@ func (o ClientCfg) NewClient() (*Client, error) {
 	}
 
 	for strings.HasSuffix(baseUrl.Path, apiUrlPathDelim) {
-		strings.TrimSuffix(baseUrl.Path, apiUrlPathDelim)
+		baseUrl.Path = strings.TrimSuffix(baseUrl.Path, apiUrlPathDelim)
 	}
 
 	httpClient := o.HttpClient
