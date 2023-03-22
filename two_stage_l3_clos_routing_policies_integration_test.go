@@ -49,11 +49,21 @@ func comparePrefixFilters(t *testing.T, a, b PrefixFilter) {
 	if a.Prefix.String() != b.Prefix.String() {
 		t.Fatal()
 	}
-	if a.GeMask != b.GeMask {
-		t.Fatal()
+	if (a.GeMask == nil) != (b.GeMask == nil) {
+		t.Fatal() // where one is nil the other must be nil
 	}
-	if a.LeMask != b.LeMask {
-		t.Fatal()
+	if (a.LeMask == nil) != (b.LeMask == nil) {
+		t.Fatal() // where one is nil the other must be nil
+	}
+	if a.GeMask != nil && b.GeMask != nil {
+		if *a.GeMask != *b.GeMask {
+			t.Fatal()
+		}
+	}
+	if a.LeMask != nil && b.LeMask != nil {
+		if *a.LeMask != *b.LeMask {
+			t.Fatal()
+		}
 	}
 }
 
@@ -130,51 +140,100 @@ func TestRoutingPolicies(t *testing.T) {
 		var f PrefixFilter
 		var ipNet *net.IPNet
 
+		eleven := 11
+		twelve := 12
+		thirteen := 13
+		fourteen := 14
+
 		var importFilters []PrefixFilter
+
 		_, ipNet, err = net.ParseCIDR("100.0.0.0/10")
+		if err != nil {
+			t.Fatal()
+		}
 		f = PrefixFilter{
 			Action: PrefixFilterActionPermit,
 			Prefix: *ipNet,
-			GeMask: 11,
-			LeMask: 13,
+			GeMask: &eleven,
+			LeMask: &thirteen,
 		}
+		importFilters = append(importFilters, f)
+
+		_, ipNet, err = net.ParseCIDR("100.64.0.0/10")
 		if err != nil {
 			t.Fatal()
 		}
-		importFilters = append(importFilters, f)
-		_, ipNet, err = net.ParseCIDR("100.32.0.0/10")
 		f = PrefixFilter{
 			Action: PrefixFilterActionDeny,
 			Prefix: *ipNet,
-			GeMask: 12,
-			LeMask: 14,
+			GeMask: &twelve,
+			LeMask: &fourteen,
 		}
+		importFilters = append(importFilters, f)
+
+		_, ipNet, err = net.ParseCIDR("100.128.0.0/10")
 		if err != nil {
 			t.Fatal()
+		}
+		f = PrefixFilter{
+			Action: PrefixFilterActionDeny,
+			Prefix: *ipNet,
+			GeMask: &eleven,
+		}
+		importFilters = append(importFilters, f)
+
+		_, ipNet, err = net.ParseCIDR("100.192.0.0/10")
+		if err != nil {
+			t.Fatal()
+		}
+		f = PrefixFilter{
+			Action: PrefixFilterActionDeny,
+			Prefix: *ipNet,
+			LeMask: &eleven,
 		}
 		importFilters = append(importFilters, f)
 
 		var exportFilters []PrefixFilter
 		_, ipNet, err = net.ParseCIDR("200.0.0.0/10")
+		if err != nil {
+			t.Fatal()
+		}
 		f = PrefixFilter{
 			Action: PrefixFilterActionPermit,
 			Prefix: *ipNet,
-			GeMask: 11,
-			LeMask: 13,
+			GeMask: &eleven,
+			LeMask: &thirteen,
 		}
+		exportFilters = append(exportFilters, f)
+		_, ipNet, err = net.ParseCIDR("200.64.0.0/10")
 		if err != nil {
 			t.Fatal()
 		}
-		exportFilters = append(exportFilters, f)
-		_, ipNet, err = net.ParseCIDR("200.32.0.0/10")
 		f = PrefixFilter{
 			Action: PrefixFilterActionDeny,
 			Prefix: *ipNet,
-			GeMask: 12,
-			LeMask: 14,
+			GeMask: &twelve,
+			LeMask: &fourteen,
 		}
+		exportFilters = append(exportFilters, f)
+		_, ipNet, err = net.ParseCIDR("200.128.0.0/10")
 		if err != nil {
 			t.Fatal()
+		}
+		f = PrefixFilter{
+			Action: PrefixFilterActionDeny,
+			Prefix: *ipNet,
+			GeMask: &twelve,
+		}
+		exportFilters = append(exportFilters, f)
+		_, ipNet, err = net.ParseCIDR("200.192.0.0/10")
+		if err != nil {
+			t.Fatal()
+		}
+		f = PrefixFilter{
+			Action: PrefixFilterActionDeny,
+			Prefix: *ipNet,
+			LeMask: &fourteen,
 		}
 		exportFilters = append(exportFilters, f)
 
@@ -248,8 +307,8 @@ func TestRoutingPolicies(t *testing.T) {
 		f = PrefixFilter{
 			Action: PrefixFilterActionPermit,
 			Prefix: *ipNet,
-			GeMask: 11,
-			LeMask: 13,
+			GeMask: &eleven,
+			LeMask: &thirteen,
 		}
 		if err != nil {
 			t.Fatal()
@@ -259,8 +318,8 @@ func TestRoutingPolicies(t *testing.T) {
 		f = PrefixFilter{
 			Action: PrefixFilterActionDeny,
 			Prefix: *ipNet,
-			GeMask: 12,
-			LeMask: 14,
+			GeMask: &twelve,
+			LeMask: &fourteen,
 		}
 		if err != nil {
 			t.Fatal()
@@ -271,8 +330,8 @@ func TestRoutingPolicies(t *testing.T) {
 		f = PrefixFilter{
 			Action: PrefixFilterActionPermit,
 			Prefix: *ipNet,
-			GeMask: 11,
-			LeMask: 13,
+			GeMask: &eleven,
+			LeMask: &thirteen,
 		}
 		if err != nil {
 			t.Fatal()
@@ -282,8 +341,8 @@ func TestRoutingPolicies(t *testing.T) {
 		f = PrefixFilter{
 			Action: PrefixFilterActionDeny,
 			Prefix: *ipNet,
-			GeMask: 12,
-			LeMask: 14,
+			GeMask: &twelve,
+			LeMask: &fourteen,
 		}
 		if err != nil {
 			t.Fatal()
