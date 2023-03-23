@@ -13,7 +13,8 @@ const (
 )
 
 const (
-	ResourceTypeAsnPool = ResourceType(iota)
+	ResourceTypeNone = ResourceType(iota)
+	ResourceTypeAsnPool
 	ResourceTypeIp4Pool
 	ResourceTypeIp6Pool
 	ResourceTypeVniPool
@@ -21,6 +22,7 @@ const (
 
 	// .../aos/reference_design/extension/resource_allocation/__init__.py says:
 	// RESOURCE_TYPES = ['ip', 'ipv6', 'asn', 'vlan', 'vni']
+	resourceTypeNone    = ""
 	resourceTypeAsnPool = "asn"
 	resourceTypeIp4Pool = "ip"
 	resourceTypeIp6Pool = "ipv6"
@@ -29,7 +31,8 @@ const (
 )
 
 const (
-	ResourceGroupNameSuperspineAsn = ResourceGroupName(iota)
+	ResourceGroupNameNone = ResourceGroupName(iota)
+	ResourceGroupNameSuperspineAsn
 	ResourceGroupNameSpineAsn
 	ResourceGroupNameLeafAsn
 	ResourceGroupNameAccessAsn
@@ -47,6 +50,7 @@ const (
 	ResourceGroupNameVtepIps
 	ResourceGroupNameUnknown
 
+	resourceGroupNameNone                 = resourceGroupName("")
 	resourceGroupNameSuperspineAsn        = resourceGroupName("superspine_asns")
 	resourceGroupNameSpineAsn             = resourceGroupName("spine_asns")
 	resourceGroupNameLeafAsn              = resourceGroupName("leaf_asns")
