@@ -97,6 +97,66 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			t.Fatalf("expected 2 security zones, got %d", len(zones))
 		}
 
+		ip4PoolIds, err := client.client.ListIp4PoolIds(ctx)
+		if err != nil {
+			t.Fatalf("error listing pool IDs - %s", err.Error())
+		}
+
+		ipv4PoolCount := len(ip4PoolIds)
+		if ipv4PoolCount == 0 {
+			t.Skip("an IPv4 pool is required for this test")
+		}
+
+		rga := &ResourceGroupAllocation{
+			ResourceGroup: ResourceGroup{
+				Type: ResourceTypeIp4Pool,
+				Name: ResourceGroupNameLeafIp4,
+			},
+			PoolIds: ip4PoolIds,
+		}
+
+		log.Printf("testing SetSecurityZoneResourcePools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.SetSecurityZoneResourcePools(ctx, zoneId, rga)
+		if err != nil {
+			t.Fatal()
+		}
+
+		rga.PoolIds = nil
+
+		log.Printf("testing GetSecurityZoneResourcePools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.GetSecurityZoneResourcePools(ctx, zoneId, rga)
+		if err != nil {
+			t.Fatal()
+		}
+
+		if ipv4PoolCount != len(rga.PoolIds) {
+			t.Fatalf("expected %d pool IDs, got %d pool IDs", ipv4PoolCount, len(rga.PoolIds))
+		}
+
+		for i := 0; i < ipv4PoolCount; i++ {
+			if ip4PoolIds[i] != rga.PoolIds[i] {
+				t.Fatal("pool id mismatch")
+			}
+		}
+
+		rga.PoolIds = nil
+
+		log.Printf("testing SetSecurityZoneResourcePools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.SetSecurityZoneResourcePools(ctx, zoneId, rga)
+		if err != nil {
+			t.Fatal()
+		}
+
+		log.Printf("testing GetSecurityZoneResourcePools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.GetSecurityZoneResourcePools(ctx, zoneId, rga)
+		if err != nil {
+			t.Fatal()
+		}
+
+		if len(rga.PoolIds) != 0 {
+			t.Fatalf("expected 0 pool ids, got %d", len(rga.PoolIds))
+		}
+
 		log.Printf("testing DeleteSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.DeleteSecurityZone(ctx, zoneId)
 		if err != nil {
