@@ -236,3 +236,55 @@ func (o *TwoStageL3ClosClient) deleteSecurityZone(ctx context.Context, zoneId Ob
 	})
 	return convertTtaeToAceWherePossible(err)
 }
+
+// GetSecurityZoneResourcePools determines the resource groups assigned to the
+// security zone with the given ID. The *ResourceGroupAllocation is used both to
+// contextualize the query (using the ResourceGroup element) and to deliver the
+// answer (via the PoolIds element).
+func (o *TwoStageL3ClosClient) GetSecurityZoneResourcePools(ctx context.Context, zoneId ObjectId, rga *ResourceGroupAllocation) error {
+	rg := &rga.ResourceGroup
+	useCase := fmt.Sprintf(resourceGroupBlueprintUseCase, resourceGroupUserSecurityZone, zoneId, rg.Name)
+	urlStr := fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rg.Type.String(), useCase)
+
+	response := &struct {
+		PoolIds []ObjectId `json:"pool_ids"`
+	}{}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      urlStr,
+		apiResponse: response,
+	})
+
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	rga.PoolIds = response.PoolIds
+
+	return nil
+}
+
+func (o *TwoStageL3ClosClient) SetSecurityZoneResourcePools(ctx context.Context, zoneId ObjectId, rga *ResourceGroupAllocation) error {
+	rg := rga.ResourceGroup
+	useCase := fmt.Sprintf(resourceGroupBlueprintUseCase, resourceGroupUserSecurityZone, zoneId, rg.Name)
+	urlStr := fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rg.Type.String(), useCase)
+
+	request := &struct {
+		PoolIds []ObjectId `json:"pool_ids"`
+	}{
+		PoolIds: rga.PoolIds,
+	}
+
+	if request.PoolIds == nil {
+		request.PoolIds = []ObjectId{}
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		urlStr:   urlStr,
+		apiInput: request,
+	})
+
+	return convertTtaeToAceWherePossible(err)
+}

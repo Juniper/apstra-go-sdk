@@ -10,6 +10,9 @@ const (
 	apiUrlBlueprintResourceGroups        = apiUrlBlueprintById + apiUrlPathDelim + "resource_groups"
 	apiUrlResourceGroupsPrefix           = apiUrlBlueprintResourceGroups + apiUrlPathDelim
 	apiUrlBlueprintResourceGroupTypeName = apiUrlResourceGroupsPrefix + "%s" + apiUrlPathDelim + "%s"
+
+	resourceGroupBlueprintUseCase = "%s:%s,%s"
+	resourceGroupUserSecurityZone = "sz"
 )
 
 const (
