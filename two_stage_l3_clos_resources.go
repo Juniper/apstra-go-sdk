@@ -283,8 +283,8 @@ func (o resourceType) parse() (ResourceType, error) {
 }
 
 type ResourceGroup struct {
-	Type           ResourceType      `json:"type"` // todo - these struct tags don't appear to be used...
-	Name           ResourceGroupName `json:"name"`
+	Type           ResourceType
+	Name           ResourceGroupName
 	SecurityZoneId *ObjectId
 }
 
