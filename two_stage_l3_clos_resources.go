@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -11,8 +12,8 @@ const (
 	apiUrlResourceGroupsPrefix           = apiUrlBlueprintResourceGroups + apiUrlPathDelim
 	apiUrlBlueprintResourceGroupTypeName = apiUrlResourceGroupsPrefix + "%s" + apiUrlPathDelim + "%s"
 
-	resourceGroupBlueprintUseCase = "%s:%s,%s"
-	resourceGroupUserSecurityZone = "sz"
+	resourceGroupNameWithOwner    = "%s:%s,%s"
+	resourceGroupOwnerecurityZone = "sz"
 )
 
 const (
@@ -282,8 +283,9 @@ func (o resourceType) parse() (ResourceType, error) {
 }
 
 type ResourceGroup struct {
-	Type ResourceType      `json:"type"`
-	Name ResourceGroupName `json:"name"`
+	Type           ResourceType      `json:"type"` // todo - these struct tags don't appear to be used...
+	Name           ResourceGroupName `json:"name"`
+	SecurityZoneId *ObjectId
 }
 
 type ResourceGroupAllocations []ResourceGroupAllocation
@@ -292,9 +294,17 @@ type ResourceGroupAllocations []ResourceGroupAllocation
 // if no matching ResourceGroupAllocation exists in this ResourceGroupAllocations
 func (o ResourceGroupAllocations) Get(requested *ResourceGroup) *ResourceGroupAllocation {
 	for _, rg := range o {
-		if rg.ResourceGroup.Name == requested.Name && rg.ResourceGroup.Type == requested.Type {
-			return &rg
+		if rg.ResourceGroup.Type != requested.Type {
+			continue
 		}
+		if rg.ResourceGroup.Name != requested.Name {
+			continue
+		}
+		if (rg.ResourceGroup.SecurityZoneId != nil && requested.SecurityZoneId != nil) &&
+			*rg.ResourceGroup.SecurityZoneId != *requested.SecurityZoneId {
+			continue
+		}
+		return &rg
 	}
 	return nil
 }
@@ -312,9 +322,21 @@ func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
 		poolIds = o.PoolIds
 	}
 
+	// 'name' here can need a value like "leaf_loopback_ips" or
+	// "sz:ISKtui8i80vl0ljsdJQ,leaf_loopback_ips", depending on whether the
+	// resource group belongs to a blueprint or to a child object within a
+	// blueprint.
+	name := o.ResourceGroup.Name.raw()
+	switch {
+	case o.ResourceGroup.SecurityZoneId != nil:
+		name = resourceGroupName(fmt.Sprintf(
+			resourceGroupNameWithOwner, resourceGroupOwnerecurityZone,
+			*o.ResourceGroup.SecurityZoneId, name))
+	}
+
 	return &rawResourceGroupAllocation{
 		Type:    o.ResourceGroup.Type.raw(),
-		Name:    o.ResourceGroup.Name.raw(),
+		Name:    name,
 		PoolIds: poolIds,
 	}
 }
@@ -329,24 +351,57 @@ type rawResourceGroupAllocation struct {
 	PoolIds []ObjectId        `json:"pool_ids"`
 }
 
+// polish leans on some apstra code which determines whether a resource group
+// name indicates that it's owned by a child object within a blueprint (security
+// zone may be the only case of this):
+//
+//	def parse_resource_group_name(resource_group_name):
+//	   """ Parse passed resource_group_name and return namedtuple with
+//	       sz_id and pure resource_group_name.
+//	   """
+//	   sz_id = None
+//	   if resource_group_name.startswith('sz:'):
+//	       fields = resource_group_name.split(',', 1)
+//	       if len(fields) != 2:
+//	           return None
+//	       sz, resource_group_name = fields
+//	       sz_id = sz[len('sz:'):]
+//	   return ParsedResourceGroupName(sz_id=sz_id, rg_name=resource_group_name)
 func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) {
 	t, err := o.Type.parse()
 	if err != nil {
 		return nil, err
 	}
 
-	n, err := o.Name.parse()
-	if err != nil {
-		return nil, err
-	}
-
-	return &ResourceGroupAllocation{
+	rga := &ResourceGroupAllocation{
+		PoolIds: o.PoolIds,
 		ResourceGroup: ResourceGroup{
 			Type: t,
-			Name: n,
 		},
-		PoolIds: o.PoolIds,
-	}, nil
+	}
+
+	switch {
+	case strings.HasPrefix(string(o.Name), resourceGroupOwnerecurityZone+":"):
+		fields := strings.Split(string(o.Name), ",")
+		if len(fields) != 2 {
+			return nil, fmt.Errorf(
+				"error processing resource group name %q, expected split on ',' to produce 2 results, got %d",
+				o.Name, len(fields))
+		}
+		err = rga.ResourceGroup.Name.FromString(fields[1])
+		if err != nil {
+			return nil, err
+		}
+		szId := ObjectId(strings.TrimPrefix(fields[0], resourceGroupOwnerecurityZone+":"))
+		rga.ResourceGroup.SecurityZoneId = &szId
+	default:
+		rga.ResourceGroup.Name, err = o.Name.parse()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return rga, nil
 }
 
 func (o *TwoStageL3ClosClient) getAllResourceAllocations(ctx context.Context) ([]rawResourceGroupAllocation, error) {
@@ -361,23 +416,25 @@ func (o *TwoStageL3ClosClient) getAllResourceAllocations(ctx context.Context) ([
 }
 
 func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg *ResourceGroup) (*rawResourceGroupAllocation, error) {
-	response := &rawResourceGroupAllocation{}
-	ttii := talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rg.Type.String(), rg.Name.String()),
-		apiResponse: response,
+	rga := ResourceGroupAllocation{
+		ResourceGroup: *rg,
 	}
-	err := o.client.talkToApstra(ctx, &ttii)
+	response := rga.raw()
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, response.Type, response.Name),
+		apiResponse: response,
+	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response, nil
 }
 
-func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga *ResourceGroupAllocation) error {
+func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga *rawResourceGroupAllocation) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.ResourceGroup.Type.String(), rga.ResourceGroup.Name.String()),
-		apiInput: rga.raw(),
+		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.Type, rga.Name),
+		apiInput: rga,
 	})
 }

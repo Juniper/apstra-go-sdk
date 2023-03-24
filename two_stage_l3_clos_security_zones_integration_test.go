@@ -109,22 +109,21 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 
 		rga := &ResourceGroupAllocation{
 			ResourceGroup: ResourceGroup{
-				Type: ResourceTypeIp4Pool,
-				Name: ResourceGroupNameLeafIp4,
+				Type:           ResourceTypeIp4Pool,
+				Name:           ResourceGroupNameLeafIp4,
+				SecurityZoneId: &zoneId,
 			},
 			PoolIds: ip4PoolIds,
 		}
 
-		log.Printf("testing SetSecurityZoneResourcePools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.SetSecurityZoneResourcePools(ctx, zoneId, rga)
+		log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.SetResourceAllocation(ctx, rga)
 		if err != nil {
 			t.Fatal()
 		}
 
-		rga.PoolIds = nil
-
-		log.Printf("testing GetSecurityZoneResourcePools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.GetSecurityZoneResourcePools(ctx, zoneId, rga)
+		log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		rga, err = bpClient.GetResourceAllocation(ctx, &rga.ResourceGroup)
 		if err != nil {
 			t.Fatal()
 		}
@@ -139,16 +138,19 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			}
 		}
 
-		rga.PoolIds = nil
+		if *rga.ResourceGroup.SecurityZoneId != zoneId {
+			t.Fatalf("expected security zone id %q, got %q", *rga.ResourceGroup.SecurityZoneId, zoneId)
+		}
 
-		log.Printf("testing SetSecurityZoneResourcePools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.SetSecurityZoneResourcePools(ctx, zoneId, rga)
+		rga.PoolIds = nil
+		log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.SetResourceAllocation(ctx, rga)
 		if err != nil {
 			t.Fatal()
 		}
 
-		log.Printf("testing GetSecurityZoneResourcePools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.GetSecurityZoneResourcePools(ctx, zoneId, rga)
+		log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		rga, err = bpClient.GetResourceAllocation(ctx, &rga.ResourceGroup)
 		if err != nil {
 			t.Fatal()
 		}
