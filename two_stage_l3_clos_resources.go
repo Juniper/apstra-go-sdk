@@ -145,6 +145,8 @@ func AllResourceGroupNames() []ResourceGroupName {
 
 func (o ResourceGroupName) raw() resourceGroupName {
 	switch o {
+	case ResourceGroupNameNone:
+		return resourceGroupNameNone
 	case ResourceGroupNameSuperspineAsn:
 		return resourceGroupNameSuperspineAsn
 	case ResourceGroupNameSpineAsn:
@@ -186,6 +188,8 @@ type resourceGroupName string
 
 func (o resourceGroupName) parse() (ResourceGroupName, error) {
 	switch o {
+	case resourceGroupNameNone:
+		return ResourceGroupNameNone, nil
 	case resourceGroupNameSuperspineAsn:
 		return ResourceGroupNameSuperspineAsn, nil
 	case resourceGroupNameSpineAsn:
@@ -231,6 +235,8 @@ func (o ResourceType) String() string {
 
 func (o ResourceType) raw() resourceType {
 	switch o {
+	case ResourceTypeNone:
+		return resourceTypeNone
 	case ResourceTypeAsnPool:
 		return resourceTypeAsnPool
 	case ResourceTypeIp4Pool:
@@ -259,11 +265,13 @@ func AllResourceTypes() []ResourceType {
 	i := 0
 	var result []ResourceType
 	for {
-		var rgn ResourceType
-		err := rgn.FromString(ResourceType(i).String())
+		var rt ResourceType
+		err := rt.FromString(ResourceType(i).String())
 		if err != nil {
 			return result[:i]
 		}
+		result = append(result, rt)
+		i++
 	}
 }
 
@@ -271,12 +279,16 @@ type resourceType string
 
 func (o resourceType) parse() (ResourceType, error) {
 	switch o {
+	case resourceTypeNone:
+		return ResourceTypeNone, nil
 	case resourceTypeAsnPool:
 		return ResourceTypeAsnPool, nil
 	case resourceTypeIp4Pool:
 		return ResourceTypeIp4Pool, nil
 	case resourceTypeIp6Pool:
 		return ResourceTypeIp6Pool, nil
+	case resourceTypeVniPool:
+		return ResourceTypeVniPool, nil
 	default:
 		return ResourceTypeUnknown, fmt.Errorf("unknown resource type '%s'", o)
 	}
