@@ -97,6 +97,68 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			t.Fatalf("expected 2 security zones, got %d", len(zones))
 		}
 
+		ip4PoolIds, err := client.client.ListIp4PoolIds(ctx)
+		if err != nil {
+			t.Fatalf("error listing pool IDs - %s", err.Error())
+		}
+
+		ipv4PoolCount := len(ip4PoolIds)
+		if ipv4PoolCount == 0 {
+			t.Skip("an IPv4 pool is required for this test")
+		}
+
+		rga := &ResourceGroupAllocation{
+			ResourceGroup: ResourceGroup{
+				Type:           ResourceTypeIp4Pool,
+				Name:           ResourceGroupNameLeafIp4,
+				SecurityZoneId: &zoneId,
+			},
+			PoolIds: ip4PoolIds,
+		}
+
+		log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.SetResourceAllocation(ctx, rga)
+		if err != nil {
+			t.Fatal()
+		}
+
+		log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		rga, err = bpClient.GetResourceAllocation(ctx, &rga.ResourceGroup)
+		if err != nil {
+			t.Fatal()
+		}
+
+		if ipv4PoolCount != len(rga.PoolIds) {
+			t.Fatalf("expected %d pool IDs, got %d pool IDs", ipv4PoolCount, len(rga.PoolIds))
+		}
+
+		for i := 0; i < ipv4PoolCount; i++ {
+			if ip4PoolIds[i] != rga.PoolIds[i] {
+				t.Fatal("pool id mismatch")
+			}
+		}
+
+		if *rga.ResourceGroup.SecurityZoneId != zoneId {
+			t.Fatalf("expected security zone id %q, got %q", *rga.ResourceGroup.SecurityZoneId, zoneId)
+		}
+
+		rga.PoolIds = nil
+		log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.SetResourceAllocation(ctx, rga)
+		if err != nil {
+			t.Fatal()
+		}
+
+		log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		rga, err = bpClient.GetResourceAllocation(ctx, &rga.ResourceGroup)
+		if err != nil {
+			t.Fatal()
+		}
+
+		if len(rga.PoolIds) != 0 {
+			t.Fatalf("expected 0 pool ids, got %d", len(rga.PoolIds))
+		}
+
 		log.Printf("testing DeleteSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.DeleteSecurityZone(ctx, zoneId)
 		if err != nil {

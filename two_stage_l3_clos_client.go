@@ -95,7 +95,7 @@ func (o *TwoStageL3ClosClient) GetResourceAllocation(ctx context.Context, in *Re
 // SetResourceAllocation sets the supplied resource allocation, overwriting any
 // prior allocations with the supplied info.
 func (o *TwoStageL3ClosClient) SetResourceAllocation(ctx context.Context, in *ResourceGroupAllocation) error {
-	return o.setResourceAllocation(ctx, in)
+	return o.setResourceAllocation(ctx, in.raw())
 }
 
 // GetInterfaceMapAssignments returns a SystemIdToInterfaceMapAssignment (a map
