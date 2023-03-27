@@ -193,12 +193,12 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 			rzToVnId := make(map[ObjectId]ObjectId)
 			for _, vnId := range vnIds {
 				log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				vn, err := dcClient.getVirtualNetwork(context.TODO(), vnId, BlueprintTypeStaging)
+				vn, err := dcClient.GetVirtualNetwork(context.TODO(), vnId, BlueprintTypeStaging)
 				if err != nil {
 					t.Fatal(err)
 				}
-				if dstVN, found := rzToVnId[vn.SecurityZoneId]; !found {
-					rzToVnId[vn.SecurityZoneId] = vnId
+				if dstVN, found := rzToVnId[vn.Data.SecurityZoneId]; !found {
+					rzToVnId[vn.Data.SecurityZoneId] = vnId
 				} else {
 					src = vnId
 					dst = dstVN
