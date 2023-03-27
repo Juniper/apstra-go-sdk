@@ -53,14 +53,22 @@ func (o BlueprintType) string() string {
 }
 
 type TwoStageL3ClosClient struct {
-	client      *Client
-	blueprintId ObjectId
-	Mutex       Mutex
+	client        *Client
+	blueprintId   ObjectId
+	Mutex         Mutex
+	blueprintType BlueprintType
 }
 
 // Id returns the client's Blueprint ID
 func (o *TwoStageL3ClosClient) Id() ObjectId {
 	return o.blueprintId
+}
+
+// SetType sets the client's internal BlueprintType value (staging, etc...).
+// This value is in HTTP requests as a query string argument, e.g.
+//	'?type=staging'
+func (o *TwoStageL3ClosClient) SetType(bpt BlueprintType) {
+	o.blueprintType = bpt
 }
 
 // GetResourceAllocations returns ResourceGroupAllocations representing
