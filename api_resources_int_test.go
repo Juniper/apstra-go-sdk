@@ -272,7 +272,7 @@ func TestEmptyVniPool(t *testing.T) {
 	}
 
 	vniRangeCount := rand.Intn(5) + 2 // random number of VNI ranges to add to new pool
-	vniBeginEnds, err := getRandInts(4096, 16777214, vniRangeCount*2)
+	vniBeginEnds, err := getRandInts(vniMin, vniMax, vniRangeCount*2)
 	if err != nil {
 		t.Fatal(err)
 	}
