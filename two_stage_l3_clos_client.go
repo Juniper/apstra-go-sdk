@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/url"
 	"time"
 )
 
@@ -69,6 +70,22 @@ func (o *TwoStageL3ClosClient) Id() ObjectId {
 //	'?type=staging'
 func (o *TwoStageL3ClosClient) SetType(bpt BlueprintType) {
 	o.blueprintType = bpt
+}
+
+// urlWithParam is a helper function which uses the blueprintType element to
+// decorate a *URL with the required query parameter.
+func (o *TwoStageL3ClosClient) urlWithParam(in string) (*url.URL, error) {
+	apstraUrl, err := url.Parse(in)
+	if err != nil {
+		return nil, err
+	}
+
+	if o.blueprintType != BlueprintTypeNone {
+		params := apstraUrl.Query()
+		params.Set(blueprintTypeParam, o.blueprintType.string())
+		apstraUrl.RawQuery = params.Encode()
+	}
+	return apstraUrl, nil
 }
 
 // GetResourceAllocations returns ResourceGroupAllocations representing
