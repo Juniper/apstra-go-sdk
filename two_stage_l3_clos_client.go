@@ -67,6 +67,7 @@ func (o *TwoStageL3ClosClient) Id() ObjectId {
 
 // SetType sets the client's internal BlueprintType value (staging, etc...).
 // This value is in HTTP requests as a query string argument, e.g.
+//
 //	'?type=staging'
 func (o *TwoStageL3ClosClient) SetType(bpt BlueprintType) {
 	o.blueprintType = bpt
@@ -74,6 +75,8 @@ func (o *TwoStageL3ClosClient) SetType(bpt BlueprintType) {
 
 // urlWithParam is a helper function which uses the blueprintType element to
 // decorate a *URL with the required query parameter.
+//
+//lint:ignore U1000 keep for future use
 func (o *TwoStageL3ClosClient) urlWithParam(in string) (*url.URL, error) {
 	apstraUrl, err := url.Parse(in)
 	if err != nil {
