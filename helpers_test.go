@@ -188,7 +188,7 @@ func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignDatacenter,
 		Label:      randString(5, "hex"),
-		TemplateId: "L2_ESI_Access",
+		TemplateId: "L2_Virtual_EVPN",
 	})
 	if err != nil {
 		t.Fatal(err)

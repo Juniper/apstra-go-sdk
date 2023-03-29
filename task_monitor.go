@@ -52,32 +52,11 @@ type getTaskResponse struct {
 	Status      string `json:"status"`
 	BeginAt     string `json:"begin_at"`
 	RequestData struct {
-		Url     string `json:"url"`
-		Headers struct {
-			ContentLength   string `json:"Content-Length"`
-			AcceptEncoding  string `json:"Accept-Encoding"`
-			XForwardedProto string `json:"X-Forwarded-Proto"`
-			XForwardedFor   string `json:"X-Forwarded-For"`
-			Connection      string `json:"Connection"`
-			XUser           string `json:"X-User"`
-			Accept          string `json:"Accept"`
-			UserAgent       string `json:"User-Agent"`
-			Host            string `json:"Host"`
-			XUserId         string `json:"X-User-Id"`
-			XRealIp         string `json:"X-Real-Ip"`
-			ContentType     string `json:"Content-Type"`
-		} `json:"headers"`
-		Args struct {
-			Async string `json:"async"`
-		} `json:"args"`
-		Data struct {
-			SzType   string `json:"sz_type"`
-			VrfName  string `json:"vrf_name"`
-			RtPolicy struct {
-			} `json:"rt_policy"`
-			Label string `json:"label"`
-		} `json:"data"`
-		Method string `json:"method"`
+		Url     string            `json:"url"`
+		Headers map[string]string `json:"headers"`
+		Args    map[string]string `json:"args"`
+		Data    json.RawMessage   `json:"data"`
+		Method  string            `json:"method"`
 	} `json:"request_data"`
 	UserId         string `json:"user_id"`
 	LastUpdatedAt  string `json:"last_updated_at"`
@@ -87,7 +66,7 @@ type getTaskResponse struct {
 		ApiResponse            json.RawMessage `json:"api_response"`
 		ConfigBlueprintVersion int             `json:"config_blueprint_version"`
 		Errors                 json.RawMessage `json:"errors"`
-		ErrorCode              int
+		ErrorCode              int             `json:"error_code"`
 	} `json:"detailed_status"`
 	ConfigLastUpdatedAt string `json:"config_last_updated_at"`
 	UserIp              string `json:"user_ip"`

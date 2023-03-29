@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"strconv"
 )
 
 const (
+	// Do not use apiUrlVirtualNetworks directly. The rawVirtualNetwork objects
+	// in the returned map do not match the objects when retrieved using
+	// apiUrlVirtualNetworkById
 	apiUrlVirtualNetworks    = apiUrlBlueprintById + apiUrlPathDelim + "virtual-networks"
 	apiUrlVirtualNetworkById = apiUrlVirtualNetworks + apiUrlPathDelim + "%s"
 
@@ -20,7 +22,6 @@ const (
 type DhcpServiceEnabled bool
 type dhcpServiceMode string
 
-//lint:ignore U1000 keep for future
 func (o DhcpServiceEnabled) raw() dhcpServiceMode {
 	if o {
 		return dhcpServiceEnabled
@@ -40,7 +41,6 @@ func (o dhcpServiceMode) polish() DhcpServiceEnabled {
 //type L3ConnectivityMode bool
 //type l3ConnectivityMode string
 //
-////lint:ignore U1000 keep for future
 //func (o L3ConnectivityMode) raw() l3ConnectivityMode {
 //	if o {
 //		return l3ConnectivityEnabled
@@ -446,7 +446,7 @@ type VnBinding struct {
 
 type VirtualNetwork struct {
 	Id   ObjectId
-	Data VirtualNetworkData
+	Data *VirtualNetworkData
 }
 
 type Endpoint struct {
@@ -612,7 +612,7 @@ func (o rawVirtualNetwork) polish() (*VirtualNetwork, error) {
 
 	return &VirtualNetwork{
 		Id: o.Id,
-		Data: VirtualNetworkData{
+		Data: &VirtualNetworkData{
 			DhcpService:               o.DhcpService.polish(),
 			Ipv4Enabled:               o.Ipv4Enabled,
 			Ipv4Subnet:                ipv4Subnet,
@@ -636,16 +636,10 @@ func (o rawVirtualNetwork) polish() (*VirtualNetwork, error) {
 	}, nil
 }
 
-func (o *TwoStageL3ClosClient) listAllVirtualNetworkIds(ctx context.Context, bpType BlueprintType) ([]ObjectId, error) {
-	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId))
+func (o *TwoStageL3ClosClient) listAllVirtualNetworkIds(ctx context.Context) ([]ObjectId, error) {
+	apstraUrl, err := o.urlWithParam(fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId))
 	if err != nil {
 		return nil, err
-	}
-
-	if bpType != BlueprintTypeNone {
-		params := apstraUrl.Query()
-		params.Set(blueprintTypeParam, bpType.string())
-		apstraUrl.RawQuery = params.Encode()
 	}
 
 	response := &struct {
@@ -670,16 +664,10 @@ func (o *TwoStageL3ClosClient) listAllVirtualNetworkIds(ctx context.Context, bpT
 	return result, nil
 }
 
-func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId ObjectId, bpType BlueprintType) (*rawVirtualNetwork, error) {
-	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, vnId))
+func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId ObjectId) (*rawVirtualNetwork, error) {
+	apstraUrl, err := o.urlWithParam(fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, vnId))
 	if err != nil {
 		return nil, err
-	}
-
-	if bpType != BlueprintTypeNone {
-		params := apstraUrl.Query()
-		params.Set(blueprintTypeParam, bpType.string())
-		apstraUrl.RawQuery = params.Encode()
 	}
 
 	response := &rawVirtualNetwork{}
@@ -697,70 +685,15 @@ func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId Objec
 	return response, nil
 }
 
-func (o *TwoStageL3ClosClient) getVirtualNetworkBySubnet(ctx context.Context, desiredNet *net.IPNet, vrf ObjectId, bpType BlueprintType) (*rawVirtualNetwork, error) {
-	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId))
-	if err != nil {
-		return nil, err
+func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, cfg *rawVirtualNetwork) (ObjectId, error) {
+	if cfg.Id != "" {
+		return "", fmt.Errorf("refusing to create virtual network using input data with a populated ID field")
 	}
-
-	if bpType != BlueprintTypeNone {
-		params := apstraUrl.Query()
-		params.Set(blueprintTypeParam, bpType.string())
-		apstraUrl.RawQuery = params.Encode()
-	}
-
-	response := &struct {
-		VirtualNetworks map[ObjectId]rawVirtualNetwork `json:"virtual_networks"`
-	}{}
-
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:         http.MethodGet,
-		url:            apstraUrl,
-		apiResponse:    response,
-		unsynchronized: true,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-
-	desiredStr := desiredNet.String()
-	for _, rawVn := range response.VirtualNetworks {
-		if rawVn.SecurityZoneId == vrf {
-			_, ipv4net, err := net.ParseCIDR(rawVn.Ipv4Subnet)
-			if err != nil {
-				return nil, err
-			}
-			if ipv4net.String() == desiredStr {
-				return o.getVirtualNetwork(ctx, rawVn.Id, bpType)
-			}
-
-			_, ipv6net, err := net.ParseCIDR(rawVn.Ipv4Subnet)
-			if err != nil {
-				return nil, err
-			}
-			if ipv6net.String() == desiredStr {
-				return o.getVirtualNetwork(ctx, rawVn.Id, bpType)
-			}
-		}
-
-	}
-
-	return nil, ApstraClientErr{
-		errType: ErrNotfound,
-		err:     fmt.Errorf("virtual network for subnet '%s' in vrf '%s' not found", desiredNet.String(), vrf),
-	}
-}
-
-func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, in *VirtualNetworkData) (ObjectId, error) {
-	return o.createVirtualNetwork(ctx, in.raw())
-}
-
-func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, in *rawVirtualNetwork) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId),
-		apiInput:    in,
+		apiInput:    cfg,
 		apiResponse: response,
 	})
 
@@ -769,4 +702,35 @@ func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, in *raw
 	}
 
 	return response.Id, nil
+}
+
+func (o *TwoStageL3ClosClient) updateVirtualNetwork(ctx context.Context, id ObjectId, cfg *rawVirtualNetwork) error {
+	if cfg.Id != "" {
+		return fmt.Errorf("refusing to update virtual network using input data with a populated ID field")
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, id),
+		apiInput: cfg,
+	})
+
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
+}
+
+func (o *TwoStageL3ClosClient) deleteVirtualNetwork(ctx context.Context, id ObjectId) error {
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, id),
+	})
+
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
 }
