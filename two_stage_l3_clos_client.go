@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/url"
 	"time"
 )
 
@@ -53,14 +54,41 @@ func (o BlueprintType) string() string {
 }
 
 type TwoStageL3ClosClient struct {
-	client      *Client
-	blueprintId ObjectId
-	Mutex       Mutex
+	client        *Client
+	blueprintId   ObjectId
+	Mutex         Mutex
+	blueprintType BlueprintType
 }
 
 // Id returns the client's Blueprint ID
 func (o *TwoStageL3ClosClient) Id() ObjectId {
 	return o.blueprintId
+}
+
+// SetType sets the client's internal BlueprintType value (staging, etc...).
+// This value is in HTTP requests as a query string argument, e.g.
+//
+//	'?type=staging'
+func (o *TwoStageL3ClosClient) SetType(bpt BlueprintType) {
+	o.blueprintType = bpt
+}
+
+// urlWithParam is a helper function which uses the blueprintType element to
+// decorate a *URL with the required query parameter.
+//
+//lint:ignore U1000 keep for future use
+func (o *TwoStageL3ClosClient) urlWithParam(in string) (*url.URL, error) {
+	apstraUrl, err := url.Parse(in)
+	if err != nil {
+		return nil, err
+	}
+
+	if o.blueprintType != BlueprintTypeNone {
+		params := apstraUrl.Query()
+		params.Set(blueprintTypeParam, o.blueprintType.string())
+		apstraUrl.RawQuery = params.Encode()
+	}
+	return apstraUrl, nil
 }
 
 // GetResourceAllocations returns ResourceGroupAllocations representing
