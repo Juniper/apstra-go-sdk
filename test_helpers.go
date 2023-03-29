@@ -1,9 +1,11 @@
 package goapstra
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
+	"testing"
 	"time"
 )
 
@@ -45,4 +47,26 @@ func samples(length int) []int {
 		i++
 	}
 	return result
+}
+
+func compareSlices[A comparable](t *testing.T, a, b []A, info string) {
+	if len(a) != len(b) {
+		t.Fatalf("%s slice length mismatch: %d vs %d", info, len(a), len(b))
+	}
+
+	for i := range a {
+		if a[i] != b[i] {
+			as, ok := interface{}(a[i]).(fmt.Stringer)
+			if !ok {
+				t.Fatalf("%s slice element %d mismtach", info, i)
+			}
+
+			bs, ok := interface{}(b[i]).(fmt.Stringer)
+			if !ok {
+				t.Fatalf("%s slice element %d mismtach", info, i)
+			}
+
+			t.Fatalf("%s slice element %d mismatch %q vs. %q", info, i, as, bs)
+		}
+	}
 }

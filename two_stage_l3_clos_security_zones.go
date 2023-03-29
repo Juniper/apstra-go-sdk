@@ -80,11 +80,6 @@ func (o securityZoneType) parse() (int, error) {
 	}
 }
 
-type RtPolicy struct {
-	ImportRTs []string `json:"import_RTs"`
-	ExportRTs []string `json:"export_RTs"`
-}
-
 type SecurityZone struct {
 	Id   ObjectId
 	Data *SecurityZoneData

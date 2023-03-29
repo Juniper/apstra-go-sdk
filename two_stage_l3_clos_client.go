@@ -3,7 +3,6 @@ package goapstra
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/url"
 	"time"
 )
@@ -247,19 +246,35 @@ func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyI
 	return o.deletePolicyRuleById(ctx, policyId, ruleId)
 }
 
+// CreateVirtualNetwork creates a new virtual network according to the supplied VirtualNetworkData
+func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, in *VirtualNetworkData) (ObjectId, error) {
+	return o.createVirtualNetwork(ctx, in.raw())
+}
+
 // ListAllVirtualNetworkIds returns []ObjectId representing virtual networks configured in the blueprint
-func (o *TwoStageL3ClosClient) ListAllVirtualNetworkIds(ctx context.Context, bpType BlueprintType) ([]ObjectId, error) {
-	return o.listAllVirtualNetworkIds(ctx, bpType)
+func (o *TwoStageL3ClosClient) ListAllVirtualNetworkIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listAllVirtualNetworkIds(ctx)
 }
 
-// GetVirtualNetwork returns *VirtualNetwork representing the given vnId within the blueprint type
-func (o *TwoStageL3ClosClient) GetVirtualNetwork(ctx context.Context, vnId ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
-	return o.getVirtualNetwork(ctx, vnId, bpType)
+// GetVirtualNetwork returns *VirtualNetwork representing the given vnId
+func (o *TwoStageL3ClosClient) GetVirtualNetwork(ctx context.Context, vnId ObjectId) (*VirtualNetwork, error) {
+	raw, err := o.getVirtualNetwork(ctx, vnId)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
 }
 
-// GetVirtualNetworkBySubnet returns *VirtualNetwork representing the given desiredNet within the blueprint type
-func (o *TwoStageL3ClosClient) GetVirtualNetworkBySubnet(ctx context.Context, desiredNet *net.IPNet, vrf ObjectId, bpType BlueprintType) (*VirtualNetwork, error) {
-	return o.getVirtualNetworkBySubnet(ctx, desiredNet, vrf, bpType)
+// UpdateVirtualNetwork updates the virtual network specified by ID using the
+// VirtualNetworkData and HTTP method PUT.
+func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, cfg *VirtualNetworkData) error {
+	return o.updateVirtualNetwork(ctx, id, cfg.raw())
+}
+
+// DeleteVirtualNetwork deletes the virtual network specified by id from the
+// blueprint.
+func (o *TwoStageL3ClosClient) DeleteVirtualNetwork(ctx context.Context, id ObjectId) error {
+	return o.deleteVirtualNetwork(ctx, id)
 }
 
 // GetLockInfo returns *LockInfo describing the current state of the blueprint lock

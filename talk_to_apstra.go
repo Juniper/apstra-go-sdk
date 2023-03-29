@@ -54,7 +54,14 @@ func convertTtaeToAceWherePossible(err error) error {
 		case http.StatusConflict:
 			return ApstraClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
 		case http.StatusUnprocessableEntity:
-			if strings.Contains(ttae.Msg, "already exists") {
+			switch {
+			case strings.Contains(ttae.Msg, "already exists"):
+				return ApstraClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
+			case strings.Contains(ttae.Msg, "No node with id: "):
+				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+			case strings.Contains(ttae.Msg, "No virtual_network with id: "):
+				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+			case strings.Contains(ttae.Msg, "Virtual Network name not unique"):
 				return ApstraClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
 			}
 		}
@@ -261,8 +268,45 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	// there might be errors articulated in the taskResponse body
 	if len(taskResponse.DetailedStatus.Errors) > 0 || taskResponse.DetailedStatus.ErrorCode != 0 {
-		return fmt.Errorf("task completion result %d: %s",
-			taskResponse.DetailedStatus.ErrorCode, taskResponse.DetailedStatus.Errors)
+		originalUrl, _ := url.Parse(taskResponse.RequestData.Url)
+		qValues := originalUrl.Query()
+		for k, v := range taskResponse.RequestData.Args {
+			qValues.Add(k, v)
+		}
+		originalUrl.RawQuery = qValues.Encode()
+
+		originalHdr := make(http.Header, len(taskResponse.RequestData.Headers))
+		for k, v := range taskResponse.RequestData.Headers {
+			originalHdr.Add(k, v)
+		}
+
+		var originalBody bytes.Buffer
+		originalBody.Write(taskResponse.RequestData.Data)
+
+		request := &http.Request{
+			Method:        taskResponse.RequestData.Method,
+			URL:           originalUrl,
+			Header:        originalHdr,
+			Body:          io.NopCloser(&originalBody),
+			ContentLength: int64(len(taskResponse.RequestData.Data)),
+		}
+
+		var responseBody bytes.Buffer
+		responseBody.Write(taskResponse.DetailedStatus.Errors)
+
+		response := &http.Response{
+			StatusCode:    taskResponse.DetailedStatus.ErrorCode,
+			Body:          io.NopCloser(&responseBody),
+			ContentLength: int64(len(taskResponse.DetailedStatus.Errors)),
+		}
+
+		detailedStatus, _ := json.Marshal(&taskResponse.DetailedStatus)
+
+		return TalkToApstraErr{
+			Request:  request,
+			Response: response,
+			Msg:      string(detailedStatus),
+		}
 	}
 
 	// caller not expecting any response?

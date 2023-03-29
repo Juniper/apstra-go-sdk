@@ -183,3 +183,25 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 
 	return bpClient, bpDeleteFunc
 }
+
+func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignDatacenter,
+		Label:      randString(5, "hex"),
+		TemplateId: "L2_Virtual_EVPN",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpDeleteFunc := func() error {
+		return client.deleteBlueprint(ctx, bpId)
+	}
+
+	return bpClient, bpDeleteFunc
+}
