@@ -1,4 +1,4 @@
-module bitbucket.org/apstrktr/goapstra
+module github.com/Juniper/apstra-go-sdk
 
 go 1.18
 
