@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package goapstra
+package apstra
 
 import (
 	"bytes"

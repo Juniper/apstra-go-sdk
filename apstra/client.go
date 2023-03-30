@@ -1,5 +1,4 @@
-// Package goapstra implements API client for Juniper Apstra
-package goapstra
+package apstra
 
 import (
 	"context"
@@ -57,7 +56,7 @@ type apstraHttpClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
-// ClientCfg is passed to NewClient() when instantiating a new goapstra Client.
+// ClientCfg is passed to NewClient() when instantiating a new apstra Client.
 // Scheme, Host, Port, User(name) and Pass(word) describe the Apstra API. Each
 // of these can be set by environment variable, the names of which are
 // controlled by these constants: EnvApstraScheme, EnvApstraUser, EnvApstraPass,

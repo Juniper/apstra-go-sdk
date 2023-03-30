@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bitbucket.org/apstrktr/goapstra"
 	"context"
 	"crypto/tls"
 	"log"
@@ -9,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+
+	"github.com/Juniper/apstra-go-sdk/apstra"
 )
 
 // ourIpForPeer returns a *net.IP representing the local interface selected by
@@ -25,9 +26,8 @@ func ourIpForPeer(them net.IP) (*net.IP, error) {
 
 func main() {
 	// create an apstra client object
-	clientCfg := goapstra.ClientCfg{
-		Host:       "apstra.example.com",
-		Port:       443,
+	clientCfg := apstra.ClientCfg{
+		Url:        "https://apstra.example.com",
 		User:       "admin",
 		Pass:       "password",
 		HttpClient: &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
@@ -44,16 +44,16 @@ func main() {
 	}
 
 	// create local stream target object
-	streamTargetConfig := goapstra.StreamTargetCfg{
+	streamTargetConfig := apstra.StreamTargetCfg{
 		Certificate:       nil, // apstra doesn't support TLS (?!?)
 		Key:               nil, // apstra doesn't support TLS (?!?)
-		SequencingMode:    goapstra.StreamingConfigSequencingModeSequenced,
-		StreamingType:     goapstra.StreamingConfigStreamingTypeAlerts,
-		Protocol:          goapstra.StreamingConfigProtocolProtoBufOverTcp,
+		SequencingMode:    apstra.StreamingConfigSequencingModeSequenced,
+		StreamingType:     apstra.StreamingConfigStreamingTypeAlerts,
+		Protocol:          apstra.StreamingConfigProtocolProtoBufOverTcp,
 		Port:              9999,
 		AosTargetHostname: ourIp.String(),
 	}
-	streamTarget, err := goapstra.NewStreamTarget(&streamTargetConfig)
+	streamTarget, err := apstra.NewStreamTarget(&streamTargetConfig)
 	if err != nil {
 		log.Fatal(err)
 	}

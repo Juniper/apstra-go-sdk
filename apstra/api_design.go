@@ -1,4 +1,4 @@
-package goapstra
+package apstra
 
 const (
 	apiUrlDesign       = "/api/design"

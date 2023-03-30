@@ -7,7 +7,7 @@
 // 	protoc        v3.19.4
 // source: apstra/streaming-telemetry.proto
 
-package goapstra
+package apstra
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

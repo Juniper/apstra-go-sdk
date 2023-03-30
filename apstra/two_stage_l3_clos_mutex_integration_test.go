@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package goapstra
+package apstra
 
 import (
 	"context"
@@ -38,7 +38,7 @@ func TestLockUnlockBlueprintMutex(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err = bp.Mutex.SetMessage("locked by goapstra test")
+		err = bp.Mutex.SetMessage("locked by apstra test")
 		if err != nil {
 			t.Fatal(err)
 		}
