@@ -142,6 +142,8 @@ func (o Ipv4Mode) int() int {
 
 func (o Ipv4Mode) raw() ipv4Mode {
 	switch o {
+	case Ipv4ModeNone:
+		return ipv4ModeNone
 	case Ipv4ModeDisabled:
 		return ipv4ModeDisabled
 	case Ipv4ModeEnabled:
@@ -159,6 +161,8 @@ func (o ipv4Mode) string() string {
 
 func (o ipv4Mode) parse() (int, error) {
 	switch o {
+	case ipv4ModeNone:
+		return int(Ipv4ModeNone), nil
 	case ipv4ModeDisabled:
 		return int(Ipv4ModeDisabled), nil
 	case ipv4ModeEnabled:
