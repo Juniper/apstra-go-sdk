@@ -23,57 +23,56 @@ const (
 type LogicalDevicePortRoleFlags uint16
 type logicalDevicePortRole string
 
+// class PortGroupSchema (scotch/schemas/logical_device.py) specifies:
+// validate=validate.OneOf(
+//                ['spine', 'superspine', 'leaf', 'access',
+//                 'l3_server', 'peer', 'unused', 'generic']))
 const (
-	LogicalDevicePortRoleAccess = LogicalDevicePortRoleFlags(1 << iota)
-	LogicalDevicePortRoleGeneric
-	LogicalDevicePortRoleL3Server
-	LogicalDevicePortRoleLeaf
-	LogicalDevicePortRolePeer
-	LogicalDevicePortRoleServer
-	LogicalDevicePortRoleSpine
+	LogicalDevicePortRoleSpine = LogicalDevicePortRoleFlags(1 << iota)
 	LogicalDevicePortRoleSuperspine
+	LogicalDevicePortRoleLeaf
+	LogicalDevicePortRoleAccess
+	LogicalDevicePortRoleL3Server
+	LogicalDevicePortRolePeer
 	LogicalDevicePortRoleUnused
+	LogicalDevicePortRoleGeneric
 	LogicalDevicePortRoleUnknown = "unknown logical device port role '%s'"
 
-	logicalDevicePortRoleAccess     = logicalDevicePortRole("access")
-	logicalDevicePortRoleGeneric    = logicalDevicePortRole("generic")
-	logicalDevicePortRoleL3Server   = logicalDevicePortRole("l3_server")
-	logicalDevicePortRoleLeaf       = logicalDevicePortRole("leaf")
-	logicalDevicePortRolePeer       = logicalDevicePortRole("peer")
-	logicalDevicePortRoleServer     = logicalDevicePortRole("server")
 	logicalDevicePortRoleSpine      = logicalDevicePortRole("spine")
 	logicalDevicePortRoleSuperspine = logicalDevicePortRole("superspine")
+	logicalDevicePortRoleLeaf       = logicalDevicePortRole("leaf")
+	logicalDevicePortRoleAccess     = logicalDevicePortRole("access")
+	logicalDevicePortRoleL3Server   = logicalDevicePortRole("l3_server")
+	logicalDevicePortRolePeer       = logicalDevicePortRole("peer")
 	logicalDevicePortRoleUnused     = logicalDevicePortRole("unused")
+	logicalDevicePortRoleGeneric    = logicalDevicePortRole("generic")
 )
 
 func (o *LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
 	var result []logicalDevicePortRole
-	if *o&LogicalDevicePortRoleAccess != 0 {
-		result = append(result, logicalDevicePortRoleAccess)
-	}
-	if *o&LogicalDevicePortRoleGeneric != 0 {
-		result = append(result, logicalDevicePortRoleGeneric)
-	}
-	if *o&LogicalDevicePortRoleL3Server != 0 {
-		result = append(result, logicalDevicePortRoleL3Server)
-	}
-	if *o&LogicalDevicePortRoleLeaf != 0 {
-		result = append(result, logicalDevicePortRoleLeaf)
-	}
-	if *o&LogicalDevicePortRolePeer != 0 {
-		result = append(result, logicalDevicePortRolePeer)
-	}
-	if *o&LogicalDevicePortRoleServer != 0 {
-		result = append(result, logicalDevicePortRoleServer)
-	}
 	if *o&LogicalDevicePortRoleSpine != 0 {
 		result = append(result, logicalDevicePortRoleSpine)
 	}
 	if *o&LogicalDevicePortRoleSuperspine != 0 {
 		result = append(result, logicalDevicePortRoleSuperspine)
 	}
+	if *o&LogicalDevicePortRoleLeaf != 0 {
+		result = append(result, logicalDevicePortRoleLeaf)
+	}
+	if *o&LogicalDevicePortRoleAccess != 0 {
+		result = append(result, logicalDevicePortRoleAccess)
+	}
+	if *o&LogicalDevicePortRoleL3Server != 0 {
+		result = append(result, logicalDevicePortRoleL3Server)
+	}
+	if *o&LogicalDevicePortRolePeer != 0 {
+		result = append(result, logicalDevicePortRolePeer)
+	}
 	if *o&LogicalDevicePortRoleUnused != 0 {
 		result = append(result, logicalDevicePortRoleUnused)
+	}
+	if *o&LogicalDevicePortRoleGeneric != 0 {
+		result = append(result, logicalDevicePortRoleGeneric)
 	}
 	return result
 }
@@ -104,24 +103,22 @@ func (o *LogicalDevicePortRoleFlags) SetAll() {
 
 func (o logicalDevicePortRole) parse() (LogicalDevicePortRoleFlags, error) {
 	switch o {
-	case logicalDevicePortRoleAccess:
-		return LogicalDevicePortRoleAccess, nil
-	case logicalDevicePortRoleGeneric:
-		return LogicalDevicePortRoleGeneric, nil
-	case logicalDevicePortRoleL3Server:
-		return LogicalDevicePortRoleL3Server, nil
-	case logicalDevicePortRoleLeaf:
-		return LogicalDevicePortRoleLeaf, nil
-	case logicalDevicePortRolePeer:
-		return LogicalDevicePortRolePeer, nil
-	case logicalDevicePortRoleServer:
-		return LogicalDevicePortRoleServer, nil
 	case logicalDevicePortRoleSpine:
 		return LogicalDevicePortRoleSpine, nil
 	case logicalDevicePortRoleSuperspine:
 		return LogicalDevicePortRoleSuperspine, nil
+	case logicalDevicePortRoleLeaf:
+		return LogicalDevicePortRoleLeaf, nil
+	case logicalDevicePortRoleAccess:
+		return LogicalDevicePortRoleAccess, nil
+	case logicalDevicePortRoleL3Server:
+		return LogicalDevicePortRoleL3Server, nil
+	case logicalDevicePortRolePeer:
+		return LogicalDevicePortRolePeer, nil
 	case logicalDevicePortRoleUnused:
 		return LogicalDevicePortRoleUnused, nil
+	case logicalDevicePortRoleGeneric:
+		return LogicalDevicePortRoleGeneric, nil
 	default:
 		return 0, fmt.Errorf(LogicalDevicePortRoleUnknown, o)
 	}
