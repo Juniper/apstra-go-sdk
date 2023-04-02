@@ -25,8 +25,9 @@ type logicalDevicePortRole string
 
 // class PortGroupSchema (scotch/schemas/logical_device.py) specifies:
 // validate=validate.OneOf(
-//                ['spine', 'superspine', 'leaf', 'access',
-//                 'l3_server', 'peer', 'unused', 'generic']))
+//
+//	['spine', 'superspine', 'leaf', 'access',
+//	 'l3_server', 'peer', 'unused', 'generic']
 const (
 	LogicalDevicePortRoleSpine = LogicalDevicePortRoleFlags(1 << iota)
 	LogicalDevicePortRoleSuperspine
