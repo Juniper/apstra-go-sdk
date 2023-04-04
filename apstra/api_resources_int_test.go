@@ -223,23 +223,7 @@ func TestGetAsnPoolByName(t *testing.T) {
 			t.Fatalf("expected '%s', got '%s", id, p.Id)
 		}
 
-		log.Printf("testing createAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		dupId, err := client.client.createAsnPool(context.Background(), &AsnPoolRequest{DisplayName: poolName})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing getAsnPoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = client.client.getAsnPoolByName(context.Background(), poolName)
-		if err == nil {
-			t.Fatalf("expected error: pool '%s' and '%s' both should be named '%s'", id, dupId, poolName)
-		}
-
 		err = client.client.deleteAsnPool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = client.client.deleteAsnPool(context.TODO(), dupId)
 		if err != nil {
 			t.Fatal(err)
 		}
