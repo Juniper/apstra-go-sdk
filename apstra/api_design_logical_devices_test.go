@@ -105,11 +105,13 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 		PortIndexingHorizontalFirst,
 	}
 
+	randStr := randString(5, "hex")
+
 	for clientName, client := range clients {
 		deviceConfigs := make([]LogicalDeviceData, len(indexingTypes))
 		for i, indexing := range indexingTypes {
 			deviceConfigs[i] = LogicalDeviceData{
-				DisplayName: fmt.Sprintf("AAAA-%s-%d", t.Name(), i),
+				DisplayName: fmt.Sprintf("AAAA-%s-%s-%d", t.Name(), randStr, i),
 				Panels: []LogicalDevicePanel{
 					{
 						PanelLayout: LogicalDevicePanelLayout{
@@ -161,6 +163,8 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
+
+				previous.Data.DisplayName = d.Data.DisplayName
 
 				log.Printf("testing updateLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 				err = client.client.updateLogicalDevice(context.TODO(), id[i], previous.Data.raw())
