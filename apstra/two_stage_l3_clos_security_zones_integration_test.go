@@ -24,7 +24,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 	for clientName, client := range clients {
 		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
 		defer func() {
-			err := bpDel()
+			err := bpDel(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -178,7 +178,7 @@ func TestGetDefaultRoutingZone(t *testing.T) {
 	for clientName, client := range clients {
 		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
 		defer func() {
-			err := bpDel()
+			err := bpDel(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}

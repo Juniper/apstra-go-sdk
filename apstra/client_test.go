@@ -91,7 +91,7 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 	}
 
 	type testCase struct {
-		bpFunc      func(context.Context, *testing.T, *Client) (*TwoStageL3ClosClient, func() error)
+		bpFunc      func(context.Context, *testing.T, *Client) (*TwoStageL3ClosClient, func(context.Context) error)
 		expectedOcp OverlayControlProtocol
 	}
 
@@ -104,7 +104,7 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 		for i := range testCases {
 			bpClient, bpDel := testCases[i].bpFunc(ctx, t, client.client)
 			defer func() {
-				err := bpDel()
+				err := bpDel(ctx)
 				if err != nil {
 					t.Fatal(err)
 				}

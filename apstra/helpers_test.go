@@ -140,7 +140,7 @@ func TestImmediateTickerSecondTick(t *testing.T) {
 	log.Printf("start %s first tick %s second tick %s", start, firstTick, secondTick)
 }
 
-func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignDatacenter,
 		Label:      randString(5, "hex"),
@@ -155,14 +155,14 @@ func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		t.Fatal(err)
 	}
 
-	bpDeleteFunc := func() error {
+	bpDeleteFunc := func(ctx context.Context) error {
 		return client.DeleteBlueprint(ctx, bpId)
 	}
 
 	return bpClient, bpDeleteFunc
 }
 
-func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignDatacenter,
 		Label:      randString(5, "hex"),
@@ -177,14 +177,14 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		t.Fatal(err)
 	}
 
-	bpDeleteFunc := func() error {
+	bpDeleteFunc := func(ctx context.Context) error {
 		return client.DeleteBlueprint(ctx, bpId)
 	}
 
 	return bpClient, bpDeleteFunc
 }
 
-func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignDatacenter,
 		Label:      randString(5, "hex"),
@@ -199,7 +199,7 @@ func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		t.Fatal(err)
 	}
 
-	bpDeleteFunc := func() error {
+	bpDeleteFunc := func(ctx context.Context) error {
 		return client.DeleteBlueprint(ctx, bpId)
 	}
 

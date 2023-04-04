@@ -7,6 +7,8 @@ import (
 	"context"
 	"log"
 	"math/rand"
+	"strconv"
+	"sync"
 	"testing"
 	"time"
 )
@@ -25,30 +27,45 @@ func TestSetGetResourceAllocation(t *testing.T) {
 	label := "test-" + randStr
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		client := client // local copy of iterator variable safe for use in deferred function
+		asnPoolWait := sync.WaitGroup{}
+		bpWait := sync.WaitGroup{}
+		bpWait.Add(1)
+		bpClient, bpDel := testBlueprintB(ctx, t, client.client)
 		defer func() {
-			err := bpDel()
+			err = bpDel(ctx)
 			if err != nil {
 				t.Error(err)
 			}
+			bpWait.Done()      // resource pool deletion is waiting for this
+			asnPoolWait.Wait() // wait for resource pool deletion to complete
 		}()
-
 		poolIds := make([]ObjectId, poolCount)
 		for i := range poolIds {
+			asnPoolWait.Add(1)
 			poolId, err := client.client.CreateAsnPool(ctx, &AsnPoolRequest{
-				DisplayName: label,
-				Ranges:      []IntfIntRange{IntRange{First: 1000, Last: 1999}},
+				DisplayName: label + "-" + strconv.Itoa(i),
+				Ranges: []IntfIntRange{IntRange{
+					First: uint32(1000 + (i * 1000)),
+					Last:  uint32(1999 + (i * 1000)),
+				}},
 			})
-			defer func() {
-				err := client.client.DeleteAsnPool(ctx, poolId)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
 			if err != nil {
 				t.Fatal(err)
 			}
 			poolIds[i] = poolId
+			defer func() {
+				go func() {
+					log.Printf("waiting before deleting pool %q", poolId)
+					bpWait.Wait()
+					log.Printf("deleting pool %q now", poolId)
+					err := client.client.DeleteAsnPool(ctx, poolId)
+					if err != nil {
+						t.Error(err)
+					}
+					asnPoolWait.Done()
+				}()
+			}()
 		}
 
 		log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
