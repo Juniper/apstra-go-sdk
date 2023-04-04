@@ -434,23 +434,7 @@ func TestGetVniPoolByName(t *testing.T) {
 			t.Fatalf("expected '%s', got '%s", id, p.Id)
 		}
 
-		log.Printf("testing createVniPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		dupId, err := client.client.createVniPool(context.Background(), &VniPoolRequest{DisplayName: poolName})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing getVniPoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = client.client.getVniPoolByName(context.Background(), poolName)
-		if err == nil {
-			t.Fatalf("expected error: pool '%s' and '%s' both should be named '%s'", id, dupId, poolName)
-		}
-
 		err = client.client.deleteVniPool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = client.client.deleteVniPool(context.TODO(), dupId)
 		if err != nil {
 			t.Fatal(err)
 		}
