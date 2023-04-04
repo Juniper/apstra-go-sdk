@@ -156,7 +156,7 @@ func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	}
 
 	bpDeleteFunc := func() error {
-		return client.deleteBlueprint(ctx, bpId)
+		return client.DeleteBlueprint(ctx, bpId)
 	}
 
 	return bpClient, bpDeleteFunc
@@ -178,7 +178,7 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	}
 
 	bpDeleteFunc := func() error {
-		return client.deleteBlueprint(ctx, bpId)
+		return client.DeleteBlueprint(ctx, bpId)
 	}
 
 	return bpClient, bpDeleteFunc
@@ -200,7 +200,7 @@ func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	}
 
 	bpDeleteFunc := func() error {
-		return client.deleteBlueprint(ctx, bpId)
+		return client.DeleteBlueprint(ctx, bpId)
 	}
 
 	return bpClient, bpDeleteFunc
