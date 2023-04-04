@@ -39,3 +39,12 @@ func immediateTicker(interval time.Duration) *time.Ticker {
 	ticker.C = nc
 	return ticker
 }
+
+func itemInSlice[A comparable](item A, slice []A) bool {
+	for i := range slice {
+		if item == slice[i] {
+			return true
+		}
+	}
+	return false
+}
