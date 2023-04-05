@@ -633,7 +633,24 @@ func (o *Client) GetBlueprintStatusByName(ctx context.Context, name string) (*Bl
 
 // DeleteBlueprint deletes the specified blueprint
 func (o *Client) DeleteBlueprint(ctx context.Context, id ObjectId) error {
-	return o.deleteBlueprint(ctx, id)
+	err := o.deleteBlueprint(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	t := immediateTicker(clientPollingIntervalMs)
+	defer t.Stop()
+	for {
+		<-t.C
+		ids, err := o.listAllBlueprintIds(ctx)
+		if err != nil {
+			return err
+		}
+		if !itemInSlice(id, ids) {
+			break
+		}
+	}
+	return nil
 }
 
 // CreateIp4Pool creates an IPv4 resource pool

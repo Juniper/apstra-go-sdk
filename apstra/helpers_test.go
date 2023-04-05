@@ -140,7 +140,7 @@ func TestImmediateTickerSecondTick(t *testing.T) {
 	log.Printf("start %s first tick %s second tick %s", start, firstTick, secondTick)
 }
 
-func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignDatacenter,
 		Label:      randString(5, "hex"),
@@ -155,14 +155,14 @@ func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		t.Fatal(err)
 	}
 
-	bpDeleteFunc := func() error {
-		return client.deleteBlueprint(ctx, bpId)
+	bpDeleteFunc := func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
 	}
 
 	return bpClient, bpDeleteFunc
 }
 
-func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignDatacenter,
 		Label:      randString(5, "hex"),
@@ -177,14 +177,14 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		t.Fatal(err)
 	}
 
-	bpDeleteFunc := func() error {
-		return client.deleteBlueprint(ctx, bpId)
+	bpDeleteFunc := func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
 	}
 
 	return bpClient, bpDeleteFunc
 }
 
-func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func() error) {
+func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignDatacenter,
 		Label:      randString(5, "hex"),
@@ -199,9 +199,59 @@ func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		t.Fatal(err)
 	}
 
-	bpDeleteFunc := func() error {
-		return client.deleteBlueprint(ctx, bpId)
+	bpDeleteFunc := func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
 	}
 
 	return bpClient, bpDeleteFunc
+}
+
+func TestItemInSlice(t *testing.T) {
+	type testCase struct {
+		item     any
+		slice    []any
+		expected bool
+	}
+
+	testCases := []testCase{
+		{item: 1, slice: []any{1, 2, 3}, expected: true},
+		{item: 1, slice: []any{1, 2, 3, 1}, expected: true},
+		{item: 1, slice: []any{3, 2, 1}, expected: true},
+		{item: 0, slice: []any{1, 2, 3}, expected: false},
+		{item: 0, slice: []any{}, expected: false},
+		{item: 1, slice: []any{}, expected: false},
+		{item: "foo", slice: []any{"foo", "bar"}, expected: true},
+		{item: "foo", slice: []any{"bar", "foo"}, expected: true},
+		{item: "foo", slice: []any{"foo", "bar", "foo"}, expected: true},
+		{item: "foo", slice: []any{"bar", "baz"}, expected: false},
+		{item: "foo", slice: []any{""}, expected: false},
+		{item: "foo", slice: []any{"", ""}, expected: false},
+		{item: "foo", slice: []any{}, expected: false},
+		{item: "", slice: []any{"bar", "foo"}, expected: false},
+		{item: "", slice: []any{"bar", "", "foo"}, expected: true},
+		{item: "", slice: []any{}, expected: false},
+	}
+
+	var result bool
+	for i, tc := range testCases {
+		switch tc.item.(type) {
+		case int:
+			item := tc.item.(int)
+			slice := make([]int, len(tc.slice))
+			for j := range tc.slice {
+				slice[j] = tc.slice[j].(int)
+			}
+			result = itemInSlice(item, slice)
+		case string:
+			item := tc.item.(string)
+			slice := make([]string, len(tc.slice))
+			for j := range tc.slice {
+				slice[j] = tc.slice[j].(string)
+			}
+			result = itemInSlice(item, slice)
+		}
+		if result != tc.expected {
+			t.Fatalf("test case %d produced %t, expected %t", i, result, tc.expected)
+		}
+	}
 }

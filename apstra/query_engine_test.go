@@ -5,9 +5,7 @@ package apstra
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"strings"
 	"testing"
 )
 
@@ -71,23 +69,20 @@ func TestQueryString(t *testing.T) {
 }
 
 func TestParsingQueryInfo(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	ctx := context.Background()
+	clients, err := getTestClients(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if len(bpIds) == 0 {
-			skipMsg[clientName] = fmt.Sprintf("no blueprints on '%s'", clientName)
-			continue
-		}
+		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		defer func() {
+			err = bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
 
 		// the type of info we expect the query to return (a slice of these)
 		var qResponse struct {
@@ -104,7 +99,7 @@ func TestParsingQueryInfo(t *testing.T) {
 			} `json:"items"`
 		}
 		log.Printf("testing NewQuery() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.NewQuery(bpIds[0]).
+		err = client.client.NewQuery(bpClient.Id()).
 			Node([]QEEAttribute{
 				{"type", QEStringVal("system")},
 				{"name", QEStringVal("n_system")},
@@ -127,12 +122,5 @@ func TestParsingQueryInfo(t *testing.T) {
 		for i, item := range qResponse.Items {
 			log.Printf("  %d id: '%s', label: '%s', logical_device: '%s'", i, item.System.Id, item.System.Label, item.LogicalDevice.Label)
 		}
-	}
-	if len(skipMsg) > 0 {
-		sb := strings.Builder{}
-		for _, msg := range skipMsg {
-			sb.WriteString(msg + ";")
-		}
-		t.Skip(sb.String())
 	}
 }

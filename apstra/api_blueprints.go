@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -458,7 +457,6 @@ func (o *Client) createBlueprintFromTemplate(ctx context.Context, req *rawCreate
 }
 
 func (o *Client) deleteBlueprint(ctx context.Context, id ObjectId) error {
-	log.Printf("delete blueprint id '%s'\n", id)
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintById, id),
