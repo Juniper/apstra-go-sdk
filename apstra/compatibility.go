@@ -3,12 +3,12 @@ package apstra
 import "strings"
 
 const (
-	apstraSupportedApiVersions = "4.1.0, 4.1.1"
+	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2"
 	apstraSupportedVersionSep  = ","
 
-	PodBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1"
+	PodBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
 
-	RackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1"
+	RackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
 )
 
 func parseVersionList(s string) StringSliceWithIncludes {

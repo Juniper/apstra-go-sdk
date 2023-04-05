@@ -6,7 +6,7 @@ package apstra
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"strings"
@@ -842,7 +842,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				}
 				id, err := client.client.createRackBasedTemplate(context.Background(), &rawCreateRackBasedTemplateRequest{
 					Type:                   cloneMe.Type,
-					DisplayName:            templateName,
+					DisplayName:            fmt.Sprintf("%s-%d", templateName, i),
 					Capability:             cloneMe.Capability,
 					Spine:                  cloneMe.Spine,
 					RackTypes:              cloneMe.RackTypes,
@@ -864,7 +864,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				}
 				id, err := client.client.createPodBasedTemplate(context.Background(), &rawCreatePodBasedTemplateRequest{
 					Type:                    cloneMe.Type,
-					DisplayName:             templateName,
+					DisplayName:             fmt.Sprintf("%s-%d", templateName, i),
 					Capability:              cloneMe.Capability,
 					Superspine:              cloneMe.Superspine,
 					RackBasedTemplates:      cloneMe.RackBasedTemplates,
@@ -883,7 +883,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				}
 				id, err := client.client.createL3CollapsedTemplate(context.Background(), &rawCreateL3CollapsedTemplateRequest{
 					Type:                 cloneMe.Type,
-					DisplayName:          templateName,
+					DisplayName:          fmt.Sprintf("%s-%d", templateName, i),
 					Capability:           cloneMe.Capability,
 					MeshLinkCount:        cloneMe.MeshLinkCount,
 					MeshLinkSpeed:        *cloneMe.MeshLinkSpeed,
@@ -905,11 +905,18 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 		}
 		log.Printf("clone IDs: '%s'", strings.Join(clones, ", "))
 
-		log.Printf("testing getTemplateIdsTypesByName(%s) against %s %s (%s)", templateName, client.clientType, clientName, client.client.ApiVersion())
-		templateIdsToType, err := client.client.getTemplateIdsTypesByName(context.Background(), templateName)
-		if err != nil {
-			t.Fatal(err)
+		templateIdsToType := make(map[ObjectId]TemplateType)
+		for i := 0; i < cloneCount; i++ {
+			log.Printf("testing getTemplateIdsTypesByName(%s) against %s %s (%s)", templateName, client.clientType, clientName, client.client.ApiVersion())
+			temp, err := client.client.getTemplateIdsTypesByName(context.Background(), fmt.Sprintf("%s-%d", templateName, i))
+			if err != nil {
+				t.Fatal(err)
+			}
+			for k, v := range temp {
+				templateIdsToType[k] = v
+			}
 		}
+
 		if cloneCount != len(templateIdsToType) {
 			t.Fatalf("expected %d, got %d", cloneCount, len(templateIdsToType))
 		}
@@ -923,16 +930,11 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 			}
 		}
 
-		_, _, err = client.client.getTemplateIdTypeByName(context.Background(), templateName)
-		var ace ApstraClientErr
-		if err == nil || !errors.As(err, &ace) || ace.errType != ErrMultipleMatch {
-			t.Fatal("this should have produced a multiple match error")
-		}
-
 		for i, cloneId := range cloneIds {
+			name := fmt.Sprintf("%s-%d", templateName, i)
 			if i+1 == len(cloneIds) { // last one before they're all deleted
-				log.Printf("testing getTemplateIdTypeByName(%s) against %s %s (%s)", templateName, client.clientType, clientName, client.client.ApiVersion())
-				tId, tType, err := client.client.getTemplateIdTypeByName(context.Background(), templateName)
+				log.Printf("testing getTemplateIdTypeByName(%s) against %s %s (%s)", name, client.clientType, clientName, client.client.ApiVersion())
+				tId, tType, err := client.client.getTemplateIdTypeByName(context.Background(), name)
 				if err != nil {
 					t.Fatal(err)
 				}
