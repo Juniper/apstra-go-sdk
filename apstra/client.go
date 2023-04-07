@@ -1306,11 +1306,6 @@ func (o *Client) ApiVersion() string {
 	return o.apiVersion
 }
 
-// SupportedVersions returns the Apstra API versions supported by the client
-func (o *Client) SupportedVersions() []string {
-	return parseVersionList(apstraSupportedApiVersions)
-}
-
 // GetDeviceProfile returns device profile
 func (o *Client) GetDeviceProfile(ctx context.Context, id ObjectId) (*DeviceProfile, error) {
 	raw, err := o.getDeviceProfile(ctx, id)
