@@ -41,3 +41,9 @@ func rackBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes 
 func podBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
 	return parseVersionList(PodBasedTemplateFabricAddressingPolicyForbiddenVersions)
 }
+
+// ApstraApiSupportedVersions returns the Apstra versions supported by this
+// SDK version.
+func ApstraApiSupportedVersions() StringSliceWithIncludes {
+	return apstraSupportedApi()
+}
