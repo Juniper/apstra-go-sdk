@@ -88,6 +88,11 @@ type AgentProfile struct {
 	OpenOptions map[string]string `json:"open_options"`
 }
 
+// HasCredentials returns true if the AgentProfile has both username and password configured.
+func (o *AgentProfile) HasCredentials() bool {
+	return o.HasUsername && o.HasPassword
+}
+
 // rawAgentProfile represents the API's description of an Agent Profile.
 // The Packages element is really a map, but has k, v string-joined with "==".
 type rawAgentProfile struct {
