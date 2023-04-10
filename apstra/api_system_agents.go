@@ -163,6 +163,8 @@ func (o AgentJobState) String() string {
 		return string(agentJobStateInProgress)
 	case AgentJobStateSuccess:
 		return string(agentJobStateSuccess)
+	case AgentJobStateFailed:
+		return string(agentJobStateFailed)
 	default:
 		return fmt.Sprintf(agentJobStateUnknown, o)
 	}
@@ -200,6 +202,8 @@ func (o rawAgentJobState) parse() int {
 		return int(AgentJobStateInProgress)
 	case agentJobStateSuccess:
 		return int(AgentJobStateSuccess)
+	case agentJobStateFailed:
+		return int(AgentJobStateFailed)
 	default:
 		return int(AgentJobStateUnknown)
 	}
