@@ -277,6 +277,7 @@ func TestSystemAgentsStrings(t *testing.T) {
 		{stringVal: "init", intType: AgentJobStateInit, stringType: agentJobStateInit},
 		{stringVal: "inprogress", intType: AgentJobStateInProgress, stringType: agentJobStateInProgress},
 		{stringVal: "success", intType: AgentJobStateSuccess, stringType: agentJobStateSuccess},
+		{stringVal: "failed", intType: AgentJobStateFailed, stringType: agentJobStateFailed},
 	}
 
 	for i, td := range testData {
