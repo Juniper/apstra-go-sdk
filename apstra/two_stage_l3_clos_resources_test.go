@@ -102,7 +102,7 @@ func TestSetGetResourceAllocation(t *testing.T) {
 
 func TestAllResourceGroupNames(t *testing.T) {
 	all := AllResourceGroupNames()
-	expected := 17
+	expected := 18
 	if len(all) != expected {
 		t.Fatalf("expected %d resource group names, got %d", expected, len(all))
 	}
@@ -113,5 +113,65 @@ func TestAllResourceTypes(t *testing.T) {
 	expected := 5
 	if len(all) != expected {
 		t.Fatalf("expected %d resource types, got %d", expected, len(all))
+	}
+}
+
+func TestTwoStageL3ClosResourceStrings(t *testing.T) {
+	type apiStringIota interface {
+		String() string
+		Int() int
+	}
+
+	type apiIotaString interface {
+		parse() (int, error)
+		string() string
+	}
+
+	type stringTestData struct {
+		stringVal  string
+		intType    apiStringIota
+		stringType apiIotaString
+	}
+	testData := []stringTestData{
+		{stringVal: "", intType: ResourceTypeNone, stringType: resourceTypeNone},
+		{stringVal: "asn", intType: ResourceTypeAsnPool, stringType: resourceTypeAsnPool},
+		{stringVal: "ip", intType: ResourceTypeIp4Pool, stringType: resourceTypeIp4Pool},
+		{stringVal: "ipv6", intType: ResourceTypeIp6Pool, stringType: resourceTypeIp6Pool},
+		{stringVal: "vni", intType: ResourceTypeVniPool, stringType: resourceTypeVniPool},
+
+		{stringVal: "", intType: ResourceGroupNameNone, stringType: resourceGroupNameNone},
+		{stringVal: "superspine_asns", intType: ResourceGroupNameSuperspineAsn, stringType: resourceGroupNameSuperspineAsn},
+		{stringVal: "spine_asns", intType: ResourceGroupNameSpineAsn, stringType: resourceGroupNameSpineAsn},
+		{stringVal: "leaf_asns", intType: ResourceGroupNameLeafAsn, stringType: resourceGroupNameLeafAsn},
+		{stringVal: "access_asns", intType: ResourceGroupNameAccessAsn, stringType: resourceGroupNameAccessAsn},
+		{stringVal: "superspine_loopback_ips", intType: ResourceGroupNameSuperspineIp4, stringType: resourceGroupNameSuperspineIp4},
+		{stringVal: "spine_loopback_ips", intType: ResourceGroupNameSpineIp4, stringType: resourceGroupNameSpineIp4},
+		{stringVal: "leaf_loopback_ips", intType: ResourceGroupNameLeafIp4, stringType: resourceGroupNameLeafIp4},
+		{stringVal: "access_loopback_ips", intType: ResourceGroupNameAccessIp4, stringType: resourceGroupNameAccessIp4},
+		{stringVal: "spine_superspine_link_ips", intType: ResourceGroupNameSuperspineSpineIp4, stringType: resourceGroupNameSuperspineSpineIp4},
+		{stringVal: "ipv6_spine_superspine_link_ips", intType: ResourceGroupNameSuperspineSpineIp6, stringType: resourceGroupNameSuperspineSpineIp6},
+		{stringVal: "spine_leaf_link_ips", intType: ResourceGroupNameSpineLeafIp4, stringType: resourceGroupNameSpineLeafIp4},
+		{stringVal: "ipv6_spine_leaf_link_ips", intType: ResourceGroupNameSpineLeafIp6, stringType: resourceGroupNameSpineLeafIp6},
+		{stringVal: "access_l3_peer_link_link_ips", intType: ResourceGroupNameAccessAccessIpv4, stringType: resourceGroupNameAccessAccessIpv4},
+		{stringVal: "leaf_leaf_link_ips", intType: ResourceGroupNameLeafLeafIp4, stringType: resourceGroupNameLeafLeafIp4},
+		{stringVal: "mlag_domain_svi_subnets", intType: ResourceGroupNameMlagDomainIpv4, stringType: resourceGroupNameMlagDomainSviIpv4},
+		{stringVal: "vtep_ips", intType: ResourceGroupNameVtepIpv4, stringType: resourceGroupNameVtepIpv4},
+		{stringVal: "evpn_l3_vnis", intType: ResourceGroupNameEvpnL3Vni, stringType: resourceGroupNameEvpnL3Vni},
+	}
+
+	for i, td := range testData {
+		ii := td.intType.Int()
+		is := td.intType.String()
+		sp, err := td.stringType.parse()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ss := td.stringType.string()
+		if td.intType.String() != td.stringType.string() ||
+			td.intType.Int() != sp ||
+			td.stringType.string() != td.stringVal {
+			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
+				i, ii, sp, is, ss, td.stringVal)
+		}
 	}
 }
