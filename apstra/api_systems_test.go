@@ -120,3 +120,11 @@ func TestSystemsStrings(t *testing.T) {
 		}
 	}
 }
+
+func TestAllNodeDeployModes(t *testing.T) {
+	all := AllNodeDeployModes()
+	expected := 5
+	if len(all) != expected {
+		t.Fatalf("expected %d node deploy modes, got %d", expected, len(all))
+	}
+}

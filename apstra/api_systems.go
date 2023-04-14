@@ -114,6 +114,15 @@ func (o NodeDeployMode) String() string {
 	}
 }
 
+func (o *NodeDeployMode) FromString(in string) error {
+	i, err := nodeDeployMode(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = NodeDeployMode(i)
+	return nil
+}
+
 func (o nodeDeployMode) string() string {
 	return string(o)
 }
@@ -381,4 +390,18 @@ func (o *Client) deleteSystem(ctx context.Context, id SystemId) error {
 		method: method,
 		url:    apstraUrl,
 	})
+}
+
+func AllNodeDeployModes() []NodeDeployMode {
+	i := 0
+	var result []NodeDeployMode
+	for {
+		var ndm NodeDeployMode
+		err := ndm.FromString(NodeDeployMode(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		result = append(result, ndm)
+		i++
+	}
 }
