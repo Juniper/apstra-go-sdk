@@ -1476,23 +1476,6 @@ func (o *Client) GetPropertySet(ctx context.Context, id ObjectId) (*PropertySet,
 	return ps.polish()
 }
 
-// GetPropertySetsByLabel returns []PropertySet representing all property sets with the given label
-func (o *Client) GetPropertySetsByLabel(ctx context.Context, in string) ([]PropertySet, error) {
-	ps, err := o.getPropertySetsByLabel(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]PropertySet, len(ps))
-	for i := range ps {
-		polished, err := ps[i].polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *polished
-	}
-	return result, nil
-}
-
 // GetPropertySetByLabel returns *PropertySet representing the only property set with the given label,
 // or an error if multiple property sets share the label.
 func (o *Client) GetPropertySetByLabel(ctx context.Context, in string) (*PropertySet, error) {
