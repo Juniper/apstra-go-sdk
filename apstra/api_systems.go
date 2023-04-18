@@ -24,12 +24,12 @@ const ( // new block resets iota to 0
 	SystemAdminStateNormal = SystemAdminState(iota) // default type 0
 	SystemAdminStateDecomm
 	SystemAdminStateMaint
-	SystemAdminStateUnknown
+	SystemAdminStateUnknown = "unknown system admin state '%s'"
 
 	systemAdminStateNormal  = rawSystemAdminState("normal")
 	systemAdminStateDecomm  = rawSystemAdminState("decomm")
 	systemAdminStateMaint   = rawSystemAdminState("maint")
-	systemAdminStateUnknown = "system agent state %d unknown"
+	systemAdminStateUnknown = "unknown system admin state '%d'"
 )
 
 type SystemAdminState int
@@ -61,16 +61,86 @@ func (o rawSystemAdminState) string() string {
 	return string(o)
 }
 
-func (o rawSystemAdminState) parse() int {
+func (o rawSystemAdminState) parse() (int, error) {
 	switch o {
 	case systemAdminStateDecomm:
-		return int(SystemAdminStateDecomm)
+		return int(SystemAdminStateDecomm), nil
 	case systemAdminStateNormal:
-		return int(SystemAdminStateNormal)
+		return int(SystemAdminStateNormal), nil
 	case systemAdminStateMaint:
-		return int(SystemAdminStateMaint)
+		return int(SystemAdminStateMaint), nil
 	default:
-		return int(SystemAdminStateUnknown)
+		return 0, fmt.Errorf(SystemAdminStateUnknown, o)
+	}
+}
+
+type NodeDeployMode int
+type nodeDeployMode string
+
+const (
+	NodeDeployModeNone = NodeDeployMode(iota)
+	NodeDeployModeDeploy
+	NodeDeployModeUndeploy
+	NodeDeployModeReady
+	NodeDeployModeDrain
+	NodeDeployModeUnknown = "unknown node deploy mode '%s'"
+
+	nodeDeployModeNone     = nodeDeployMode("")
+	nodeDeployModeDeploy   = nodeDeployMode("deploy")
+	nodeDeployModeUndeploy = nodeDeployMode("undeploy")
+	nodeDeployModeReady    = nodeDeployMode("ready")
+	nodeDeployModeDrain    = nodeDeployMode("drain")
+	nodeDeployModeUnknown  = "unknown node deploy mode '%d'"
+)
+
+func (o NodeDeployMode) Int() int {
+	return int(o)
+}
+
+func (o NodeDeployMode) String() string {
+	switch o {
+	case NodeDeployModeNone:
+		return string(nodeDeployModeNone)
+	case NodeDeployModeDeploy:
+		return string(nodeDeployModeDeploy)
+	case NodeDeployModeUndeploy:
+		return string(nodeDeployModeUndeploy)
+	case NodeDeployModeReady:
+		return string(nodeDeployModeReady)
+	case NodeDeployModeDrain:
+		return string(nodeDeployModeDrain)
+	default:
+		return fmt.Sprintf(nodeDeployModeUnknown, o)
+	}
+}
+
+func (o *NodeDeployMode) FromString(in string) error {
+	i, err := nodeDeployMode(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = NodeDeployMode(i)
+	return nil
+}
+
+func (o nodeDeployMode) string() string {
+	return string(o)
+}
+
+func (o nodeDeployMode) parse() (int, error) {
+	switch o {
+	case nodeDeployModeNone:
+		return int(NodeDeployModeNone), nil
+	case nodeDeployModeDeploy:
+		return int(NodeDeployModeDeploy), nil
+	case nodeDeployModeUndeploy:
+		return int(NodeDeployModeUndeploy), nil
+	case nodeDeployModeReady:
+		return int(NodeDeployModeReady), nil
+	case nodeDeployModeDrain:
+		return int(NodeDeployModeDrain), nil
+	default:
+		return 0, fmt.Errorf(NodeDeployModeUnknown, o)
 	}
 }
 
@@ -101,7 +171,12 @@ type rawManagedSystemInfo struct {
 	UserConfig      rawSystemUserConfig   `json:"user_config"`
 }
 
-func (o *rawManagedSystemInfo) polish() *ManagedSystemInfo {
+func (o *rawManagedSystemInfo) polish() (*ManagedSystemInfo, error) {
+	userConfig, err := o.UserConfig.polish()
+	if err != nil {
+		return nil, err
+	}
+
 	return &ManagedSystemInfo{
 		ContainerStatus: o.ContainerStatus,
 		DeviceKey:       o.DeviceKey,
@@ -109,8 +184,8 @@ func (o *rawManagedSystemInfo) polish() *ManagedSystemInfo {
 		Id:              o.Id,
 		Services:        o.Services,
 		Status:          *o.Status.polish(),
-		UserConfig:      *o.UserConfig.polish(),
-	}
+		UserConfig:      *userConfig,
+	}, nil
 }
 
 type SystemContainerStatus struct {
@@ -199,12 +274,17 @@ type rawSystemUserConfig struct {
 	Location    string              `json:"location,omitempty"`
 }
 
-func (o *rawSystemUserConfig) polish() *SystemUserConfig {
+func (o *rawSystemUserConfig) polish() (*SystemUserConfig, error) {
+	adminState, err := o.AdminState.parse()
+	if err != nil {
+		return nil, err
+	}
+
 	return &SystemUserConfig{
-		AdminState:  SystemAdminState(o.AdminState.parse()),
+		AdminState:  SystemAdminState(adminState),
 		AosHclModel: o.AosHclModel,
 		Location:    o.Location,
-	}
+	}, nil
 }
 
 func (o *Client) listSystems(ctx context.Context) ([]SystemId, error) {
@@ -244,7 +324,7 @@ func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystem
 		}
 		return nil, err
 	}
-	return response.polish(), nil
+	return response.polish()
 }
 
 func (o *Client) getAllSystemsInfo(ctx context.Context) ([]ManagedSystemInfo, error) {
@@ -260,7 +340,11 @@ func (o *Client) getAllSystemsInfo(ctx context.Context) ([]ManagedSystemInfo, er
 
 	result := make([]ManagedSystemInfo, len(response.Items))
 	for i, rmsi := range response.Items {
-		result[i] = *rmsi.polish()
+		polished, err := rmsi.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
 	}
 
 	return result, nil
@@ -306,4 +390,18 @@ func (o *Client) deleteSystem(ctx context.Context, id SystemId) error {
 		method: method,
 		url:    apstraUrl,
 	})
+}
+
+func AllNodeDeployModes() []NodeDeployMode {
+	i := 0
+	var result []NodeDeployMode
+	for {
+		var ndm NodeDeployMode
+		err := ndm.FromString(NodeDeployMode(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		result = append(result, ndm)
+		i++
+	}
 }
