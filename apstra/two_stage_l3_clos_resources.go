@@ -48,10 +48,10 @@ const (
 	ResourceGroupNameSuperspineSpineIp6
 	ResourceGroupNameSpineLeafIp4
 	ResourceGroupNameSpineLeafIp6
-	ResourceGroupNameAccessAccessIpv4
+	ResourceGroupNameAccessAccessIp4
 	ResourceGroupNameLeafLeafIp4
-	ResourceGroupNameMlagDomainIpv4
-	ResourceGroupNameVtepIpv4
+	ResourceGroupNameMlagDomainIp4
+	ResourceGroupNameVtepIp4
 	ResourceGroupNameEvpnL3Vni
 	ResourceGroupNameUnknown
 
@@ -69,9 +69,9 @@ const (
 	resourceGroupNameSpineLeafIp4       = resourceGroupName("spine_leaf_link_ips")
 	resourceGroupNameSpineLeafIp6       = resourceGroupName("ipv6_spine_leaf_link_ips")
 	resourceGroupNameLeafLeafIp4        = resourceGroupName("leaf_leaf_link_ips")
-	resourceGroupNameMlagDomainSviIpv4  = resourceGroupName("mlag_domain_svi_subnets")
-	resourceGroupNameAccessAccessIpv4   = resourceGroupName("access_l3_peer_link_link_ips")
-	resourceGroupNameVtepIpv4           = resourceGroupName("vtep_ips")
+	resourceGroupNameMlagDomainSviIp4   = resourceGroupName("mlag_domain_svi_subnets")
+	resourceGroupNameAccessAccessIp4    = resourceGroupName("access_l3_peer_link_link_ips")
+	resourceGroupNameVtepIp4            = resourceGroupName("vtep_ips")
 	resourceGroupNameEvpnL3Vni          = resourceGroupName("evpn_l3_vnis")
 	resourceGroupNameUnknown            = "group name %d unknown"
 )
@@ -121,13 +121,13 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameSpineLeafIp6:
 		return ResourceTypeIp6Pool
-	case ResourceGroupNameAccessAccessIpv4:
+	case ResourceGroupNameAccessAccessIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameLeafLeafIp4:
 		return ResourceTypeIp4Pool
-	case ResourceGroupNameMlagDomainIpv4:
+	case ResourceGroupNameMlagDomainIp4:
 		return ResourceTypeIp4Pool
-	case ResourceGroupNameVtepIpv4:
+	case ResourceGroupNameVtepIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameEvpnL3Vni:
 		return ResourceTypeVniPool
@@ -179,14 +179,14 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameSpineLeafIp4
 	case ResourceGroupNameSpineLeafIp6:
 		return resourceGroupNameSpineLeafIp6
-	case ResourceGroupNameAccessAccessIpv4:
-		return resourceGroupNameAccessAccessIpv4
+	case ResourceGroupNameAccessAccessIp4:
+		return resourceGroupNameAccessAccessIp4
 	case ResourceGroupNameLeafLeafIp4:
 		return resourceGroupNameLeafLeafIp4
-	case ResourceGroupNameMlagDomainIpv4:
-		return resourceGroupNameMlagDomainSviIpv4
-	case ResourceGroupNameVtepIpv4:
-		return resourceGroupNameVtepIpv4
+	case ResourceGroupNameMlagDomainIp4:
+		return resourceGroupNameMlagDomainSviIp4
+	case ResourceGroupNameVtepIp4:
+		return resourceGroupNameVtepIp4
 	case ResourceGroupNameEvpnL3Vni:
 		return resourceGroupNameEvpnL3Vni
 	default:
@@ -224,14 +224,14 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameSpineLeafIp4), nil
 	case resourceGroupNameSpineLeafIp6:
 		return int(ResourceGroupNameSpineLeafIp6), nil
-	case resourceGroupNameAccessAccessIpv4:
-		return int(ResourceGroupNameAccessAccessIpv4), nil
+	case resourceGroupNameAccessAccessIp4:
+		return int(ResourceGroupNameAccessAccessIp4), nil
 	case resourceGroupNameLeafLeafIp4:
 		return int(ResourceGroupNameLeafLeafIp4), nil
-	case resourceGroupNameMlagDomainSviIpv4:
-		return int(ResourceGroupNameMlagDomainIpv4), nil
-	case resourceGroupNameVtepIpv4:
-		return int(ResourceGroupNameVtepIpv4), nil
+	case resourceGroupNameMlagDomainSviIp4:
+		return int(ResourceGroupNameMlagDomainIp4), nil
+	case resourceGroupNameVtepIp4:
+		return int(ResourceGroupNameVtepIp4), nil
 	case resourceGroupNameEvpnL3Vni:
 		return int(ResourceGroupNameEvpnL3Vni), nil
 	default:

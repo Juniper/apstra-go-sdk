@@ -152,10 +152,10 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "ipv6_spine_superspine_link_ips", intType: ResourceGroupNameSuperspineSpineIp6, stringType: resourceGroupNameSuperspineSpineIp6},
 		{stringVal: "spine_leaf_link_ips", intType: ResourceGroupNameSpineLeafIp4, stringType: resourceGroupNameSpineLeafIp4},
 		{stringVal: "ipv6_spine_leaf_link_ips", intType: ResourceGroupNameSpineLeafIp6, stringType: resourceGroupNameSpineLeafIp6},
-		{stringVal: "access_l3_peer_link_link_ips", intType: ResourceGroupNameAccessAccessIpv4, stringType: resourceGroupNameAccessAccessIpv4},
+		{stringVal: "access_l3_peer_link_link_ips", intType: ResourceGroupNameAccessAccessIp4, stringType: resourceGroupNameAccessAccessIp4},
 		{stringVal: "leaf_leaf_link_ips", intType: ResourceGroupNameLeafLeafIp4, stringType: resourceGroupNameLeafLeafIp4},
-		{stringVal: "mlag_domain_svi_subnets", intType: ResourceGroupNameMlagDomainIpv4, stringType: resourceGroupNameMlagDomainSviIpv4},
-		{stringVal: "vtep_ips", intType: ResourceGroupNameVtepIpv4, stringType: resourceGroupNameVtepIpv4},
+		{stringVal: "mlag_domain_svi_subnets", intType: ResourceGroupNameMlagDomainIp4, stringType: resourceGroupNameMlagDomainSviIp4},
+		{stringVal: "vtep_ips", intType: ResourceGroupNameVtepIp4, stringType: resourceGroupNameVtepIp4},
 		{stringVal: "evpn_l3_vnis", intType: ResourceGroupNameEvpnL3Vni, stringType: resourceGroupNameEvpnL3Vni},
 	}
 
