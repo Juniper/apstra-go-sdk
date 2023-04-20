@@ -21,8 +21,8 @@ const (
 )
 
 const ( // new block resets iota to 0
-	SystemAdminStateNone   = SystemAdminState(iota) // default type 0
-	SystemAdminStateNormal = SystemAdminState(iota) // default type 0
+	SystemAdminStateNone = SystemAdminState(iota) // default type 0
+	SystemAdminStateNormal
 	SystemAdminStateDecomm
 	SystemAdminStateMaint
 	SystemAdminStateUnknown = "unknown system admin state '%s'"
