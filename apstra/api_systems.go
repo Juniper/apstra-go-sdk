@@ -21,11 +21,13 @@ const (
 )
 
 const ( // new block resets iota to 0
-	SystemAdminStateNormal = SystemAdminState(iota) // default type 0
+	SystemAdminStateNone = SystemAdminState(iota) // default type 0
+	SystemAdminStateNormal
 	SystemAdminStateDecomm
 	SystemAdminStateMaint
 	SystemAdminStateUnknown = "unknown system admin state '%s'"
 
+	systemAdminStateNone    = rawSystemAdminState("")
 	systemAdminStateNormal  = rawSystemAdminState("normal")
 	systemAdminStateDecomm  = rawSystemAdminState("decomm")
 	systemAdminStateMaint   = rawSystemAdminState("maint")
@@ -40,12 +42,14 @@ func (o SystemAdminState) Int() int {
 
 func (o SystemAdminState) String() string {
 	switch o {
+	case SystemAdminStateNone:
+		return string(systemAdminStateNone)
+	case SystemAdminStateNormal:
+		return string(systemAdminStateNormal)
 	case SystemAdminStateDecomm:
 		return string(systemAdminStateDecomm)
 	case SystemAdminStateMaint:
 		return string(systemAdminStateMaint)
-	case SystemAdminStateNormal:
-		return string(systemAdminStateNormal)
 	default:
 		return fmt.Sprintf(systemAdminStateUnknown, o)
 	}
@@ -63,10 +67,12 @@ func (o rawSystemAdminState) string() string {
 
 func (o rawSystemAdminState) parse() (int, error) {
 	switch o {
-	case systemAdminStateDecomm:
-		return int(SystemAdminStateDecomm), nil
+	case systemAdminStateNone:
+		return int(SystemAdminStateNone), nil
 	case systemAdminStateNormal:
 		return int(SystemAdminStateNormal), nil
+	case systemAdminStateDecomm:
+		return int(SystemAdminStateDecomm), nil
 	case systemAdminStateMaint:
 		return int(SystemAdminStateMaint), nil
 	default:
