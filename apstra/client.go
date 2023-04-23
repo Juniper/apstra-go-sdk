@@ -1486,6 +1486,23 @@ func (o *Client) GetPropertySetByLabel(ctx context.Context, in string) (*Propert
 	return ps.polish()
 }
 
+func (o *Client) CreatePropertySet(ctx context.Context, in *PropertySetRequest) (ObjectId, error) {
+	return o.createPropertySet(ctx, in)
+}
+
+// UpdatePropertySet returns *PropertySet representing the only property set with the given label,
+// or an error if multiple property sets share the label.
+func (o *Client) UpdatePropertySet(ctx context.Context, id ObjectId, in *PropertySetRequest) error {
+	return o.updatePropertySet(ctx, id, in)
+}
+
+// DeletePropertySet returns *PropertySet representing the only property set with the given label,
+// or an error if multiple property sets share the label.
+
+func (o *Client) DeletePropertySet(ctx context.Context, id ObjectId) error {
+	return o.deletePropertySet(ctx, id)
+}
+
 // Private method added for Client.ready(), public wrapper not currently needed.
 //// GetTelemetryQuery returns *TelemetryQuery
 //func (o *Client) GetTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error){

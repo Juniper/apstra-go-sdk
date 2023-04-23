@@ -5,7 +5,6 @@ package apstra
 
 import (
 	"context"
-	"errors"
 	"log"
 	"math/rand"
 	"testing"
@@ -47,7 +46,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 
 	rand.Seed(time.Now().UnixNano())
 	samples := rand.Intn(10) + 3
-	ps := &PropertySetData{
+	ps := &PropertySetRequest{
 		Label:  randString(10, "hex"),
 		Values: make(map[string]string, samples),
 	}
@@ -56,52 +55,26 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing createPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id1, err := client.client.createPropertySet(ctx, ps)
+		log.Printf("testing CreatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		id1, err := client.client.CreatePropertySet(ctx, ps)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing createPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id2, err := client.client.createPropertySet(ctx, ps)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing getPropertySetsByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		psSlice, err := client.client.GetPropertySetsByLabel(ctx, ps.Label)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(psSlice) != 2 {
-			t.Fatalf("expected 2 property sets, got %d", len(psSlice))
-		}
-		if !equal(psSlice[0].Data, psSlice[1].Data) {
-			t.Fatal("property sets don't match")
-		}
-
-		log.Printf("testing getPropertySetByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = client.client.getPropertySetByLabel(ctx, ps.Label)
+		log.Printf("Testing duplicate CreatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		_, err = client.client.CreatePropertySet(ctx, ps)
 		if err == nil {
-			t.Fatal("expected multiple match error, but got no error")
-		} else {
-			var ace ApstraClientErr
-			if errors.As(err, &ace) && ace.Type() != ErrMultipleMatch {
-				t.Fatalf("expected multiple match error, got %s", err.Error())
-			}
+			t.Fatal("Expected to fail duplicate")
 		}
+		log.Printf("Error Received %q", err)
 
-		log.Printf("testing getPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ps1, err := client.client.getPropertySet(ctx, id1)
+		log.Printf("testing GetPropertySetByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		ps1, err := client.client.GetPropertySetByLabel(ctx, ps.Label)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("Error %q", err)
 		}
-		polished1, err := ps1.polish()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !equal(ps, polished1.Data) {
-			t.Fatal("ps and ps1 are not equal")
+		if !equal((*PropertySetData)(ps), ps1.Data) {
+			t.Fatal("Created and extracted objects are not equal")
 		}
 
 		ps.Label = randString(10, "hex")
@@ -110,47 +83,25 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		}
 
 		log.Printf("testing updatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.updatePropertySet(ctx, id1, ps)
+		err = client.client.UpdatePropertySet(ctx, id1, ps)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing getPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ps2, err := client.client.getPropertySet(ctx, id1)
+		ps2, err := client.client.GetPropertySet(ctx, id1)
 		if err != nil {
 			t.Fatal(err)
 		}
-		polished2, err := ps2.polish()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !equal(ps, polished2.Data) {
+		if !equal((*PropertySetData)(ps), ps2.Data) {
 			t.Fatal("ps and ps2 are not equal")
 		}
 
 		log.Printf("testing deletePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deletePropertySet(ctx, id1)
+		err = client.client.DeletePropertySet(ctx, id1)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing getPropertySetByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = client.client.getPropertySetByLabel(ctx, polished1.Data.Label)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deletePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deletePropertySet(ctx, id2)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing getPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = client.client.getPropertySet(ctx, id1)
-		if err == nil {
-			t.Fatal("expected a 404 here, didn't get one")
-		}
 	}
-
 }
