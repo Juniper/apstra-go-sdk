@@ -1512,7 +1512,7 @@ func (o *Client) UpdatePropertySet(ctx context.Context, id ObjectId, in *Propert
 	return o.updatePropertySet(ctx, id, in)
 }
 
-// Delete a property given the id
+// DeletePropertySet deletes a property given the id
 func (o *Client) DeletePropertySet(ctx context.Context, id ObjectId) error {
 	return o.deletePropertySet(ctx, id)
 }
