@@ -21,7 +21,6 @@ type PropertySet struct {
 	Data      *PropertySetData
 }
 
-// We don't really need a "raw" PropertySetData because there are no iota etc that need translation
 type PropertySetData struct {
 	Label      string            `json:"label"`
 	Values     map[string]string `json:"values"`
@@ -36,8 +35,6 @@ type rawPropertySet struct {
 	CreatedAt  string            `json:"created_at,omitempty"`
 	UpdatedAt  string            `json:"updated_at,omitempty"`
 }
-
-type PropertySetRequest PropertySetData
 
 func (o *rawPropertySet) polish() (*PropertySet, error) {
 	created, err := time.Parse("2006-01-02T15:04:05.000000+0000", o.CreatedAt)
@@ -144,7 +141,7 @@ func (o *Client) getAllPropertySets(ctx context.Context) ([]rawPropertySet, erro
 	return result, nil
 }
 
-func (o *Client) createPropertySet(ctx context.Context, in *PropertySetRequest) (ObjectId, error) {
+func (o *Client) createPropertySet(ctx context.Context, in *PropertySetData) (ObjectId, error) {
 	if len(in.Blueprints) != 0 {
 		return "", errors.New("blueprints field must be empty when creating property set")
 	}
@@ -161,7 +158,7 @@ func (o *Client) createPropertySet(ctx context.Context, in *PropertySetRequest) 
 	return response.Id, nil
 }
 
-func (o *Client) updatePropertySet(ctx context.Context, id ObjectId, in *PropertySetRequest) error {
+func (o *Client) updatePropertySet(ctx context.Context, id ObjectId, in *PropertySetData) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlPropertySetById, id),

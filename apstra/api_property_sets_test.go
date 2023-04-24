@@ -46,7 +46,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 
 	rand.Seed(time.Now().UnixNano())
 	samples := rand.Intn(10) + 3
-	ps := &PropertySetRequest{
+	ps := &PropertySetData{
 		Label:  randString(10, "hex"),
 		Values: make(map[string]string, samples),
 	}
