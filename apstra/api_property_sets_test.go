@@ -90,7 +90,6 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		}
 
 		log.Printf("testing DeletePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-
 		err = client.client.DeletePropertySet(ctx, id1)
 		if err != nil {
 			t.Fatal(err)
@@ -101,6 +100,5 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		if err == nil {
 			t.Fatal("This Get Should have failed with a 404")
 		}
-		log.Printf("Error Received %s", err)
 	}
 }
