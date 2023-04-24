@@ -63,17 +63,19 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		log.Printf("testing GetPropertySetByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		ps1, err := client.client.GetPropertySetByLabel(ctx, ps.Label)
 		if err != nil {
-			log.Printf("Testing duplicate CreatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			_, err = client.client.CreatePropertySet(ctx, ps)
-			if err == nil {
-				t.Fatal("Expected to fail duplicate")
-			}
 			log.Printf("Error Received %q", err)
 		}
 
 		if !equal((*PropertySetData)(ps), ps1.Data) {
 			t.Fatal("Created and extracted objects are not equal")
 		}
+
+		log.Printf("Testing duplicate CreatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		_, err = client.client.CreatePropertySet(ctx, ps)
+		if err == nil {
+			t.Fatal("Expected to fail duplicate")
+		}
+		log.Printf("Error Received %q", err)
 
 		ps.Label = randString(10, "hex")
 		for i := 0; i < samples; i++ {
