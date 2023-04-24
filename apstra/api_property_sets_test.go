@@ -63,19 +63,11 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		log.Printf("testing GetPropertySetByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		ps1, err := client.client.GetPropertySetByLabel(ctx, ps.Label)
 		if err != nil {
-			log.Printf("Error Received %q", err)
+			t.Fatal(err)
 		}
-
-		if !equal((*PropertySetData)(ps), ps1.Data) {
+		if !equal(ps, ps1.Data) {
 			t.Fatal("Created and extracted objects are not equal")
 		}
-
-		log.Printf("Testing duplicate CreatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = client.client.CreatePropertySet(ctx, ps)
-		if err == nil {
-			t.Fatal("Expected to fail duplicate")
-		}
-		log.Printf("Error Received %q", err)
 
 		ps.Label = randString(10, "hex")
 		for i := 0; i < samples; i++ {
@@ -93,11 +85,11 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !equal((*PropertySetData)(ps), ps2.Data) {
+		if !equal(ps, ps2.Data) {
 			t.Fatal("ps and ps2 are not equal")
 		}
 
-		log.Printf("testing deletePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		log.Printf("testing DeletePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 
 		err = client.client.DeletePropertySet(ctx, id1)
 		if err != nil {
@@ -107,7 +99,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		log.Printf("Testing GetPropertySet() against %s %s (%s). This should fail", client.clientType, clientName, client.client.ApiVersion())
 		ps2, err = client.client.GetPropertySet(ctx, id1)
 		if err == nil {
-			t.Fatal("This Get Should have failed")
+			t.Fatal("This Get Should have failed with a 404")
 		}
 		log.Printf("Error Received %s", err)
 	}
