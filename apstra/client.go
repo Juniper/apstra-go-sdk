@@ -1493,31 +1493,28 @@ func (o *Client) GetPropertySet(ctx context.Context, id ObjectId) (*PropertySet,
 	return ps.polish()
 }
 
-// GetPropertySetsByLabel returns []PropertySet representing all property sets with the given label
-func (o *Client) GetPropertySetsByLabel(ctx context.Context, in string) ([]PropertySet, error) {
-	ps, err := o.getPropertySetsByLabel(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]PropertySet, len(ps))
-	for i := range ps {
-		polished, err := ps[i].polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *polished
-	}
-	return result, nil
-}
-
-// GetPropertySetByLabel returns *PropertySet representing the only property set with the given label,
-// or an error if multiple property sets share the label.
+// GetPropertySetByLabel returns *PropertySet representing the only property set with the given label, or an error if multiple property sets share the label.
 func (o *Client) GetPropertySetByLabel(ctx context.Context, in string) (*PropertySet, error) {
 	ps, err := o.getPropertySetByLabel(ctx, in)
 	if err != nil {
 		return nil, err
 	}
 	return ps.polish()
+}
+
+// CreatePropertySet creates a property set with the data in PropertySetData. On success, it returns the id of the new property set that was created
+func (o *Client) CreatePropertySet(ctx context.Context, in *PropertySetData) (ObjectId, error) {
+	return o.createPropertySet(ctx, in)
+}
+
+// UpdatePropertySet updates a property set identified by an id with the new set of data
+func (o *Client) UpdatePropertySet(ctx context.Context, id ObjectId, in *PropertySetData) error {
+	return o.updatePropertySet(ctx, id, in)
+}
+
+// DeletePropertySet deletes a property given the id
+func (o *Client) DeletePropertySet(ctx context.Context, id ObjectId) error {
+	return o.deletePropertySet(ctx, id)
 }
 
 // Private method added for Client.ready(), public wrapper not currently needed.

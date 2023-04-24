@@ -14,6 +14,19 @@ const (
 	apiUrlPropertySetById    = apiUrlPropertySetsPrefix + "%s"
 )
 
+type PropertySet struct {
+	Id        ObjectId
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Data      *PropertySetData
+}
+
+type PropertySetData struct {
+	Label      string            `json:"label"`
+	Values     map[string]string `json:"values"`
+	Blueprints []ObjectId        `json:"blueprints,omitempty"`
+}
+
 type rawPropertySet struct {
 	Id         ObjectId          `json:"id,omitempty"`
 	Label      string            `json:"label"`
@@ -32,7 +45,6 @@ func (o *rawPropertySet) polish() (*PropertySet, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing update time %s - %w", o.UpdatedAt, err)
 	}
-
 	return &PropertySet{
 		Id:        o.Id,
 		CreatedAt: created,
@@ -43,19 +55,6 @@ func (o *rawPropertySet) polish() (*PropertySet, error) {
 			Blueprints: o.Blueprints,
 		},
 	}, nil
-}
-
-type PropertySetData struct {
-	Label      string            `json:"label"`
-	Values     map[string]string `json:"values"`
-	Blueprints []ObjectId
-}
-
-type PropertySet struct {
-	Id        ObjectId
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Data      *PropertySetData
 }
 
 func (o *Client) listAllPropertySets(ctx context.Context) ([]ObjectId, error) {
