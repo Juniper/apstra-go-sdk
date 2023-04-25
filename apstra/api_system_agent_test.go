@@ -16,7 +16,10 @@ func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		client.client.Login(context.Background())
+		err = client.client.Login(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
 		// initial fetch
 		log.Printf("testing getSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		mgrCfg, err := client.client.getSystemAgentManagerConfig(context.Background())
