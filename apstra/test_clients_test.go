@@ -60,7 +60,10 @@ func getTestClients(ctx context.Context) (map[string]testClient, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	// There are no test clients. Might be worth logging
+	if len(testClients) == 0 {
+		log.Print("There seem to be no clients. Check the environment variables.")
+	}
 	for k := range testClients {
 		testClients[k].client.logger = log.New(f, "", log.LstdFlags)
 		testClients[k].client.cfg.LogLevel = 1
