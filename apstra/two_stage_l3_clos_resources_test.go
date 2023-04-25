@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestSetGetResourceAllocation(t *testing.T) {
@@ -19,8 +18,6 @@ func TestSetGetResourceAllocation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	rand.Seed(time.Now().UnixNano())
 
 	poolCount := rand.Intn(5) + 2
 	randStr := randString(5, "hex")

@@ -135,7 +135,7 @@ func (o rawSecurityZone) polish() (*SecurityZone, error) {
 
 	var routeTarget *string
 	if o.RouteTarget != "" {
-		rt := string(o.RouteTarget)
+		rt := o.RouteTarget
 		routeTarget = &rt
 	}
 

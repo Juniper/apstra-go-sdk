@@ -14,8 +14,6 @@ import (
 )
 
 func randString(n int, style string) string {
-	rand.Seed(time.Now().UnixNano())
-
 	var b64Letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
 	var hexLetters = []rune("0123456789abcdef")
 	var letters []rune

@@ -8,11 +8,9 @@ import (
 	"log"
 	"math/rand"
 	"testing"
-	"time"
 )
 
 func TestListGetOneRackType(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
@@ -72,7 +70,6 @@ func TestListGetAllGetRackType(t *testing.T) {
 			t.Fatalf("got %d rack type IDs but %d rack types", len(rackTypeIds), len(rackTypes))
 		}
 
-		rand.Seed(time.Now().UnixNano())
 		randRackid := rackTypeIds[rand.Intn(len(rackTypeIds))]
 		log.Printf("testing getRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		rt, err := client.client.GetRackType(context.TODO(), randRackid)

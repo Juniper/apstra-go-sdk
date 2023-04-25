@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/rand"
 	"testing"
-	"time"
 )
 
 func TestGetInterfaceMapDigest(t *testing.T) {
@@ -36,7 +35,6 @@ func TestGetInterfaceMapDigest(t *testing.T) {
 }
 
 func TestGetInterfaceMapDigestsByLogicalDevice(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
@@ -62,7 +60,6 @@ func TestGetInterfaceMapDigestsByLogicalDevice(t *testing.T) {
 }
 
 func TestGetInterfaceMapDigestsByDeviceProfile(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)

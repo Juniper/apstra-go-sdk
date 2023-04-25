@@ -200,7 +200,10 @@ func TestLockBlockUnlockLockUnlockBlueprintMutex(t *testing.T) {
 			delay := 2 * time.Second
 			log.Printf("Unlock scheduled for %s", time.Now().Add(delay))
 			time.Sleep(delay)
-			bpA.Mutex.Unlock(context.Background())
+			err = bpA.Mutex.Unlock(context.Background())
+			if err != nil {
+				t.Error("error unlocking blueprint")
+			}
 		}()
 
 		start := time.Now()

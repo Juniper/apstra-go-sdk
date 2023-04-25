@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/rand"
 	"testing"
-	"time"
 )
 
 func TestInterfaceSettingParam(t *testing.T) {
@@ -38,7 +37,6 @@ func TestInterfaceSettingParam(t *testing.T) {
 }
 
 func TestListGetAllInterfaceMaps(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)

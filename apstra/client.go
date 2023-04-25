@@ -391,7 +391,7 @@ func (o *Client) ListVniPoolIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listVniPoolIds(ctx)
 }
 
-// CreateVniPool adds an Vni pool to Apstra
+// CreateVniPool adds a VNI pool to Apstra
 func (o *Client) CreateVniPool(ctx context.Context, in *VniPoolRequest) (ObjectId, error) {
 	response, err := o.createVniPool(ctx, in)
 	if err != nil {
@@ -410,12 +410,12 @@ func (o *Client) GetVniPoolByName(ctx context.Context, name string) (*VniPool, e
 	return o.getVniPoolByName(ctx, name)
 }
 
-// DeleteVniPool deletes an Vni pool, by ObjectId from Apstra
+// DeleteVniPool deletes a VNI pool, by ObjectId from Apstra
 func (o *Client) DeleteVniPool(ctx context.Context, in ObjectId) error {
 	return o.deleteVniPool(ctx, in)
 }
 
-// UpdateVniPool updates an Vni pool by ObjectId with new Vni pool config
+// UpdateVniPool updates a VNI pool by ObjectId with new Vni pool config
 func (o *Client) UpdateVniPool(ctx context.Context, id ObjectId, cfg *VniPoolRequest) error {
 	// VniPool "write" operations are not concurrency safe
 	// It is important that this lock is performed in the public method, rather than the private
@@ -426,7 +426,7 @@ func (o *Client) UpdateVniPool(ctx context.Context, id ObjectId, cfg *VniPoolReq
 	return o.updateVniPool(ctx, id, cfg)
 }
 
-// CreateVniPoolRange updates an Vni pool by adding a new VniRange
+// CreateVniPoolRange updates a VNI pool by adding a new VniRange
 func (o *Client) CreateVniPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
 	return o.createVniPoolRange(ctx, poolId, newRange)
 }
@@ -437,7 +437,7 @@ func (o *Client) VniPoolRangeExists(ctx context.Context, poolId ObjectId, VniRan
 	return o.vniPoolRangeExists(ctx, poolId, VniRange)
 }
 
-// DeleteVniPoolRange updates an Vni pool by adding a new VniRange
+// DeleteVniPoolRange updates a VNI pool by adding a new VniRange
 func (o *Client) DeleteVniPoolRange(ctx context.Context, poolId ObjectId, deleteme IntfIntRange) error {
 	return o.deleteVniPoolRange(ctx, poolId, deleteme)
 }
@@ -950,7 +950,7 @@ func (o *Client) GetAllConfiglets(ctx context.Context) ([]Configlet, error) {
 	return result, nil
 }
 
-// ListAllConfiglets gets the List of All configlets' ids
+// ListAllConfiglets gets the List of All configlet IDs
 func (o *Client) ListAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllConfiglets(ctx)
 }
@@ -1018,7 +1018,7 @@ func (o *Client) GetAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBa
 }
 
 // GetRackBasedTemplateByName returns *RackBasedTemplate if exactly one pod_based template uses the
-// specified name. If zero or more than one templates use the name, an error is returned.
+// specified name. If zero templates or more than one template uses the name, an error is returned.
 func (o *Client) GetRackBasedTemplateByName(ctx context.Context, name string) (*TemplateRackBased, error) {
 	t, err := o.getTemplateByTypeAndName(ctx, templateTypeRackBased, name)
 	if err != nil {
@@ -1059,7 +1059,7 @@ func (o *Client) GetAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBase
 }
 
 // GetPodBasedTemplateByName returns *PodBasedTemplate if exactly one pod_based template uses the
-// specified name. If zero or more than one templates use the name, an error is returned.
+// specified name. If zero templates or more than one template uses the name, an error is returned.
 func (o *Client) GetPodBasedTemplateByName(ctx context.Context, name string) (*TemplatePodBased, error) {
 	t, err := o.getTemplateByTypeAndName(ctx, templateTypePodBased, name)
 	if err != nil {
@@ -1100,7 +1100,7 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 }
 
 // GetL3CollapsedTemplateByName returns *L3CollapsedTemplate if exactly one pod_based template uses the
-// specified name. If zero or more than one templates use the name, an error is returned.
+// specified name. If zero templates or more than one template uses the name, an error is returned.
 func (o *Client) GetL3CollapsedTemplateByName(ctx context.Context, name string) (*TemplateL3Collapsed, error) {
 	t, err := o.getTemplateByTypeAndName(ctx, templateTypeL3Collapsed, name)
 	if err != nil {
