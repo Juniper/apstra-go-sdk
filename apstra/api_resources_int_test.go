@@ -31,7 +31,7 @@ const (
 
 func TestEmptyAsnPool(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +139,7 @@ func TestUnmarshalPool(t *testing.T) {
 }
 
 func TestCreateDeleteAsnPoolRange(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,7 +193,7 @@ func TestCreateDeleteAsnPoolRange(t *testing.T) {
 }
 
 func TestGetAsnPoolByName(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -231,7 +231,7 @@ func TestGetAsnPoolByName(t *testing.T) {
 }
 
 func TestListAsnPoolIds(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +250,7 @@ func TestListAsnPoolIds(t *testing.T) {
 
 func TestEmptyVniPool(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -350,7 +350,7 @@ func TestEmptyVniPool(t *testing.T) {
 }
 
 func TestCreateDeleteVniPoolRange(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -404,7 +404,7 @@ func TestCreateDeleteVniPoolRange(t *testing.T) {
 }
 
 func TestGetVniPoolByName(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -442,7 +442,7 @@ func TestGetVniPoolByName(t *testing.T) {
 }
 
 func TestListVniPoolIds(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

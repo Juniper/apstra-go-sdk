@@ -39,7 +39,7 @@ func TestInterfaceSettingParam(t *testing.T) {
 
 func TestListGetAllInterfaceMaps(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestListGetAllInterfaceMaps(t *testing.T) {
 }
 
 func TestCreateInterfaceMap(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +179,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 }
 
 func TestGetInterfaceMapByName(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

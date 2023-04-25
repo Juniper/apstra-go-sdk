@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
