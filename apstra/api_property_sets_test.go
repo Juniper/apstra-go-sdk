@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/rand"
 	"testing"
-	"time"
 )
 
 func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
@@ -44,7 +43,6 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rand.Seed(time.Now().UnixNano())
 	samples := rand.Intn(10) + 3
 	ps := &PropertySetData{
 		Label:  randString(10, "hex"),

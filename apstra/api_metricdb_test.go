@@ -59,7 +59,6 @@ func TestUseAggregation(t *testing.T) {
 }
 
 func TestQueryMetricdb(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)

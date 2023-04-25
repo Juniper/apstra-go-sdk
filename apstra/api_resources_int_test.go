@@ -11,7 +11,6 @@ import (
 	"math/rand"
 	"sort"
 	"testing"
-	"time"
 )
 
 const (
@@ -30,7 +29,6 @@ const (
 )
 
 func TestEmptyAsnPool(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
@@ -249,7 +247,6 @@ func TestListAsnPoolIds(t *testing.T) {
 }
 
 func TestEmptyVniPool(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)

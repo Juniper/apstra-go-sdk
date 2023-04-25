@@ -11,7 +11,6 @@ import (
 	"math/rand"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestUnmarshalTemplate(t *testing.T) {
@@ -445,7 +444,6 @@ func TestGetTemplate(t *testing.T) {
 
 func TestGetTemplateMethods(t *testing.T) {
 	var n int
-	rand.Seed(time.Now().UnixNano())
 
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {

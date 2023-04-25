@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"testing"
-	"time"
 )
 
 const envSampleSize = "GOAPSTRA_TEST_SAMPLE_MAX"
@@ -20,7 +19,6 @@ func intsFromZero(length int) []int {
 }
 
 func samples(length int) []int {
-	rand.Seed(time.Now().UnixNano())
 	var sampleSizeStr string
 	var sampleSizeInt int
 	var found bool
