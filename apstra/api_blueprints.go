@@ -79,7 +79,7 @@ func (o *RefDesign) FromString(s string) error {
 	if err != nil {
 		return err
 	}
-	*o = RefDesign(i)
+	*o = i
 	return nil
 }
 

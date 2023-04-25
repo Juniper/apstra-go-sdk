@@ -101,7 +101,7 @@ func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
 	cg.Filename = o.Filename
 	cg.NegationTemplateText = o.NegationTemplateText
 	cg.ConfigStyle = o.ConfigStyle.raw().string()
-	cg.Section = string(ConfigletSection(o.Section).raw())
+	cg.Section = string(o.Section.raw())
 
 	return &cg
 }

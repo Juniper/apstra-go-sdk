@@ -1365,7 +1365,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 
 		// prep the rackTypeCount object using the caller's map key (ObjectId) as
 		// the link between the racktype data copy and the racktypecount
-		rackTypeCounts[i].RackTypeId = ObjectId(k)
+		rackTypeCounts[i].RackTypeId = k
 		rackTypeCounts[i].Count = ri.Count
 		i++
 	}
