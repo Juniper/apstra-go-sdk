@@ -359,7 +359,7 @@ func TestTemplateStrings(t *testing.T) {
 }
 
 func TestGetTemplate(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -447,7 +447,7 @@ func TestGetTemplateMethods(t *testing.T) {
 	var n int
 	rand.Seed(time.Now().UnixNano())
 
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -515,7 +515,7 @@ func TestGetTemplateMethods(t *testing.T) {
 }
 
 func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -572,7 +572,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 }
 
 func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -674,7 +674,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 }
 
 func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -712,7 +712,7 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 }
 
 func TestGetL3CollapsedTemplateByName(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -734,7 +734,7 @@ func TestGetL3CollapsedTemplateByName(t *testing.T) {
 }
 
 func TestGetRackBasedTemplateByName(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -756,7 +756,7 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 }
 
 func TestGetPodBasedTemplateByName(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -778,7 +778,7 @@ func TestGetPodBasedTemplateByName(t *testing.T) {
 }
 
 func TestGetTemplateType(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -809,7 +809,7 @@ func TestGetTemplateType(t *testing.T) {
 }
 
 func TestGetTemplateIdsTypesByName(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

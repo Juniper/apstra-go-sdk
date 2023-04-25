@@ -15,7 +15,7 @@ import (
 
 func TestSetGetResourceAllocation(t *testing.T) {
 	ctx := context.Background()
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

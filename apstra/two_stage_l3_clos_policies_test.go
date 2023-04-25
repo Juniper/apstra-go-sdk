@@ -93,7 +93,7 @@ func TestRawPortRangesParse(t *testing.T) {
 
 func TestGetAllPolicies(t *testing.T) {
 	ctx := context.Background()
-	clients, err := getTestClients(ctx)
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +129,7 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 	t.Skip()
 	return
 	ctx := context.Background()
-	clients, err := getTestClients(ctx)
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -190,7 +190,7 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 func TestAddDeletePolicyRule(t *testing.T) {
 	// todo re-write this test to create required conditions
 	t.Skip("this test needs to be re-written - skipping")
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

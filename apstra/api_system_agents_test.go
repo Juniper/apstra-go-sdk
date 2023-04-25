@@ -18,7 +18,7 @@ const envSkipSwitchAgentTest = "GOAPSTRA_SPEEDY_SKIP_SWITCH_AGENT_TEST"
 const fileSkipSwitchAgentTest = "/tmp/GOAPSTRA_SPEEDY_SKIP_SWITCH_AGENT_TEST"
 
 func TestGetSystemAgent(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 		t.Skipf("skipping switch agent tests because '%s' exists", fileSkipSwitchAgentTest)
 	}
 
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

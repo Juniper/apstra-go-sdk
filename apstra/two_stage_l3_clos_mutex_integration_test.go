@@ -15,7 +15,7 @@ import (
 // TestLockUnlockBlueprintMutex is a simple test of Lock() followed by Unlock()
 func TestLockUnlockBlueprintMutex(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +67,7 @@ func TestLockUnlockBlueprintMutex(t *testing.T) {
 // verifies that we hit context expiration
 func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -147,7 +147,7 @@ func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 // to ensure that timing is works out as expected.
 func TestLockBlockUnlockLockUnlockBlueprintMutex(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -233,7 +233,7 @@ func TestLockBlockUnlockLockUnlockBlueprintMutex(t *testing.T) {
 // attempted against a previously Lock()ed blueprint.
 func TestLockTryLockBlueprintMutex(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -319,7 +319,7 @@ func TestLockTryLockBlueprintMutex(t *testing.T) {
 // attempted against a previously TryLock()ed blueprint.
 func TestTryLockTryLockBlueprintMutex(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -404,7 +404,7 @@ func TestTryLockTryLockBlueprintMutex(t *testing.T) {
 // against a locked blueprint, then succeeds after the lock is released.
 func TestLockUnlLockTrylockBlueprintMutex(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -482,7 +482,7 @@ func TestLockUnlLockTrylockBlueprintMutex(t *testing.T) {
 // on that mutex to ensure they fail with the expected error type.
 func TestReadOnlyBlueprintMutex(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

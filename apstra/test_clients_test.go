@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"testing"
 	"time"
 )
 
@@ -31,7 +32,7 @@ type testClient struct {
 
 var testClients map[string]testClient
 
-func getTestClients(ctx context.Context) (map[string]testClient, error) {
+func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, error) {
 	if testClients != nil {
 		return testClients, nil
 	}
@@ -60,7 +61,10 @@ func getTestClients(ctx context.Context) (map[string]testClient, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	// There are no test clients. Might be worth logging
+	if len(testClients) == 0 {
+		t.Fatal("Error : There seem to be no clients. Check the environment variables.")
+	}
 	for k := range testClients {
 		testClients[k].client.logger = log.New(f, "", log.LstdFlags)
 		testClients[k].client.cfg.LogLevel = 1

@@ -11,7 +11,7 @@ import (
 )
 
 func TestListAndGetAllDeviceProfiles(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func TestListAndGetAllDeviceProfiles(t *testing.T) {
 }
 
 func TestGetDeviceProfile(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestGetDeviceProfile(t *testing.T) {
 }
 
 func TestGetDeviceProfileByName(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestGetDeviceProfileByName(t *testing.T) {
 }
 
 func TestGetTransformCandidates(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

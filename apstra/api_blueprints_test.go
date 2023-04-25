@@ -11,7 +11,7 @@ import (
 )
 
 func TestListAllBlueprintIds(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +32,7 @@ func TestListAllBlueprintIds(t *testing.T) {
 }
 
 func TestGetAllBlueprintStatus(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestGetAllBlueprintStatus(t *testing.T) {
 }
 
 func TestCreateDeleteBlueprint(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 
 func TestGetPatchGetPatchNode(t *testing.T) {
 	ctx := context.Background()
-	clients, err := getTestClients(ctx)
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}

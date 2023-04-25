@@ -11,7 +11,7 @@ import (
 )
 
 func TestClientLog(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +23,7 @@ func TestClientLog(t *testing.T) {
 }
 
 func TestLoginEmptyPassword(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func TestLoginEmptyPassword(t *testing.T) {
 }
 
 func TestLoginBadPassword(t *testing.T) {
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,7 +85,7 @@ func TestLogoutAuthFail(t *testing.T) {
 func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 	ctx := context.Background()
 
-	clients, err := getTestClients(context.Background())
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}

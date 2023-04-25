@@ -105,7 +105,7 @@ func compareDcRoutingPolicyData(t *testing.T, a, b *DcRoutingPolicyData) {
 func TestRoutingPolicies(t *testing.T) {
 	ctx := context.Background()
 
-	clients, err := getTestClients(ctx)
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
