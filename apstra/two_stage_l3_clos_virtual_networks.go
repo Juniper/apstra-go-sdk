@@ -307,16 +307,16 @@ func (o vnType) parse() (int, error) {
 
 // AllVirtualNetworkTypes returns the []VnType representing
 // each supported VnType
-func AllVirtualNetworkTypes() []VnType {
+func AllVirtualNetworkTypes() []*VnType {
 	i := 0
-	var result []VnType
+	var result []*VnType
 	for {
-		var os VnType
-		err := os.FromString(VnType(i).String())
+		var vnt VnType
+		err := vnt.FromString(VnType(i).String())
 		if err != nil {
 			return result[:i]
 		}
-		result = append(result, os)
+		result = append(result, &vnt)
 		i++
 	}
 }
