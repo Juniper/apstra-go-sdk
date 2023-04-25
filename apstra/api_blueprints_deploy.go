@@ -98,14 +98,14 @@ func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeployRequest
 		Version:     in.Version,
 	}
 
-	url, err := url.Parse(fmt.Sprintf(apiUrlBlueprintDeploy, in.Id))
+	deployUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintDeploy, in.Id))
 	if err != nil {
 		return nil, err
 	}
 
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		url:      url,
+		url:      deployUrl,
 		apiInput: request,
 	})
 	if err != nil {
@@ -115,7 +115,7 @@ func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeployRequest
 	response := &rawBlueprintDeployResponse{}
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		url:         url,
+		url:         deployUrl,
 		apiResponse: &response,
 	})
 
