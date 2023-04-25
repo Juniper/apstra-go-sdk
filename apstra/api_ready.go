@@ -6,7 +6,7 @@ import (
 )
 
 // ready tests whether an Apstra server is ready to handle client requests.
-// It's based based on a code sample shared by JP Senior
+// It's based on a code sample shared by JP Senior
 // https://apstra-eng.slack.com/archives/C2DFCFHJR/p1674246878325579?thread_ts=1674244723.467159&cid=C2DFCFHJR
 func (o *Client) ready(ctx context.Context) error {
 	var err error

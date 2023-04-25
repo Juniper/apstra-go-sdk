@@ -97,7 +97,7 @@ func (o IntRanges) Overlaps(b IntfIntRange) bool {
 type IntPool struct {
 	Id             ObjectId
 	DisplayName    string
-	Ranges         IntRanges // use the named slice type so we can call IndexOf()
+	Ranges         IntRanges // by using the named slice type we can call IndexOf()
 	Tags           []string
 	Status         PoolStatus
 	CreatedAt      time.Time
