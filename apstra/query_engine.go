@@ -3,6 +3,7 @@ package apstra
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -117,6 +118,7 @@ type QEQuery struct {
 	context       context.Context
 	blueprintId   ObjectId
 	blueprintType BlueprintType
+	match         []QEQuery
 }
 
 func (o *QEQuery) addElement(elementType string, attributes []QEEAttribute) *QEQuery {
@@ -157,22 +159,45 @@ func (o *QEQuery) SetBlueprintId(id ObjectId) *QEQuery {
 	return o
 }
 
-func (o *QEQuery) String() string {
+func (o *QEQuery) String() (string, error) {
 	return o.string()
 }
 
-func (o *QEQuery) string() string {
+func (o *QEQuery) string() (string, error) {
+	if o.firstElement != nil && len(o.match) != 0 {
+		return "", errors.New("cannot stringify QEQuery with both path and match elements")
+	}
+
 	sb := strings.Builder{}
+
 	if o.firstElement != nil {
-		sb.WriteString(o.firstElement.String())
+		var next *QEElement
+		if o.firstElement != nil {
+			sb.WriteString(o.firstElement.String())
+			next = o.firstElement.getNext()
+		}
+		for next != nil {
+			sb.WriteString(".")
+			sb.WriteString(next.String())
+			next = next.next
+		}
+		return sb.String(), nil
 	}
-	next := o.firstElement.getNext()
-	for next != nil {
-		sb.WriteString(".")
-		sb.WriteString(next.String())
-		next = next.next
+
+	if len(o.match) != 0 {
+		sb.WriteString("match(")
+		for i := range o.match {
+			s, err := o.match[i].string()
+			if err != nil {
+				return "", err
+			}
+			sb.WriteString(s + ",")
+		}
+		sb.WriteString(")")
+		return sb.String(), nil
 	}
-	return sb.String()
+
+	return "", errors.New("cannot stringify QEQuery with neither path nor match elements")
 }
 
 func (o *QEQuery) Do(response interface{}) error {
@@ -181,4 +206,9 @@ func (o *QEQuery) Do(response interface{}) error {
 		ctx = context.TODO()
 	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
+}
+
+func (o *QEQuery) Match(q *QEQuery) *QEQuery {
+	o.match = append(o.match, *q)
+	return o
 }

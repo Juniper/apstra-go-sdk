@@ -475,9 +475,14 @@ func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuer
 		apstraUrl.RawQuery = params.Encode()
 	}
 
+	qString, err := query.string()
+	if err != nil {
+		return err
+	}
+
 	apiInput := &struct {
 		Query string `json:"query"`
-	}{Query: query.string()}
+	}{Query: qString}
 
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodPost,

@@ -50,7 +50,7 @@ func TestQEEAttributeString(t *testing.T) {
 
 func TestQueryString(t *testing.T) {
 	x := QEQuery{}
-	y := x.Node([]QEEAttribute{
+	y, err := x.Node([]QEEAttribute{
 		{"type", QEStringVal("system")},
 		{"name", QEStringVal("n_system")},
 		{"system_type", QEStringVal("switch")},
@@ -65,6 +65,9 @@ func TestQueryString(t *testing.T) {
 			{"name", QEStringVal("n_interface_map")},
 		}).
 		string()
+	if err != nil {
+		t.Fatal(err)
+	}
 	log.Println("\n", y)
 }
 
@@ -123,4 +126,50 @@ func TestParsingQueryInfo(t *testing.T) {
 			log.Printf("  %d id: '%s', label: '%s', logical_device: '%s'", i, item.System.Id, item.System.Label, item.LogicalDevice.Label)
 		}
 	}
+}
+
+func TestQueryMatchString(t *testing.T) {
+	expected := "match(node(type='system',name='n_system',role=is_in(['superspine','spine','leaf']),external=False).in_(type='tag').node(type='tag',label='tag_a',name='n_tag_a'),node(type='system',name='n_system',role=is_in(['superspine','spine','leaf']),external=False).in_(type='tag').node(type='tag',label='tag_b',name='n_tag_b'),)"
+	matchTagA := new(QEQuery).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("system")},
+			{"name", QEStringVal("n_system")},
+			{"role", QEStringValIsIn{"superspine", "spine", "leaf"}},
+			{"external", QEBoolVal(false)},
+		}).
+		In([]QEEAttribute{
+			{"type", QEStringVal("tag")},
+		}).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("tag")},
+			{"label", QEStringVal("tag_a")},
+			{"name", QEStringVal("n_tag_a")},
+		})
+
+	matchTagB := new(QEQuery).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("system")},
+			{"name", QEStringVal("n_system")},
+			{"role", QEStringValIsIn{"superspine", "spine", "leaf"}},
+			{"external", QEBoolVal(false)},
+		}).
+		In([]QEEAttribute{
+			{"type", QEStringVal("tag")},
+		}).
+		Node([]QEEAttribute{
+			{"type", QEStringVal("tag")},
+			{"label", QEStringVal("tag_b")},
+			{"name", QEStringVal("n_tag_b")},
+		})
+
+	result, err := new(QEQuery).Match(matchTagA).Match(matchTagB).String()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if result != expected {
+		t.Fatalf("expected %q, got %q\n", expected, result)
+	}
+
+	log.Println(result)
 }
