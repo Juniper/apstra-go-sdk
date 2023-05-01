@@ -104,10 +104,10 @@ func (o QEBoolVal) String() string {
 	return "False"
 }
 
-func (o *Client) newQuery(blueprint ObjectId) *QEQuery {
+func (o *Client) newQuery(blueprintId ObjectId) *QEQuery {
 	return &QEQuery{
 		client:      o,
-		blueprintId: blueprint,
+		blueprintId: blueprintId,
 	}
 }
 
