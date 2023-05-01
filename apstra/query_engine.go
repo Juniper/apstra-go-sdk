@@ -200,6 +200,11 @@ func (o *QEQuery) string() (string, error) {
 	return "", errors.New("cannot stringify QEQuery with neither path nor match elements")
 }
 
+func (o *QEQuery) SetClient(client *Client) *QEQuery {
+	o.client = client
+	return o
+}
+
 func (o *QEQuery) Do(response interface{}) error {
 	ctx := o.context
 	if o.context == nil {
