@@ -106,8 +106,8 @@ func (o QEBoolVal) String() string {
 
 func (o *Client) newQuery(blueprint ObjectId) *QEQuery {
 	return &QEQuery{
-		client:    o,
-		blueprint: blueprint,
+		client:      o,
+		blueprintId: blueprint,
 	}
 }
 
@@ -115,7 +115,7 @@ type QEQuery struct {
 	firstElement  *QEElement
 	client        *Client
 	context       context.Context
-	blueprint     ObjectId
+	blueprintId   ObjectId
 	blueprintType BlueprintType
 }
 
@@ -175,5 +175,5 @@ func (o *QEQuery) Do(response interface{}) error {
 	if o.context == nil {
 		ctx = context.TODO()
 	}
-	return o.client.runQuery(ctx, o.blueprint, o, response)
+	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
