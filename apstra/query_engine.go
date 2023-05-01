@@ -152,6 +152,11 @@ func (o *QEQuery) SetType(t BlueprintType) *QEQuery {
 	return o
 }
 
+func (o *QEQuery) SetBlueprintId(id ObjectId) *QEQuery {
+	o.blueprintId = id
+	return o
+}
+
 func (o *QEQuery) String() string {
 	return o.string()
 }
