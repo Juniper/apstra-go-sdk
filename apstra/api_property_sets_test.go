@@ -5,10 +5,11 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"testing"
-	"time"
 )
 
 func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
@@ -24,18 +25,11 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 				return false
 			}
 		}
-		if len(a.Values) != len(b.Values) {
-			return false
+		eq, err := areEqualJSON(a.Values, b.Values)
+		if err != nil {
+			t.Fatal(err)
 		}
-		for k := range a.Values {
-			if _, ok := b.Values[k]; !ok {
-				return false
-			}
-			if a.Values[k] != b.Values[k] {
-				return false
-			}
-		}
-		return true
+		return eq
 	}
 
 	ctx := context.Background()
@@ -44,18 +38,19 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rand.Seed(time.Now().UnixNano())
 	samples := rand.Intn(10) + 3
+	m := make(map[string]string, samples)
 	ps := &PropertySetData{
-		Label:  randString(10, "hex"),
-		Values: make(map[string]string, samples),
+		Label: randString(10, "hex"),
 	}
 	for i := 0; i < samples; i++ {
-		ps.Values["_"+randString(10, "hex")] = randString(10, "hex")
+		m["_"+randString(10, "hex")] = randString(10, "hex")
 	}
-
+	b, err := json.Marshal(m)
+	ps.Values = b
 	for clientName, client := range clients {
 		log.Printf("testing CreatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+
 		id1, err := client.client.CreatePropertySet(ctx, ps)
 		if err != nil {
 			t.Fatal(err)
@@ -71,8 +66,14 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 
 		ps.Label = randString(10, "hex")
 		for i := 0; i < samples; i++ {
-			ps.Values["_"+randString(10, "hex")] = randString(10, "hex")
+			m["_"+randString(10, "hex")] = randString(10, "hex")
 		}
+		b, err = json.Marshal(m)
+		s := string(b)
+		s = s[:len(s)-1] + `,"json_in_json":{"integer":1, "string":"2"}}`
+		fmt.Printf(s)
+		b = []byte(s)
+		ps.Values = b
 
 		log.Printf("testing UpdatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.UpdatePropertySet(ctx, id1, ps)
