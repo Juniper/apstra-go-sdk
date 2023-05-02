@@ -210,17 +210,17 @@ func (o *MatchQuery) Do(ctx context.Context, response interface{}) error {
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
 
-func (o *MatchQuery) SetBlueprintId(id ObjectId) QEQuery {
+func (o *MatchQuery) SetBlueprintId(id ObjectId) *MatchQuery {
 	o.blueprintId = id
 	return o
 }
 
-func (o *MatchQuery) SetBlueprintType(t BlueprintType) QEQuery {
+func (o *MatchQuery) SetBlueprintType(t BlueprintType) *MatchQuery {
 	o.blueprintType = t
 	return o
 }
 
-func (o *MatchQuery) SetClient(client *Client) QEQuery {
+func (o *MatchQuery) SetClient(client *Client) *MatchQuery {
 	o.client = client
 	return o
 }
