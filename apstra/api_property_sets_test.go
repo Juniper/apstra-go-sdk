@@ -5,6 +5,7 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"math/rand"
 	"testing"
@@ -23,18 +24,11 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 				return false
 			}
 		}
-		if len(a.Values) != len(b.Values) {
-			return false
-		}
-		for k := range a.Values {
-			if _, ok := b.Values[k]; !ok {
-				return false
-			}
-			if a.Values[k] != b.Values[k] {
-				return false
-			}
-		}
-		return true
+		return jsonEqual(t, a.Values, b.Values)
+	}
+
+	append_to_byte := func(a []byte, s string) []byte {
+		return []byte(string(a) + s)
 	}
 
 	ctx := context.Background()
@@ -45,11 +39,16 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 
 	samples := rand.Intn(10) + 3
 	ps := &PropertySetData{
-		Label:  randString(10, "hex"),
-		Values: make(map[string]string, samples),
+		Label: randString(10, "hex"),
 	}
+	vals := make(map[string]string, samples)
+
 	for i := 0; i < samples; i++ {
-		ps.Values["_"+randString(10, "hex")] = randString(10, "hex")
+		vals["_"+randString(10, "hex")] = randString(10, "hex")
+	}
+	ps.Values, err = json.Marshal(vals)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	for clientName, client := range clients {
@@ -69,15 +68,18 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 
 		ps.Label = randString(10, "hex")
 		for i := 0; i < samples; i++ {
-			ps.Values["_"+randString(10, "hex")] = randString(10, "hex")
+			vals["_"+randString(10, "hex")] = randString(10, "hex")
 		}
-
+		ps.Values, err = json.Marshal(vals)
+		ps.Values = append_to_byte(ps.Values[:len(ps.Values)-1], `,"inner_json":{"number":1, "string":"str1"}}`)
+		if err != nil {
+			t.Fatal(err)
+		}
 		log.Printf("testing UpdatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.UpdatePropertySet(ctx, id1, ps)
 		if err != nil {
 			t.Fatal(err)
 		}
-
 		log.Printf("testing GetPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		ps2, err := client.client.GetPropertySet(ctx, id1)
 		if err != nil {
