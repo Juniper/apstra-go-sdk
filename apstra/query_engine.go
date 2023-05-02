@@ -15,9 +15,6 @@ const (
 
 type QEQuery interface {
 	Do(context.Context, interface{}) error
-	SetBlueprintId(ObjectId) QEQuery
-	SetBlueprintType(BlueprintType) QEQuery
-	SetClient(*Client) QEQuery
 	String() string
 	getBlueprintType() BlueprintType
 }
@@ -68,7 +65,7 @@ func (o *QEElement) getLast() *QEElement {
 	return last
 }
 
-func (o QEElement) String() string {
+func (o *QEElement) String() string {
 	attrsSB := strings.Builder{}
 
 	// add first attribute to string builder without leading separator
@@ -140,17 +137,17 @@ func (o *PathQuery) Do(ctx context.Context, response interface{}) error {
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
 
-func (o *PathQuery) SetBlueprintId(id ObjectId) QEQuery {
+func (o *PathQuery) SetBlueprintId(id ObjectId) *PathQuery {
 	o.blueprintId = id
 	return o
 }
 
-func (o *PathQuery) SetBlueprintType(t BlueprintType) QEQuery {
+func (o *PathQuery) SetBlueprintType(t BlueprintType) *PathQuery {
 	o.blueprintType = t
 	return o
 }
 
-func (o *PathQuery) SetClient(client *Client) QEQuery {
+func (o *PathQuery) SetClient(client *Client) *PathQuery {
 	o.client = client
 	return o
 }
@@ -202,33 +199,33 @@ type MatchQuery struct {
 	match         []PathQuery
 }
 
-func (o MatchQuery) getBlueprintType() BlueprintType {
+func (o *MatchQuery) getBlueprintType() BlueprintType {
 	return o.blueprintType
 }
 
-func (o MatchQuery) Do(ctx context.Context, response interface{}) error {
+func (o *MatchQuery) Do(ctx context.Context, response interface{}) error {
 	if o.client == nil {
 		return errors.New("attempt to execute query without setting client")
 	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
 
-func (o MatchQuery) SetBlueprintId(id ObjectId) QEQuery {
+func (o *MatchQuery) SetBlueprintId(id ObjectId) QEQuery {
 	o.blueprintId = id
 	return o
 }
 
-func (o MatchQuery) SetBlueprintType(t BlueprintType) QEQuery {
+func (o *MatchQuery) SetBlueprintType(t BlueprintType) QEQuery {
 	o.blueprintType = t
 	return o
 }
 
-func (o MatchQuery) SetClient(client *Client) QEQuery {
+func (o *MatchQuery) SetClient(client *Client) QEQuery {
 	o.client = client
 	return o
 }
 
-func (o MatchQuery) String() string {
+func (o *MatchQuery) String() string {
 	var sb strings.Builder
 	sb.WriteString("match(")
 	for i := range o.match {
