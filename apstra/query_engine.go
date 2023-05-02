@@ -229,11 +229,14 @@ func (o *MatchQuery) String() string {
 	var sb strings.Builder
 	sb.WriteString("match(")
 	for i := range o.match {
-		s := o.match[i].String()
-		sb.WriteString(s + ",")
+		if i != 0 {
+			sb.WriteString(",")
+		}
+		sb.WriteString(o.match[i].String())
 	}
+	sb.WriteString(")")
 
-	return sb.String()[:sb.Len()-1] + ")" // omit the trailing ',' and then tack on the closing ')'
+	return sb.String()
 }
 
 func (o *MatchQuery) Match(q *PathQuery) *MatchQuery {
