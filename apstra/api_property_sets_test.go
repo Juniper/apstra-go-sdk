@@ -25,11 +25,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 				return false
 			}
 		}
-		eq, err := jsonEqual(a.Values, b.Values)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return eq
+		return jsonEqual(t, a.Values, b.Values)
 	}
 
 	append_to_byte := func(a []byte, s string) []byte {
