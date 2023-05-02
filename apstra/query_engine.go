@@ -13,6 +13,18 @@ const (
 	qEElementAttributeSep      = ","
 )
 
+type QEQuery interface {
+	Do(context.Context, interface{}) error
+	SetBlueprintId(ObjectId) QEQuery
+	SetBlueprintType(BlueprintType) QEQuery
+	SetClient(*Client) QEQuery
+	String() string
+	getBlueprintType() BlueprintType
+}
+
+var _ QEQuery = &PathQuery{}
+var _ QEQuery = &MatchQuery{}
+
 type QEEType int
 
 const (
@@ -105,23 +117,61 @@ func (o QEBoolVal) String() string {
 	return "False"
 }
 
-func (o *Client) newQuery(blueprintId ObjectId) *QEQuery {
-	return &QEQuery{
+func (o *Client) newQuery(blueprintId ObjectId) *PathQuery {
+	return &PathQuery{
 		client:      o,
 		blueprintId: blueprintId,
 	}
 }
 
-type QEQuery struct {
+type PathQuery struct {
 	firstElement  *QEElement
 	client        *Client
 	context       context.Context
 	blueprintId   ObjectId
 	blueprintType BlueprintType
-	match         []QEQuery
 }
 
-func (o *QEQuery) addElement(elementType string, attributes []QEEAttribute) *QEQuery {
+func (o *PathQuery) getBlueprintType() BlueprintType {
+	return o.blueprintType
+}
+
+func (o *PathQuery) Do(ctx context.Context, response interface{}) error {
+	return o.client.runQuery(ctx, o.blueprintId, o, response)
+}
+
+func (o *PathQuery) SetBlueprintId(id ObjectId) QEQuery {
+	o.blueprintId = id
+	return o
+}
+
+func (o *PathQuery) SetBlueprintType(t BlueprintType) QEQuery {
+	o.blueprintType = t
+	return o
+}
+
+func (o *PathQuery) SetClient(client *Client) QEQuery {
+	o.client = client
+	return o
+}
+
+func (o *PathQuery) String() string {
+	sb := strings.Builder{}
+
+	var next *QEElement
+	if o.firstElement != nil {
+		sb.WriteString(o.firstElement.String())
+		next = o.firstElement.getNext()
+	}
+	for next != nil {
+		sb.WriteString(".")
+		sb.WriteString(next.String())
+		next = next.next
+	}
+	return sb.String()
+}
+
+func (o *PathQuery) addElement(elementType string, attributes []QEEAttribute) *PathQuery {
 	newElement := QEElement{
 		qeeType:    elementType,
 		attributes: attributes,
@@ -134,86 +184,62 @@ func (o *QEQuery) addElement(elementType string, attributes []QEEAttribute) *QEQ
 	return o
 }
 
-func (o *QEQuery) Node(attributes []QEEAttribute) *QEQuery {
+func (o *PathQuery) Node(attributes []QEEAttribute) *PathQuery {
 	return o.addElement(qEETypeNode, attributes)
 }
-func (o *QEQuery) Out(attributes []QEEAttribute) *QEQuery {
+func (o *PathQuery) Out(attributes []QEEAttribute) *PathQuery {
 	return o.addElement(qEETypeOut, attributes)
 }
-func (o *QEQuery) In(attributes []QEEAttribute) *QEQuery {
+func (o *PathQuery) In(attributes []QEEAttribute) *PathQuery {
 	return o.addElement(qEETypeIn, attributes)
 }
 
-func (o *QEQuery) SetContext(ctx context.Context) *QEQuery {
-	o.context = ctx
-	return o
+type MatchQuery struct {
+	client        *Client
+	context       context.Context
+	blueprintId   ObjectId
+	blueprintType BlueprintType
+	match         []PathQuery
 }
 
-func (o *QEQuery) SetType(t BlueprintType) *QEQuery {
-	o.blueprintType = t
-	return o
+func (o MatchQuery) getBlueprintType() BlueprintType {
+	return o.blueprintType
 }
 
-func (o *QEQuery) SetBlueprintId(id ObjectId) *QEQuery {
-	o.blueprintId = id
-	return o
-}
-
-func (o *QEQuery) String() (string, error) {
-	return o.string()
-}
-
-func (o *QEQuery) string() (string, error) {
-	if o.firstElement != nil && len(o.match) != 0 {
-		return "", errors.New("cannot stringify QEQuery with both path and match elements")
-	}
-
-	sb := strings.Builder{}
-
-	if o.firstElement != nil {
-		var next *QEElement
-		if o.firstElement != nil {
-			sb.WriteString(o.firstElement.String())
-			next = o.firstElement.getNext()
-		}
-		for next != nil {
-			sb.WriteString(".")
-			sb.WriteString(next.String())
-			next = next.next
-		}
-		return sb.String(), nil
-	}
-
-	if len(o.match) != 0 {
-		sb.WriteString("match(")
-		for i := range o.match {
-			s, err := o.match[i].string()
-			if err != nil {
-				return "", err
-			}
-			sb.WriteString(s + ",")
-		}
-		sb.WriteString(")")
-		return sb.String(), nil
-	}
-
-	return "", errors.New("cannot stringify QEQuery with neither path nor match elements")
-}
-
-func (o *QEQuery) SetClient(client *Client) *QEQuery {
-	o.client = client
-	return o
-}
-
-func (o *QEQuery) Do(response interface{}) error {
-	ctx := o.context
-	if o.context == nil {
-		ctx = context.TODO()
+func (o MatchQuery) Do(ctx context.Context, response interface{}) error {
+	if o.client == nil {
+		return errors.New("attempt to execute query without setting client")
 	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
 
-func (o *QEQuery) Match(q *QEQuery) *QEQuery {
+func (o MatchQuery) SetBlueprintId(id ObjectId) QEQuery {
+	o.blueprintId = id
+	return o
+}
+
+func (o MatchQuery) SetBlueprintType(t BlueprintType) QEQuery {
+	o.blueprintType = t
+	return o
+}
+
+func (o MatchQuery) SetClient(client *Client) QEQuery {
+	o.client = client
+	return o
+}
+
+func (o MatchQuery) String() string {
+	var sb strings.Builder
+	sb.WriteString("match(")
+	for i := range o.match {
+		s := o.match[i].String()
+		sb.WriteString(s + ",")
+	}
+
+	return sb.String()[:sb.Len()-1] + ")" // omit the trailing ',' and then tack on the closing ')'
+}
+
+func (o *MatchQuery) Match(q *PathQuery) *MatchQuery {
 	o.match = append(o.match, *q)
 	return o
 }

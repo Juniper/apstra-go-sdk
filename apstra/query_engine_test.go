@@ -49,8 +49,8 @@ func TestQEEAttributeString(t *testing.T) {
 }
 
 func TestQueryString(t *testing.T) {
-	x := QEQuery{}
-	y, err := x.Node([]QEEAttribute{
+	x := PathQuery{}
+	y := x.Node([]QEEAttribute{
 		{"type", QEStringVal("system")},
 		{"name", QEStringVal("n_system")},
 		{"system_type", QEStringVal("switch")},
@@ -64,10 +64,7 @@ func TestQueryString(t *testing.T) {
 			{"type", QEStringVal("interface_map")},
 			{"name", QEStringVal("n_interface_map")},
 		}).
-		string()
-	if err != nil {
-		t.Fatal(err)
-	}
+		String()
 	log.Println("\n", y)
 }
 
@@ -116,7 +113,7 @@ func TestParsingQueryInfo(t *testing.T) {
 				{"type", QEStringVal("logical_device")},
 				{"name", QEStringVal("n_logical_device")},
 			}).
-			Do(&qResponse)
+			Do(ctx, &qResponse)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -129,8 +126,9 @@ func TestParsingQueryInfo(t *testing.T) {
 }
 
 func TestQueryMatchString(t *testing.T) {
-	expected := "match(node(type='system',name='n_system',role=is_in(['superspine','spine','leaf']),external=False).in_(type='tag').node(type='tag',label='tag_a',name='n_tag_a'),node(type='system',name='n_system',role=is_in(['superspine','spine','leaf']),external=False).in_(type='tag').node(type='tag',label='tag_b',name='n_tag_b'),)"
-	matchTagA := new(QEQuery).
+	expected := "match(node(type='system',name='n_system',role=is_in(['superspine','spine','leaf']),external=False).in_(type='tag').node(type='tag',label='tag_a',name='n_tag_a'),node(type='system',name='n_system',role=is_in(['superspine','spine','leaf']),external=False).in_(type='tag').node(type='tag',label='tag_b',name='n_tag_b'))"
+
+	queryTagA := new(PathQuery).
 		Node([]QEEAttribute{
 			{"type", QEStringVal("system")},
 			{"name", QEStringVal("n_system")},
@@ -146,7 +144,7 @@ func TestQueryMatchString(t *testing.T) {
 			{"name", QEStringVal("n_tag_a")},
 		})
 
-	matchTagB := new(QEQuery).
+	queryTagB := new(PathQuery).
 		Node([]QEEAttribute{
 			{"type", QEStringVal("system")},
 			{"name", QEStringVal("n_system")},
@@ -162,10 +160,7 @@ func TestQueryMatchString(t *testing.T) {
 			{"name", QEStringVal("n_tag_b")},
 		})
 
-	result, err := new(QEQuery).Match(matchTagA).Match(matchTagB).String()
-	if err != nil {
-		t.Fatal(err)
-	}
+	result := new(MatchQuery).Match(queryTagA).Match(queryTagB).String()
 
 	if result != expected {
 		t.Fatalf("expected %q, got %q\n", expected, result)
