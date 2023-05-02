@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -22,18 +23,18 @@ type PropertySet struct {
 }
 
 type PropertySetData struct {
-	Label      string            `json:"label"`
-	Values     map[string]string `json:"values"`
-	Blueprints []ObjectId        `json:"blueprints,omitempty"`
+	Label      string          `json:"label"`
+	Values     json.RawMessage `json:"values"`
+	Blueprints []ObjectId      `json:"blueprints,omitempty"`
 }
 
 type rawPropertySet struct {
-	Id         ObjectId          `json:"id,omitempty"`
-	Label      string            `json:"label"`
-	Values     map[string]string `json:"values"`
-	Blueprints []ObjectId        `json:"blueprints,omitempty"`
-	CreatedAt  string            `json:"created_at,omitempty"`
-	UpdatedAt  string            `json:"updated_at,omitempty"`
+	Id         ObjectId        `json:"id,omitempty"`
+	Label      string          `json:"label"`
+	Values     json.RawMessage `json:"values"`
+	Blueprints []ObjectId      `json:"blueprints,omitempty"`
+	CreatedAt  string          `json:"created_at,omitempty"`
+	UpdatedAt  string          `json:"updated_at,omitempty"`
 }
 
 func (o *rawPropertySet) polish() (*PropertySet, error) {
