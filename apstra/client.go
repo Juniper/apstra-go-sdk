@@ -1161,8 +1161,8 @@ func (o *Client) DeleteTemplate(ctx context.Context, id ObjectId) error {
 	return o.deleteTemplate(ctx, id)
 }
 
-// NewQuery returns a *QEQuery with embedded *Client
-func (o *Client) NewQuery(blueprint ObjectId) *QEQuery {
+// NewQuery returns a *PathQuery with embedded *Client
+func (o *Client) NewQuery(blueprint ObjectId) *PathQuery {
 	return o.newQuery(blueprint)
 }
 
@@ -1616,13 +1616,12 @@ func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectI
 	}
 
 	query := o.NewQuery(id).
-		SetContext(ctx).
 		Node([]QEEAttribute{
 			{"type", QEStringVal("virtual_network_policy")},
 			{"name", QEStringVal("n_virtual_network_policy")},
 		})
 
-	err := query.Do(&result)
+	err := query.Do(ctx, &result)
 	if err != nil {
 		return 0, fmt.Errorf("error querying blueprint virtual network policy - %w", err)
 	}

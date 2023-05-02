@@ -259,9 +259,20 @@ const (
 func (o VnType) String() string {
 	return string(o.raw())
 }
+
 func (o VnType) int() int {
 	return int(o)
 }
+
+func (o *VnType) FromString(s string) error {
+	i, err := vnType(s).parse()
+	if err != nil {
+		return err
+	}
+	*o = VnType(i)
+	return nil
+}
+
 func (o VnType) raw() vnType {
 	switch o {
 	case VnTypeNone:
@@ -291,6 +302,22 @@ func (o vnType) parse() (int, error) {
 		return int(VnTypeVxlan), nil
 	default:
 		return 0, fmt.Errorf(VnTypeUnknown, o)
+	}
+}
+
+// AllVirtualNetworkTypes returns the []VnType representing
+// each supported VnType
+func AllVirtualNetworkTypes() []VnType {
+	i := 0
+	var result []VnType
+	for {
+		var os VnType
+		err := os.FromString(VnType(i).String())
+		if err != nil {
+			return result[:i]
+		}
+		result = append(result, os)
+		i++
 	}
 }
 

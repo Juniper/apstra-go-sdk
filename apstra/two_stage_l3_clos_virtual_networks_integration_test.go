@@ -208,14 +208,14 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			} `json:"items"`
 		}
 
-		query := client.client.NewQuery(bpClient.Id()).SetContext(ctx).Node([]QEEAttribute{
+		query := client.client.NewQuery(bpClient.Id()).Node([]QEEAttribute{
 			{"type", QEStringVal("system")},
 			{"system_type", QEStringVal("switch")},
 			{"role", QEStringVal("leaf")},
 			{"name", QEStringVal("system")},
 		})
 
-		err = query.Do(&result)
+		err = query.Do(ctx, &result)
 		if err != nil {
 			t.Fatal(err)
 		}

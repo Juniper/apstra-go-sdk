@@ -463,21 +463,21 @@ func (o *Client) deleteBlueprint(ctx context.Context, id ObjectId) error {
 	})
 }
 
-func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query *QEQuery, response interface{}) error {
+func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query QEQuery, response interface{}) error {
 	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintQueryEngine, blueprint))
 	if err != nil {
 		return err
 	}
 
-	if query.blueprintType != BlueprintTypeNone {
+	if query.getBlueprintType() != BlueprintTypeNone {
 		params := apstraUrl.Query()
-		params.Set(blueprintTypeParam, query.blueprintType.string())
+		params.Set(blueprintTypeParam, query.getBlueprintType().string())
 		apstraUrl.RawQuery = params.Encode()
 	}
 
 	apiInput := &struct {
 		Query string `json:"query"`
-	}{Query: query.string()}
+	}{Query: query.String()}
 
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodPost,
