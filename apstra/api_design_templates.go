@@ -3,6 +3,7 @@ package apstra
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -1376,33 +1377,30 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		dhcpServiceIntent = *o.DhcpServiceIntent
 	}
 
-	var spine *rawSpine
-	if o.Spine != nil {
-		spine, err = o.Spine.raw(ctx, client)
-		if err != nil {
-			return nil, err
-		}
+	switch {
+	case o.Spine == nil:
+		return nil, errors.New("spine cannot be <nil> when creating a rack-based template")
+	case o.AntiAffinityPolicy == nil:
+		return nil, errors.New("anti-affinity policy cannot be <nil> when creating a rack-based template")
+	case o.AsnAllocationPolicy == nil:
+		return nil, errors.New("asn allocation policy cannot be <nil> when creating a rack-based template")
+	case o.VirtualNetworkPolicy == nil:
+		return nil, errors.New("virtual network policy cannot be <nil> when creating a rack-based template")
 	}
 
-	var antiAffinityPolicy *rawAntiAffinityPolicy
-	if o.AntiAffinityPolicy != nil {
-		antiAffinityPolicy = o.AntiAffinityPolicy.raw()
+	spine, err := o.Spine.raw(ctx, client)
+	if err != nil {
+		return nil, err
 	}
-
-	var asnAllocationPolicy *rawAsnAllocationPolicy
-	if o.AsnAllocationPolicy != nil {
-		asnAllocationPolicy = o.AsnAllocationPolicy.raw()
-	}
+	antiAffinityPolicy := o.AntiAffinityPolicy.raw()
+	asnAllocationPolicy := o.AsnAllocationPolicy.raw()
 
 	var fabricAddressingPolicy *rawFabricAddressingPolicy
 	if o.FabricAddressingPolicy != nil && !rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion) {
 		fabricAddressingPolicy = o.FabricAddressingPolicy.raw()
 	}
 
-	var virtualNetworkPolicy *rawVirtualNetworkPolicy
-	if o.VirtualNetworkPolicy != nil {
-		virtualNetworkPolicy = o.VirtualNetworkPolicy.raw()
-	}
+	virtualNetworkPolicy := o.VirtualNetworkPolicy.raw()
 
 	return &rawCreateRackBasedTemplateRequest{
 		Type:                   templateTypeRackBased,
