@@ -339,9 +339,11 @@ const (
 func (o SystemRole) String() string {
 	return string(o.raw())
 }
+
 func (o SystemRole) int() int {
 	return int(o)
 }
+
 func (o SystemRole) raw() systemRole {
 	switch o {
 	case SystemRoleNone:
@@ -354,9 +356,20 @@ func (o SystemRole) raw() systemRole {
 		return systemRole(fmt.Sprintf(systemRoleUnknown, o))
 	}
 }
+
+func (o *SystemRole) FromString(in string) error {
+	i, err := systemRole(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = SystemRole(i)
+	return nil
+}
+
 func (o systemRole) string() string {
 	return string(o)
 }
+
 func (o systemRole) parse() (int, error) {
 	switch o {
 	case systemRoleNone:
