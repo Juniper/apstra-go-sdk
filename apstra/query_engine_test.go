@@ -168,3 +168,92 @@ func TestQueryMatchString(t *testing.T) {
 
 	log.Println(result)
 }
+
+func TestMatchQueryDistinct_String(t *testing.T) {
+	type testCase struct {
+		mqd      MatchQueryDistinct
+		expected string
+	}
+
+	testCases := []testCase{
+		{
+			mqd:      nil,
+			expected: "[]",
+		},
+		{
+			mqd:      MatchQueryDistinct{},
+			expected: "[]",
+		},
+		{
+			mqd:      MatchQueryDistinct{"foo", "bar"},
+			expected: "['foo','bar']",
+		},
+	}
+
+	for i, tc := range testCases {
+		result := tc.mqd.String()
+		if tc.expected != result {
+			t.Fatalf("testcase %d expected %q got %q", i, tc.expected, result)
+		}
+	}
+}
+
+func TestMatchQueryElement_String(t *testing.T) {
+	mqe := MatchQueryElement{
+		mqeType: "distinct",
+		value:   MatchQueryDistinct{"foo", "bar"},
+		next:    nil,
+	}
+
+	result := mqe.String()
+	expected := "distinct(['foo','bar'])"
+
+	if expected != result {
+		t.Fatalf("expected %q, got %q", expected, result)
+	}
+}
+
+func TestMatchQueryDistinct(t *testing.T) {
+	pq1 := new(PathQuery).
+		Node([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("system")},
+			{Key: "name", Value: QEStringVal("n_switch")},
+			{Key: "system_type", Value: QEStringVal("switch")},
+		}).
+		Out([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("hosted_interfaces")},
+		}).
+		Node([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("interface")},
+			{Key: "if_type", Value: QEStringVal("loopback")},
+			{Key: "name", Value: QEStringVal("n_interface")},
+		})
+
+	type testCase struct {
+		q QEQuery
+		e string
+	}
+
+	testCases := []testCase{
+		{
+			q: new(MatchQuery).
+				Match(pq1).
+				Distinct(MatchQueryDistinct{"n_switch", "n_interface"}),
+			e: "match(" + pq1.String() + ").distinct(['n_switch','n_interface'])",
+		},
+		{
+			q: new(MatchQuery).
+				Match(pq1).
+				Distinct(MatchQueryDistinct{"n_switch", "n_interface"}).
+				Distinct(MatchQueryDistinct{"foo", "bar"}),
+			e: "match(" + pq1.String() + ").distinct(['n_switch','n_interface']).distinct(['foo','bar'])",
+		},
+	}
+
+	for i, tc := range testCases {
+		result := tc.q.String()
+		if tc.e != result {
+			t.Fatalf("test case %d expected %q, got %q", i, tc.e, result)
+		}
+	}
+}

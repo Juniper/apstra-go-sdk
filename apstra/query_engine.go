@@ -84,7 +84,7 @@ func (o *QEElement) String() string {
 type QEStringValIsIn []string
 
 func (o QEStringValIsIn) String() string {
-	if len(o) == 0 {
+	if len(o) == 0 { // handle <nil> gracefully
 		return "is_in([])"
 	}
 	return "is_in(['" + strings.Join(o, "','") + "'])"
@@ -191,12 +191,69 @@ func (o *PathQuery) In(attributes []QEEAttribute) *PathQuery {
 	return o.addElement(qEETypeIn, attributes)
 }
 
+type MatchQueryElement struct {
+	mqeType string
+	value   QEAttrVal
+	next    *MatchQueryElement
+}
+
+func (o *MatchQueryElement) String() string {
+	return fmt.Sprintf("%s(%s)", o.mqeType, o.value.String())
+}
+
+func (o *MatchQueryElement) getNext() *MatchQueryElement {
+	return o.next
+}
+
+func (o *MatchQueryElement) getLast() *MatchQueryElement {
+	last := o
+	next := last.getNext()
+	for next != nil {
+		last = next
+		next = last.getNext()
+	}
+	return last
+}
+
+type MatchQueryDistinct []string
+
+func (o MatchQueryDistinct) String() string {
+	if len(o) == 0 { // handle <nil> gracefully
+		return "[]"
+	}
+	return "['" + strings.Join(o, "','") + "']"
+}
+
 type MatchQuery struct {
 	client        *Client
 	context       context.Context
 	blueprintId   ObjectId
 	blueprintType BlueprintType
 	match         []PathQuery
+	firstElement  *MatchQueryElement
+}
+
+//func (o *MatchQuery) Having(v QEAttrVal) *MatchQuery          {} // todo
+//func (o *MatchQuery) Where(v QEAttrVal) *MatchQuery           {} // todo
+//func (o *MatchQuery) EnsureDifferent(v QEAttrVal) *MatchQuery {} // todo
+
+func (o *MatchQuery) Distinct(distinct MatchQueryDistinct) *MatchQuery {
+	o.addElement("distinct", distinct)
+	return o
+}
+
+func (o *MatchQuery) addElement(t string, v QEAttrVal) *MatchQuery {
+	newElement := MatchQueryElement{
+		mqeType: t,
+		value:   v,
+	}
+	if o.firstElement == nil {
+		o.firstElement = &newElement
+		return o
+	}
+	o.firstElement.getLast().next = &newElement
+	return o
+
 }
 
 func (o *MatchQuery) getBlueprintType() BlueprintType {
@@ -235,6 +292,18 @@ func (o *MatchQuery) String() string {
 		sb.WriteString(o.match[i].String())
 	}
 	sb.WriteString(")")
+
+	var next *MatchQueryElement
+	if o.firstElement != nil {
+		sb.WriteString(".")
+		sb.WriteString(o.firstElement.String())
+		next = o.firstElement.getNext()
+	}
+	for next != nil {
+		sb.WriteString(".")
+		sb.WriteString(next.String())
+		next = next.next
+	}
 
 	return sb.String()
 }
