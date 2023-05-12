@@ -327,13 +327,19 @@ type systemRole string
 const (
 	SystemRoleNone = SystemRole(iota)
 	SystemRoleAccess
+	SystemRoleGeneric
 	SystemRoleLeaf
+	SystemRoleSpine
+	SystemRoleSuperSpine
 	SystemRoleUnknown = "unknown System Role '%s'"
 
-	systemRoleNone    = systemRole("")
-	systemRoleAccess  = systemRole("access")
-	systemRoleLeaf    = systemRole("leaf")
-	systemRoleUnknown = "unknown System Role '%d'"
+	systemRoleNone       = systemRole("")
+	systemRoleAccess     = systemRole("access")
+	systemRoleGeneric    = systemRole("generic")
+	systemRoleLeaf       = systemRole("leaf")
+	systemRoleSpine      = systemRole("spine")
+	systemRoleSuperSpine = systemRole("superspine")
+	systemRoleUnknown    = "unknown System Role '%d'"
 )
 
 func (o SystemRole) String() string {
@@ -350,8 +356,14 @@ func (o SystemRole) raw() systemRole {
 		return systemRoleNone
 	case SystemRoleAccess:
 		return systemRoleAccess
+	case SystemRoleGeneric:
+		return systemRoleGeneric
 	case SystemRoleLeaf:
 		return systemRoleLeaf
+	case SystemRoleSpine:
+		return systemRoleSpine
+	case SystemRoleSuperSpine:
+		return systemRoleSuperSpine
 	default:
 		return systemRole(fmt.Sprintf(systemRoleUnknown, o))
 	}
@@ -376,8 +388,14 @@ func (o systemRole) parse() (int, error) {
 		return int(SystemRoleNone), nil
 	case systemRoleAccess:
 		return int(SystemRoleAccess), nil
+	case systemRoleGeneric:
+		return int(SystemRoleGeneric), nil
 	case systemRoleLeaf:
 		return int(SystemRoleLeaf), nil
+	case systemRoleSpine:
+		return int(SystemRoleSpine), nil
+	case systemRoleSuperSpine:
+		return int(SystemRoleSuperSpine), nil
 	default:
 		return 0, fmt.Errorf(SystemRoleUnknown, o)
 	}
