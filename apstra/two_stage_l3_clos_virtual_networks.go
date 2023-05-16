@@ -273,8 +273,6 @@ func (o *VnType) FromString(s string) error {
 
 func (o VnType) raw() vnType {
 	switch o {
-	case VnTypeNone:
-		return vnTypeNone
 	case VnTypeExternal:
 		return vnTypeExternal
 	case VnTypeVlan:
@@ -290,8 +288,6 @@ func (o vnType) string() string {
 }
 func (o vnType) parse() (int, error) {
 	switch o {
-	case vnTypeNone:
-		return int(VnTypeNone), nil
 	case vnTypeExternal:
 		return int(VnTypeExternal), nil
 	case vnTypeVlan:
