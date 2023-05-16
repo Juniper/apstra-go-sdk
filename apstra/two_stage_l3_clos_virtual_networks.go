@@ -243,13 +243,11 @@ type VnType int
 type vnType string
 
 const (
-	VnTypeNone = VnType(iota)
-	VnTypeExternal
+	VnTypeExternal = VnType(iota)
 	VnTypeVlan
 	VnTypeVxlan
 	VnTypeUnknown = "unknown VN type '%s'"
 
-	vnTypeNone     = vnType("")
 	vnTypeExternal = vnType("external")
 	vnTypeVlan     = vnType("vlan")
 	vnTypeVxlan    = vnType("vxlan")
