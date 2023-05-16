@@ -244,16 +244,16 @@ type vnType string
 
 const (
 	VnTypeNone = VnType(iota)
+	VnTypeExternal
 	VnTypeVlan
 	VnTypeVxlan
-	VnTypeOverlay
 	VnTypeUnknown = "unknown VN type '%s'"
 
-	vnTypeNone    = vnType("")
-	vnTypeVlan    = vnType("vlan")
-	vnTypeVxlan   = vnType("vxlan")
-	vnTypeOverlay = vnType("overlay")
-	vnTypeUnknown = "unknown VN type '%d'"
+	vnTypeNone     = vnType("")
+	vnTypeExternal = vnType("external")
+	vnTypeVlan     = vnType("vlan")
+	vnTypeVxlan    = vnType("vxlan")
+	vnTypeUnknown  = "unknown VN type '%d'"
 )
 
 func (o VnType) String() string {
@@ -277,8 +277,8 @@ func (o VnType) raw() vnType {
 	switch o {
 	case VnTypeNone:
 		return vnTypeNone
-	case VnTypeOverlay:
-		return vnTypeOverlay
+	case VnTypeExternal:
+		return vnTypeExternal
 	case VnTypeVlan:
 		return vnTypeVlan
 	case VnTypeVxlan:
@@ -294,8 +294,8 @@ func (o vnType) parse() (int, error) {
 	switch o {
 	case vnTypeNone:
 		return int(VnTypeNone), nil
-	case vnTypeOverlay:
-		return int(VnTypeOverlay), nil
+	case vnTypeExternal:
+		return int(VnTypeExternal), nil
 	case vnTypeVlan:
 		return int(VnTypeVlan), nil
 	case vnTypeVxlan:
