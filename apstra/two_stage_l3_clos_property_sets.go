@@ -37,11 +37,11 @@ func (o *TwoStageL3ClosClient) importPropertySet(ctx context.Context, psid Objec
 		return "", err
 	}
 
-	response := &ImportPropertySetResponse{}
+	response := &importPropertySetResponse{}
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		url:         importPropertySetUrl,
-		apiInput:    ImportPropertySetRequest{Id: psid, Keys: keys},
+		apiInput:    importPropertySetRequest{Id: psid, Keys: keys},
 		apiResponse: response,
 	})
 	if err != nil {
@@ -105,7 +105,7 @@ func (o *TwoStageL3ClosClient) updatePropertySet(ctx context.Context, psid Objec
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPut,
 		url:    updateImportedPropertySetUrl,
-		apiInput: ImportPropertySetRequest{
+		apiInput: importPropertySetRequest{
 			Id:   psid,
 			Keys: keys,
 		},
