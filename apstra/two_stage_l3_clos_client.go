@@ -378,7 +378,7 @@ func (o *TwoStageL3ClosClient) GetPropertySetByName(ctx context.Context, in stri
 
 // ImportPropertySet imports a property set into a blueprint. On success, it returns the id of the imported property set. Optionally, a set of keys can be part of the request
 func (o *TwoStageL3ClosClient) ImportPropertySet(ctx context.Context, psid ObjectId, keys ...string) (ObjectId, error) {
-	return o.ImportPropertySet(ctx, psid, keys...)
+	return o.importPropertySet(ctx, psid, keys...)
 }
 
 // UpdatePropertySet updates a property set imported into a blueprint. Optionally, a set of keys can be part of the request

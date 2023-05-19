@@ -87,9 +87,8 @@ func jsonEqual(t *testing.T, m1, m2 json.RawMessage) bool {
 	return reflect.DeepEqual(map1, map2)
 }
 
-func stringkeysfromMap(m map[string]interface{}) []string {
-
-	keys := make([]string, len(m))
+func getKeysfromMap[A comparable](m map[A]interface{}) []A {
+	keys := make([]A, len(m))
 	i := 0
 	for k := range m {
 		keys[i] = k
