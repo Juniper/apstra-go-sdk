@@ -133,7 +133,7 @@ func TestImportGetUpdateGetDeletePropertySet(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		cleanup := func() {
+		defer func() {
 			log.Printf("testing DeletePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = client.client.DeletePropertySet(ctx, ps_id)
 			if err != nil {
@@ -145,8 +145,7 @@ func TestImportGetUpdateGetDeletePropertySet(t *testing.T) {
 			if err != nil {
 				log.Println(err)
 			}
-		}
-		defer cleanup()
+		}()
 	}
 }
 
