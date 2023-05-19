@@ -1517,6 +1517,48 @@ func (o *Client) DeletePropertySet(ctx context.Context, id ObjectId) error {
 	return o.deletePropertySet(ctx, id)
 }
 
+// GetAllImportedPropertySets returns []ImportedPropertySet representing all property sets imported into a blueprint
+func (o *Client) GetAllImportedPropertySets(ctx context.Context, bpid ObjectId) ([]ImportedPropertySet, error) {
+	ps, err := o.getAllImportedPropertySets(ctx, bpid)
+	if err != nil {
+		return nil, err
+	}
+	return ps, nil
+}
+
+// GetImportedPropertySet returns *ImportedPropertySet representing the imported property set with the given ID in the specified blueprint
+func (o *Client) GetImportedPropertySet(ctx context.Context, bpid, id ObjectId) (*ImportedPropertySet, error) {
+	ps, err := o.getImportedPropertySet(ctx, bpid, id)
+	if err != nil {
+		return nil, err
+	}
+	return ps, nil
+}
+
+// GetImportedPropertySetByLabel returns *ImportedPropertySet representing the only property set with the given label, or an error if multiple property sets share the label.
+func (o *Client) GetImportedPropertySetByName(ctx context.Context, bpid ObjectId, in string) (*ImportedPropertySet, error) {
+	ps, err := o.getImportedPropertySetByName(ctx, bpid, in)
+	if err != nil {
+		return nil, err
+	}
+	return ps, nil
+}
+
+// ImportPropertySet imports a property set into a blueprint. On success, it returns the id of the imported property set. Optionally, a set of keys can be part of the request
+func (o *Client) ImportPropertySet(ctx context.Context, bpid ObjectId, psid ObjectId, keys ...string) (ObjectId, error) {
+	return o.importPropertySet(ctx, bpid, psid, keys...)
+}
+
+// UpdateImportedPropertySet updates a property set imported into a blueprint. Optionally, a set of keys can be part of the request
+func (o *Client) UpdateImportedPropertySet(ctx context.Context, id ObjectId, psid ObjectId, keys ...string) error {
+	return o.updateImportedPropertySet(ctx, id, psid, keys...)
+}
+
+// DeletePropertySet deletes a property given the id
+func (o *Client) DeleteImportedPropertySet(ctx context.Context, bpid, id ObjectId) error {
+	return o.deleteImportedPropertySet(ctx, bpid, id)
+}
+
 // Private method added for Client.ready(), public wrapper not currently needed.
 //// GetTelemetryQuery returns *TelemetryQuery
 //func (o *Client) GetTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error){
