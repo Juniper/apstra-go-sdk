@@ -13,7 +13,7 @@ const (
 	apiUrlBlueprintPropertySet  = apiUrlBlueprintById + apiUrlPathDelim + "property-sets" + apiUrlPathDelim + "%s"
 )
 
-type ImportedPropertySet struct {
+type TwoStageL3ClosPropertySet struct {
 	Id         ObjectId        `json:"id"`
 	Label      string          `json:"label"`
 	Stale      bool            `json:"stale"`
@@ -30,15 +30,15 @@ type ImportPropertySetResponse struct {
 	Id ObjectId `json:"id"`
 }
 
-func (o *Client) importPropertySet(ctx context.Context, bpid ObjectId, psid ObjectId, keys ...string) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) importPropertySet(ctx context.Context, psid ObjectId, keys ...string) (ObjectId, error) {
 
-	importPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySets, bpid.String()))
+	importPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySets, o.blueprintId.String()))
 	if err != nil {
 		return "", err
 	}
 
 	response := &ImportPropertySetResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		url:         importPropertySetUrl,
 		apiInput:    ImportPropertySetRequest{Id: psid, Keys: keys},
@@ -51,13 +51,13 @@ func (o *Client) importPropertySet(ctx context.Context, bpid ObjectId, psid Obje
 	return response.Id, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) getAllImportedPropertySets(ctx context.Context, bpid ObjectId) ([]ImportedPropertySet, error) {
+func (o *TwoStageL3ClosClient) getAllImportedPropertySets(ctx context.Context) ([]TwoStageL3ClosPropertySet, error) {
 	result := &struct {
-		Items []ImportedPropertySet `json:"items"`
+		Items []TwoStageL3ClosPropertySet `json:"items"`
 	}{}
-	allImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySets, bpid.String()))
+	allImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySets, o.blueprintId.String()))
 
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         allImportedPropertySetUrl,
 		apiResponse: result,
@@ -65,8 +65,8 @@ func (o *Client) getAllImportedPropertySets(ctx context.Context, bpid ObjectId) 
 	return result.Items, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) getImportedPropertySetByName(ctx context.Context, bpid ObjectId, name string) (*ImportedPropertySet, error) {
-	allps, err := o.getAllImportedPropertySets(ctx, bpid)
+func (o *TwoStageL3ClosClient) getPropertySetByName(ctx context.Context, name string) (*TwoStageL3ClosPropertySet, error) {
+	allps, err := o.getAllImportedPropertySets(ctx)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
@@ -75,18 +75,17 @@ func (o *Client) getImportedPropertySetByName(ctx context.Context, bpid ObjectId
 			return &t, nil
 		}
 	}
-
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf(" Property Set with name '%s' not found", name),
 	}
 }
 
-func (o *Client) getImportedPropertySet(ctx context.Context, bpid ObjectId, psid ObjectId) (*ImportedPropertySet, error) {
-	result := &ImportedPropertySet{}
+func (o *TwoStageL3ClosClient) getPropertySet(ctx context.Context, psid ObjectId) (*TwoStageL3ClosPropertySet, error) {
+	result := &TwoStageL3ClosPropertySet{}
 
-	getImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySet, bpid.String(), psid.String()))
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	getImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySet, o.blueprintId.String(), psid.String()))
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         getImportedPropertySetUrl,
 		apiResponse: result,
@@ -94,14 +93,14 @@ func (o *Client) getImportedPropertySet(ctx context.Context, bpid ObjectId, psid
 	return result, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) updateImportedPropertySet(ctx context.Context, bpid ObjectId, psid ObjectId, keys ...string) error {
+func (o *TwoStageL3ClosClient) updatePropertySet(ctx context.Context, psid ObjectId, keys ...string) error {
 
-	updateImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySet, bpid.String(), psid.String()))
+	updateImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySet, o.blueprintId.String(), psid.String()))
 	if err != nil {
 		return err
 	}
 
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPut,
 		url:    updateImportedPropertySetUrl,
 		apiInput: ImportPropertySetRequest{
@@ -115,12 +114,12 @@ func (o *Client) updateImportedPropertySet(ctx context.Context, bpid ObjectId, p
 	return nil
 }
 
-func (o *Client) deleteImportedPropertySet(ctx context.Context, bpid ObjectId, pid ObjectId) error {
-	deleteImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySet, bpid.String(), pid.String()))
+func (o *TwoStageL3ClosClient) deletePropertySet(ctx context.Context, pid ObjectId) error {
+	deleteImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySet, o.blueprintId.String(), pid.String()))
 	if err != nil {
 		return err
 	}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		url:    deleteImportedPropertySetUrl,
 	})
