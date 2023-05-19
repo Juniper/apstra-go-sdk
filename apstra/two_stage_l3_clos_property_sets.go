@@ -21,12 +21,12 @@ type TwoStageL3ClosPropertySet struct {
 	ValuesYaml string          `json:"values_yaml"`
 }
 
-type ImportPropertySetRequest struct {
+type importPropertySetRequest struct {
 	Id   ObjectId `json:"id"`
 	Keys []string `json:"keys"`
 }
 
-type ImportPropertySetResponse struct {
+type importPropertySetResponse struct {
 	Id ObjectId `json:"id"`
 }
 
