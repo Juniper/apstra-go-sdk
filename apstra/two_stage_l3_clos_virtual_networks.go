@@ -547,13 +547,8 @@ func (o *VirtualNetworkData) raw() *rawVirtualNetwork {
 		sviIps[i] = *o.SviIps[i].raw()
 	}
 
-	var virtualGatewayIpv4, virtualGatewayIpv6 string
-	if len(o.VirtualGatewayIpv4) == 4 {
-		virtualGatewayIpv4 = o.VirtualGatewayIpv4.String()
-	}
-	if len(o.VirtualGatewayIpv6) == 16 {
-		virtualGatewayIpv6 = o.VirtualGatewayIpv6.String()
-	}
+	virtualGatewayIpv4 := o.VirtualGatewayIpv4.String()
+	virtualGatewayIpv6 := o.VirtualGatewayIpv6.String()
 
 	var vnId string
 	if o.VnId != nil {
