@@ -361,31 +361,19 @@ func (o *TwoStageL3ClosClient) DeleteRoutingPolicy(ctx context.Context, id Objec
 	return o.deleteRoutingPolicy(ctx, id)
 }
 
-// GetAllImportedPropertySets returns []TwoStageL3ClosPropertySet representing all property sets imported into a blueprint
-func (o *TwoStageL3ClosClient) GetAllImportedPropertySets(ctx context.Context) ([]TwoStageL3ClosPropertySet, error) {
-	ps, err := o.getAllImportedPropertySets(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return ps, nil
+// GetAllPropertySets returns []TwoStageL3ClosPropertySet representing all property sets imported into a blueprint
+func (o *TwoStageL3ClosClient) GetAllPropertySets(ctx context.Context) ([]TwoStageL3ClosPropertySet, error) {
+	return o.getAllPropertySets(ctx)
 }
 
-// GetImportedPropertySet returns *TwoStageL3ClosPropertySet representing the imported property set with the given ID in the specified blueprint
-func (o *TwoStageL3ClosClient) GetImportedPropertySet(ctx context.Context, id ObjectId) (*TwoStageL3ClosPropertySet, error) {
-	ps, err := o.getPropertySet(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return ps, nil
+// GetPropertySet returns *TwoStageL3ClosPropertySet representing the imported property set with the given ID in the specified blueprint
+func (o *TwoStageL3ClosClient) GetPropertySet(ctx context.Context, id ObjectId) (*TwoStageL3ClosPropertySet, error) {
+	return o.getPropertySet(ctx, id)
 }
 
-// GetImportedPropertySetByLabel returns *TwoStageL3ClosPropertySet representing the only property set with the given label, or an error if multiple property sets share the label.
+// GetPropertySetByName returns *TwoStageL3ClosPropertySet representing the only property set with the given label, or an error if multiple property sets share the label.
 func (o *TwoStageL3ClosClient) GetPropertySetByName(ctx context.Context, in string) (*TwoStageL3ClosPropertySet, error) {
-	ps, err := o.getPropertySetByName(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	return ps, nil
+	return o.getPropertySetByName(ctx, in)
 }
 
 // ImportPropertySet imports a property set into a blueprint. On success, it returns the id of the imported property set. Optionally, a set of keys can be part of the request
@@ -393,7 +381,7 @@ func (o *TwoStageL3ClosClient) ImportPropertySet(ctx context.Context, psid Objec
 	return o.ImportPropertySet(ctx, psid, keys...)
 }
 
-// UpdateImportedPropertySet updates a property set imported into a blueprint. Optionally, a set of keys can be part of the request
+// UpdatePropertySet updates a property set imported into a blueprint. Optionally, a set of keys can be part of the request
 func (o *TwoStageL3ClosClient) UpdatePropertySet(ctx context.Context, psid ObjectId, keys ...string) error {
 	return o.updatePropertySet(ctx, psid, keys...)
 }

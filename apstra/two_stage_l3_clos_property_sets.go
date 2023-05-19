@@ -51,12 +51,14 @@ func (o *TwoStageL3ClosClient) importPropertySet(ctx context.Context, psid Objec
 	return response.Id, convertTtaeToAceWherePossible(err)
 }
 
-func (o *TwoStageL3ClosClient) getAllImportedPropertySets(ctx context.Context) ([]TwoStageL3ClosPropertySet, error) {
+func (o *TwoStageL3ClosClient) getAllPropertySets(ctx context.Context) ([]TwoStageL3ClosPropertySet, error) {
 	result := &struct {
 		Items []TwoStageL3ClosPropertySet `json:"items"`
 	}{}
 	allImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySets, o.blueprintId.String()))
-
+	if err != nil {
+		return nil, err
+	}
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         allImportedPropertySetUrl,
@@ -66,7 +68,7 @@ func (o *TwoStageL3ClosClient) getAllImportedPropertySets(ctx context.Context) (
 }
 
 func (o *TwoStageL3ClosClient) getPropertySetByName(ctx context.Context, name string) (*TwoStageL3ClosPropertySet, error) {
-	allps, err := o.getAllImportedPropertySets(ctx)
+	allps, err := o.getAllPropertySets(ctx)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}

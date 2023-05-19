@@ -32,24 +32,6 @@ func TestImportGetUpdateGetDeletePropertySet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//equal := func(a, b *PropertySetData) bool {
-	//	if a.Label != b.Label {
-	//		return false
-	//	}
-	//	if len(a.Blueprints) != len(b.Blueprints) {
-	//		return false
-	//	}
-	//	for i := range a.Blueprints {
-	//		if a.Blueprints[i] != b.Blueprints[i] {
-	//			return false
-	//		}
-	//	}
-	//	return jsonEqual(t, a.Values, b.Values)
-	//}
-	//
-	//append_to_byte := func(a []byte, s string) []byte {
-	//	return []byte(string(a) + s)
-	//}
 	ctx := context.TODO()
 	for clientName, client := range clients {
 
@@ -60,6 +42,7 @@ func TestImportGetUpdateGetDeletePropertySet(t *testing.T) {
 		ps := &PropertySetData{
 			Label: randString(10, "hex"),
 		}
+		var t TwoStageL3ClosClient
 		vals := make(map[string]string, samples)
 
 		for i := 0; i < samples; i++ {
