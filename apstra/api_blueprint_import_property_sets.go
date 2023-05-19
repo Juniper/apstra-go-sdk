@@ -48,12 +48,6 @@ func (o *Client) importPropertySet(ctx context.Context, bpid ObjectId, psid Obje
 		return "", convertTtaeToAceWherePossible(err)
 	}
 
-	err = o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		url:         importPropertySetUrl,
-		apiResponse: &response,
-	})
-
 	return response.Id, convertTtaeToAceWherePossible(err)
 }
 
