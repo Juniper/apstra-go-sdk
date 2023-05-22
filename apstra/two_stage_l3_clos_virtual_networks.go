@@ -243,17 +243,15 @@ type VnType int
 type vnType string
 
 const (
-	VnTypeNone = VnType(iota)
+	VnTypeExternal = VnType(iota)
 	VnTypeVlan
 	VnTypeVxlan
-	VnTypeOverlay
 	VnTypeUnknown = "unknown VN type '%s'"
 
-	vnTypeNone    = vnType("")
-	vnTypeVlan    = vnType("vlan")
-	vnTypeVxlan   = vnType("vxlan")
-	vnTypeOverlay = vnType("overlay")
-	vnTypeUnknown = "unknown VN type '%d'"
+	vnTypeExternal = vnType("external")
+	vnTypeVlan     = vnType("vlan")
+	vnTypeVxlan    = vnType("vxlan")
+	vnTypeUnknown  = "unknown VN type '%d'"
 )
 
 func (o VnType) String() string {
@@ -275,10 +273,8 @@ func (o *VnType) FromString(s string) error {
 
 func (o VnType) raw() vnType {
 	switch o {
-	case VnTypeNone:
-		return vnTypeNone
-	case VnTypeOverlay:
-		return vnTypeOverlay
+	case VnTypeExternal:
+		return vnTypeExternal
 	case VnTypeVlan:
 		return vnTypeVlan
 	case VnTypeVxlan:
@@ -292,10 +288,8 @@ func (o vnType) string() string {
 }
 func (o vnType) parse() (int, error) {
 	switch o {
-	case vnTypeNone:
-		return int(VnTypeNone), nil
-	case vnTypeOverlay:
-		return int(VnTypeOverlay), nil
+	case vnTypeExternal:
+		return int(VnTypeExternal), nil
 	case vnTypeVlan:
 		return int(VnTypeVlan), nil
 	case vnTypeVxlan:
@@ -327,44 +321,75 @@ type systemRole string
 const (
 	SystemRoleNone = SystemRole(iota)
 	SystemRoleAccess
+	SystemRoleGeneric
 	SystemRoleLeaf
+	SystemRoleSpine
+	SystemRoleSuperSpine
 	SystemRoleUnknown = "unknown System Role '%s'"
 
-	systemRoleNone    = systemRole("")
-	systemRoleAccess  = systemRole("access")
-	systemRoleLeaf    = systemRole("leaf")
-	systemRoleUnknown = "unknown System Role '%d'"
+	systemRoleNone       = systemRole("")
+	systemRoleAccess     = systemRole("access")
+	systemRoleGeneric    = systemRole("generic")
+	systemRoleLeaf       = systemRole("leaf")
+	systemRoleSpine      = systemRole("spine")
+	systemRoleSuperSpine = systemRole("superspine")
+	systemRoleUnknown    = "unknown System Role '%d'"
 )
 
 func (o SystemRole) String() string {
 	return string(o.raw())
 }
+
 func (o SystemRole) int() int {
 	return int(o)
 }
+
 func (o SystemRole) raw() systemRole {
 	switch o {
 	case SystemRoleNone:
 		return systemRoleNone
 	case SystemRoleAccess:
 		return systemRoleAccess
+	case SystemRoleGeneric:
+		return systemRoleGeneric
 	case SystemRoleLeaf:
 		return systemRoleLeaf
+	case SystemRoleSpine:
+		return systemRoleSpine
+	case SystemRoleSuperSpine:
+		return systemRoleSuperSpine
 	default:
 		return systemRole(fmt.Sprintf(systemRoleUnknown, o))
 	}
 }
+
+func (o *SystemRole) FromString(in string) error {
+	i, err := systemRole(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = SystemRole(i)
+	return nil
+}
+
 func (o systemRole) string() string {
 	return string(o)
 }
+
 func (o systemRole) parse() (int, error) {
 	switch o {
 	case systemRoleNone:
 		return int(SystemRoleNone), nil
 	case systemRoleAccess:
 		return int(SystemRoleAccess), nil
+	case systemRoleGeneric:
+		return int(SystemRoleGeneric), nil
 	case systemRoleLeaf:
 		return int(SystemRoleLeaf), nil
+	case systemRoleSpine:
+		return int(SystemRoleSpine), nil
+	case systemRoleSuperSpine:
+		return int(SystemRoleSuperSpine), nil
 	default:
 		return 0, fmt.Errorf(SystemRoleUnknown, o)
 	}
@@ -523,10 +548,10 @@ func (o *VirtualNetworkData) raw() *rawVirtualNetwork {
 	}
 
 	var virtualGatewayIpv4, virtualGatewayIpv6 string
-	if len(o.VirtualGatewayIpv4) == 4 {
+	if len(o.VirtualGatewayIpv4.To4()) == net.IPv4len {
 		virtualGatewayIpv4 = o.VirtualGatewayIpv4.String()
 	}
-	if len(o.VirtualGatewayIpv6) == 16 {
+	if len(o.VirtualGatewayIpv6) == net.IPv6len {
 		virtualGatewayIpv6 = o.VirtualGatewayIpv6.String()
 	}
 

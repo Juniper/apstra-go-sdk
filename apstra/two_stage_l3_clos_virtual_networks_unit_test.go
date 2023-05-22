@@ -41,10 +41,9 @@ func TestTwoStageL3ClosVirtualNetworkStrings(t *testing.T) {
 		{stringVal: "forced", intType: Ipv6ModeForced, stringType: ipv6ModeForced},
 		{stringVal: "link_local", intType: Ipv6ModeLinkLocal, stringType: ipv6ModeLinkLocal},
 
-		{stringVal: "", intType: VnTypeNone, stringType: vnTypeNone},
 		{stringVal: "vlan", intType: VnTypeVlan, stringType: vnTypeVlan},
 		{stringVal: "vxlan", intType: VnTypeVxlan, stringType: vnTypeVxlan},
-		{stringVal: "overlay", intType: VnTypeOverlay, stringType: vnTypeOverlay},
+		{stringVal: "external", intType: VnTypeExternal, stringType: vnTypeExternal},
 
 		{stringVal: "", intType: SystemRoleNone, stringType: systemRoleNone},
 		{stringVal: "access", intType: SystemRoleAccess, stringType: systemRoleAccess},

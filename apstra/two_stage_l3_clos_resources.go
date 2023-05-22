@@ -53,27 +53,31 @@ const (
 	ResourceGroupNameMlagDomainIp4
 	ResourceGroupNameVtepIp4
 	ResourceGroupNameEvpnL3Vni
+	ResourceGroupNameVirtualNetworkSviIpv4
+	ResourceGroupNameVirtualNetworkSviIpv6
 	ResourceGroupNameUnknown
 
-	resourceGroupNameNone               = resourceGroupName("")
-	resourceGroupNameSuperspineAsn      = resourceGroupName("superspine_asns")
-	resourceGroupNameSpineAsn           = resourceGroupName("spine_asns")
-	resourceGroupNameLeafAsn            = resourceGroupName("leaf_asns")
-	resourceGroupNameAccessAsn          = resourceGroupName("access_asns")
-	resourceGroupNameSuperspineIp4      = resourceGroupName("superspine_loopback_ips")
-	resourceGroupNameSpineIp4           = resourceGroupName("spine_loopback_ips")
-	resourceGroupNameLeafIp4            = resourceGroupName("leaf_loopback_ips")
-	resourceGroupNameAccessIp4          = resourceGroupName("access_loopback_ips")
-	resourceGroupNameSuperspineSpineIp4 = resourceGroupName("spine_superspine_link_ips")
-	resourceGroupNameSuperspineSpineIp6 = resourceGroupName("ipv6_spine_superspine_link_ips")
-	resourceGroupNameSpineLeafIp4       = resourceGroupName("spine_leaf_link_ips")
-	resourceGroupNameSpineLeafIp6       = resourceGroupName("ipv6_spine_leaf_link_ips")
-	resourceGroupNameLeafLeafIp4        = resourceGroupName("leaf_leaf_link_ips")
-	resourceGroupNameMlagDomainSviIp4   = resourceGroupName("mlag_domain_svi_subnets")
-	resourceGroupNameAccessAccessIp4    = resourceGroupName("access_l3_peer_link_link_ips")
-	resourceGroupNameVtepIp4            = resourceGroupName("vtep_ips")
-	resourceGroupNameEvpnL3Vni          = resourceGroupName("evpn_l3_vnis")
-	resourceGroupNameUnknown            = "group name %d unknown"
+	resourceGroupNameNone                  = resourceGroupName("")
+	resourceGroupNameSuperspineAsn         = resourceGroupName("superspine_asns")
+	resourceGroupNameSpineAsn              = resourceGroupName("spine_asns")
+	resourceGroupNameLeafAsn               = resourceGroupName("leaf_asns")
+	resourceGroupNameAccessAsn             = resourceGroupName("access_asns")
+	resourceGroupNameSuperspineIp4         = resourceGroupName("superspine_loopback_ips")
+	resourceGroupNameSpineIp4              = resourceGroupName("spine_loopback_ips")
+	resourceGroupNameLeafIp4               = resourceGroupName("leaf_loopback_ips")
+	resourceGroupNameAccessIp4             = resourceGroupName("access_loopback_ips")
+	resourceGroupNameSuperspineSpineIp4    = resourceGroupName("spine_superspine_link_ips")
+	resourceGroupNameSuperspineSpineIp6    = resourceGroupName("ipv6_spine_superspine_link_ips")
+	resourceGroupNameSpineLeafIp4          = resourceGroupName("spine_leaf_link_ips")
+	resourceGroupNameSpineLeafIp6          = resourceGroupName("ipv6_spine_leaf_link_ips")
+	resourceGroupNameLeafLeafIp4           = resourceGroupName("leaf_leaf_link_ips")
+	resourceGroupNameMlagDomainSviIp4      = resourceGroupName("mlag_domain_svi_subnets")
+	resourceGroupNameAccessAccessIp4       = resourceGroupName("access_l3_peer_link_link_ips")
+	resourceGroupNameVtepIp4               = resourceGroupName("vtep_ips")
+	resourceGroupNameEvpnL3Vni             = resourceGroupName("evpn_l3_vnis")
+	resourceGroupNameVirtualNetworkSviIpv4 = resourceGroupName("virtual_network_svi_subnets")
+	resourceGroupNameVirtualNetworkSviIpv6 = resourceGroupName("virtual_network_svi_subnets_ipv6")
+	resourceGroupNameUnknown               = "group name %d unknown"
 )
 
 type ResourceGroupName int
@@ -131,6 +135,10 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameEvpnL3Vni:
 		return ResourceTypeVniPool
+	case ResourceGroupNameVirtualNetworkSviIpv4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameVirtualNetworkSviIpv6:
+		return ResourceTypeIp6Pool
 	}
 	return ResourceTypeUnknown
 }
@@ -189,6 +197,10 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameVtepIp4
 	case ResourceGroupNameEvpnL3Vni:
 		return resourceGroupNameEvpnL3Vni
+	case ResourceGroupNameVirtualNetworkSviIpv4:
+		return resourceGroupNameVirtualNetworkSviIpv4
+	case ResourceGroupNameVirtualNetworkSviIpv6:
+		return resourceGroupNameVirtualNetworkSviIpv6
 	default:
 		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
@@ -234,6 +246,10 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameVtepIp4), nil
 	case resourceGroupNameEvpnL3Vni:
 		return int(ResourceGroupNameEvpnL3Vni), nil
+	case resourceGroupNameVirtualNetworkSviIpv4:
+		return int(ResourceGroupNameVirtualNetworkSviIpv4), nil
+	case resourceGroupNameVirtualNetworkSviIpv6:
+		return int(ResourceGroupNameVirtualNetworkSviIpv6), nil
 	default:
 		return int(ResourceGroupNameUnknown), fmt.Errorf("unknown group name '%s'", o)
 	}
