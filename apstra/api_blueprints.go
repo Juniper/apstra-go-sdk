@@ -24,6 +24,7 @@ const (
 const (
 	NodeTypeNone = NodeType(iota)
 	NodeTypeMetadata
+	NodeTypePolicy
 	NodeTypeRedundancyGroup
 	NodeTypeRoutingPolicy
 	NodeTypeSecurityZone
@@ -33,6 +34,7 @@ const (
 
 	nodeTypeNone            = nodeType("")
 	nodeTypeMetadata        = nodeType("metadata")
+	nodeTypePolicy          = nodeType("policy")
 	nodeTypeRedundancyGroup = nodeType("redundancy_group")
 	nodeTypeRoutingPolicy   = nodeType("routing_policy")
 	nodeTypeSecurityZone    = nodeType("security_zone")
@@ -50,6 +52,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeNone)
 	case NodeTypeMetadata:
 		return string(nodeTypeMetadata)
+	case NodeTypePolicy:
+		return string(nodeTypePolicy)
 	case NodeTypeRedundancyGroup:
 		return string(nodeTypeRedundancyGroup)
 	case NodeTypeRoutingPolicy:
