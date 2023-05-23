@@ -14,6 +14,10 @@ type Logger interface {
 // logStr checks if DebugLevel meets the message verbosity specified in
 // msgLevel. If so, it logs the supplied message (maybe)
 func (o *Client) logStr(msgLevel int, msg string) {
+	if o.logger == nil {
+		return
+	}
+
 	if msgLevel > o.cfg.LogLevel {
 		return
 	}
@@ -23,6 +27,10 @@ func (o *Client) logStr(msgLevel int, msg string) {
 // logStrf checks if DebugLevel meets the message verbosity specified in
 // msgLevel. If so, it formats the message and logs it.
 func (o *Client) logStrf(msgLevel int, msg string, a ...any) {
+	if o.logger == nil {
+		return
+	}
+
 	if msgLevel > o.cfg.LogLevel {
 		return
 	}
@@ -34,6 +42,10 @@ func (o *Client) logStrf(msgLevel int, msg string, a ...any) {
 // string returned by the function is logged. If the function produces an
 // error, it is logged directly and the intended log message is lost
 func (o *Client) logFunc(msgLevel int, f func(int, ...interface{}) (string, error), params ...interface{}) {
+	if o.logger == nil {
+		return
+	}
+
 	if msgLevel > o.cfg.LogLevel {
 		return
 	}
