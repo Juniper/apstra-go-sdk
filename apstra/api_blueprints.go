@@ -25,12 +25,14 @@ const (
 	NodeTypeNone = NodeType(iota)
 	NodeTypeMetadata
 	NodeTypeRedundancyGroup
+	NodeTypeSecurityZone
 	NodeTypeSystem
 	NodeTypeUnknown = "unknown node type %s"
 
 	nodeTypeNone            = nodeType("")
 	nodeTypeMetadata        = nodeType("metadata")
 	nodeTypeRedundancyGroup = nodeType("redundancy_group")
+	nodeTypeSecurityZone    = nodeType("security_zone")
 	nodeTypeSystem          = nodeType("system")
 	nodeTypeUnknown         = "unknown node type %d"
 )
@@ -46,6 +48,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeMetadata)
 	case NodeTypeRedundancyGroup:
 		return string(nodeTypeRedundancyGroup)
+	case NodeTypeSecurityZone:
+		return string(nodeTypeSecurityZone)
 	case NodeTypeSystem:
 		return string(nodeTypeSystem)
 	default:
