@@ -27,6 +27,7 @@ const (
 	NodeTypeRedundancyGroup
 	NodeTypeSecurityZone
 	NodeTypeSystem
+	NodeTypeVirtualNetwork
 	NodeTypeUnknown = "unknown node type %s"
 
 	nodeTypeNone            = nodeType("")
@@ -34,6 +35,7 @@ const (
 	nodeTypeRedundancyGroup = nodeType("redundancy_group")
 	nodeTypeSecurityZone    = nodeType("security_zone")
 	nodeTypeSystem          = nodeType("system")
+	nodeTypeVirtualNetwork  = nodeType("virtual_network")
 	nodeTypeUnknown         = "unknown node type %d"
 )
 
@@ -52,6 +54,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeSecurityZone)
 	case NodeTypeSystem:
 		return string(nodeTypeSystem)
+	case NodeTypeVirtualNetwork:
+		return string(nodeTypeVirtualNetwork)
 	default:
 		return fmt.Sprintf(nodeTypeUnknown, o)
 	}
