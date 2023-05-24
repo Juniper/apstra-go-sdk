@@ -134,6 +134,7 @@ type PathQuery struct {
 	context       context.Context
 	blueprintId   ObjectId
 	blueprintType BlueprintType
+	where         []string
 }
 
 func (o *PathQuery) getBlueprintType() BlueprintType {
@@ -172,7 +173,15 @@ func (o *PathQuery) String() string {
 		sb.WriteString(next.String())
 		next = next.next
 	}
+	for _, where := range o.where {
+		sb.WriteString(".where(" + where + ")")
+	}
 	return sb.String()
+}
+
+func (o *PathQuery) Where(where string) *PathQuery {
+	o.where = append(o.where, where)
+	return o
 }
 
 func (o *PathQuery) addElement(elementType string, attributes []QEEAttribute) *PathQuery {
@@ -238,6 +247,7 @@ type MatchQuery struct {
 	blueprintType BlueprintType
 	match         []PathQuery
 	firstElement  *MatchQueryElement
+	where         []string
 }
 
 //func (o *MatchQuery) Having(v QEAttrVal) *MatchQuery          {} // todo
@@ -312,7 +322,16 @@ func (o *MatchQuery) String() string {
 		next = next.next
 	}
 
+	for _, where := range o.where {
+		sb.WriteString(".where(" + where + ")")
+	}
+
 	return sb.String()
+}
+
+func (o *MatchQuery) Where(where string) *MatchQuery {
+	o.where = append(o.where, where)
+	return o
 }
 
 func (o *MatchQuery) Match(q *PathQuery) *MatchQuery {

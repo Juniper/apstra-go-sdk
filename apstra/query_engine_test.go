@@ -257,3 +257,88 @@ func TestMatchQueryDistinct(t *testing.T) {
 		}
 	}
 }
+
+func TestPathQueryWhere(t *testing.T) {
+	type testCase struct {
+		q QEQuery
+		e string
+	}
+
+	testCases := []testCase{
+		{
+			q: new(PathQuery).
+				Node([]QEEAttribute{
+					{Key: "type", Value: QEStringVal("system")},
+					{Key: "name", Value: QEStringVal("n_switch")},
+					{Key: "system_type", Value: QEStringVal("switch")},
+				}).
+				Out([]QEEAttribute{
+					{Key: "type", Value: QEStringVal("hosted_interfaces")},
+				}).
+				Node([]QEEAttribute{
+					{Key: "type", Value: QEStringVal("interface")},
+					{Key: "if_type", Value: QEStringVal("loopback")},
+					{Key: "name", Value: QEStringVal("n_interface")},
+				}).
+				Where("lambda n_switch: n_switch.role in ('leaf', 'spine')"),
+			e: "node(type='system',name='n_switch',system_type='switch')." +
+				"out(type='hosted_interfaces')." +
+				"node(type='interface',if_type='loopback',name='n_interface')." +
+				"where(lambda n_switch: n_switch.role in ('leaf', 'spine'))",
+		},
+	}
+
+	for i, tc := range testCases {
+		r := tc.q.String()
+		if tc.e != r {
+			t.Fatalf("test case %d expected %q, got: %q", i, tc.e, r)
+		}
+	}
+}
+
+func TestMatchQueryWhere(t *testing.T) {
+	pq1 := new(PathQuery).
+		Node([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("system")},
+			{Key: "name", Value: QEStringVal("n_switch")},
+			{Key: "system_type", Value: QEStringVal("switch")},
+		}).
+		Out([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("hosted_interfaces")},
+		}).
+		Node([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("interface")},
+			{Key: "if_type", Value: QEStringVal("loopback")},
+			{Key: "name", Value: QEStringVal("n_interface")},
+		})
+
+	type testCase struct {
+		q QEQuery
+		e string
+	}
+
+	testCases := []testCase{
+		{
+			q: new(MatchQuery).
+				Match(pq1).
+				Distinct(MatchQueryDistinct{"n_switch", "n_interface"}).
+				Where("foo"),
+			e: "match(" + pq1.String() + ").distinct(['n_switch','n_interface']).where(foo)",
+		},
+		{
+			q: new(MatchQuery).
+				Match(pq1).
+				Distinct(MatchQueryDistinct{"n_switch", "n_interface"}).
+				Distinct(MatchQueryDistinct{"foo", "bar"}).
+				Where("foo"),
+			e: "match(" + pq1.String() + ").distinct(['n_switch','n_interface']).distinct(['foo','bar']).where(foo)",
+		},
+	}
+
+	for i, tc := range testCases {
+		r := tc.q.String()
+		if tc.e != r {
+			t.Fatalf("test case %d expected %q, got: %q", i, tc.e, r)
+		}
+	}
+}
