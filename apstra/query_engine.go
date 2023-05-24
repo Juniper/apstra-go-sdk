@@ -118,7 +118,7 @@ func (o QEBoolVal) String() string {
 type QEIntVal int
 
 func (o QEIntVal) String() string {
-	return strconv.Itoa(o)
+	return strconv.Itoa(int(o))
 }
 
 func (o *Client) newQuery(blueprintId ObjectId) *PathQuery {
