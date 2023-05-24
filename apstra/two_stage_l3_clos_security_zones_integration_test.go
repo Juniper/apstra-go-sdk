@@ -6,6 +6,7 @@ package apstra
 import (
 	"context"
 	"log"
+	"net"
 	"testing"
 )
 
@@ -190,5 +191,81 @@ func TestGetDefaultRoutingZone(t *testing.T) {
 			t.Fatal(err)
 		}
 		log.Printf("blueprint: %s - default security zone: %s", bpClient.blueprintId, sz.Id)
+	}
+}
+
+func TestGetSetSecurityZoneDHCPServers(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		defer func() {
+			err := bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		log.Printf("testing GetSecurityZoneByVrfName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		sz, err := bpClient.GetSecurityZoneByVrfName(ctx, "default")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing GetSecurityZoneDhcpServers() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		getIPs, err := bpClient.GetSecurityZoneDhcpServers(ctx, sz.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(getIPs) != 0 {
+			t.Fatalf("expected no DHCP servers, got: %s", getIPs)
+		}
+
+		setIPs := []net.IP{
+			[]byte{1, 2, 3, 4},
+			[]byte{5, 6, 7, 8},
+			[]byte{9, 10, 11, 12},
+			[]byte{1, 2, 3, 4},
+		}
+
+		log.Printf("testing SetSecurityZoneDhcpServers() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.SetSecurityZoneDhcpServers(ctx, sz.Id, setIPs)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing GetSecurityZoneDhcpServers() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		getIPs, err = bpClient.GetSecurityZoneDhcpServers(ctx, sz.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(setIPs) != len(getIPs) {
+			t.Fatalf("expected %d dhcp servers, got %d dhcp servers", len(setIPs), len(getIPs))
+		}
+		for i := 0; i < len(getIPs); i++ {
+			if !setIPs[i].Equal(getIPs[i]) {
+				t.Fatalf("dhcp server at index %d: expected %s, got %s", i, setIPs[i].String(), getIPs[i].String())
+			}
+		}
+
+		log.Printf("testing SetSecurityZoneDhcpServers() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.SetSecurityZoneDhcpServers(ctx, sz.Id, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing GetSecurityZoneDhcpServers() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		getIPs, err = bpClient.GetSecurityZoneDhcpServers(ctx, sz.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(getIPs) != 0 {
+			t.Fatalf("expected no DHCP servers, got: %s", getIPs)
+		}
 	}
 }

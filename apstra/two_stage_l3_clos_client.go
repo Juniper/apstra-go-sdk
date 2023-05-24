@@ -2,7 +2,9 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"time"
 )
@@ -157,6 +159,38 @@ func (o *TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg *Secu
 // DeleteSecurityZone deletes an Apstra Routing Zone / Security Zone / VRF
 func (o *TwoStageL3ClosClient) DeleteSecurityZone(ctx context.Context, zoneId ObjectId) error {
 	return o.deleteSecurityZone(ctx, zoneId)
+}
+
+// GetSecurityZoneDhcpServers returns []net.IP representing the DHCP relay
+// targets for the security zone specified by zoneId.
+func (o *TwoStageL3ClosClient) GetSecurityZoneDhcpServers(ctx context.Context, zoneId ObjectId) ([]net.IP, error) {
+	var err error
+	ips, err := o.getSecurityZoneDhcpServers(ctx, zoneId)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]net.IP, len(ips))
+	for i, s := range ips {
+		result[i] = net.ParseIP(s)
+		if result[i] == nil {
+			err = errors.Join(err, fmt.Errorf("failed to parse blueprint %s security zone %s dhcp server"+
+				" at index %d; expected an IP address, got %q", o.blueprintId, zoneId, i, s))
+		}
+	}
+	return result, err
+}
+
+// SetSecurityZoneDhcpServers assigns the []net.IP as DHCP relay targets for
+// the specified security zone, overwriting whatever is there. On the Apstra
+// side, the servers seem to be maintained as an ordered list with duplicates
+// permitted (though the web UI sorts the data prior to display)
+func (o *TwoStageL3ClosClient) SetSecurityZoneDhcpServers(ctx context.Context, zoneId ObjectId, IPs []net.IP) error {
+	ips := make([]string, len(IPs))
+	for i, ip := range IPs {
+		ips[i] = ip.String()
+	}
+	return o.setSecurityZoneDhcpServers(ctx, zoneId, ips)
 }
 
 // GetSecurityZone fetches the Security Zone / Routing Zone / VRF with the given
