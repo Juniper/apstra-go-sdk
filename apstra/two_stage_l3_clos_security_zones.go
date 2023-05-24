@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	apiUrlBlueprintSecurityZones       = apiUrlBlueprintById + apiUrlPathDelim + "security-zones"
-	apiUrlBlueprintSecurityZonesPrefix = apiUrlBlueprintSecurityZones + apiUrlPathDelim
-	apiUrlBlueprintSecurityZoneById    = apiUrlBlueprintSecurityZonesPrefix + "%s"
+	apiUrlBlueprintSecurityZones               = apiUrlBlueprintById + apiUrlPathDelim + "security-zones"
+	apiUrlBlueprintSecurityZonesPrefix         = apiUrlBlueprintSecurityZones + apiUrlPathDelim
+	apiUrlBlueprintSecurityZoneById            = apiUrlBlueprintSecurityZonesPrefix + "%s"
+	apiUrlBlueprintSecurityZoneByIdDhcpServers = apiUrlBlueprintSecurityZoneById + apiUrlPathDelim + "dhcp-servers"
 )
 
 type SecurityZoneType int
@@ -230,4 +231,28 @@ func (o *TwoStageL3ClosClient) deleteSecurityZone(ctx context.Context, zoneId Ob
 		urlStr: fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
 	})
 	return convertTtaeToAceWherePossible(err)
+}
+
+func (o *TwoStageL3ClosClient) getSecurityZoneDhcpServers(ctx context.Context, zoneId ObjectId) ([]string, error) {
+	response := &struct {
+		Items []string `json:"items"`
+	}{}
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintSecurityZoneByIdDhcpServers, o.blueprintId, zoneId),
+		apiResponse: response,
+	})
+	return response.Items, convertTtaeToAceWherePossible(err)
+}
+
+func (o *TwoStageL3ClosClient) setSecurityZoneDhcpServers(ctx context.Context, zoneId ObjectId, ips []string) error {
+	return convertTtaeToAceWherePossible(o.client.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodPut,
+		urlStr: fmt.Sprintf(apiUrlBlueprintSecurityZoneByIdDhcpServers, o.blueprintId, zoneId),
+		apiInput: &struct {
+			Items []string `json:"items"`
+		}{
+			Items: ips,
+		},
+	}))
 }
