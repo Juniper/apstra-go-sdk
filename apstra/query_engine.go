@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -112,6 +113,12 @@ func (o QEBoolVal) String() string {
 		return "True"
 	}
 	return "False"
+}
+
+type QEIntVal int
+
+func (o QEIntVal) String() string {
+	return strconv.Itoa(o)
 }
 
 func (o *Client) newQuery(blueprintId ObjectId) *PathQuery {
