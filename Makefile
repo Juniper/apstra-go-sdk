@@ -1,4 +1,4 @@
-all: build verify unit-tests integration-tests
+all: verify unit-tests integration-tests
 
 fast-check: verify unit-tests
 
@@ -7,9 +7,6 @@ unit-tests:
 
 integration-tests:
 	go test -tags integration -v .
-
-build:
-	go build .
 
 verify: lint-revive lint-staticcheck fmt-check vet
 
@@ -26,4 +23,4 @@ vet:
 	go vet
 
 
-.PHONY: all build fmt-check lint lint-revive lint-staticcheck unit-tests verify vet
+.PHONY: all fmt-check lint lint-revive lint-staticcheck unit-tests verify vet
