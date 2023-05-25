@@ -9,6 +9,55 @@ import (
 	"testing"
 )
 
+func TestQEAttrValsString(t *testing.T) {
+	type testCase struct {
+		v QEAttrVal
+		e string
+	}
+
+	testCases := []testCase{
+		{
+			v: QEStringVal("foo"),
+			e: "'foo'",
+		},
+		{
+			v: QEStringVal("\"bar\""),
+			e: "'\"bar\"'",
+		},
+		{
+			v: QEStringVal("123"),
+			e: "'123'",
+		},
+		{
+			v: QEStringVal(""),
+			e: "''",
+		},
+		{
+			v: QEStringValIsIn{"foo", "bar"},
+			e: "is_in(['foo','bar'])",
+		},
+		{
+			v: QEStringValNotIn{"foo", "bar"},
+			e: "not_in(['foo','bar'])",
+		},
+		{
+			v: QEIntVal(7),
+			e: "7",
+		},
+		{
+			v: QEIntVal(-7),
+			e: "-7",
+		},
+	}
+
+	for i, tc := range testCases {
+		r := tc.v.String()
+		if tc.e != r {
+			t.Errorf("test case %d expected %q got %q", i, tc.e, r)
+		}
+	}
+}
+
 func TestQEEAttributeString(t *testing.T) {
 	test := []struct {
 		expected string
@@ -254,6 +303,91 @@ func TestMatchQueryDistinct(t *testing.T) {
 		result := tc.q.String()
 		if tc.e != result {
 			t.Fatalf("test case %d expected %q, got %q", i, tc.e, result)
+		}
+	}
+}
+
+func TestPathQueryWhere(t *testing.T) {
+	type testCase struct {
+		q QEQuery
+		e string
+	}
+
+	testCases := []testCase{
+		{
+			q: new(PathQuery).
+				Node([]QEEAttribute{
+					{Key: "type", Value: QEStringVal("system")},
+					{Key: "name", Value: QEStringVal("n_switch")},
+					{Key: "system_type", Value: QEStringVal("switch")},
+				}).
+				Out([]QEEAttribute{
+					{Key: "type", Value: QEStringVal("hosted_interfaces")},
+				}).
+				Node([]QEEAttribute{
+					{Key: "type", Value: QEStringVal("interface")},
+					{Key: "if_type", Value: QEStringVal("loopback")},
+					{Key: "name", Value: QEStringVal("n_interface")},
+				}).
+				Where("lambda n_switch: n_switch.role in ('leaf', 'spine')"),
+			e: "node(type='system',name='n_switch',system_type='switch')." +
+				"out(type='hosted_interfaces')." +
+				"node(type='interface',if_type='loopback',name='n_interface')." +
+				"where(lambda n_switch: n_switch.role in ('leaf', 'spine'))",
+		},
+	}
+
+	for i, tc := range testCases {
+		r := tc.q.String()
+		if tc.e != r {
+			t.Fatalf("test case %d expected %q, got: %q", i, tc.e, r)
+		}
+	}
+}
+
+func TestMatchQueryWhere(t *testing.T) {
+	pq1 := new(PathQuery).
+		Node([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("system")},
+			{Key: "name", Value: QEStringVal("n_switch")},
+			{Key: "system_type", Value: QEStringVal("switch")},
+		}).
+		Out([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("hosted_interfaces")},
+		}).
+		Node([]QEEAttribute{
+			{Key: "type", Value: QEStringVal("interface")},
+			{Key: "if_type", Value: QEStringVal("loopback")},
+			{Key: "name", Value: QEStringVal("n_interface")},
+		})
+
+	type testCase struct {
+		q QEQuery
+		e string
+	}
+
+	testCases := []testCase{
+		{
+			q: new(MatchQuery).
+				Match(pq1).
+				Distinct(MatchQueryDistinct{"n_switch", "n_interface"}).
+				Where("foo"),
+			e: "match(" + pq1.String() + ").distinct(['n_switch','n_interface']).where(foo)",
+		},
+		{
+			q: new(MatchQuery).
+				Match(pq1).
+				Distinct(MatchQueryDistinct{"n_switch", "n_interface"}).
+				Distinct(MatchQueryDistinct{"foo", "bar"}).
+				Where("foo"),
+			e: "match(" + pq1.String() + ").distinct(['n_switch','n_interface']).distinct(['foo','bar']).where(foo)",
+		},
+	}
+
+	for i, tc := range testCases {
+		r := tc.q.String()
+		if tc.e != r {
+			t.Fatalf("test case %d expected %q, got: %q", i, tc.e, r)
 		}
 	}
 }
