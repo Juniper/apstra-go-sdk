@@ -20,7 +20,6 @@ lint-staticcheck:
 	staticcheck -tags integration .
 
 vet:
-	go vet
-
+	go vet -v ./apstra/...
 
 .PHONY: all fmt-check lint lint-revive lint-staticcheck unit-tests verify vet
