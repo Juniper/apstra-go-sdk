@@ -49,3 +49,10 @@ func (o NodeType) String() string {
 		return fmt.Sprintf(nodeTypeUnknown, o)
 	}
 }
+
+func (o NodeType) QEEAttribute() QEEAttribute {
+	return QEEAttribute{
+		Key:   "type",
+		Value: QEStringVal(o.String()),
+	}
+}
