@@ -9,6 +9,55 @@ import (
 	"testing"
 )
 
+func TestQEAttrValsString(t *testing.T) {
+	type testCase struct {
+		v QEAttrVal
+		e string
+	}
+
+	testCases := []testCase{
+		{
+			v: QEStringVal("foo"),
+			e: "'foo'",
+		},
+		{
+			v: QEStringVal("\"bar\""),
+			e: "'\"bar\"'",
+		},
+		{
+			v: QEStringVal("123"),
+			e: "'123'",
+		},
+		{
+			v: QEStringVal(""),
+			e: "''",
+		},
+		{
+			v: QEStringValIsIn{"foo", "bar"},
+			e: "is_in(['foo','bar'])",
+		},
+		{
+			v: QEStringValNotIn{"foo", "bar"},
+			e: "not_in(['foo','bar'])",
+		},
+		{
+			v: QEIntVal(7),
+			e: "7",
+		},
+		{
+			v: QEIntVal(-7),
+			e: "-7",
+		},
+	}
+
+	for i, tc := range testCases {
+		r := tc.v.String()
+		if tc.e != r {
+			t.Errorf("test case %d expected %q got %q", i, tc.e, r)
+		}
+	}
+}
+
 func TestQEEAttributeString(t *testing.T) {
 	test := []struct {
 		expected string
