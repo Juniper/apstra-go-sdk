@@ -789,7 +789,7 @@ type jobIdResponse struct {
 	Id JobId `json:"id"`
 }
 
-func (o *Client) listAgents(ctx context.Context) ([]ObjectId, error) {
+func (o *Client) listSystemAgents(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsAgentsResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
@@ -815,7 +815,7 @@ func (o *Client) getSystemAgent(ctx context.Context, id ObjectId) (*SystemAgent,
 	return response.polish(), nil
 }
 
-func (o *Client) getAllAgentsInfo(ctx context.Context) ([]SystemAgent, error) {
+func (o *Client) getAllSystemAgents(ctx context.Context) ([]SystemAgent, error) {
 	response := &getAgentsResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -834,7 +834,7 @@ func (o *Client) getAllAgentsInfo(ctx context.Context) ([]SystemAgent, error) {
 }
 
 func (o *Client) getSystemAgentByManagementIp(ctx context.Context, ip string) (*SystemAgent, error) {
-	asa, err := o.getAllAgentsInfo(ctx)
+	asa, err := o.getAllSystemAgents(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -849,7 +849,7 @@ func (o *Client) getSystemAgentByManagementIp(ctx context.Context, ip string) (*
 	}
 }
 
-func (o *Client) createAgent(ctx context.Context, request *SystemAgentRequest) (ObjectId, error) {
+func (o *Client) createSystemAgent(ctx context.Context, request *SystemAgentRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,

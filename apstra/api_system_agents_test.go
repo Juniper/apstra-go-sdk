@@ -25,8 +25,8 @@ func TestGetSystemAgent(t *testing.T) {
 
 	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
-		log.Printf("testing listAgents() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		list, err := client.client.listAgents(context.TODO())
+		log.Printf("testing listSystemAgents() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		list, err := client.client.listSystemAgents(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
