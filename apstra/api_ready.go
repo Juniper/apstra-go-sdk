@@ -26,7 +26,7 @@ func (o *Client) ready(ctx context.Context) error {
 		return fmt.Errorf("error listing Blueprints - %w", err)
 	}
 
-	_, err = o.getAllAgentsInfo(ctx)
+	_, err = o.getAllSystemAgents(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting System Agents - %w", err)
 	}

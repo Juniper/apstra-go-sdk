@@ -482,7 +482,17 @@ func (o *Client) GetAgentProfileByLabel(ctx context.Context, label string) (*Age
 
 // CreateAgent creates an Apstra Agent and returns its ID
 func (o *Client) CreateAgent(ctx context.Context, request *SystemAgentRequest) (ObjectId, error) {
-	return o.createAgent(ctx, request)
+	return o.createSystemAgent(ctx, request)
+}
+
+// ListSystemAgents returns []ObjectId representing all Managed Device System Agents
+func (o *Client) ListSystemAgents(ctx context.Context) ([]ObjectId, error) {
+	return o.listSystemAgents(ctx)
+}
+
+// GetAllSystemAgents returns a SystemAgent structure representing the supplied ID
+func (o *Client) GetAllSystemAgents(ctx context.Context) ([]SystemAgent, error) {
+	return o.getAllSystemAgents(ctx)
 }
 
 // GetSystemAgent returns a SystemAgent structure representing the supplied ID
