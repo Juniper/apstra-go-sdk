@@ -4,6 +4,8 @@ import "fmt"
 
 const (
 	NodeTypeNone = NodeType(iota)
+	NodeTypeInterface
+	NodeTypeLink
 	NodeTypeMetadata
 	NodeTypePolicy
 	NodeTypeRedundancyGroup
@@ -14,6 +16,8 @@ const (
 	NodeTypeUnknown = "unknown node type %s"
 
 	nodeTypeNone            = nodeType("")
+	nodeTypeInterface       = nodeType("interface")
+	nodeTypeLink            = nodeType("link")
 	nodeTypeMetadata        = nodeType("metadata")
 	nodeTypePolicy          = nodeType("policy")
 	nodeTypeRedundancyGroup = nodeType("redundancy_group")

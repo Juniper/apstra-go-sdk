@@ -3,7 +3,7 @@ package apstra
 import "fmt"
 
 const (
-	RelationshipTypeNone = iota
+	RelationshipTypeNone = RelationshipType(iota)
 	RelationshipTypeComposedOfSystems
 	RelationshipTypeDeviceProfile
 	RelationshipTypeHostedInterfaces
