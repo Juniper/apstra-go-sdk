@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"testing"
-	"time"
 )
 
 var testSpeedStrings = [][]string{
@@ -187,36 +186,6 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestRawIfy(t *testing.T) {
-	testDev := LogicalDevice{
-		Id:             "id",
-		CreatedAt:      time.Now().Add(-time.Hour * 24),
-		LastModifiedAt: time.Now(),
-		Data: &LogicalDeviceData{
-			DisplayName: "name",
-			Panels: []LogicalDevicePanel{{
-
-				PanelLayout: LogicalDevicePanelLayout{
-					RowCount:    3,
-					ColumnCount: 3,
-				},
-				PortIndexing: LogicalDevicePortIndexing{
-					Order:      PortIndexingVerticalFirst,
-					StartIndex: 0,
-					Schema:     PortIndexingSchemaAbsolute,
-				},
-				PortGroups: []LogicalDevicePortGroup{{
-					Count: 9,
-					Speed: "10G",
-					Roles: LogicalDevicePortRoleAccess | LogicalDevicePortRoleSpine,
-				}},
-			}},
-		},
-	}
-	raw := testDev.raw()
-	log.Println(raw.Panels[0].PortGroups[0].Roles)
 }
 
 func TestGetLogicalDeviceByName(t *testing.T) {
