@@ -10,6 +10,7 @@ const (
 	RelationshipTypeInterfaceMap
 	RelationshipTypeLink
 	RelationshipTypeLogicalDevice
+	RelationshipTypePartOfRack
 	RelationshipTypeTag
 	RelationshipTypeUnknown = "unknown node type %s"
 
@@ -20,6 +21,7 @@ const (
 	relationshipTypeInterfaceMap      = relationshipType("interface_map")
 	relationshipTypeLink              = relationshipType("link")
 	relationshipTypeLogicalDevice     = relationshipType("logical_device")
+	relationshipTypePartOfRack        = relationshipType("part_of_rack")
 	relationshipTypeTag               = relationshipType("tag")
 	relationshipTypeUnknown           = "unknown node type %d"
 )
@@ -43,6 +45,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeLink)
 	case RelationshipTypeLogicalDevice:
 		return string(relationshipTypeLogicalDevice)
+	case RelationshipTypePartOfRack:
+		return string(relationshipTypePartOfRack)
 	case RelationshipTypeTag:
 		return string(relationshipTypeTag)
 	default:

@@ -8,6 +8,7 @@ const (
 	NodeTypeLink
 	NodeTypeMetadata
 	NodeTypePolicy
+	NodeTypeRack
 	NodeTypeRedundancyGroup
 	NodeTypeRoutingPolicy
 	NodeTypeSecurityZone
@@ -20,6 +21,7 @@ const (
 	nodeTypeLink            = nodeType("link")
 	nodeTypeMetadata        = nodeType("metadata")
 	nodeTypePolicy          = nodeType("policy")
+	nodeTypeRack            = nodeType("rack")
 	nodeTypeRedundancyGroup = nodeType("redundancy_group")
 	nodeTypeRoutingPolicy   = nodeType("routing_policy")
 	nodeTypeSecurityZone    = nodeType("security_zone")
@@ -35,10 +37,16 @@ func (o NodeType) String() string {
 	switch o {
 	case NodeTypeNone:
 		return string(nodeTypeNone)
+	case NodeTypeInterface:
+		return string(nodeTypeInterface)
+	case NodeTypeLink:
+		return string(nodeTypeLink)
 	case NodeTypeMetadata:
 		return string(nodeTypeMetadata)
 	case NodeTypePolicy:
 		return string(nodeTypePolicy)
+	case NodeTypeRack:
+		return string(nodeTypeRack)
 	case NodeTypeRedundancyGroup:
 		return string(nodeTypeRedundancyGroup)
 	case NodeTypeRoutingPolicy:

@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -199,6 +200,60 @@ func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 
 	bpDeleteFunc := func(ctx context.Context) error {
 		return client.DeleteBlueprint(ctx, bpId)
+	}
+
+	return bpClient, bpDeleteFunc
+}
+
+func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignDatacenter,
+		Label:      randString(5, "hex"),
+		TemplateId: "L2_Virtual_ESI_2x_Links",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpDeleteFunc := func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	}
+
+	query := new(PathQuery).
+		SetBlueprintId(bpId).
+		SetBlueprintType(BlueprintTypeStaging).
+		SetClient(client).
+		Node([]QEEAttribute{
+			NodeTypeSystem.QEEAttribute(),
+			{"system_type", QEStringVal("switch")},
+			{"role", QEStringVal("leaf")},
+			{"name", QEStringVal("n_leaf")},
+		})
+	var response struct {
+		Items []struct {
+			Leaf struct {
+				ID string `json:"id"`
+			} `json:"n_leaf"`
+		} `json:"items"`
+	}
+	err = query.Do(ctx, &response)
+	if err != nil {
+		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
+	}
+
+	assignments := make(SystemIdToInterfaceMapAssignment)
+	for _, item := range response.Items {
+		assignments[item.Leaf.ID] = "Juniper_vQFX__AOS-7x10-Leaf"
+	}
+
+	err = bpClient.SetInterfaceMapAssignments(ctx, assignments)
+	if err != nil {
+		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
 	}
 
 	return bpClient, bpDeleteFunc
