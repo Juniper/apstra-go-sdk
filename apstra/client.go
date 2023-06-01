@@ -1233,6 +1233,11 @@ func (o *Client) DeleteInterfaceMap(ctx context.Context, id ObjectId) error {
 	return o.deleteInterfaceMap(ctx, id)
 }
 
+// GetNode fetches the specified node and unpacks it into target
+func (o *Client) GetNode(ctx context.Context, blueprint ObjectId, nodeId ObjectId, target interface{}) error {
+	return o.getNode(ctx, blueprint, nodeId, target)
+}
+
 // GetNodes fetches the node of the specified type, unpacks the API response
 // into 'response'
 func (o *Client) GetNodes(ctx context.Context, blueprint ObjectId, nodeType NodeType, response interface{}) error {

@@ -480,6 +480,14 @@ func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType Node
 	})
 }
 
+func (o *Client) getNode(ctx context.Context, blueprintId ObjectId, nodeId ObjectId, target interface{}) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, blueprintId, nodeId),
+		apiResponse: target,
+	})
+}
+
 func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPatch,

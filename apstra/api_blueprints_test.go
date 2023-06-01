@@ -153,3 +153,56 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 		}
 	}
 }
+
+func TestGetNodes(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		bpClient, bpDel := testBlueprintB(ctx, t, client.client)
+		defer func() {
+			err = bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+		_ = clientName
+		_ = bpClient
+
+		type node struct {
+			Id         ObjectId `json:"id"`
+			Label      string   `json:"label"`
+			SystemType string   `json:"system_type"`
+		}
+		equal := func(a, b node) bool {
+			return a.Id == b.Id &&
+				a.Label == b.Label &&
+				a.SystemType == b.SystemType
+		}
+
+		var response struct {
+			Nodes map[ObjectId]node `json:"nodes"`
+		}
+		err = bpClient.Client().GetNodes(ctx, bpClient.Id(), NodeTypeSystem, &response)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var nodeB node
+		for id, nodeA := range response.Nodes {
+			err = bpClient.Client().GetNode(ctx, bpClient.Id(), id, &nodeB)
+			if err != nil {
+				t.Fatal()
+			}
+			if !equal(nodeA, nodeB) {
+				t.Fatalf("nodes don't match:\n%v\n%v", nodeA, nodeB)
+			}
+		}
+	}
+}
