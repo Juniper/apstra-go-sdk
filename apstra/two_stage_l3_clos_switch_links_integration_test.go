@@ -72,7 +72,7 @@ func TestCreateDeleteServer(t *testing.T) {
 			Server: System{
 				Hostname:         randString(5, "hex"),
 				Label:            randString(5, "hex"),
-				LogicalDeviceId:  "AOS-1x10-1",
+				LogicalDeviceId:  "AOS-2x10-1",
 				PortChannelIdMin: 0,
 				PortChannelIdMax: 0,
 				Tags:             []string{"blah", "also blah"},

@@ -169,8 +169,6 @@ func TestGetNodes(t *testing.T) {
 				t.Fatal(err)
 			}
 		}()
-		_ = clientName
-		_ = bpClient
 
 		type node struct {
 			Id         ObjectId `json:"id"`
@@ -186,6 +184,7 @@ func TestGetNodes(t *testing.T) {
 		var response struct {
 			Nodes map[ObjectId]node `json:"nodes"`
 		}
+		log.Printf("testing GetNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.Client().GetNodes(ctx, bpClient.Id(), NodeTypeSystem, &response)
 		if err != nil {
 			t.Fatal(err)
@@ -194,8 +193,10 @@ func TestGetNodes(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		log.Printf("got %d nodes. Fetch each one...", len(response.Nodes))
 		var nodeB node
 		for id, nodeA := range response.Nodes {
+			log.Printf("testing GetNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = bpClient.Client().GetNode(ctx, bpClient.Id(), id, &nodeB)
 			if err != nil {
 				t.Fatal()
