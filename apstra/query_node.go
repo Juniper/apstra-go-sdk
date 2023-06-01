@@ -13,6 +13,7 @@ const (
 	NodeTypeRoutingPolicy
 	NodeTypeSecurityZone
 	NodeTypeSystem
+	NodeTypeTag
 	NodeTypeVirtualNetwork
 	NodeTypeUnknown = "unknown node type %s"
 
@@ -26,6 +27,7 @@ const (
 	nodeTypeRoutingPolicy   = nodeType("routing_policy")
 	nodeTypeSecurityZone    = nodeType("security_zone")
 	nodeTypeSystem          = nodeType("system")
+	nodeTypeTag             = nodeType("tag")
 	nodeTypeVirtualNetwork  = nodeType("virtual_network")
 	nodeTypeUnknown         = "unknown node type %d"
 )
@@ -55,6 +57,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeSecurityZone)
 	case NodeTypeSystem:
 		return string(nodeTypeSystem)
+	case NodeTypeTag:
+		return string(nodeTypeTag)
 	case NodeTypeVirtualNetwork:
 		return string(nodeTypeVirtualNetwork)
 	default:
