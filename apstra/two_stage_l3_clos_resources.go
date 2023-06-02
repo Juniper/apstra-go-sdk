@@ -55,6 +55,7 @@ const (
 	ResourceGroupNameEvpnL3Vni
 	ResourceGroupNameVirtualNetworkSviIpv4
 	ResourceGroupNameVirtualNetworkSviIpv6
+	ResourceGroupNameVxlanVnIds
 	ResourceGroupNameUnknown
 
 	resourceGroupNameNone                  = resourceGroupName("")
@@ -77,6 +78,7 @@ const (
 	resourceGroupNameEvpnL3Vni             = resourceGroupName("evpn_l3_vnis")
 	resourceGroupNameVirtualNetworkSviIpv4 = resourceGroupName("virtual_network_svi_subnets")
 	resourceGroupNameVirtualNetworkSviIpv6 = resourceGroupName("virtual_network_svi_subnets_ipv6")
+	resourceGroupNameVxlanVnIds            = resourceGroupName("vxlan_vn_ids")
 	resourceGroupNameUnknown               = "group name %d unknown"
 )
 
@@ -139,6 +141,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameVirtualNetworkSviIpv6:
 		return ResourceTypeIp6Pool
+	case ResourceGroupNameVxlanVnIds:
+		return ResourceTypeVniPool
 	}
 	return ResourceTypeUnknown
 }
@@ -201,6 +205,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameVirtualNetworkSviIpv4
 	case ResourceGroupNameVirtualNetworkSviIpv6:
 		return resourceGroupNameVirtualNetworkSviIpv6
+	case ResourceGroupNameVxlanVnIds:
+		return resourceGroupNameVxlanVnIds
 	default:
 		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
@@ -250,6 +256,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameVirtualNetworkSviIpv4), nil
 	case resourceGroupNameVirtualNetworkSviIpv6:
 		return int(ResourceGroupNameVirtualNetworkSviIpv6), nil
+	case resourceGroupNameVxlanVnIds:
+		return int(ResourceGroupNameVxlanVnIds), nil
 	default:
 		return int(ResourceGroupNameUnknown), fmt.Errorf("unknown group name '%s'", o)
 	}
