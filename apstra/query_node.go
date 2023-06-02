@@ -6,6 +6,7 @@ const (
 	NodeTypeNone = NodeType(iota)
 	NodeTypeInterface
 	NodeTypeLink
+	NodeTypeLogicalDevice
 	NodeTypeMetadata
 	NodeTypePolicy
 	NodeTypeRack
@@ -20,6 +21,7 @@ const (
 	nodeTypeNone            = nodeType("")
 	nodeTypeInterface       = nodeType("interface")
 	nodeTypeLink            = nodeType("link")
+	nodeTypeLogicalDevice   = nodeType("logical_device")
 	nodeTypeMetadata        = nodeType("metadata")
 	nodeTypePolicy          = nodeType("policy")
 	nodeTypeRack            = nodeType("rack")
@@ -43,6 +45,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeInterface)
 	case NodeTypeLink:
 		return string(nodeTypeLink)
+	case NodeTypeLogicalDevice:
+		return string(nodeTypeLogicalDevice)
 	case NodeTypeMetadata:
 		return string(nodeTypeMetadata)
 	case NodeTypePolicy:
