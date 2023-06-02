@@ -156,6 +156,7 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "evpn_l3_vnis", intType: ResourceGroupNameEvpnL3Vni, stringType: resourceGroupNameEvpnL3Vni},
 		{stringVal: "virtual_network_svi_subnets", intType: ResourceGroupNameVirtualNetworkSviIpv4, stringType: resourceGroupNameVirtualNetworkSviIpv4},
 		{stringVal: "virtual_network_svi_subnets_ipv6", intType: ResourceGroupNameVirtualNetworkSviIpv6, stringType: resourceGroupNameVirtualNetworkSviIpv6},
+		{stringVal: "vxlan_vn_ids", intType: ResourceGroupNameVxlanVnIds, stringType: resourceGroupNameVxlanVnIds},
 	}
 
 	for i, td := range testData {
