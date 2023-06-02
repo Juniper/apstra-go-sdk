@@ -150,7 +150,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 			defer cancel()
 		}
 	}
-
+	fmt.Println(string(requestBody))
 	// create request
 	req, err := http.NewRequestWithContext(ctx, in.method, apstraUrl.String(), bytes.NewReader(requestBody))
 	if err != nil {

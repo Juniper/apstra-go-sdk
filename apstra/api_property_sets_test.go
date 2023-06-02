@@ -5,7 +5,6 @@ package apstra
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"math/rand"
 	"testing"
@@ -27,9 +26,9 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		return jsonEqual(t, a.Values, b.Values)
 	}
 
-	append_to_byte := func(a []byte, s string) []byte {
-		return []byte(string(a) + s)
-	}
+	//append_to_byte := func(a []byte, s string) []byte {
+	//	return []byte(string(a) + s)
+	//}
 
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
@@ -41,12 +40,12 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 	ps := &PropertySetData{
 		Label: randString(10, "hex"),
 	}
-	vals := make(map[string]string, samples)
+	vals := make(map[string][]byte, samples)
 
 	for i := 0; i < samples; i++ {
-		vals["_"+randString(10, "hex")] = randString(10, "hex")
+		vals["_"+randString(10, "hex")] = []byte(randString(10, "hex"))
 	}
-	ps.Values, err = json.Marshal(vals)
+	ps.Values = vals
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,10 +67,11 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 
 		ps.Label = randString(10, "hex")
 		for i := 0; i < samples; i++ {
-			vals["_"+randString(10, "hex")] = randString(10, "hex")
+			vals["_"+randString(10, "hex")] = []byte(randString(10, "hex"))
 		}
-		ps.Values, err = json.Marshal(vals)
-		ps.Values = append_to_byte(ps.Values[:len(ps.Values)-1], `,"inner_json":{"number":1, "string":"str1"}}`)
+		ps.Values = vals
+		ps.Values["inner_json"] = []byte(`{"number":1, "string":"str1"}}`)
+		//	ps.Values = append_to_byte(ps.Values[:len(ps.Values)-1], `,"inner_json":{"number":1, "string":"str1"}}`)
 		if err != nil {
 			t.Fatal(err)
 		}

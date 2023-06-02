@@ -23,6 +23,12 @@ type PropertySet struct {
 }
 
 type PropertySetData struct {
+	Label      string
+	Values     map[string][]byte
+	Blueprints []ObjectId
+}
+
+type rawPropertySetData struct {
 	Label      string          `json:"label"`
 	Values     json.RawMessage `json:"values"`
 	Blueprints []ObjectId      `json:"blueprints,omitempty"`
@@ -46,13 +52,18 @@ func (o *rawPropertySet) polish() (*PropertySet, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing update time %s - %w", o.UpdatedAt, err)
 	}
+	m := make(map[string][]byte)
+	err = json.Unmarshal(o.Values, &m)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing values %s - %w", string(o.Values), err)
+	}
 	return &PropertySet{
 		Id:        o.Id,
 		CreatedAt: created,
 		UpdatedAt: updated,
 		Data: &PropertySetData{
 			Label:      o.Label,
-			Values:     o.Values,
+			Values:     m,
 			Blueprints: o.Blueprints,
 		},
 	}, nil
@@ -147,10 +158,21 @@ func (o *Client) createPropertySet(ctx context.Context, in *PropertySetData) (Ob
 		return "", errors.New("blueprints field must be empty when creating property set")
 	}
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      apiUrlPropertySets,
-		apiInput:    in,
+	vals, err := json.Marshal(in.Values)
+	fmt.Println(vals)
+	fmt.Println(in.Values)
+	if err != nil {
+		fmt.Println("error marshalling input")
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	err = o.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodPost,
+		urlStr: apiUrlPropertySets,
+		apiInput: &rawPropertySetData{
+			Label:      in.Label,
+			Values:     vals,
+			Blueprints: in.Blueprints,
+		},
 		apiResponse: response,
 	})
 	if err != nil {

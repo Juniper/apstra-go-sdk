@@ -1,7 +1,6 @@
 package apstra
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -71,20 +70,20 @@ func compareSlices[A comparable](t *testing.T, a, b []A, info string) {
 	}
 }
 
-func jsonEqual(t *testing.T, m1, m2 json.RawMessage) bool {
-	var map1 interface{}
-	var map2 interface{}
-
-	var err error
-	err = json.Unmarshal(m1, &map1)
-	if err != nil {
-		t.Fatalf("error unmarshalling string 1 : %v", err)
-	}
-	err = json.Unmarshal(m2, &map2)
-	if err != nil {
-		t.Fatalf("error unmarshalling string 1 : %v", err)
-	}
-	return reflect.DeepEqual(map1, map2)
+func jsonEqual(t *testing.T, m1, m2 map[string][]byte) bool {
+	//var map1 interface{}
+	//var map2 interface{}
+	//var err error
+	//
+	//err = json.Unmarshal(m1, &map1)
+	//if err != nil {
+	//	t.Fatalf("error unmarshalling string 1 : %v", err)
+	//}
+	//err = json.Unmarshal(m2, &map2)
+	//if err != nil {
+	//	t.Fatalf("error unmarshalling string 1 : %v", err)
+	//}
+	return reflect.DeepEqual(m1, m2)
 }
 
 func getKeysfromMap[A comparable](m map[A]interface{}) []A {
