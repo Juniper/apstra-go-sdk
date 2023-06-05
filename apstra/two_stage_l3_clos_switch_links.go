@@ -191,6 +191,13 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 		return convertTtaeToAceWherePossible(err)
 	}
 
+	if len(response.Items) == 0 {
+		return ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("query %q returned no results", query),
+		}
+	}
+
 	linkIds := make([]ObjectId, len(response.Items))
 	for i, item := range response.Items {
 		linkIds[i] = item.Link.ID
