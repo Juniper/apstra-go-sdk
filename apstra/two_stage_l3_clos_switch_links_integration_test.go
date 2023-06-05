@@ -54,16 +54,15 @@ func TestCreateDeleteServer(t *testing.T) {
 			t.Fatal(err)
 		}
 		links := make([]SwitchLink, len(leafResult.Items))
-		for i, link := range leafResult.Items {
+		for i, item := range leafResult.Items {
 			links[i] = SwitchLink{
 				Tags:           []string{"link blah", "link also blah"},
 				SystemEndpoint: SwitchLinkEndpoint{},
 				SwitchEndpoint: SwitchLinkEndpoint{
 					TransformationId: 1,
-					SystemId:         link.Leaf.Id,
+					SystemId:         item.Leaf.Id,
 					IfName:           "xe-0/0/3",
 				},
-				LagMode: RackLinkLagModeActive,
 			}
 		}
 

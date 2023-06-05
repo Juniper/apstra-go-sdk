@@ -80,7 +80,6 @@ type SwitchLink struct {
 	Tags           []string
 	SystemEndpoint SwitchLinkEndpoint
 	SwitchEndpoint SwitchLinkEndpoint
-	LagMode        RackLinkLagMode
 	GroupLabel     string
 }
 
@@ -89,7 +88,6 @@ func (o *SwitchLink) raw() rawSwitchLink {
 		Tags:           o.Tags,
 		SystemEndpoint: o.SystemEndpoint.raw(),
 		SwitchEndpoint: o.SwitchEndpoint.raw(),
-		LagMode:        o.LagMode.String(),
 		GroupLabel:     o.GroupLabel,
 	}
 }
@@ -98,7 +96,6 @@ type rawSwitchLink struct {
 	Tags           []string              `json:"tags,omitempty"`
 	SystemEndpoint rawSwitchLinkEndpoint `json:"system"`
 	SwitchEndpoint rawSwitchLinkEndpoint `json:"switch"`
-	LagMode        string                `json:"lag_mode,omitempty"`
 	GroupLabel     string                `json:"link_group_label,omitempty"`
 }
 
@@ -106,6 +103,7 @@ type SwitchLinkEndpoint struct {
 	TransformationId int
 	SystemId         ObjectId
 	IfName           string
+	LagMode          RackLinkLagMode
 }
 
 func (o *SwitchLinkEndpoint) raw() rawSwitchLinkEndpoint {
@@ -118,6 +116,7 @@ func (o *SwitchLinkEndpoint) raw() rawSwitchLinkEndpoint {
 		TransformationId: o.TransformationId,
 		SystemId:         systemIdPtr,
 		IfName:           o.IfName,
+		LagMode:          o.LagMode.String(),
 	}
 }
 
@@ -125,6 +124,7 @@ type rawSwitchLinkEndpoint struct {
 	TransformationId int     `json:"transformation_id,omitempty"`
 	SystemId         *string `json:"system_id"` // must send `null` when creating a new system, so no `omitempty`
 	IfName           string  `json:"if_name,omitempty"`
+	LagMode          string  `json:"lag_mode,omitempty"`
 }
 
 func (o *TwoStageL3ClosClient) CreateLinksWithNewServer(ctx context.Context, req *CreateLinksWithNewServerRequest) ([]ObjectId, error) {
