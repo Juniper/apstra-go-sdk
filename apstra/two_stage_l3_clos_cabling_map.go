@@ -29,7 +29,6 @@ const (
 	InterfaceTypeUnicastVtep
 	InterfaceTypeGlobalAnycastVtep
 	InterfaceTypeSubinterface
-
 	InterfaceTypeUnknown = "unknown interface type '%s'"
 
 	interfaceTypeEthernet          = interfaceType("ethernet")
@@ -42,8 +41,7 @@ const (
 	interfaceTypeUnicastVtep       = interfaceType("unicast_vtep")
 	interfaceTypeGlobalAnycastVtep = interfaceType("global_anycast_vtep")
 	interfaceTypeSubinterface      = interfaceType("subinterface")
-
-	interfaceTypeUnknown = "unknown interface type '%d'"
+	interfaceTypeUnknown           = "unknown interface type '%d'"
 )
 
 func (o InterfaceType) Int() int {
