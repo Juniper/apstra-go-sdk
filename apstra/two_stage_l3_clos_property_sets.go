@@ -23,7 +23,7 @@ type TwoStageL3ClosPropertySet struct {
 
 type importPropertySetRequest struct {
 	Id   ObjectId `json:"id"`
-	Keys []string `json:"keys"`
+	Keys []string `json:"keys,omitempty"`
 }
 
 type importPropertySetResponse struct {
