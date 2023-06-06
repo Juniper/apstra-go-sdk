@@ -25,6 +25,11 @@ func TestCreateDeleteServer(t *testing.T) {
 			}
 		}()
 
+		//bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, "c09e3975-6799-41a3-ab1a-d96f93cd5d3e")
+		//if err != nil {
+		//	t.Fatal(err)
+		//}
+
 		leafQuery := new(PathQuery).
 			SetBlueprintId(bpClient.Id()).
 			SetBlueprintType(BlueprintTypeStaging).
@@ -65,6 +70,32 @@ func TestCreateDeleteServer(t *testing.T) {
 				},
 			}
 		}
+		//links[0] = SwitchLink{
+		//	GroupLabel: "foo",
+		//	//Tags:       []string{"link blah", "link also blah"},
+		//	SystemEndpoint: SwitchLinkEndpoint{
+		//		LagMode: RackLinkLagModeActive,
+		//	},
+		//	SwitchEndpoint: SwitchLinkEndpoint{
+		//		TransformationId: 1,
+		//		SystemId:         leafResult.Items[0].Leaf.Id,
+		//		IfName:           "xe-0/0/2",
+		//		LagMode:          RackLinkLagModeActive,
+		//	},
+		//}
+		//links[1] = SwitchLink{
+		//	GroupLabel: "foo",
+		//	//Tags:       []string{"link blah", "link also blah"},
+		//	SystemEndpoint: SwitchLinkEndpoint{
+		//		LagMode: RackLinkLagModeActive,
+		//	},
+		//	SwitchEndpoint: SwitchLinkEndpoint{
+		//		TransformationId: 1,
+		//		SystemId:         leafResult.Items[0].Leaf.Id,
+		//		IfName:           "xe-0/0/3",
+		//		LagMode:          RackLinkLagModeActive,
+		//	},
+		//}
 
 		log.Printf("testing CreateLinksWithNewServer() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		linkIds, err := bpClient.CreateLinksWithNewServer(ctx, &CreateLinksWithNewServerRequest{

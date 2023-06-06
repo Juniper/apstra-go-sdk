@@ -58,9 +58,9 @@ func TestSwitchLinkStrings(t *testing.T) {
 		{stringVal: "spine", intType: SystemNodeRoleSpine, stringType: systemNodeRoleSpine},
 		{stringVal: "superspine", intType: SystemNodeRoleSuperspine, stringType: systemNodeRoleSuperspine},
 
-		{stringVal: "logical_link", intType: LinkTypeAggregateLink, stringType: linkTypeAggregateLink},
+		{stringVal: "aggregate_link", intType: LinkTypeAggregateLink, stringType: linkTypeAggregateLink},
 		{stringVal: "ethernet", intType: LinkTypeEthernet, stringType: linkTypeEthernet},
-		{stringVal: "aggregate_link", intType: LinkTypeLogicalLink, stringType: linkTypeLogicalLink},
+		{stringVal: "logical_link", intType: LinkTypeLogicalLink, stringType: linkTypeLogicalLink},
 	}
 
 	for i, td := range testData {

@@ -387,9 +387,9 @@ const (
 	LinkTypeLogicalLink
 	LinkTypeUnknown = "unknown link type '%s'"
 
-	linkTypeAggregateLink = linkType("logical_link")
+	linkTypeAggregateLink = linkType("aggregate_link")
 	linkTypeEthernet      = linkType("ethernet")
-	linkTypeLogicalLink   = linkType("aggregate_link")
+	linkTypeLogicalLink   = linkType("logical_link")
 	linkTypeUnknown       = "unknown link type '%d'"
 )
 
@@ -436,30 +436,32 @@ func (o linkType) parse() (int, error) {
 }
 
 type CablingMapLinkEndpoint struct {
-	Interface CablingMapLinkEndpointInterface
-	System    CablingMapLinkEndpointSystem
+	Interface *CablingMapLinkEndpointInterface
+	System    *CablingMapLinkEndpointSystem
 }
 
 type rawCablingMapLinkEndpoint struct {
-	Interface rawCablingMapLinkEndpointInterface `json:"interface"`
-	System    rawCablingMapLinkEndpointSystem    `json:"system"`
+	Interface *rawCablingMapLinkEndpointInterface `json:"interface"`
+	System    *rawCablingMapLinkEndpointSystem    `json:"system"`
 }
 
 func (o *rawCablingMapLinkEndpoint) polish() (*CablingMapLinkEndpoint, error) {
-	epInterface, err := o.Interface.polish()
-	if err != nil {
-		return nil, err
+	var err error
+	var result CablingMapLinkEndpoint
+
+	if o.Interface != nil {
+		if result.Interface, err = o.Interface.polish(); err != nil {
+			return nil, err
+		}
 	}
 
-	epSystem, err := o.System.polish()
-	if err != nil {
-		return nil, err
+	if o.System != nil {
+		if result.System, err = o.System.polish(); err != nil {
+			return nil, err
+		}
 	}
 
-	return &CablingMapLinkEndpoint{
-		Interface: *epInterface,
-		System:    *epSystem,
-	}, nil
+	return &result, nil
 }
 
 type rawCablingMapLinkEndpointInterface struct {
@@ -590,6 +592,7 @@ func (o *rawCablingMapLink) polish() (*CablingMapLink, error) {
 	return result, nil
 }
 
+// GetCablingMapLinks returns []CablingMapLink representing every link in the blueprint
 func (o *TwoStageL3ClosClient) GetCablingMapLinks(ctx context.Context) ([]CablingMapLink, error) {
 	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintCablingMap, o.blueprintId))
 	if err != nil {
@@ -625,6 +628,7 @@ func (o *TwoStageL3ClosClient) GetCablingMapLinks(ctx context.Context) ([]Cablin
 	return result, nil
 }
 
+// GetCablingMapLinksBySystem returns []CablingMapLink representing every link (including LAGs)
 func (o *TwoStageL3ClosClient) GetCablingMapLinksBySystem(ctx context.Context, systemNodeId ObjectId) ([]CablingMapLink, error) {
 	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintCablingMap, o.blueprintId))
 	if err != nil {

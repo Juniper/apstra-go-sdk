@@ -259,6 +259,88 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, bpDeleteFunc
 }
 
+func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignDatacenter,
+		Label:      randString(5, "hex"),
+		TemplateId: "L2_ESI_Access",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpDeleteFunc := func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	}
+
+	leafQuery := new(PathQuery).
+		SetBlueprintId(bpId).
+		SetBlueprintType(BlueprintTypeStaging).
+		SetClient(client).
+		Node([]QEEAttribute{
+			NodeTypeSystem.QEEAttribute(),
+			{"system_type", QEStringVal("switch")},
+			{"role", QEStringVal("leaf")},
+			{"name", QEStringVal("n_leaf")},
+		})
+	var leafResponse struct {
+		Items []struct {
+			Leaf struct {
+				ID string `json:"id"`
+			} `json:"n_leaf"`
+		} `json:"items"`
+	}
+	err = leafQuery.Do(ctx, &leafResponse)
+	if err != nil {
+		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
+	}
+	leafAssignements := make(SystemIdToInterfaceMapAssignment)
+	for _, item := range leafResponse.Items {
+		leafAssignements[item.Leaf.ID] = "Juniper_vQFX__AOS-7x10-Leaf"
+	}
+	err = bpClient.SetInterfaceMapAssignments(ctx, leafAssignements)
+	if err != nil {
+		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
+	}
+
+	accessQuery := new(PathQuery).
+		SetBlueprintId(bpId).
+		SetBlueprintType(BlueprintTypeStaging).
+		SetClient(client).
+		Node([]QEEAttribute{
+			NodeTypeSystem.QEEAttribute(),
+			{"system_type", QEStringVal("switch")},
+			{"role", QEStringVal("access")},
+			{"name", QEStringVal("n_access")},
+		})
+	var accessResponse struct {
+		Items []struct {
+			Leaf struct {
+				ID string `json:"id"`
+			} `json:"n_access"`
+		} `json:"items"`
+	}
+	err = accessQuery.Do(ctx, &accessResponse)
+	if err != nil {
+		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
+	}
+	accessAssignements := make(SystemIdToInterfaceMapAssignment)
+	for _, item := range accessResponse.Items {
+		accessAssignements[item.Leaf.ID] = "Juniper_vQFX__AOS-8x10-1"
+	}
+	err = bpClient.SetInterfaceMapAssignments(ctx, accessAssignements)
+	if err != nil {
+		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
+	}
+
+	return bpClient, bpDeleteFunc
+}
+
 func TestItemInSlice(t *testing.T) {
 	type testCase struct {
 		item     any
