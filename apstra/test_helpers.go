@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"testing"
 )
@@ -95,4 +96,14 @@ func getKeysfromMap[A comparable](m map[A]interface{}) []A {
 		i++
 	}
 	return keys
+}
+
+func nextInterface(in string) string {
+	re := regexp.MustCompile(`\d+$`)
+	loc := re.FindStringIndex(in)
+	i, err := strconv.Atoi(in[loc[0]:])
+	if err != nil {
+		panic("Atoi should not have produced an error because the regex guaranteed digits here.")
+	}
+	return in[:loc[0]] + strconv.Itoa(i+1)
 }
