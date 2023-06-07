@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"sort"
 	"testing"
 )
@@ -96,183 +97,308 @@ func TestSetGenericServerBonding(t *testing.T) {
 			accessIds[i] = switchQueryResult.Items[i].System.Id
 		}
 
-		// used for querying links to learn new server ID
-		linkQueryResult := struct {
-			Items []struct {
-				Generic struct {
-					Id ObjectId `json:"id"`
-				} `json:"n_generic"`
-			} `json:"items"`
-		}{}
-
-		server1LinkCount := 4
-		server1FirstPort := 5
-		server1Links := make([]SwitchLink, server1LinkCount)
-		for i := 0; i < server1LinkCount; i++ {
-			server1Links[i] = SwitchLink{
-				SystemEndpoint: SwitchLinkEndpoint{},
-				SwitchEndpoint: SwitchLinkEndpoint{
-					TransformationId: 1,
-					SystemId:         leafIds[0],
-					IfName:           fmt.Sprintf("xe-0/0/%d", server1FirstPort+i),
-				},
-			}
+		type testCase struct {
+			//request         CreateLinksWithNewServerRequest
+			switchIds       []ObjectId
+			linkCount       int
+			firstInterface  string
+			bondStrategy    string
+			logicalDeviceId string
 		}
 
-		server2Links := make([]SwitchLink, len(leafIds))
-		for i, id := range leafIds {
-			server2Links[i] = SwitchLink{
-				SystemEndpoint: SwitchLinkEndpoint{},
-				SwitchEndpoint: SwitchLinkEndpoint{
-					TransformationId: 1,
-					SystemId:         id,
-					IfName:           "xe-0/0/2",
-				},
-			}
+		testCases := []testCase{
+			{
+				switchIds:       []ObjectId{leafIds[0]},
+				linkCount:       1,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+			},
+			{
+				switchIds:       []ObjectId{leafIds[0]},
+				linkCount:       4,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+			},
+			{
+				switchIds:       []ObjectId{accessIds[0]},
+				linkCount:       1,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+			},
+			{
+				switchIds:       []ObjectId{accessIds[0]},
+				linkCount:       4,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+			},
+			{
+				switchIds:       leafIds,
+				linkCount:       4,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+			},
+			{
+				switchIds:       accessIds,
+				linkCount:       4,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+			},
 		}
 
-		server3LinkCount := 4
-		server3FirstPort := 5
-		server3Links := make([]SwitchLink, server3LinkCount)
-		for i := 0; i < server3LinkCount; i++ {
-			server3Links[i] = SwitchLink{
-				SystemEndpoint: SwitchLinkEndpoint{},
-				SwitchEndpoint: SwitchLinkEndpoint{
-					TransformationId: 1,
-					SystemId:         accessIds[0],
-					IfName:           fmt.Sprintf("xe-0/0/%d", server3FirstPort+i),
-				},
+	TESTCASE:
+		for i, tc := range testCases {
+			var hostTags []string
+			for j := 0; j < rand.Intn(5)+2; j++ {
+				hostTags = append(hostTags, randString(5, "hex"))
 			}
-		}
 
-		server4Links := make([]SwitchLink, len(accessIds))
-		for i, id := range accessIds {
-			server4Links[i] = SwitchLink{
-				SystemEndpoint: SwitchLinkEndpoint{},
-				SwitchEndpoint: SwitchLinkEndpoint{
-					TransformationId: 1,
-					SystemId:         id,
-					IfName:           "xe-0/0/9",
-				},
+			var links []CreateLinksWithNewServerRequestLink
+			var ifName string
+			for j := 0; j < tc.linkCount; j++ {
+				var linkTags []string
+				for k := 0; k < rand.Intn(5)+2; k++ {
+					linkTags = append(linkTags, randString(5, "hex"))
+				}
+
+				switchModulo := j % len(tc.switchIds)
+
+				switchId := tc.switchIds[switchModulo]
+
+				if j == 0 {
+					ifName = tc.firstInterface
+				} else if switchModulo == 0 {
+					ifName = nextInterface(ifName)
+				}
+
+				links = append(links, CreateLinksWithNewServerRequestLink{
+					Tags: linkTags,
+					SwitchEndpoint: SwitchLinkEndpoint{
+						TransformationId: 1,
+						SystemId:         switchId,
+						IfName:           ifName,
+					},
+				})
 			}
-		}
 
-		serverLinks := [][]SwitchLink{server1Links, server2Links, server3Links, server4Links}
-		serverIdToLinkIDs := make(map[ObjectId][]ObjectId, len(serverLinks))
-		for _, links := range serverLinks {
-			// create generic system
-			log.Printf("testing CreateLinksWithNewServer() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			linkIds, err := bpClient.CreateLinksWithNewServer(ctx, &CreateLinksWithNewServerRequest{
-				Server: System{
+			request := CreateLinksWithNewServerRequest{
+				Links: links,
+				Server: CreateLinksWithNewServerRequestServer{
 					Hostname:         randString(5, "hex"),
 					Label:            randString(5, "hex"),
-					LogicalDeviceId:  "AOS-2x10-1",
-					PortChannelIdMin: 0,
-					PortChannelIdMax: 0,
-					Tags:             []string{"blah", "also blah"},
+					LogicalDeviceId:  ObjectId(tc.logicalDeviceId),
+					PortChannelIdMin: rand.Intn(100) + 100,
+					PortChannelIdMax: rand.Intn(100) + 200,
+					Tags:             hostTags,
 				},
-				Links: links,
-			})
+			}
+			log.Printf("testing CreateLinksWithNewServer() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			linkIds, err := bpClient.CreateLinksWithNewServer(ctx, &request)
+			if err != nil {
+				t.Fatalf("test case %d - %s", i, err)
+			}
+
+			genericId, err := bpClient.SystemNodeFromLinkIds(ctx, linkIds, SystemNodeRoleGeneric)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			linkQuery := new(MatchQuery).
-				SetBlueprintId(bpClient.blueprintId).
-				SetBlueprintType(BlueprintTypeStaging).
-				SetClient(bpClient.Client())
+			systemTags, err := bpClient.GetNodeTags(ctx, genericId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			sort.Strings(systemTags)
+			sort.Strings(request.Server.Tags)
+			compareSlices(t, systemTags, request.Server.Tags, fmt.Sprintf("test case %d system tags", i))
+
+			var node struct {
+				PoMax int `json:"port_channel_id_max"`
+				PoMin int `json:"port_channel_id_min"`
+			}
+			err = bpClient.client.GetNode(ctx, bpClient.blueprintId, genericId, &node)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if request.Server.PortChannelIdMin != node.PoMin {
+				t.Fatalf("expected port channel id min: %d got %d", request.Server.PortChannelIdMin, node.PoMin)
+			}
+			if request.Server.PortChannelIdMax != node.PoMax {
+				t.Fatalf("expected port channel id max: %d got %d", request.Server.PortChannelIdMax, node.PoMax)
+			}
+
+			originalLinkTagDigests := make([]string, len(request.Links))
+			for j, link := range request.Links {
+				sort.Strings(link.Tags)
+				originalLinkTagDigests[j] = fmt.Sprintf("%v", link.Tags)
+			}
+			sort.Strings(originalLinkTagDigests)
+
+			observedLinkTagDigests := make([]string, len(linkIds))
+			for j, linkId := range linkIds {
+				tags, err := bpClient.GetNodeTags(ctx, linkId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				sort.Strings(tags)
+				observedLinkTagDigests[j] = fmt.Sprintf("%v", tags)
+			}
+			sort.Strings(observedLinkTagDigests)
+
+			compareSlices(t, originalLinkTagDigests, observedLinkTagDigests, "link tag digests")
+
+			// set individual port channels
+			lagRequest := make(SetLinkLagParamsRequest)
 			for _, linkId := range linkIds {
-				linkQuery.Match(
-					new(PathQuery).
-						Node([]QEEAttribute{NodeTypeLink.QEEAttribute(),
-							{"id", QEStringVal(linkId.String())},
-						}).
-						In([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
-						Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
-						In([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
-						Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(),
-							{"role", QEStringVal("generic")},
-							{"name", QEStringVal("n_generic")},
-						}),
-				)
-			}
-
-			err = linkQuery.Do(ctx, &linkQueryResult)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if len(linkQueryResult.Items) != 1 {
-				t.Fatalf("expected 1 item, got %d items", len(linkQueryResult.Items))
-			}
-
-			serverIdToLinkIDs[linkQueryResult.Items[0].Generic.Id] = linkIds
-
-		}
-
-		lagCount := func(ctx context.Context, serverId ObjectId) int {
-			links, err := bpClient.GetCablingMapLinksBySystem(ctx, serverId)
-			if err != nil {
-				t.Fatal(err)
-			}
-			var lagCount int
-			for _, link := range links {
-				if link.Type == LinkTypeAggregateLink {
-					lagCount++
+				lagRequest[linkId] = LinkLagParams{
+					LagMode: RackLinkLagModeActive,
 				}
 			}
-			return lagCount
-		}
+			err = bpClient.SetLinkLagParams(ctx, &lagRequest)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		// one big LAG
-		for serverId, linkIds := range serverIdToLinkIDs {
-			groupLabel := "bond0"
-			request := make(SetLinkLagParamsRequest)
+			typeCount, lagMemberCount, err := countSystemLinkTypes(ctx, genericId, bpClient)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if typeCount[LinkTypeAggregateLink] != typeCount[LinkTypeEthernet] {
+				t.Fatalf("expected count of aggregate to match count of ethernet, got %d and %d",
+					typeCount[LinkTypeAggregateLink], typeCount[LinkTypeEthernet])
+			}
+			if len(linkIds) != lagMemberCount {
+				t.Fatalf("expected %d lag member links, got %d", len(linkIds), lagMemberCount)
+			}
+
+			observedLinkTagDigests = make([]string, len(linkIds))
+			for j, linkId := range linkIds {
+				tags, err := bpClient.GetNodeTags(ctx, linkId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				sort.Strings(tags)
+				observedLinkTagDigests[j] = fmt.Sprintf("%v", tags)
+			}
+			sort.Strings(observedLinkTagDigests)
+
+			compareSlices(t, originalLinkTagDigests, observedLinkTagDigests, "link tag digests")
+
+			// create one big port channel and wipe out link tags
+			lagRequest = make(SetLinkLagParamsRequest)
 			for _, linkId := range linkIds {
-				params := LinkLagParams{
-					GroupLabel: &groupLabel,
+				lagRequest[linkId] = LinkLagParams{
+					GroupLabel: "one big lag",
 					LagMode:    RackLinkLagModeActive,
-					Tags:       []string{"a", "b"},
+					Tags:       []string{},
 				}
-				request[linkId] = params
 			}
-
-			err = bpClient.SetLinkLagParams(ctx, &request)
+			err = bpClient.SetLinkLagParams(ctx, &lagRequest)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			lc := lagCount(ctx, serverId)
-			if lc != 1 {
-				t.Fatalf("expected 1 LAG, got %d LAGs", lc)
+			typeCount, lagMemberCount, err = countSystemLinkTypes(ctx, genericId, bpClient)
+			if err != nil {
+				t.Fatal(err)
 			}
-		}
+			if typeCount[LinkTypeAggregateLink] != 1 {
+				t.Fatal("expected one big LAG")
+			}
+			if len(linkIds) != lagMemberCount {
+				t.Fatalf("expected %d lag member links, got %d", len(linkIds), lagMemberCount)
+			}
 
-		// no LAG
-		for serverId, linkIds := range serverIdToLinkIDs {
-			request := make(SetLinkLagParamsRequest)
 			for _, linkId := range linkIds {
-				params := LinkLagParams{
-					LagMode: RackLinkLagModeNone,
-					Tags:    []string{"no lag", "still no lag"},
+				tags, err := bpClient.GetNodeTags(ctx, linkId)
+				if err != nil {
+					t.Fatal(err)
 				}
-				request[linkId] = params
+				if len(tags) != 0 {
+					t.Fatalf("expected no link tags, got %v", tags)
+				}
 			}
 
-			err = bpClient.SetLinkLagParams(ctx, &request)
+			// create port channels with no more than two links
+			if len(linkIds) < 2 {
+				err = bpClient.DeleteGenericSystem(ctx, genericId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				continue TESTCASE
+			}
+
+			lagRequest = make(SetLinkLagParamsRequest)
+			for i, linkId := range linkIds {
+				lagRequest[linkId] = LinkLagParams{
+					GroupLabel: fmt.Sprintf("paired links %d", i/2),
+					LagMode:    RackLinkLagModeActive,
+					Tags:       []string{"paired links", fmt.Sprintf("link %d of the pair", i%2)},
+				}
+			}
+			err = bpClient.SetLinkLagParams(ctx, &lagRequest)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			lc := lagCount(ctx, serverId)
-			if lc != 0 {
-				t.Fatalf("expected 0 LAG, got %d LAGs", lc)
+			typeCount, lagMemberCount, err = countSystemLinkTypes(ctx, genericId, bpClient)
+			if err != nil {
+				t.Fatal(err)
 			}
-		}
+			if typeCount[LinkTypeAggregateLink] != typeCount[LinkTypeEthernet]/2 {
+				t.Fatalf("expected half as many aggregate links as ethernet, got %d and %d",
+					typeCount[LinkTypeAggregateLink], typeCount[LinkTypeEthernet])
+			}
+			if len(linkIds) != lagMemberCount {
+				t.Fatalf("expected %d lag member links, got %d", len(linkIds), lagMemberCount)
+			}
 
-		for id := range serverIdToLinkIDs {
-			log.Printf("testing DeleteGenericSystem() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.DeleteGenericSystem(ctx, id)
+			observedLinkTagDigests = make([]string, len(linkIds))
+			for j, linkId := range linkIds {
+				tags, err := bpClient.GetNodeTags(ctx, linkId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				sort.Strings(tags)
+				observedLinkTagDigests[j] = fmt.Sprintf("%v", tags)
+			}
+			sort.Strings(observedLinkTagDigests)
+
+			expectedLinkTagDigests := make([]string, len(lagRequest))
+			var j int
+			for _, params := range lagRequest {
+				sort.Strings(params.Tags)
+				expectedLinkTagDigests[j] = fmt.Sprintf("%v", params.Tags)
+				j++
+			}
+			sort.Strings(expectedLinkTagDigests)
+
+			compareSlices(t, expectedLinkTagDigests, observedLinkTagDigests, "link tag digests")
+
+			// disable LAG
+			lagRequest = make(SetLinkLagParamsRequest)
+			for _, linkId := range linkIds {
+				lagRequest[linkId] = LinkLagParams{
+					LagMode: RackLinkLagModeNone,
+				}
+			}
+			err = bpClient.SetLinkLagParams(ctx, &lagRequest)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			typeCount, lagMemberCount, err = countSystemLinkTypes(ctx, genericId, bpClient)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if typeCount[LinkTypeAggregateLink] != 0 {
+				t.Fatalf("expected 0 LAGs got %d", typeCount[LinkTypeAggregateLink])
+			}
+			if 0 != lagMemberCount {
+				t.Fatalf("expected 0 lag member links, got %d", lagMemberCount)
+			}
+
+			// delete the server
+			err = bpClient.DeleteGenericSystem(ctx, genericId)
 			if err != nil {
 				t.Fatal(err)
 			}

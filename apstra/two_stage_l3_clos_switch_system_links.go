@@ -12,33 +12,33 @@ const (
 )
 
 type CreateLinksWithNewServerRequest struct {
-	Links  []SwitchLink
-	Server System
+	Links  []CreateLinksWithNewServerRequestLink
+	Server CreateLinksWithNewServerRequestServer
 }
 
-func (o *CreateLinksWithNewServerRequest) raw(ctx context.Context, client *Client) (*rawCreateServerRequest, error) {
+func (o *CreateLinksWithNewServerRequest) raw(ctx context.Context, client *Client) (*rawCreateLinksWithNewServerRequest, error) {
 	rs, err := o.Server.raw(ctx, "server", client)
 	if err != nil {
 		return nil, err
 	}
 
-	links := make([]rawSwitchLink, len(o.Links))
+	links := make([]rawCreateLinksWithNewServerRequestLink, len(o.Links))
 	for i, link := range o.Links {
-		links[i] = link.raw()
+		links[i] = *link.raw()
 	}
 
-	return &rawCreateServerRequest{
-		NewSystems: []rawSystem{*rs},
+	return &rawCreateLinksWithNewServerRequest{
+		NewSystems: []rawCreateLinksWithNewServerRequestServer{*rs},
 		Links:      links,
 	}, nil
 }
 
-type rawCreateServerRequest struct {
-	NewSystems []rawSystem     `json:"new_systems"`
-	Links      []rawSwitchLink `json:"links"`
+type rawCreateLinksWithNewServerRequest struct {
+	NewSystems []rawCreateLinksWithNewServerRequestServer `json:"new_systems"`
+	Links      []rawCreateLinksWithNewServerRequestLink   `json:"links"`
 }
 
-type System struct {
+type CreateLinksWithNewServerRequestServer struct {
 	Hostname         string
 	Label            string
 	LogicalDeviceId  ObjectId
@@ -47,7 +47,7 @@ type System struct {
 	Tags             []string
 }
 
-func (o *System) raw(ctx context.Context, systemType string, client *Client) (*rawSystem, error) {
+func (o *CreateLinksWithNewServerRequestServer) raw(ctx context.Context, systemType string, client *Client) (*rawCreateLinksWithNewServerRequestServer, error) {
 	rawLD, err := client.getLogicalDevice(ctx, o.LogicalDeviceId)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching logical device %q - %w", o.LogicalDeviceId, err)
@@ -55,7 +55,7 @@ func (o *System) raw(ctx context.Context, systemType string, client *Client) (*r
 	rawLD.CreatedAt = nil
 	rawLD.LastModifiedAt = nil
 
-	return &rawSystem{
+	return &rawCreateLinksWithNewServerRequestServer{
 		SystemType:       systemType,
 		LogicalDevice:    *rawLD,
 		PortChannelIdMin: o.PortChannelIdMin,
@@ -66,7 +66,7 @@ func (o *System) raw(ctx context.Context, systemType string, client *Client) (*r
 	}, nil
 }
 
-type rawSystem struct {
+type rawCreateLinksWithNewServerRequestServer struct {
 	SystemType       string           `json:"system_type"`         // mandatory; only using "server"
 	LogicalDevice    rawLogicalDevice `json:"logical_device"`      // mandatory
 	PortChannelIdMin int              `json:"port_channel_id_min"` // mandatory; 0 is default
@@ -76,34 +76,37 @@ type rawSystem struct {
 	Hostname         string           `json:"hostname,omitempty"`
 }
 
-type SwitchLink struct {
+type CreateLinksWithNewServerRequestLink struct {
 	Tags           []string
 	SystemEndpoint SwitchLinkEndpoint
 	SwitchEndpoint SwitchLinkEndpoint
 	GroupLabel     string
+	LagMode        RackLinkLagMode
 }
 
-func (o *SwitchLink) raw() rawSwitchLink {
-	return rawSwitchLink{
+func (o *CreateLinksWithNewServerRequestLink) raw() *rawCreateLinksWithNewServerRequestLink {
+	return &rawCreateLinksWithNewServerRequestLink{
 		Tags:           o.Tags,
 		SystemEndpoint: o.SystemEndpoint.raw(),
 		SwitchEndpoint: o.SwitchEndpoint.raw(),
 		GroupLabel:     o.GroupLabel,
+		LagMode:        rackLinkLagMode(o.LagMode.String()),
 	}
 }
 
-type rawSwitchLink struct {
+type rawCreateLinksWithNewServerRequestLink struct {
 	Tags           []string              `json:"tags,omitempty"`
 	SystemEndpoint rawSwitchLinkEndpoint `json:"system"`
 	SwitchEndpoint rawSwitchLinkEndpoint `json:"switch"`
 	GroupLabel     string                `json:"link_group_label,omitempty"`
+	LagMode        rackLinkLagMode       `json:"lag_mode,omitempty"`
 }
 
 type SwitchLinkEndpoint struct {
 	TransformationId int
 	SystemId         ObjectId
 	IfName           string
-	LagMode          RackLinkLagMode
+	//LagMode          RackLinkLagMode
 }
 
 func (o *SwitchLinkEndpoint) raw() rawSwitchLinkEndpoint {
@@ -116,7 +119,7 @@ func (o *SwitchLinkEndpoint) raw() rawSwitchLinkEndpoint {
 		TransformationId: o.TransformationId,
 		SystemId:         systemIdPtr,
 		IfName:           o.IfName,
-		LagMode:          o.LagMode.String(),
+		//LagMode:          o.LagMode.String(),
 	}
 }
 

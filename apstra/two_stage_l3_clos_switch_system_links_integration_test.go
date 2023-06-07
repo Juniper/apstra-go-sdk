@@ -5,7 +5,10 @@ package apstra
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"math/rand"
+	"sort"
 	"testing"
 )
 
@@ -58,9 +61,11 @@ func TestCreateDeleteServer(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		links := make([]SwitchLink, len(leafResult.Items))
+		links := make([]CreateLinksWithNewServerRequestLink, len(leafResult.Items))
 		for i, item := range leafResult.Items {
-			links[i] = SwitchLink{
+			links[i] = CreateLinksWithNewServerRequestLink{
+				LagMode:        RackLinkLagModeActive,
+				GroupLabel:     "foo",
 				Tags:           []string{"link blah", "link also blah"},
 				SystemEndpoint: SwitchLinkEndpoint{},
 				SwitchEndpoint: SwitchLinkEndpoint{
@@ -70,42 +75,21 @@ func TestCreateDeleteServer(t *testing.T) {
 				},
 			}
 		}
-		//links[0] = SwitchLink{
-		//	GroupLabel: "foo",
-		//	//Tags:       []string{"link blah", "link also blah"},
-		//	SystemEndpoint: SwitchLinkEndpoint{
-		//		LagMode: RackLinkLagModeActive,
-		//	},
-		//	SwitchEndpoint: SwitchLinkEndpoint{
-		//		TransformationId: 1,
-		//		SystemId:         leafResult.Items[0].Leaf.Id,
-		//		IfName:           "xe-0/0/2",
-		//		LagMode:          RackLinkLagModeActive,
-		//	},
-		//}
-		//links[1] = SwitchLink{
-		//	GroupLabel: "foo",
-		//	//Tags:       []string{"link blah", "link also blah"},
-		//	SystemEndpoint: SwitchLinkEndpoint{
-		//		LagMode: RackLinkLagModeActive,
-		//	},
-		//	SwitchEndpoint: SwitchLinkEndpoint{
-		//		TransformationId: 1,
-		//		SystemId:         leafResult.Items[0].Leaf.Id,
-		//		IfName:           "xe-0/0/3",
-		//		LagMode:          RackLinkLagModeActive,
-		//	},
-		//}
+
+		var desiredTags []string
+		for i := 0; i < rand.Intn(3)+2; i++ {
+			desiredTags = append(desiredTags, randString(5, "hex"))
+		}
 
 		log.Printf("testing CreateLinksWithNewServer() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		linkIds, err := bpClient.CreateLinksWithNewServer(ctx, &CreateLinksWithNewServerRequest{
-			Server: System{
+			Server: CreateLinksWithNewServerRequestServer{
 				Hostname:         randString(5, "hex"),
 				Label:            randString(5, "hex"),
 				LogicalDeviceId:  "AOS-2x10-1",
 				PortChannelIdMin: 0,
 				PortChannelIdMax: 0,
-				Tags:             []string{"blah", "also blah"},
+				Tags:             desiredTags,
 			},
 			Links: links,
 		})
@@ -113,46 +97,38 @@ func TestCreateDeleteServer(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		linkQuery := new(MatchQuery).
-			SetBlueprintId(bpClient.blueprintId).
-			SetBlueprintType(BlueprintTypeStaging).
-			SetClient(bpClient.Client())
-
-		for _, linkId := range linkIds {
-			linkQuery.Match(
-				new(PathQuery).
-					Node([]QEEAttribute{NodeTypeLink.QEEAttribute(),
-						{"id", QEStringVal(linkId.String())},
-					}).
-					In([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
-					Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
-					In([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
-					Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(),
-						{"role", QEStringVal("generic")},
-						{"name", QEStringVal("n_generic")},
-					}),
-			)
-		}
-
-		linkResult := struct {
-			Items []struct {
-				Generic struct {
-					Id ObjectId `json:"id"`
-				} `json:"n_generic"`
-			} `json:"items"`
-		}{}
-
-		err = linkQuery.Do(ctx, &linkResult)
+		systemId, err := bpClient.SystemNodeFromLinkIds(ctx, linkIds, SystemNodeRoleGeneric)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if len(linkResult.Items) != 1 {
-			t.Fatalf("expected 1 item, got %d items", len(linkResult.Items))
+		observedTags, err := bpClient.GetNodeTags(ctx, systemId)
+		if err != nil {
+			t.Fatal(err)
 		}
 
+		cmLinks, err := bpClient.GetCablingMapLinksBySystem(ctx, systemId)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var aggregateCount int
+		for i := range cmLinks {
+			if cmLinks[i].Type == LinkTypeAggregateLink {
+				aggregateCount++
+			}
+		}
+
+		if aggregateCount != 1 {
+			t.Fatalf("expected 1 aggregate link, got %d", aggregateCount)
+		}
+
+		sort.Strings(desiredTags)
+		sort.Strings(observedTags)
+		compareSlices(t, desiredTags, observedTags, fmt.Sprintf("generic system tags"))
+
 		log.Printf("testing DeleteGenericSystem() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.DeleteGenericSystem(ctx, linkResult.Items[0].Generic.Id)
+		err = bpClient.DeleteGenericSystem(ctx, systemId)
 		if err != nil {
 			t.Fatal(err)
 		}

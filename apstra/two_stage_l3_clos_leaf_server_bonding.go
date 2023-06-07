@@ -13,16 +13,14 @@ const (
 )
 
 type LinkLagParams struct {
-	GroupLabel *string
+	GroupLabel string
 	LagMode    RackLinkLagMode
 	Tags       []string
 }
 
 func (o *LinkLagParams) raw() (*rawLinkLagParams, error) {
-	var groupLabel string
-	if o.GroupLabel != nil {
-		groupLabel = *o.GroupLabel
-	} else {
+	groupLabel := o.GroupLabel
+	if groupLabel == "" {
 		if !uuid.SetNodeID([]byte("apstra")) {
 			return nil, errors.New("uuid.SetNodeID failed")
 		}
