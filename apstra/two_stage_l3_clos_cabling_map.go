@@ -353,8 +353,8 @@ func (o SystemNodeRole) raw() systemNodeRole {
 	return systemNodeRole(o.String())
 }
 
-func (o SystemNodeRole) QEAttribute() QEEAttribute {
-	return QEEAttribute{"type", QEStringVal(o.String())}
+func (o SystemNodeRole) QEEAttribute() QEEAttribute {
+	return QEEAttribute{"role", QEStringVal(o.String())}
 }
 
 func (o systemNodeRole) string() string {
@@ -416,7 +416,7 @@ func (o LinkType) String() string {
 	}
 }
 
-func (o LinkType) QEAttributee() QEEAttribute {
+func (o LinkType) QEEAttributee() QEEAttribute {
 	return QEEAttribute{"type", QEStringVal(o.String())}
 }
 
