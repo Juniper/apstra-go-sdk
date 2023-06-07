@@ -301,7 +301,8 @@ type SystemNodeRole int
 type systemNodeRole string
 
 const (
-	SystemNodeRoleAccess = SystemNodeRole(iota)
+	SystemNodeRoleNone = SystemNodeRole(iota)
+	SystemNodeRoleAccess
 	SystemNodeRoleGeneric
 	SystemNodeRoleL3Server
 	SystemNodeRoleLeaf
@@ -310,6 +311,7 @@ const (
 	SystemNodeRoleSuperspine
 	SystemNodeRoleUnknown = "unknown system node role '%s'"
 
+	systemNodeRoleNone          = systemNodeRole("")
 	systemNodeRoleAccess        = systemNodeRole("access")
 	systemNodeRoleGeneric       = systemNodeRole("generic")
 	systemNodeRoleL3Server      = systemNodeRole("l3_server")
@@ -326,6 +328,8 @@ func (o SystemNodeRole) Int() int {
 
 func (o SystemNodeRole) String() string {
 	switch o {
+	case SystemNodeRoleNone:
+		return string(systemNodeRoleNone)
 	case SystemNodeRoleAccess:
 		return string(systemNodeRoleAccess)
 	case SystemNodeRoleGeneric:
@@ -359,6 +363,8 @@ func (o systemNodeRole) string() string {
 
 func (o systemNodeRole) parse() (int, error) {
 	switch o {
+	case systemNodeRoleNone:
+		return int(SystemNodeRoleNone), nil
 	case systemNodeRoleAccess:
 		return int(SystemNodeRoleAccess), nil
 	case systemNodeRoleGeneric:

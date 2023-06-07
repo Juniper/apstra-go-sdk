@@ -50,6 +50,7 @@ func TestSwitchLinkStrings(t *testing.T) {
 		{stringVal: "to_external_router", intType: LinkRoleToExternalRouter, stringType: linkRoleToExternalRouter},
 		{stringVal: "to_generic", intType: LinkRoleToGeneric, stringType: linkRoleToGeneric},
 
+		{stringVal: "", intType: SystemNodeRoleNone, stringType: systemNodeRoleNone},
 		{stringVal: "access", intType: SystemNodeRoleAccess, stringType: systemNodeRoleAccess},
 		{stringVal: "generic", intType: SystemNodeRoleGeneric, stringType: systemNodeRoleGeneric},
 		{stringVal: "l3_server", intType: SystemNodeRoleL3Server, stringType: systemNodeRoleL3Server},
