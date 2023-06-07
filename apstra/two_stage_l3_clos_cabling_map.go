@@ -464,6 +464,15 @@ func (o *rawCablingMapLinkEndpoint) polish() (*CablingMapLinkEndpoint, error) {
 	return &result, nil
 }
 
+type CablingMapLinkEndpointInterface struct {
+	OperationState InterfaceOperationState
+	IfName         *string
+	PortChannelId  *int
+	IfType         InterfaceType
+	Id             ObjectId
+	LagMode        RackLinkLagMode
+}
+
 type rawCablingMapLinkEndpointInterface struct {
 	OperationState interfaceOperationState `json:"operation_state"`
 	IfName         *string                 `json:"if_name"`
@@ -499,13 +508,10 @@ func (o *rawCablingMapLinkEndpointInterface) polish() (*CablingMapLinkEndpointIn
 	}, nil
 }
 
-type CablingMapLinkEndpointInterface struct {
-	OperationState InterfaceOperationState `json:"operation_state"`
-	IfName         *string
-	PortChannelId  *int
-	IfType         InterfaceType
-	Id             ObjectId
-	LagMode        RackLinkLagMode
+type CablingMapLinkEndpointSystem struct {
+	Role  SystemNodeRole
+	Id    ObjectId
+	Label string
 }
 
 type rawCablingMapLinkEndpointSystem struct {
@@ -525,12 +531,6 @@ func (o *rawCablingMapLinkEndpointSystem) polish() (*CablingMapLinkEndpointSyste
 		Id:    o.Id,
 		Label: o.Label,
 	}, nil
-}
-
-type CablingMapLinkEndpointSystem struct {
-	Role  SystemNodeRole
-	Id    ObjectId
-	Label string
 }
 
 type CablingMapLink struct {
@@ -558,7 +558,7 @@ type rawCablingMapLink struct {
 }
 
 func (o *rawCablingMapLink) polish() (*CablingMapLink, error) {
-	lr, err := o.Role.parse()
+	lRole, err := o.Role.parse()
 	if err != nil {
 		return nil, err
 	}
@@ -572,7 +572,7 @@ func (o *rawCablingMapLink) polish() (*CablingMapLink, error) {
 		endpoints[i] = *polished
 	}
 
-	linktype, err := o.Type.parse()
+	lType, err := o.Type.parse()
 	if err != nil {
 		return nil, fmt.Errorf("failed parsing link type %q, - %w", o.Type, err)
 	}
@@ -583,9 +583,9 @@ func (o *rawCablingMapLink) polish() (*CablingMapLink, error) {
 		AggregateLinkId: o.AggregateLinkId,
 		GroupLabel:      o.GroupLabel,
 		Label:           o.Label,
-		Role:            LinkRole(lr),
+		Role:            LinkRole(lRole),
 		Endpoints:       endpoints,
-		Type:            LinkType(linktype),
+		Type:            LinkType(lType),
 		Id:              o.Id,
 	}
 
