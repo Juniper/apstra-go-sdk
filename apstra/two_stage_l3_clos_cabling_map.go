@@ -589,8 +589,10 @@ func (o *CablingMapLink) OppositeEndpointBySystemId(systemId ObjectId) *CablingM
 		return nil
 	}
 
-	if o.Endpoints[0].System.Id == o.Endpoints[1].System.Id {
-		// can't be 'opposite of' if the same system is on both ends
+	if o.Endpoints[0].System != nil &&
+		o.Endpoints[1].System != nil &&
+		o.Endpoints[0].System.Id == o.Endpoints[1].System.Id {
+		// can't find an 'opposite of' system if the same system is on both ends
 		return nil
 	}
 
