@@ -1,6 +1,14 @@
 package apstra
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"net/http"
+)
+
+const (
+	apiUrlBlueprintTagging = apiUrlBlueprintById + apiUrlPathDelim + "tagging"
+)
 
 func (o *TwoStageL3ClosClient) GetNodeTags(ctx context.Context, nodeId ObjectId) ([]string, error) {
 	query := new(PathQuery).
@@ -39,4 +47,58 @@ func (o *TwoStageL3ClosClient) GetNodeTags(ctx context.Context, nodeId ObjectId)
 	}
 
 	return result, nil
+}
+
+func (o *TwoStageL3ClosClient) SetNodeTags(ctx context.Context, nodeId ObjectId, tags []string) error {
+	desiredTags := make(map[string]bool, len(tags))
+	for _, tag := range tags {
+		desiredTags[tag] = true
+	}
+
+	tags, err := o.GetNodeTags(ctx, nodeId)
+	if err != nil {
+		return err
+	}
+	currentTags := make(map[string]bool, len(tags))
+	for _, tag := range tags {
+		currentTags[tag] = true
+	}
+
+	var addTags, removeTags []string
+	for k := range desiredTags {
+		if currentTags[k] {
+			delete(currentTags, k)
+			delete(desiredTags, k)
+		}
+	}
+
+	if len(currentTags) == 0 && len(desiredTags) == 0 {
+		// nothing to add, nothing to remove - our job is done
+		return nil
+	}
+
+	for k := range desiredTags {
+		addTags = append(addTags, k)
+	}
+
+	for k := range currentTags {
+		removeTags = append(removeTags, k)
+	}
+
+	apiInput := struct {
+		Nodes  []string `json:"nodes"`
+		Add    []string `json:"add"`
+		Remove []string `json:"remove"`
+	}{
+		Nodes:  []string{nodeId.String()},
+		Add:    addTags,
+		Remove: removeTags,
+	}
+
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPost,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintTagging, o.blueprintId),
+		apiInput: &apiInput,
+	})
+	return convertTtaeToAceWherePossible(err)
 }
