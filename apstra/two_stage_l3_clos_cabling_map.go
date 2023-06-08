@@ -564,10 +564,36 @@ type CablingMapLink struct {
 	Id              ObjectId
 }
 
+// EndpointBySystemId returns the first (likely only) *CablingMapLinkEndpoint
+// connected to the specified system.
 func (o *CablingMapLink) EndpointBySystemId(systemId ObjectId) *CablingMapLinkEndpoint {
 	for _, endpoint := range o.Endpoints {
 		if endpoint.System.Id == systemId {
 			return &endpoint
+		}
+	}
+	return nil
+}
+
+// OppositeEndpointBySystemId does the opposite of EndpointBySystemId. Rather
+// than returning the specified endpoint, it returns the other one. For
+// "opposite" to be a useful concept, there must be exactly two endpoints.
+// Returns nil if endpoint count isn't 2, if both ends of the link land on
+// the specified system, or if no ends of the link end on the specified system.
+func (o *CablingMapLink) OppositeEndpointBySystemId(systemId ObjectId) *CablingMapLinkEndpoint {
+	if len(o.Endpoints) != 2 {
+		// can't be 'opposite of' with a 0, 1 or 3 ended cable...
+		return nil
+	}
+
+	if o.Endpoints[0].System.Id == o.Endpoints[1].System.Id {
+		// can't be 'opposite of' if the same system is on both ends
+		return nil
+	}
+
+	for i, endpoint := range o.Endpoints {
+		if endpoint.System.Id == systemId {
+			return &o.Endpoints[(i+1)%2]
 		}
 	}
 	return nil
