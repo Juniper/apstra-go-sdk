@@ -568,6 +568,9 @@ type CablingMapLink struct {
 // connected to the specified system.
 func (o *CablingMapLink) EndpointBySystemId(systemId ObjectId) *CablingMapLinkEndpoint {
 	for _, endpoint := range o.Endpoints {
+		if endpoint.System == nil {
+			continue
+		}
 		if endpoint.System.Id == systemId {
 			return &endpoint
 		}
@@ -592,6 +595,9 @@ func (o *CablingMapLink) OppositeEndpointBySystemId(systemId ObjectId) *CablingM
 	}
 
 	for i, endpoint := range o.Endpoints {
+		if endpoint.System == nil {
+			continue
+		}
 		if endpoint.System.Id == systemId {
 			return &o.Endpoints[(i+1)%2]
 		}
