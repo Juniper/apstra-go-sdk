@@ -446,6 +446,19 @@ type CablingMapLinkEndpoint struct {
 	System    *CablingMapLinkEndpointSystem
 }
 
+// Digest returns a string which uniquely identifies the endpoint by the system
+// and interface where it terminates. It returns *string like "abc123:xe-0/0/1"
+// or "def456:eth0"
+// If any of the required elements are nil, nil is returned.
+func (o *CablingMapLinkEndpoint) Digest() *string {
+	if o.System == nil || o.Interface == nil || o.Interface.IfName == nil {
+		return nil
+	}
+
+	result := o.System.Id.String() + ":" + *o.Interface.IfName
+	return &result
+}
+
 type rawCablingMapLinkEndpoint struct {
 	Interface *rawCablingMapLinkEndpointInterface `json:"interface"`
 	System    *rawCablingMapLinkEndpointSystem    `json:"system"`
