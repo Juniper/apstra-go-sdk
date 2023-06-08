@@ -551,6 +551,15 @@ type CablingMapLink struct {
 	Id              ObjectId
 }
 
+func (o *CablingMapLink) EndpointBySystemId(systemId ObjectId) *CablingMapLinkEndpoint {
+	for _, endpoint := range o.Endpoints {
+		if endpoint.System.Id == systemId {
+			return &endpoint
+		}
+	}
+	return nil
+}
+
 type rawCablingMapLink struct {
 	TagLabels       []string                    `json:"tags"`
 	Speed           LogicalDevicePortSpeed      `json:"speed"`
