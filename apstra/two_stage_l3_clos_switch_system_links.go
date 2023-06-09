@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -42,18 +43,48 @@ type CreateLinksWithNewServerRequestServer struct {
 	Hostname         string
 	Label            string
 	LogicalDeviceId  ObjectId
+	LogicalDevice    *LogicalDevice
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Tags             []string
 }
 
 func (o *CreateLinksWithNewServerRequestServer) raw(ctx context.Context, systemType string, client *Client) (*rawCreateLinksWithNewServerRequestServer, error) {
-	rawLD, err := client.getLogicalDevice(ctx, o.LogicalDeviceId)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching logical device %q - %w", o.LogicalDeviceId, err)
+	if o.LogicalDeviceId != "" && o.LogicalDevice != nil {
+		return nil, errors.New("both LogicalDevice (payload) and LogicalDeviceId (catalog ID) specified.")
 	}
-	rawLD.CreatedAt = nil
-	rawLD.LastModifiedAt = nil
+
+	var err error
+	var rawLD *rawLogicalDevice
+
+	if o.LogicalDeviceId != "" {
+		rawLD, err = client.getLogicalDevice(ctx, o.LogicalDeviceId)
+		if err != nil {
+			return nil, fmt.Errorf("error fetching logical device %q - %w", o.LogicalDeviceId, err)
+		}
+		// wipe out the timestamps so we don't send 'em back to Apstra
+		rawLD.CreatedAt = nil
+		rawLD.LastModifiedAt = nil
+	}
+
+	if o.LogicalDevice != nil {
+		rawLD = &rawLogicalDevice{
+			DisplayName: "TF LD template",
+			Id:          "tf-ld-template",
+			Panels: []rawLogicalDevicePanel{{
+				PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
+				PortIndexing: LogicalDevicePortIndexing{
+					Order:      PortIndexingHorizontalFirst,
+					StartIndex: 1,
+					Schema:     PortIndexingSchemaAbsolute,
+				},
+				PortGroups: []rawLogicalDevicePortGroup{{
+					Count: 1,
+					Speed: rawLogicalDevicePortSpeed{Unit: "M", Value: 100},
+				}},
+			}},
+		}
+	}
 
 	return &rawCreateLinksWithNewServerRequestServer{
 		SystemType:       systemType,
