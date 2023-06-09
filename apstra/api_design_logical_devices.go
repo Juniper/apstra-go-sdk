@@ -50,7 +50,10 @@ const (
 )
 
 func (o *LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
-	var result []logicalDevicePortRole
+	// instantiate as zero-length rather than nil so we send "[]"
+	// rather than "null" when no roles are specified.
+	result := make([]logicalDevicePortRole, 0)
+
 	if *o&LogicalDevicePortRoleSpine != 0 {
 		result = append(result, logicalDevicePortRoleSpine)
 	}
