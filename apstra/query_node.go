@@ -5,6 +5,7 @@ import "fmt"
 const (
 	NodeTypeNone = NodeType(iota)
 	NodeTypeInterface
+	NodeTypeInterfaceMap
 	NodeTypeLink
 	NodeTypeLogicalDevice
 	NodeTypeMetadata
@@ -20,6 +21,7 @@ const (
 
 	nodeTypeNone            = nodeType("")
 	nodeTypeInterface       = nodeType("interface")
+	nodeTypeInterfaceMap    = nodeType("interface_map")
 	nodeTypeLink            = nodeType("link")
 	nodeTypeLogicalDevice   = nodeType("logical_device")
 	nodeTypeMetadata        = nodeType("metadata")
@@ -43,6 +45,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeNone)
 	case NodeTypeInterface:
 		return string(nodeTypeInterface)
+	case NodeTypeInterfaceMap:
+		return string(nodeTypeInterfaceMap)
 	case NodeTypeLink:
 		return string(nodeTypeLink)
 	case NodeTypeLogicalDevice:
