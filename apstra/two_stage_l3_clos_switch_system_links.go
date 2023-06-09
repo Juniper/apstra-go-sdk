@@ -51,7 +51,7 @@ type CreateLinksWithNewServerRequestServer struct {
 
 func (o *CreateLinksWithNewServerRequestServer) raw(ctx context.Context, systemType string, client *Client) (*rawCreateLinksWithNewServerRequestServer, error) {
 	if o.LogicalDeviceId != "" && o.LogicalDevice != nil {
-		return nil, errors.New("both LogicalDevice (payload) and LogicalDeviceId (catalog ID) specified.")
+		return nil, errors.New("both LogicalDevice (payload) and LogicalDeviceId (catalog ID) specified")
 	}
 
 	var err error
@@ -68,22 +68,7 @@ func (o *CreateLinksWithNewServerRequestServer) raw(ctx context.Context, systemT
 	}
 
 	if o.LogicalDevice != nil {
-		rawLD = &rawLogicalDevice{
-			DisplayName: "TF LD template",
-			Id:          "tf-ld-template",
-			Panels: []rawLogicalDevicePanel{{
-				PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
-				PortIndexing: LogicalDevicePortIndexing{
-					Order:      PortIndexingHorizontalFirst,
-					StartIndex: 1,
-					Schema:     PortIndexingSchemaAbsolute,
-				},
-				PortGroups: []rawLogicalDevicePortGroup{{
-					Count: 1,
-					Speed: rawLogicalDevicePortSpeed{Unit: "M", Value: 100},
-				}},
-			}},
-		}
+		rawLD = o.LogicalDevice.raw()
 	}
 
 	return &rawCreateLinksWithNewServerRequestServer{
