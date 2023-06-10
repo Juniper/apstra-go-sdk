@@ -223,3 +223,27 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 
 	return o.DeleteLinks(ctx, linkIds)
 }
+
+func (o *TwoStageL3ClosClient) AddLinksToSystem(ctx context.Context, linkRequests []CreateLinkRequest) ([]ObjectId, error) {
+	rawLinkRequests := make([]rawCreateLinkRequest, len(linkRequests))
+	for i := range rawLinkRequests {
+		rawLinkRequests[i] = *linkRequests[i].raw()
+	}
+
+	apiInput := rawCreateLinksWithNewServerRequest{Links: rawLinkRequests}
+	var apiResponse struct {
+		Ids []ObjectId `json:"ids"`
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlSwitchSystemLinks, o.blueprintId),
+		apiInput:    &apiInput,
+		apiResponse: &apiResponse,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return apiResponse.Ids, nil
+}

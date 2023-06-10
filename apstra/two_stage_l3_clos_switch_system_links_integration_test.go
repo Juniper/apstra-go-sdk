@@ -127,6 +127,32 @@ func TestCreateDeleteServer(t *testing.T) {
 		sort.Strings(observedTags)
 		compareSlices(t, desiredTags, observedTags, fmt.Sprintf("generic system tags"))
 
+		newLinks := make([]CreateLinkRequest, len(leafResult.Items))
+		for i, item := range leafResult.Items {
+			newLinks[i] = CreateLinkRequest{
+				LagMode:    RackLinkLagModePassive,
+				GroupLabel: "bar",
+				Tags:       []string{"a", "b"},
+				SystemEndpoint: SwitchLinkEndpoint{
+					SystemId: systemId,
+				},
+				SwitchEndpoint: SwitchLinkEndpoint{
+					TransformationId: 1,
+					SystemId:         item.Leaf.Id,
+					IfName:           "xe-0/0/2",
+				},
+			}
+		}
+
+		log.Printf("testing AddLinksToSystem() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		newLinkIds, err := bpClient.AddLinksToSystem(ctx, newLinks)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(leafResult.Items) != len(newLinkIds) {
+			t.Fatalf("expected %d additional link IDs, got %d", len(leafResult.Items), len(newLinks))
+		}
+
 		log.Printf("testing DeleteGenericSystem() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.DeleteGenericSystem(ctx, systemId)
 		if err != nil {
