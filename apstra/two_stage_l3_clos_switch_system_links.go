@@ -165,7 +165,7 @@ func (o *TwoStageL3ClosClient) CreateLinksWithNewServer(ctx context.Context, req
 	return apiResponse.IDs, convertTtaeToAceWherePossible(err)
 }
 
-func (o *TwoStageL3ClosClient) DeleteLinks(ctx context.Context, ids []ObjectId) error {
+func (o *TwoStageL3ClosClient) DeleteLinksFromSystem(ctx context.Context, ids []ObjectId) error {
 	apiInput := struct {
 		LinkIds []ObjectId `json:"link_ids"`
 	}{ids}
@@ -221,7 +221,7 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 		linkIds[i] = item.Link.ID
 	}
 
-	return o.DeleteLinks(ctx, linkIds)
+	return o.DeleteLinksFromSystem(ctx, linkIds)
 }
 
 func (o *TwoStageL3ClosClient) AddLinksToSystem(ctx context.Context, linkRequests []CreateLinkRequest) ([]ObjectId, error) {
