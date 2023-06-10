@@ -61,9 +61,9 @@ func TestCreateDeleteServer(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		links := make([]CreateLinksWithNewServerRequestLink, len(leafResult.Items))
+		links := make([]CreateLinkRequest, len(leafResult.Items))
 		for i, item := range leafResult.Items {
-			links[i] = CreateLinksWithNewServerRequestLink{
+			links[i] = CreateLinkRequest{
 				LagMode:        RackLinkLagModeActive,
 				GroupLabel:     "foo",
 				Tags:           []string{"link blah", "link also blah"},

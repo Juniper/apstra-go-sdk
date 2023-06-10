@@ -152,7 +152,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 				hostTags = append(hostTags, randString(5, "hex"))
 			}
 
-			var links []CreateLinksWithNewServerRequestLink
+			var links []CreateLinkRequest
 			var ifName string
 			for j := 0; j < tc.linkCount; j++ {
 				var linkTags []string
@@ -170,7 +170,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 					ifName = nextInterface(ifName)
 				}
 
-				links = append(links, CreateLinksWithNewServerRequestLink{
+				links = append(links, CreateLinkRequest{
 					Tags: linkTags,
 					SwitchEndpoint: SwitchLinkEndpoint{
 						TransformationId: 1,

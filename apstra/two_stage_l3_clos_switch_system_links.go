@@ -13,7 +13,7 @@ const (
 )
 
 type CreateLinksWithNewServerRequest struct {
-	Links  []CreateLinksWithNewServerRequestLink
+	Links  []CreateLinkRequest
 	Server CreateLinksWithNewServerRequestServer
 }
 
@@ -23,7 +23,7 @@ func (o *CreateLinksWithNewServerRequest) raw(ctx context.Context, client *Clien
 		return nil, err
 	}
 
-	links := make([]rawCreateLinksWithNewServerRequestLink, len(o.Links))
+	links := make([]rawCreateLinkRequest, len(o.Links))
 	for i, link := range o.Links {
 		links[i] = *link.raw()
 	}
@@ -35,8 +35,8 @@ func (o *CreateLinksWithNewServerRequest) raw(ctx context.Context, client *Clien
 }
 
 type rawCreateLinksWithNewServerRequest struct {
-	NewSystems []rawCreateLinksWithNewServerRequestServer `json:"new_systems"`
-	Links      []rawCreateLinksWithNewServerRequestLink   `json:"links"`
+	NewSystems []rawCreateLinksWithNewServerRequestServer `json:"new_systems,omitempty"`
+	Links      []rawCreateLinkRequest                     `json:"links"`
 }
 
 type CreateLinksWithNewServerRequestServer struct {
@@ -92,7 +92,7 @@ type rawCreateLinksWithNewServerRequestServer struct {
 	Hostname         string           `json:"hostname,omitempty"`
 }
 
-type CreateLinksWithNewServerRequestLink struct {
+type CreateLinkRequest struct {
 	Tags           []string
 	SystemEndpoint SwitchLinkEndpoint
 	SwitchEndpoint SwitchLinkEndpoint
@@ -100,8 +100,8 @@ type CreateLinksWithNewServerRequestLink struct {
 	LagMode        RackLinkLagMode
 }
 
-func (o *CreateLinksWithNewServerRequestLink) raw() *rawCreateLinksWithNewServerRequestLink {
-	return &rawCreateLinksWithNewServerRequestLink{
+func (o *CreateLinkRequest) raw() *rawCreateLinkRequest {
+	return &rawCreateLinkRequest{
 		Tags:           o.Tags,
 		SystemEndpoint: o.SystemEndpoint.raw(),
 		SwitchEndpoint: o.SwitchEndpoint.raw(),
@@ -110,7 +110,7 @@ func (o *CreateLinksWithNewServerRequestLink) raw() *rawCreateLinksWithNewServer
 	}
 }
 
-type rawCreateLinksWithNewServerRequestLink struct {
+type rawCreateLinkRequest struct {
 	Tags           []string              `json:"tags,omitempty"`
 	SystemEndpoint rawSwitchLinkEndpoint `json:"system"`
 	SwitchEndpoint rawSwitchLinkEndpoint `json:"switch"`
@@ -126,8 +126,8 @@ type SwitchLinkEndpoint struct {
 }
 
 func (o *SwitchLinkEndpoint) raw() rawSwitchLinkEndpoint {
-	var systemIdPtr *string
-	if s := o.SystemId.String(); s != "" {
+	var systemIdPtr *ObjectId
+	if s := o.SystemId; s != "" {
 		systemIdPtr = &s
 	}
 
@@ -135,15 +135,14 @@ func (o *SwitchLinkEndpoint) raw() rawSwitchLinkEndpoint {
 		TransformationId: o.TransformationId,
 		SystemId:         systemIdPtr,
 		IfName:           o.IfName,
-		//LagMode:          o.LagMode.String(),
 	}
 }
 
 type rawSwitchLinkEndpoint struct {
-	TransformationId int     `json:"transformation_id,omitempty"`
-	SystemId         *string `json:"system_id"` // must send `null` when creating a new system, so no `omitempty`
-	IfName           string  `json:"if_name,omitempty"`
-	LagMode          string  `json:"lag_mode,omitempty"`
+	TransformationId int       `json:"transformation_id,omitempty"`
+	SystemId         *ObjectId `json:"system_id"` // must send `null` when creating a new system, so no `omitempty`
+	IfName           string    `json:"if_name,omitempty"`
+	LagMode          string    `json:"lag_mode,omitempty"`
 }
 
 func (o *TwoStageL3ClosClient) CreateLinksWithNewServer(ctx context.Context, req *CreateLinksWithNewServerRequest) ([]ObjectId, error) {
