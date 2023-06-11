@@ -134,20 +134,8 @@ func TestGetSetTransformationId(t *testing.T) {
 		}
 
 		for i, tc := range testCases {
-			log.Printf("testing SetTransformationId() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			request := SetTransformationRequest{
-				Force: false,
-				Interface: struct {
-					TransformationId int
-					SystemId         ObjectId
-					IfName           string
-				}{
-					TransformationId: tc.transformId,
-					SystemId:         leafId,
-					IfName:           ifName,
-				},
-			}
-			err = bpClient.SetTransformationId(ctx, &request)
+			log.Printf("testing SetTransformIdByIfName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.SetTransformIdByIfName(ctx, leafId, ifName, tc.transformId)
 			if tc.expSetIdErr && err == nil {
 				t.Fatalf("test case %d should have produced an error", i)
 			}

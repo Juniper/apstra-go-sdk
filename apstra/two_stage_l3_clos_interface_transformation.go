@@ -10,32 +10,6 @@ const (
 	apiUrlBlueprintInterfaceTransformation = apiUrlBlueprintById + apiUrlPathDelim + "interface-transformation"
 )
 
-type SetTransformationRequest struct {
-	Force     bool
-	Interface struct {
-		TransformationId int
-		SystemId         ObjectId
-		IfName           string
-	}
-}
-
-func (o *SetTransformationRequest) raw() *rawSetTransformationRequest {
-	return &rawSetTransformationRequest{
-		Force: o.Force,
-		Interfaces: []struct {
-			TransformationId int      `json:"transformation_id"`
-			SystemId         ObjectId `json:"system_id"`
-			IfName           string   `json:"if_name"`
-		}{
-			{
-				TransformationId: o.Interface.TransformationId,
-				SystemId:         o.Interface.SystemId,
-				IfName:           o.Interface.IfName,
-			},
-		},
-	}
-}
-
 type rawSetTransformationRequest struct {
 	Force      bool `json:"force"` // not clear what this is for
 	Interfaces []struct {
@@ -45,17 +19,29 @@ type rawSetTransformationRequest struct {
 	} `json:"interfaces"`
 }
 
-// SetTransformationId attempts to update the transform ID according to the
-// SetTransformationRequest details. Note that it is not always possible to
+// SetTransformIdByIfName attempts to update the transform ID of the named
+// interface on the specified system. Note that it is not always possible to
 // change the transform number, particularly when such a change would change
 // the link speed.
-func (o *TwoStageL3ClosClient) SetTransformationId(ctx context.Context, apiInput *SetTransformationRequest) error {
+func (o *TwoStageL3ClosClient) SetTransformIdByIfName(ctx context.Context, systemId ObjectId, ifName string, transformId int) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintInterfaceTransformation, o.blueprintId),
-		apiInput: apiInput.raw(),
+		method: http.MethodPut,
+		urlStr: fmt.Sprintf(apiUrlBlueprintInterfaceTransformation, o.blueprintId),
+		apiInput: &rawSetTransformationRequest{
+			Force: false,
+			Interfaces: []struct {
+				TransformationId int      `json:"transformation_id"`
+				SystemId         ObjectId `json:"system_id"`
+				IfName           string   `json:"if_name"`
+			}{
+				{
+					TransformationId: transformId,
+					SystemId:         systemId,
+					IfName:           ifName,
+				},
+			},
+		},
 	})
-
 	return convertTtaeToAceWherePossible(err)
 }
 
