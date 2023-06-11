@@ -390,3 +390,99 @@ func TestItemInSlice(t *testing.T) {
 		}
 	}
 }
+
+func testRackA(ctx context.Context, t *testing.T, client *Client) (ObjectId, func(context.Context) error) {
+	deleteFunc := func(context.Context) error { return nil }
+	request := RackTypeRequest{
+		DisplayName:              randString(5, "hex"),
+		FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
+		LeafSwitches: []RackElementLeafSwitchRequest{
+			{
+				Label:             randString(5, "hex"),
+				LinkPerSpineCount: 1,
+				LinkPerSpineSpeed: "40G",
+				LogicalDeviceId:   "AOS-48x10_6x40-1",
+			},
+		},
+	}
+
+	id, err := client.CreateRackType(ctx, &request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	deleteFunc = func(context.Context) error {
+		return client.DeleteRackType(ctx, id)
+	}
+
+	return id, deleteFunc
+}
+
+func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId, func(context.Context) error) {
+	deleteFunc := func(context.Context) error { return nil }
+	rackId, rackDeleteFunc := testRackA(ctx, t, client)
+	deleteFunc = func(context.Context) error {
+		return rackDeleteFunc(ctx)
+	}
+
+	request := CreateRackBasedTemplateRequest{
+		DisplayName: randString(5, "hex"),
+		Spine: &TemplateElementSpineRequest{
+			Count:         1,
+			LogicalDevice: "AOS-16x40-1",
+		},
+		RackInfos: map[ObjectId]TemplateRackBasedRackInfo{
+			rackId: {Count: 1},
+		},
+		FabricAddressingPolicy: &FabricAddressingPolicy{
+			SpineSuperspineLinks: AddressingSchemeIp4,
+			SpineLeafLinks:       AddressingSchemeIp4,
+		},
+		AntiAffinityPolicy: &AntiAffinityPolicy{
+			Algorithm:                AlgorithmHeuristic,
+			MaxLinksPerPort:          1,
+			MaxLinksPerSlot:          1,
+			MaxPerSystemLinksPerPort: 1,
+			MaxPerSystemLinksPerSlot: 1,
+			Mode:                     AntiAffinityModeDisabled,
+		},
+		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeDistinct},
+		VirtualNetworkPolicy: &VirtualNetworkPolicy{OverlayControlProtocol: OverlayControlProtocolEvpn},
+	}
+
+	id, err := client.CreateRackBasedTemplate(ctx, &request)
+	if err != nil {
+		t.Fatal(errors.Join(err, rackDeleteFunc(ctx)))
+	}
+	deleteFunc = func(context.Context) error {
+		return errors.Join(client.DeleteTemplate(ctx, id), rackDeleteFunc(ctx))
+	}
+
+	return id, deleteFunc
+}
+
+func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+	deleteFunc := func(context.Context) error { return nil }
+	templateId, templateDeleteFunc := testTemplateA(ctx, t, client)
+	deleteFunc = func(context.Context) error {
+		return templateDeleteFunc(ctx)
+	}
+
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignDatacenter,
+		Label:      randString(5, "hex"),
+		TemplateId: templateId,
+	})
+	if err != nil {
+		t.Fatal(errors.Join(err, templateDeleteFunc(ctx)))
+	}
+	deleteFunc = func(ctx context.Context) error {
+		return errors.Join(templateDeleteFunc(ctx), client.DeleteBlueprint(ctx, bpId))
+	}
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	if err != nil {
+		t.Fatal(errors.Join(err, deleteFunc(ctx)))
+	}
+
+	return bpClient, deleteFunc
+}

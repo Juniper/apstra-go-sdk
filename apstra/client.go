@@ -20,6 +20,7 @@ const (
 	ErrUnknown       = iota
 	ErrAsnOutOfRange
 	ErrAsnRangeOverlap
+	ErrCannotChangeTransform
 	ErrRangeOverlap
 	ErrAuthFail
 	ErrCompatibility
