@@ -35,13 +35,13 @@ func TestGetAllSystems(t *testing.T) {
 
 	for clientName, client := range clients {
 		log.Printf("testing listSystems() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		systemIds, err := client.client.listSystems(context.TODO())
+		systemIds, err := client.client.ListSystems(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing getAllSystemsInfo() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		systems, err := client.client.getAllSystemsInfo(context.TODO())
+		systems, err := client.client.GetAllSystemsInfo(context.TODO())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -67,7 +67,7 @@ func TestGetSystems(t *testing.T) {
 
 		for _, s := range systems {
 			log.Printf("testing getSystemInfo() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			system, err := client.client.getSystemInfo(context.TODO(), s)
+			system, err := client.client.GetSystemInfo(context.TODO(), s)
 			if err != nil {
 				t.Fatal(err)
 			}
