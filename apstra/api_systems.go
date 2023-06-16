@@ -2,7 +2,6 @@ package apstra
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -158,13 +157,13 @@ type optionsSystemsResponse struct {
 }
 
 type ManagedSystemInfo struct {
-	ContainerStatus SystemContainerStatus `json:"container_status"`
-	DeviceKey       string                `json:"device_key"`
-	Facts           SystemFacts           `json:"facts"`
-	Id              SystemId              `json:"id"`
-	Services        []string              `json:"services"`
-	Status          SystemStatus          `json:"status"`
-	UserConfig      SystemUserConfig      `json:"user_config"`
+	ContainerStatus SystemContainerStatus
+	DeviceKey       string
+	Facts           SystemFacts
+	Id              SystemId
+	Services        []string
+	Status          SystemStatus
+	UserConfig      SystemUserConfig
 }
 
 type rawManagedSystemInfo struct {
@@ -313,7 +312,7 @@ func (o *Client) listSystems(ctx context.Context) ([]SystemId, error) {
 	return response.Items, nil
 }
 
-func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystemInfo, error) {
+func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*rawManagedSystemInfo, error) {
 	response := &rawManagedSystemInfo{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -321,19 +320,13 @@ func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*ManagedSystem
 		apiResponse: response,
 	})
 	if err != nil {
-		var ttae TalkToApstraErr
-		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
-			return nil, ApstraClientErr{
-				errType: ErrNotfound,
-				err:     err,
-			}
-		}
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response.polish()
+
+	return response, nil
 }
 
-func (o *Client) getAllSystemsInfo(ctx context.Context) ([]ManagedSystemInfo, error) {
+func (o *Client) getAllSystemsInfo(ctx context.Context) ([]rawManagedSystemInfo, error) {
 	response := &struct{ Items []rawManagedSystemInfo }{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -341,19 +334,10 @@ func (o *Client) getAllSystemsInfo(ctx context.Context) ([]ManagedSystemInfo, er
 		apiResponse: response,
 	})
 	if err != nil {
-		return nil, err
+		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	result := make([]ManagedSystemInfo, len(response.Items))
-	for i, rmsi := range response.Items {
-		polished, err := rmsi.polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *polished
-	}
-
-	return result, nil
+	return response.Items, nil
 }
 
 func (o *Client) updateSystemByAgentId(ctx context.Context, agentId ObjectId, cfg *SystemUserConfig) error {

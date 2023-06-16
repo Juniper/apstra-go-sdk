@@ -568,12 +568,31 @@ func (o *Client) ListSystems(ctx context.Context) ([]SystemId, error) {
 // GetAllSystemsInfo returns []ManagedSystemInfo representing all systems
 // configured on the Apstra server.
 func (o *Client) GetAllSystemsInfo(ctx context.Context) ([]ManagedSystemInfo, error) {
-	return o.getAllSystemsInfo(ctx)
+	rawSlice, err := o.getAllSystemsInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]ManagedSystemInfo, len(rawSlice))
+	for i, raw := range rawSlice {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+
+	return result, nil
 }
 
 // GetSystemInfo returns a *ManagedSystemInfo representing the requested SystemId
 func (o *Client) GetSystemInfo(ctx context.Context, id SystemId) (*ManagedSystemInfo, error) {
-	return o.getSystemInfo(ctx, id)
+	raw, err := o.getSystemInfo(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
 }
 
 // UpdateSystem deletes the supplied SystemId
