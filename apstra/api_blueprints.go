@@ -420,19 +420,21 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, desired string) (
 
 func (o *Client) createBlueprintFromTemplate(ctx context.Context, req *rawCreateBlueprintFromTemplateRequest) (ObjectId, error) {
 	response := &postBlueprintsResponse{}
-	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlBlueprints,
 		apiInput:    req,
 		apiResponse: response,
 	})
+	return response.Id, convertTtaeToAceWherePossible(err)
 }
 
 func (o *Client) deleteBlueprint(ctx context.Context, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintById, id),
 	})
+	return convertTtaeToAceWherePossible(err)
 }
 
 func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query QEQuery, response interface{}) error {
@@ -473,18 +475,29 @@ func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType Node
 		apstraUrl.RawQuery = params.Encode()
 	}
 
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,
 	})
+	return convertTtaeToAceWherePossible(err)
+}
+
+func (o *Client) getNode(ctx context.Context, blueprintId ObjectId, nodeId ObjectId, target interface{}) error {
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, blueprintId, nodeId),
+		apiResponse: target,
+	})
+	return convertTtaeToAceWherePossible(err)
 }
 
 func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPatch,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, blueprint, node),
 		apiInput:    request,
 		apiResponse: response,
 	})
+	return convertTtaeToAceWherePossible(err)
 }

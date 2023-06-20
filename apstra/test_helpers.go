@@ -1,11 +1,13 @@
 package apstra
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"testing"
 )
@@ -95,4 +97,35 @@ func getKeysfromMap[A comparable](m map[A]interface{}) []A {
 		i++
 	}
 	return keys
+}
+
+func nextInterface(in string) string {
+	re := regexp.MustCompile(`\d+$`)
+	loc := re.FindStringIndex(in)
+	portNumStr := in[loc[0]:]
+	i, err := strconv.Atoi(portNumStr)
+	if err != nil {
+		panic("Atoi should not have produced an error because the regex guaranteed digits here.")
+	}
+	beginStr := in[:loc[0]]
+	return beginStr + strconv.Itoa(i+1)
+}
+
+func countSystemLinkTypes(ctx context.Context, systemId ObjectId, client *TwoStageL3ClosClient) (map[LinkType]int, int, error) {
+	links, err := client.GetCablingMapLinksBySystem(ctx, systemId)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var lagMembers int
+
+	result := make(map[LinkType]int)
+	for _, link := range links {
+		result[link.Type]++
+		if link.Type == LinkTypeEthernet && link.AggregateLinkId != "" {
+			lagMembers++
+		}
+	}
+
+	return result, lagMembers, nil
 }

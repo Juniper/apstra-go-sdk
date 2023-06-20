@@ -20,6 +20,7 @@ const (
 	ErrUnknown       = iota
 	ErrAsnOutOfRange
 	ErrAsnRangeOverlap
+	ErrCannotChangeTransform
 	ErrRangeOverlap
 	ErrAuthFail
 	ErrCompatibility
@@ -1250,6 +1251,11 @@ func (o *Client) UpdateInterfaceMap(ctx context.Context, id ObjectId, ifMap *Int
 // DeleteInterfaceMap deletes the interface map identified by id
 func (o *Client) DeleteInterfaceMap(ctx context.Context, id ObjectId) error {
 	return o.deleteInterfaceMap(ctx, id)
+}
+
+// GetNode fetches the specified node and unpacks it into target
+func (o *Client) GetNode(ctx context.Context, blueprint ObjectId, nodeId ObjectId, target interface{}) error {
+	return o.getNode(ctx, blueprint, nodeId, target)
 }
 
 // GetNodes fetches the node of the specified type, unpacks the API response

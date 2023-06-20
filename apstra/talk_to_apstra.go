@@ -63,6 +63,8 @@ func convertTtaeToAceWherePossible(err error) error {
 				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "Virtual Network name not unique"):
 				return ApstraClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
+			case strings.Contains(ttae.Msg, "Transformation cannot be changed"):
+				return ApstraClientErr{errType: ErrCannotChangeTransform, err: errors.New(ttae.Msg)}
 			}
 		}
 	}

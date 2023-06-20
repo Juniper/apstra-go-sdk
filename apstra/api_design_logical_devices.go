@@ -50,7 +50,10 @@ const (
 )
 
 func (o *LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
-	var result []logicalDevicePortRole
+	// instantiate as zero-length rather than nil so we send "[]"
+	// rather than "null" when no roles are specified.
+	result := make([]logicalDevicePortRole, 0)
+
 	if *o&LogicalDevicePortRoleSpine != 0 {
 		result = append(result, logicalDevicePortRoleSpine)
 	}
@@ -336,8 +339,8 @@ func (o rawLogicalDevicePanel) parse() (*LogicalDevicePanel, error) {
 
 type LogicalDevice struct {
 	Id             ObjectId
-	CreatedAt      time.Time
-	LastModifiedAt time.Time
+	CreatedAt      *time.Time
+	LastModifiedAt *time.Time
 	Data           *LogicalDeviceData
 }
 
@@ -360,8 +363,8 @@ type rawLogicalDevice struct {
 	DisplayName    string                  `json:"display_name"`
 	Id             ObjectId                `json:"id,omitempty"`
 	Panels         []rawLogicalDevicePanel `json:"panels"`
-	CreatedAt      time.Time               `json:"created_at"`
-	LastModifiedAt time.Time               `json:"last_modified_at"`
+	CreatedAt      *time.Time              `json:"created_at,omitempty"`
+	LastModifiedAt *time.Time              `json:"last_modified_at,omitempty"`
 }
 
 func (o rawLogicalDevice) polish() (*LogicalDevice, error) {
