@@ -288,8 +288,8 @@ type TwoStageL3ClosNodeAnomalyCounts struct {
 	Interface          int `json:"interface"`
 	Lag                int `json:"lag"`
 	Liveness           int `json:"liveness"`
-	Mac                int `json"mac"`
-	Mlag               int `json"mlag"`
+	Mac                int `json:"mac"`
+	Mlag               int `json:"mlag"`
 	Probe              int `json:"probe"`
 	Route              int `json:"route"`
 	Series             int `json:"series"`
