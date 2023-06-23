@@ -321,6 +321,28 @@ func (o *Client) GetAnomalies(ctx context.Context) ([]Anomaly, error) {
 	return result, nil
 }
 
+// GetBlueprintAnomalies returns []TwoStageL3ClosAnomaly representing all anomalies in
+// the blueprint.
+func (o *Client) GetBlueprintAnomalies(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosAnomaly, error) {
+	return o.getBlueprintAnomalies(ctx, blueprintId)
+}
+
+// GetBlueprintNodeAnomalyCounts returns []TwoStageL3ClosNodeAnomalyCounts
+// which summarize current anomalies on a per-node basis in the blueprint.
+// Nodes which are not currently experiencing an anomaly are not represented in
+// the returned slice.
+func (o *Client) GetBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosNodeAnomalyCounts, error) {
+	return o.getBlueprintNodeAnomalyCounts(ctx, blueprintId)
+}
+
+// GetBlueprintServiceAnomalyCounts returns []TwoStageL3ClosServiceAnomalyCount
+// which summarize current anomalies on a per-service basis in the blueprint.
+// Services which are not currently experiencing an anomaly are not represented
+// in the returned slice.
+func (o *Client) GetBlueprintServiceAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosServiceAnomalyCount, error) {
+	return o.getBlueprintServiceAnomalyCounts(ctx, blueprintId)
+}
+
 // GetAsnPools returns ASN pools configured on Apstra
 func (o *Client) GetAsnPools(ctx context.Context) ([]AsnPool, error) {
 	return o.getAsnPools(ctx)
