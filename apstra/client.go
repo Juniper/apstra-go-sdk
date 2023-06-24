@@ -321,9 +321,9 @@ func (o *Client) GetAnomalies(ctx context.Context) ([]Anomaly, error) {
 	return result, nil
 }
 
-// GetBlueprintAnomalies returns []TwoStageL3ClosAnomaly representing all anomalies in
+// GetBlueprintAnomalies returns []BlueprintAnomaly representing all anomalies in
 // the blueprint.
-func (o *Client) GetBlueprintAnomalies(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosAnomaly, error) {
+func (o *Client) GetBlueprintAnomalies(ctx context.Context, blueprintId ObjectId) ([]BlueprintAnomaly, error) {
 	return o.getBlueprintAnomalies(ctx, blueprintId)
 }
 
@@ -335,11 +335,11 @@ func (o *Client) GetBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId 
 	return o.getBlueprintNodeAnomalyCounts(ctx, blueprintId)
 }
 
-// GetBlueprintServiceAnomalyCounts returns []TwoStageL3ClosServiceAnomalyCount
+// GetBlueprintServiceAnomalyCounts returns []BlueprintServiceAnomalyCount
 // which summarize current anomalies on a per-service basis in the blueprint.
 // Services which are not currently experiencing an anomaly are not represented
 // in the returned slice.
-func (o *Client) GetBlueprintServiceAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosServiceAnomalyCount, error) {
+func (o *Client) GetBlueprintServiceAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]BlueprintServiceAnomalyCount, error) {
 	return o.getBlueprintServiceAnomalyCounts(ctx, blueprintId)
 }
 

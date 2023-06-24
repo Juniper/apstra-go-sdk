@@ -246,7 +246,7 @@ func (o *Client) getAnomalies(ctx context.Context) ([]Anomaly, error) {
 //   STREAMING_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {           // ?
 //   PROBE_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {               // node
 
-type TwoStageL3ClosAnomaly struct {
+type BlueprintAnomaly struct {
 	Id             string     `json:"id"`               // part of base schema
 	LastModifiedAt *time.Time `json:"last_modified_at"` // part of base schema
 	Severity       string     `json:"severity"`         // part of base schema
@@ -259,7 +259,7 @@ type TwoStageL3ClosAnomaly struct {
 	Anomalous json.RawMessage `json:"anomalous"` // probe
 }
 
-type TwoStageL3ClosServiceAnomalyCount struct {
+type BlueprintServiceAnomalyCount struct {
 	AnomalyType string `json:"type"`
 	Role        string `json:"role"`
 	Count       int    `json:"count"`
@@ -272,7 +272,7 @@ type TwoStageL3ClosServiceAnomalyCount struct {
 //               'streaming', 'mac', 'arp', 'lag', 'mlag', 'series',
 //               'all']
 
-type TwoStageL3ClosNodeAnomalyCounts struct {
+type BlueprintNodeAnomalyCounts struct {
 	Node     string `json:"node"`
 	SystemId string `json:"system_id"`
 	All      int    `json:"all"`
@@ -296,9 +296,9 @@ type TwoStageL3ClosNodeAnomalyCounts struct {
 	Streaming          int `json:"streaming"`
 }
 
-func (o *Client) getBlueprintAnomalies(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosAnomaly, error) {
+func (o *Client) getBlueprintAnomalies(ctx context.Context, blueprintId ObjectId) ([]BlueprintAnomaly, error) {
 	var apiResonse struct {
-		Items []TwoStageL3ClosAnomaly
+		Items []BlueprintAnomaly
 	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -310,9 +310,9 @@ func (o *Client) getBlueprintAnomalies(ctx context.Context, blueprintId ObjectId
 	return apiResonse.Items, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) getBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosNodeAnomalyCounts, error) {
+func (o *Client) getBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]BlueprintNodeAnomalyCounts, error) {
 	var apiResonse struct {
-		Items []TwoStageL3ClosNodeAnomalyCounts
+		Items []BlueprintNodeAnomalyCounts
 	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -324,9 +324,9 @@ func (o *Client) getBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId 
 	return apiResonse.Items, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) getBlueprintServiceAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosServiceAnomalyCount, error) {
+func (o *Client) getBlueprintServiceAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]BlueprintServiceAnomalyCount, error) {
 	var apiResonse struct {
-		Items []TwoStageL3ClosServiceAnomalyCount
+		Items []BlueprintServiceAnomalyCount
 	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
