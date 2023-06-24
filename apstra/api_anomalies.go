@@ -247,7 +247,7 @@ func (o *Client) getAnomalies(ctx context.Context) ([]Anomaly, error) {
 //   PROBE_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {               // node
 
 type BlueprintAnomaly struct {
-	Id             string     `json:"id"`               // part of base schema
+	Id             ObjectId   `json:"id"`               // part of base schema
 	LastModifiedAt *time.Time `json:"last_modified_at"` // part of base schema
 	Severity       string     `json:"severity"`         // part of base schema
 	AnomalyType    string     `json:"anomaly_type"`     // part of base schema
@@ -273,9 +273,9 @@ type BlueprintServiceAnomalyCount struct {
 //               'all']
 
 type BlueprintNodeAnomalyCounts struct {
-	Node     string `json:"node"`
-	SystemId string `json:"system_id"`
-	All      int    `json:"all"`
+	Node     string   `json:"node"`
+	SystemId ObjectId `json:"system_id"`
+	All      int      `json:"all"`
 
 	Arp                int `json:"arp"`
 	Bgp                int `json:"bgp"`
