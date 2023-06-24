@@ -11,7 +11,10 @@ import (
 )
 
 const (
-	apiUrlAnomalies = "/api/anomalies"
+	apiUrlAnomalies                   = "/api/anomalies"
+	apiUrlBlueprintAnomalies          = apiUrlBlueprintById + apiUrlPathDelim + "anomalies"
+	apiUrlBlueprintAnomaliesByNode    = apiUrlBlueprintById + apiUrlPathDelim + "anomalies_nodes_count"
+	apiUrlBlueprintAnomaliesByService = apiUrlBlueprintById + apiUrlPathDelim + "anomalies_services_count"
 )
 
 type AnomalyProperty struct {
@@ -223,4 +226,114 @@ func (o *Client) getAnomalies(ctx context.Context) ([]Anomaly, error) {
 		result = append(result, *a)
 	}
 	return result, nil
+}
+
+// also available in scotch/schemas/alerts.py:
+//   BGP_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {                 // node
+//   BLUEPRINT_RENDERING_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, { // node
+//   CABLING_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {             // node
+//   CONFIG_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {              // node
+//   CONFIG_MISMATCH_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {     // node
+//   DEPLOYMENT_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {          // node
+//   EXTENSIBLE_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {          // ?
+//   HOSTNAME_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {            // node
+//   INTERFACE_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {           // node
+//   LAG_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {                 // ?
+//   LIVENESS_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {            // node
+//   MAC_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {                 // ?
+//   MLAG_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {                // ?
+//   ROUTE_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {               // node
+//   STREAMING_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {           // ?
+//   PROBE_ANOMALY_SCHEMA = t.Object(BASE_ANOMALY_SCHEMA, {               // node
+
+type BlueprintAnomaly struct {
+	Id             ObjectId   `json:"id"`               // part of base schema
+	LastModifiedAt *time.Time `json:"last_modified_at"` // part of base schema
+	Severity       string     `json:"severity"`         // part of base schema
+	AnomalyType    string     `json:"anomaly_type"`     // part of base schema
+
+	Actual    json.RawMessage `json:"actual"`    // universal (near universal?)
+	Expected  json.RawMessage `json:"expected"`  // universal (near universal?)
+	Identity  json.RawMessage `json:"identity"`  // universal (near universal?)
+	Role      *string         `json:"role"`      // near universal
+	Anomalous json.RawMessage `json:"anomalous"` // probe
+}
+
+type BlueprintServiceAnomalyCount struct {
+	AnomalyType string `json:"type"`
+	Role        string `json:"role"`
+	Count       int    `json:"count"`
+}
+
+// per JP Senior: I think the a reliable list is aos.reference_design.two_stage_l3clos.__init__.py's alert_types list:
+// aos/reference_design/two_stage_l3clos/__init__.py:
+// alert_types = ['bgp', 'cabling', 'counter', 'interface', 'hostname', 'liveness',
+//               'route', 'config', 'deployment', 'blueprint_rendering', 'probe',
+//               'streaming', 'mac', 'arp', 'lag', 'mlag', 'series',
+//               'all']
+
+type BlueprintNodeAnomalyCounts struct {
+	Node     string   `json:"node"`
+	SystemId ObjectId `json:"system_id"`
+	All      int      `json:"all"`
+
+	Arp                int `json:"arp"`
+	Bgp                int `json:"bgp"`
+	BlueprintRendering int `json:"blueprint_rendering"`
+	Cabling            int `json:"cabling"`
+	Config             int `json:"config"`
+	Counter            int `json:"counter"`
+	Deployment         int `json:"deployment"`
+	Hostname           int `json:"hostname"`
+	Interface          int `json:"interface"`
+	Lag                int `json:"lag"`
+	Liveness           int `json:"liveness"`
+	Mac                int `json:"mac"`
+	Mlag               int `json:"mlag"`
+	Probe              int `json:"probe"`
+	Route              int `json:"route"`
+	Series             int `json:"series"`
+	Streaming          int `json:"streaming"`
+}
+
+func (o *Client) getBlueprintAnomalies(ctx context.Context, blueprintId ObjectId) ([]BlueprintAnomaly, error) {
+	var apiResonse struct {
+		Items []BlueprintAnomaly
+	}
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodGet,
+		urlStr:         fmt.Sprintf(apiUrlBlueprintAnomalies, blueprintId),
+		apiResponse:    &apiResonse,
+		unsynchronized: true,
+	})
+	return apiResonse.Items, convertTtaeToAceWherePossible(err)
+}
+
+func (o *Client) getBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]BlueprintNodeAnomalyCounts, error) {
+	var apiResonse struct {
+		Items []BlueprintNodeAnomalyCounts
+	}
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodGet,
+		urlStr:         fmt.Sprintf(apiUrlBlueprintAnomaliesByNode, blueprintId),
+		apiResponse:    &apiResonse,
+		unsynchronized: true,
+	})
+	return apiResonse.Items, convertTtaeToAceWherePossible(err)
+}
+
+func (o *Client) getBlueprintServiceAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]BlueprintServiceAnomalyCount, error) {
+	var apiResonse struct {
+		Items []BlueprintServiceAnomalyCount
+	}
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodGet,
+		urlStr:         fmt.Sprintf(apiUrlBlueprintAnomaliesByService, blueprintId),
+		apiResponse:    &apiResonse,
+		unsynchronized: true,
+	})
+	return apiResonse.Items, convertTtaeToAceWherePossible(err)
 }
