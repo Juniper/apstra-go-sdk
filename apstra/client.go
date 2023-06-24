@@ -327,11 +327,11 @@ func (o *Client) GetBlueprintAnomalies(ctx context.Context, blueprintId ObjectId
 	return o.getBlueprintAnomalies(ctx, blueprintId)
 }
 
-// GetBlueprintNodeAnomalyCounts returns []TwoStageL3ClosNodeAnomalyCounts
+// GetBlueprintNodeAnomalyCounts returns []BlueprintNodeAnomalyCounts
 // which summarize current anomalies on a per-node basis in the blueprint.
 // Nodes which are not currently experiencing an anomaly are not represented in
 // the returned slice.
-func (o *Client) GetBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]TwoStageL3ClosNodeAnomalyCounts, error) {
+func (o *Client) GetBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId ObjectId) ([]BlueprintNodeAnomalyCounts, error) {
 	return o.getBlueprintNodeAnomalyCounts(ctx, blueprintId)
 }
 
