@@ -2,7 +2,6 @@ package apstra
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"net/http"
@@ -21,9 +20,7 @@ type LinkLagParams struct {
 func (o *LinkLagParams) raw() (*rawLinkLagParams, error) {
 	groupLabel := o.GroupLabel
 	if groupLabel == "" {
-		if !uuid.SetNodeID([]byte("apstra")) {
-			return nil, errors.New("uuid.SetNodeID failed")
-		}
+		initUUID()
 		uuid1, err := uuid.NewUUID()
 		if err != nil {
 			return nil, fmt.Errorf("error generating type 1 uuid - %w", err)

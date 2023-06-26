@@ -2,8 +2,10 @@ package apstra
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"io"
 	"net"
+	"sync"
 	"time"
 )
 
@@ -47,4 +49,16 @@ func itemInSlice[A comparable](item A, slice []A) bool {
 		}
 	}
 	return false
+}
+
+var uuidInit bool
+var uuidInitMutex sync.Mutex
+
+func initUUID() {
+	uuidInitMutex.Lock()
+	defer uuidInitMutex.Unlock()
+	if !uuidInit {
+		uuid.SetNodeID([]byte("apstra"))
+		uuidInit = true
+	}
 }
