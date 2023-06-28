@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"io"
 	"net"
@@ -61,4 +62,13 @@ func initUUID() {
 		uuid.SetNodeID([]byte("apstra"))
 		uuidInit = true
 	}
+}
+
+func uuid1AsObjectId() (ObjectId, error) {
+	initUUID()
+	uuid1, err := uuid.NewUUID()
+	if err != nil {
+		return "", fmt.Errorf("failed while invoking uuid>NewUUID() - %w", err)
+	}
+	return ObjectId(uuid1.String()), nil
 }
