@@ -2,53 +2,16 @@ package apstra
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
 const (
-	policyTypeNameBatch           = "batch"
-	policyTypeNamePipelinPipeline = "pipeline"
+	policyTypeNameBatch      = "batch"
+	policyTypeNamePipeline   = "pipeline"
+	policyTypeBatchSuffix    = " (" + policyTypeNameBatch + ")"
+	policyTypePipelineSuffix = " (" + policyTypeNamePipeline + ")"
 )
-
-//	"AttachSingleVlan"
-// "Virtual Network (Single)"
-// "Add a single VLAN to interfaces, as tagged or untagged."
-
-//	"AttachMultipleVLAN"
-// "Virtual Network (Multiple)"
-// "Add a list of VLANs to interfaces, as tagged or untagged."
-
-//	"AttachLogicalLink"
-// "IP Link"
-// "Build an IP link between a fabric node and a generic system. This primitive uses AOS resource pool \"Link IPs - To Generic\" by default to dynamically allocate an IP endpoint (/31) on each side of the link. To allocate different IP endpoints, navigate under Routing Zone>Subinterfaces Table. Can be assigned to physical interfaces or single-chassis LAGs (not applicable to ESI LAG or MLAG interfaces)."
-
-//	"AttachStaticRoute"
-// "Static Route"
-// "Create a static route to user defined subnet via next hop derived from either IP link or VN endpoint."
-
-//	"AttachCustomStaticRoute"
-// "Custom Static Route"
-// "Create a static route with user defined next hop and destination network."
-
-//	"AttachIpEndpointWithBgpNsxt"
-// "BGP Peering (IP Endpoint)"
-// "Create a BGP peering session with a user-specified BGP neighbor addressed peer."
-
-// 	"AttachBgpOverSubinterfacesOrSvi"
-// "BGP Peering (Generic System)"
-// "Create a BGP peering session with Generic Systems inherited from AOS Generic System properties such as loopback and ASN (addressed, or link-local peer). Static route is automatically created when selecting loopback peering."
-
-//	"AttachBgpWithPrefixPeeringForSviOrSubinterface"
-// "Dynamic BGP Peering"
-// "Configure dynamic BGP peering with IP prefix specified."
-
-//	"AttachExistingRoutingPolicy"
-// "Routing Policy"
-// "Allocate routing policy to specific BGP sessions."
-
-// "AttachRoutingZoneConstraint"
-// "Routing Zone Constraint"
-// "Assign a Routing Zone Constraint"
 
 type XConnectivityTemplate struct {
 	Id          *ObjectId
@@ -66,18 +29,11 @@ type xConnectivityTemplatePrimitiveUserData struct {
 	Positions []int `json:"positions"`
 }
 
-type xConnectivityTemplateAttributes interface {
-	raw() (json.RawMessage, error)
-	policyTypeName() string
-	label() string
-	description() string
-}
-
 type xConnectivityTemplatePrimitive struct {
 	id          *ObjectId
 	userData    *xConnectivityTemplatePrimitiveUserData
 	attributes  xConnectivityTemplateAttributes
-	subPolicies []*xConnectivityTemplatePrimitive // batch pointers
+	subpolicies []*xConnectivityTemplatePrimitive // batch pointers
 	batchId     *ObjectId
 	pipelineId  *ObjectId
 }
@@ -93,52 +49,142 @@ type xRawConnectivityTemplatePrimitive struct {
 	Attributes     json.RawMessage                         `json:"attributes"`
 }
 
+type xRawPipelineAttributes struct {
+	FirstSubpolicy  ObjectId    `json:"first_subpolicy"`
+	SecondSubpolicy *ObjectId   `json:"second_subpolicy"`
+	Resolver        interface{} `json:"resolver"` // what is this?
+}
+
 //func (o xConnectivityTemplatePrimitive) id() ObjectId {
 //	id, err := uuid.NewUUID()
 //	id.ClockSequence()
 //}
 
-func (o xConnectivityTemplatePrimitive) raw(root bool, pl string, pd string, tags []string, batchMembers []xRawConnectivityTemplatePrimitive) ([]xRawConnectivityTemplatePrimitive, error) {
-	if root && len(o.subPolicies) == 0 {
-		// root batch should always have sub-policies
-		return nil, fmt.Errorf("cannot render Connectivity Template with no primitives")
+func rawBatch(description, label string, tags []string, subpolicies []*xConnectivityTemplatePrimitive) ([]xRawConnectivityTemplatePrimitive, error) {
+	id, err := uuid1AsObjectId()
+	if err != nil {
+		return nil, err
 	}
 
-	batchId := o.batchId
-	if batchId == nil {
-		uuid, err := uuid1AsObjectId()
+	// build downstream pipelines and collect their IDs
+	var pipelines []xRawConnectivityTemplatePrimitive
+	subpolicyIds := make([]ObjectId, len(subpolicies))
+	for i, subpolicy := range subpolicies {
+		pipelineSlice, err := subpolicy.rawPipeline()
 		if err != nil {
 			return nil, err
 		}
-		batchId = &uuid
+
+		subpolicyIds[i] = pipelineSlice[0].Id
+		pipelines = append(pipelines, pipelineSlice...)
 	}
 
-	batchPrimitive := xRawConnectivityTemplatePrimitive{
-		Id:             *batchId,
-		Label:          pl,
-		Description:    pd,
-		Tags:           tags,
-		UserData:       nil, // todo fix after batch members fully populated
-		Visible:        root,
-		PolicyTypeName: policyTypeNameBatch,
-		Attributes:     nil,
+	rawAttributes, err := json.Marshal(&struct {
+		Subpolicies []ObjectId `json:"subpolicies"`
+	}{
+		Subpolicies: subpolicyIds,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed marshaling subpolicy ids for batch - %w", err)
 	}
-	_ = batchPrimitive
-
-	var result []xRawConnectivityTemplatePrimitive
-	_ = result
 
 	batch := xRawConnectivityTemplatePrimitive{
-		Id:             "",
-		Label:          "",
-		Description:    "",
-		Tags:           nil,
-		UserData:       nil,
-		Visible:        false,
-		PolicyTypeName: "",
-		Attributes:     nil,
+		Description:    description,
+		Tags:           tags,
+		Label:          label,
+		PolicyTypeName: policyTypeNameBatch,
+		Attributes:     rawAttributes,
+		Id:             id,
 	}
-	_ = batch
 
-	return nil, nil
+	return append([]xRawConnectivityTemplatePrimitive{batch}, pipelines...), nil
+}
+
+// raw returns []xRawConnectivityTemplatePrimitive consisting of:
+// - a pipeline policy element
+// - the actual policy element
+// - if there are any children, a batch policy element containing downstream primitives
+func (o *xConnectivityTemplatePrimitive) rawPipeline() ([]xRawConnectivityTemplatePrimitive, error) {
+	err := o.SetIds()
+	if err != nil {
+		return nil, err
+	}
+
+	if o.attributes == nil {
+		return nil, errors.New("rawPipeline() invoked with nil attributes")
+	}
+
+	attributes := o.attributes
+	rawAttributes, err := attributes.raw()
+	if err != nil {
+		return nil, err
+	}
+
+	// "actual"
+	actual := xRawConnectivityTemplatePrimitive{
+		Description:    attributes.description(),
+		Tags:           []string{}, // always empty slice
+		Label:          attributes.label(),
+		PolicyTypeName: attributes.policyTypeName(),
+		Attributes:     rawAttributes,
+		Id:             *o.id,
+	}
+
+	var secondSubpolicy *ObjectId
+	if len(o.subpolicies) > 0 {
+		secondSubpolicy = o.batchId
+	}
+
+	pipelineAttributes := xRawPipelineAttributes{
+		FirstSubpolicy:  *o.id,
+		SecondSubpolicy: secondSubpolicy,
+		Resolver:        nil,
+	}
+	rawPipelineAttribtes, err := json.Marshal(&pipelineAttributes)
+	if err != nil {
+		return nil, fmt.Errorf("failed marshaling pipelineAttributes - %w", err)
+	}
+
+	pipeline := xRawConnectivityTemplatePrimitive{
+		Description:    attributes.description(),
+		Tags:           []string{}, // always empty slice
+		Label:          attributes.label() + policyTypePipelineSuffix,
+		PolicyTypeName: policyTypeNamePipeline,
+		Attributes:     rawPipelineAttribtes,
+		Id:             *o.pipelineId,
+	}
+
+	result := []xRawConnectivityTemplatePrimitive{pipeline, actual}
+
+	if len(o.subpolicies) > 0 {
+		batchPolicies, err := rawBatch(attributes.description(), attributes.label(), []string{}, o.subpolicies)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, batchPolicies...)
+	}
+
+	return result, nil
+}
+
+func (o *xConnectivityTemplatePrimitive) SetIds() error {
+	if o.id == nil {
+		uuid, err := uuid1AsObjectId()
+		if err != nil {
+			return err
+		}
+		o.id = &uuid
+	}
+
+	if o.pipelineId == nil {
+		uuid := *o.id + policyTypePipelineSuffix
+		o.pipelineId = &uuid
+	}
+
+	if o.batchId == nil && len(o.subpolicies) > 0 {
+		uuid := *o.id + policyTypeBatchSuffix
+		o.batchId = &uuid
+	}
+
+	return nil
 }
