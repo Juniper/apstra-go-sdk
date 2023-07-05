@@ -149,7 +149,7 @@ func (o ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) label() string
 }
 
 func (o ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) description() string {
-	return "Build an IP link between a fabric node and a generic system. This primitive uses AOS resource pool \"Link IPs - To Generic\" by default to dynamically allocate an IP endpoint (/31) on each side of the link. To allocate different IP endpoints, navigate under Routing Zone>Subinterfaces Table. Can be assigned to physical interfaces or single-chassis LAGs (not applicable to ESI LAG or MLAG interfaces)."
+	return "Build an IP link between a fabric node and a generic system. This primitive uses AOS resource pool \"Link IPs - To Generic\" by default to dynamically allocate an IP endpoint (/31) on each side of the link. To allocate different IP endpoints, navigate under Routing Zone>Subinterfaces Table."
 }
 
 //	"AttachStaticRoute"
@@ -242,16 +242,35 @@ func (o ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) 
 }
 
 func (o ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) description() string {
-	return "Create a BGP peering session with Generic Systems inherited from AOS Generic System properties such as loopback and ASN (addressed, or link-local peer). Static route is automatically created when selecting loopback peering."
+	return "Create a BGP peering session with Generic Systems inherited from AOS Generic System properties such as loopback and ASN (addressed, or link-local peer)."
 }
 
 //	"AttachBgpWithPrefixPeeringForSviOrSubinterface"
 // "Dynamic BGP Peering"
 // "Configure dynamic BGP peering with IP prefix specified."
 
-//	"AttachExistingRoutingPolicy"
-// "Routing Policy"
-// "Allocate routing policy to specific BGP sessions."
+// "AttachExistingRoutingPolicy"
+var _ xConnectivityTemplateAttributes = ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
+
+type ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
+	RpToAttach string `json:"rp_to_attach"`
+}
+
+func (o ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) raw() (json.RawMessage, error) {
+	return json.Marshal(&o)
+}
+
+func (o ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) policyTypeName() string {
+	return "AttachExistingRoutingPolicy"
+}
+
+func (o ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) label() string {
+	return "Routing Policy"
+}
+
+func (o ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) description() string {
+	return "Allocate routing policy to specific BGP sessions."
+}
 
 // "AttachRoutingZoneConstraint"
 // "Routing Zone Constraint"
