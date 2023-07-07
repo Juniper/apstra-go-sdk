@@ -4,20 +4,50 @@ import "encoding/json"
 
 type xConnectivityTemplateAttributes interface {
 	raw() (json.RawMessage, error)
-	policyTypeName() string
+	policyTypeName() CtPrimitivePolicyTypeName
 	label() string
 	description() string
+	fromRawJson(json.RawMessage) error
 }
 
+//// Batch
+//var _ xConnectivityTemplateAttributes = ConnectivityTemplatePrimitiveAttributesBatch
+//
+//type ConnectivityTemplatePrimitiveAttributesBatch struct {
+//	Subpolicies []ObjectId `json:"subpolicies"`
+//}
+//
+//func (o ConnectivityTemplatePrimitiveAttributesBatch) raw() (json.RawMessage, error) {
+//	return json.Marshal(&o)
+//}
+//
+//func (o ConnectivityTemplatePrimitiveAttributesBatch) policyTypeName() CtPrimitivePolicyTypeName {
+//	return CtPrimitivePolicyTypeNameBatch
+//}
+//
+//func (o ConnectivityTemplatePrimitiveAttributesBatch) label() string {
+//	//TODO implement me
+//	panic("implement me")
+//}
+//
+//func (o ConnectivityTemplatePrimitiveAttributesBatch) description() string {
+//	//TODO implement me
+//	panic("implement me")
+//}
+
 // AttachSingleVlan
-var _ xConnectivityTemplateAttributes = ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{}
+var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachSingleVlan struct {
 	Tagged   bool
 	VnNodeId *ObjectId
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) raw() (json.RawMessage, error) {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) fromRawJson(in json.RawMessage) error {
+	return json.Unmarshal(in, o)
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) raw() (json.RawMessage, error) {
 	var tagType string
 	if o.Tagged {
 		tagType = "vlan_tagged"
@@ -36,27 +66,31 @@ func (o ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) raw() (json.Raw
 	return json.Marshal(&raw)
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) policyTypeName() string {
-	return "AttachSingleVlan"
+func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachSingleVlan
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) label() string {
 	return "Virtual Network (Single)"
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) description() string {
 	return "Add a single VLAN to interfaces, as tagged or untagged."
 }
 
 // AttachMultipleVLAN
-var _ xConnectivityTemplateAttributes = ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan{}
+var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan struct {
 	UntaggedVnNodeId *ObjectId
 	TaggedVnNodeIds  []ObjectId
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) raw() (json.RawMessage, error) {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) fromRawJson(in json.RawMessage) error {
+	return json.Unmarshal(in, o)
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) raw() (json.RawMessage, error) {
 	raw := struct {
 		UntaggedVnNodeId *ObjectId  `json:"untagged_vn_node_id"`
 		TaggedVnNodeIds  []ObjectId `json:"tagged_vn_node_ids"`
@@ -68,20 +102,20 @@ func (o ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) raw() (json.R
 	return json.Marshal(&raw)
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) policyTypeName() string {
-	return "AttachMultipleVLAN"
+func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachMultipleVLAN
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) label() string {
 	return "Virtual Network (Multiple)"
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) description() string {
 	return "Add a list of VLANs to interfaces, as tagged or untagged."
 }
 
 // AttachLogicalLink
-var _ xConnectivityTemplateAttributes = ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{}
+var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	SecurityZone            *ObjectId
@@ -91,7 +125,11 @@ type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	IPv6AddressingLinkLocal bool
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) raw() (json.RawMessage, error) {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) fromRawJson(in json.RawMessage) error {
+	return json.Unmarshal(in, o)
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) raw() (json.RawMessage, error) {
 	var interfaceType string
 	switch o.Tagged {
 	case true:
@@ -140,15 +178,15 @@ func (o ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) raw() (json.Ra
 	return json.Marshal(&raw)
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) policyTypeName() string {
-	return "AttachLogicalLink"
+func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachLogicalLink
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) label() string {
 	return "IP Link"
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) description() string {
 	return "Build an IP link between a fabric node and a generic system. This primitive uses AOS resource pool \"Link IPs - To Generic\" by default to dynamically allocate an IP endpoint (/31) on each side of the link. To allocate different IP endpoints, navigate under Routing Zone>Subinterfaces Table."
 }
 
@@ -165,7 +203,7 @@ func (o ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) description() 
 // "Create a BGP peering session with a user-specified BGP neighbor addressed peer."
 
 // AttachBgpOverSubinterfacesOrSvi
-var _ xConnectivityTemplateAttributes = ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{}
+var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi struct {
 	Ipv4Safi              bool
@@ -183,7 +221,11 @@ type ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi stru
 	NeighborAsnDynamic    bool // 'static', 'dynamic'
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) raw() (json.RawMessage, error) {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) fromRawJson(in json.RawMessage) error {
+	return json.Unmarshal(in, o)
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) raw() (json.RawMessage, error) {
 	var peerFrom string
 	switch o.PeerFromLoopback {
 	case true:
@@ -233,15 +275,15 @@ func (o ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) 
 	return json.Marshal(&raw)
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) policyTypeName() string {
-	return "AttachBgpOverSubinterfacesOrSvi"
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) label() string {
 	return "BGP Peering (Generic System)"
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) description() string {
 	return "Create a BGP peering session with Generic Systems inherited from AOS Generic System properties such as loopback and ASN (addressed, or link-local peer)."
 }
 
@@ -250,25 +292,29 @@ func (o ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) 
 // "Configure dynamic BGP peering with IP prefix specified."
 
 // "AttachExistingRoutingPolicy"
-var _ xConnectivityTemplateAttributes = ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
+var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
 	RpToAttach string `json:"rp_to_attach"`
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) raw() (json.RawMessage, error) {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) fromRawJson(in json.RawMessage) error {
+	return json.Unmarshal(in, o)
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) raw() (json.RawMessage, error) {
 	return json.Marshal(&o)
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) policyTypeName() string {
-	return "AttachExistingRoutingPolicy"
+func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachExistingRoutingPolicy
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) label() string {
 	return "Routing Policy"
 }
 
-func (o ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) description() string {
 	return "Allocate routing policy to specific BGP sessions."
 }
 
