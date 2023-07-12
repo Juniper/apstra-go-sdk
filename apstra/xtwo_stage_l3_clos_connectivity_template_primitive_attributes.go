@@ -178,57 +178,99 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) description()
 // "AttachStaticRoute"
 var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{}
 
-type ConnectivityTemplatePrimitiveAttributesAttachStaticRoute struct{} // todo
-
-func (c ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) raw() (json.RawMessage, error) {
-	//TODO implement me
-	panic("implement me")
+type ConnectivityTemplatePrimitiveAttributesAttachStaticRoute struct {
+	ShareIpEndpoint bool
+	Network         *net.IPNet
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) policyTypeName() CtPrimitivePolicyTypeName {
-	//TODO implement me
-	panic("implement me")
+func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) raw() (json.RawMessage, error) {
+	var network *string
+	if o.Network != nil {
+		s := o.Network.String()
+		network = &s
+	}
+
+	raw := rawConnectivityTemplatePrimitiveAttributesAttachStaticRoute{
+		ShareIpEndpoint: o.ShareIpEndpoint,
+		Network:         network,
+	}
+
+	return json.Marshal(&raw)
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachStaticRoute
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) label() string {
 	return "Static Route"
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) description() string {
 	return "Create a static route to user defined subnet via next hop derived from either IP link or VN endpoint."
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) fromRawJson(in json.RawMessage) error {
-	//TODO implement me
-	panic("implement me")
+func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) fromRawJson(in json.RawMessage) error {
+	var raw rawConnectivityTemplatePrimitiveAttributesAttachStaticRoute
+	err := json.Unmarshal(in, &raw)
+	if err != nil {
+		return err
+	}
+
+	return raw.polish(o)
 }
 
 // "AttachCustomStaticRoute"
 var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute{}
 
-type ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute struct{} // todo
-
-func (c ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) raw() (json.RawMessage, error) {
-	//TODO implement me
-	panic("implement me")
+type ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute struct {
+	Network      *net.IPNet
+	NextHop      net.IP
+	SecurityZone *ObjectId
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) policyTypeName() CtPrimitivePolicyTypeName {
-	//TODO implement me
-	panic("implement me")
+func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) raw() (json.RawMessage, error) {
+	var network, nexthop *string
+
+	if o.Network != nil {
+		s := o.Network.String()
+		network = &s
+	}
+
+	if o.NextHop != nil {
+		s := o.NextHop.String()
+		nexthop = &s
+	}
+
+	raw := rawConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute{
+		Network:      network,
+		NextHop:      nexthop,
+		SecurityZone: o.SecurityZone,
+	}
+
+	return json.Marshal(&raw)
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachCustomStaticRoute
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) label() string {
 	return "Custom Static Route"
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) description() string {
 	return "Create a static route with user defined next hop and destination network."
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) fromRawJson(in json.RawMessage) error {
-	//TODO implement me
-	panic("implement me")
+func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) fromRawJson(in json.RawMessage) error {
+	var raw rawConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute
+	err := json.Unmarshal(in, &raw)
+	if err != nil {
+		return err
+	}
+
+	return raw.polish(o)
 }
 
 // AttachIpEndpointWithBgpNsxt
@@ -244,7 +286,7 @@ type ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt struct {
 	Ipv6Safi           bool
 	Keepalive          *uint16
 	LocalAsn           *uint32
-	NeighborAsnDynamic bool // 'static', 'dynamic'
+	NeighborAsnDynamic bool
 	Password           *string
 	Ttl                uint8
 }
@@ -260,7 +302,39 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) fro
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) raw() (json.RawMessage, error) {
-	raw := rawConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt{}
+	var ipv4Addr, ipv6Addr *string
+
+	if len(o.Ipv4Addr) != 0 {
+		s := o.Ipv4Addr.String()
+		ipv4Addr = &s
+	}
+
+	if len(o.Ipv6Addr) != 0 {
+		s := o.Ipv6Addr.String()
+		ipv6Addr = &s
+	}
+
+	var neighborAsnType string
+	if o.NeighborAsnDynamic {
+		neighborAsnType = "dynamic"
+	} else {
+		neighborAsnType = "static"
+	}
+
+	raw := rawConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt{
+		Asn:             o.Asn,
+		Bfd:             o.Bfd,
+		Holdtime:        o.Holdtime,
+		Ipv4Addr:        ipv4Addr,
+		Ipv4Safi:        o.Ipv4Safi,
+		Ipv6Addr:        ipv6Addr,
+		Ipv6Safi:        o.Ipv6Safi,
+		Keepalive:       o.Keepalive,
+		LocalAsn:        o.LocalAsn,
+		NeighborAsnType: neighborAsnType,
+		Password:        o.Password,
+		Ttl:             o.Ttl,
+	}
 
 	return json.Marshal(&raw)
 }
@@ -297,18 +371,16 @@ type ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi stru
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) fromRawJson(in json.RawMessage) error {
+	var raw rawConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi
+	err := json.Unmarshal(in, &raw)
+	if err != nil {
+		return err
+	}
+
 	return json.Unmarshal(in, o)
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) raw() (json.RawMessage, error) {
-	var peerFrom string
-	switch o.PeerFromLoopback {
-	case true:
-		peerFrom = "loopback"
-	case false:
-		peerFrom = "interface"
-	}
-
 	var neighborAsnType string
 	switch o.NeighborAsnDynamic {
 	case true:
@@ -317,35 +389,28 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
 		neighborAsnType = "static"
 	}
 
-	// todo use rawConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi here
-	raw := struct {
-		Ipv4Safi              bool                                     `json:"ipv4_safi"`
-		Ipv6Safi              bool                                     `json:"ipv6_safi"`
-		TTL                   uint8                                    `json:"ttl"`
-		BFD                   bool                                     `json:"bfd"`
-		Password              *string                                  `json:"password"`
-		Keepalive             *uint16                                  `json:"keepalive_timer"`
-		Holdtime              *uint16                                  `json:"holdtime_timer"`
-		LocalAsn              *uint32                                  `json:"local_asn"`
-		NeighborAsnType       string                                   `json:"neighbor_asn_type"`
-		PeerFrom              string                                   `json:"peer_from"`
-		PeerTo                ctPrimitiveBgpPeerTo                     `json:"peer_to"`
-		SessionAddressingIpv4 ctPrimitiveIPv4ProtocolSessionAddressing `json:"session_addressing_ipv4"`
-		SessionAddressingIpv6 ctPrimitiveIPv6ProtocolSessionAddressing `json:"session_addressing_ipv6"`
-	}{
+	var peerFrom string
+	switch o.PeerFromLoopback {
+	case true:
+		peerFrom = "loopback"
+	case false:
+		peerFrom = "interface"
+	}
+
+	raw := rawConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{
+		Bfd:                   o.Bfd,
+		Holdtime:              o.Holdtime,
 		Ipv4Safi:              o.Ipv4Safi,
 		Ipv6Safi:              o.Ipv6Safi,
-		TTL:                   o.Ttl,
-		BFD:                   o.Bfd,
-		Password:              o.Password,
 		Keepalive:             o.Keepalive,
-		Holdtime:              o.Holdtime,
 		LocalAsn:              o.LocalAsn,
 		NeighborAsnType:       neighborAsnType,
+		Password:              o.Password,
 		PeerFrom:              peerFrom,
 		PeerTo:                o.PeerTo.raw(),
 		SessionAddressingIpv4: o.SessionAddressingIpv4.raw(),
 		SessionAddressingIpv6: o.SessionAddressingIpv6.raw(),
+		Ttl:                   o.Ttl,
 	}
 
 	return json.Marshal(&raw)
@@ -366,29 +431,72 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
 // AttachBgpWithPrefixPeeringForSviOrSubinterface
 var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{}
 
-type ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface struct{} // todo
-
-func (c ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) raw() (json.RawMessage, error) {
-	//TODO implement me
-	panic("implement me")
+type ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface struct {
+	Bfd                   bool
+	Holdtime              *uint16
+	Ipv4Safi              bool
+	Ipv6Safi              bool
+	Keepalive             *uint16
+	LocalAsn              *uint32
+	Password              *string
+	PrefixNeighborIpv4    *net.IPNet
+	PrefixNeighborIpv6    *net.IPNet
+	SessionAddressingIpv4 bool
+	SessionAddressingIpv6 bool
+	Ttl                   int
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) policyTypeName() CtPrimitivePolicyTypeName {
-	//TODO implement me
-	panic("implement me")
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) raw() (json.RawMessage, error) {
+	var prefixNeighborIpv4, prefixNeighborIpv6 *string
+
+	if o.PrefixNeighborIpv4 != nil {
+		s := o.PrefixNeighborIpv4.String()
+		prefixNeighborIpv4 = &s
+	}
+
+	if o.PrefixNeighborIpv6 != nil {
+		s := o.PrefixNeighborIpv6.String()
+		prefixNeighborIpv6 = &s
+	}
+
+	raw := rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{
+		Bfd:                   o.Bfd,
+		Holdtime:              o.Holdtime,
+		Ipv4Safi:              o.Ipv4Safi,
+		Ipv6Safi:              o.Ipv6Safi,
+		Keepalive:             o.Keepalive,
+		LocalAsn:              o.LocalAsn,
+		Password:              o.Password,
+		PrefixNeighborIpv4:    prefixNeighborIpv4,
+		PrefixNeighborIpv6:    prefixNeighborIpv6,
+		SessionAddressingIpv4: o.SessionAddressingIpv4,
+		SessionAddressingIpv6: o.SessionAddressingIpv6,
+		Ttl:                   o.Ttl,
+	}
+
+	return json.Marshal(&raw)
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) label() string {
 	return "Dynamic BGP Peering"
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) description() string {
 	return "Configure dynamic BGP peering with IP prefix specified."
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) fromRawJson(in json.RawMessage) error {
-	//TODO implement me
-	panic("implement me")
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) fromRawJson(in json.RawMessage) error {
+	var raw rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface
+	err := json.Unmarshal(in, &raw)
+	if err != nil {
+		return err
+	}
+
+	return raw.polish(o)
 }
 
 // "AttachExistingRoutingPolicy"
@@ -409,7 +517,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) fro
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) raw() (json.RawMessage, error) {
-	return json.Marshal(&o)
+	raw := rawConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{
+		RpToAttach: o.RpToAttach,
+	}
+	return json.Marshal(&raw)
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) policyTypeName() CtPrimitivePolicyTypeName {
@@ -427,29 +538,38 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) des
 // "AttachRoutingZoneConstraint"
 var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{}
 
-type ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct{} // todo
-
-func (c ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) raw() (json.RawMessage, error) {
-	//TODO implement me
-	panic("implement me")
+type ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct {
+	RoutingZoneConstraint *string
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) policyTypeName() CtPrimitivePolicyTypeName {
-	//TODO implement me
-	panic("implement me")
+func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) raw() (json.RawMessage, error) {
+	raw := rawConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{
+		RoutingZoneConstraint: o.RoutingZoneConstraint,
+	}
+
+	return json.Marshal(&raw)
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) policyTypeName() CtPrimitivePolicyTypeName {
+	return CtPrimitivePolicyTypeNameAttachRoutingZoneConstraint
+}
+
+func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) label() string {
 	return "Routing Zone Constraint"
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) description() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) description() string {
 	return "Assign a Routing Zone Constraint"
 }
 
-func (c ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) fromRawJson(in json.RawMessage) error {
-	//TODO implement me
-	panic("implement me")
+func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) fromRawJson(in json.RawMessage) error {
+	var raw rawConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint
+	err := json.Unmarshal(in, &raw)
+	if err != nil {
+		return err
+	}
+
+	return raw.polish(o)
 }
 
 type rawConnectivityTemplatePrimitiveAttributesAttachSingleVlan struct {
@@ -534,16 +654,55 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink) polish(t *C
 	return nil
 }
 
-type rawConnectivityTemplatePrimitiveAttributesAttachStaticRoute struct{}
-
-func (o rawConnectivityTemplatePrimitiveAttributesAttachStaticRoute) polish(t *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) error {
-	panic("rawConnectivityTemplatePrimitiveAttributesAttachStaticRoute.polish() not implemented")
+type rawConnectivityTemplatePrimitiveAttributesAttachStaticRoute struct {
+	ShareIpEndpoint bool    `json:"share_ip_endpoint"`
+	Network         *string `json:"network"`
 }
 
-type rawConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute struct{}
+func (o rawConnectivityTemplatePrimitiveAttributesAttachStaticRoute) polish(t *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) error {
+	var network *net.IPNet
+
+	if o.Network != nil {
+		var err error
+		_, network, err = net.ParseCIDR(*o.Network)
+		if err != nil {
+			return err
+		}
+	}
+
+	t.ShareIpEndpoint = o.ShareIpEndpoint
+	t.Network = network
+
+	return nil
+}
+
+type rawConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute struct {
+	Network      *string   `json:"network"`
+	NextHop      *string   `json:"next_hop"`
+	SecurityZone *ObjectId `json:"security_zone"`
+}
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) polish(t *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) error {
-	panic("rawConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute.polish() not implemented")
+	var network *net.IPNet
+	var nextHop net.IP
+
+	if o.Network != nil {
+		var err error
+		_, network, err = net.ParseCIDR(*o.Network)
+		if err != nil {
+			return err
+		}
+	}
+
+	if o.NextHop != nil {
+		nextHop = net.ParseIP(*o.NextHop)
+	}
+
+	t.Network = network
+	t.NextHop = nextHop
+	t.SecurityZone = o.SecurityZone
+
+	return nil
 }
 
 type rawConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt struct {
@@ -597,19 +756,19 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) p
 }
 
 type rawConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi struct {
-	Bfd                   bool                 `json:"bfd"`
-	Holdtime              *uint16              `json:"holdtime_timer"`
-	Ipv4Safi              bool                 `json:"ipv4_safi"`
-	Ipv6Safi              bool                 `json:"ipv6_safi"`
-	Keepalive             *uint16              `json:"keepalive_timer"`
-	LocalAsn              *uint32              `json:"local_asn"`
-	NeighborAsnType       string               `json:"neighbor_asn_type"` // static / dynamic
-	Password              *string              `json:"password"`
-	PeerFrom              string               `json:"peer_from"`
-	PeerTo                ctPrimitiveBgpPeerTo `json:"peer_to"`
-	SessionAddressingIpv4 string               `json:"session_addressing_ipv4"`
-	SessionAddressingIpv6 string               `json:"session_addressing_ipv6"`
-	Ttl                   uint8                `json:"ttl"`
+	Bfd                   bool                                     `json:"bfd"`
+	Holdtime              *uint16                                  `json:"holdtime_timer"`
+	Ipv4Safi              bool                                     `json:"ipv4_safi"`
+	Ipv6Safi              bool                                     `json:"ipv6_safi"`
+	Keepalive             *uint16                                  `json:"keepalive_timer"`
+	LocalAsn              *uint32                                  `json:"local_asn"`
+	NeighborAsnType       string                                   `json:"neighbor_asn_type"` // static / dynamic
+	Password              *string                                  `json:"password"`
+	PeerFrom              string                                   `json:"peer_from"`
+	PeerTo                ctPrimitiveBgpPeerTo                     `json:"peer_to"`
+	SessionAddressingIpv4 ctPrimitiveIPv4ProtocolSessionAddressing `json:"session_addressing_ipv4"`
+	SessionAddressingIpv6 ctPrimitiveIPv6ProtocolSessionAddressing `json:"session_addressing_ipv6"`
+	Ttl                   uint8                                    `json:"ttl"`
 }
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) polish(t *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) error {
@@ -639,13 +798,13 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSv
 	}
 
 	var ipv4Addressing CtPrimitiveIPv4ProtocolSessionAddressing
-	err = ipv4Addressing.FromString(o.SessionAddressingIpv4)
+	err = ipv4Addressing.FromString(string(o.SessionAddressingIpv4))
 	if err != nil {
 		return err
 	}
 
 	var ipv6Addressing CtPrimitiveIPv6ProtocolSessionAddressing
-	err = ipv6Addressing.FromString(o.SessionAddressingIpv6)
+	err = ipv6Addressing.FromString(string(o.SessionAddressingIpv6))
 	if err != nil {
 		return err
 	}
@@ -667,10 +826,53 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSv
 	return nil
 }
 
-type rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface struct{}
+type rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface struct {
+	Bfd                   bool    `json:"bfd"`
+	Holdtime              *uint16 `json:"holdtime_timer"`
+	Ipv4Safi              bool    `json:"ipv4_safi"`
+	Ipv6Safi              bool    `json:"ipv6_safi"`
+	Keepalive             *uint16 `json:"keepalive_timer"`
+	LocalAsn              *uint32 `json:"local_asn"`
+	Password              *string `json:"password"`
+	PrefixNeighborIpv4    *string `json:"prefix_neighbor_ipv4"`
+	PrefixNeighborIpv6    *string `json:"prefix_neighbor_ipv6"`
+	SessionAddressingIpv4 bool    `json:"session_addressing_ipv4"`
+	SessionAddressingIpv6 bool    `json:"session_addressing_ipv6"`
+	Ttl                   int     `json:"ttl"`
+}
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) polish(t *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) error {
-	panic("rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface.polish() not implemented")
+	var prefixNeighborIpv4, prefixNeighborIpv6 *net.IPNet
+	var err error
+
+	if o.PrefixNeighborIpv4 != nil {
+		_, prefixNeighborIpv4, err = net.ParseCIDR(*o.PrefixNeighborIpv4)
+		if err != nil {
+			return err
+		}
+	}
+
+	if o.PrefixNeighborIpv6 != nil {
+		_, prefixNeighborIpv6, err = net.ParseCIDR(*o.PrefixNeighborIpv6)
+		if err != nil {
+			return err
+		}
+	}
+
+	t.Bfd = o.Bfd
+	t.Holdtime = o.Holdtime
+	t.Ipv4Safi = o.Ipv4Safi
+	t.Ipv6Safi = o.Ipv6Safi
+	t.Keepalive = o.Keepalive
+	t.LocalAsn = o.LocalAsn
+	t.Password = o.Password
+	t.PrefixNeighborIpv4 = prefixNeighborIpv4
+	t.PrefixNeighborIpv6 = prefixNeighborIpv6
+	t.SessionAddressingIpv4 = o.SessionAddressingIpv4
+	t.SessionAddressingIpv6 = o.SessionAddressingIpv6
+	t.Ttl = o.Ttl
+
+	return nil
 }
 
 type rawConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
@@ -683,8 +885,12 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) p
 	return nil
 }
 
-type rawConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct{}
+type rawConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct {
+	RoutingZoneConstraint *string `json:"routing_zone_constraint"`
+}
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) polish(t *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) error {
-	panic("rawConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint.polish() not implemented")
+	t.RoutingZoneConstraint = o.RoutingZoneConstraint
+
+	return nil
 }
