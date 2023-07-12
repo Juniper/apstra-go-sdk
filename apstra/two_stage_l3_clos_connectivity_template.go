@@ -162,7 +162,7 @@ func (o *rawConnectivityTemplate) polish() (*ConnectivityTemplate, error) {
 			rootBatch.Id, *rootBatch.UserData, err)
 	}
 
-	var attributes rawBatchattributes
+	var attributes rawBatchAttributes
 	err = json.Unmarshal(rootBatch.Attributes, &attributes)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling root batch %q attributes %q - %w",
@@ -299,6 +299,14 @@ func (o *connectivityTemplatePrimitive) SetIds() error {
 	return nil
 }
 
+// A rawConnectivityTemplatePolicy is the base building block of a CT primitive
+// (CT building block in the web UI) in the Apstra API. Each CT primitive is
+// composed of 2 or 3 (when it has children) rawConnectivityTemplatePolicy
+// structs.
+//
+// The Attributes element can take any of 12 forms: "pipeline", "batch", or
+// one of the 10 implementations of connectivityTemplateAttributes. "piplline"
+// and "batch" provide tree structure which forms a CT as seen in the web UI.
 type rawConnectivityTemplatePolicy struct {
 	Id             ObjectId                  `json:"id"`
 	Label          string                    `json:"label"`
@@ -341,10 +349,19 @@ func (o rawConnectivityTemplatePolicy) attributes() (connectivityTemplateAttribu
 	return result, result.fromRawJson(o.Attributes)
 }
 
-type rawBatchattributes struct {
+// rawBatchAttributes
+// Each "batch" policy, including the root batch keeps a list of child policies.
+// These sub-policies are identified by ID. Each one is a "pipeline" policy.
+type rawBatchAttributes struct {
 	Subpolicies []ObjectId `json:"subpolicies"`
 }
 
+// rawPipelineAttributes
+// each "pipeline" policy identifies an actual CT primitive policy (VLAN, BGP
+// stuff, static route, etc...) by ID in the FirstSubpolicy element. When the
+// CT primitive has child primitives, the SecondSubpolicy element identifies a
+// downstream "batch" policy. When there are no child primitives, SeconSubpolicy
+// is nil.
 type rawPipelineAttributes struct {
 	FirstSubpolicy  ObjectId    `json:"first_subpolicy"`
 	SecondSubpolicy *ObjectId   `json:"second_subpolicy"`
@@ -442,7 +459,7 @@ func parsePrimitiveTreeByPipelineId(pipelineId ObjectId, policyMap map[ObjectId]
 					batch.Id, policyTypeNameBatch, batch.PolicyTypeName)
 			}
 
-			var batchAttributes rawBatchattributes
+			var batchAttributes rawBatchAttributes
 			err = json.Unmarshal(batch.Attributes, &batchAttributes)
 			if err != nil {
 				return nil, fmt.Errorf("failed unmarshaling batch attributes %q for policy %q - %w",

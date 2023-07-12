@@ -55,6 +55,7 @@ func itemInSlice[A comparable](item A, slice []A) bool {
 var uuidInit bool
 var uuidInitMutex sync.Mutex
 
+// initUUID sets the "hardware address" used for generating UUIDv1 strings to "apstra"
 func initUUID() {
 	uuidInitMutex.Lock()
 	defer uuidInitMutex.Unlock()
@@ -64,6 +65,7 @@ func initUUID() {
 	}
 }
 
+// uuid1AsObjectId returns a new UUIDv1 string as an ObjectId
 func uuid1AsObjectId() (ObjectId, error) {
 	initUUID()
 	uuid1, err := uuid.NewUUID()

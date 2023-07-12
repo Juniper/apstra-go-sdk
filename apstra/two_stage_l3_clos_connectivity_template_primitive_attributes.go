@@ -6,6 +6,10 @@ import (
 	"net"
 )
 
+// connectivityTemplateAttributes are the data structures which make the various
+// CT primitives (single VLAN, multiple VLAN, static route, etc...) different
+// from each other. In Apstra 4.1.2 there are 10 CT primitives, so there are 10
+// implementations of the connectivityTemplateAttributes interface.
 type connectivityTemplateAttributes interface {
 	raw() (json.RawMessage, error)
 	policyTypeName() CtPrimitivePolicyTypeName
@@ -175,7 +179,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) description()
 	return "Build an IP link between a fabric node and a generic system. This primitive uses AOS resource pool \"Link IPs - To Generic\" by default to dynamically allocate an IP endpoint (/31) on each side of the link. To allocate different IP endpoints, navigate under Routing Zone>Subinterfaces Table."
 }
 
-// "AttachStaticRoute"
+// AttachStaticRoute
 var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachStaticRoute struct {
@@ -220,7 +224,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) fromRawJson(i
 	return raw.polish(o)
 }
 
-// "AttachCustomStaticRoute"
+// AttachCustomStaticRoute
 var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute struct {
@@ -499,7 +503,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSvi
 	return raw.polish(o)
 }
 
-// "AttachExistingRoutingPolicy"
+// AttachExistingRoutingPolicy
 var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
@@ -535,7 +539,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) des
 	return "Allocate routing policy to specific BGP sessions."
 }
 
-// "AttachRoutingZoneConstraint"
+// AttachRoutingZoneConstraint
 var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct {
@@ -572,9 +576,14 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) fro
 	return raw.polish(o)
 }
 
+// Each implementation of connectivityTemplateAttributes needs a "raw" struct
+// with JSON tags wire-style elements. The 10 "raw" structs follow, each with a
+// `polish()` method. Note that rather than returning a polished struct (or
+// pointer), these methods polish into an existing struct referenced by a caller
+// supplied pointer.
 type rawConnectivityTemplatePrimitiveAttributesAttachSingleVlan struct {
 	VnNodeId *ObjectId `json:"vn_node_id"`
-	TagType  string    `json:"tag_type"` // vlan_tagged / untagged
+	TagType  string    `json:"tag_type"`
 }
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachSingleVlan) polish(t *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) error {
