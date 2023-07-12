@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-type xConnectivityTemplateAttributes interface {
+type connectivityTemplateAttributes interface {
 	raw() (json.RawMessage, error)
 	policyTypeName() CtPrimitivePolicyTypeName
 	label() string
@@ -15,7 +15,7 @@ type xConnectivityTemplateAttributes interface {
 }
 
 // AttachSingleVlan
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachSingleVlan struct {
 	Tagged   bool
@@ -61,7 +61,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) description() 
 }
 
 // AttachMultipleVLAN
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan struct {
 	UntaggedVnNodeId *ObjectId
@@ -100,7 +100,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) description(
 }
 
 // AttachLogicalLink
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	SecurityZone            *ObjectId
@@ -176,7 +176,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) description()
 }
 
 // "AttachStaticRoute"
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachStaticRoute struct {
 	ShareIpEndpoint bool
@@ -221,7 +221,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) fromRawJson(i
 }
 
 // "AttachCustomStaticRoute"
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute struct {
 	Network      *net.IPNet
@@ -274,7 +274,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) fromRaw
 }
 
 // AttachIpEndpointWithBgpNsxt
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt struct {
 	Asn                *uint32
@@ -352,7 +352,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) des
 }
 
 // AttachBgpOverSubinterfacesOrSvi
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi struct {
 	Bfd                   bool
@@ -429,7 +429,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
 }
 
 // AttachBgpWithPrefixPeeringForSviOrSubinterface
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface struct {
 	Bfd                   bool
@@ -500,7 +500,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSvi
 }
 
 // "AttachExistingRoutingPolicy"
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
 	RpToAttach *string `json:"rp_to_attach"`
@@ -536,7 +536,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) des
 }
 
 // "AttachRoutingZoneConstraint"
-var _ xConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{}
+var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct {
 	RoutingZoneConstraint *string

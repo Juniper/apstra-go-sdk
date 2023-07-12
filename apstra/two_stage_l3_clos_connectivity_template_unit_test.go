@@ -2,120 +2,240 @@ package apstra
 
 import (
 	"encoding/json"
-	"log"
 	"testing"
 )
 
-func TestConnectivityTemplateStrings(t *testing.T) {
-	type apiStringIota interface {
-		String() string
-		Int() int
+func TestBgpOverL3Connectivity(t *testing.T) {
+	expected := json.RawMessage(`{
+  "policies": [
+    {
+      "id": "9f6c2ee4-a842-4fc2-979c-afce6c5f0ace",
+      "label": "BGP over L3 connectivity",
+      "description": "this is the description",
+      "tags": [],
+      "visible": true,
+      "policy_type_name": "batch",
+      "attributes": {
+        "subpolicies": [
+          "31e32ddd-98e9-4f74-8fd7-61bbf9501cfd"
+        ]
+      }
+    },
+    {
+      "id": "31e32ddd-98e9-4f74-8fd7-61bbf9501cfd",
+      "label": "IP Link (pipeline)",
+      "description": "Build an IP link between a fabric node and a generic system. This primitive uses AOS resource pool \"Link IPs - To Generic\" by default to dynamically allocate an IP endpoint (/31) on each side of the link. To allocate different IP endpoints, navigate under Routing Zone>Subinterfaces Table.",
+      "tags": [],
+      "visible": false,
+      "policy_type_name": "pipeline",
+      "attributes": {
+        "first_subpolicy": "bac16090-88ff-4f8b-9ee6-79b31078e123",
+        "second_subpolicy": "e4f0ae44-871e-4002-806e-c61e647e5657",
+        "resolver": null
+      }
+    },
+    {
+      "id": "bac16090-88ff-4f8b-9ee6-79b31078e123",
+      "label": "IP Link",
+      "description": "Build an IP link between a fabric node and a generic system. This primitive uses AOS resource pool \"Link IPs - To Generic\" by default to dynamically allocate an IP endpoint (/31) on each side of the link. To allocate different IP endpoints, navigate under Routing Zone>Subinterfaces Table.",
+      "tags": [],
+      "visible": false,
+      "policy_type_name": "AttachLogicalLink",
+      "attributes": {
+        "security_zone": "6k8Wmo0n1h5b_Mbnmbc",
+        "interface_type": "tagged",
+        "vlan_id": 5,
+        "ipv4_addressing_type": "numbered",
+        "ipv6_addressing_type": "link_local"
+      }
+    },
+    {
+      "id": "e4f0ae44-871e-4002-806e-c61e647e5657",
+      "label": "IP Link (batch)",
+      "description": "Build an IP link between a fabric node and a generic system. This primitive uses AOS resource pool \"Link IPs - To Generic\" by default to dynamically allocate an IP endpoint (/31) on each side of the link. To allocate different IP endpoints, navigate under Routing Zone>Subinterfaces Table.",
+      "tags": [],
+      "visible": false,
+      "policy_type_name": "batch",
+      "attributes": {
+        "subpolicies": [
+          "de1474c2-f892-4fa6-bef4-e330ae7f9ac7"
+        ]
+      }
+    },
+    {
+      "id": "de1474c2-f892-4fa6-bef4-e330ae7f9ac7",
+      "label": "BGP Peering (Generic System) (pipeline)",
+      "description": "Create a BGP peering session with Generic Systems inherited from AOS Generic System properties such as loopback and ASN (addressed, or link-local peer).",
+      "tags": [],
+      "visible": false,
+      "policy_type_name": "pipeline",
+      "attributes": {
+        "first_subpolicy": "498b2502-e062-414b-b401-4e88a08ae8c5",
+        "second_subpolicy": "83bd1635-e543-4752-b526-e290b8771285",
+        "resolver": null
+      }
+    },
+    {
+      "id": "498b2502-e062-414b-b401-4e88a08ae8c5",
+      "label": "BGP Peering (Generic System)",
+      "description": "Create a BGP peering session with Generic Systems inherited from AOS Generic System properties such as loopback and ASN (addressed, or link-local peer).",
+      "tags": [],
+      "visible": false,
+      "policy_type_name": "AttachBgpOverSubinterfacesOrSvi",
+      "attributes": {
+        "ipv4_safi": true,
+        "ipv6_safi": false,
+        "ttl": 2,
+        "bfd": false,
+        "password": "foo",
+        "keepalive_timer": 10,
+        "holdtime_timer": 30,
+        "local_asn": 55,
+        "neighbor_asn_type": "static",
+        "peer_from": "interface",
+        "peer_to": "interface_or_ip_endpoint",
+        "session_addressing_ipv4": "addressed",
+        "session_addressing_ipv6": "link_local"
+      }
+    },
+    {
+      "id": "83bd1635-e543-4752-b526-e290b8771285",
+      "label": "BGP Peering (Generic System) (batch)",
+      "description": "Create a BGP peering session with Generic Systems inherited from AOS Generic System properties such as loopback and ASN (addressed, or link-local peer).",
+      "tags": [],
+      "visible": false,
+      "policy_type_name": "batch",
+      "attributes": {
+        "subpolicies": [
+          "8c654b0f-3253-45c6-9d8b-88bcc35fb70b"
+        ]
+      }
+    },
+    {
+      "id": "8c654b0f-3253-45c6-9d8b-88bcc35fb70b",
+      "label": "Routing Policy (pipeline)",
+      "description": "Allocate routing policy to specific BGP sessions.",
+      "tags": [],
+      "visible": false,
+      "policy_type_name": "pipeline",
+      "attributes": {
+        "first_subpolicy": "49f36469-7f10-4b10-9102-83654f3fe6a6",
+        "second_subpolicy": null,
+        "resolver": null
+      }
+    },
+    {
+      "id": "49f36469-7f10-4b10-9102-83654f3fe6a6",
+      "label": "Routing Policy",
+      "description": "Allocate routing policy to specific BGP sessions.",
+      "tags": [],
+      "visible": false,
+      "policy_type_name": "AttachExistingRoutingPolicy",
+      "attributes": {
+        "rp_to_attach": "o-ob0kv9g1yniFpiTco"
+      }
+    }
+  ]
+}`)
+
+	expectedUserData := "{\"isSausage\":true,\"positions\":{\"bac16090-88ff-4f8b-9ee6-79b31078e123\":[290,80,1],\"498b2502-e062-414b-b401-4e88a08ae8c5\":[290,150,1],\"49f36469-7f10-4b10-9102-83654f3fe6a6\":[290,220,1]}}"
+
+	rpId := "o-ob0kv9g1yniFpiTco"
+	attachExistingRoutingPolicy := ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{
+		RpToAttach: &rpId,
+	}
+	rppPipelineId := ObjectId("8c654b0f-3253-45c6-9d8b-88bcc35fb70b")
+	rppId := ObjectId("49f36469-7f10-4b10-9102-83654f3fe6a6")
+	routingPolicyPrimitive := connectivityTemplatePrimitive{
+		id:          &rppId,
+		attributes:  &attachExistingRoutingPolicy,
+		subpolicies: nil,
+		batchId:     nil,
+		pipelineId:  &rppPipelineId,
 	}
 
-	type apiIotaString interface {
-		parse() (int, error)
-		string() string
+	bgpPassword := "foo"
+	keepalive := uint16(10)
+	holdtime := uint16(30)
+	localAsn := uint32(55)
+	attachBgpOverSubinterfacesOrSvi := ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{
+		Ipv4Safi:              true,
+		Ipv6Safi:              false,
+		Ttl:                   2,
+		Bfd:                   false,
+		Password:              &bgpPassword,
+		Keepalive:             &keepalive,
+		Holdtime:              &holdtime,
+		SessionAddressingIpv4: CtPrimitiveIPv4ProtocolSessionAddressingAddressed,
+		SessionAddressingIpv6: CtPrimitiveIPv6ProtocolSessionAddressingLinkLocal,
+		LocalAsn:              &localAsn,
+		PeerFromLoopback:      false,
+		PeerTo:                CtPrimitiveBgpPeerToInterfaceOrIpEndpoint,
+		NeighborAsnDynamic:    false,
+	}
+	bgpPipelineId := ObjectId("de1474c2-f892-4fa6-bef4-e330ae7f9ac7")
+	bgpId := ObjectId("498b2502-e062-414b-b401-4e88a08ae8c5")
+	bgpBatchId := ObjectId("83bd1635-e543-4752-b526-e290b8771285")
+	bgpPrimitive := connectivityTemplatePrimitive{
+		id:          &bgpId,
+		attributes:  &attachBgpOverSubinterfacesOrSvi,
+		subpolicies: []*connectivityTemplatePrimitive{&routingPolicyPrimitive},
+		batchId:     &bgpBatchId,
+		pipelineId:  &bgpPipelineId,
 	}
 
-	type stringTestData struct {
-		stringVal  string
-		intType    apiStringIota
-		stringType apiIotaString
+	securityZone := ObjectId("6k8Wmo0n1h5b_Mbnmbc")
+	vlan := Vlan(5)
+	attachLogicalLink := ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
+		SecurityZone:            &securityZone,
+		Tagged:                  true,
+		Vlan:                    &vlan,
+		IPv4AddressingNumbered:  true,
+		IPv6AddressingLinkLocal: true,
 	}
-	testData := []stringTestData{
-		{stringVal: "", intType: ObjPolicyTypeNameNone, stringType: objPolicyTypeNameNone},
-		{stringVal: "batch", intType: ObjPolicyTypeNameBatch, stringType: objPolicyTypeNameBatch},
-		{stringVal: "pipeline", intType: ObjPolicyTypeNamePipeline, stringType: objPolicyTypeNamePipeline},
-		{stringVal: "AttachBgpOverSubinterfacesOrSvi", intType: ObjPolicyTypeNameBgpOverSubinterfacesOrSvi, stringType: objPolicyTypeNameBgpOverSubinterfacesOrSvi},
-		{stringVal: "AttachBgpWithPrefixPeeringForSviOrSubinterface", intType: ObjPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface, stringType: objPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface},
-		{stringVal: "AttachCustomStaticRoute", intType: ObjPolicyTypeNameCustomStaticRoute, stringType: objPolicyTypeNameCustomStaticRoute},
-		{stringVal: "AttachExistingRoutingPolicy", intType: ObjPolicyTypeNameRoutingPolicy, stringType: objPolicyTypeNameRoutingPolicy},
-		{stringVal: "AttachIpEndpointWithBgpNsxt", intType: ObjPolicyTypeNameIpEndpointWithBgpNsxt, stringType: objPolicyTypeNameIpEndpointWithBgpNsxt},
-		{stringVal: "AttachLogicalLink", intType: ObjPolicyTypeNameLogicalLink, stringType: objPolicyTypeNameLogicalLink},
-		{stringVal: "AttachMultipleVLAN", intType: ObjPolicyTypeNameMultipleVLAN, stringType: objPolicyTypeNameMultipleVLAN},
-		{stringVal: "AttachRoutingZoneConstraint", intType: ObjPolicyTypeNameRoutingZoneConstraint, stringType: objPolicyTypeNameRoutingZoneConstraint},
-		{stringVal: "AttachSingleVlan", intType: ObjPolicyTypeNameSingleVlan, stringType: objPolicyTypeNameSingleVlan},
-		{stringVal: "AttachStaticRoute", intType: ObjPolicyTypeNameStaticRoute, stringType: objPolicyTypeNameStaticRoute},
-	}
-
-	for i, td := range testData {
-		ii := td.intType.Int()
-		is := td.intType.String()
-		sp, err := td.stringType.parse()
-		if err != nil {
-			t.Fatal(err)
-		}
-		ss := td.stringType.string()
-		if td.intType.String() != td.stringType.string() ||
-			td.intType.Int() != sp ||
-			td.stringType.string() != td.stringVal {
-			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
-				i, ii, sp, is, ss, td.stringVal)
-		}
-	}
-}
-
-func TestObjPolicyAttributesMarshal(t *testing.T) {
-	type testCase struct {
-		attributes TwoStageL3ClosObjPolicyAttributes
-		expected   string
+	IpLinkPipelineId := ObjectId("31e32ddd-98e9-4f74-8fd7-61bbf9501cfd")
+	IpLinkId := ObjectId("bac16090-88ff-4f8b-9ee6-79b31078e123")
+	IpLinkBatchId := ObjectId("e4f0ae44-871e-4002-806e-c61e647e5657")
+	IpLinkPrimitive := connectivityTemplatePrimitive{
+		id:          &IpLinkId,
+		attributes:  &attachLogicalLink,
+		subpolicies: []*connectivityTemplatePrimitive{&bgpPrimitive},
+		batchId:     &IpLinkBatchId,
+		pipelineId:  &IpLinkPipelineId,
 	}
 
-	testCases := []testCase{
-		{
-			attributes: ObjPolicySingleVlanAttributes{
-				VnNodeId: "abc",
-				Tagged:   false,
-			},
-			expected: `{"vn_node_id":"abc","tag_type":"untagged"}`,
-		},
-		{
-			attributes: ObjPolicySingleVlanAttributes{
-				VnNodeId: "def",
-				Tagged:   true,
-			},
-			expected: `{"vn_node_id":"def","tag_type":"vlan_tagged"}`,
-		},
+	ctId := ObjectId("9f6c2ee4-a842-4fc2-979c-afce6c5f0ace")
+	ct := ConnectivityTemplate{
+		Id:          &ctId,
+		Subpolicies: []*connectivityTemplatePrimitive{&IpLinkPrimitive},
+		Tags:        nil,
+		Label:       "BGP over L3 connectivity",
+		Description: "this is the description",
 	}
+	ct.SetUserData()
 
-	for i, tc := range testCases {
-		raw, err := tc.attributes.marshal()
-		if err != nil {
-			t.Fatalf("test case %d failed with error - %s", i, err)
-		}
-		if tc.expected != string(raw) {
-			t.Fatalf("test case %d expected %q got %q", i, tc.expected, string(raw))
-		}
-	}
-}
-
-func TestTwoStageL3ClosObjPolicy(t *testing.T) {
-	a := TwoStageL3ClosObjPolicy{
-		Description:    "description",
-		Tags:           []string{"foo", "bar"},
-		Label:          "label",
-		PolicyTypeName: ObjPolicyTypeNameSingleVlan, // todo eliminate this
-		Attributes: ObjPolicySingleVlanAttributes{
-			VnNodeId: "aaaa",
-			Tagged:   false,
-		},
-	}
-
-	r, err := a.Raw()
+	raw, err := ct.raw()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result := struct {
-		Policies []RawTwoStageL3ClosObjPolicy `json:"policies"`
+	resultUserData := raw.Policies[0].UserData
+	raw.Policies[0].UserData = nil
+
+	result, err := json.Marshal(&struct {
+		Policies []rawConnectivityTemplatePolicy `json:"policies"`
 	}{
-		Policies: r,
-	}
-
-	x, err := json.Marshal(&result)
+		Policies: raw.Policies,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	log.Println(string(x))
+	if !jsonEqual(t, expected, result) {
+		t.Fatalf("expected:\n %s\n\n got:\n%s", expected, result)
+	}
+
+	if !jsonEqual(t, json.RawMessage(expectedUserData), json.RawMessage(*resultUserData)) {
+		t.Fatalf("expected:\n %s\n\n got:\n%s", expectedUserData, *resultUserData)
+	}
 }

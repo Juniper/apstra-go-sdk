@@ -1,290 +1,574 @@
 package apstra
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
+	"net/http"
+	"net/url"
 )
-
-type ObjPolicyTypeName int
-type objPolicyTypeName string
-
-// 7 ObjPolicyTypeNameBgpOverSubinterfacesOrSvi // BGP Peering (Generic System)
-// 8 ObjPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface // + Dynamic BGP Peering
-// 5 ObjPolicyTypeNameCustomStaticRoute // Custom Static Route
-// 9 ObjPolicyTypeNameRoutingPolicy // Routing Policy
-// 6 ObjPolicyTypeNameIpEndpointWithBgpNsxt // BGP Peering (IP Endpoint)
-// 3 ObjPolicyTypeNameLogicalLink // IP Link
-// 2 ObjPolicyTypeNameMultipleVLAN //Virtual Network (Multiple)
-// 10 ObjPolicyTypeNameRoutingZoneConstraint // Routing Zone Constraint
-// 1 ObjPolicyTypeNameSingleVlan // Virtual Network (Single)
-// 4 ObjPolicyTypeNameStaticRoute // Static Route
 
 const (
-	ObjPolicyTypeNameNone = ObjPolicyTypeName(iota)
-	ObjPolicyTypeNameBatch
-	ObjPolicyTypeNamePipeline
-	ObjPolicyTypeNameBgpOverSubinterfacesOrSvi
-	ObjPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface
-	ObjPolicyTypeNameCustomStaticRoute
-	ObjPolicyTypeNameRoutingPolicy
-	ObjPolicyTypeNameIpEndpointWithBgpNsxt
-	ObjPolicyTypeNameLogicalLink
-	ObjPolicyTypeNameMultipleVLAN
-	ObjPolicyTypeNameRoutingZoneConstraint
-	ObjPolicyTypeNameSingleVlan
-	ObjPolicyTypeNameStaticRoute
-	ObjPolicyTypeNameUnknown = "unknown policy_type_name %q"
+	apiUrlBlueprintObjPolicyImport = apiUrlBlueprintById + apiUrlPathDelim + "obj-policy-import"
 
-	objPolicyTypeNameNone                                     = objPolicyTypeName("")
-	objPolicyTypeNameBatch                                    = objPolicyTypeName("batch")
-	objPolicyTypeNamePipeline                                 = objPolicyTypeName("pipeline")
-	objPolicyTypeNameBgpOverSubinterfacesOrSvi                = objPolicyTypeName("AttachBgpOverSubinterfacesOrSvi")
-	objPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface = objPolicyTypeName("AttachBgpWithPrefixPeeringForSviOrSubinterface")
-	objPolicyTypeNameCustomStaticRoute                        = objPolicyTypeName("AttachCustomStaticRoute")
-	objPolicyTypeNameRoutingPolicy                            = objPolicyTypeName("AttachExistingRoutingPolicy")
-	objPolicyTypeNameIpEndpointWithBgpNsxt                    = objPolicyTypeName("AttachIpEndpointWithBgpNsxt")
-	objPolicyTypeNameLogicalLink                              = objPolicyTypeName("AttachLogicalLink")
-	objPolicyTypeNameMultipleVLAN                             = objPolicyTypeName("AttachMultipleVLAN")
-	objPolicyTypeNameRoutingZoneConstraint                    = objPolicyTypeName("AttachRoutingZoneConstraint")
-	objPolicyTypeNameSingleVlan                               = objPolicyTypeName("AttachSingleVlan")
-	objPolicyTypeNameStaticRoute                              = objPolicyTypeName("AttachStaticRoute")
-	objPolicyTypeNameUnknown                                  = "unknown policy_type_name %d"
+	apiUrlBlueprintObjPolicyExport     = apiUrlBlueprintById + apiUrlPathDelim + "obj-policy-export"
+	apiUrlBlueprintObjPolicyExportById = apiUrlBlueprintObjPolicyExport + apiUrlPathDelim + "%s"
+
+	apiUrlBlueprintEndpointPolicies   = apiUrlBlueprintById + apiUrlPathDelim + "endpoint-policies"
+	apiUrlBlueprintEndpointPolicyById = apiUrlBlueprintEndpointPolicies + apiUrlPathDelim + "%s"
+
+	deleteRecursive = "delete_recursive"
+
+	policyTypeNameBatch      = "batch"
+	policyTypeNamePipeline   = "pipeline"
+	policyTypeBatchSuffix    = " (" + policyTypeNameBatch + ")"
+	policyTypePipelineSuffix = " (" + policyTypeNamePipeline + ")"
+
+	xInitialPosition = 290
+	yInitialPosition = 80
+	xSpacing         = 200
+	ySpacing         = 70
 )
 
-func (o ObjPolicyTypeName) Int() int {
-	return int(o)
+type ConnectivityTemplate struct {
+	Id          *ObjectId
+	Label       string
+	Description string
+	Subpolicies []*connectivityTemplatePrimitive // batch pointers
+	Tags        []string
+	UserData    *connectivityTemplatePrimitiveUserData
 }
 
-func (o ObjPolicyTypeName) String() string {
-	switch o {
-	case ObjPolicyTypeNameNone:
-		return string(objPolicyTypeNameNone)
-	case ObjPolicyTypeNameBatch:
-		return string(objPolicyTypeNameBatch)
-	case ObjPolicyTypeNamePipeline:
-		return string(objPolicyTypeNamePipeline)
-	case ObjPolicyTypeNameBgpOverSubinterfacesOrSvi:
-		return string(objPolicyTypeNameBgpOverSubinterfacesOrSvi)
-	case ObjPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface:
-		return string(objPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface)
-	case ObjPolicyTypeNameCustomStaticRoute:
-		return string(objPolicyTypeNameCustomStaticRoute)
-	case ObjPolicyTypeNameRoutingPolicy:
-		return string(objPolicyTypeNameRoutingPolicy)
-	case ObjPolicyTypeNameIpEndpointWithBgpNsxt:
-		return string(objPolicyTypeNameIpEndpointWithBgpNsxt)
-	case ObjPolicyTypeNameLogicalLink:
-		return string(objPolicyTypeNameLogicalLink)
-	case ObjPolicyTypeNameMultipleVLAN:
-		return string(objPolicyTypeNameMultipleVLAN)
-	case ObjPolicyTypeNameRoutingZoneConstraint:
-		return string(objPolicyTypeNameRoutingZoneConstraint)
-	case ObjPolicyTypeNameSingleVlan:
-		return string(objPolicyTypeNameSingleVlan)
-	case ObjPolicyTypeNameStaticRoute:
-		return string(objPolicyTypeNameStaticRoute)
-	default:
-		return fmt.Sprintf(objPolicyTypeNameUnknown, o)
-	}
-}
-
-func (o ObjPolicyTypeName) raw() objPolicyTypeName {
-	return objPolicyTypeName(o.String())
-}
-
-func (o *ObjPolicyTypeName) FromString(in string) error {
-	i, err := objPolicyTypeName(in).parse()
+func (o *ConnectivityTemplate) raw() (*rawConnectivityTemplate, error) {
+	err := o.SetId()
 	if err != nil {
-		return err
-	}
-	*o = ObjPolicyTypeName(i)
-	return nil
-}
-
-func (o objPolicyTypeName) string() string {
-	return string(o)
-}
-
-func (o objPolicyTypeName) parse() (int, error) {
-	switch o {
-	case objPolicyTypeNameNone:
-		return int(ObjPolicyTypeNameNone), nil
-	case objPolicyTypeNameBatch:
-		return int(ObjPolicyTypeNameBatch), nil
-	case objPolicyTypeNamePipeline:
-		return int(ObjPolicyTypeNamePipeline), nil
-	case objPolicyTypeNameBgpOverSubinterfacesOrSvi:
-		return int(ObjPolicyTypeNameBgpOverSubinterfacesOrSvi), nil
-	case objPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface:
-		return int(ObjPolicyTypeNameBgpWithPrefixPeeringForSviOrSubinterface), nil
-	case objPolicyTypeNameCustomStaticRoute:
-		return int(ObjPolicyTypeNameCustomStaticRoute), nil
-	case objPolicyTypeNameRoutingPolicy:
-		return int(ObjPolicyTypeNameRoutingPolicy), nil
-	case objPolicyTypeNameIpEndpointWithBgpNsxt:
-		return int(ObjPolicyTypeNameIpEndpointWithBgpNsxt), nil
-	case objPolicyTypeNameLogicalLink:
-		return int(ObjPolicyTypeNameLogicalLink), nil
-	case objPolicyTypeNameMultipleVLAN:
-		return int(ObjPolicyTypeNameMultipleVLAN), nil
-	case objPolicyTypeNameRoutingZoneConstraint:
-		return int(ObjPolicyTypeNameRoutingZoneConstraint), nil
-	case objPolicyTypeNameSingleVlan:
-		return int(ObjPolicyTypeNameSingleVlan), nil
-	case objPolicyTypeNameStaticRoute:
-		return int(ObjPolicyTypeNameStaticRoute), nil
-	default:
-		return 0, fmt.Errorf(ObjPolicyTypeNameUnknown, o)
-	}
-}
-
-type TwoStageL3ClosObjPolicyAttributes interface {
-	marshal() (json.RawMessage, error)
-	typeName() string
-}
-
-type TwoStageL3ClosObjPolicy struct {
-	Description    string
-	Tags           []string
-	UserData       *TwoStageL3ClosObjPolicyUserData
-	Label          string
-	PolicyTypeName ObjPolicyTypeName
-	Attributes     TwoStageL3ClosObjPolicyAttributes
-	Id             *ObjectId
-	Children       []ObjectId
-	pipeline       *RawTwoStageL3ClosObjPolicy
-	batch          *RawTwoStageL3ClosObjPolicy
-}
-
-func (o *TwoStageL3ClosObjPolicy) Raw() ([]RawTwoStageL3ClosObjPolicy, error) {
-	initUUID()
-
-	mainRawAttributes, err := o.Attributes.marshal()
-	if err != nil {
-		return nil, fmt.Errorf("could not marshal CT policy element - %w", err)
+		return nil, err
 	}
 
-	if o.Id == nil {
-		uuid1, err := uuid.NewUUID()
+	subpolicyIds := make([]ObjectId, len(o.Subpolicies))
+	for i, primitivePtr := range o.Subpolicies {
+		err = primitivePtr.SetIds()
 		if err != nil {
-			return nil, fmt.Errorf("could not generate UUID - %w", err)
+			return nil, err
 		}
-		id := ObjectId(uuid1.String())
-		o.Id = &id
+
+		subpolicyIds[i] = *primitivePtr.pipelineId
 	}
 
-	resultMain := RawTwoStageL3ClosObjPolicy{
-		Description:    o.Description,
-		Label:          o.Label,
-		Attributes:     mainRawAttributes,
-		PolicyTypeName: o.Attributes.typeName(),
-		Id:             *o.Id,
-	}
-
-	err = o.buildPipeline()
+	rawPolicies, err := rawBatch(*o.Id, "", "", o.Subpolicies)
 	if err != nil {
 		return nil, err
 	}
 
-	err = o.buildBatch()
-	if err != nil {
-		return nil, err
-	}
-
-	return []RawTwoStageL3ClosObjPolicy{resultMain, *o.pipeline, *o.batch}, nil
-}
-
-func (o *TwoStageL3ClosObjPolicy) buildPipeline() error {
-	if o.Id == nil {
-		return errors.New("attempt to generate pipeline policy object with nil ID")
-	}
-
-	if o.pipeline != nil {
-		return errors.New("attempt to re-generate pipeline policy")
-	}
-
-	switch o.PolicyTypeName {
-	case ObjPolicyTypeNamePipeline:
-		fallthrough
-	case ObjPolicyTypeNameBatch:
-		fallthrough
-	case ObjPolicyTypeNameNone:
-		return fmt.Errorf("attempt to generate pipeline policy on a policy of type %q", o.PolicyTypeName)
-	}
-
-	uuid1, err := uuid.NewUUID()
-	if err != nil {
-		return fmt.Errorf("could not generate UUID - %w", err)
-	}
-
-	rawAttributes, err := json.Marshal(&ObjPolicyPipelineAttributes{FirstSubpolicy: o.Id})
-	if err != nil {
-		return err
-	}
-
-	o.pipeline = &RawTwoStageL3ClosObjPolicy{
-		Description:    o.Description,
-		Label:          o.Label + "(pipeline)",
-		Attributes:     rawAttributes,
-		PolicyTypeName: ObjPolicyTypeNamePipeline.String(),
-		Id:             ObjectId(uuid1.String()),
-	}
-
-	return nil
-}
-
-func (o *TwoStageL3ClosObjPolicy) buildBatch() error {
-	if o.batch != nil {
-		return errors.New("attempt to re-generate batch policy")
-	}
-
-	switch o.PolicyTypeName {
-	case ObjPolicyTypeNamePipeline:
-		fallthrough
-	case ObjPolicyTypeNameBatch:
-		fallthrough
-	case ObjPolicyTypeNameNone:
-		return fmt.Errorf("attempt to generate pipeline policy on a policy of type %q", o.PolicyTypeName)
-	}
-
-	uuid1, err := uuid.NewUUID()
-	if err != nil {
-		return fmt.Errorf("could not generate UUID - %w", err)
-	}
-
-	var tags []string // starts as nil
 	if o.Tags == nil {
-		tags = []string{} // make an empty slice (not nil)
-	} else {
-		tags = o.Tags
+		o.Tags = []string{}
 	}
 
-	rawAttributes, err := json.Marshal(&ObjPolicyBatchAttributes{Subpolicies: []ObjectId{}})
+	userDataBytes, err := json.Marshal(o.UserData)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed marshaling user data - %w", err)
 	}
+	userDataString := string(userDataBytes)
 
-	o.batch = &RawTwoStageL3ClosObjPolicy{
-		Description:    o.Description,
-		Tags:           tags,
-		Label:          o.Label,
-		PolicyTypeName: ObjPolicyTypeNameBatch.String(),
-		Attributes:     rawAttributes,
-		Id:             ObjectId(uuid1.String()),
+	// special handling for root batch fields
+	rawPolicies[0].Description = o.Description
+	rawPolicies[0].Label = o.Label
+	rawPolicies[0].Visible = true
+	rawPolicies[0].Tags = o.Tags
+	rawPolicies[0].UserData = &userDataString
+
+	return &rawConnectivityTemplate{
+		Policies: rawPolicies,
+	}, nil
+}
+
+func (o *ConnectivityTemplate) SetId() error {
+	if o.Id == nil {
+		uuid, err := uuid1AsObjectId()
+		if err != nil {
+			return err
+		}
+		o.Id = &uuid
 	}
 
 	return nil
 }
 
-type RawTwoStageL3ClosObjPolicy struct {
-	Description    string                           `json:"description"`
-	Tags           []string                         `json:"tags,omitempty"`
-	UserData       *TwoStageL3ClosObjPolicyUserData `json:"user_data"`
-	Label          string                           `json:"label"`
-	Visible        bool                             `json:"visible"`
-	PolicyTypeName string                           `json:"policy_type_name"`
-	Attributes     json.RawMessage                  `json:"attributes"`
-	Id             ObjectId                         `json:"id"`
+func (o *ConnectivityTemplate) SetUserData() {
+	o.UserData = &connectivityTemplatePrimitiveUserData{
+		IsSausage: true,
+		Positions: make(map[ObjectId][]int),
+	}
+
+	for i, subpolicy := range o.Subpolicies {
+		additionalPositions := subpolicy.positions(i*xSpacing+xInitialPosition, yInitialPosition)
+		mergePositionMaps(&o.UserData.Positions, &additionalPositions)
+	}
+}
+
+type rawConnectivityTemplate struct {
+	Policies []rawConnectivityTemplatePolicy `json:"policies"`
+}
+
+func (o *rawConnectivityTemplate) rootBatch() (*rawConnectivityTemplatePolicy, error) {
+	rootBatchIdx := -1
+	for i, rawPolicy := range o.Policies {
+		switch {
+		case rawPolicy.Visible && rootBatchIdx < 0:
+			rootBatchIdx = i
+		case rawPolicy.Visible && rootBatchIdx >= 0:
+			return nil, fmt.Errorf(
+				"cannot polish rawConnectivityTempalte when policy[%d] and policy[%d] both flagged \"visible\"",
+				rootBatchIdx, i)
+		}
+	}
+
+	if rootBatchIdx < 0 {
+		return nil, fmt.Errorf("out of %d raw policies, none are flagged \"visible\"", len(o.Policies))
+	}
+
+	return &o.Policies[rootBatchIdx], nil
+}
+
+func (o *rawConnectivityTemplate) policyMap() map[ObjectId]rawConnectivityTemplatePolicy {
+	result := make(map[ObjectId]rawConnectivityTemplatePolicy, len(o.Policies))
+	for _, policy := range o.Policies {
+		result[policy.Id] = policy
+	}
+	return result
+}
+
+func (o *rawConnectivityTemplate) polish() (*ConnectivityTemplate, error) {
+	if len(o.Policies) == 0 {
+		return nil, fmt.Errorf("cannot polish a rawConnectivityTemplate with no policies")
+	}
+
+	rootBatch, err := o.rootBatch()
+	if err != nil {
+		return nil, err
+	}
+	if rootBatch.UserData == nil {
+		return nil, fmt.Errorf("connectivity template root batch has no user data")
+	}
+
+	policyMap := o.policyMap()
+	delete(policyMap, rootBatch.Id)
+
+	var userData connectivityTemplatePrimitiveUserData
+	err = json.Unmarshal([]byte(*rootBatch.UserData), &userData)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling root batch %q user data %q - %w",
+			rootBatch.Id, *rootBatch.UserData, err)
+	}
+
+	var attributes rawBatchattributes
+	err = json.Unmarshal(rootBatch.Attributes, &attributes)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling root batch %q attributes %q - %w",
+			rootBatch.Id, *rootBatch.UserData, err)
+	}
+
+	subpolicies := make([]*connectivityTemplatePrimitive, len(attributes.Subpolicies))
+	for i, policyId := range attributes.Subpolicies {
+		subpolicies[i], err = parsePrimitiveTreeByPipelineId(policyId, policyMap)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &ConnectivityTemplate{
+		Id:          &rootBatch.Id,
+		Label:       rootBatch.Label,
+		Description: rootBatch.Description,
+		Subpolicies: subpolicies,
+		Tags:        rootBatch.Tags,
+		UserData:    &userData,
+	}, nil
+}
+
+type connectivityTemplatePrimitiveUserData struct {
+	IsSausage bool               `json:"isSausage"`
+	Positions map[ObjectId][]int `json:"positions"`
+}
+
+type connectivityTemplatePrimitive struct {
+	id          *ObjectId
+	attributes  connectivityTemplateAttributes
+	subpolicies []*connectivityTemplatePrimitive // batch of pointers to pipelines
+	batchId     *ObjectId
+	pipelineId  *ObjectId
+}
+
+func (o *connectivityTemplatePrimitive) positions(x, y int) map[ObjectId][]int {
+	positions := make(map[ObjectId][]int)
+	positions[*o.id] = []int{x, y, 1}
+	for i, subpolicy := range o.subpolicies {
+		additionalPositions := subpolicy.positions(x+i*xSpacing, y+ySpacing)
+		mergePositionMaps(&positions, &additionalPositions)
+	}
+	return positions
+}
+
+// rawPipeline returns []rawConnectivityTemplatePolicy consisting of:
+//   - a pipeline policy element
+//   - the actual policy element
+//   - if there are any children, a batch policy element containing downstream primitives
+func (o *connectivityTemplatePrimitive) rawPipeline() ([]rawConnectivityTemplatePolicy, error) {
+	if o.attributes == nil {
+		return nil, errors.New("rawPipeline() invoked with nil attributes")
+	}
+
+	err := o.SetIds()
+	if err != nil {
+		return nil, err
+	}
+
+	attributes := o.attributes
+	rawAttributes, err := attributes.raw()
+	if err != nil {
+		return nil, err
+	}
+
+	// "actual"
+	actual := rawConnectivityTemplatePolicy{
+		Description:    attributes.description(),
+		Tags:           []string{}, // always empty slice
+		Label:          attributes.label(),
+		PolicyTypeName: attributes.policyTypeName().raw(),
+		Attributes:     rawAttributes,
+		Id:             *o.id,
+	}
+
+	var secondSubpolicy *ObjectId
+	if len(o.subpolicies) > 0 {
+		secondSubpolicy = o.batchId
+	}
+
+	pipelineAttributes := rawPipelineAttributes{
+		FirstSubpolicy:  *o.id,
+		SecondSubpolicy: secondSubpolicy,
+		Resolver:        nil,
+	}
+	rawPipelineAttribtes, err := json.Marshal(&pipelineAttributes)
+	if err != nil {
+		return nil, fmt.Errorf("failed marshaling pipelineAttributes - %w", err)
+	}
+
+	pipeline := rawConnectivityTemplatePolicy{
+		Description:    attributes.description(),
+		Tags:           []string{}, // always empty slice
+		Label:          attributes.label() + policyTypePipelineSuffix,
+		PolicyTypeName: policyTypeNamePipeline,
+		Attributes:     rawPipelineAttribtes,
+		Id:             *o.pipelineId,
+	}
+
+	result := []rawConnectivityTemplatePolicy{pipeline, actual}
+
+	if len(o.subpolicies) > 0 {
+		batchPolicies, err := rawBatch(*o.batchId, attributes.description(), attributes.label(), o.subpolicies)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, batchPolicies...)
+	}
+
+	return result, nil
+}
+
+func (o *connectivityTemplatePrimitive) SetIds() error {
+	if o.id == nil {
+		uuid, err := uuid1AsObjectId()
+		if err != nil {
+			return err
+		}
+		o.id = &uuid
+	}
+
+	if o.pipelineId == nil {
+		uuid := *o.id + policyTypePipelineSuffix
+		o.pipelineId = &uuid
+	}
+
+	if o.batchId == nil && len(o.subpolicies) > 0 {
+		uuid := *o.id + policyTypeBatchSuffix
+		o.batchId = &uuid
+	}
+
+	return nil
+}
+
+type rawConnectivityTemplatePolicy struct {
+	Id             ObjectId                  `json:"id"`
+	Label          string                    `json:"label"`
+	Description    string                    `json:"description"`
+	Tags           []string                  `json:"tags"`
+	UserData       *string                   `json:"user_data,omitempty"`
+	Visible        bool                      `json:"visible"`
+	PolicyTypeName ctPrimitivePolicyTypeName `json:"policy_type_name"`
+	Attributes     json.RawMessage           `json:"attributes"`
+}
+
+func (o rawConnectivityTemplatePolicy) attributes() (connectivityTemplateAttributes, error) {
+	var result connectivityTemplateAttributes
+
+	switch o.PolicyTypeName {
+	case ctPrimitivePolicyTypeNameAttachSingleVlan:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachSingleVlan)
+	case ctPrimitivePolicyTypeNameAttachMultipleVLAN:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan)
+	case ctPrimitivePolicyTypeNameAttachLogicalLink:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachLogicalLink)
+	case ctPrimitivePolicyTypeNameAttachStaticRoute:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachStaticRoute)
+	case ctPrimitivePolicyTypeNameAttachCustomStaticRoute:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute)
+	case ctPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt)
+	case ctPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
+	case ctPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface)
+	case ctPrimitivePolicyTypeNameAttachExistingRoutingPolicy:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy)
+	case ctPrimitivePolicyTypeNameAttachRoutingZoneConstraint:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint)
+	default:
+		return nil, fmt.Errorf("unhandled connectivity template type %q", o.PolicyTypeName)
+	}
+
+	return result, result.fromRawJson(o.Attributes)
+}
+
+type rawBatchattributes struct {
+	Subpolicies []ObjectId `json:"subpolicies"`
+}
+
+type rawPipelineAttributes struct {
+	FirstSubpolicy  ObjectId    `json:"first_subpolicy"`
+	SecondSubpolicy *ObjectId   `json:"second_subpolicy"`
+	Resolver        interface{} `json:"resolver"` // what is this?
+}
+
+func rawBatch(id ObjectId, description, label string, subpolicies []*connectivityTemplatePrimitive) ([]rawConnectivityTemplatePolicy, error) {
+	// build downstream pipelines and collect their IDs
+	var pipelines []rawConnectivityTemplatePolicy
+	subpolicyIds := make([]ObjectId, len(subpolicies))
+	for i, subpolicy := range subpolicies {
+		pipelineSlice, err := subpolicy.rawPipeline()
+		if err != nil {
+			return nil, err
+		}
+
+		subpolicyIds[i] = pipelineSlice[0].Id
+		pipelines = append(pipelines, pipelineSlice...)
+	}
+
+	rawAttributes, err := json.Marshal(&struct {
+		Subpolicies []ObjectId `json:"subpolicies"`
+	}{
+		Subpolicies: subpolicyIds,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed marshaling subpolicy ids for batch - %w", err)
+	}
+
+	batch := rawConnectivityTemplatePolicy{
+		Description:    description,
+		Tags:           []string{},
+		Label:          label + policyTypeBatchSuffix,
+		PolicyTypeName: policyTypeNameBatch,
+		Attributes:     rawAttributes,
+		Id:             id,
+	}
+
+	return append([]rawConnectivityTemplatePolicy{batch}, pipelines...), nil
+}
+
+func mergePositionMaps(dst, src *map[ObjectId][]int) {
+	t := *dst
+	for k, v := range *src {
+		t[k] = v
+	}
+}
+
+// parsePrimitiveTreeByPipelineId takes an entrypoint ObjectId representing a
+// "pipeline" policy and a map of rawConnectivityTemplatePolicy including
+// the specified pipeline and all of its children.
+//
+// The returned *connectivityTemplatePrimitive is a tree built by recursive
+// invocations of parsePrimitiveTreeByPipelineId until the tree is complete.
+//
+// parsePrimitiveTreeByPipelineId should be invoked once for each sub-policy in
+// a connectivity template's root batch.
+func parsePrimitiveTreeByPipelineId(pipelineId ObjectId, policyMap map[ObjectId]rawConnectivityTemplatePolicy) (*connectivityTemplatePrimitive, error) {
+	var actual, batch, pipeline rawConnectivityTemplatePolicy
+	var ok bool
+
+	if pipeline, ok = policyMap[pipelineId]; !ok {
+		return nil, fmt.Errorf("raw policy map doesn't include pipeline policy %q", pipelineId)
+	}
+	if pipeline.PolicyTypeName != policyTypeNamePipeline {
+		return nil, fmt.Errorf("expected policy %q to be type %q, got %q",
+			pipeline.Id, policyTypeNamePipeline, pipeline.PolicyTypeName)
+	}
+
+	var pipelineAttributes rawPipelineAttributes
+	err := json.Unmarshal(pipeline.Attributes, &pipelineAttributes)
+	if err != nil {
+		return nil, fmt.Errorf("failed unmarshaling pipeline attributes %q for policy %q - %w",
+			pipeline.Attributes, pipeline.Id, err)
+	}
+
+	if actual, ok = policyMap[pipelineAttributes.FirstSubpolicy]; !ok {
+		return nil, fmt.Errorf("raw policy map doesn't include actual policy %q", pipelineAttributes.FirstSubpolicy)
+	}
+	var actualType CtPrimitivePolicyTypeName
+	err = actualType.FromString(string(actual.PolicyTypeName))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse policy type from CT policy %q - %w", actual.Id, err)
+	}
+
+	var batchId *ObjectId
+	var subpolicies []*connectivityTemplatePrimitive
+	if pipelineAttributes.SecondSubpolicy != nil {
+		// a batch ID appears in the pipeline
+		if batch, ok = policyMap[*pipelineAttributes.SecondSubpolicy]; ok {
+			// the batch was found in the map
+			if batch.PolicyTypeName != policyTypeNameBatch {
+				// batch ID has wrong policy type (not batch)
+				return nil, fmt.Errorf("expected policy %q to be type %q, got %q",
+					batch.Id, policyTypeNameBatch, batch.PolicyTypeName)
+			}
+
+			var batchAttributes rawBatchattributes
+			err = json.Unmarshal(batch.Attributes, &batchAttributes)
+			if err != nil {
+				return nil, fmt.Errorf("failed unmarshaling batch attributes %q for policy %q - %w",
+					batch.Attributes, batch.Id, err)
+			}
+
+			batchId = &batch.Id
+
+			subpolicies = make([]*connectivityTemplatePrimitive, len(batchAttributes.Subpolicies))
+			for i, subpolicyId := range batchAttributes.Subpolicies {
+				subpolicies[i], err = parsePrimitiveTreeByPipelineId(subpolicyId, policyMap)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	attributes, err := actual.attributes()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load attributes \"%s\" for policy %q - %w",
+			actual.Attributes, actual.Id, err)
+	}
+
+	return &connectivityTemplatePrimitive{
+		id:          &actual.Id,
+		attributes:  attributes,
+		subpolicies: subpolicies,
+		batchId:     batchId,
+		pipelineId:  &pipeline.Id,
+	}, nil
+}
+
+func (o *TwoStageL3ClosClient) ListConnectivityTemplates(ctx context.Context) ([]ObjectId, error) {
+	var apiResponse struct {
+		Policies []rawConnectivityTemplatePolicy `json:"policies"`
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodGet,
+		urlStr:         fmt.Sprintf(apiUrlBlueprintObjPolicyExport, o.blueprintId),
+		apiResponse:    &apiResponse,
+		doNotLogin:     false,
+		unsynchronized: false,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	var result []ObjectId
+	for _, policy := range apiResponse.Policies {
+		if policy.Visible {
+			result = append(result, policy.Id)
+		}
+	}
+
+	return result, nil
+}
+
+func (o *TwoStageL3ClosClient) CreateConnectivityTemplate(ctx context.Context, in *ConnectivityTemplate) error {
+	apiInput, err := in.raw()
+	if err != nil {
+		return err
+	}
+
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:         http.MethodPut,
+		urlStr:         fmt.Sprintf(apiUrlBlueprintObjPolicyImport, o.blueprintId),
+		apiInput:       &apiInput,
+		apiResponse:    nil,
+		doNotLogin:     false,
+		unsynchronized: false,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
+}
+
+func (o *TwoStageL3ClosClient) DeleteConnectivityTemplate(ctx context.Context, id ObjectId) error {
+	urlStr := fmt.Sprintf(apiUrlBlueprintEndpointPolicyById, o.blueprintId, id)
+	urlObj, err := url.Parse(urlStr)
+	if err != nil {
+		return fmt.Errorf("failed parsing url %q - %w", urlStr, err)
+	}
+
+	params := urlObj.Query()
+	params.Set(deleteRecursive, "true")
+	urlObj.RawQuery = params.Encode()
+
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodDelete,
+		url:    urlObj,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
+}
+
+func (o *TwoStageL3ClosClient) getConnectivityTemplate(ctx context.Context, id ObjectId) (map[ObjectId]rawConnectivityTemplatePolicy, error) {
+	urlStr := fmt.Sprintf(apiUrlBlueprintObjPolicyExportById, o.blueprintId, id)
+
+	var response struct {
+		Policies []rawConnectivityTemplatePolicy `json:"policies"`
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      urlStr,
+		apiResponse: &response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	result := make(map[ObjectId]rawConnectivityTemplatePolicy, len(response.Policies))
+	for _, policy := range response.Policies {
+		result[policy.Id] = policy
+	}
+
+	if _, ok := result[id]; !ok {
+		return nil, fmt.Errorf("policy %q not found in API response to GET %s", id, urlStr)
+	}
+
+	return result, nil
 }
