@@ -149,7 +149,7 @@ func (o *rawConnectivityTemplate) polish() (*XConnectivityTemplate, error) {
 		return nil, err
 	}
 	if rootBatch.UserData == nil {
-		return nil, fmt.Errorf("connectivit template root batch has no user data")
+		return nil, fmt.Errorf("connectivity template root batch has no user data")
 	}
 
 	policyMap := o.policyMap()
@@ -320,16 +320,20 @@ func (o xRawConnectivityTemplatePolicy) attributes() (xConnectivityTemplateAttri
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan)
 	case ctPrimitivePolicyTypeNameAttachLogicalLink:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachLogicalLink)
-	//case ctPrimitivePolicyTypeNameAttachStaticRoute: // todo
-	//case ctPrimitivePolicyTypeNameAttachCustomStaticRoute: // todo
+	case ctPrimitivePolicyTypeNameAttachStaticRoute:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachStaticRoute)
+	case ctPrimitivePolicyTypeNameAttachCustomStaticRoute:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute)
 	case ctPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt)
 	case ctPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
-	//case ctPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface: // todo
+	case ctPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface)
 	case ctPrimitivePolicyTypeNameAttachExistingRoutingPolicy:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy)
-	//case ctPrimitivePolicyTypeNameAttachRoutingZoneConstraint: // todo
+	case ctPrimitivePolicyTypeNameAttachRoutingZoneConstraint:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint)
 	default:
 		return nil, fmt.Errorf("unhandled connectivity template type %q", o.PolicyTypeName)
 	}
