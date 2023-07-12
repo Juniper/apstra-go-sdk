@@ -38,35 +38,39 @@ const (
 )
 
 func (o CtPrimitivePolicyTypeName) String() string {
+	return string(o.raw())
+}
+
+func (o CtPrimitivePolicyTypeName) raw() ctPrimitivePolicyTypeName {
 	switch o {
 	case CtPrimitivePolicyTypeNameNone:
-		return string(ctPrimitivePolicyTypeNameNone)
+		return ctPrimitivePolicyTypeNameNone
 	case CtPrimitivePolicyTypeNameBatch:
-		return string(ctPrimitivePolicyTypeNameBatch)
+		return ctPrimitivePolicyTypeNameBatch
 	case CtPrimitivePolicyTypeNamePipeline:
-		return string(ctPrimitivePolicyTypeNamePipeline)
+		return ctPrimitivePolicyTypeNamePipeline
 	case CtPrimitivePolicyTypeNameAttachSingleVlan:
-		return string(ctPrimitivePolicyTypeNameAttachSingleVlan)
+		return ctPrimitivePolicyTypeNameAttachSingleVlan
 	case CtPrimitivePolicyTypeNameAttachMultipleVLAN:
-		return string(ctPrimitivePolicyTypeNameAttachMultipleVLAN)
+		return ctPrimitivePolicyTypeNameAttachMultipleVLAN
 	case CtPrimitivePolicyTypeNameAttachLogicalLink:
-		return string(ctPrimitivePolicyTypeNameAttachLogicalLink)
+		return ctPrimitivePolicyTypeNameAttachLogicalLink
 	case CtPrimitivePolicyTypeNameAttachStaticRoute:
-		return string(ctPrimitivePolicyTypeNameAttachStaticRoute)
+		return ctPrimitivePolicyTypeNameAttachStaticRoute
 	case CtPrimitivePolicyTypeNameAttachCustomStaticRoute:
-		return string(ctPrimitivePolicyTypeNameAttachCustomStaticRoute)
+		return ctPrimitivePolicyTypeNameAttachCustomStaticRoute
 	case CtPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt:
-		return string(ctPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt)
+		return ctPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt
 	case CtPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi:
-		return string(ctPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi)
+		return ctPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi
 	case CtPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface:
-		return string(ctPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface)
+		return ctPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface
 	case CtPrimitivePolicyTypeNameAttachExistingRoutingPolicy:
-		return string(ctPrimitivePolicyTypeNameAttachExistingRoutingPolicy)
+		return ctPrimitivePolicyTypeNameAttachExistingRoutingPolicy
 	case CtPrimitivePolicyTypeNameAttachRoutingZoneConstraint:
-		return string(ctPrimitivePolicyTypeNameAttachRoutingZoneConstraint)
+		return ctPrimitivePolicyTypeNameAttachRoutingZoneConstraint
 	default:
-		return fmt.Sprintf(ctPrimitivePolicyTypeNameUnknown, o)
+		return ctPrimitivePolicyTypeName(fmt.Sprintf(ctPrimitivePolicyTypeNameUnknown, o))
 	}
 }
 
@@ -140,8 +144,30 @@ func (o CtPrimitiveBgpPeerTo) String() string {
 	}
 }
 
+func (o *CtPrimitiveBgpPeerTo) FromString(in string) error {
+	i, err := ctPrimitiveBgpPeerTo(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = CtPrimitiveBgpPeerTo(i)
+	return nil
+}
+
 func (o CtPrimitiveBgpPeerTo) raw() ctPrimitiveBgpPeerTo {
 	return ctPrimitiveBgpPeerTo(o.String())
+}
+
+func (o ctPrimitiveBgpPeerTo) parse() (int, error) {
+	switch o {
+	case ctPrimitiveBgpPeerToLoopback:
+		return int(CtPrimitiveBgpPeerToLoopback), nil
+	case ctPrimitiveBgpPeerToInterfaceOrIpEndpoint:
+		return int(CtPrimitiveBgpPeerToInterfaceOrIpEndpoint), nil
+	case ctPrimitiveBgpPeerToInterfaceOrSharedIpEndpoint:
+		return int(CtPrimitiveBgpPeerToInterfaceOrSharedIpEndpoint), nil
+	default:
+		return 0, fmt.Errorf(CtPrimitiveBgpPeerToInterfaceUnknown, o)
+	}
 }
 
 type CtPrimitiveIPv4ProtocolSessionAddressing int
@@ -168,8 +194,28 @@ func (o CtPrimitiveIPv4ProtocolSessionAddressing) String() string {
 	}
 }
 
+func (o *CtPrimitiveIPv4ProtocolSessionAddressing) FromString(in string) error {
+	i, err := ctPrimitiveIPv4ProtocolSessionAddressing(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = CtPrimitiveIPv4ProtocolSessionAddressing(i)
+	return nil
+}
+
 func (o CtPrimitiveIPv4ProtocolSessionAddressing) raw() ctPrimitiveIPv4ProtocolSessionAddressing {
 	return ctPrimitiveIPv4ProtocolSessionAddressing(o.String())
+}
+
+func (o ctPrimitiveIPv4ProtocolSessionAddressing) parse() (int, error) {
+	switch o {
+	case ctPrimitiveIPv4ProtocolSessionAddressingNone:
+		return int(CtPrimitiveIPv4ProtocolSessionAddressingNone), nil
+	case ctPrimitiveIPv4ProtocolSessionAddressingAddressed:
+		return int(CtPrimitiveIPv4ProtocolSessionAddressingAddressed), nil
+	default:
+		return 0, fmt.Errorf(CtPrimitiveIPv4ProtocolSessionAddressingUnknown, o)
+	}
 }
 
 type CtPrimitiveIPv6ProtocolSessionAddressing int
@@ -200,6 +246,26 @@ func (o CtPrimitiveIPv6ProtocolSessionAddressing) String() string {
 	}
 }
 
+func (o *CtPrimitiveIPv6ProtocolSessionAddressing) FromString(in string) error {
+	i, err := ctPrimitiveIPv6ProtocolSessionAddressing(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = CtPrimitiveIPv6ProtocolSessionAddressing(i)
+	return nil
+}
+
 func (o CtPrimitiveIPv6ProtocolSessionAddressing) raw() ctPrimitiveIPv6ProtocolSessionAddressing {
 	return ctPrimitiveIPv6ProtocolSessionAddressing(o.String())
+}
+
+func (o ctPrimitiveIPv6ProtocolSessionAddressing) parse() (int, error) {
+	switch o {
+	case ctPrimitiveIPv6ProtocolSessionAddressingNone:
+		return int(CtPrimitiveIPv6ProtocolSessionAddressingNone), nil
+	case ctPrimitiveIPv6ProtocolSessionAddressingAddressed:
+		return int(CtPrimitiveIPv6ProtocolSessionAddressingAddressed), nil
+	default:
+		return 0, fmt.Errorf(CtPrimitiveIPv6ProtocolSessionAddressingUnknown, o)
+	}
 }

@@ -140,14 +140,15 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 
 	expectedUserData := "{\"isSausage\":true,\"positions\":{\"bac16090-88ff-4f8b-9ee6-79b31078e123\":[290,80,1],\"498b2502-e062-414b-b401-4e88a08ae8c5\":[290,150,1],\"49f36469-7f10-4b10-9102-83654f3fe6a6\":[290,220,1]}}"
 
+	rpId := "o-ob0kv9g1yniFpiTco"
 	attachExistingRoutingPolicy := ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{
-		RpToAttach: "o-ob0kv9g1yniFpiTco",
+		RpToAttach: &rpId,
 	}
 	rppPipelineId := ObjectId("8c654b0f-3253-45c6-9d8b-88bcc35fb70b")
 	rppId := ObjectId("49f36469-7f10-4b10-9102-83654f3fe6a6")
 	routingPolicyPrimitive := xConnectivityTemplatePrimitive{
 		id:          &rppId,
-		attributes:  attachExistingRoutingPolicy,
+		attributes:  &attachExistingRoutingPolicy,
 		subpolicies: nil,
 		batchId:     nil,
 		pipelineId:  &rppPipelineId,
@@ -160,8 +161,8 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 	attachBgpOverSubinterfacesOrSvi := ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{
 		Ipv4Safi:              true,
 		Ipv6Safi:              false,
-		TTL:                   2,
-		BFD:                   false,
+		Ttl:                   2,
+		Bfd:                   false,
 		Password:              &bgpPassword,
 		Keepalive:             &keepalive,
 		Holdtime:              &holdtime,
@@ -177,7 +178,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 	bgpBatchId := ObjectId("83bd1635-e543-4752-b526-e290b8771285")
 	bgpPrimitive := xConnectivityTemplatePrimitive{
 		id:          &bgpId,
-		attributes:  attachBgpOverSubinterfacesOrSvi,
+		attributes:  &attachBgpOverSubinterfacesOrSvi,
 		subpolicies: []*xConnectivityTemplatePrimitive{&routingPolicyPrimitive},
 		batchId:     &bgpBatchId,
 		pipelineId:  &bgpPipelineId,
@@ -197,7 +198,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 	IpLinkBatchId := ObjectId("e4f0ae44-871e-4002-806e-c61e647e5657")
 	IpLinkPrimitive := xConnectivityTemplatePrimitive{
 		id:          &IpLinkId,
-		attributes:  attachLogicalLink,
+		attributes:  &attachLogicalLink,
 		subpolicies: []*xConnectivityTemplatePrimitive{&bgpPrimitive},
 		batchId:     &IpLinkBatchId,
 		pipelineId:  &IpLinkPipelineId,
@@ -218,13 +219,13 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resultUserData := raw[0].UserData
-	raw[0].UserData = ""
+	resultUserData := raw.Policies[0].UserData
+	raw.Policies[0].UserData = nil
 
 	result, err := json.Marshal(&struct {
-		Policies []xRawConnectivityTemplatePrimitive `json:"policies"`
+		Policies []xRawConnectivityTemplatePolicy `json:"policies"`
 	}{
-		Policies: raw,
+		Policies: raw.Policies,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -234,7 +235,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 		t.Fatalf("expected:\n %s\n\n got:\n%s", expected, result)
 	}
 
-	if !jsonEqual(t, json.RawMessage(expectedUserData), json.RawMessage(resultUserData)) {
-		t.Fatalf("expected:\n %s\n\n got:\n%s", expectedUserData, resultUserData)
+	if !jsonEqual(t, json.RawMessage(expectedUserData), json.RawMessage(*resultUserData)) {
+		t.Fatalf("expected:\n %s\n\n got:\n%s", expectedUserData, *resultUserData)
 	}
 }

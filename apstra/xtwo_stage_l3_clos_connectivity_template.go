@@ -65,17 +65,18 @@ func (o *XConnectivityTemplate) raw() (*rawConnectivityTemplate, error) {
 		o.Tags = []string{}
 	}
 
-	userData, err := json.Marshal(o.UserData)
+	userDataBytes, err := json.Marshal(o.UserData)
 	if err != nil {
 		return nil, fmt.Errorf("failed marshaling user data - %w", err)
 	}
+	userDataString := string(userDataBytes)
 
 	// special handling for root batch fields
 	rawPolicies[0].Description = o.Description
 	rawPolicies[0].Label = o.Label
 	rawPolicies[0].Visible = true
 	rawPolicies[0].Tags = o.Tags
-	rawPolicies[0].UserData = string(userData)
+	rawPolicies[0].UserData = &userDataString
 
 	return &rawConnectivityTemplate{
 		Policies: rawPolicies,
@@ -107,10 +108,10 @@ func (o *XConnectivityTemplate) SetUserData() {
 }
 
 type rawConnectivityTemplate struct {
-	Policies []xRawConnectivityTemplatePrimitive `json:"policies"`
+	Policies []xRawConnectivityTemplatePolicy `json:"policies"`
 }
 
-func (o *rawConnectivityTemplate) rootBatch() (*xRawConnectivityTemplatePrimitive, error) {
+func (o *rawConnectivityTemplate) rootBatch() (*xRawConnectivityTemplatePolicy, error) {
 	rootBatchIdx := -1
 	for i, rawPolicy := range o.Policies {
 		switch {
@@ -118,16 +119,20 @@ func (o *rawConnectivityTemplate) rootBatch() (*xRawConnectivityTemplatePrimitiv
 			rootBatchIdx = i
 		case rawPolicy.Visible && rootBatchIdx >= 0:
 			return nil, fmt.Errorf(
-				"cannot polish rawConnectivityTempalte when policy[%d] and policy[%d] both marked \"visible\"",
+				"cannot polish rawConnectivityTempalte when policy[%d] and policy[%d] both flagged \"visible\"",
 				rootBatchIdx, i)
 		}
+	}
+
+	if rootBatchIdx < 0 {
+		return nil, fmt.Errorf("out of %d raw policies, none are flagged \"visible\"", len(o.Policies))
 	}
 
 	return &o.Policies[rootBatchIdx], nil
 }
 
-func (o *rawConnectivityTemplate) policyMap() map[ObjectId]xRawConnectivityTemplatePrimitive {
-	result := make(map[ObjectId]xRawConnectivityTemplatePrimitive, len(o.Policies))
+func (o *rawConnectivityTemplate) policyMap() map[ObjectId]xRawConnectivityTemplatePolicy {
+	result := make(map[ObjectId]xRawConnectivityTemplatePolicy, len(o.Policies))
 	for _, policy := range o.Policies {
 		result[policy.Id] = policy
 	}
@@ -143,18 +148,43 @@ func (o *rawConnectivityTemplate) polish() (*XConnectivityTemplate, error) {
 	if err != nil {
 		return nil, err
 	}
+	if rootBatch.UserData == nil {
+		return nil, fmt.Errorf("connectivit template root batch has no user data")
+	}
 
 	policyMap := o.policyMap()
 	delete(policyMap, rootBatch.Id)
 
-	return &XConnectivityTemplate{
-		Id:          &o.Policies[0].Id,
-		Label:       "",
-		Description: "",
-		Subpolicies: nil,
-		Tags:        nil,
-		UserData:    nil,
+	var userData xConnectivityTemplatePrimitiveUserData
+	err = json.Unmarshal([]byte(*rootBatch.UserData), &userData)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling root batch %q user data %q - %w",
+			rootBatch.Id, *rootBatch.UserData, err)
 	}
+
+	var attributes xRawBatchattributes
+	err = json.Unmarshal(rootBatch.Attributes, &attributes)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling root batch %q attributes %q - %w",
+			rootBatch.Id, *rootBatch.UserData, err)
+	}
+
+	subpolicies := make([]*xConnectivityTemplatePrimitive, len(attributes.Subpolicies))
+	for i, policyId := range attributes.Subpolicies {
+		subpolicies[i], err = parsePrimitiveTreeByPipelineId(policyId, policyMap)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &XConnectivityTemplate{
+		Id:          &rootBatch.Id,
+		Label:       rootBatch.Label,
+		Description: rootBatch.Description,
+		Subpolicies: subpolicies,
+		Tags:        rootBatch.Tags,
+		UserData:    &userData,
+	}, nil
 }
 
 type xConnectivityTemplatePrimitiveUserData struct {
@@ -165,7 +195,7 @@ type xConnectivityTemplatePrimitiveUserData struct {
 type xConnectivityTemplatePrimitive struct {
 	id          *ObjectId
 	attributes  xConnectivityTemplateAttributes
-	subpolicies []*xConnectivityTemplatePrimitive // batch pointers
+	subpolicies []*xConnectivityTemplatePrimitive // batch of pointers to pipelines
 	batchId     *ObjectId
 	pipelineId  *ObjectId
 }
@@ -180,11 +210,11 @@ func (o *xConnectivityTemplatePrimitive) positions(x, y int) map[ObjectId][]int 
 	return positions
 }
 
-// rawPipeline returns []xRawConnectivityTemplatePrimitive consisting of:
+// rawPipeline returns []xRawConnectivityTemplatePolicy consisting of:
 //   - a pipeline policy element
 //   - the actual policy element
 //   - if there are any children, a batch policy element containing downstream primitives
-func (o *xConnectivityTemplatePrimitive) rawPipeline() ([]xRawConnectivityTemplatePrimitive, error) {
+func (o *xConnectivityTemplatePrimitive) rawPipeline() ([]xRawConnectivityTemplatePolicy, error) {
 	if o.attributes == nil {
 		return nil, errors.New("rawPipeline() invoked with nil attributes")
 	}
@@ -201,11 +231,11 @@ func (o *xConnectivityTemplatePrimitive) rawPipeline() ([]xRawConnectivityTempla
 	}
 
 	// "actual"
-	actual := xRawConnectivityTemplatePrimitive{
+	actual := xRawConnectivityTemplatePolicy{
 		Description:    attributes.description(),
 		Tags:           []string{}, // always empty slice
 		Label:          attributes.label(),
-		PolicyTypeName: attributes.policyTypeName(),
+		PolicyTypeName: attributes.policyTypeName().raw(),
 		Attributes:     rawAttributes,
 		Id:             *o.id,
 	}
@@ -225,7 +255,7 @@ func (o *xConnectivityTemplatePrimitive) rawPipeline() ([]xRawConnectivityTempla
 		return nil, fmt.Errorf("failed marshaling pipelineAttributes - %w", err)
 	}
 
-	pipeline := xRawConnectivityTemplatePrimitive{
+	pipeline := xRawConnectivityTemplatePolicy{
 		Description:    attributes.description(),
 		Tags:           []string{}, // always empty slice
 		Label:          attributes.label() + policyTypePipelineSuffix,
@@ -234,7 +264,7 @@ func (o *xConnectivityTemplatePrimitive) rawPipeline() ([]xRawConnectivityTempla
 		Id:             *o.pipelineId,
 	}
 
-	result := []xRawConnectivityTemplatePrimitive{pipeline, actual}
+	result := []xRawConnectivityTemplatePolicy{pipeline, actual}
 
 	if len(o.subpolicies) > 0 {
 		batchPolicies, err := rawBatch(*o.batchId, attributes.description(), attributes.label(), o.subpolicies)
@@ -269,21 +299,21 @@ func (o *xConnectivityTemplatePrimitive) SetIds() error {
 	return nil
 }
 
-type xRawConnectivityTemplatePrimitive struct {
-	Id             ObjectId        `json:"id"`
-	Label          string          `json:"label"`
-	Description    string          `json:"description"`
-	Tags           []string        `json:"tags"`
-	UserData       string          `json:"user_data,omitempty"`
-	Visible        bool            `json:"visible"`
-	PolicyTypeName string          `json:"policy_type_name"`
-	Attributes     json.RawMessage `json:"attributes"`
+type xRawConnectivityTemplatePolicy struct {
+	Id             ObjectId                  `json:"id"`
+	Label          string                    `json:"label"`
+	Description    string                    `json:"description"`
+	Tags           []string                  `json:"tags"`
+	UserData       *string                   `json:"user_data,omitempty"`
+	Visible        bool                      `json:"visible"`
+	PolicyTypeName ctPrimitivePolicyTypeName `json:"policy_type_name"`
+	Attributes     json.RawMessage           `json:"attributes"`
 }
 
-func (o xRawConnectivityTemplatePrimitive) attributes() (xConnectivityTemplateAttributes, error) {
+func (o xRawConnectivityTemplatePolicy) attributes() (xConnectivityTemplateAttributes, error) {
 	var result xConnectivityTemplateAttributes
 
-	switch ctPrimitivePolicyTypeName(o.PolicyTypeName) {
+	switch o.PolicyTypeName {
 	case ctPrimitivePolicyTypeNameAttachSingleVlan:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachSingleVlan)
 	case ctPrimitivePolicyTypeNameAttachMultipleVLAN:
@@ -292,7 +322,8 @@ func (o xRawConnectivityTemplatePrimitive) attributes() (xConnectivityTemplateAt
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachLogicalLink)
 	//case ctPrimitivePolicyTypeNameAttachStaticRoute: // todo
 	//case ctPrimitivePolicyTypeNameAttachCustomStaticRoute: // todo
-	//case ctPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt: // todo
+	case ctPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt:
+		result = new(ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt)
 	case ctPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
 	//case ctPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface: // todo
@@ -321,9 +352,9 @@ type xRawPipelineAttributes struct {
 //	id.ClockSequence()
 //}
 
-func rawBatch(id ObjectId, description, label string, subpolicies []*xConnectivityTemplatePrimitive) ([]xRawConnectivityTemplatePrimitive, error) {
+func rawBatch(id ObjectId, description, label string, subpolicies []*xConnectivityTemplatePrimitive) ([]xRawConnectivityTemplatePolicy, error) {
 	// build downstream pipelines and collect their IDs
-	var pipelines []xRawConnectivityTemplatePrimitive
+	var pipelines []xRawConnectivityTemplatePolicy
 	subpolicyIds := make([]ObjectId, len(subpolicies))
 	for i, subpolicy := range subpolicies {
 		pipelineSlice, err := subpolicy.rawPipeline()
@@ -344,7 +375,7 @@ func rawBatch(id ObjectId, description, label string, subpolicies []*xConnectivi
 		return nil, fmt.Errorf("failed marshaling subpolicy ids for batch - %w", err)
 	}
 
-	batch := xRawConnectivityTemplatePrimitive{
+	batch := xRawConnectivityTemplatePolicy{
 		Description:    description,
 		Tags:           []string{},
 		Label:          label + policyTypeBatchSuffix,
@@ -353,7 +384,7 @@ func rawBatch(id ObjectId, description, label string, subpolicies []*xConnectivi
 		Id:             id,
 	}
 
-	return append([]xRawConnectivityTemplatePrimitive{batch}, pipelines...), nil
+	return append([]xRawConnectivityTemplatePolicy{batch}, pipelines...), nil
 }
 
 func mergePositionMaps(dst, src *map[ObjectId][]int) {
@@ -363,8 +394,17 @@ func mergePositionMaps(dst, src *map[ObjectId][]int) {
 	}
 }
 
-func parsePrimitiveFromRawPrimitiveMap(pipelineId ObjectId, policyMap map[ObjectId]xRawConnectivityTemplatePrimitive) (*xConnectivityTemplatePrimitive, error) {
-	var actual, batch, pipeline xRawConnectivityTemplatePrimitive
+// parsePrimitiveTreeByPipelineId takes an entrypoint ObjectId representing a
+// "pipeline" policy and a map of xRawConnectivityTemplatePolicy including
+// the specified pipeline and all of its children.
+//
+// The returned *xConnectivityTemplatePrimitive is a tree built by recursive
+// invocations of parsePrimitiveTreeByPipelineId until the tree is complete.
+//
+// parsePrimitiveTreeByPipelineId should be invoked once for each sub-policy in
+// a connectivity template's root batch.
+func parsePrimitiveTreeByPipelineId(pipelineId ObjectId, policyMap map[ObjectId]xRawConnectivityTemplatePolicy) (*xConnectivityTemplatePrimitive, error) {
+	var actual, batch, pipeline xRawConnectivityTemplatePolicy
 	var ok bool
 
 	if pipeline, ok = policyMap[pipelineId]; !ok {
@@ -386,13 +426,13 @@ func parsePrimitiveFromRawPrimitiveMap(pipelineId ObjectId, policyMap map[Object
 		return nil, fmt.Errorf("raw policy map doesn't include actual policy %q", pipelineAttributes.FirstSubpolicy)
 	}
 	var actualType CtPrimitivePolicyTypeName
-	err = actualType.FromString(actual.PolicyTypeName)
+	err = actualType.FromString(string(actual.PolicyTypeName))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse policy type from CT policy %q - %w", actual.Id, err)
 	}
 
 	var batchId *ObjectId
-	var subpolicies []ObjectId
+	var subpolicies []*xConnectivityTemplatePrimitive
 	if pipelineAttributes.SecondSubpolicy != nil {
 		// a batch ID appears in the pipeline
 		if batch, ok = policyMap[*pipelineAttributes.SecondSubpolicy]; ok {
@@ -411,7 +451,14 @@ func parsePrimitiveFromRawPrimitiveMap(pipelineId ObjectId, policyMap map[Object
 			}
 
 			batchId = &batch.Id
-			subpolicies = batchAttributes.Subpolicies
+
+			subpolicies = make([]*xConnectivityTemplatePrimitive, len(batchAttributes.Subpolicies))
+			for i, subpolicyId := range batchAttributes.Subpolicies {
+				subpolicies[i], err = parsePrimitiveTreeByPipelineId(subpolicyId, policyMap)
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 
@@ -422,9 +469,9 @@ func parsePrimitiveFromRawPrimitiveMap(pipelineId ObjectId, policyMap map[Object
 	}
 
 	return &xConnectivityTemplatePrimitive{
-		id:          &pipeline.Id,
+		id:          &actual.Id,
 		attributes:  attributes,
-		subpolicies: subpolicies, // todo - recursion?
+		subpolicies: subpolicies,
 		batchId:     batchId,
 		pipelineId:  &pipeline.Id,
 	}, nil
@@ -432,7 +479,7 @@ func parsePrimitiveFromRawPrimitiveMap(pipelineId ObjectId, policyMap map[Object
 
 func (o *TwoStageL3ClosClient) ListConnectivityTemplates(ctx context.Context) ([]ObjectId, error) {
 	var apiResponse struct {
-		Policies []xRawConnectivityTemplatePrimitive `json:"policies"`
+		Policies []xRawConnectivityTemplatePolicy `json:"policies"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -499,11 +546,11 @@ func (o *TwoStageL3ClosClient) DeleteConnectivityTemplate(ctx context.Context, i
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) getConnectivityTemplate(ctx context.Context, id ObjectId) (map[ObjectId]xRawConnectivityTemplatePrimitive, error) {
+func (o *TwoStageL3ClosClient) getConnectivityTemplate(ctx context.Context, id ObjectId) (map[ObjectId]xRawConnectivityTemplatePolicy, error) {
 	urlStr := fmt.Sprintf(apiUrlBlueprintObjPolicyExportById, o.blueprintId, id)
 
 	var response struct {
-		Policies []xRawConnectivityTemplatePrimitive `json:"policies"`
+		Policies []xRawConnectivityTemplatePolicy `json:"policies"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -515,7 +562,7 @@ func (o *TwoStageL3ClosClient) getConnectivityTemplate(ctx context.Context, id O
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	result := make(map[ObjectId]xRawConnectivityTemplatePrimitive, len(response.Policies))
+	result := make(map[ObjectId]xRawConnectivityTemplatePolicy, len(response.Policies))
 	for _, policy := range response.Policies {
 		result[policy.Id] = policy
 	}
