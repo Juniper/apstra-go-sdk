@@ -98,11 +98,11 @@ func (o *ConnectivityTemplate) SetId() error {
 func (o *ConnectivityTemplate) SetUserData() {
 	o.UserData = &connectivityTemplatePrimitiveUserData{
 		IsSausage: true,
-		Positions: make(map[ObjectId][]int),
+		Positions: make(map[ObjectId][]float64),
 	}
 
 	for i, subpolicy := range o.Subpolicies {
-		additionalPositions := subpolicy.positions(i*xSpacing+xInitialPosition, yInitialPosition)
+		additionalPositions := subpolicy.positions(float64(i*xSpacing+xInitialPosition), yInitialPosition)
 		mergePositionMaps(&o.UserData.Positions, &additionalPositions)
 	}
 }
@@ -188,8 +188,8 @@ func (o *rawConnectivityTemplate) polish() (*ConnectivityTemplate, error) {
 }
 
 type connectivityTemplatePrimitiveUserData struct {
-	IsSausage bool               `json:"isSausage"`
-	Positions map[ObjectId][]int `json:"positions"`
+	IsSausage bool                   `json:"isSausage"`
+	Positions map[ObjectId][]float64 `json:"positions"`
 }
 
 type connectivityTemplatePrimitive struct {
@@ -200,11 +200,11 @@ type connectivityTemplatePrimitive struct {
 	pipelineId  *ObjectId
 }
 
-func (o *connectivityTemplatePrimitive) positions(x, y int) map[ObjectId][]int {
-	positions := make(map[ObjectId][]int)
-	positions[*o.id] = []int{x, y, 1}
+func (o *connectivityTemplatePrimitive) positions(x, y float64) map[ObjectId][]float64 {
+	positions := make(map[ObjectId][]float64)
+	positions[*o.id] = []float64{x, y, 1}
 	for i, subpolicy := range o.subpolicies {
-		additionalPositions := subpolicy.positions(x+i*xSpacing, y+ySpacing)
+		additionalPositions := subpolicy.positions(x+float64(i*xSpacing), y+ySpacing)
 		mergePositionMaps(&positions, &additionalPositions)
 	}
 	return positions
@@ -403,7 +403,7 @@ func rawBatch(id ObjectId, description, label string, subpolicies []*connectivit
 	return append([]rawConnectivityTemplatePolicy{batch}, pipelines...), nil
 }
 
-func mergePositionMaps(dst, src *map[ObjectId][]int) {
+func mergePositionMaps(dst, src *map[ObjectId][]float64) {
 	t := *dst
 	for k, v := range *src {
 		t[k] = v
