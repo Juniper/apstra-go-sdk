@@ -562,12 +562,10 @@ func (o *TwoStageL3ClosClient) DeleteConnectivityTemplate(ctx context.Context, i
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) getConnectivityTemplate(ctx context.Context, id ObjectId) (map[ObjectId]rawConnectivityTemplatePolicy, error) {
+func (o *TwoStageL3ClosClient) GetConnectivityTemplate(ctx context.Context, id ObjectId) (*ConnectivityTemplate, error) {
 	urlStr := fmt.Sprintf(apiUrlBlueprintObjPolicyExportById, o.blueprintId, id)
 
-	var response struct {
-		Policies []rawConnectivityTemplatePolicy `json:"policies"`
-	}
+	var response rawConnectivityTemplate
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -578,14 +576,5 @@ func (o *TwoStageL3ClosClient) getConnectivityTemplate(ctx context.Context, id O
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	result := make(map[ObjectId]rawConnectivityTemplatePolicy, len(response.Policies))
-	for _, policy := range response.Policies {
-		result[policy.Id] = policy
-	}
-
-	if _, ok := result[id]; !ok {
-		return nil, fmt.Errorf("policy %q not found in API response to GET %s", id, urlStr)
-	}
-
-	return result, nil
+	return response.polish()
 }
