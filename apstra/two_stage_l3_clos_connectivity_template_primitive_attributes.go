@@ -630,6 +630,8 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink) polish(t *C
 		tagged = true
 	case "untagged":
 		tagged = false
+	case "":
+		tagged = false
 	default:
 		return fmt.Errorf("unexpected interfaceType %q", o.InterfaceType)
 	}
