@@ -40,7 +40,7 @@ type rawConnectivityTemplateState struct {
 }
 
 func (o rawConnectivityTemplateState) polish() (*ConnectivityTemplateState, error) {
-	if o.Visible {
+	if !o.Visible {
 		return nil, fmt.Errorf("attempt to polish rawConnectivityTemplateState %q which is not visible", o.Id)
 	}
 
