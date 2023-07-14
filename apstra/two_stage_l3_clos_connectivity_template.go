@@ -637,7 +637,7 @@ func (o *TwoStageL3ClosClient) GetAllConnectivityTemplateStates(ctx context.Cont
 	}
 
 	result := make([]ConnectivityTemplateState, 0, len(response.EndpointPolicies)/2)
-	for i, rawPolicy := range response.EndpointPolicies {
+	for _, rawPolicy := range response.EndpointPolicies {
 		if rawPolicy.Visible {
 			polished, err := rawPolicy.polish()
 			if err != nil {
