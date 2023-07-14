@@ -31,7 +31,7 @@ const (
 	ctPrimitivePolicyTypeNameAttachCustomStaticRoute                        = ctPrimitivePolicyTypeName("AttachCustomStaticRoute")
 	ctPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt                    = ctPrimitivePolicyTypeName("AttachIpEndpointWithBgpNsxt")
 	ctPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi                = ctPrimitivePolicyTypeName("AttachBgpOverSubinterfacesOrSvi")
-	ctPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface = ctPrimitivePolicyTypeName("BgpWithPrefixPeeringForSviOrSubinterface")
+	ctPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface = ctPrimitivePolicyTypeName("AttachBgpWithPrefixPeeringForSviOrSubinterface")
 	ctPrimitivePolicyTypeNameAttachExistingRoutingPolicy                    = ctPrimitivePolicyTypeName("AttachExistingRoutingPolicy")
 	ctPrimitivePolicyTypeNameAttachRoutingZoneConstraint                    = ctPrimitivePolicyTypeName("AttachRoutingZoneConstraint")
 	ctPrimitivePolicyTypeNameUnknown                                        = "unknown CT primitive policy name %d"
