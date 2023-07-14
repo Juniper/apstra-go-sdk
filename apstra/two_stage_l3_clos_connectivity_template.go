@@ -32,6 +32,7 @@ const (
 )
 
 type ConnectivityTemplateState struct {
+	Id                ObjectId          `json:"id"`
 	Status            string            `json:"status"`
 	AppPointsCount    int               `json:"app_points_count"`
 	MissingAttributes map[string]string `json:"missing_attributes"`
@@ -598,4 +599,21 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplateState(ctx context.Context,
 	}
 
 	return &response.EndpointPolicy, nil
+}
+
+func (o *TwoStageL3ClosClient) GetAllConnectivityTemplateStates(ctx context.Context) ([]ConnectivityTemplateState, error) {
+	var response struct {
+		EndpointPolicies []ConnectivityTemplateState `json:"endpoint_policies"`
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintEndpointPolicies, o.blueprintId),
+		apiResponse: &response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return response.EndpointPolicies, nil
 }
