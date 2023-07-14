@@ -584,7 +584,9 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplate(ctx context.Context, id O
 }
 
 func (o *TwoStageL3ClosClient) GetConnectivityTemplateState(ctx context.Context, id ObjectId) (*ConnectivityTemplateState, error) {
-	var response ConnectivityTemplateState
+	var response struct {
+		EndpointPolicy ConnectivityTemplateState `json:"endpoint_policy"`
+	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -595,5 +597,5 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplateState(ctx context.Context,
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	return &response, nil
+	return &response.EndpointPolicy, nil
 }
