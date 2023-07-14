@@ -563,13 +563,11 @@ func (o *TwoStageL3ClosClient) DeleteConnectivityTemplate(ctx context.Context, i
 }
 
 func (o *TwoStageL3ClosClient) GetConnectivityTemplate(ctx context.Context, id ObjectId) (*ConnectivityTemplate, error) {
-	urlStr := fmt.Sprintf(apiUrlBlueprintObjPolicyExportById, o.blueprintId, id)
-
 	var response rawConnectivityTemplate
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      urlStr,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintObjPolicyExportById, o.blueprintId, id),
 		apiResponse: &response,
 	})
 	if err != nil {

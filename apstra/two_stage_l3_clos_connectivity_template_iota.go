@@ -24,7 +24,7 @@ const (
 	ctPrimitivePolicyTypeNameNone                                           = ctPrimitivePolicyTypeName("")
 	ctPrimitivePolicyTypeNameBatch                                          = ctPrimitivePolicyTypeName("batch")
 	ctPrimitivePolicyTypeNamePipeline                                       = ctPrimitivePolicyTypeName("pipeline")
-	ctPrimitivePolicyTypeNameAttachSingleVlan                               = ctPrimitivePolicyTypeName("AttachSingleVlan")
+	ctPrimitivePolicyTypeNameAttachSingleVlan                               = ctPrimitivePolicyTypeName("AttachSingleVLAN")
 	ctPrimitivePolicyTypeNameAttachMultipleVLAN                             = ctPrimitivePolicyTypeName("AttachMultipleVLAN")
 	ctPrimitivePolicyTypeNameAttachLogicalLink                              = ctPrimitivePolicyTypeName("AttachLogicalLink")
 	ctPrimitivePolicyTypeNameAttachStaticRoute                              = ctPrimitivePolicyTypeName("AttachStaticRoute")
