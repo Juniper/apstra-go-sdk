@@ -332,7 +332,12 @@ func TestParseCT(t *testing.T) {
 			t.Fatalf("error in test case %d", i)
 		}
 
-		connectivityTemplate, err := raw.polish()
+		ids := raw.rootBatchIds()
+		if len(ids) != 1 {
+			t.Fatalf("expected 1 root batch ID, got %d", len(ids))
+		}
+
+		connectivityTemplate, err := raw.polish(ids[0])
 		if err != nil {
 			t.Fatal(err)
 		}
