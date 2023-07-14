@@ -31,12 +31,32 @@ const (
 	ySpacing         = 70
 )
 
-type ConnectivityTemplateState struct {
+type rawConnectivityTemplateState struct {
 	Id                ObjectId          `json:"id"`
 	Status            string            `json:"status"`
 	AppPointsCount    int               `json:"app_points_count"`
 	MissingAttributes map[string]string `json:"missing_attributes"`
 	Visible           bool              `json:"visible"`
+}
+
+func (o rawConnectivityTemplateState) polish() (*ConnectivityTemplateState, error) {
+	if o.Visible {
+		return nil, fmt.Errorf("attempt to polish rawConnectivityTemplateState %q which is not visible", o.Id)
+	}
+
+	return &ConnectivityTemplateState{
+		Id:                o.Id,
+		Status:            o.Status,
+		AppPointsCount:    o.AppPointsCount,
+		MissingAttributes: o.MissingAttributes,
+	}, nil
+}
+
+type ConnectivityTemplateState struct {
+	Id                ObjectId          `json:"id"`
+	Status            string            `json:"status"`
+	AppPointsCount    int               `json:"app_points_count"`
+	MissingAttributes map[string]string `json:"missing_attributes"`
 }
 
 type ConnectivityTemplate struct {
@@ -587,7 +607,7 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplate(ctx context.Context, id O
 
 func (o *TwoStageL3ClosClient) GetConnectivityTemplateState(ctx context.Context, id ObjectId) (*ConnectivityTemplateState, error) {
 	var response struct {
-		EndpointPolicy ConnectivityTemplateState `json:"endpoint_policy"`
+		EndpointPolicy rawConnectivityTemplateState `json:"endpoint_policy"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -599,12 +619,12 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplateState(ctx context.Context,
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	return &response.EndpointPolicy, nil
+	return response.EndpointPolicy.polish()
 }
 
 func (o *TwoStageL3ClosClient) GetAllConnectivityTemplateStates(ctx context.Context) ([]ConnectivityTemplateState, error) {
 	var response struct {
-		EndpointPolicies []ConnectivityTemplateState `json:"endpoint_policies"`
+		EndpointPolicies []rawConnectivityTemplateState `json:"endpoint_policies"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -616,5 +636,16 @@ func (o *TwoStageL3ClosClient) GetAllConnectivityTemplateStates(ctx context.Cont
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	return response.EndpointPolicies, nil
+	result := make([]ConnectivityTemplateState, 0, len(response.EndpointPolicies)/2)
+	for i, rawPolicy := range response.EndpointPolicies {
+		if rawPolicy.Visible {
+			polished, err := rawPolicy.polish()
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, *polished)
+		}
+	}
+
+	return result, nil
 }
