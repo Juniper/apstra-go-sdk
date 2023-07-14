@@ -36,6 +36,7 @@ type ConnectivityTemplateState struct {
 	Status            string            `json:"status"`
 	AppPointsCount    int               `json:"app_points_count"`
 	MissingAttributes map[string]string `json:"missing_attributes"`
+	Visible           bool              `json:"visible"`
 }
 
 type ConnectivityTemplate struct {
