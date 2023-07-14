@@ -50,6 +50,7 @@ const (
 	ResourceGroupNameSpineLeafIp6
 	ResourceGroupNameAccessAccessIp4
 	ResourceGroupNameLeafLeafIp4
+	ResourceGroupNameLeafL3PeerLinkLinkIps
 	ResourceGroupNameMlagDomainIp4
 	ResourceGroupNameVtepIp4
 	ResourceGroupNameEvpnL3Vni
@@ -72,6 +73,7 @@ const (
 	resourceGroupNameSpineLeafIp4          = resourceGroupName("spine_leaf_link_ips")
 	resourceGroupNameSpineLeafIp6          = resourceGroupName("ipv6_spine_leaf_link_ips")
 	resourceGroupNameLeafLeafIp4           = resourceGroupName("leaf_leaf_link_ips")
+	resourceGroupNameLeafL3PeerLinkLinkIps = resourceGroupName("leaf_l3_peer_link_link_ips")
 	resourceGroupNameMlagDomainSviIp4      = resourceGroupName("mlag_domain_svi_subnets")
 	resourceGroupNameAccessAccessIp4       = resourceGroupName("access_l3_peer_link_link_ips")
 	resourceGroupNameVtepIp4               = resourceGroupName("vtep_ips")
@@ -130,6 +132,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 	case ResourceGroupNameAccessAccessIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameLeafLeafIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameLeafL3PeerLinkLinkIps:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameMlagDomainIp4:
 		return ResourceTypeIp4Pool
@@ -195,6 +199,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameAccessAccessIp4
 	case ResourceGroupNameLeafLeafIp4:
 		return resourceGroupNameLeafLeafIp4
+	case ResourceGroupNameLeafL3PeerLinkLinkIps:
+		return resourceGroupNameLeafL3PeerLinkLinkIps
 	case ResourceGroupNameMlagDomainIp4:
 		return resourceGroupNameMlagDomainSviIp4
 	case ResourceGroupNameVtepIp4:
@@ -246,6 +252,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameAccessAccessIp4), nil
 	case resourceGroupNameLeafLeafIp4:
 		return int(ResourceGroupNameLeafLeafIp4), nil
+	case resourceGroupNameLeafL3PeerLinkLinkIps:
+		return int(ResourceGroupNameLeafL3PeerLinkLinkIps), nil
 	case resourceGroupNameMlagDomainSviIp4:
 		return int(ResourceGroupNameMlagDomainIp4), nil
 	case resourceGroupNameVtepIp4:
