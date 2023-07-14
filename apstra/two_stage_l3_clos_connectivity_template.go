@@ -139,24 +139,16 @@ type rawConnectivityTemplate struct {
 	Policies []rawConnectivityTemplatePolicy `json:"policies"`
 }
 
-func (o *rawConnectivityTemplate) rootBatch() (*rawConnectivityTemplatePolicy, error) {
-	rootBatchIdx := -1
-	for i, rawPolicy := range o.Policies {
-		switch {
-		case rawPolicy.Visible && rootBatchIdx < 0:
-			rootBatchIdx = i
-		case rawPolicy.Visible && rootBatchIdx >= 0:
-			return nil, fmt.Errorf(
-				"cannot polish rawConnectivityTempalte when policy[%d] and policy[%d] both flagged \"visible\"",
-				rootBatchIdx, i)
+func (o *rawConnectivityTemplate) rootBatchIds() []ObjectId {
+	var result []ObjectId
+
+	for _, rawPolicy := range o.Policies {
+		if rawPolicy.Visible {
+			result = append(result, rawPolicy.Id)
 		}
 	}
 
-	if rootBatchIdx < 0 {
-		return nil, fmt.Errorf("out of %d raw policies, none are flagged \"visible\"", len(o.Policies))
-	}
-
-	return &o.Policies[rootBatchIdx], nil
+	return result
 }
 
 func (o *rawConnectivityTemplate) policyMap() map[ObjectId]rawConnectivityTemplatePolicy {
@@ -167,24 +159,24 @@ func (o *rawConnectivityTemplate) policyMap() map[ObjectId]rawConnectivityTempla
 	return result
 }
 
-func (o *rawConnectivityTemplate) polish() (*ConnectivityTemplate, error) {
+func (o *rawConnectivityTemplate) polish(id ObjectId) (*ConnectivityTemplate, error) {
 	if len(o.Policies) == 0 {
 		return nil, fmt.Errorf("cannot polish a rawConnectivityTemplate with no policies")
 	}
 
-	rootBatch, err := o.rootBatch()
-	if err != nil {
-		return nil, err
+	policyMap := o.policyMap()
+	rootBatch, ok := policyMap[id]
+	if !ok {
+		return nil, fmt.Errorf("root batch policy %q not found", id)
 	}
 	if rootBatch.UserData == nil {
 		return nil, fmt.Errorf("connectivity template root batch has no user data")
 	}
 
-	policyMap := o.policyMap()
 	delete(policyMap, rootBatch.Id)
 
 	var userData connectivityTemplatePrimitiveUserData
-	err = json.Unmarshal([]byte(*rootBatch.UserData), &userData)
+	err := json.Unmarshal([]byte(*rootBatch.UserData), &userData)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling root batch %q user data %q - %w",
 			rootBatch.Id, *rootBatch.UserData, err)
@@ -602,7 +594,31 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplate(ctx context.Context, id O
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	return response.polish()
+	return response.polish(id)
+}
+
+func (o *TwoStageL3ClosClient) GetAllConnectivityTemplates(ctx context.Context) ([]ConnectivityTemplate, error) {
+	var response rawConnectivityTemplate
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintObjPolicyExport, o.blueprintId),
+		apiResponse: &response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	ids := response.rootBatchIds()
+	result := make([]ConnectivityTemplate, len(ids))
+	for i, id := range ids {
+		polished, err := response.polish(id)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+
+	return result, nil
 }
 
 func (o *TwoStageL3ClosClient) GetConnectivityTemplateState(ctx context.Context, id ObjectId) (*ConnectivityTemplateState, error) {
@@ -636,7 +652,7 @@ func (o *TwoStageL3ClosClient) GetAllConnectivityTemplateStates(ctx context.Cont
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	result := make([]ConnectivityTemplateState, 0, len(response.EndpointPolicies)/2)
+	result := make([]ConnectivityTemplateState, 0, len(response.EndpointPolicies)/3)
 	for _, rawPolicy := range response.EndpointPolicies {
 		if rawPolicy.Visible {
 			polished, err := rawPolicy.polish()
