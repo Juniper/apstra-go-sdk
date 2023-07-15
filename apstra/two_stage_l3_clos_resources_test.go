@@ -151,6 +151,7 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "ipv6_spine_leaf_link_ips", intType: ResourceGroupNameSpineLeafIp6, stringType: resourceGroupNameSpineLeafIp6},
 		{stringVal: "access_l3_peer_link_link_ips", intType: ResourceGroupNameAccessAccessIp4, stringType: resourceGroupNameAccessAccessIp4},
 		{stringVal: "leaf_leaf_link_ips", intType: ResourceGroupNameLeafLeafIp4, stringType: resourceGroupNameLeafLeafIp4},
+		{stringVal: "leaf_l3_peer_link_link_ips", intType: ResourceGroupNameLeafL3PeerLinkLinkIps, stringType: resourceGroupNameLeafL3PeerLinkLinkIps},
 		{stringVal: "mlag_domain_svi_subnets", intType: ResourceGroupNameMlagDomainIp4, stringType: resourceGroupNameMlagDomainSviIp4},
 		{stringVal: "vtep_ips", intType: ResourceGroupNameVtepIp4, stringType: resourceGroupNameVtepIp4},
 		{stringVal: "evpn_l3_vnis", intType: ResourceGroupNameEvpnL3Vni, stringType: resourceGroupNameEvpnL3Vni},
