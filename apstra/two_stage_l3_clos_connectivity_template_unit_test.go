@@ -255,3 +255,15 @@ func TestGetAllConnectivityTemplatesFromFile(t *testing.T) {
 		log.Println(ct.Id)
 	}
 }
+
+func TestGetAllConnectivityTemplateStatesFromFile(t *testing.T) {
+	file := "/Users/cmarget/20230717-090911/42a2f25d-ba82-423c-9bf2-c715c7ce9748/endpoint-policies"
+	ctStates, err := GetAllConnectivityTemplateStatesFromFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, ctState := range ctStates {
+		log.Println(ctState.Id)
+	}
+}
