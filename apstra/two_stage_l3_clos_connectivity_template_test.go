@@ -15,7 +15,7 @@ func TestParseCT(t *testing.T) {
       "visible": false,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "2e264a0a-ca5b-413c-9bab-c8c1c4aa4e6e"
         ]
       },
@@ -92,7 +92,7 @@ func TestParseCT(t *testing.T) {
       "visible": true,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "c303e784-82e5-48f5-9ddc-4242641e3770"
         ]
       },
@@ -118,7 +118,7 @@ func TestParseCT(t *testing.T) {
       "visible": false,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "7ae346b7-9136-4d0a-acd1-37856c23b68f"
         ]
       },
@@ -179,7 +179,7 @@ func TestParseCT(t *testing.T) {
       "visible": true,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "7621d11a-ca48-410f-a413-96505bd14812"
         ]
       },
@@ -228,7 +228,7 @@ func TestParseCT(t *testing.T) {
       "visible": false,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "5760f3de-8228-46fd-958a-8f3ad1402814",
           "3862d50e-ea13-4d14-8852-fd041a2225ca"
         ]
@@ -315,7 +315,7 @@ func TestParseCT(t *testing.T) {
       "visible": false,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "c46106e6-671c-44e1-ae8c-43835509fa5e",
           "816f4aad-bee5-47a1-8ddf-30e04ba113ed"
         ]

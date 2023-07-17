@@ -17,7 +17,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
       "visible": true,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "31e32ddd-98e9-4f74-8fd7-61bbf9501cfd"
         ]
       }
@@ -58,7 +58,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
       "visible": false,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "de1474c2-f892-4fa6-bef4-e330ae7f9ac7"
         ]
       }
@@ -107,7 +107,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
       "visible": false,
       "policy_type_name": "batch",
       "attributes": {
-        "subpolicies": [
+        "Subpolicies": [
           "8c654b0f-3253-45c6-9d8b-88bcc35fb70b"
         ]
       }
@@ -147,12 +147,12 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 	}
 	rppPipelineId := ObjectId("8c654b0f-3253-45c6-9d8b-88bcc35fb70b")
 	rppId := ObjectId("49f36469-7f10-4b10-9102-83654f3fe6a6")
-	routingPolicyPrimitive := connectivityTemplatePrimitive{
-		id:          &rppId,
-		attributes:  &attachExistingRoutingPolicy,
-		subpolicies: nil,
-		batchId:     nil,
-		pipelineId:  &rppPipelineId,
+	routingPolicyPrimitive := ConnectivityTemplatePrimitive{
+		Id:          &rppId,
+		Attributes:  &attachExistingRoutingPolicy,
+		Subpolicies: nil,
+		BatchId:     nil,
+		PipelineId:  &rppPipelineId,
 	}
 
 	bgpPassword := "foo"
@@ -177,12 +177,12 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 	bgpPipelineId := ObjectId("de1474c2-f892-4fa6-bef4-e330ae7f9ac7")
 	bgpId := ObjectId("498b2502-e062-414b-b401-4e88a08ae8c5")
 	bgpBatchId := ObjectId("83bd1635-e543-4752-b526-e290b8771285")
-	bgpPrimitive := connectivityTemplatePrimitive{
-		id:          &bgpId,
-		attributes:  &attachBgpOverSubinterfacesOrSvi,
-		subpolicies: []*connectivityTemplatePrimitive{&routingPolicyPrimitive},
-		batchId:     &bgpBatchId,
-		pipelineId:  &bgpPipelineId,
+	bgpPrimitive := ConnectivityTemplatePrimitive{
+		Id:          &bgpId,
+		Attributes:  &attachBgpOverSubinterfacesOrSvi,
+		Subpolicies: []*ConnectivityTemplatePrimitive{&routingPolicyPrimitive},
+		BatchId:     &bgpBatchId,
+		PipelineId:  &bgpPipelineId,
 	}
 
 	securityZone := ObjectId("6k8Wmo0n1h5b_Mbnmbc")
@@ -197,18 +197,18 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 	IpLinkPipelineId := ObjectId("31e32ddd-98e9-4f74-8fd7-61bbf9501cfd")
 	IpLinkId := ObjectId("bac16090-88ff-4f8b-9ee6-79b31078e123")
 	IpLinkBatchId := ObjectId("e4f0ae44-871e-4002-806e-c61e647e5657")
-	IpLinkPrimitive := connectivityTemplatePrimitive{
-		id:          &IpLinkId,
-		attributes:  &attachLogicalLink,
-		subpolicies: []*connectivityTemplatePrimitive{&bgpPrimitive},
-		batchId:     &IpLinkBatchId,
-		pipelineId:  &IpLinkPipelineId,
+	IpLinkPrimitive := ConnectivityTemplatePrimitive{
+		Id:          &IpLinkId,
+		Attributes:  &attachLogicalLink,
+		Subpolicies: []*ConnectivityTemplatePrimitive{&bgpPrimitive},
+		BatchId:     &IpLinkBatchId,
+		PipelineId:  &IpLinkPipelineId,
 	}
 
 	ctId := ObjectId("9f6c2ee4-a842-4fc2-979c-afce6c5f0ace")
 	ct := ConnectivityTemplate{
 		Id:          &ctId,
-		Subpolicies: []*connectivityTemplatePrimitive{&IpLinkPrimitive},
+		Subpolicies: []*ConnectivityTemplatePrimitive{&IpLinkPrimitive},
 		Tags:        nil,
 		Label:       "BGP over L3 connectivity",
 		Description: "this is the description",
