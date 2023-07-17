@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 const (
@@ -661,6 +663,34 @@ func (o *TwoStageL3ClosClient) GetAllConnectivityTemplateStates(ctx context.Cont
 			}
 			result = append(result, *polished)
 		}
+	}
+
+	return result, nil
+}
+
+func GetAllConnectivityTemplatesFromFile(file string) ([]ConnectivityTemplate, error) {
+	b, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	var raw rawConnectivityTemplate
+	err = json.Unmarshal(b, &raw)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := raw.rootBatchIds()
+	result := make([]ConnectivityTemplate, len(ids))
+	for i, id := range ids {
+		if id == "6328a6fe-114e-4f91-b24f-b348f614ad3b" {
+			log.Println("stop!")
+		}
+		polished, err := raw.polish(id)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
 	}
 
 	return result, nil

@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"encoding/json"
+	"log"
 	"testing"
 )
 
@@ -237,5 +238,20 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 
 	if !jsonEqual(t, json.RawMessage(expectedUserData), json.RawMessage(*resultUserData)) {
 		t.Fatalf("expected:\n %s\n\n got:\n%s", expectedUserData, *resultUserData)
+	}
+}
+
+func TestGetAllConnectivityTemplatesFromFile(t *testing.T) {
+	file := "/Users/cmarget/20230717-090911/42a2f25d-ba82-423c-9bf2-c715c7ce9748/obj-policy-export"
+	cts, err := GetAllConnectivityTemplatesFromFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for i, ct := range cts {
+		if ct.Id == nil {
+			t.Fatalf("CT at index %d has nil ID", i)
+		}
+		log.Println(ct.Id)
 	}
 }
