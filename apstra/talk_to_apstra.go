@@ -119,9 +119,6 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	var err error
 	var requestBody []byte
-	if ctx == nil {
-		ctx = context.TODO()
-	}
 
 	// create URL
 	apstraUrl, err := o.craftUrl(in)
