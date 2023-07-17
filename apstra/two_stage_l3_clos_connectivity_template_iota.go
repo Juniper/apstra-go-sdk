@@ -269,3 +269,105 @@ func (o ctPrimitiveIPv6ProtocolSessionAddressing) parse() (int, error) {
 		return 0, fmt.Errorf(CtPrimitiveIPv6ProtocolSessionAddressingUnknown, o)
 	}
 }
+
+type CtPrimitiveIPv4AddressingType int
+type ctPrimitiveIPv4AddressingType string
+
+const (
+	CtPrimitiveIPv4AddressingTypeNone     = CtPrimitiveIPv4AddressingType(iota)
+	CtPrimitiveIPv4AddressingTypeNumbered = CtPrimitiveIPv4AddressingType(iota)
+	CtPrimitiveIPv4AddressingTypeUnknown  = "unknown CtPrimitiveIPv4AddressingType value %q"
+
+	ctPrimitiveIPv4AddressingTypeNone     = ctPrimitiveIPv4AddressingType("none")
+	ctPrimitiveIPv4AddressingTypeNumbered = ctPrimitiveIPv4AddressingType("numbered")
+	ctPrimitiveIPv4AddressingTypeUnknown  = "unknown ctPrimitiveIPv4AddressingType value %d"
+)
+
+func (o CtPrimitiveIPv4AddressingType) String() string {
+	switch o {
+	case CtPrimitiveIPv4AddressingTypeNone:
+		return string(ctPrimitiveIPv4AddressingTypeNone)
+	case CtPrimitiveIPv4AddressingTypeNumbered:
+		return string(ctPrimitiveIPv4AddressingTypeNumbered)
+	default:
+		return fmt.Sprintf(ctPrimitiveIPv4AddressingTypeUnknown, o)
+	}
+}
+
+func (o *CtPrimitiveIPv4AddressingType) FromString(in string) error {
+	i, err := ctPrimitiveIPv4AddressingType(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = CtPrimitiveIPv4AddressingType(i)
+	return nil
+}
+
+func (o CtPrimitiveIPv4AddressingType) raw() ctPrimitiveIPv4AddressingType {
+	return ctPrimitiveIPv4AddressingType(o.String())
+}
+
+func (o ctPrimitiveIPv4AddressingType) parse() (int, error) {
+	switch o {
+	case ctPrimitiveIPv4AddressingTypeNone:
+		return int(CtPrimitiveIPv4AddressingTypeNone), nil
+	case ctPrimitiveIPv4AddressingTypeNumbered:
+		return int(CtPrimitiveIPv4AddressingTypeNumbered), nil
+	default:
+		return 0, fmt.Errorf(CtPrimitiveIPv4AddressingTypeUnknown, o)
+	}
+}
+
+type CtPrimitiveIPv6AddressingType int
+type ctPrimitiveIPv6AddressingType string
+
+const (
+	CtPrimitiveIPv6AddressingTypeLinkLocal = CtPrimitiveIPv6AddressingType(iota)
+	CtPrimitiveIPv6AddressingTypeNone
+	CtPrimitiveIPv6AddressingTypeNumbered
+	CtPrimitiveIPv6AddressingTypeUnknown = "unknown CtPrimitiveIPv6AddressingType value %q"
+
+	ctPrimitiveIPv6AddressingTypeLinkLocal = ctPrimitiveIPv6AddressingType("link_local")
+	ctPrimitiveIPv6AddressingTypeNone      = ctPrimitiveIPv6AddressingType("none")
+	ctPrimitiveIPv6AddressingTypeNumbered  = ctPrimitiveIPv6AddressingType("numbered")
+	ctPrimitiveIPv6AddressingTypeUnknown   = "unknown ctPrimitiveIPv6AddressingType value %d"
+)
+
+func (o CtPrimitiveIPv6AddressingType) String() string {
+	switch o {
+	case CtPrimitiveIPv6AddressingTypeLinkLocal:
+		return string(ctPrimitiveIPv6AddressingTypeLinkLocal)
+	case CtPrimitiveIPv6AddressingTypeNone:
+		return string(ctPrimitiveIPv6AddressingTypeNone)
+	case CtPrimitiveIPv6AddressingTypeNumbered:
+		return string(ctPrimitiveIPv6AddressingTypeNumbered)
+	default:
+		return fmt.Sprintf(ctPrimitiveIPv6AddressingTypeUnknown, o)
+	}
+}
+
+func (o *CtPrimitiveIPv6AddressingType) FromString(in string) error {
+	i, err := ctPrimitiveIPv6AddressingType(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = CtPrimitiveIPv6AddressingType(i)
+	return nil
+}
+
+func (o CtPrimitiveIPv6AddressingType) raw() ctPrimitiveIPv6AddressingType {
+	return ctPrimitiveIPv6AddressingType(o.String())
+}
+
+func (o ctPrimitiveIPv6AddressingType) parse() (int, error) {
+	switch o {
+	case ctPrimitiveIPv6AddressingTypeLinkLocal:
+		return int(CtPrimitiveIPv6AddressingTypeLinkLocal), nil
+	case ctPrimitiveIPv6AddressingTypeNone:
+		return int(CtPrimitiveIPv6AddressingTypeNone), nil
+	case ctPrimitiveIPv6AddressingTypeNumbered:
+		return int(CtPrimitiveIPv6AddressingTypeNumbered), nil
+	default:
+		return 0, fmt.Errorf(CtPrimitiveIPv6AddressingTypeUnknown, o)
+	}
+}

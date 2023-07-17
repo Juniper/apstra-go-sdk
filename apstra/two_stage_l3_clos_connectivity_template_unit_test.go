@@ -187,11 +187,11 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 	securityZone := ObjectId("6k8Wmo0n1h5b_Mbnmbc")
 	vlan := Vlan(5)
 	attachLogicalLink := ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-		SecurityZone:            &securityZone,
-		Tagged:                  true,
-		Vlan:                    &vlan,
-		IPv4AddressingNumbered:  true,
-		IPv6AddressingLinkLocal: true,
+		SecurityZone:       &securityZone,
+		Tagged:             true,
+		Vlan:               &vlan,
+		IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
+		IPv6AddressingType: CtPrimitiveIPv6AddressingTypeLinkLocal,
 	}
 	IpLinkPipelineId := ObjectId("31e32ddd-98e9-4f74-8fd7-61bbf9501cfd")
 	IpLinkId := ObjectId("bac16090-88ff-4f8b-9ee6-79b31078e123")

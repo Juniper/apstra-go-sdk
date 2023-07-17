@@ -107,11 +107,11 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) description(
 var _ connectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
-	SecurityZone            *ObjectId
-	Tagged                  bool
-	Vlan                    *Vlan
-	IPv4AddressingNumbered  bool
-	IPv6AddressingLinkLocal bool
+	SecurityZone       *ObjectId
+	Tagged             bool
+	Vlan               *Vlan
+	IPv4AddressingType CtPrimitiveIPv4AddressingType
+	IPv6AddressingType CtPrimitiveIPv6AddressingType
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) fromRawJson(in json.RawMessage) error {
@@ -140,27 +140,11 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) raw() (json.R
 		}
 	}
 
-	var iPv4AddressingType string
-	switch o.IPv4AddressingNumbered {
-	case true:
-		iPv4AddressingType = "numbered"
-	case false:
-		iPv4AddressingType = "none"
-	}
-
-	var iPv6AddressingType string
-	switch o.IPv6AddressingLinkLocal {
-	case true:
-		iPv6AddressingType = "link_local"
-	case false:
-		iPv6AddressingType = "none"
-	}
-
 	raw := rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
 		InterfaceType:      intfType,
 		Vlan:               o.Vlan,
-		Ipv4AddressingType: iPv4AddressingType,
-		Ipv6AddressingType: iPv6AddressingType,
+		Ipv4AddressingType: o.IPv4AddressingType.raw(),
+		Ipv6AddressingType: o.IPv6AddressingType.raw(),
 		SecurityZone:       o.SecurityZone,
 	}
 
@@ -616,11 +600,11 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) polish(t *
 }
 
 type rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
-	InterfaceType      string    `json:"interface_type"`
-	Vlan               *Vlan     `json:"vlan_id"`
-	Ipv6AddressingType string    `json:"ipv6_addressing_type"`
-	Ipv4AddressingType string    `json:"ipv4_addressing_type"`
-	SecurityZone       *ObjectId `json:"security_zone"`
+	InterfaceType      string                        `json:"interface_type"`
+	Vlan               *Vlan                         `json:"vlan_id"`
+	Ipv4AddressingType ctPrimitiveIPv4AddressingType `json:"ipv4_addressing_type"`
+	Ipv6AddressingType ctPrimitiveIPv6AddressingType `json:"ipv6_addressing_type"`
+	SecurityZone       *ObjectId                     `json:"security_zone"`
 }
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink) polish(t *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) error {
@@ -636,31 +620,21 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink) polish(t *C
 		return fmt.Errorf("unexpected interfaceType %q", o.InterfaceType)
 	}
 
-	var ipv4Numbered bool
-	switch o.Ipv4AddressingType {
-	case "numbered":
-		ipv4Numbered = true
-	case "none":
-		ipv4Numbered = false
-	default:
-		return fmt.Errorf("unexpected ipv4_addressing_type %q", o.Ipv4AddressingType)
+	ipv4AddressingType, err := o.Ipv4AddressingType.parse()
+	if err != nil {
+		return err
 	}
 
-	var ipv6LinkLocal bool
-	switch o.Ipv6AddressingType {
-	case "link_local":
-		ipv6LinkLocal = true
-	case "none":
-		ipv6LinkLocal = false
-	default:
-		return fmt.Errorf("unexpected ipv6_addressing_type %q", o.Ipv6AddressingType)
+	ipv6AddressingType, err := o.Ipv6AddressingType.parse()
+	if err != nil {
+		return err
 	}
 
 	t.SecurityZone = o.SecurityZone
 	t.Tagged = tagged
 	t.Vlan = o.Vlan
-	t.IPv4AddressingNumbered = ipv4Numbered
-	t.IPv6AddressingLinkLocal = ipv6LinkLocal
+	t.IPv4AddressingType = CtPrimitiveIPv4AddressingType(ipv4AddressingType)
+	t.IPv6AddressingType = CtPrimitiveIPv6AddressingType(ipv6AddressingType)
 
 	return nil
 }
