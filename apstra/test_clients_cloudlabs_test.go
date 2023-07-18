@@ -129,7 +129,7 @@ func (o *cloudlabsTopology) getGoapstraClientCfg(ctx context.Context) (*ClientCf
 			return nil, err
 		}
 		if o.State != "up" {
-			return nil, fmt.Errorf("topology '%s' state is '%s", o.Uuid, o.State)
+			return nil, fmt.Errorf("topology '%s' state is '%s'", o.Uuid, o.State)
 		}
 	}
 
@@ -163,7 +163,7 @@ func (o *cloudlabsTopology) getGoapstraClient(ctx context.Context) (*Client, err
 	if err != nil {
 		return nil, err
 	}
-	return cfg.NewClient()
+	return cfg.NewClient(ctx)
 }
 
 func getCloudlabsTopology(ctx context.Context, id string) (*cloudlabsTopology, error) {
