@@ -299,6 +299,28 @@ func (o *TwoStageL3ClosClient) GetVirtualNetwork(ctx context.Context, vnId Objec
 	return raw.polish()
 }
 
+// GetAllVirtualNetworks return map[ObjectId]VirtualNetwork representing all
+// virtual networks configured in Apstra. NOTE: the underlying API call DOES NOT
+// RETURN the SVI information, so each map entry will have a nil slice at it's
+// Data.SviIps struct element.
+func (o *TwoStageL3ClosClient) GetAllVirtualNetworks(ctx context.Context) (map[ObjectId]VirtualNetwork, error) {
+	rawMap, err := o.getAllVirtualNetworks(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[ObjectId]VirtualNetwork, len(rawMap))
+	for id, raw := range rawMap {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[id] = *polished
+	}
+
+	return result, nil
+}
+
 // UpdateVirtualNetwork updates the virtual network specified by ID using the
 // VirtualNetworkData and HTTP method PUT.
 func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, cfg *VirtualNetworkData) error {
