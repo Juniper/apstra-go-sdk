@@ -274,6 +274,16 @@ func TestRoutingPolicies(t *testing.T) {
 		}
 		compareDcRoutingPolicyData(t, policyData, policy.Data)
 
+		log.Printf("testing GetRoutingPolicyByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		policy, err = bpClient.GetRoutingPolicyByName(ctx, policy.Data.Label)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if policy.Id != policyId {
+			t.Fatalf("policy IDs don't match %q vs. %q", policy.Id, policyId)
+		}
+		compareDcRoutingPolicyData(t, policyData, policy.Data)
+
 		log.Printf("testing GetAllRoutingPolicies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		policies, err := bpClient.GetAllRoutingPolicies(ctx)
 		if err != nil {
