@@ -57,7 +57,7 @@ const (
 	ResourceGroupNameVirtualNetworkSviIpv4
 	ResourceGroupNameVirtualNetworkSviIpv6
 	ResourceGroupNameVxlanVnIds
-	ResourceGroupNameUnknown
+	ResourceGroupNameUnknown = "unknown group name %q"
 
 	resourceGroupNameNone                  = resourceGroupName("")
 	resourceGroupNameSuperspineAsn         = resourceGroupName("superspine_asns")
@@ -267,7 +267,7 @@ func (o resourceGroupName) parse() (int, error) {
 	case resourceGroupNameVxlanVnIds:
 		return int(ResourceGroupNameVxlanVnIds), nil
 	default:
-		return int(ResourceGroupNameUnknown), fmt.Errorf("unknown group name '%s'", o)
+		return 0, fmt.Errorf(ResourceGroupNameUnknown, o)
 	}
 }
 
