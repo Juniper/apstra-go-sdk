@@ -491,6 +491,13 @@ func (o *TwoStageL3ClosClient) getRoutingPolicyByName(ctx context.Context, desir
 		policyIdx = i
 	}
 
+	if policyIdx < 0 {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("routing policy with name %q not found", desired),
+		}
+	}
+
 	return &policies[policyIdx], nil
 }
 
