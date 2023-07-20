@@ -153,7 +153,8 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "ipv6_spine_leaf_link_ips", intType: ResourceGroupNameSpineLeafIp6, stringType: resourceGroupNameSpineLeafIp6},
 		{stringVal: "access_l3_peer_link_link_ips", intType: ResourceGroupNameAccessAccessIp4, stringType: resourceGroupNameAccessAccessIp4},
 		{stringVal: "leaf_leaf_link_ips", intType: ResourceGroupNameLeafLeafIp4, stringType: resourceGroupNameLeafLeafIp4},
-		{stringVal: "leaf_l3_peer_link_link_ips", intType: ResourceGroupNameLeafL3PeerLinkLinkIps, stringType: resourceGroupNameLeafL3PeerLinkLinkIps},
+		{stringVal: "leaf_l3_peer_link_link_ips", intType: ResourceGroupNameLeafL3PeerLinkLinkIp4, stringType: resourceGroupNameLeafL3PeerLinkLinkIp4},
+		{stringVal: "ipv6_leaf_l3_peer_link_link_ips", intType: ResourceGroupNameLeafL3PeerLinkLinkIp6, stringType: resourceGroupNameLeafL3PeerLinkLinkIp6},
 		{stringVal: "mlag_domain_svi_subnets", intType: ResourceGroupNameMlagDomainIp4, stringType: resourceGroupNameMlagDomainSviIp4},
 		{stringVal: "mlag_domain_svi_subnets_ipv6", intType: ResourceGroupNameMlagDomainIp6, stringType: resourceGroupNameMlagDomainSviIp6},
 		{stringVal: "vtep_ips", intType: ResourceGroupNameVtepIp4, stringType: resourceGroupNameVtepIp4},
@@ -161,8 +162,8 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "virtual_network_svi_subnets", intType: ResourceGroupNameVirtualNetworkSviIpv4, stringType: resourceGroupNameVirtualNetworkSviIpv4},
 		{stringVal: "virtual_network_svi_subnets_ipv6", intType: ResourceGroupNameVirtualNetworkSviIpv6, stringType: resourceGroupNameVirtualNetworkSviIpv6},
 		{stringVal: "vxlan_vn_ids", intType: ResourceGroupNameVxlanVnIds, stringType: resourceGroupNameVxlanVnIds},
-		{stringVal: "to_generic_link_ipv4", intType: ResourceGroupNameToGenericLinkIpv4, stringType: resourceGroupNameToGenericLinkIpv4},
-		{stringVal: "to_generic_link_ipv6", intType: ResourceGroupNameToGenericLinkIpv6, stringType: resourceGroupNameToGenericLinkIpv6},
+		{stringVal: "to_generic_link_ips", intType: ResourceGroupNameToGenericLinkIpv4, stringType: resourceGroupNameToGenericLinkIpv4},
+		{stringVal: "ipv6_to_generic_link_ips", intType: ResourceGroupNameToGenericLinkIpv6, stringType: resourceGroupNameToGenericLinkIpv6},
 	}
 
 	for i, td := range testData {
