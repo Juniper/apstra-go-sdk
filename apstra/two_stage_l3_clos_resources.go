@@ -57,7 +57,8 @@ const (
 	ResourceGroupNameVirtualNetworkSviIpv4
 	ResourceGroupNameVirtualNetworkSviIpv6
 	ResourceGroupNameVxlanVnIds
-	ResourceGroupNameUnknown
+	ResourceGroupNameToGenericLinkIps
+	ResourceGroupNameUnknown = "unknown group name %q"
 
 	resourceGroupNameNone                  = resourceGroupName("")
 	resourceGroupNameSuperspineAsn         = resourceGroupName("superspine_asns")
@@ -81,6 +82,7 @@ const (
 	resourceGroupNameVirtualNetworkSviIpv4 = resourceGroupName("virtual_network_svi_subnets")
 	resourceGroupNameVirtualNetworkSviIpv6 = resourceGroupName("virtual_network_svi_subnets_ipv6")
 	resourceGroupNameVxlanVnIds            = resourceGroupName("vxlan_vn_ids")
+	resourceGroupNameToGenericLinkIps      = resourceGroupName("to_generic_link_ips")
 	resourceGroupNameUnknown               = "group name %d unknown"
 )
 
@@ -136,6 +138,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 	case ResourceGroupNameLeafL3PeerLinkLinkIps:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameMlagDomainIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameToGenericLinkIps:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameVtepIp4:
 		return ResourceTypeIp4Pool
@@ -213,6 +217,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameVirtualNetworkSviIpv6
 	case ResourceGroupNameVxlanVnIds:
 		return resourceGroupNameVxlanVnIds
+	case ResourceGroupNameToGenericLinkIps:
+		return resourceGroupNameToGenericLinkIps
 	default:
 		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
 	}
@@ -266,8 +272,10 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameVirtualNetworkSviIpv6), nil
 	case resourceGroupNameVxlanVnIds:
 		return int(ResourceGroupNameVxlanVnIds), nil
+	case resourceGroupNameToGenericLinkIps:
+		return int(ResourceGroupNameToGenericLinkIps), nil
 	default:
-		return int(ResourceGroupNameUnknown), fmt.Errorf("unknown group name '%s'", o)
+		return 0, fmt.Errorf(ResourceGroupNameUnknown, o)
 	}
 }
 
