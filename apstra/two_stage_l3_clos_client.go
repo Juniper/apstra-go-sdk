@@ -390,6 +390,15 @@ func (o *TwoStageL3ClosClient) GetRoutingPolicy(ctx context.Context, id ObjectId
 	return raw.polish()
 }
 
+func (o *TwoStageL3ClosClient) GetRoutingPolicyByName(ctx context.Context, desired string) (*DcRoutingPolicy, error) {
+	raw, err := o.getRoutingPolicyByName(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
+}
+
 // GetDefaultRoutingPolicy returns *DcRoutingPolicy representing the
 // "default_immutable" routing policy attached to the blueprint.
 func (o *TwoStageL3ClosClient) GetDefaultRoutingPolicy(ctx context.Context) (*DcRoutingPolicy, error) {

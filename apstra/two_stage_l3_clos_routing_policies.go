@@ -469,6 +469,38 @@ func (o *TwoStageL3ClosClient) getRoutingPolicy(ctx context.Context, id ObjectId
 	return response, nil
 }
 
+func (o *TwoStageL3ClosClient) getRoutingPolicyByName(ctx context.Context, desired string) (*rawDcRoutingPolicy, error) {
+	policies, err := o.getAllRoutingPolicies(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	policyIdx := -1
+	for i, policy := range policies {
+		if policy.Label != desired {
+			continue
+		}
+
+		if policyIdx >= 0 {
+			return nil, ApstraClientErr{
+				errType: ErrMultipleMatch,
+				err:     fmt.Errorf("found multiple routing policies with name %q", desired),
+			}
+		}
+
+		policyIdx = i
+	}
+
+	if policyIdx < 0 {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("routing policy with name %q not found", desired),
+		}
+	}
+
+	return &policies[policyIdx], nil
+}
+
 func (o *TwoStageL3ClosClient) getDefaultRoutingPolicy(ctx context.Context) (*rawDcRoutingPolicy, error) {
 	policies, err := o.getAllRoutingPolicies(ctx)
 	if err != nil {
