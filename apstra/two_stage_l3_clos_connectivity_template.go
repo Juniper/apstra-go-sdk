@@ -214,7 +214,7 @@ type ConnectivityTemplatePrimitiveUserData struct {
 
 type ConnectivityTemplatePrimitive struct {
 	Id          *ObjectId
-	Attributes  ConnectivityTemplateAttributes
+	Attributes  ConnectivityTemplatePrimitiveAttributes
 	Subpolicies []*ConnectivityTemplatePrimitive // batch of pointers to pipelines
 	BatchId     *ObjectId
 	PipelineId  *ObjectId
@@ -325,8 +325,9 @@ func (o *ConnectivityTemplatePrimitive) SetIds() error {
 // structs.
 //
 // The Attributes element can take any of 12 forms: "pipeline", "batch", or
-// one of the 10 implementations of ConnectivityTemplateAttributes. "piplline"
-// and "batch" provide tree structure which forms a CT as seen in the web UI.
+// one of the 10 implementations of ConnectivityTemplatePrimitiveAttributes.
+// "pipeline" and "batch" are used to provide the tree structure which forms a
+// CT as seen in the web UI.
 type rawConnectivityTemplatePolicy struct {
 	Id             ObjectId                  `json:"id"`
 	Label          string                    `json:"label"`
@@ -338,8 +339,8 @@ type rawConnectivityTemplatePolicy struct {
 	Attributes     json.RawMessage           `json:"attributes"`
 }
 
-func (o rawConnectivityTemplatePolicy) attributes() (ConnectivityTemplateAttributes, error) {
-	var result ConnectivityTemplateAttributes
+func (o rawConnectivityTemplatePolicy) attributes() (ConnectivityTemplatePrimitiveAttributes, error) {
+	var result ConnectivityTemplatePrimitiveAttributes
 
 	switch o.PolicyTypeName {
 	case ctPrimitivePolicyTypeNameAttachSingleVlan:

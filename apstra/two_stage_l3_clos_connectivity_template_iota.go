@@ -6,9 +6,9 @@ type CtPrimitivePolicyTypeName int
 type ctPrimitivePolicyTypeName string
 
 const (
-	CtPrimitivePolicyTypeNameNone = CtPrimitivePolicyTypeName(iota)
-	CtPrimitivePolicyTypeNameBatch
-	CtPrimitivePolicyTypeNamePipeline
+	CtPrimitivePolicyTypeNameNone     = CtPrimitivePolicyTypeName(iota)
+	CtPrimitivePolicyTypeNameBatch    // todo - is this needed?
+	CtPrimitivePolicyTypeNamePipeline // todo - is this needed?
 	CtPrimitivePolicyTypeNameAttachSingleVlan
 	CtPrimitivePolicyTypeNameAttachMultipleVLAN
 	CtPrimitivePolicyTypeNameAttachLogicalLink
@@ -22,8 +22,8 @@ const (
 	CtPrimitivePolicyTypeNameUnknown = "unknown CT primitive policy name %q"
 
 	ctPrimitivePolicyTypeNameNone                                           = ctPrimitivePolicyTypeName("")
-	ctPrimitivePolicyTypeNameBatch                                          = ctPrimitivePolicyTypeName("batch")
-	ctPrimitivePolicyTypeNamePipeline                                       = ctPrimitivePolicyTypeName("pipeline")
+	ctPrimitivePolicyTypeNameBatch                                          = ctPrimitivePolicyTypeName("batch")    // todo - is this needed?
+	ctPrimitivePolicyTypeNamePipeline                                       = ctPrimitivePolicyTypeName("pipeline") // todo - is this needed?
 	ctPrimitivePolicyTypeNameAttachSingleVlan                               = ctPrimitivePolicyTypeName("AttachSingleVLAN")
 	ctPrimitivePolicyTypeNameAttachMultipleVLAN                             = ctPrimitivePolicyTypeName("AttachMultipleVLAN")
 	ctPrimitivePolicyTypeNameAttachLogicalLink                              = ctPrimitivePolicyTypeName("AttachLogicalLink")

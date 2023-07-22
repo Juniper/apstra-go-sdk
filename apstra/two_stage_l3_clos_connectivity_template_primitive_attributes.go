@@ -6,11 +6,11 @@ import (
 	"net"
 )
 
-// ConnectivityTemplateAttributes are the data structures which make the various
+// ConnectivityTemplatePrimitiveAttributes are the data structures which make the various
 // CT primitives (single VLAN, multiple VLAN, static route, etc...) different
 // from each other. In Apstra 4.1.2 there are 10 CT primitives, so there are 10
-// implementations of the ConnectivityTemplateAttributes interface.
-type ConnectivityTemplateAttributes interface {
+// implementations of the ConnectivityTemplatePrimitiveAttributes interface.
+type ConnectivityTemplatePrimitiveAttributes interface {
 	raw() (json.RawMessage, error)
 	PolicyTypeName() CtPrimitivePolicyTypeName
 	Label() string
@@ -19,7 +19,7 @@ type ConnectivityTemplateAttributes interface {
 }
 
 // AttachSingleVlan
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachSingleVlan struct {
 	Tagged   bool
@@ -65,7 +65,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) Description() 
 }
 
 // AttachMultipleVLAN
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan struct {
 	UntaggedVnNodeId *ObjectId
@@ -104,7 +104,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) Description(
 }
 
 // AttachLogicalLink
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	SecurityZone       *ObjectId
@@ -164,7 +164,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) Description()
 }
 
 // AttachStaticRoute
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachStaticRoute struct {
 	ShareIpEndpoint bool
@@ -209,7 +209,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) fromRawJson(i
 }
 
 // AttachCustomStaticRoute
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute struct {
 	Network      *net.IPNet
@@ -262,7 +262,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) fromRaw
 }
 
 // AttachIpEndpointWithBgpNsxt
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt struct {
 	Asn                *uint32
@@ -340,7 +340,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) Des
 }
 
 // AttachBgpOverSubinterfacesOrSvi
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi struct {
 	Bfd                   bool
@@ -417,7 +417,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
 }
 
 // AttachBgpWithPrefixPeeringForSviOrSubinterface
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface struct {
 	Bfd                   bool
@@ -488,7 +488,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSvi
 }
 
 // AttachExistingRoutingPolicy
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
 	RpToAttach *string `json:"rp_to_attach"`
@@ -524,7 +524,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) Des
 }
 
 // AttachRoutingZoneConstraint
-var _ ConnectivityTemplateAttributes = &ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{}
+var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct {
 	RoutingZoneConstraint *string
@@ -560,7 +560,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) fro
 	return raw.polish(o)
 }
 
-// Each implementation of ConnectivityTemplateAttributes needs a "raw" struct
+// Each implementation of ConnectivityTemplatePrimitiveAttributes needs a "raw" struct
 // with JSON tags wire-style elements. The 10 "raw" structs follow, each with a
 // `polish()` method. Note that rather than returning a polished struct (or
 // pointer), these methods polish into an existing struct referenced by a caller
