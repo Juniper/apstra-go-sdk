@@ -314,12 +314,18 @@ func (o *ConnectivityTemplatePrimitive) SetIds() error {
 	}
 
 	if o.PipelineId == nil {
-		uuid := *o.Id + policyTypePipelineSuffix
+		uuid, err := uuid1AsObjectId()
+		if err != nil {
+			return err
+		}
 		o.PipelineId = &uuid
 	}
 
 	if o.BatchId == nil && len(o.Subpolicies) > 0 {
-		uuid := *o.Id + policyTypeBatchSuffix
+		uuid, err := uuid1AsObjectId()
+		if err != nil {
+			return err
+		}
 		o.BatchId = &uuid
 	}
 
