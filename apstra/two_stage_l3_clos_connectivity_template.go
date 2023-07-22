@@ -394,7 +394,7 @@ func (o rawConnectivityTemplatePolicy) attributes() (ConnectivityTemplatePrimiti
 // Each "batch" policy, including the root batch keeps a list of child policies.
 // These sub-policies are identified by ID. Each one is a "pipeline" policy.
 type rawBatchAttributes struct {
-	Subpolicies []ObjectId `json:"Subpolicies"`
+	Subpolicies []ObjectId `json:"subpolicies"`
 }
 
 // rawPipelineAttributes
@@ -423,11 +423,7 @@ func rawBatch(id ObjectId, description, label string, subpolicies []*Connectivit
 		pipelines = append(pipelines, pipelineSlice...)
 	}
 
-	rawAttributes, err := json.Marshal(&struct {
-		Subpolicies []ObjectId `json:"Subpolicies"`
-	}{
-		Subpolicies: subpolicyIds,
-	})
+	rawAttributes, err := json.Marshal(&rawBatchAttributes{Subpolicies: subpolicyIds})
 	if err != nil {
 		return nil, fmt.Errorf("failed marshaling subpolicy ids for batch - %w", err)
 	}
