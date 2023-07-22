@@ -69,7 +69,7 @@ type ConnectivityTemplate struct {
 }
 
 func (o *ConnectivityTemplate) raw() (*rawConnectivityTemplate, error) {
-	err := o.SetId()
+	err := o.SetIds()
 	if err != nil {
 		return nil, err
 	}
@@ -111,13 +111,20 @@ func (o *ConnectivityTemplate) raw() (*rawConnectivityTemplate, error) {
 	}, nil
 }
 
-func (o *ConnectivityTemplate) SetId() error {
+func (o *ConnectivityTemplate) SetIds() error {
 	if o.Id == nil {
 		uuid, err := uuid1AsObjectId()
 		if err != nil {
 			return err
 		}
 		o.Id = &uuid
+	}
+
+	for _, subpolicy := range o.Subpolicies {
+		err := subpolicy.SetIds()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -314,6 +321,13 @@ func (o *ConnectivityTemplatePrimitive) SetIds() error {
 	if o.BatchId == nil && len(o.Subpolicies) > 0 {
 		uuid := *o.Id + policyTypeBatchSuffix
 		o.BatchId = &uuid
+	}
+
+	for _, subpolicy := range o.Subpolicies {
+		err := subpolicy.SetIds()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
