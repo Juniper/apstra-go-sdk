@@ -123,12 +123,12 @@ const (
 	CtPrimitiveBgpPeerToLoopback = CtPrimitiveBgpPeerTo(iota)
 	CtPrimitiveBgpPeerToInterfaceOrIpEndpoint
 	CtPrimitiveBgpPeerToInterfaceOrSharedIpEndpoint
-	CtPrimitiveBgpPeerToInterfaceUnknown = "unknown CtPrimitiveBgpPeerTo value %q"
+	CtPrimitiveBgpPeerToUnknown = "unknown CtPrimitiveBgpPeerTo value %q"
 
 	ctPrimitiveBgpPeerToLoopback                    = ctPrimitiveBgpPeerTo("loopback")
 	ctPrimitiveBgpPeerToInterfaceOrIpEndpoint       = ctPrimitiveBgpPeerTo("interface_or_ip_endpoint")
 	ctPrimitiveBgpPeerToInterfaceOrSharedIpEndpoint = ctPrimitiveBgpPeerTo("interface_or_shared_ip_endpoint")
-	ctPrimitiveBgpPeerToInterfaceUnknown            = "unknown ctPrimitiveBgpPeerTo value %d"
+	ctPrimitiveBgpPeerToUnknown                     = "unknown ctPrimitiveBgpPeerTo value %d"
 )
 
 func (o CtPrimitiveBgpPeerTo) String() string {
@@ -140,7 +140,7 @@ func (o CtPrimitiveBgpPeerTo) String() string {
 	case CtPrimitiveBgpPeerToInterfaceOrSharedIpEndpoint:
 		return string(ctPrimitiveBgpPeerToInterfaceOrSharedIpEndpoint)
 	default:
-		return fmt.Sprintf(ctPrimitiveBgpPeerToInterfaceUnknown, o)
+		return fmt.Sprintf(ctPrimitiveBgpPeerToUnknown, o)
 	}
 }
 
@@ -166,7 +166,7 @@ func (o ctPrimitiveBgpPeerTo) parse() (int, error) {
 	case ctPrimitiveBgpPeerToInterfaceOrSharedIpEndpoint:
 		return int(CtPrimitiveBgpPeerToInterfaceOrSharedIpEndpoint), nil
 	default:
-		return 0, fmt.Errorf(CtPrimitiveBgpPeerToInterfaceUnknown, o)
+		return 0, fmt.Errorf(CtPrimitiveBgpPeerToUnknown, o)
 	}
 }
 
