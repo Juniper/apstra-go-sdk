@@ -16,6 +16,7 @@ const (
 type ConfigletGenerator struct {
 	ConfigStyle          PlatformOS
 	Section              ConfigletSection
+	SectionCondition     *string
 	TemplateText         string
 	NegationTemplateText string
 	Filename             string
@@ -24,6 +25,7 @@ type ConfigletGenerator struct {
 type rawConfigletGenerator struct {
 	ConfigStyle          string `json:"config_style"`
 	Section              string `json:"section"`
+	SectionCondition     string `json:"section_condition,omitempty"`
 	TemplateText         string `json:"template_text"`
 	NegationTemplateText string `json:"negation_template_text"`
 	Filename             string `json:"filename"`
@@ -89,6 +91,7 @@ func (o *rawConfigletGenerator) polish() (*ConfigletGenerator, error) {
 	return &ConfigletGenerator{
 		ConfigStyle:          PlatformOS(platform),
 		Section:              ConfigletSection(section),
+		SectionCondition:     &o.SectionCondition,
 		TemplateText:         o.TemplateText,
 		NegationTemplateText: o.NegationTemplateText,
 		Filename:             o.Filename,
@@ -102,7 +105,9 @@ func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
 	cg.NegationTemplateText = o.NegationTemplateText
 	cg.ConfigStyle = o.ConfigStyle.raw().string()
 	cg.Section = string(o.Section.raw())
-
+	if o.SectionCondition != nil {
+		cg.SectionCondition = *o.SectionCondition
+	}
 	return &cg
 }
 
