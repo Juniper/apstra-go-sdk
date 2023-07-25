@@ -97,7 +97,8 @@ func (o *TwoStageL3ClosClient) importConfiglet(ctx context.Context, c ConfigletD
 	}
 	return response.Id, nil
 }
-func (o *TwoStageL3ClosClient) importConfigletByID(ctx context.Context, id ObjectId, condition string, label string) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) importConfigletById(ctx context.Context, id ObjectId, condition string,
+	label string) (ObjectId, error) {
 	blueprintconfigleturl := fmt.Sprintf(apiUrlBlueprintConfiglets, o.blueprintId.String())
 	response := &objectIdResponse{}
 	cfglet, err := o.client.GetConfiglet(ctx, id)

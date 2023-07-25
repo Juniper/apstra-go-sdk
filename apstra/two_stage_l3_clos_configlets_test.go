@@ -31,7 +31,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 	}
 	ctx := context.TODO()
 	for clientName, client := range clients {
-		//Create Configlet
+		// Create Configlet
 		CatConfId, err := client.client.CreateConfiglet(ctx, &cr)
 		if err != nil {
 			t.Fatal(err)
@@ -48,8 +48,9 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 			}
 		}()
 
-		log.Printf("testing ImportConfigletByID() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ips_id, err := bpClient.ImportConfigletByID(ctx, CatConfId, "role in [\"spine\", \"leaf\"]", "")
+		log.Printf("testing ImportConfigletById() against %s %s (%s)", client.clientType, clientName,
+			client.client.ApiVersion())
+		ips_id, err := bpClient.ImportConfigletById(ctx, CatConfId, "role in [\"spine\", \"leaf\"]", "")
 		log.Printf("%s", ips_id)
 		if err != nil {
 			t.Fatal(err)
@@ -87,7 +88,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 		ips.Label = "new name"
 		ips.Condition = "role in [\"spine\"]"
 		log.Printf("testing UpdateConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.UpdateConfiglet(ctx, ips_id, ips)
+		err = bpClient.UpdateConfiglet(ctx, ips)
 		if err != nil {
 			t.Fatal(err)
 		}
