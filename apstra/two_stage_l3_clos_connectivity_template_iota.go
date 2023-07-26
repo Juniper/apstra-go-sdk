@@ -265,6 +265,8 @@ func (o ctPrimitiveIPv6ProtocolSessionAddressing) parse() (int, error) {
 		return int(CtPrimitiveIPv6ProtocolSessionAddressingNone), nil
 	case ctPrimitiveIPv6ProtocolSessionAddressingAddressed:
 		return int(CtPrimitiveIPv6ProtocolSessionAddressingAddressed), nil
+	case ctPrimitiveIPv6ProtocolSessionAddressingLinkLocal:
+		return int(CtPrimitiveIPv6ProtocolSessionAddressingLinkLocal), nil
 	default:
 		return 0, fmt.Errorf(CtPrimitiveIPv6ProtocolSessionAddressingUnknown, o)
 	}
