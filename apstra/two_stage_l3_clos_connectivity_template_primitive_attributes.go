@@ -365,7 +365,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
 		return err
 	}
 
-	return json.Unmarshal(in, o)
+	return raw.polish(o)
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) raw() (json.RawMessage, error) {
