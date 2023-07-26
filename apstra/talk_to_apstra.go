@@ -66,6 +66,12 @@ func convertTtaeToAceWherePossible(err error) error {
 			case strings.Contains(ttae.Msg, "Transformation cannot be changed"):
 				return ApstraClientErr{errType: ErrCannotChangeTransform, err: errors.New(ttae.Msg)}
 			}
+		case http.StatusInternalServerError:
+			switch {
+			case strings.Contains(ttae.Msg, "Error executing facade API GET /obj-policy-export") &&
+				strings.Contains(ttae.Msg, "'NoneType' object has no attribute 'id'"):
+				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+			}
 		}
 	}
 	return err
