@@ -568,18 +568,19 @@ func (o *TwoStageL3ClosClient) CreateConnectivityTemplate(ctx context.Context, i
 	}
 
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:         http.MethodPut,
-		urlStr:         fmt.Sprintf(apiUrlBlueprintObjPolicyImport, o.blueprintId),
-		apiInput:       &apiInput,
-		apiResponse:    nil,
-		doNotLogin:     false,
-		unsynchronized: false,
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintObjPolicyImport, o.blueprintId),
+		apiInput: &apiInput,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
 
 	return nil
+}
+
+func (o *TwoStageL3ClosClient) UpdateConnectivityTemplate(ctx context.Context, in *ConnectivityTemplate) error {
+	return o.CreateConnectivityTemplate(ctx, in)
 }
 
 func (o *TwoStageL3ClosClient) DeleteConnectivityTemplate(ctx context.Context, id ObjectId) error {
