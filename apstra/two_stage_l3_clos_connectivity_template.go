@@ -387,7 +387,12 @@ func (o rawConnectivityTemplatePolicy) attributes() (ConnectivityTemplatePrimiti
 		return nil, fmt.Errorf("unhandled connectivity template type %q", o.PolicyTypeName)
 	}
 
-	return result, result.fromRawJson(o.Attributes)
+	err := result.fromRawJson(o.Attributes)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, err
 }
 
 // rawBatchAttributes
