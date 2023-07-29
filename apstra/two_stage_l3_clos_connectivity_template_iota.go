@@ -373,3 +373,57 @@ func (o ctPrimitiveIPv6AddressingType) parse() (int, error) {
 		return 0, fmt.Errorf(CtPrimitiveIPv6AddressingTypeUnknown, o)
 	}
 }
+
+type CtPrimitiveStatus int
+type ctPrimitiveStatus string
+
+const (
+	CtPrimitiveStatusAssigned = CtPrimitiveStatus(iota)
+	CtPrimitiveStatusIncomplete
+	CtPrimitiveStatusReady
+	CtPrimitiveStatusUnknown = "unknown CtPrimitiveStatus value %q"
+
+	ctPrimitiveStatusAssigned   = ctPrimitiveStatus("assigned")
+	ctPrimitiveStatusIncomplete = ctPrimitiveStatus("incomplete")
+	ctPrimitiveStatusReady      = ctPrimitiveStatus("ready")
+	ctPrimitiveStatusUnknown    = "unknown ctPrimitiveStatus value %d"
+)
+
+func (o CtPrimitiveStatus) String() string {
+	switch o {
+	case CtPrimitiveStatusAssigned:
+		return string(ctPrimitiveStatusAssigned)
+	case CtPrimitiveStatusIncomplete:
+		return string(ctPrimitiveStatusIncomplete)
+	case CtPrimitiveStatusReady:
+		return string(ctPrimitiveStatusReady)
+	default:
+		return fmt.Sprintf(ctPrimitiveStatusUnknown, o)
+	}
+}
+
+func (o *CtPrimitiveStatus) FromString(in string) error {
+	i, err := ctPrimitiveStatus(in).parse()
+	if err != nil {
+		return err
+	}
+	*o = CtPrimitiveStatus(i)
+	return nil
+}
+
+func (o CtPrimitiveStatus) raw() ctPrimitiveStatus {
+	return ctPrimitiveStatus(o.String())
+}
+
+func (o ctPrimitiveStatus) parse() (int, error) {
+	switch o {
+	case ctPrimitiveStatusAssigned:
+		return int(CtPrimitiveStatusAssigned), nil
+	case ctPrimitiveStatusIncomplete:
+		return int(CtPrimitiveStatusIncomplete), nil
+	case ctPrimitiveStatusReady:
+		return int(CtPrimitiveStatusReady), nil
+	default:
+		return 0, fmt.Errorf(CtPrimitiveStatusUnknown, o)
+	}
+}

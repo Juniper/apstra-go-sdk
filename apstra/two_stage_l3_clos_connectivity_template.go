@@ -33,7 +33,7 @@ const (
 
 type rawConnectivityTemplateState struct {
 	Id                ObjectId          `json:"id"`
-	Status            string            `json:"status"`
+	Status            ctPrimitiveStatus `json:"status"`
 	AppPointsCount    int               `json:"app_points_count"`
 	MissingAttributes map[string]string `json:"missing_attributes"`
 	Visible           bool              `json:"visible"`
@@ -44,19 +44,24 @@ func (o rawConnectivityTemplateState) polish() (*ConnectivityTemplateState, erro
 		return nil, fmt.Errorf("attempt to polish rawConnectivityTemplateState %q which is not visible", o.Id)
 	}
 
+	status, err := o.Status.parse()
+	if err != nil {
+		return nil, err
+	}
+
 	return &ConnectivityTemplateState{
 		Id:                o.Id,
-		Status:            o.Status,
+		Status:            CtPrimitiveStatus(status),
 		AppPointsCount:    o.AppPointsCount,
 		MissingAttributes: o.MissingAttributes,
 	}, nil
 }
 
 type ConnectivityTemplateState struct {
-	Id                ObjectId          `json:"id"`
-	Status            string            `json:"status"`
-	AppPointsCount    int               `json:"app_points_count"`
-	MissingAttributes map[string]string `json:"missing_attributes"`
+	Id                ObjectId
+	Status            CtPrimitiveStatus
+	AppPointsCount    int
+	MissingAttributes map[string]string
 }
 
 type ConnectivityTemplate struct {
