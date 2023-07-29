@@ -81,7 +81,7 @@ func (o *ConnectivityTemplate) raw() (*rawConnectivityTemplate, error) {
 
 	subpolicyIds := make([]ObjectId, len(o.Subpolicies))
 	for i, primitivePtr := range o.Subpolicies {
-		err = primitivePtr.SetIds()
+		err = primitivePtr.setIds()
 		if err != nil {
 			return nil, err
 		}
@@ -116,6 +116,9 @@ func (o *ConnectivityTemplate) raw() (*rawConnectivityTemplate, error) {
 	}, nil
 }
 
+// SetIds walks the Connectivity Template tree and sets all "batch", "pipeline"
+// and "actual" object IDs which aren't set, but need to be. Batch IDs where
+// no children exist will not be set.
 func (o *ConnectivityTemplate) SetIds() error {
 	if o.Id == nil {
 		uuid, err := uuid1AsObjectId()
@@ -126,7 +129,7 @@ func (o *ConnectivityTemplate) SetIds() error {
 	}
 
 	for _, subpolicy := range o.Subpolicies {
-		err := subpolicy.SetIds()
+		err := subpolicy.setIds()
 		if err != nil {
 			return err
 		}
@@ -135,6 +138,8 @@ func (o *ConnectivityTemplate) SetIds() error {
 	return nil
 }
 
+// SetUserData builds the top level `user_data` struct. It tries to lay the
+// primitive "sausages" out sensibly.
 func (o *ConnectivityTemplate) SetUserData() {
 	o.UserData = &ConnectivityTemplatePrimitiveUserData{
 		IsSausage: true,
@@ -251,7 +256,7 @@ func (o *ConnectivityTemplatePrimitive) rawPipeline() ([]rawConnectivityTemplate
 		return nil, errors.New("rawPipeline() invoked with nil attributes")
 	}
 
-	err := o.SetIds()
+	err := o.setIds()
 	if err != nil {
 		return nil, err
 	}
@@ -309,7 +314,7 @@ func (o *ConnectivityTemplatePrimitive) rawPipeline() ([]rawConnectivityTemplate
 	return result, nil
 }
 
-func (o *ConnectivityTemplatePrimitive) SetIds() error {
+func (o *ConnectivityTemplatePrimitive) setIds() error {
 	if o.Id == nil {
 		uuid, err := uuid1AsObjectId()
 		if err != nil {
@@ -335,7 +340,7 @@ func (o *ConnectivityTemplatePrimitive) SetIds() error {
 	}
 
 	for _, subpolicy := range o.Subpolicies {
-		err := subpolicy.SetIds()
+		err := subpolicy.setIds()
 		if err != nil {
 			return err
 		}
