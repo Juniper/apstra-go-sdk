@@ -55,13 +55,14 @@ func TestLoginBadPassword(t *testing.T) {
 }
 
 func TestLogoutAuthFail(t *testing.T) {
+	ctx := context.Background()
 	clientCfgs, err := getTestClientCfgs(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for name, cfg := range clientCfgs {
-		client, err := cfg.cfg.NewClient()
+		client, err := cfg.cfg.NewClient(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}

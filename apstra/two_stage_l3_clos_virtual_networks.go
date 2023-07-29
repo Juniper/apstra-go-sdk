@@ -741,6 +741,23 @@ func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId Objec
 	return response, nil
 }
 
+func (o *TwoStageL3ClosClient) getAllVirtualNetworks(ctx context.Context) (map[ObjectId]rawVirtualNetwork, error) {
+	var response struct {
+		VirtualNetworks map[ObjectId]rawVirtualNetwork `json:"virtual_networks"`
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId),
+		apiResponse: &response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return response.VirtualNetworks, nil
+}
+
 func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, cfg *rawVirtualNetwork) (ObjectId, error) {
 	if cfg.Id != "" {
 		return "", fmt.Errorf("refusing to create virtual network using input data with a populated ID field")

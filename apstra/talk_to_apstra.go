@@ -66,6 +66,12 @@ func convertTtaeToAceWherePossible(err error) error {
 			case strings.Contains(ttae.Msg, "Transformation cannot be changed"):
 				return ApstraClientErr{errType: ErrCannotChangeTransform, err: errors.New(ttae.Msg)}
 			}
+		case http.StatusInternalServerError:
+			switch {
+			case strings.Contains(ttae.Msg, "Error executing facade API GET /obj-policy-export") &&
+				strings.Contains(ttae.Msg, "'NoneType' object has no attribute 'id'"):
+				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+			}
 		}
 	}
 	return err
@@ -119,9 +125,6 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	var err error
 	var requestBody []byte
-	if ctx == nil {
-		ctx = context.TODO()
-	}
 
 	// create URL
 	apstraUrl, err := o.craftUrl(in)

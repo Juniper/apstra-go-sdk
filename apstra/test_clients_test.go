@@ -44,7 +44,7 @@ func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, e
 
 	testClients = make(map[string]testClient, len(clientCfgs))
 	for k, cfg := range clientCfgs {
-		client, err := cfg.cfg.NewClient()
+		client, err := cfg.cfg.NewClient(ctx)
 		if err != nil {
 			return nil, err
 		}

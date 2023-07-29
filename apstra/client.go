@@ -72,16 +72,15 @@ type apstraHttpClient interface {
 // ErrChan, when not nil, is used by async operations to deliver any errors to
 // the caller's code.
 type ClientCfg struct {
-	Url          string          // URL to access Apstra
-	User         string          // Apstra API/UI username
-	Pass         string          // Apstra API/UI password
-	LogLevel     int             // set < 0 for no logging
-	Logger       Logger          // optional caller-created logger sorted by increasing verbosity
-	HttpClient   *http.Client    // optional
-	Timeout      time.Duration   // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
-	ErrChan      chan<- error    // async client errors (apstra task polling, etc) sent here
-	ctx          context.Context // used for async operations (apstra task polling, etc.)
-	Experimental bool            // used to enable experimental features
+	Url          string        // URL to access Apstra
+	User         string        // Apstra API/UI username
+	Pass         string        // Apstra API/UI password
+	LogLevel     int           // set < 0 for no logging
+	Logger       Logger        // optional caller-created logger sorted by increasing verbosity
+	HttpClient   *http.Client  // optional
+	Timeout      time.Duration // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
+	ErrChan      chan<- error  // async client errors (apstra task polling, etc) sent here
+	Experimental bool          // used to enable experimental features
 }
 
 // TaskId represents outstanding tasks on an Apstra server
@@ -117,6 +116,13 @@ type Client struct {
 	logger      Logger                  // logs sent here
 	sync        map[int]*sync.Mutex     // some client operations are not concurrency safe. Their locks live here.
 	syncLock    sync.Mutex              // control access to the 'sync' map
+}
+
+// SetContext sets the internal context.Context used by background pollers. This
+// context should not have a timeout/deadline, but can be used to cancel
+// background tasks.
+func (o *Client) SetContext(ctx context.Context) {
+	o.ctx = ctx
 }
 
 // ID returns the Apstra User ID associated with the client or an empty string if not logged in.
@@ -155,7 +161,7 @@ func (o ClientCfg) validate() error {
 }
 
 // NewClient creates a Client object
-func (o ClientCfg) NewClient() (*Client, error) {
+func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 	err := o.validate()
 	if err != nil {
 		return nil, err
@@ -187,16 +193,11 @@ func (o ClientCfg) NewClient() (*Client, error) {
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		logger:      logger,
 		taskMonChan: make(chan *taskMonitorMonReq),
-		ctx:         o.ctx,
 		sync:        make(map[int]*sync.Mutex),
+		ctx:         context.Background(),
 	}
 
-	// set default context if necessary
-	if c.ctx == nil {
-		c.ctx = context.Background()
-	}
-
-	v, err := c.getApiVersion(c.ctx)
+	v, err := c.getApiVersion(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -302,6 +302,20 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 		}
 		compareVirtualNetworkData(t, &createData, getById.Data, true)
 
+		vnMap, err := bpClient.GetAllVirtualNetworks(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(vnMap) != 1 {
+			t.Fatalf("expected one VN got %d", len(vnMap))
+		}
+		if _, ok := vnMap[vnId]; !ok {
+			t.Fatalf("map does not contain virtual network %q", vnId)
+		}
+		batchData := createData
+		batchData.SviIps = nil // the "get all" API call omits SVI info. for. some. reason.
+		compareVirtualNetworkData(t, &batchData, vnMap[vnId].Data, true)
+
 		log.Printf("testing DeleteVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.DeleteVirtualNetwork(ctx, vnId)
 		if err != nil {

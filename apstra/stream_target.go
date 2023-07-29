@@ -21,7 +21,7 @@ const (
 	EnvApstraStreamBasePort = "APSTRA_STREAM_BASE_PORT"
 
 	sizeOfAosMessageLenHdr = 2 // Apstra 'protoBufOverTcp' streaming includes a 16-bit length w/each protobuf
-	network                = "tcp4"
+	stNetwork              = "tcp4"
 	errConnClosed          = "use of closed network connection"
 )
 
@@ -88,9 +88,9 @@ func (o *StreamTarget) Start() (msgChan <-chan *StreamingMessage, errChan <-chan
 
 	laddr := ":" + strconv.Itoa(int(o.cfg.Port)) // something like ":6000" (a port number)
 	if o.cfg.TlsConfig != nil {
-		nl, err = tls.Listen(network, laddr, o.cfg.TlsConfig) // if we're doing TLS (tls.listener)
+		nl, err = tls.Listen(stNetwork, laddr, o.cfg.TlsConfig) // if we're doing TLS (tls.listener)
 	} else {
-		nl, err = net.Listen(network, laddr) // if we're doing raw TCP (net.TCPListener)
+		nl, err = net.Listen(stNetwork, laddr) // if we're doing raw TCP (net.TCPListener)
 	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("error starting listener - %w", err)
