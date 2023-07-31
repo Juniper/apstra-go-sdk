@@ -15,7 +15,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var cr ConfigletRequest
+	var cr ConfigletData
 	var cg []ConfigletGenerator
 	var refarchs []RefDesign
 	cg = append(cg, ConfigletGenerator{
@@ -24,7 +24,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 		TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
 	})
 	refarchs = append(refarchs, RefDesignTwoStageL3Clos)
-	cr = ConfigletRequest{
+	cr = ConfigletData{
 		DisplayName: "TestImportConfiglet",
 		RefArchs:    refarchs,
 		Generators:  cg,

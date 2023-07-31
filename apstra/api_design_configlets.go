@@ -16,7 +16,6 @@ const (
 type ConfigletGenerator struct {
 	ConfigStyle          PlatformOS
 	Section              ConfigletSection
-	SectionCondition     *string
 	TemplateText         string
 	NegationTemplateText string
 	Filename             string
@@ -25,7 +24,6 @@ type ConfigletGenerator struct {
 type rawConfigletGenerator struct {
 	ConfigStyle          string `json:"config_style"`
 	Section              string `json:"section"`
-	SectionCondition     string `json:"section_condition,omitempty"`
 	TemplateText         string `json:"template_text"`
 	NegationTemplateText string `json:"negation_template_text"`
 	Filename             string `json:"filename"`
@@ -59,11 +57,8 @@ type rawConfiglet struct {
 	DisplayName    string                  `json:"display_name"`
 }
 
-type ConfigletRequest ConfigletData
-type rawConfigletRequest rawConfigletData
-
-func (o *ConfigletRequest) raw() *rawConfigletRequest {
-	rawcr := rawConfigletRequest{}
+func (o *ConfigletData) raw() *rawConfigletData {
+	rawcr := rawConfigletData{}
 	rawcr.DisplayName = o.DisplayName
 	rawcr.RefArchs = make([]string, len(o.RefArchs))
 	rawcr.Generators = make([]rawConfigletGenerator, len(o.Generators))
@@ -73,8 +68,32 @@ func (o *ConfigletRequest) raw() *rawConfigletRequest {
 	for i, j := range o.Generators {
 		rawcr.Generators[i] = *j.raw()
 	}
-
 	return &rawcr
+}
+
+func (o *rawConfigletData) polish() (*ConfigletData, error) {
+	var err error
+
+	refArchs := make([]RefDesign, len(o.RefArchs))
+	for i, refArch := range o.RefArchs {
+		refArchs[i], err = refDesign(refArch).parse()
+		if err != nil {
+			return nil, err
+		}
+	}
+	generators := make([]ConfigletGenerator, len(o.Generators))
+	for i, generator := range o.Generators {
+		polished, err := generator.polish()
+		if err != nil {
+			return nil, err
+		}
+		generators[i] = *polished
+	}
+	return &ConfigletData{
+		RefArchs:    refArchs,
+		Generators:  generators,
+		DisplayName: o.DisplayName,
+	}, nil
 }
 
 func (o *rawConfigletGenerator) polish() (*ConfigletGenerator, error) {
@@ -82,16 +101,13 @@ func (o *rawConfigletGenerator) polish() (*ConfigletGenerator, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	section, err := configletSection(o.Section).parse()
 	if err != nil {
 		return nil, err
 	}
-
 	return &ConfigletGenerator{
 		ConfigStyle:          PlatformOS(platform),
 		Section:              ConfigletSection(section),
-		SectionCondition:     &o.SectionCondition,
 		TemplateText:         o.TemplateText,
 		NegationTemplateText: o.NegationTemplateText,
 		Filename:             o.Filename,
@@ -105,15 +121,11 @@ func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
 	cg.NegationTemplateText = o.NegationTemplateText
 	cg.ConfigStyle = o.ConfigStyle.raw().string()
 	cg.Section = string(o.Section.raw())
-	if o.SectionCondition != nil {
-		cg.SectionCondition = *o.SectionCondition
-	}
 	return &cg
 }
 
 func (o *rawConfiglet) polish() (*Configlet, error) {
 	var err error
-
 	refArchs := make([]RefDesign, len(o.RefArchs))
 	for i, refArch := range o.RefArchs {
 		refArchs[i], err = refDesign(refArch).parse()
@@ -121,7 +133,6 @@ func (o *rawConfiglet) polish() (*Configlet, error) {
 			return nil, err
 		}
 	}
-
 	generators := make([]ConfigletGenerator, len(o.Generators))
 	for i, generator := range o.Generators {
 		polished, err := generator.polish()
@@ -130,7 +141,6 @@ func (o *rawConfiglet) polish() (*Configlet, error) {
 		}
 		generators[i] = *polished
 	}
-
 	return &Configlet{
 		Id:             o.Id,
 		CreatedAt:      o.CreatedAt,
@@ -205,7 +215,7 @@ func (o *Client) getAllConfiglets(ctx context.Context) ([]rawConfiglet, error) {
 	return response.Items, nil
 }
 
-func (o *Client) createConfiglet(ctx context.Context, in *ConfigletRequest) (ObjectId, error) {
+func (o *Client) createConfiglet(ctx context.Context, in *ConfigletData) (ObjectId, error) {
 
 	cr := in.raw()
 	response := &objectIdResponse{}
@@ -222,7 +232,7 @@ func (o *Client) createConfiglet(ctx context.Context, in *ConfigletRequest) (Obj
 	return response.Id, nil
 }
 
-func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *ConfigletRequest) error {
+func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *ConfigletData) error {
 	cr := in.raw()
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{

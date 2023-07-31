@@ -467,7 +467,7 @@ func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid Obje
 
 // ImportConfiglet imports a configlet described by a ConfigletData structure
 // into a blueprint.
-// condtion is a string input that indicates which devices it applies to.
+// condition is a string input that indicates which devices it applies to.
 // label can be used to rename the configlet in the blueprint
 // On success, it returns the id of the imported configlet.
 func (o *TwoStageL3ClosClient) ImportConfiglet(ctx context.Context, c ConfigletData, condition string, label string) (ObjectId, error) {

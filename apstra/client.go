@@ -960,7 +960,7 @@ func (o *Client) DeleteTag(ctx context.Context, id ObjectId) error {
 }
 
 // CreateConfiglet creates a Configlet and returns its ObjectId.
-func (o *Client) CreateConfiglet(ctx context.Context, in *ConfigletRequest) (ObjectId, error) {
+func (o *Client) CreateConfiglet(ctx context.Context, in *ConfigletData) (ObjectId, error) {
 	return o.createConfiglet(ctx, in)
 }
 
@@ -979,7 +979,7 @@ func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, err
 }
 
 // UpdateConfiglet updates a configlet
-func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletRequest) error {
+func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletData) error {
 	return o.updateConfiglet(ctx, id, in)
 }
 
@@ -1575,10 +1575,10 @@ func (o *Client) DeletePropertySet(ctx context.Context, id ObjectId) error {
 }
 
 // Private method added for Client.ready(), public wrapper not currently needed.
-//// GetTelemetryQuery returns *TelemetryQuery
-//func (o *Client) GetTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error){
+// // GetTelemetryQuery returns *TelemetryQuery
+// func (o *Client) GetTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error){
 //	return o.getTelemetryQuery(ctx)
-//}
+// }
 
 // DeployBlueprint commits the staging blueprint to the active blueprint
 func (o *Client) DeployBlueprint(ctx context.Context, in *BlueprintDeployRequest) (*BlueprintDeployResponse, error) {
