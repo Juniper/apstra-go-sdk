@@ -44,19 +44,24 @@ func (o *rawTwoStageL3ClosConfiglet) polish() (*TwoStageL3ClosConfiglet, error) 
 	c.Data = *d
 	return &c, err
 }
-func (o *TwoStageL3ClosClient) getAllConfiglets(ctx context.Context) ([]TwoStageL3ClosConfiglet, error) {
+func (o *TwoStageL3ClosClient) getAllConfiglets(ctx context.Context) ([]*TwoStageL3ClosConfiglet, error) {
 	response := &struct {
-		Items []TwoStageL3ClosConfiglet `json:"items"`
+		Items []rawTwoStageL3ClosConfiglet `json:"items"`
 	}{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodOptions,
+		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintConfiglets, o.blueprintId.String()),
 		apiResponse: response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response.Items, nil
+	cgs := make([]*TwoStageL3ClosConfiglet, len(response.Items))
+	for i, j := range response.Items {
+		cgs[i], err = j.polish()
+
+	}
+	return cgs, nil
 }
 
 func (o *TwoStageL3ClosClient) getAllConfigletIds(ctx context.Context) ([]ObjectId, error) {
@@ -89,11 +94,11 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	var c *TwoStageL3ClosConfiglet
-	for _, t := range cgs {
+	idx := -1
+	for i, t := range cgs {
 		if t.Label == name {
-			if c == nil {
-				c = &t
+			if idx == -1 {
+				idx = i
 			} else { // This is clearly the second occurrence
 				return nil, ApstraClientErr{
 					errType: ErrMultipleMatch,
@@ -102,8 +107,8 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 			}
 		}
 	}
-	if c != nil {
-		return c, nil
+	if idx != -1 {
+		return cgs[idx], nil
 	}
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
@@ -113,7 +118,9 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 
 func (o *TwoStageL3ClosClient) importConfiglet(ctx context.Context, c ConfigletData, condition string, label string) (ObjectId, error) {
 	response := &objectIdResponse{}
-
+	if len(label) == 0 {
+		label = c.DisplayName
+	}
 	in := TwoStageL3ClosConfiglet{
 		Data:      c,
 		Condition: condition,
@@ -132,26 +139,11 @@ func (o *TwoStageL3ClosClient) importConfiglet(ctx context.Context, c ConfigletD
 }
 func (o *TwoStageL3ClosClient) importConfigletById(ctx context.Context, id ObjectId, condition string,
 	label string) (ObjectId, error) {
-	response := &objectIdResponse{}
 	cfglet, err := o.client.GetConfiglet(ctx, id)
-	if len(label) == 0 {
-		label = cfglet.Data.DisplayName
-	}
-	in := TwoStageL3ClosConfiglet{
-		Data:      *cfglet.Data,
-		Condition: condition,
-		Label:     label,
-	}
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintConfiglets, o.blueprintId.String()),
-		apiInput:    in.raw(),
-		apiResponse: response,
-	})
 	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
+		return "", err
 	}
-	return response.Id, nil
+	return o.ImportConfiglet(ctx, *cfglet.Data, condition, label)
 }
 
 func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, in *TwoStageL3ClosConfiglet) error {

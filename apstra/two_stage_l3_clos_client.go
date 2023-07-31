@@ -434,7 +434,7 @@ func (o *TwoStageL3ClosClient) DeletePropertySet(ctx context.Context, id ObjectI
 
 // GetAllConfiglets returns []TwoStageL3ClosConfiglet representing all
 // configlets imported into a blueprint
-func (o *TwoStageL3ClosClient) GetAllConfiglets(ctx context.Context) ([]TwoStageL3ClosConfiglet, error) {
+func (o *TwoStageL3ClosClient) GetAllConfiglets(ctx context.Context) ([]*TwoStageL3ClosConfiglet, error) {
 	return o.getAllConfiglets(ctx)
 }
 
