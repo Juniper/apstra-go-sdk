@@ -72,7 +72,7 @@ func (o *TwoStageL3ClosClient) getAllConfigletIds(ctx context.Context) ([]Object
 }
 
 func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*TwoStageL3ClosConfiglet, error) {
-	response := &TwoStageL3ClosConfiglet{}
+	response := &rawTwoStageL3ClosConfiglet{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), id.String()),
@@ -81,7 +81,7 @@ func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response, nil
+	return response.polish()
 }
 
 func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name string) (*TwoStageL3ClosConfiglet, error) {
@@ -89,10 +89,21 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+	var c *TwoStageL3ClosConfiglet
 	for _, t := range cgs {
 		if t.Label == name {
-			return &t, nil
+			if c == nil {
+				c = &t
+			} else { // This is clearly the second occurrence
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("name '%s' does not uniquely identify a configlet", name),
+				}
+			}
 		}
+	}
+	if c != nil {
+		return c, nil
 	}
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
