@@ -504,8 +504,8 @@ func (o *Client) GetAgentProfileByLabel(ctx context.Context, label string) (*Age
 	return o.getAgentProfileByLabel(ctx, label)
 }
 
-// CreateAgent creates an Apstra Agent and returns its ID
-func (o *Client) CreateAgent(ctx context.Context, request *SystemAgentRequest) (ObjectId, error) {
+// CreateSystemAgent creates an Apstra System Agent and returns its ID
+func (o *Client) CreateSystemAgent(ctx context.Context, request *SystemAgentRequest) (ObjectId, error) {
 	return o.createSystemAgent(ctx, request)
 }
 
