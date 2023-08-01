@@ -24,12 +24,11 @@ const (
 const (
 	RefDesignTwoStageL3Clos = RefDesign(iota)
 	RefDesignFreeform
-	RefDesignDatacenter = RefDesignTwoStageL3Clos
-	RefDesignUnknown    = "unknown reference design '%s'"
+	RefDesignUnknown = "unknown reference design '%s'"
 
-	refDesignDatacenter = refDesign("two_stage_l3clos")
-	refDesignFreeform   = refDesign("freeform")
-	refDesignUnknown    = refDesign("unknown reference design %d")
+	refDesignTwoStageL3Clos = refDesign("two_stage_l3clos")
+	refDesignFreeform       = refDesign("freeform")
+	refDesignUnknown        = refDesign("unknown reference design %d")
 )
 
 type RefDesign int
@@ -37,8 +36,8 @@ type refDesign string
 
 func (o RefDesign) String() string {
 	switch o {
-	case RefDesignDatacenter:
-		return string(refDesignDatacenter)
+	case RefDesignTwoStageL3Clos:
+		return string(refDesignTwoStageL3Clos)
 	case RefDesignFreeform:
 		return string(refDesignFreeform)
 	default:
@@ -57,8 +56,8 @@ func (o *RefDesign) FromString(s string) error {
 
 func (o refDesign) parse() (RefDesign, error) {
 	switch o {
-	case refDesignDatacenter:
-		return RefDesignDatacenter, nil
+	case refDesignTwoStageL3Clos:
+		return RefDesignTwoStageL3Clos, nil
 	case refDesignFreeform:
 		return RefDesignFreeform, nil
 	default:
