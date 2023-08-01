@@ -189,6 +189,10 @@ func (o *rawConnectivityTemplate) polish(id ObjectId) (*ConnectivityTemplate, er
 	if rootBatch.UserData == nil {
 		return nil, fmt.Errorf("connectivity template root batch has no user data")
 	}
+	if policyTypeNameBatch != rootBatch.PolicyTypeName {
+		return nil, fmt.Errorf("expected policy %q to be type %q, got %q",
+			rootBatch.Id, policyTypeNameBatch, rootBatch.PolicyTypeName)
+	}
 
 	delete(policyMap, rootBatch.Id)
 
