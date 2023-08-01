@@ -6,6 +6,10 @@ const (
 	RelationshipTypeNone = RelationshipType(iota)
 	RelationshipTypeComposedOfSystems
 	RelationshipTypeDeviceProfile
+	RelationshipTypeEpAffectedBy
+	RelationshipTypeEpMemberOf
+	RelationshipTypeEpNested
+	RelationshipTypeEpTopLevel
 	RelationshipTypeHostedInterfaces
 	RelationshipTypeInterfaceMap
 	RelationshipTypeLink
@@ -17,6 +21,10 @@ const (
 	relationshipTypeNone              = relationshipType("")
 	relationshipTypeComposedOfSystems = relationshipType("composed_of_systems")
 	relationshipTypeDeviceProfile     = relationshipType("device_profile")
+	relationshipTypeEpAffectedBy      = relationshipType("ep_affected_by")
+	relationshipTypeEpMemberOf        = relationshipType("ep_member_of")
+	relationshipTypeEpNested          = relationshipType("ep_nested")
+	relationshipTypeEpTopLevel        = relationshipType("ep_top_level")
 	relationshipTypeHostedInterfaces  = relationshipType("hosted_interfaces")
 	relationshipTypeInterfaceMap      = relationshipType("interface_map")
 	relationshipTypeLink              = relationshipType("link")
@@ -37,6 +45,14 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeComposedOfSystems)
 	case RelationshipTypeDeviceProfile:
 		return string(relationshipTypeDeviceProfile)
+	case RelationshipTypeEpAffectedBy:
+		return string(relationshipTypeEpAffectedBy)
+	case RelationshipTypeEpMemberOf:
+		return string(relationshipTypeEpMemberOf)
+	case RelationshipTypeEpNested:
+		return string(relationshipTypeEpNested)
+	case RelationshipTypeEpTopLevel:
+		return string(relationshipTypeEpTopLevel)
 	case RelationshipTypeHostedInterfaces:
 		return string(relationshipTypeHostedInterfaces)
 	case RelationshipTypeInterfaceMap:

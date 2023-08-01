@@ -4,6 +4,9 @@ import "fmt"
 
 const (
 	NodeTypeNone = NodeType(iota)
+	NodeTypeEpApplicationInstance
+	NodeTypeEpEndpointPolicy
+	NodeTypeEpGroup
 	NodeTypeInterface
 	NodeTypeInterfaceMap
 	NodeTypeLink
@@ -19,21 +22,24 @@ const (
 	NodeTypeVirtualNetwork
 	NodeTypeUnknown = "unknown node type %s"
 
-	nodeTypeNone            = nodeType("")
-	nodeTypeInterface       = nodeType("interface")
-	nodeTypeInterfaceMap    = nodeType("interface_map")
-	nodeTypeLink            = nodeType("link")
-	nodeTypeLogicalDevice   = nodeType("logical_device")
-	nodeTypeMetadata        = nodeType("metadata")
-	nodeTypePolicy          = nodeType("policy")
-	nodeTypeRack            = nodeType("rack")
-	nodeTypeRedundancyGroup = nodeType("redundancy_group")
-	nodeTypeRoutingPolicy   = nodeType("routing_policy")
-	nodeTypeSecurityZone    = nodeType("security_zone")
-	nodeTypeSystem          = nodeType("system")
-	nodeTypeTag             = nodeType("tag")
-	nodeTypeVirtualNetwork  = nodeType("virtual_network")
-	nodeTypeUnknown         = "unknown node type %d"
+	nodeTypeNone                  = nodeType("")
+	nodeTypeEpApplicationInstance = nodeType("ep_application_instance")
+	nodeTypeEpEndpointPolicy      = nodeType("ep_endpoint_policy")
+	nodeTypeEpGroup               = nodeType("ep_group")
+	nodeTypeInterface             = nodeType("interface")
+	nodeTypeInterfaceMap          = nodeType("interface_map")
+	nodeTypeLink                  = nodeType("link")
+	nodeTypeLogicalDevice         = nodeType("logical_device")
+	nodeTypeMetadata              = nodeType("metadata")
+	nodeTypePolicy                = nodeType("policy")
+	nodeTypeRack                  = nodeType("rack")
+	nodeTypeRedundancyGroup       = nodeType("redundancy_group")
+	nodeTypeRoutingPolicy         = nodeType("routing_policy")
+	nodeTypeSecurityZone          = nodeType("security_zone")
+	nodeTypeSystem                = nodeType("system")
+	nodeTypeTag                   = nodeType("tag")
+	nodeTypeVirtualNetwork        = nodeType("virtual_network")
+	nodeTypeUnknown               = "unknown node type %d"
 )
 
 type NodeType int
@@ -43,6 +49,12 @@ func (o NodeType) String() string {
 	switch o {
 	case NodeTypeNone:
 		return string(nodeTypeNone)
+	case NodeTypeEpApplicationInstance:
+		return string(nodeTypeEpApplicationInstance)
+	case NodeTypeEpEndpointPolicy:
+		return string(nodeTypeEpEndpointPolicy)
+	case NodeTypeEpGroup:
+		return string(nodeTypeEpGroup)
 	case NodeTypeInterface:
 		return string(nodeTypeInterface)
 	case NodeTypeInterfaceMap:
