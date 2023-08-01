@@ -7,6 +7,8 @@ type ctPrimitivePolicyTypeName string
 
 const (
 	CtPrimitivePolicyTypeNameNone = CtPrimitivePolicyTypeName(iota)
+	CtPrimitivePolicyTypeNameBatch
+	CtPrimitivePolicyTypeNamePipeline
 	CtPrimitivePolicyTypeNameAttachSingleVlan
 	CtPrimitivePolicyTypeNameAttachMultipleVlan
 	CtPrimitivePolicyTypeNameAttachLogicalLink
@@ -20,6 +22,8 @@ const (
 	CtPrimitivePolicyTypeNameUnknown = "unknown CT primitive policy name %q"
 
 	ctPrimitivePolicyTypeNameNone                                           = ctPrimitivePolicyTypeName("")
+	ctPrimitivePolicyTypeNameBatch                                          = ctPrimitivePolicyTypeName("batch")
+	ctPrimitivePolicyTypeNamePipeline                                       = ctPrimitivePolicyTypeName("pipeline")
 	ctPrimitivePolicyTypeNameAttachSingleVlan                               = ctPrimitivePolicyTypeName("AttachSingleVLAN")
 	ctPrimitivePolicyTypeNameAttachMultipleVlan                             = ctPrimitivePolicyTypeName("AttachMultipleVLAN")
 	ctPrimitivePolicyTypeNameAttachLogicalLink                              = ctPrimitivePolicyTypeName("AttachLogicalLink")
@@ -41,6 +45,10 @@ func (o CtPrimitivePolicyTypeName) raw() ctPrimitivePolicyTypeName {
 	switch o {
 	case CtPrimitivePolicyTypeNameNone:
 		return ctPrimitivePolicyTypeNameNone
+	case CtPrimitivePolicyTypeNameBatch:
+		return ctPrimitivePolicyTypeNameBatch
+	case CtPrimitivePolicyTypeNamePipeline:
+		return ctPrimitivePolicyTypeNamePipeline
 	case CtPrimitivePolicyTypeNameAttachSingleVlan:
 		return ctPrimitivePolicyTypeNameAttachSingleVlan
 	case CtPrimitivePolicyTypeNameAttachMultipleVlan:
@@ -79,6 +87,10 @@ func (o ctPrimitivePolicyTypeName) parse() (int, error) {
 	switch o {
 	case ctPrimitivePolicyTypeNameNone:
 		return int(CtPrimitivePolicyTypeNameNone), nil
+	case ctPrimitivePolicyTypeNameBatch:
+		return int(CtPrimitivePolicyTypeNameBatch), nil
+	case ctPrimitivePolicyTypeNamePipeline:
+		return int(CtPrimitivePolicyTypeNamePipeline), nil
 	case ctPrimitivePolicyTypeNameAttachSingleVlan:
 		return int(CtPrimitivePolicyTypeNameAttachSingleVlan), nil
 	case ctPrimitivePolicyTypeNameAttachMultipleVlan:

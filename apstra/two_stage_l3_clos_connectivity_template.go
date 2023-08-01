@@ -20,10 +20,8 @@ const (
 
 	deleteRecursive = "delete_recursive"
 
-	policyTypeNameBatch      = "batch"
-	policyTypeNamePipeline   = "pipeline"
-	policyTypeBatchSuffix    = " (" + policyTypeNameBatch + ")"
-	policyTypePipelineSuffix = " (" + policyTypeNamePipeline + ")"
+	policyTypeBatchSuffix    = " (" + ctPrimitivePolicyTypeNameBatch + ")"
+	policyTypePipelineSuffix = " (" + ctPrimitivePolicyTypeNamePipeline + ")"
 
 	xInitialPosition = 290
 	yInitialPosition = 80
@@ -189,9 +187,9 @@ func (o *rawConnectivityTemplate) polish(id ObjectId) (*ConnectivityTemplate, er
 	if rootBatch.UserData == nil {
 		return nil, fmt.Errorf("connectivity template root batch has no user data")
 	}
-	if policyTypeNameBatch != rootBatch.PolicyTypeName {
+	if ctPrimitivePolicyTypeNameBatch != rootBatch.PolicyTypeName {
 		return nil, fmt.Errorf("expected policy %q to be type %q, got %q",
-			rootBatch.Id, policyTypeNameBatch, rootBatch.PolicyTypeName)
+			rootBatch.Id, ctPrimitivePolicyTypeNameBatch, rootBatch.PolicyTypeName)
 	}
 
 	delete(policyMap, rootBatch.Id)
@@ -299,8 +297,8 @@ func (o *ConnectivityTemplatePrimitive) rawPipeline() ([]rawConnectivityTemplate
 	pipeline := rawConnectivityTemplatePolicy{
 		Description:    attributes.Description(),
 		Tags:           []string{}, // always empty slice
-		Label:          attributes.Label() + policyTypePipelineSuffix,
-		PolicyTypeName: policyTypeNamePipeline,
+		Label:          attributes.Label() + string(policyTypePipelineSuffix),
+		PolicyTypeName: ctPrimitivePolicyTypeNamePipeline,
 		Attributes:     rawPipelineAttribtes,
 		Id:             *o.PipelineId,
 	}
@@ -450,8 +448,8 @@ func rawBatch(id ObjectId, description, label string, subpolicies []*Connectivit
 	batch := rawConnectivityTemplatePolicy{
 		Description:    description,
 		Tags:           []string{},
-		Label:          label + policyTypeBatchSuffix,
-		PolicyTypeName: policyTypeNameBatch,
+		Label:          label + string(policyTypeBatchSuffix),
+		PolicyTypeName: ctPrimitivePolicyTypeNameBatch,
 		Attributes:     rawAttributes,
 		Id:             id,
 	}
@@ -482,9 +480,9 @@ func parsePrimitiveTreeByPipelineId(pipelineId ObjectId, policyMap map[ObjectId]
 	if pipeline, ok = policyMap[pipelineId]; !ok {
 		return nil, fmt.Errorf("raw policy map doesn't include pipeline policy %q", pipelineId)
 	}
-	if pipeline.PolicyTypeName != policyTypeNamePipeline {
+	if ctPrimitivePolicyTypeNamePipeline != pipeline.PolicyTypeName {
 		return nil, fmt.Errorf("expected policy %q to be type %q, got %q",
-			pipeline.Id, policyTypeNamePipeline, pipeline.PolicyTypeName)
+			pipeline.Id, ctPrimitivePolicyTypeNamePipeline, pipeline.PolicyTypeName)
 	}
 
 	var pipelineAttributes rawPipelineAttributes
@@ -509,10 +507,10 @@ func parsePrimitiveTreeByPipelineId(pipelineId ObjectId, policyMap map[ObjectId]
 		// a batch ID appears in the pipeline
 		if batch, ok = policyMap[*pipelineAttributes.SecondSubpolicy]; ok {
 			// the batch was found in the map
-			if batch.PolicyTypeName != policyTypeNameBatch {
+			if ctPrimitivePolicyTypeNameBatch != batch.PolicyTypeName {
 				// batch ID has wrong policy type (not batch)
 				return nil, fmt.Errorf("expected policy %q to be type %q, got %q",
-					batch.Id, policyTypeNameBatch, batch.PolicyTypeName)
+					batch.Id, ctPrimitivePolicyTypeNameBatch, batch.PolicyTypeName)
 			}
 
 			var batchAttributes rawBatchAttributes
