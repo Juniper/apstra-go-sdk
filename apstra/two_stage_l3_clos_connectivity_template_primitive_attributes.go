@@ -92,7 +92,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) raw() (json.
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) PolicyTypeName() CtPrimitivePolicyTypeName {
-	return CtPrimitivePolicyTypeNameAttachMultipleVLAN
+	return CtPrimitivePolicyTypeNameAttachMultipleVlan
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) Label() string {
