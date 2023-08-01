@@ -10,7 +10,7 @@ const (
 	CtPrimitivePolicyTypeNameBatch    // todo - is this needed?
 	CtPrimitivePolicyTypeNamePipeline // todo - is this needed?
 	CtPrimitivePolicyTypeNameAttachSingleVlan
-	CtPrimitivePolicyTypeNameAttachMultipleVLAN
+	CtPrimitivePolicyTypeNameAttachMultipleVlan
 	CtPrimitivePolicyTypeNameAttachLogicalLink
 	CtPrimitivePolicyTypeNameAttachStaticRoute
 	CtPrimitivePolicyTypeNameAttachCustomStaticRoute
@@ -25,7 +25,7 @@ const (
 	ctPrimitivePolicyTypeNameBatch                                          = ctPrimitivePolicyTypeName("batch")    // todo - is this needed?
 	ctPrimitivePolicyTypeNamePipeline                                       = ctPrimitivePolicyTypeName("pipeline") // todo - is this needed?
 	ctPrimitivePolicyTypeNameAttachSingleVlan                               = ctPrimitivePolicyTypeName("AttachSingleVLAN")
-	ctPrimitivePolicyTypeNameAttachMultipleVLAN                             = ctPrimitivePolicyTypeName("AttachMultipleVLAN")
+	ctPrimitivePolicyTypeNameAttachMultipleVlan                             = ctPrimitivePolicyTypeName("AttachMultipleVLAN")
 	ctPrimitivePolicyTypeNameAttachLogicalLink                              = ctPrimitivePolicyTypeName("AttachLogicalLink")
 	ctPrimitivePolicyTypeNameAttachStaticRoute                              = ctPrimitivePolicyTypeName("AttachStaticRoute")
 	ctPrimitivePolicyTypeNameAttachCustomStaticRoute                        = ctPrimitivePolicyTypeName("AttachCustomStaticRoute")
@@ -51,8 +51,8 @@ func (o CtPrimitivePolicyTypeName) raw() ctPrimitivePolicyTypeName {
 		return ctPrimitivePolicyTypeNamePipeline
 	case CtPrimitivePolicyTypeNameAttachSingleVlan:
 		return ctPrimitivePolicyTypeNameAttachSingleVlan
-	case CtPrimitivePolicyTypeNameAttachMultipleVLAN:
-		return ctPrimitivePolicyTypeNameAttachMultipleVLAN
+	case CtPrimitivePolicyTypeNameAttachMultipleVlan:
+		return ctPrimitivePolicyTypeNameAttachMultipleVlan
 	case CtPrimitivePolicyTypeNameAttachLogicalLink:
 		return ctPrimitivePolicyTypeNameAttachLogicalLink
 	case CtPrimitivePolicyTypeNameAttachStaticRoute:
@@ -93,8 +93,8 @@ func (o ctPrimitivePolicyTypeName) parse() (int, error) {
 		return int(CtPrimitivePolicyTypeNamePipeline), nil
 	case ctPrimitivePolicyTypeNameAttachSingleVlan:
 		return int(CtPrimitivePolicyTypeNameAttachSingleVlan), nil
-	case ctPrimitivePolicyTypeNameAttachMultipleVLAN:
-		return int(CtPrimitivePolicyTypeNameAttachMultipleVLAN), nil
+	case ctPrimitivePolicyTypeNameAttachMultipleVlan:
+		return int(CtPrimitivePolicyTypeNameAttachMultipleVlan), nil
 	case ctPrimitivePolicyTypeNameAttachLogicalLink:
 		return int(CtPrimitivePolicyTypeNameAttachLogicalLink), nil
 	case ctPrimitivePolicyTypeNameAttachStaticRoute:

@@ -375,7 +375,7 @@ func (o rawConnectivityTemplatePolicy) attributes() (ConnectivityTemplatePrimiti
 	switch o.PolicyTypeName {
 	case ctPrimitivePolicyTypeNameAttachSingleVlan:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachSingleVlan)
-	case ctPrimitivePolicyTypeNameAttachMultipleVLAN:
+	case ctPrimitivePolicyTypeNameAttachMultipleVlan:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan)
 	case ctPrimitivePolicyTypeNameAttachLogicalLink:
 		result = new(ConnectivityTemplatePrimitiveAttributesAttachLogicalLink)
