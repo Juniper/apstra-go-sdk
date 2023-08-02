@@ -141,7 +141,7 @@ func TestImmediateTickerSecondTick(t *testing.T) {
 
 func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignDatacenter,
+		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L3_Collapsed_ESI",
 	})
@@ -163,7 +163,7 @@ func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 
 func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignDatacenter,
+		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual",
 	})
@@ -185,7 +185,7 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 
 func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignDatacenter,
+		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
 	})
@@ -207,7 +207,7 @@ func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 
 func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignDatacenter,
+		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_ESI_2x_Links",
 	})
@@ -261,7 +261,7 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 
 func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignDatacenter,
+		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_ESI_Access",
 	})
@@ -468,7 +468,7 @@ func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	}
 
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignDatacenter,
+		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
 	})

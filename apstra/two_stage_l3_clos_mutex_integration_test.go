@@ -24,7 +24,7 @@ func TestLockUnlockBlueprintMutex(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
+			RefDesign:  RefDesignTwoStageL3Clos,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
 		})
@@ -76,7 +76,7 @@ func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
+			RefDesign:  RefDesignTwoStageL3Clos,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
 		})
@@ -156,7 +156,7 @@ func TestLockBlockUnlockLockUnlockBlueprintMutex(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
+			RefDesign:  RefDesignTwoStageL3Clos,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
 		})
@@ -245,7 +245,7 @@ func TestLockTryLockBlueprintMutex(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
+			RefDesign:  RefDesignTwoStageL3Clos,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
 		})
@@ -331,7 +331,7 @@ func TestTryLockTryLockBlueprintMutex(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
+			RefDesign:  RefDesignTwoStageL3Clos,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
 		})
@@ -416,7 +416,7 @@ func TestLockUnlLockTrylockBlueprintMutex(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
+			RefDesign:  RefDesignTwoStageL3Clos,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
 		})
@@ -494,7 +494,7 @@ func TestReadOnlyBlueprintMutex(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
+			RefDesign:  RefDesignTwoStageL3Clos,
 			Label:      bpName,
 			TemplateId: "L3_Collapsed_ESI",
 		})

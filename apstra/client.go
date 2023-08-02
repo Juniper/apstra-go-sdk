@@ -135,7 +135,7 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 	if err != nil {
 		return nil, err
 	}
-	if bp.Design != refDesignDatacenter {
+	if bp.Design != refDesignTwoStageL3Clos {
 		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
 			RefDesignTwoStageL3Clos.String(), blueprintId, bp.Design)
 	}
