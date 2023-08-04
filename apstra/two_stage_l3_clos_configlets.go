@@ -62,6 +62,9 @@ func (o *rawTwoStageL3ClosConfiglet) polish() (*TwoStageL3ClosConfiglet, error) 
 	c := TwoStageL3ClosConfiglet{}
 	c.Id = ObjectId(o.Id)
 	d, err := o.Data.polish()
+	if err != nil {
+		return nil, err
+	}
 	c.Data = TwoStageL3ClosConfigletData{
 		Data:      *d,
 		Condition: o.Condition,
