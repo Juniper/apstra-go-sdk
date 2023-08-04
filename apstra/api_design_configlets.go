@@ -22,11 +22,11 @@ type ConfigletGenerator struct {
 }
 
 type rawConfigletGenerator struct {
-	ConfigStyle          string `json:"config_style"`
-	Section              string `json:"section"`
-	TemplateText         string `json:"template_text"`
-	NegationTemplateText string `json:"negation_template_text"`
-	Filename             string `json:"filename"`
+	ConfigStyle          platformOS       `json:"config_style"`
+	Section              configletSection `json:"section"`
+	TemplateText         string           `json:"template_text"`
+	NegationTemplateText string           `json:"negation_template_text"`
+	Filename             string           `json:"filename"`
 }
 
 type Configlet struct {
@@ -97,11 +97,11 @@ func (o *rawConfigletData) polish() (*ConfigletData, error) {
 }
 
 func (o *rawConfigletGenerator) polish() (*ConfigletGenerator, error) {
-	platform, err := platformOS(o.ConfigStyle).parse()
+	platform, err := o.ConfigStyle.parse()
 	if err != nil {
 		return nil, err
 	}
-	section, err := configletSection(o.Section).parse()
+	section, err := o.Section.parse()
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +119,8 @@ func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
 	cg.TemplateText = o.TemplateText
 	cg.Filename = o.Filename
 	cg.NegationTemplateText = o.NegationTemplateText
-	cg.ConfigStyle = o.ConfigStyle.raw().string()
-	cg.Section = string(o.Section.raw())
+	cg.ConfigStyle = o.ConfigStyle.raw()
+	cg.Section = o.Section.raw()
 	return &cg
 }
 
