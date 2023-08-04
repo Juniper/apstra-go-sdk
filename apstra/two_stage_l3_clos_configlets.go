@@ -137,7 +137,7 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 	}
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
-		err:     fmt.Errorf(" Configlet with name '%s' not found", name),
+		err:     fmt.Errorf(" no Configlet with name '%s' found", name),
 	}
 }
 
