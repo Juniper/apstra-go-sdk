@@ -50,21 +50,21 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 
 		log.Printf("testing ImportConfigletById() against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
-		ips_id, err := bpClient.ImportConfigletById(ctx, CatConfId, "role in [\"spine\", \"leaf\"]", "")
-		log.Printf("%s", ips_id)
+		icfg_id, err := bpClient.ImportConfigletById(ctx, CatConfId, "role in [\"spine\", \"leaf\"]", "")
+		log.Printf("%s", icfg_id)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing GetConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ips, err := bpClient.GetConfiglet(ctx, ips_id)
-		log.Println(ips)
+		icfg, err := bpClient.GetConfiglet(ctx, icfg_id)
+		log.Println(icfg)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing DeleteConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.DeleteConfiglet(ctx, ips_id)
+		err = bpClient.DeleteConfiglet(ctx, icfg_id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -72,43 +72,48 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 		// Delete takes time sometimes
 		time.Sleep(3 * time.Second)
 		log.Printf("testing ImportConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ips_id, err = bpClient.ImportConfiglet(ctx, (ConfigletData)(cr), "role in [\"spine\", \"leaf\"]", "")
-		log.Printf("%s", ips_id)
+		c := TwoStageL3ClosConfigletData{
+			Data:      cr,
+			Condition: "role in [\"spine\", \"leaf\"]",
+			Label:     "",
+		}
+		icfg_id, err = bpClient.ImportConfiglet(ctx, c)
+		log.Printf("%s", icfg_id)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing GetConfigletByName() against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
-		ips, err = bpClient.GetConfigletByName(ctx, "TestImportConfiglet")
-		log.Println(ips)
+		icfg1, err := bpClient.GetConfigletByName(ctx, "TestImportConfiglet")
+		log.Println(icfg1)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		ips.Label = "new name"
-		ips.Condition = "role in [\"spine\"]"
+		icfg1.Data.Label = "new name"
+		icfg1.Data.Condition = "role in [\"spine\"]"
 		log.Printf("testing UpdateConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.UpdateConfiglet(ctx, ips)
+		err = bpClient.UpdateConfiglet(ctx, icfg1)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing GetConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ips1, err := bpClient.GetConfiglet(ctx, ips_id)
-		log.Println(ips1)
+		icfg2, err := bpClient.GetConfiglet(ctx, icfg_id)
+		log.Println(icfg2)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if ips1.Label != ips.Label {
+		if icfg1.Data.Label != icfg2.Data.Label {
 			t.Fatal("Name Change Failed")
 		}
-		if ips1.Condition != ips.Condition {
+		if icfg1.Data.Condition != icfg2.Data.Condition {
 			t.Fatal("Condition Change Failed")
 		}
 
 		log.Printf("testing DeleteConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.DeleteConfiglet(ctx, ips_id)
+		err = bpClient.DeleteConfiglet(ctx, icfg_id)
 		if err != nil {
 			t.Fatal(err)
 		}

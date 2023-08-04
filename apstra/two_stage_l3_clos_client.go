@@ -434,8 +434,20 @@ func (o *TwoStageL3ClosClient) DeletePropertySet(ctx context.Context, id ObjectI
 
 // GetAllConfiglets returns []TwoStageL3ClosConfiglet representing all
 // configlets imported into a blueprint
-func (o *TwoStageL3ClosClient) GetAllConfiglets(ctx context.Context) ([]*TwoStageL3ClosConfiglet, error) {
-	return o.getAllConfiglets(ctx)
+func (o *TwoStageL3ClosClient) GetAllConfiglets(ctx context.Context) ([]TwoStageL3ClosConfiglet, error) {
+	rawConfiglets, err := o.getAllConfiglets(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]TwoStageL3ClosConfiglet, len(rawConfiglets))
+	for i := range rawConfiglets {
+		polished, err := rawConfiglets[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
 }
 
 // GetAllConfigletIds returns Ids of all the configlets imported into a
@@ -453,7 +465,11 @@ func (o *TwoStageL3ClosClient) GetConfiglet(ctx context.Context, id ObjectId) (*
 // GetConfigletByName returns *TwoStageL3ClosConfiglet representing the only
 // configlet with the given label, or an error if no configlet by that name exists
 func (o *TwoStageL3ClosClient) GetConfigletByName(ctx context.Context, in string) (*TwoStageL3ClosConfiglet, error) {
-	return o.getConfigletByName(ctx, in)
+	c, err := o.getConfigletByName(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return c.polish()
 }
 
 // ImportConfigletById imports a configlet from the catalog into a blueprint.
@@ -462,7 +478,15 @@ func (o *TwoStageL3ClosClient) GetConfigletByName(ctx context.Context, in string
 // label can be used to rename the configlet in the blue print
 // On success, it returns the id of the imported configlet.
 func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid ObjectId, condition string, label string) (ObjectId, error) {
-	return o.importConfigletById(ctx, cid, condition, label)
+	cfg, err := o.client.GetConfiglet(ctx, cid)
+	if err != nil {
+		return "", err
+	}
+	return o.importConfiglet(ctx, TwoStageL3ClosConfigletData{
+		Data:      *cfg.Data,
+		Condition: condition,
+		Label:     label,
+	})
 }
 
 // ImportConfiglet imports a configlet described by a ConfigletData structure
@@ -470,13 +494,13 @@ func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid Obje
 // condition is a string input that indicates which devices it applies to.
 // label can be used to rename the configlet in the blueprint
 // On success, it returns the id of the imported configlet.
-func (o *TwoStageL3ClosClient) ImportConfiglet(ctx context.Context, c ConfigletData, condition string, label string) (ObjectId, error) {
-	return o.importConfiglet(ctx, c, condition, label)
+func (o *TwoStageL3ClosClient) ImportConfiglet(ctx context.Context, c TwoStageL3ClosConfigletData) (ObjectId, error) {
+	return o.importConfiglet(ctx, c)
 }
 
 // UpdateConfiglet updates a configlet imported into a blueprint.
-func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, configlet *TwoStageL3ClosConfiglet) error {
-	return o.updateConfiglet(ctx, configlet)
+func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, c *TwoStageL3ClosConfiglet) error {
+	return o.updateConfiglet(ctx, c)
 }
 
 // DeleteConfiglet deletes a configlet from the blueprint given the id

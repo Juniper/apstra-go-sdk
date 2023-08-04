@@ -12,6 +12,18 @@ const (
 	apiUrlBlueprintConfigletsById   = apiUrlBlueprintConfigletsPrefix + "%s"
 )
 
+type rawTwoStageL3ClosConfigletData struct {
+	Data      rawConfigletData `json:"configlet"`
+	Condition string           `json:"condition"`
+	Label     string           `json:"label"`
+}
+
+type TwoStageL3ClosConfigletData struct {
+	Data      ConfigletData
+	Condition string
+	Label     string
+}
+
 type rawTwoStageL3ClosConfiglet struct {
 	Data      rawConfigletData `json:"configlet"`
 	Id        string           `json:"id"`
@@ -20,31 +32,45 @@ type rawTwoStageL3ClosConfiglet struct {
 }
 
 type TwoStageL3ClosConfiglet struct {
-	Data      ConfigletData
-	Id        string
-	Condition string
-	Label     string
+	Data TwoStageL3ClosConfigletData
+	Id   ObjectId
+}
+
+func (o *TwoStageL3ClosConfigletData) raw() *rawTwoStageL3ClosConfigletData {
+	rawtc := rawTwoStageL3ClosConfigletData{}
+	rawtc.Data = *o.Data.raw()
+	rawtc.Condition = o.Condition
+	rawtc.Label = o.Label
+	return &rawtc
 }
 
 func (o *TwoStageL3ClosConfiglet) raw() *rawTwoStageL3ClosConfiglet {
-	rawc := rawTwoStageL3ClosConfiglet{}
-	rawc.Data = *o.Data.raw()
-	rawc.Id = o.Id
-	rawc.Condition = o.Condition
-	rawc.Label = o.Label
-	return &rawc
+	d := o.Data.raw()
+	return &rawTwoStageL3ClosConfiglet{
+		Data: rawConfigletData{
+			RefArchs:    d.Data.RefArchs,
+			Generators:  d.Data.Generators,
+			DisplayName: d.Data.DisplayName,
+		},
+		Id:        o.Id.String(),
+		Condition: d.Condition,
+		Label:     d.Label,
+	}
 }
 
 func (o *rawTwoStageL3ClosConfiglet) polish() (*TwoStageL3ClosConfiglet, error) {
 	c := TwoStageL3ClosConfiglet{}
-	c.Id = o.Id
-	c.Condition = o.Condition
-	c.Label = o.Label
+	c.Id = ObjectId(o.Id)
 	d, err := o.Data.polish()
-	c.Data = *d
+	c.Data = TwoStageL3ClosConfigletData{
+		Data:      *d,
+		Condition: o.Condition,
+		Label:     o.Label,
+	}
 	return &c, err
 }
-func (o *TwoStageL3ClosClient) getAllConfiglets(ctx context.Context) ([]*TwoStageL3ClosConfiglet, error) {
+
+func (o *TwoStageL3ClosClient) getAllConfiglets(ctx context.Context) ([]rawTwoStageL3ClosConfiglet, error) {
 	response := &struct {
 		Items []rawTwoStageL3ClosConfiglet `json:"items"`
 	}{}
@@ -56,12 +82,7 @@ func (o *TwoStageL3ClosClient) getAllConfiglets(ctx context.Context) ([]*TwoStag
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	cgs := make([]*TwoStageL3ClosConfiglet, len(response.Items))
-	for i, j := range response.Items {
-		cgs[i], err = j.polish()
-
-	}
-	return cgs, nil
+	return response.Items, nil
 }
 
 func (o *TwoStageL3ClosClient) getAllConfigletIds(ctx context.Context) ([]ObjectId, error) {
@@ -89,7 +110,8 @@ func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*
 	return response.polish()
 }
 
-func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name string) (*TwoStageL3ClosConfiglet, error) {
+func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name string) (*rawTwoStageL3ClosConfiglet,
+	error) {
 	cgs, err := o.getAllConfiglets(ctx)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -108,7 +130,7 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 		}
 	}
 	if idx != -1 {
-		return cgs[idx], nil
+		return &cgs[idx], nil
 	}
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
@@ -116,34 +138,21 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 	}
 }
 
-func (o *TwoStageL3ClosClient) importConfiglet(ctx context.Context, c ConfigletData, condition string, label string) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) importConfiglet(ctx context.Context, c TwoStageL3ClosConfigletData) (ObjectId, error) {
 	response := &objectIdResponse{}
-	if len(label) == 0 {
-		label = c.DisplayName
-	}
-	in := TwoStageL3ClosConfiglet{
-		Data:      c,
-		Condition: condition,
-		Label:     label,
+	if len(c.Label) == 0 {
+		c.Label = c.Data.DisplayName
 	}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintConfiglets, o.blueprintId.String()),
-		apiInput:    in.raw(),
+		apiInput:    c.raw(),
 		apiResponse: response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
 	return response.Id, nil
-}
-func (o *TwoStageL3ClosClient) importConfigletById(ctx context.Context, id ObjectId, condition string,
-	label string) (ObjectId, error) {
-	cfglet, err := o.client.GetConfiglet(ctx, id)
-	if err != nil {
-		return "", err
-	}
-	return o.ImportConfiglet(ctx, *cfglet.Data, condition, label)
 }
 
 func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, in *TwoStageL3ClosConfiglet) error {
