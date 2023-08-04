@@ -26,7 +26,7 @@ type TwoStageL3ClosConfigletData struct {
 
 type rawTwoStageL3ClosConfiglet struct {
 	Data      rawConfigletData `json:"configlet"`
-	Id        string           `json:"id"`
+	Id        ObjectId         `json:"id"`
 	Condition string           `json:"condition"`
 	Label     string           `json:"label"`
 }
@@ -52,7 +52,7 @@ func (o *TwoStageL3ClosConfiglet) raw() *rawTwoStageL3ClosConfiglet {
 			Generators:  d.Data.Generators,
 			DisplayName: d.Data.DisplayName,
 		},
-		Id:        o.Id.String(),
+		Id:        o.Id,
 		Condition: d.Condition,
 		Label:     d.Label,
 	}
@@ -60,7 +60,7 @@ func (o *TwoStageL3ClosConfiglet) raw() *rawTwoStageL3ClosConfiglet {
 
 func (o *rawTwoStageL3ClosConfiglet) polish() (*TwoStageL3ClosConfiglet, error) {
 	c := TwoStageL3ClosConfiglet{}
-	c.Id = ObjectId(o.Id)
+	c.Id = o.Id
 	d, err := o.Data.polish()
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func (o *TwoStageL3ClosClient) getAllConfigletIds(ctx context.Context) ([]Object
 	}
 	ids := make([]ObjectId, len(configlets))
 	for i, c := range configlets {
-		ids[i] = ObjectId(c.Id)
+		ids[i] = c.Id
 	}
 	return ids, nil
 }
