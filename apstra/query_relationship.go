@@ -8,6 +8,7 @@ const (
 	RelationshipTypeDeviceProfile
 	RelationshipTypeHostedInterfaces
 	RelationshipTypeInterfaceMap
+	RelationshipTypeInstantiatedBy
 	RelationshipTypeInstantiates
 	RelationshipTypeLink
 	RelationshipTypeLogicalDevice
@@ -21,6 +22,7 @@ const (
 	relationshipTypeDeviceProfile     = relationshipType("device_profile")
 	relationshipTypeHostedInterfaces  = relationshipType("hosted_interfaces")
 	relationshipTypeInterfaceMap      = relationshipType("interface_map")
+	relationshipTypeInstantiatedBy    = relationshipType("instantiated_by")
 	relationshipTypeInstantiates      = relationshipType("instantiates")
 	relationshipTypeLink              = relationshipType("link")
 	relationshipTypeLogicalDevice     = relationshipType("logical_device")
@@ -45,6 +47,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeHostedInterfaces)
 	case RelationshipTypeInterfaceMap:
 		return string(relationshipTypeInterfaceMap)
+	case RelationshipTypeInstantiatedBy:
+		return string(relationshipTypeInstantiatedBy)
 	case RelationshipTypeInstantiates:
 		return string(relationshipTypeInstantiates)
 	case RelationshipTypeLink:
