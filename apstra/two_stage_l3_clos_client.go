@@ -482,16 +482,20 @@ func (o *TwoStageL3ClosClient) GetConfigletByName(ctx context.Context, in string
 // label can be used to rename the configlet in the blue print
 // On success, it returns the id of the imported configlet.
 func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid ObjectId, condition string, label string) (ObjectId, error) {
-	cfg, err := o.client.GetConfiglet(ctx, cid)
+	cfg, err := o.client.getConfiglet(ctx, cid)
 	if err != nil {
 		return "", err
 	}
-	c := TwoStageL3ClosConfigletData{
-		Data:      *cfg.Data,
+
+	return o.createConfiglet(ctx, &rawTwoStageL3ClosConfigletData{
 		Condition: condition,
 		Label:     label,
-	}
-	return o.createConfiglet(ctx, c.raw())
+		Data: rawConfigletData{
+			RefArchs:    cfg.RefArchs,
+			Generators:  cfg.Generators,
+			DisplayName: cfg.DisplayName,
+		},
+	})
 }
 
 // CreateConfiglet creates a configlet described by a TwoStageL3ClosConfigletData structure
