@@ -49,7 +49,7 @@ type rawConfigletData struct {
 }
 
 type rawConfiglet struct {
-	RefArchs       []string                `json:"ref_archs"`
+	RefArchs       []refDesign             `json:"ref_archs"`
 	Generators     []rawConfigletGenerator `json:"generators"`
 	CreatedAt      time.Time               `json:"created_at"`
 	Id             ObjectId                `json:"id,omitempty"`
