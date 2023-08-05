@@ -459,7 +459,11 @@ func (o *TwoStageL3ClosClient) GetAllConfigletIds(ctx context.Context) ([]Object
 // GetConfiglet returns *TwoStageL3ClosConfiglet representing the imported
 // configlet with the given ID in the specified blueprint
 func (o *TwoStageL3ClosClient) GetConfiglet(ctx context.Context, id ObjectId) (*TwoStageL3ClosConfiglet, error) {
-	return o.getConfiglet(ctx, id)
+	c, err := o.getConfiglet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return c.polish()
 }
 
 // GetConfigletByName returns *TwoStageL3ClosConfiglet representing the only
@@ -482,25 +486,23 @@ func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid Obje
 	if err != nil {
 		return "", err
 	}
-	return o.importConfiglet(ctx, TwoStageL3ClosConfigletData{
+	c := TwoStageL3ClosConfigletData{
 		Data:      *cfg.Data,
 		Condition: condition,
 		Label:     label,
-	})
+	}
+	return o.createConfiglet(ctx, c.raw())
 }
 
-// ImportConfiglet imports a configlet described by a ConfigletData structure
-// into a blueprint.
-// condition is a string input that indicates which devices it applies to.
-// label can be used to rename the configlet in the blueprint
-// On success, it returns the id of the imported configlet.
-func (o *TwoStageL3ClosClient) ImportConfiglet(ctx context.Context, c TwoStageL3ClosConfigletData) (ObjectId, error) {
-	return o.importConfiglet(ctx, c)
+// CreateConfiglet creates a configlet described by a TwoStageL3ClosConfigletData structure
+// in a blueprint.
+func (o *TwoStageL3ClosClient) CreateConfiglet(ctx context.Context, c *TwoStageL3ClosConfigletData) (ObjectId, error) {
+	return o.createConfiglet(ctx, c.raw())
 }
 
 // UpdateConfiglet updates a configlet imported into a blueprint.
 func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, c *TwoStageL3ClosConfiglet) error {
-	return o.updateConfiglet(ctx, c)
+	return o.updateConfiglet(ctx, c.raw())
 }
 
 // DeleteConfiglet deletes a configlet from the blueprint given the id

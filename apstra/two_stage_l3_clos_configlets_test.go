@@ -75,7 +75,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 			Condition: "role in [\"spine\", \"leaf\"]",
 			Label:     "",
 		}
-		icfg_id, err = bpClient.ImportConfiglet(ctx, c)
+		icfg_id, err = bpClient.CreateConfiglet(ctx, &c)
 		log.Printf("%s", icfg_id)
 		if err != nil {
 			t.Fatal(err)

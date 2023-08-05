@@ -100,7 +100,7 @@ func (o *TwoStageL3ClosClient) getAllConfigletIds(ctx context.Context) ([]Object
 	return ids, nil
 }
 
-func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*TwoStageL3ClosConfiglet, error) {
+func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*rawTwoStageL3ClosConfiglet, error) {
 	response := &rawTwoStageL3ClosConfiglet{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -110,7 +110,7 @@ func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response.polish()
+	return response, nil
 }
 
 func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name string) (*rawTwoStageL3ClosConfiglet,
@@ -137,19 +137,21 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 	}
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
-		err:     fmt.Errorf(" no Configlet with name '%s' found", name),
+		err:     fmt.Errorf("no Configlet with name '%s' found", name),
 	}
 }
 
-func (o *TwoStageL3ClosClient) importConfiglet(ctx context.Context, c TwoStageL3ClosConfigletData) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) createConfiglet(ctx context.Context, in *rawTwoStageL3ClosConfigletData) (ObjectId,
+	error) {
 	response := &objectIdResponse{}
-	if len(c.Label) == 0 {
-		c.Label = c.Data.DisplayName
+	if len(in.Label) == 0 {
+		in.Label = in.Data.DisplayName
 	}
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintConfiglets, o.blueprintId.String()),
-		apiInput:    c.raw(),
+		apiInput:    in,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -158,11 +160,11 @@ func (o *TwoStageL3ClosClient) importConfiglet(ctx context.Context, c TwoStageL3
 	return response.Id, nil
 }
 
-func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, in *TwoStageL3ClosConfiglet) error {
+func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, in *rawTwoStageL3ClosConfiglet) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), in.Id),
-		apiInput: in.raw(),
+		apiInput: in,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
