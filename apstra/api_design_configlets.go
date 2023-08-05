@@ -43,7 +43,7 @@ type ConfigletData struct {
 }
 
 type rawConfigletData struct {
-	RefArchs    []string                `json:"ref_archs"`
+	RefArchs    []refDesign             `json:"ref_archs"`
 	Generators  []rawConfigletGenerator `json:"generators"`
 	DisplayName string                  `json:"display_name"`
 }
@@ -58,17 +58,21 @@ type rawConfiglet struct {
 }
 
 func (o *ConfigletData) raw() *rawConfigletData {
-	rawcr := rawConfigletData{}
-	rawcr.DisplayName = o.DisplayName
-	rawcr.RefArchs = make([]string, len(o.RefArchs))
-	rawcr.Generators = make([]rawConfigletGenerator, len(o.Generators))
+	refArchs := make([]refDesign, len(o.RefArchs))
 	for i, j := range o.RefArchs {
-		rawcr.RefArchs[i] = j.String()
+		refArchs[i] = refDesign(j.String())
 	}
+
+	generators := make([]rawConfigletGenerator, len(o.Generators))
 	for i, j := range o.Generators {
-		rawcr.Generators[i] = *j.raw()
+		generators[i] = *j.raw()
 	}
-	return &rawcr
+
+	return &rawConfigletData{
+		DisplayName: o.DisplayName,
+		RefArchs:    make([]refDesign, len(o.RefArchs)),
+		Generators:  make([]rawConfigletGenerator, len(o.Generators)),
+	}
 }
 
 func (o *rawConfigletData) polish() (*ConfigletData, error) {
@@ -115,13 +119,13 @@ func (o *rawConfigletGenerator) polish() (*ConfigletGenerator, error) {
 }
 
 func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
-	cg := rawConfigletGenerator{}
-	cg.TemplateText = o.TemplateText
-	cg.Filename = o.Filename
-	cg.NegationTemplateText = o.NegationTemplateText
-	cg.ConfigStyle = o.ConfigStyle.raw()
-	cg.Section = o.Section.raw()
-	return &cg
+	return &rawConfigletGenerator{
+		TemplateText:         o.TemplateText,
+		Filename:             o.Filename,
+		NegationTemplateText: o.NegationTemplateText,
+		ConfigStyle:          o.ConfigStyle.raw(),
+		Section:              o.Section.raw(),
+	}
 }
 
 func (o *rawConfiglet) polish() (*Configlet, error) {
@@ -183,20 +187,31 @@ func (o *Client) getConfiglet(ctx context.Context, id ObjectId) (*rawConfiglet, 
 }
 
 func (o *Client) getConfigletByName(ctx context.Context, name string) (*rawConfiglet, error) {
-	cgs, err := o.getAllConfiglets(ctx)
+	configlets, err := o.getAllConfiglets(ctx)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	for _, t := range cgs {
-		if t.DisplayName == name {
-			return &t, nil
+	foundIdx := -1
+	for i, configlet := range configlets {
+		if configlet.DisplayName == name {
+			if foundIdx >= 0 {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple Configlets have name %q", name),
+				}
+			}
+			foundIdx = i
 		}
+	}
+
+	if foundIdx >= 0 {
+		return &configlets[foundIdx], nil
 	}
 
 	return nil, ApstraClientErr{
 		errType: ErrNotfound,
-		err:     fmt.Errorf(" Configlet with name '%s' not found", name),
+		err:     fmt.Errorf("no Configlet with name '%s' found", name),
 	}
 }
 
