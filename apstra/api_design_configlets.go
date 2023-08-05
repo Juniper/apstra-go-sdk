@@ -215,15 +215,13 @@ func (o *Client) getAllConfiglets(ctx context.Context) ([]rawConfiglet, error) {
 	return response.Items, nil
 }
 
-func (o *Client) createConfiglet(ctx context.Context, in *ConfigletData) (ObjectId, error) {
-
-	cr := in.raw()
+func (o *Client) createConfiglet(ctx context.Context, in *rawConfigletData) (ObjectId, error) {
 	response := &objectIdResponse{}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignConfiglets,
-		apiInput:    cr,
+		apiInput:    in,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -232,13 +230,11 @@ func (o *Client) createConfiglet(ctx context.Context, in *ConfigletData) (Object
 	return response.Id, nil
 }
 
-func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *ConfigletData) error {
-	cr := in.raw()
-
+func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *rawConfigletData) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignConfigletsById, id),
-		apiInput: cr,
+		apiInput: in,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
