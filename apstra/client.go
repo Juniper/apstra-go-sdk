@@ -961,7 +961,7 @@ func (o *Client) DeleteTag(ctx context.Context, id ObjectId) error {
 
 // CreateConfiglet creates a Configlet and returns its ObjectId.
 func (o *Client) CreateConfiglet(ctx context.Context, in *ConfigletData) (ObjectId, error) {
-	return o.createConfiglet(ctx, in)
+	return o.createConfiglet(ctx, in.raw())
 }
 
 // DeleteConfiglet deletes a configlet.
@@ -980,7 +980,7 @@ func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, err
 
 // UpdateConfiglet updates a configlet
 func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletData) error {
-	return o.updateConfiglet(ctx, id, in)
+	return o.updateConfiglet(ctx, id, in.raw())
 }
 
 // GetAllConfiglets returns []Configlet representing all configlets
