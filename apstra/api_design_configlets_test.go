@@ -28,7 +28,7 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 
 		refarchs = append(refarchs, RefDesignTwoStageL3Clos)
 
-		id1, err := client.client.CreateConfiglet(context.Background(), &ConfigletRequest{
+		id1, err := client.client.CreateConfiglet(context.Background(), &ConfigletData{
 			DisplayName: Name,
 			RefArchs:    refarchs,
 			Generators:  cg,
@@ -55,7 +55,7 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 		})
 		log.Println("Update Config")
 
-		err = client.client.UpdateConfiglet(context.Background(), id1, &ConfigletRequest{
+		err = client.client.UpdateConfiglet(context.Background(), id1, &ConfigletData{
 			DisplayName: c.Data.DisplayName,
 			RefArchs:    c.Data.RefArchs,
 			Generators:  c.Data.Generators,
