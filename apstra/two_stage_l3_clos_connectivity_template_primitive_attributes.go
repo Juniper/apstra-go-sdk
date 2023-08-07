@@ -431,7 +431,7 @@ type ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSu
 	PrefixNeighborIpv6    *net.IPNet
 	SessionAddressingIpv4 bool
 	SessionAddressingIpv6 bool
-	Ttl                   int
+	Ttl                   uint8
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) raw() (json.RawMessage, error) {
@@ -823,7 +823,7 @@ type rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviO
 	PrefixNeighborIpv6    *string `json:"prefix_neighbor_ipv6"`
 	SessionAddressingIpv4 bool    `json:"session_addressing_ipv4"`
 	SessionAddressingIpv6 bool    `json:"session_addressing_ipv6"`
-	Ttl                   int     `json:"ttl"`
+	Ttl                   uint8   `json:"ttl"`
 }
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) polish(t *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) error {
