@@ -4,6 +4,7 @@ import "fmt"
 
 const (
 	RelationshipTypeNone = RelationshipType(iota)
+	RelationshipTypeComposedOf
 	RelationshipTypeComposedOfSystems
 	RelationshipTypeDeviceProfile
 	RelationshipTypeEpAffectedBy
@@ -19,6 +20,7 @@ const (
 	RelationshipTypeUnknown = "unknown node type %s"
 
 	relationshipTypeNone              = relationshipType("")
+	relationshipTypeComposedOf        = relationshipType("composed_of")
 	relationshipTypeComposedOfSystems = relationshipType("composed_of_systems")
 	relationshipTypeDeviceProfile     = relationshipType("device_profile")
 	relationshipTypeEpAffectedBy      = relationshipType("ep_affected_by")
@@ -41,6 +43,8 @@ func (o RelationshipType) String() string {
 	switch o {
 	case RelationshipTypeNone:
 		return string(relationshipTypeNone)
+	case RelationshipTypeComposedOf:
+		return string(relationshipTypeComposedOf)
 	case RelationshipTypeComposedOfSystems:
 		return string(relationshipTypeComposedOfSystems)
 	case RelationshipTypeDeviceProfile:
