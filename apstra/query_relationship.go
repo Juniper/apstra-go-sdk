@@ -13,8 +13,11 @@ const (
 	RelationshipTypeEpTopLevel
 	RelationshipTypeHostedInterfaces
 	RelationshipTypeInterfaceMap
+	RelationshipTypeInstantiatedBy
+	RelationshipTypeInstantiates
 	RelationshipTypeLink
 	RelationshipTypeLogicalDevice
+	RelationshipTypeMemberVNs
 	RelationshipTypePartOfRack
 	RelationshipTypeTag
 	RelationshipTypeUnknown = "unknown node type %s"
@@ -29,8 +32,11 @@ const (
 	relationshipTypeEpTopLevel        = relationshipType("ep_top_level")
 	relationshipTypeHostedInterfaces  = relationshipType("hosted_interfaces")
 	relationshipTypeInterfaceMap      = relationshipType("interface_map")
+	relationshipTypeInstantiatedBy    = relationshipType("instantiated_by")
+	relationshipTypeInstantiates      = relationshipType("instantiates")
 	relationshipTypeLink              = relationshipType("link")
 	relationshipTypeLogicalDevice     = relationshipType("logical_device")
+	relationshipTypeMemberVNs         = relationshipType("member_vns")
 	relationshipTypePartOfRack        = relationshipType("part_of_rack")
 	relationshipTypeTag               = relationshipType("tag")
 	relationshipTypeUnknown           = "unknown node type %d"
@@ -61,10 +67,16 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeHostedInterfaces)
 	case RelationshipTypeInterfaceMap:
 		return string(relationshipTypeInterfaceMap)
+	case RelationshipTypeInstantiatedBy:
+		return string(relationshipTypeInstantiatedBy)
+	case RelationshipTypeInstantiates:
+		return string(relationshipTypeInstantiates)
 	case RelationshipTypeLink:
 		return string(relationshipTypeLink)
 	case RelationshipTypeLogicalDevice:
 		return string(relationshipTypeLogicalDevice)
+	case RelationshipTypeMemberVNs:
+		return string(relationshipTypeMemberVNs)
 	case RelationshipTypePartOfRack:
 		return string(relationshipTypePartOfRack)
 	case RelationshipTypeTag:

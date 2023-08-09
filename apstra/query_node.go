@@ -20,26 +20,28 @@ const (
 	NodeTypeSystem
 	NodeTypeTag
 	NodeTypeVirtualNetwork
+	NodeTypeVirtualNetworkInstance
 	NodeTypeUnknown = "unknown node type %s"
 
-	nodeTypeNone                  = nodeType("")
-	nodeTypeEpApplicationInstance = nodeType("ep_application_instance")
-	nodeTypeEpEndpointPolicy      = nodeType("ep_endpoint_policy")
-	nodeTypeEpGroup               = nodeType("ep_group")
-	nodeTypeInterface             = nodeType("interface")
-	nodeTypeInterfaceMap          = nodeType("interface_map")
-	nodeTypeLink                  = nodeType("link")
-	nodeTypeLogicalDevice         = nodeType("logical_device")
-	nodeTypeMetadata              = nodeType("metadata")
-	nodeTypePolicy                = nodeType("policy")
-	nodeTypeRack                  = nodeType("rack")
-	nodeTypeRedundancyGroup       = nodeType("redundancy_group")
-	nodeTypeRoutingPolicy         = nodeType("routing_policy")
-	nodeTypeSecurityZone          = nodeType("security_zone")
-	nodeTypeSystem                = nodeType("system")
-	nodeTypeTag                   = nodeType("tag")
-	nodeTypeVirtualNetwork        = nodeType("virtual_network")
-	nodeTypeUnknown               = "unknown node type %d"
+	nodeTypeNone                   = nodeType("")
+	nodeTypeEpApplicationInstance  = nodeType("ep_application_instance")
+	nodeTypeEpEndpointPolicy       = nodeType("ep_endpoint_policy")
+	nodeTypeEpGroup                = nodeType("ep_group")
+	nodeTypeInterface              = nodeType("interface")
+	nodeTypeInterfaceMap           = nodeType("interface_map")
+	nodeTypeLink                   = nodeType("link")
+	nodeTypeLogicalDevice          = nodeType("logical_device")
+	nodeTypeMetadata               = nodeType("metadata")
+	nodeTypePolicy                 = nodeType("policy")
+	nodeTypeRack                   = nodeType("rack")
+	nodeTypeRedundancyGroup        = nodeType("redundancy_group")
+	nodeTypeRoutingPolicy          = nodeType("routing_policy")
+	nodeTypeSecurityZone           = nodeType("security_zone")
+	nodeTypeSystem                 = nodeType("system")
+	nodeTypeTag                    = nodeType("tag")
+	nodeTypeVirtualNetwork         = nodeType("virtual_network")
+	nodeTypeVirtualNetworkInstance = nodeType("vn_instance")
+	nodeTypeUnknown                = "unknown node type %d"
 )
 
 type NodeType int
@@ -81,6 +83,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeTag)
 	case NodeTypeVirtualNetwork:
 		return string(nodeTypeVirtualNetwork)
+	case NodeTypeVirtualNetworkInstance:
+		return string(nodeTypeVirtualNetworkInstance)
 	default:
 		return fmt.Sprintf(nodeTypeUnknown, o)
 	}

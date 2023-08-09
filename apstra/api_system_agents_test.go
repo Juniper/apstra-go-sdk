@@ -103,9 +103,9 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 		var agentIds []ObjectId // do not make fixed length -- some switches might not be available
 		var labels []string     // do not make fixed length -- some switches might not be available
 		for _, testSwitch := range switchInfo {
-			log.Printf("testing CreateAgent() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			log.Printf("testing CreateSystemAgent() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			label := randString(5, "hex")
-			id, err := client.client.CreateAgent(context.TODO(), &SystemAgentRequest{
+			id, err := client.client.CreateSystemAgent(context.TODO(), &SystemAgentRequest{
 				ManagementIp:    testSwitch.ip,
 				Username:        testSwitch.user,
 				Password:        testSwitch.pass,

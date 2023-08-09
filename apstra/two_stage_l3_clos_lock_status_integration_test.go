@@ -19,7 +19,7 @@ func TestGetLockInfo(t *testing.T) {
 		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		name := randString(10, "hex")
 		id, err := client.client.CreateBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignDatacenter,
+			RefDesign:  RefDesignTwoStageL3Clos,
 			Label:      name,
 			TemplateId: "L2_Virtual_EVPN",
 		})

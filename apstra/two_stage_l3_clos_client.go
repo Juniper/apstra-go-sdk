@@ -426,32 +426,121 @@ func (o *TwoStageL3ClosClient) DeleteRoutingPolicy(ctx context.Context, id Objec
 	return o.deleteRoutingPolicy(ctx, id)
 }
 
-// GetAllPropertySets returns []TwoStageL3ClosPropertySet representing all property sets imported into a blueprint
+// GetAllPropertySets returns []TwoStageL3ClosPropertySet representing
+// all property sets imported into a blueprint
 func (o *TwoStageL3ClosClient) GetAllPropertySets(ctx context.Context) ([]TwoStageL3ClosPropertySet, error) {
 	return o.getAllPropertySets(ctx)
 }
 
-// GetPropertySet returns *TwoStageL3ClosPropertySet representing the imported property set with the given ID in the specified blueprint
+// GetPropertySet returns *TwoStageL3ClosPropertySet representing the
+// imported property set with the given ID in the specified blueprint
 func (o *TwoStageL3ClosClient) GetPropertySet(ctx context.Context, id ObjectId) (*TwoStageL3ClosPropertySet, error) {
 	return o.getPropertySet(ctx, id)
 }
 
-// GetPropertySetByName returns *TwoStageL3ClosPropertySet representing the only property set with the given label, or an error if multiple property sets share the label.
+// GetPropertySetByName returns *TwoStageL3ClosPropertySet representing
+// the only property set with the given label, or an error if multiple
+// property sets share the label.
 func (o *TwoStageL3ClosClient) GetPropertySetByName(ctx context.Context, in string) (*TwoStageL3ClosPropertySet, error) {
 	return o.getPropertySetByName(ctx, in)
 }
 
-// ImportPropertySet imports a property set into a blueprint. On success, it returns the id of the imported property set. Optionally, a set of keys can be part of the request
+// ImportPropertySet imports a property set into a blueprint. On success,
+// it returns the id of the imported property set. Optionally, a set of keys
+// can be part of the request
 func (o *TwoStageL3ClosClient) ImportPropertySet(ctx context.Context, psid ObjectId, keys ...string) (ObjectId, error) {
 	return o.importPropertySet(ctx, psid, keys...)
 }
 
-// UpdatePropertySet updates a property set imported into a blueprint. Optionally, a set of keys can be part of the request
+// UpdatePropertySet updates a property set imported into a blueprint.
+// Optionally, a set of keys can be part of the request
 func (o *TwoStageL3ClosClient) UpdatePropertySet(ctx context.Context, psid ObjectId, keys ...string) error {
 	return o.updatePropertySet(ctx, psid, keys...)
 }
 
-// DeletePropertySet deletes a property given the id
+// DeletePropertySet deletes a property set given the id
 func (o *TwoStageL3ClosClient) DeletePropertySet(ctx context.Context, id ObjectId) error {
 	return o.deletePropertySet(ctx, id)
+}
+
+// GetAllConfiglets returns []TwoStageL3ClosConfiglet representing all
+// configlets imported into a blueprint
+func (o *TwoStageL3ClosClient) GetAllConfiglets(ctx context.Context) ([]TwoStageL3ClosConfiglet, error) {
+	rawConfiglets, err := o.getAllConfiglets(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]TwoStageL3ClosConfiglet, len(rawConfiglets))
+	for i := range rawConfiglets {
+		polished, err := rawConfiglets[i].polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
+}
+
+// GetAllConfigletIds returns Ids of all the configlets imported into a
+// blueprint
+func (o *TwoStageL3ClosClient) GetAllConfigletIds(ctx context.Context) ([]ObjectId, error) {
+	return o.getAllConfigletIds(ctx)
+}
+
+// GetConfiglet returns *TwoStageL3ClosConfiglet representing the imported
+// configlet with the given ID in the specified blueprint
+func (o *TwoStageL3ClosClient) GetConfiglet(ctx context.Context, id ObjectId) (*TwoStageL3ClosConfiglet, error) {
+	c, err := o.getConfiglet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return c.polish()
+}
+
+// GetConfigletByName returns *TwoStageL3ClosConfiglet representing the only
+// configlet with the given label, or an error if no configlet by that name exists
+func (o *TwoStageL3ClosClient) GetConfigletByName(ctx context.Context, in string) (*TwoStageL3ClosConfiglet, error) {
+	c, err := o.getConfigletByName(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return c.polish()
+}
+
+// ImportConfigletById imports a configlet from the catalog into a blueprint.
+// cid is the Id catalog configlet of the
+// condtion is a string input that indicates which devices it applies to.
+// label can be used to rename the configlet in the blue print
+// On success, it returns the id of the imported configlet.
+func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid ObjectId, condition string, label string) (ObjectId, error) {
+	cfg, err := o.client.getConfiglet(ctx, cid)
+	if err != nil {
+		return "", err
+	}
+
+	return o.createConfiglet(ctx, &rawTwoStageL3ClosConfigletData{
+		Condition: condition,
+		Label:     label,
+		Data: rawConfigletData{
+			RefArchs:    cfg.RefArchs,
+			Generators:  cfg.Generators,
+			DisplayName: cfg.DisplayName,
+		},
+	})
+}
+
+// CreateConfiglet creates a configlet described by a TwoStageL3ClosConfigletData structure
+// in a blueprint.
+func (o *TwoStageL3ClosClient) CreateConfiglet(ctx context.Context, c *TwoStageL3ClosConfigletData) (ObjectId, error) {
+	return o.createConfiglet(ctx, c.raw())
+}
+
+// UpdateConfiglet updates a configlet imported into a blueprint.
+func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, c *TwoStageL3ClosConfiglet) error {
+	return o.updateConfiglet(ctx, c.Id, c.Data.raw())
+}
+
+// DeleteConfiglet deletes a configlet from the blueprint given the id
+func (o *TwoStageL3ClosClient) DeleteConfiglet(ctx context.Context, id ObjectId) error {
+	return o.deleteConfiglet(ctx, id)
 }

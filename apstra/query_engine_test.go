@@ -48,6 +48,30 @@ func TestQEAttrValsString(t *testing.T) {
 			v: QEIntVal(-7),
 			e: "-7",
 		},
+		{
+			v: QENone(true),
+			e: "is_none()",
+		},
+		{
+			v: QENone(false),
+			e: "not_none()",
+		},
+		{
+			v: QEIntGreater(4),
+			e: "gt(4)",
+		},
+		{
+			v: QEIntGreaterEqual(4),
+			e: "ge(4)",
+		},
+		{
+			v: QEIntLessThan(4),
+			e: "lt(4)",
+		},
+		{
+			v: QEIntLessThanEqual(4),
+			e: "le(4)",
+		},
 	}
 
 	for i, tc := range testCases {

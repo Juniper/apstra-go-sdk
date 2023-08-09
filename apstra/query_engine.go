@@ -121,6 +121,39 @@ func (o QEIntVal) String() string {
 	return strconv.Itoa(int(o))
 }
 
+type QEIntGreater int
+
+func (o QEIntGreater) String() string {
+	return "gt(" + strconv.Itoa(int(o)) + ")"
+}
+
+type QEIntGreaterEqual int
+
+func (o QEIntGreaterEqual) String() string {
+	return "ge(" + strconv.Itoa(int(o)) + ")"
+}
+
+type QEIntLessThan int
+
+func (o QEIntLessThan) String() string {
+	return "lt(" + strconv.Itoa(int(o)) + ")"
+}
+
+type QEIntLessThanEqual int
+
+func (o QEIntLessThanEqual) String() string {
+	return "le(" + strconv.Itoa(int(o)) + ")"
+}
+
+type QENone bool
+
+func (o QENone) String() string {
+	if o {
+		return "is_none()"
+	}
+	return "not_none()"
+}
+
 func (o *Client) newQuery(blueprintId ObjectId) *PathQuery {
 	return &PathQuery{
 		client:      o,
