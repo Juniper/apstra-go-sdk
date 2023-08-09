@@ -140,7 +140,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 
 	expectedUserData := "{\"isSausage\":true,\"positions\":{\"bac16090-88ff-4f8b-9ee6-79b31078e123\":[290,80,1],\"498b2502-e062-414b-b401-4e88a08ae8c5\":[290,150,1],\"49f36469-7f10-4b10-9102-83654f3fe6a6\":[290,220,1]}}"
 
-	rpId := "o-ob0kv9g1yniFpiTco"
+	rpId := ObjectId("o-ob0kv9g1yniFpiTco")
 	attachExistingRoutingPolicy := ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{
 		RpToAttach: &rpId,
 	}

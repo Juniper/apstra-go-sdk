@@ -491,7 +491,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSvi
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
-	RpToAttach *string `json:"rp_to_attach"`
+	RpToAttach *ObjectId
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) fromRawJson(in json.RawMessage) error {
@@ -527,7 +527,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) Des
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct {
-	RoutingZoneConstraint *string
+	RoutingZoneConstraint *ObjectId
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) raw() (json.RawMessage, error) {
@@ -861,7 +861,7 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForS
 }
 
 type rawConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
-	RpToAttach *string `json:"rp_to_attach"`
+	RpToAttach *ObjectId `json:"rp_to_attach"`
 }
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) polish(t *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) error {
@@ -871,7 +871,7 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) p
 }
 
 type rawConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct {
-	RoutingZoneConstraint *string `json:"routing_zone_constraint"`
+	RoutingZoneConstraint *ObjectId `json:"routing_zone_constraint"`
 }
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) polish(t *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) error {
