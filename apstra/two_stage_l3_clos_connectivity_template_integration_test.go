@@ -298,3 +298,156 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 		}
 	}
 }
+
+func TestCtLayout(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, client := range clients {
+		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			err := bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: true})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		sz, err := bpClient.GetSecurityZoneByVrfName(ctx, "default")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rp, err := bpClient.GetRoutingPolicyByName(ctx, "Default_immutable")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		//sz := SecurityZone{}
+		//rp := DcRoutingPolicy{}
+		_ = client
+
+		vlan := Vlan(11)
+		ct := ConnectivityTemplate{
+			Label: randString(5, "hex"),
+			Subpolicies: []*ConnectivityTemplatePrimitive{
+				{
+					Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
+						//SecurityZone:       &sz.Id,
+						SecurityZone:       &sz.Id,
+						Tagged:             false,
+						Vlan:               &vlan,
+						IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
+						IPv6AddressingType: CtPrimitiveIPv6AddressingTypeNumbered,
+					},
+					Subpolicies: []*ConnectivityTemplatePrimitive{
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{
+								Ipv4Safi:              true,
+								SessionAddressingIpv4: true,
+							},
+							Subpolicies: []*ConnectivityTemplatePrimitive{
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+							},
+						},
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{
+								Ipv6Safi:              true,
+								SessionAddressingIpv6: true,
+							},
+							Subpolicies: []*ConnectivityTemplatePrimitive{
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+							},
+						},
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{
+								Network: &net.IPNet{
+									IP:   []byte{1, 1, 1, 1},
+									Mask: []byte{255, 255, 255, 255},
+								},
+							},
+						},
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{
+								Network: &net.IPNet{
+									IP:   []byte{2, 2, 2, 2},
+									Mask: []byte{255, 255, 255, 255},
+								},
+							},
+						},
+					},
+				},
+				{
+					Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
+						SecurityZone:       &sz.Id,
+						Tagged:             false,
+						Vlan:               &vlan,
+						IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
+						IPv6AddressingType: CtPrimitiveIPv6AddressingTypeNumbered,
+					},
+					Subpolicies: []*ConnectivityTemplatePrimitive{
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{
+								Ipv4Safi:              true,
+								SessionAddressingIpv4: true,
+							},
+							Subpolicies: []*ConnectivityTemplatePrimitive{
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+							},
+						},
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{
+								Ipv6Safi:              true,
+								SessionAddressingIpv6: true,
+							},
+							Subpolicies: []*ConnectivityTemplatePrimitive{
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+							},
+						},
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{
+								Network: &net.IPNet{
+									IP:   []byte{3, 3, 3, 3},
+									Mask: []byte{255, 255, 255, 255},
+								},
+							},
+						},
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{
+								Network: &net.IPNet{
+									IP:   []byte{4, 4, 4, 4},
+									Mask: []byte{255, 255, 255, 255},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		err = ct.SetIds()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ct.SetUserData()
+
+		err = bpClient.CreateConnectivityTemplate(ctx, &ct)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
