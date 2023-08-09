@@ -5,38 +5,39 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"log"
 	"testing"
 )
 
 func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
-	var cr ConfigletData
-	var cg []ConfigletGenerator
-	var refarchs []RefDesign
-	cg = append(cg, ConfigletGenerator{
-		ConfigStyle:  PlatformOSJunos,
-		Section:      ConfigletSectionSystem,
-		TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
-	})
-	refarchs = append(refarchs, RefDesignTwoStageL3Clos)
-	cr = ConfigletData{
+
+	configletData := ConfigletData{
 		DisplayName: "TestImportConfiglet",
-		RefArchs:    refarchs,
-		Generators:  cg,
+		RefArchs:    []RefDesign{RefDesignTwoStageL3Clos},
+		Generators: []ConfigletGenerator{{
+			ConfigStyle:  PlatformOSJunos,
+			Section:      ConfigletSectionSystem,
+			TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
+		}},
 	}
-	ctx := context.TODO()
+
 	for clientName, client := range clients {
 		// Create Configlet
-		CatConfId, err := client.client.CreateConfiglet(ctx, &cr)
+		catalogConfigletId, err := client.client.CreateConfiglet(ctx, &configletData)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer func() {
-			client.client.DeleteConfiglet(ctx, CatConfId)
+			err := client.client.DeleteConfiglet(ctx, catalogConfigletId)
+			if err != nil {
+				t.Fatal(err)
+			}
 		}()
 
 		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
@@ -47,36 +48,44 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 			}
 		}()
 
-		log.Printf("testing ImportConfigletById() against %s %s (%s)", client.clientType, clientName,
-			client.client.ApiVersion())
-		icfg_id, err := bpClient.ImportConfigletById(ctx, CatConfId, "role in [\"spine\", \"leaf\"]", "")
-		log.Printf("%s", icfg_id)
+		log.Printf("testing ImportConfigletById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		bpConfigletId, err := bpClient.ImportConfigletById(ctx, catalogConfigletId, `role in ["spine", "leaf"]`, "")
+		log.Printf("%s", bpConfigletId)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing GetConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		icfg, err := bpClient.GetConfiglet(ctx, icfg_id)
-		log.Println(icfg)
+		_, err = bpClient.GetConfiglet(ctx, bpConfigletId)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing DeleteConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.DeleteConfiglet(ctx, icfg_id)
+		err = bpClient.DeleteConfiglet(ctx, bpConfigletId)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		cr.DisplayName = "ImportDirect"
+		_, err = bpClient.GetConfiglet(ctx, bpConfigletId)
+		if err == nil {
+			t.Fatal("fetch configlet after delete should have produced an error")
+		} else {
+			var ace ApstraClientErr
+			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
+				t.Fatal("fetch configlet after delete should have produced ErrNotFound")
+			}
+		}
+
+		configletData.DisplayName = "ImportDirect"
 		log.Printf("testing ImportConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		c := TwoStageL3ClosConfigletData{
-			Data:      cr,
+			Data:      &configletData,
 			Condition: "role in [\"spine\", \"leaf\"]",
 			Label:     "",
 		}
-		icfg_id, err = bpClient.CreateConfiglet(ctx, &c)
-		log.Printf("%s", icfg_id)
+		bpConfigletId, err = bpClient.CreateConfiglet(ctx, &c)
+		log.Printf("%s", bpConfigletId)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -96,7 +105,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 			t.Fatal(err)
 		}
 		log.Printf("testing GetConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		icfg2, err := bpClient.GetConfiglet(ctx, icfg_id)
+		icfg2, err := bpClient.GetConfiglet(ctx, bpConfigletId)
 		log.Println(icfg2)
 		if err != nil {
 			t.Fatal(err)
@@ -108,7 +117,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 			t.Fatal("Condition Change Failed")
 		}
 		log.Printf("testing DeleteConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.DeleteConfiglet(ctx, icfg_id)
+		err = bpClient.DeleteConfiglet(ctx, bpConfigletId)
 		if err != nil {
 			t.Fatal(err)
 		}

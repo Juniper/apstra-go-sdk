@@ -13,64 +13,61 @@ const (
 )
 
 type rawTwoStageL3ClosConfigletData struct {
-	Data      rawConfigletData `json:"configlet"`
-	Condition string           `json:"condition"`
 	Label     string           `json:"label"`
+	Condition string           `json:"condition"`
+	Data      rawConfigletData `json:"configlet"`
 }
 
 type TwoStageL3ClosConfigletData struct {
-	Data      ConfigletData
-	Condition string
 	Label     string
+	Condition string
+	Data      *ConfigletData
 }
 
 type rawTwoStageL3ClosConfiglet struct {
-	Data      rawConfigletData `json:"configlet"`
 	Id        ObjectId         `json:"id"`
 	Condition string           `json:"condition"`
 	Label     string           `json:"label"`
+	Data      rawConfigletData `json:"configlet"`
 }
 
 type TwoStageL3ClosConfiglet struct {
-	Data TwoStageL3ClosConfigletData
 	Id   ObjectId
+	Data *TwoStageL3ClosConfigletData
 }
 
 func (o *TwoStageL3ClosConfigletData) raw() *rawTwoStageL3ClosConfigletData {
-	rawtc := rawTwoStageL3ClosConfigletData{}
-	rawtc.Data = *o.Data.raw()
-	rawtc.Condition = o.Condition
-	rawtc.Label = o.Label
-	return &rawtc
+	return &rawTwoStageL3ClosConfigletData{
+		Label:     o.Label,
+		Condition: o.Condition,
+		Data:      *o.Data.raw(),
+	}
 }
 
 func (o *TwoStageL3ClosConfiglet) raw() *rawTwoStageL3ClosConfiglet {
 	d := o.Data.raw()
 	return &rawTwoStageL3ClosConfiglet{
-		Data: rawConfigletData{
-			RefArchs:    d.Data.RefArchs,
-			Generators:  d.Data.Generators,
-			DisplayName: d.Data.DisplayName,
-		},
 		Id:        o.Id,
-		Condition: d.Condition,
 		Label:     d.Label,
+		Condition: d.Condition,
+		Data:      d.Data,
 	}
 }
 
 func (o *rawTwoStageL3ClosConfiglet) polish() (*TwoStageL3ClosConfiglet, error) {
-	c := TwoStageL3ClosConfiglet{}
-	c.Id = o.Id
 	d, err := o.Data.polish()
 	if err != nil {
 		return nil, err
 	}
-	c.Data = TwoStageL3ClosConfigletData{
-		Data:      *d,
-		Condition: o.Condition,
-		Label:     o.Label,
-	}
-	return &c, err
+
+	return &TwoStageL3ClosConfiglet{
+		Id: o.Id,
+		Data: &TwoStageL3ClosConfigletData{
+			Data:      d,
+			Condition: o.Condition,
+			Label:     o.Label,
+		},
+	}, nil
 }
 
 func (o *TwoStageL3ClosClient) getAllConfiglets(ctx context.Context) ([]rawTwoStageL3ClosConfiglet, error) {
