@@ -144,9 +144,14 @@ func (o *ConnectivityTemplate) SetUserData() {
 		Positions: make(map[ObjectId][]float64),
 	}
 
-	for i, subpolicy := range o.Subpolicies {
-		additionalPositions := subpolicy.positions(float64(i*xSpacing+xInitialPosition), yInitialPosition)
+	var width int
+	for _, subpolicy := range o.Subpolicies {
+		xPosition := float64(xInitialPosition + (width * xSpacing))
+		additionalPositions, subpolicyWidth := subpolicy.positions(xPosition, yInitialPosition)
 		mergePositionMaps(&o.UserData.Positions, &additionalPositions)
+		if subpolicyWidth > width {
+			width += subpolicyWidth
+		}
 	}
 }
 
@@ -239,14 +244,21 @@ type ConnectivityTemplatePrimitive struct {
 	PipelineId  *ObjectId
 }
 
-func (o *ConnectivityTemplatePrimitive) positions(x, y float64) map[ObjectId][]float64 {
+// positions returns position data suitable for Web UI layout and an integer
+// which indicates the maximum width in "sausages" of the subpolicy tree.
+func (o *ConnectivityTemplatePrimitive) positions(x, y float64) (map[ObjectId][]float64, int) {
+	var width int
 	positions := make(map[ObjectId][]float64)
 	positions[*o.Id] = []float64{x, y, 1}
-	for i, subpolicy := range o.Subpolicies {
-		additionalPositions := subpolicy.positions(x+float64(i*xSpacing), y+ySpacing)
+	for _, subpolicy := range o.Subpolicies {
+		additionalPositions, subpolicyWidth := subpolicy.positions(x+float64(width*xSpacing), y+ySpacing)
 		mergePositionMaps(&positions, &additionalPositions)
+		width += subpolicyWidth
 	}
-	return positions
+	if width == 0 {
+		width++
+	}
+	return positions, width
 }
 
 // rawPipeline returns []rawConnectivityTemplatePolicy consisting of:
