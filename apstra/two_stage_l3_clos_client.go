@@ -537,7 +537,7 @@ func (o *TwoStageL3ClosClient) CreateConfiglet(ctx context.Context, c *TwoStageL
 
 // UpdateConfiglet updates a configlet imported into a blueprint.
 func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, c *TwoStageL3ClosConfiglet) error {
-	return o.updateConfiglet(ctx, c.raw())
+	return o.updateConfiglet(ctx, c.Id, c.Data.raw())
 }
 
 // DeleteConfiglet deletes a configlet from the blueprint given the id

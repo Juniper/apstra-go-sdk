@@ -160,10 +160,11 @@ func (o *TwoStageL3ClosClient) createConfiglet(ctx context.Context, in *rawTwoSt
 	return response.Id, nil
 }
 
-func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, in *rawTwoStageL3ClosConfiglet) error {
+func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, id ObjectId,
+	in *rawTwoStageL3ClosConfigletData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), in.Id),
+		urlStr:   fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), id),
 		apiInput: in,
 	})
 	if err != nil {

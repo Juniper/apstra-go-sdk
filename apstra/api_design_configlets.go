@@ -70,8 +70,8 @@ func (o *ConfigletData) raw() *rawConfigletData {
 
 	return &rawConfigletData{
 		DisplayName: o.DisplayName,
-		RefArchs:    make([]refDesign, len(o.RefArchs)),
-		Generators:  make([]rawConfigletGenerator, len(o.Generators)),
+		RefArchs:    refArchs,
+		Generators:  generators,
 	}
 }
 
