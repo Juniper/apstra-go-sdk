@@ -171,8 +171,10 @@ func TestParsingQueryInfo(t *testing.T) {
 				} `json:"n_system"`
 			} `json:"items"`
 		}
-		log.Printf("testing NewQuery() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.NewQuery(bpClient.Id()).
+		log.Printf("testing PathQuery.Do() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = new(PathQuery).
+			SetClient(bpClient.client).
+			SetBlueprintId(bpClient.Id()).
 			Node([]QEEAttribute{
 				{"type", QEStringVal("system")},
 				{"name", QEStringVal("n_system")},
