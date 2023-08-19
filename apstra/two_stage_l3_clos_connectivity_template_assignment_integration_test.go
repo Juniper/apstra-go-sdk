@@ -168,7 +168,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 		interfaceId := queryResponse.Items[0].Interface.Id
 
 		ctsToAssign := []ObjectId{*ct.Id}
-		err = bpClient.SetInterfaceConnectivityTemplates(ctx, interfaceId, ctsToAssign)
+		err = bpClient.SetApplicationPointConnectivityTemplates(ctx, interfaceId, ctsToAssign)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -180,7 +180,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 
 		compareSlices(t, ctsToAssign, assignedCts, "assigned slices do not match intent")
 
-		err = bpClient.DelInterfaceConnectivityTemplates(ctx, interfaceId, ctsToAssign)
+		err = bpClient.DelApplicationPointConnectivityTemplates(ctx, interfaceId, ctsToAssign)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -194,5 +194,4 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			t.Fatalf("expected 0 interfaces assigned to interface, got %d", len(assignedCts))
 		}
 	}
-
 }
