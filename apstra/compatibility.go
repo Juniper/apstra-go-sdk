@@ -6,9 +6,11 @@ const (
 	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2"
 	apstraSupportedVersionSep  = ","
 
-	PodBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
+	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
 
-	RackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
+	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
+
+	integerPoolForbiddenVersions = "4.1.0, 4.1.1"
 )
 
 func parseVersionList(s string) StringSliceWithIncludes {
@@ -35,11 +37,15 @@ func apstraSupportedApi() StringSliceWithIncludes {
 }
 
 func rackBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
-	return parseVersionList(RackBasedTemplateFabricAddressingPolicyForbiddenVersions)
+	return parseVersionList(rackBasedTemplateFabricAddressingPolicyForbiddenVersions)
 }
 
 func podBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
-	return parseVersionList(PodBasedTemplateFabricAddressingPolicyForbiddenVersions)
+	return parseVersionList(podBasedTemplateFabricAddressingPolicyForbiddenVersions)
+}
+
+func integerPoolForbidden() StringSliceWithIncludes {
+	return parseVersionList(integerPoolForbiddenVersions)
 }
 
 // ApstraApiSupportedVersions returns the Apstra versions supported by this

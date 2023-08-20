@@ -37,6 +37,7 @@ const (
 
 	clientHttpHeadersMutex = iota
 	clientApiResourceAsnPoolRangeMutex
+	clientApiResourceIntegerPoolRangeMutex
 	clientApiResourceVniPoolRangeMutex
 	clientApiResourceIpPoolRangeMutex
 )
@@ -404,6 +405,101 @@ func (o *Client) AsnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRan
 // DeleteAsnPoolRange updates an ASN pool by adding a new AsnRange
 func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme IntfIntRange) error {
 	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
+}
+
+// GetIntegerPools returns Integer Pools configured on Apstra
+func (o *Client) GetIntegerPools(ctx context.Context) ([]IntPool, error) {
+	if integerPoolForbidden().Includes(o.apiVersion) {
+		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
+	}
+
+	rawPools, err := o.getIntPools(ctx, apiUrlResourcesIntegerPools)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]IntPool, len(rawPools))
+	for i, rawPool := range rawPools {
+		polished, err := rawPool.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+
+	return result, nil
+}
+
+// GetIntegerPoolByName returns Integer Pools configured on Apstra
+func (o *Client) GetIntegerPoolByName(ctx context.Context, desired string) (*IntPool, error) {
+	if integerPoolForbidden().Includes(o.apiVersion) {
+		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
+	}
+
+	raw, err := o.getIntPoolByName(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
+}
+
+// ListIntegerPoolIds returns Integer Pools configured on Apstra
+func (o *Client) ListIntegerPoolIds(ctx context.Context) ([]ObjectId, error) {
+	if integerPoolForbidden().Includes(o.apiVersion) {
+		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
+	}
+
+	return o.listIntPoolIds(ctx, apiUrlResourcesIntegerPools)
+}
+
+// CreateIntegerPool adds an Integer Pool to Apstra
+func (o *Client) CreateIntegerPool(ctx context.Context, in *IntPoolRequest) (ObjectId, error) {
+	if integerPoolForbidden().Includes(o.apiVersion) {
+		return "", fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
+	}
+
+	response, err := o.createIntPool(ctx, in, apiUrlResourcesIntegerPools)
+	if err != nil {
+		return "", fmt.Errorf("error creating Integer Pool - %w", err)
+	}
+	return response, nil
+}
+
+// GetIntegerPool returns, by ObjectId, a specific Integer Pool
+func (o *Client) GetIntegerPool(ctx context.Context, in ObjectId) (*IntPool, error) {
+	if integerPoolForbidden().Includes(o.apiVersion) {
+		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
+	}
+
+	rawPool, err := o.getIntPool(ctx, apiUrlResourcesIntegerPoolById, in)
+	if err != nil {
+		return nil, err
+	}
+	return rawPool.polish()
+}
+
+// DeleteIntegerPool deletes an Integer Pool, by ObjectId from Apstra
+func (o *Client) DeleteIntegerPool(ctx context.Context, in ObjectId) error {
+	if integerPoolForbidden().Includes(o.apiVersion) {
+		return fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
+	}
+
+	return o.deleteIntPool(ctx, apiUrlResourcesIntegerPoolById, in)
+}
+
+// UpdateIntegerPool updates an Integer Pool by ObjectId with new Integer Pool config
+func (o *Client) UpdateIntegerPool(ctx context.Context, id ObjectId, cfg *IntPoolRequest) error {
+	// Integer Pool "write" operations are not concurrency safe
+	// It is important that this lock is performed in the public method, rather than the private
+	// one below, because other callers of the private method implement their own locking.
+	o.lock(clientApiResourceIntegerPoolRangeMutex)
+	defer o.unlock(clientApiResourceIntegerPoolRangeMutex)
+
+	if integerPoolForbidden().Includes(o.apiVersion) {
+		return fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
+	}
+
+	return o.updateIntPool(ctx, apiUrlResourcesIntegerPoolById, id, cfg)
 }
 
 // GetVniPools returns Vni pools configured on Apstra
