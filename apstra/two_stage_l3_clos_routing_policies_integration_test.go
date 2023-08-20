@@ -5,6 +5,7 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 	"testing"
@@ -403,6 +404,47 @@ func TestRoutingPolicies(t *testing.T) {
 		}
 		if policies[0].Id != defaultPolicy.Id {
 			t.Fatalf("surviving policy ID %q does not match previously noted default policy ID %q", policies[0].Id, defaultPolicy.Id)
+		}
+	}
+}
+
+func TestRoutingPolicy404(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		defer func() {
+			err := bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		log.Printf("testing GetDefaultRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		_, err := bpClient.GetRoutingPolicy(ctx, "bogus")
+		if err == nil {
+			t.Fatal("should have gotten an error")
+		} else {
+			var clientErr ApstraClientErr
+			if !errors.As(err, &clientErr) || clientErr.Type() != ErrNotfound {
+				t.Fatal("error should have been something 404-ish")
+			}
+		}
+
+		log.Printf("testing DeleteRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.DeleteRoutingPolicy(ctx, "bogus")
+		if err == nil {
+			t.Fatal("should have gotten an error")
+		} else {
+			var clientErr ApstraClientErr
+			if !errors.As(err, &clientErr) || clientErr.Type() != ErrNotfound {
+				t.Fatal("error should have been something 404-ish")
+			}
 		}
 	}
 }
