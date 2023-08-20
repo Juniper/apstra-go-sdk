@@ -13,7 +13,13 @@ const (
 	apiUrlResourcesVniPools       = apiUrlResources + "/vni-pools"
 	apiUrlResourcesVniPoolsPrefix = apiUrlResourcesVniPools + apiUrlPathDelim
 	apiUrlResourcesVniPoolById    = apiUrlResourcesVniPoolsPrefix + "%s"
+
+	apiUrlResourcesIntegerPools       = apiUrlResources + "/integer-pools"
+	apiUrlResourcesIntegerPoolsPrefix = apiUrlResourcesIntegerPools + apiUrlPathDelim
+	apiUrlResourcesIntegerPoolById    = apiUrlResourcesIntegerPoolsPrefix + "%s"
 )
+
+// Following code will take care of ASN Pools
 
 // AsnPoolRequest is the public structure used to create/update an ASN pool.
 type AsnPoolRequest IntPoolRequest
@@ -112,6 +118,34 @@ func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, delete
 	o.lock(clientApiResourceAsnPoolRangeMutex)
 	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
 	return o.deleteIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, deleteMe)
+}
+
+// Following code will take care of Integer Pools
+
+func (o *Client) getIntPoolByName(ctx context.Context, desired string) (*rawIntPool, error) {
+	pools, err := o.getIntPools(ctx, apiUrlResourcesIntegerPools)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching all Integer Pools - %w", err)
+	}
+	found := -1
+	for i, pool := range pools {
+		if pool.DisplayName == desired {
+			if found >= 0 {
+				return nil, ApstraClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("name '%s' does not uniquely identify an Integer Pool", desired),
+				}
+			}
+			found = i
+		}
+	}
+	if found < 0 {
+		return nil, ApstraClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("pool named '%s' not found", desired),
+		}
+	}
+	return &pools[found], nil
 }
 
 // Following code will take care of VNI Pools
