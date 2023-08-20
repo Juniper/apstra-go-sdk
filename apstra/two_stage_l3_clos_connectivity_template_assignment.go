@@ -82,22 +82,22 @@ func (o *TwoStageL3ClosClient) GetInterfaceConnectivityTemplates(ctx context.Con
 	return nil, o.client.GetNode(ctx, o.blueprintId, intfId, &struct{}{})
 }
 
-// SetInterfaceConnectivityTemplates assigns the listed ConnectivityTemplate IDs
-// to the interface specified by intfId.
-func (o *TwoStageL3ClosClient) SetInterfaceConnectivityTemplates(ctx context.Context, intfId ObjectId, ctIds []ObjectId) error {
+// SetApplicationPointConnectivityTemplates assigns the listed
+// ConnectivityTemplate IDs to the application point specified by apId
+func (o *TwoStageL3ClosClient) SetApplicationPointConnectivityTemplates(ctx context.Context, apId ObjectId, ctIds []ObjectId) error {
 	type policyInfo struct {
 		PolicyId ObjectId `json:"policy"`
 		Used     bool     `json:"used"`
 	}
 
 	type applicationPoints struct {
-		InterfaceId ObjectId     `json:"id"`
-		PolicyInfo  []policyInfo `json:"policies"`
+		ApplicationPointId ObjectId     `json:"id"`
+		PolicyInfo         []policyInfo `json:"policies"`
 	}
 
 	appPoints := applicationPoints{
-		InterfaceId: intfId,
-		PolicyInfo:  make([]policyInfo, len(ctIds)),
+		ApplicationPointId: apId,
+		PolicyInfo:         make([]policyInfo, len(ctIds)),
 	}
 	for i, ctId := range ctIds {
 		appPoints.PolicyInfo[i] = policyInfo{
@@ -124,34 +124,34 @@ func (o *TwoStageL3ClosClient) SetInterfaceConnectivityTemplates(ctx context.Con
 	return nil
 }
 
-// DelInterfaceConnectivityTemplates removes the listed ConnectivityTemplate IDs
-// from the interface specified by intfId.
-func (o *TwoStageL3ClosClient) DelInterfaceConnectivityTemplates(ctx context.Context, intfId ObjectId, ctIds []ObjectId) error {
+// DelApplicationPointConnectivityTemplates removes the listed
+// ConnectivityTemplate IDs from the application point specified by apId
+func (o *TwoStageL3ClosClient) DelApplicationPointConnectivityTemplates(ctx context.Context, apId ObjectId, ctIds []ObjectId) error {
 	type policyInfo struct {
 		PolicyId ObjectId `json:"policy"`
 		Used     bool     `json:"used"`
 	}
 
-	type applicationPoints struct {
-		InterfaceId ObjectId     `json:"id"`
-		PolicyInfo  []policyInfo `json:"policies"`
+	type applicationPoint struct {
+		ApplicationPointId ObjectId     `json:"id"`
+		PolicyInfo         []policyInfo `json:"policies"`
 	}
 
-	appPoints := applicationPoints{
-		InterfaceId: intfId,
-		PolicyInfo:  make([]policyInfo, len(ctIds)),
+	appPoint := applicationPoint{
+		ApplicationPointId: apId,
+		PolicyInfo:         make([]policyInfo, len(ctIds)),
 	}
 	for i, ctId := range ctIds {
-		appPoints.PolicyInfo[i] = policyInfo{
+		appPoint.PolicyInfo[i] = policyInfo{
 			PolicyId: ctId,
 			Used:     false,
 		}
 	}
 
 	apiInput := struct {
-		ApplicationPoints []applicationPoints `json:"application_points"`
+		ApplicationPoints []applicationPoint `json:"application_points"`
 	}{
-		ApplicationPoints: []applicationPoints{appPoints},
+		ApplicationPoints: []applicationPoint{appPoint},
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
