@@ -429,10 +429,22 @@ func TestRoutingPolicy404(t *testing.T) {
 		_, err := bpClient.GetRoutingPolicy(ctx, "bogus")
 		if err == nil {
 			t.Fatal("should have gotten an error")
+		} else {
+			var clientErr ApstraClientErr
+			if !errors.As(err, &clientErr) || clientErr.Type() != ErrNotfound {
+				t.Fatal("error should have been something 404-ish")
+			}
 		}
-		var clientErr ApstraClientErr
-		if !errors.As(err, &clientErr) || clientErr.Type() != ErrNotfound {
-			t.Fatal("error should have been something 404-ish")
+
+		log.Printf("testing DeleteRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.DeleteRoutingPolicy(ctx, "bogus")
+		if err == nil {
+			t.Fatal("should have gotten an error")
+		} else {
+			var clientErr ApstraClientErr
+			if !errors.As(err, &clientErr) || clientErr.Type() != ErrNotfound {
+				t.Fatal("error should have been something 404-ish")
+			}
 		}
 	}
 }
