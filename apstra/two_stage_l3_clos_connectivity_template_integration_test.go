@@ -451,3 +451,45 @@ func TestCtLayout(t *testing.T) {
 		}
 	}
 }
+
+func TestConnectivityTemplate404(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, client := range clients {
+		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			err := bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		_, err = bpClient.GetConnectivityTemplate(ctx, "bogus")
+		if err == nil {
+			t.Fatal("retrieval of bogus CT should have produced an error")
+		} else {
+			var ace ApstraClientErr
+			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
+				t.Fatal("error should have been something 404-ish")
+			}
+		}
+
+		err = bpClient.DeleteConnectivityTemplate(ctx, "bogus")
+		if err == nil {
+			t.Fatal("deletion of bogus CT should have produced an error")
+		} else {
+			var ace ApstraClientErr
+			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
+				t.Fatal("error should have been something 404-ish")
+			}
+		}
+	}
+}
