@@ -200,14 +200,14 @@ func (o *Client) getIpPoolByName(ctx context.Context, urlStr string, desired str
 	}
 	switch len(pools) {
 	case 0:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no pool named '%s' found", desired),
 		}
 	case 1:
 		return &pools[0], nil
 	default:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("name '%s' does not uniquely identify a single IPv4 pool", desired),
 		}
@@ -361,7 +361,7 @@ func (o *Client) deleteSubnetFromIpPool(ctx context.Context, poolId ObjectId, ta
 
 	if !targetFound {
 		// nothing to do
-		return ApstraClientErr{
+		return ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("target '%s' not found in pool '%s'", target.String(), poolId),
 		}

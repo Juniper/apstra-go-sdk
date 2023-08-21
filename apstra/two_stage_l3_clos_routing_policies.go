@@ -482,7 +482,7 @@ func (o *TwoStageL3ClosClient) getRoutingPolicyByName(ctx context.Context, desir
 		}
 
 		if policyIdx >= 0 {
-			return nil, ApstraClientErr{
+			return nil, ClientErr{
 				errType: ErrMultipleMatch,
 				err:     fmt.Errorf("found multiple routing policies with name %q", desired),
 			}
@@ -492,7 +492,7 @@ func (o *TwoStageL3ClosClient) getRoutingPolicyByName(ctx context.Context, desir
 	}
 
 	if policyIdx < 0 {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("routing policy with name %q not found", desired),
 		}
@@ -513,7 +513,7 @@ func (o *TwoStageL3ClosClient) getDefaultRoutingPolicy(ctx context.Context) (*ra
 		}
 	}
 
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err: fmt.Errorf("blueprint %q has %d policies, but none have type %q",
 			o.blueprintId, len(policies), dcRoutingPolicyTypeDefault),

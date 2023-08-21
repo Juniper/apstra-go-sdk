@@ -291,7 +291,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 			if err == nil {
 				t.Fatal("GetConnectivityTemplate() against deleted ID should have produced an error")
 			}
-			var ace ApstraClientErr
+			var ace ClientErr
 			if !(errors.As(err, &ace) && ace.errType == ErrNotfound) {
 				t.Fatalf("expected ErrNotFound, got %s", err.Error())
 			}
@@ -476,7 +476,7 @@ func TestConnectivityTemplate404(t *testing.T) {
 		if err == nil {
 			t.Fatal("retrieval of bogus CT should have produced an error")
 		} else {
-			var ace ApstraClientErr
+			var ace ClientErr
 			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
 				t.Fatal("error should have been something 404-ish")
 			}
@@ -486,7 +486,7 @@ func TestConnectivityTemplate404(t *testing.T) {
 		if err == nil {
 			t.Fatal("deletion of bogus CT should have produced an error")
 		} else {
-			var ace ApstraClientErr
+			var ace ClientErr
 			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
 				t.Fatal("error should have been something 404-ish")
 			}

@@ -194,7 +194,7 @@ func (o *TwoStageL3ClosClient) getSecurityZoneByVrfName(ctx context.Context, vrf
 		}
 	}
 
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("security zone with vrf name %q not found in blueprint %q", vrfName, o.blueprintId),
 	}

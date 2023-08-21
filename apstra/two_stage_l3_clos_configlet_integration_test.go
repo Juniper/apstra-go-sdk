@@ -71,7 +71,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 		if err == nil {
 			t.Fatal("fetch configlet after delete should have produced an error")
 		} else {
-			var ace ApstraClientErr
+			var ace ClientErr
 			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
 				t.Fatal("fetch configlet after delete should have produced ErrNotFound")
 			}

@@ -196,7 +196,7 @@ func (o *Client) getConfigletByName(ctx context.Context, name string) (*rawConfi
 	for i, configlet := range configlets {
 		if configlet.DisplayName == name {
 			if foundIdx >= 0 {
-				return nil, ApstraClientErr{
+				return nil, ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("multiple Configlets have name %q", name),
 				}
@@ -209,7 +209,7 @@ func (o *Client) getConfigletByName(ctx context.Context, name string) (*rawConfi
 		return &configlets[foundIdx], nil
 	}
 
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("no Configlet with name '%s' found", name),
 	}

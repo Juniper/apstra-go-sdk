@@ -144,7 +144,7 @@ func TestGetSetTransformationId(t *testing.T) {
 			}
 
 			if tc.expSetIdErr {
-				var ace ApstraClientErr
+				var ace ClientErr
 				if errors.As(err, &ace) && ace.Type() == ErrCannotChangeTransform {
 					log.Println("got the error we wanted:", err)
 					continue

@@ -122,7 +122,7 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 			if idx == -1 {
 				idx = i
 			} else { // This is clearly the second occurrence
-				return nil, ApstraClientErr{
+				return nil, ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("name '%s' does not uniquely identify a configlet", name),
 				}
@@ -132,7 +132,7 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 	if idx != -1 {
 		return &cgs[idx], nil
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("no Configlet with name '%s' found", name),
 	}

@@ -205,7 +205,7 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 			test := logicalDevices[i]
 			log.Printf("testing GetLogicalDeviceByName(%s) against %s %s (%s)", test.Data.DisplayName, client.clientType, clientName, client.client.ApiVersion())
 			logicalDevice, err := client.client.GetLogicalDeviceByName(context.TODO(), test.Data.DisplayName)
-			var ace ApstraClientErr
+			var ace ClientErr
 			if err != nil {
 				if !(errors.As(err, &ace) && ace.Type() == ErrMultipleMatch) {
 					t.Fatal(err)

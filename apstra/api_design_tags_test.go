@@ -110,7 +110,7 @@ func TestCreateTagCollision(t *testing.T) {
 		}
 		_ = client.client.deleteTag(context.Background(), id1)
 
-		var ace ApstraClientErr
+		var ace ClientErr
 		if errors.As(err, &ace) && ace.errType == ErrExists { // this is the error we want
 			continue
 		}

@@ -274,8 +274,8 @@ func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRu
 	return o.addPolicyRule(ctx, rule, position, policyId)
 }
 
-// DeletePolicyRuleById deletes the given rule. If the rule doesn't exist, an
-// ApstraClientErr with ErrNotFound is returned.
+// DeletePolicyRuleById deletes the given rule. If the rule doesn't exist, a
+// ClientErr with ErrNotFound is returned.
 func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
 	return o.deletePolicyRuleById(ctx, policyId, ruleId)
 }

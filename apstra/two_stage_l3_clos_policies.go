@@ -442,7 +442,7 @@ func (o *TwoStageL3ClosClient) deletePolicyRuleById(ctx context.Context, policyI
 	}
 
 	if ruleIdx < 0 {
-		return ApstraClientErr{
+		return ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("rule id '%s' not found in policy '%s'", ruleId, policyId),
 		}

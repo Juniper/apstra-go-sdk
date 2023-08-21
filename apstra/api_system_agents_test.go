@@ -114,7 +114,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 				AgentTypeOffbox: testSwitch.platform.offbox(),
 			})
 			if err != nil {
-				ace := &ApstraClientErr{}
+				ace := &ClientErr{}
 				if errors.As(err, ace) && ace.Type() == ErrConflict {
 					log.Printf("skipping switch '%s' because: '%s'", testSwitch.ip, err.Error())
 					continue

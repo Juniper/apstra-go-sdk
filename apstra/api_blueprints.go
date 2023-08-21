@@ -307,7 +307,7 @@ func (o *Client) getBlueprintIdByName(ctx context.Context, name string) (ObjectI
 	for i, bps := range blueprintStatuses {
 		if bps.Label == name {
 			if found > 0 {
-				return "", ApstraClientErr{
+				return "", ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("multiple blueprints have name '%s'", name),
 				}
@@ -320,7 +320,7 @@ func (o *Client) getBlueprintIdByName(ctx context.Context, name string) (ObjectI
 	if found >= 0 {
 		return blueprintStatuses[found].Id, nil
 	}
-	return "", ApstraClientErr{
+	return "", ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("found %d blueprints but one named '%s' wasn't among them", len(blueprintStatuses), name),
 	}
@@ -369,7 +369,7 @@ func (o *Client) getBlueprintStatus(ctx context.Context, id ObjectId) (*rawBluep
 			return &bps, nil
 		}
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("found %d blueprints but one with id '%s' wasn't among them", len(blueprintStatuses), id),
 	}
@@ -403,14 +403,14 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, desired string) (
 
 	switch len(blueprintStatuses) {
 	case 0:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("blueprint with name '%s' not found", desired),
 		}
 	case 1:
 		return &blueprintStatuses[0], nil
 	default:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("multiple blueprints with name '%s' found", desired),
 		}

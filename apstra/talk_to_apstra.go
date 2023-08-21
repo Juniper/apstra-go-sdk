@@ -50,29 +50,29 @@ func convertTtaeToAceWherePossible(err error) error {
 	if errors.As(err, &ttae) {
 		switch ttae.Response.StatusCode {
 		case http.StatusNotFound:
-			return ApstraClientErr{errType: ErrNotfound, err: err}
+			return ClientErr{errType: ErrNotfound, err: err}
 		case http.StatusConflict:
-			return ApstraClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
+			return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
 		case http.StatusUnprocessableEntity:
 			switch {
 			case strings.Contains(ttae.Msg, "already exists"):
-				return ApstraClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
+				return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "No node with id: "):
-				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "No virtual_network with id: "):
-				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "Virtual Network name not unique"):
-				return ApstraClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
+				return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "Transformation cannot be changed"):
-				return ApstraClientErr{errType: ErrCannotChangeTransform, err: errors.New(ttae.Msg)}
+				return ClientErr{errType: ErrCannotChangeTransform, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "does not exist"):
-				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
 			}
 		case http.StatusInternalServerError:
 			switch {
 			case strings.Contains(ttae.Msg, "Error executing facade API GET /obj-policy-export") &&
 				strings.Contains(ttae.Msg, "'NoneType' object has no attribute 'id'"):
-				return ApstraClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
 			}
 		}
 	}

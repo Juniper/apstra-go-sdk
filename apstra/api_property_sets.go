@@ -94,7 +94,7 @@ func (o *Client) getPropertySetByLabel(ctx context.Context, label string) (*rawP
 	}
 
 	if len(propertySets) > 1 {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("found multiple (%d) property sets with label %q", len(propertySets), label),
 		}
@@ -117,7 +117,7 @@ func (o *Client) getPropertySetsByLabel(ctx context.Context, label string) ([]ra
 	}
 
 	if len(result) == 0 {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("property set with label '%s' not found", label),
 		}

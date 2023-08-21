@@ -168,7 +168,7 @@ func compareVirtualNetworkData(t *testing.T, a, b *VirtualNetworkData, strict bo
 }
 
 func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
-	var ace ApstraClientErr
+	var ace ClientErr
 	ctx := context.Background()
 
 	clients, err := getTestClients(ctx, t)

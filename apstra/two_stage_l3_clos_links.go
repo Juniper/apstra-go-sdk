@@ -79,14 +79,14 @@ func (o *TwoStageL3ClosClient) SystemNodeFromLinkIds(ctx context.Context, linkId
 
 	switch len(nodeIds) {
 	case 0:
-		return "", ApstraClientErr{
+		return "", ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no node matches query: %q", query.String()),
 		}
 	case 1:
 		return nodeIds[0], nil
 	default:
-		return "", ApstraClientErr{
+		return "", ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("multiple nodes match query: %q", query.String()),
 		}
