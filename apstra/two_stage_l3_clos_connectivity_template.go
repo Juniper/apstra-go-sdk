@@ -138,7 +138,7 @@ func (o *ConnectivityTemplate) SetIds() error {
 
 // SetUserData builds the top level `user_data` struct. It tries to lay the
 // primitive "sausages" out sensibly.
-func (o *ConnectivityTemplate) SetUserData() {
+func (o *ConnectivityTemplate) SetUserData() error {
 	o.UserData = &ConnectivityTemplatePrimitiveUserData{
 		IsSausage: true,
 		Positions: make(map[ObjectId][]float64),
@@ -147,12 +147,18 @@ func (o *ConnectivityTemplate) SetUserData() {
 	var width int
 	for _, subpolicy := range o.Subpolicies {
 		xPosition := float64(xInitialPosition + (width * xSpacing))
-		additionalPositions, subpolicyWidth := subpolicy.positions(xPosition, yInitialPosition)
+		additionalPositions, subpolicyWidth, err := subpolicy.positions(xPosition, yInitialPosition)
+		if err != nil {
+			return err
+		}
+
 		mergePositionMaps(&o.UserData.Positions, &additionalPositions)
 		if subpolicyWidth > width {
 			width += subpolicyWidth
 		}
 	}
+
+	return nil
 }
 
 type rawConnectivityTemplate struct {
@@ -246,19 +252,28 @@ type ConnectivityTemplatePrimitive struct {
 
 // positions returns position data suitable for Web UI layout and an integer
 // which indicates the maximum width in "sausages" of the subpolicy tree.
-func (o *ConnectivityTemplatePrimitive) positions(x, y float64) (map[ObjectId][]float64, int) {
+func (o *ConnectivityTemplatePrimitive) positions(x, y float64) (map[ObjectId][]float64, int, error) {
+	if o.Id == nil {
+		return nil, 0, errors.New("attempt to define connectivity template primitive position without setting ID")
+	}
+
 	var width int
 	positions := make(map[ObjectId][]float64)
 	positions[*o.Id] = []float64{x, y, 1}
 	for _, subpolicy := range o.Subpolicies {
-		additionalPositions, subpolicyWidth := subpolicy.positions(x+float64(width*xSpacing), y+ySpacing)
+		additionalPositions, subpolicyWidth, err := subpolicy.positions(x+float64(width*xSpacing), y+ySpacing)
+		if err != nil {
+			return nil, 0, err
+		}
+
 		mergePositionMaps(&positions, &additionalPositions)
 		width += subpolicyWidth
 	}
 	if width == 0 {
 		width++
 	}
-	return positions, width
+
+	return positions, width, nil
 }
 
 // rawPipeline returns []rawConnectivityTemplatePolicy consisting of:

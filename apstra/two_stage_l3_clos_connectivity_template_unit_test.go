@@ -212,7 +212,11 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 		Label:       "BGP over L3 connectivity",
 		Description: "this is the description",
 	}
-	ct.SetUserData()
+
+	err := ct.SetUserData()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	raw, err := ct.raw()
 	if err != nil {

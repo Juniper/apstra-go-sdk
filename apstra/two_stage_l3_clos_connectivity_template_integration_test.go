@@ -234,7 +234,11 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			tc.ct.SetUserData()
+
+			err = tc.ct.SetUserData()
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			log.Printf("testing CreateConnectivityTemplate(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
 			err = bpClient.CreateConnectivityTemplate(ctx, tc.ct)
@@ -265,7 +269,11 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			u.SetUserData()
+
+			err = u.SetUserData()
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			log.Printf("testing UpdateConnectivityTemplate(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
 			err = bpClient.UpdateConnectivityTemplate(ctx, u)
@@ -443,7 +451,11 @@ func TestCtLayout(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		ct.SetUserData()
+
+		err = ct.SetUserData()
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		err = bpClient.CreateConnectivityTemplate(ctx, &ct)
 		if err != nil {

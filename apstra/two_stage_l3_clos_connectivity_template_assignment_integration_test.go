@@ -111,7 +111,10 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		ct.SetUserData()
+		err = ct.SetUserData()
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		log.Printf("testing CreateConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.CreateConnectivityTemplate(ctx, &ct)
