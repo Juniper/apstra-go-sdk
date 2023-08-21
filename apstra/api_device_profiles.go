@@ -91,7 +91,7 @@ func (o *PortInfo) Transformation(desired int) (*Transformation, error) {
 			return &t, nil
 		}
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("transform id %d not found", desired),
 	}
@@ -177,7 +177,7 @@ func (o *Transformation) Interface(desired int) (*TransformInterface, error) {
 			return &intf, nil
 		}
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("interface %d not found in transformation", desired),
 	}
@@ -305,14 +305,14 @@ func (o *DeviceProfileData) PortByInterfaceName(desired string) (*PortInfo, erro
 	ports := o.PortsByInterfaceName(desired)
 	switch len(ports) {
 	case 0:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no port matching name '%s' could be found", desired),
 		}
 	case 1:
 		return &ports[0], nil
 	default:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("multiple ports matching name '%s' found", desired),
 		}
@@ -325,7 +325,7 @@ func (o *DeviceProfileData) PortById(desired int) (*PortInfo, error) {
 			return &portInfo, nil
 		}
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("no port with ID %d found", desired),
 	}
@@ -474,14 +474,14 @@ func (o *Client) getDeviceProfileByName(ctx context.Context, desired string) (*r
 	}
 	switch len(deviceProfiles) {
 	case 0:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no device profile named '%s' found", desired),
 		}
 	case 1:
 		return &deviceProfiles[0], nil
 	default:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("found multiple device profiles named '%s'", desired),
 		}

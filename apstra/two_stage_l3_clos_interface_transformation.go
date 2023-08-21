@@ -91,14 +91,14 @@ func (o *TwoStageL3ClosClient) GetTransformationId(ctx context.Context, interfac
 
 	switch len(queryResponse.Items) {
 	case 0:
-		return -1, ApstraClientErr{
+		return -1, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no interface map associated with node %q query: %q", interfaceNodeId, query.String()),
 		}
 	case 1:
 		return transformByIfName(queryResponse.Items[0].Interface.IfName, queryResponse.Items[0].InterfaceMap.Interfaces)
 	default:
-		return -1, ApstraClientErr{
+		return -1, ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("query %q found %d interface maps, expected 1", query.String(), len(queryResponse.Items)),
 		}
@@ -141,14 +141,14 @@ func (o *TwoStageL3ClosClient) GetTransformationIdByIfName(ctx context.Context, 
 
 	switch len(queryResponse.Items) {
 	case 0:
-		return -1, ApstraClientErr{
+		return -1, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no interface map associated with node %q query: %q", systemNodeId, query.String()),
 		}
 	case 1:
 		return transformByIfName(ifName, queryResponse.Items[0].InterfaceMap.Interfaces)
 	default:
-		return -1, ApstraClientErr{
+		return -1, ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("query %q found %d interface maps, expected 1", query.String(), len(queryResponse.Items)),
 		}
@@ -167,7 +167,7 @@ func transformByIfName(ifName string, in []struct {
 	}
 
 	// getting here means we failed to find a the interface within the mapping
-	return -1, ApstraClientErr{
+	return -1, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("no mapping for interface %q found in interface map", ifName),
 	}

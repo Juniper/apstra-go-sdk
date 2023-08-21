@@ -88,7 +88,7 @@ func (o *Client) getTagByLabel(ctx context.Context, label string) (*rawDesignTag
 		}
 	}
 
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("tag with label '%s' not found", label),
 	}
@@ -119,7 +119,7 @@ func (o *Client) getTagsByLabels(ctx context.Context, labels []string) ([]rawDes
 		if tag, ok := allTagsMap[requestedLabel]; ok {
 			result = append(result, tag)
 		} else {
-			return nil, ApstraClientErr{
+			return nil, ClientErr{
 				errType: ErrNotfound,
 				err:     fmt.Errorf("tag with label '%s' not found", requestedLabel),
 			}

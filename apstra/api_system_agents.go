@@ -843,7 +843,7 @@ func (o *Client) getSystemAgentByManagementIp(ctx context.Context, ip string) (*
 			return &a, nil
 		}
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("no System Agent with management IP '%s' found", ip),
 	}
@@ -976,7 +976,7 @@ func (o *Client) getSystemAgentJobStatus(ctx context.Context, agentId ObjectId, 
 	}
 
 	// jobId not found - return error
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("agent '%s' job history does not include job '%d'", agentId, jobId),
 	}
@@ -994,7 +994,7 @@ func (o *Client) systemAgentWaitForJobToExist(ctx context.Context, agentId Objec
 
 		_, err := o.getSystemAgentJobStatus(ctx, agentId, jobId)
 		if err != nil {
-			var ace ApstraClientErr
+			var ace ClientErr
 			if !(errors.As(err, &ace) && ace.Type() == ErrNotfound) {
 				// error other than notfound - stop looking - return error
 				return fmt.Errorf("error getting job status - %w", err)
@@ -1051,7 +1051,7 @@ func (o *Client) systemAgentWaitForConnection(ctx context.Context, agentId Objec
 		case AgentCxnStateConnected:
 			return nil
 		case AgentCxnStateAuthFail:
-			return ApstraClientErr{
+			return ClientErr{
 				errType: ErrAuthFail,
 				err: fmt.Errorf("agent %s connection failure: '%s'",
 					agentId, agentInfo.Status.ConnectionState.String()),
@@ -1059,7 +1059,7 @@ func (o *Client) systemAgentWaitForConnection(ctx context.Context, agentId Objec
 		case AgentCxnStateDisconnected:
 			// go around again
 		default:
-			return ApstraClientErr{
+			return ClientErr{
 				errType: ErrUnknown,
 				err: fmt.Errorf("unknown agent %s connection failure: '%s'",
 					agentId, agentInfo.Status.ConnectionState.String()),

@@ -449,7 +449,7 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 		_ = foo
 		if ld.Data.DisplayName == name {
 			if found {
-				return nil, ApstraClientErr{
+				return nil, ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("found multiple logical devices named '%s' found", name),
 				}
@@ -461,7 +461,7 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 	if found {
 		return &result, nil
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("no logical device named '%s' found", name),
 	}

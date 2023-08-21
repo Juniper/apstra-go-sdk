@@ -1346,7 +1346,7 @@ func (o *Client) getRackTypeByName(ctx context.Context, name string) (*RackType,
 			return &rackType, nil
 		}
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("rack type with name '%s' not found", name),
 	}

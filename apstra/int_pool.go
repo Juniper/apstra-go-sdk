@@ -347,7 +347,7 @@ func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById st
 	}
 	// we don't expect to find the "new" range in there already
 	if pool.Ranges.IndexOf(newRange) >= 0 {
-		return ApstraClientErr{
+		return ClientErr{
 			errType: ErrExists,
 			err:     fmt.Errorf(" range %d-%d in  pool '%s' already exists, cannot create", newRange.first(), newRange.last(), pool.Id),
 		}
@@ -355,7 +355,7 @@ func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById st
 
 	// sanity check: the new range shouldn't overlap any existing range (the API will reject it)
 	if pool.Ranges.Overlaps(newRange) {
-		return ApstraClientErr{
+		return ClientErr{
 			errType: ErrRangeOverlap,
 			err: fmt.Errorf("new range %d-%d overlaps with existing range in  Pool '%s'",
 				newRange.first(), newRange.last(), poolId),
@@ -411,7 +411,7 @@ func (o *Client) deleteIntPoolRange(ctx context.Context, apiResourcesPoolById st
 	}
 	deleteIdx := p.Ranges.IndexOf(deleteMe)
 	if deleteIdx < 0 {
-		return ApstraClientErr{
+		return ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("range '%d-%d' not found in Int Pool '%s'", deleteMe.first(), deleteMe.last(), poolId),
 		}

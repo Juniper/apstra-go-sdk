@@ -1144,7 +1144,7 @@ func (o *Client) getRackBasedTemplate(ctx context.Context, id ObjectId) (*rawTem
 	}
 
 	if tType != templateTypeRackBased {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrWrongType,
 			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeRackBased),
 		}
@@ -1192,7 +1192,7 @@ func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemp
 	}
 
 	if tType != templateTypePodBased {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrWrongType,
 			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypePodBased),
 		}
@@ -1269,7 +1269,7 @@ func (o *Client) getTemplateByTypeAndName(ctx context.Context, desiredType templ
 		}
 
 		if found != nil { // multiple matches!
-			return nil, ApstraClientErr{
+			return nil, ClientErr{
 				errType: ErrMultipleMatch,
 				err:     fmt.Errorf("found multiple %s templates named '%s'", desiredType, desiredName),
 			}
@@ -1280,7 +1280,7 @@ func (o *Client) getTemplateByTypeAndName(ctx context.Context, desiredType templ
 	}
 
 	if found == nil { // not found!
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no %s templates named '%s'", desiredType, desiredName),
 		}
@@ -1301,7 +1301,7 @@ func (o *Client) getL3CollapsedTemplate(ctx context.Context, id ObjectId) (*rawT
 	}
 
 	if tType != templateTypeL3Collapsed {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrWrongType,
 			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeL3Collapsed),
 		}
@@ -1701,7 +1701,7 @@ func (o *Client) getTemplateIdTypeByName(ctx context.Context, desired string) (O
 
 	switch len(idToType) {
 	case 0:
-		return "", -1, ApstraClientErr{
+		return "", -1, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("template named '%s' not found", desired),
 		}
@@ -1710,7 +1710,7 @@ func (o *Client) getTemplateIdTypeByName(ctx context.Context, desired string) (O
 			return k, v, nil
 		}
 	}
-	return "", -1, ApstraClientErr{
+	return "", -1, ClientErr{
 		errType: ErrMultipleMatch,
 		err:     fmt.Errorf("found multiple templates named '%s'", desired),
 	}

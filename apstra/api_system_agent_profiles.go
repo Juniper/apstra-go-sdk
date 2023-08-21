@@ -142,7 +142,7 @@ func (o *Client) createAgentProfile(ctx context.Context, in *AgentProfileConfig)
 	if err != nil {
 		var ttae TalkToApstraErr
 		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusConflict {
-			return "", ApstraClientErr{
+			return "", ClientErr{
 				errType: ErrConflict,
 				err:     fmt.Errorf("error Agent Profile '%s' likely already exists - %w", in.Label, err),
 			}
@@ -162,7 +162,7 @@ func (o *Client) getAgentProfile(ctx context.Context, id ObjectId) (*AgentProfil
 	if err != nil {
 		var ttae TalkToApstraErr
 		if errors.As(err, &ttae) && ttae.Response.StatusCode == http.StatusNotFound {
-			return nil, ApstraClientErr{
+			return nil, ClientErr{
 				errType: ErrNotfound,
 				err:     err,
 			}
@@ -214,7 +214,7 @@ func (o *Client) deleteAgentProfile(ctx context.Context, id ObjectId) error {
 			var ae apstraErr
 			_ = json.Unmarshal(body, &apstraErr{})
 			if ae.Errors == apstraErrAgentProfileInUse {
-				return ApstraClientErr{
+				return ClientErr{
 					errType: ErrInUse,
 					err:     fmt.Errorf("agent profile '%s' is in use, cannot delete", id),
 				}
@@ -240,7 +240,7 @@ func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*Age
 	for i, sap := range response.Items {
 		if sap.Label == label {
 			if found >= 0 {
-				return nil, ApstraClientErr{
+				return nil, ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("multiple matches for System Agent Profile with label '%s'", label),
 				}
@@ -250,7 +250,7 @@ func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*Age
 	}
 
 	if found < 0 {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no System Agent Profile with label '%s' found", label),
 		}

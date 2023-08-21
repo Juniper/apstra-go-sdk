@@ -77,7 +77,7 @@ func (o *TwoStageL3ClosClient) getPropertySetByName(ctx context.Context, name st
 			return &t, nil
 		}
 	}
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("property Set with name '%s' not found", name),
 	}

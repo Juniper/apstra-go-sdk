@@ -210,7 +210,7 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 	}
 
 	if len(response.Items) == 0 {
-		return ApstraClientErr{
+		return ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("query %q returned no results", query),
 		}

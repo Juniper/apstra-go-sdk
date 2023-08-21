@@ -348,14 +348,14 @@ func (o *Client) getInterfaceMapByName(ctx context.Context, desired string) (*ra
 	}
 	switch len(interfaceMaps) {
 	case 0:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no interface map named '%s' found", desired),
 		}
 	case 1:
 		return &interfaceMaps[0], nil
 	default:
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("found multiple interface maps named '%s' found", desired),
 		}

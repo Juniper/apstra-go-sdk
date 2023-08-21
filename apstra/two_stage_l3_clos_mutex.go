@@ -28,7 +28,7 @@ func (o *TwoStageL3ClosMutex) GetMessage() string {
 // SetMessage sets the lock message embedded in the mutex
 func (o *TwoStageL3ClosMutex) SetMessage(msg string) error {
 	if o.readOnly {
-		return ApstraClientErr{
+		return ClientErr{
 			errType: ErrReadOnly,
 			err:     errors.New("attempt to set message of a read-only mutex"),
 		}
@@ -113,7 +113,7 @@ func (o *TwoStageL3ClosMutex) lock(ctx context.Context, nonBlocking bool) error 
 	// loop until we acquire the lock or the context deadline (set by caller) expires.
 	tickerB := immediateTicker(lockPollInterval)
 	defer tickerB.Stop()
-	var ace ApstraClientErr
+	var ace ClientErr
 	var tagID ObjectId
 	for tagID == "" {
 		select {
@@ -167,7 +167,7 @@ func (o *TwoStageL3ClosMutex) lock(ctx context.Context, nonBlocking bool) error 
 // Unlock releases the mutex
 func (o *TwoStageL3ClosMutex) Unlock(ctx context.Context) error {
 	if o.readOnly {
-		return ApstraClientErr{
+		return ClientErr{
 			errType: ErrReadOnly,
 			err:     errors.New("attempt to unlock read-only mutex"),
 		}
@@ -175,7 +175,7 @@ func (o *TwoStageL3ClosMutex) Unlock(ctx context.Context) error {
 
 	err := o.client.client.deleteTag(ctx, o.tagId)
 	if err != nil {
-		var ace ApstraClientErr
+		var ace ClientErr
 		if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
 			return err
 		}

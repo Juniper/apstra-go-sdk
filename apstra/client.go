@@ -42,16 +42,16 @@ const (
 	clientApiResourceIpPoolRangeMutex
 )
 
-type ApstraClientErr struct {
+type ClientErr struct {
 	errType int
 	err     error
 }
 
-func (o ApstraClientErr) Error() string {
+func (o ClientErr) Error() string {
 	return o.err.Error()
 }
 
-func (o ApstraClientErr) Type() int {
+func (o ClientErr) Type() int {
 	return o.errType
 }
 
@@ -596,7 +596,7 @@ func (o *Client) DeleteAgentProfile(ctx context.Context, id ObjectId) error {
 
 // GetAgentProfileByLabel returns the Agent Profile with the given
 // label. Apstra doesn't allow label collisions, so this should be a unique
-// match. If no match, an ApstraClientErr with Type ErrNotfound is returned.
+// match. If no match, a ClientErr with Type ErrNotfound is returned.
 func (o *Client) GetAgentProfileByLabel(ctx context.Context, label string) (*AgentProfile, error) {
 	return o.getAgentProfileByLabel(ctx, label)
 }
@@ -624,7 +624,7 @@ func (o *Client) GetSystemAgent(ctx context.Context, id ObjectId) (*SystemAgent,
 // GetSystemAgentByManagementIp returns *SystemAgent representing the
 // Agent with the given "Management Ip" (which in Apstra terms can also
 // be a hostname). Apstra doesn't allow management IP collisions, so this should
-// be a unique match. If no match, an ApstraClientErr with type ErrNotfound is
+// be a unique match. If no match, a ClientErr with type ErrNotfound is
 // returned.
 func (o *Client) GetSystemAgentByManagementIp(ctx context.Context, ip string) (*SystemAgent, error) {
 	return o.getSystemAgentByManagementIp(ctx, ip)
@@ -870,7 +870,7 @@ func (o *Client) AddSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *n
 }
 
 // DeleteSubnetFromIp4Pool deletes a subnet from an IPv4 resource pool. If the subnet does not exist,
-// an ApstraClientErr with type ErrNotfound will be returned.
+// a ClientErr with type ErrNotfound will be returned.
 func (o *Client) DeleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
 	return o.deleteSubnetFromIpPool(ctx, poolId, target)
 }
@@ -942,7 +942,7 @@ func (o *Client) AddSubnetToIp6Pool(ctx context.Context, poolId ObjectId, new *n
 }
 
 // DeleteSubnetFromIp6Pool deletes a subnet from an IPv6 resource pool. If the subnet does not exist,
-// an ApstraClientErr with type ErrNotfound will be returned.
+// a ClientErr with type ErrNotfound will be returned.
 func (o *Client) DeleteSubnetFromIp6Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
 	return o.deleteSubnetFromIpPool(ctx, poolId, target)
 }
@@ -1725,7 +1725,7 @@ func (o *Client) GetRevision(ctx context.Context, id ObjectId, rev int) (*Bluepr
 		}
 	}
 
-	return nil, ApstraClientErr{
+	return nil, ClientErr{
 		errType: ErrNotfound,
 		err:     fmt.Errorf("blueprint %q revision %d not available in rollback history", id, rev),
 	}
@@ -1752,7 +1752,7 @@ func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*Blu
 	}
 
 	if highestRevPtr == nil {
-		err = ApstraClientErr{
+		err = ClientErr{
 			errType: ErrUncommitted,
 			err:     fmt.Errorf("no commits/deployments of blueprint %q found", id),
 		}

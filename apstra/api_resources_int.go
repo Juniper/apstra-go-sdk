@@ -77,7 +77,7 @@ func (o *Client) getAsnPoolByName(ctx context.Context, desired string) (*AsnPool
 	for i, pool := range pools {
 		if pool.DisplayName == desired {
 			if found >= 0 {
-				return nil, ApstraClientErr{
+				return nil, ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("name '%s' does not uniquely identify an ASN pool", desired),
 				}
@@ -86,7 +86,7 @@ func (o *Client) getAsnPoolByName(ctx context.Context, desired string) (*AsnPool
 		}
 	}
 	if found < 0 {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("pool named '%s' not found", desired),
 		}
@@ -131,7 +131,7 @@ func (o *Client) getIntPoolByName(ctx context.Context, desired string) (*rawIntP
 	for i, pool := range pools {
 		if pool.DisplayName == desired {
 			if found >= 0 {
-				return nil, ApstraClientErr{
+				return nil, ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("name '%s' does not uniquely identify an Integer Pool", desired),
 				}
@@ -140,7 +140,7 @@ func (o *Client) getIntPoolByName(ctx context.Context, desired string) (*rawIntP
 		}
 	}
 	if found < 0 {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("pool named '%s' not found", desired),
 		}
@@ -206,7 +206,7 @@ func (o *Client) getVniPoolByName(ctx context.Context, desired string) (*VniPool
 	for i, pool := range pools {
 		if pool.DisplayName == desired {
 			if found >= 0 {
-				return nil, ApstraClientErr{
+				return nil, ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("name '%s' does not uniquely identify an VNI pool", desired),
 				}
@@ -215,7 +215,7 @@ func (o *Client) getVniPoolByName(ctx context.Context, desired string) (*VniPool
 		}
 	}
 	if found < 0 {
-		return nil, ApstraClientErr{
+		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("pool named '%s' not found", desired),
 		}

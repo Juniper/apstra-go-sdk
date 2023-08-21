@@ -430,7 +430,7 @@ func TestRoutingPolicy404(t *testing.T) {
 		if err == nil {
 			t.Fatal("should have gotten an error")
 		} else {
-			var clientErr ApstraClientErr
+			var clientErr ClientErr
 			if !errors.As(err, &clientErr) || clientErr.Type() != ErrNotfound {
 				t.Fatal("error should have been something 404-ish")
 			}
@@ -441,7 +441,7 @@ func TestRoutingPolicy404(t *testing.T) {
 		if err == nil {
 			t.Fatal("should have gotten an error")
 		} else {
-			var clientErr ApstraClientErr
+			var clientErr ClientErr
 			if !errors.As(err, &clientErr) || clientErr.Type() != ErrNotfound {
 				t.Fatal("error should have been something 404-ish")
 			}
