@@ -16,7 +16,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
       "visible": true,
       "policy_type_name": "batch",
       "attributes": {
-        "Subpolicies": [
+        "subpolicies": [
           "31e32ddd-98e9-4f74-8fd7-61bbf9501cfd"
         ]
       }
@@ -57,7 +57,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
       "visible": false,
       "policy_type_name": "batch",
       "attributes": {
-        "Subpolicies": [
+        "subpolicies": [
           "de1474c2-f892-4fa6-bef4-e330ae7f9ac7"
         ]
       }
@@ -106,7 +106,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
       "visible": false,
       "policy_type_name": "batch",
       "attributes": {
-        "Subpolicies": [
+        "subpolicies": [
           "8c654b0f-3253-45c6-9d8b-88bcc35fb70b"
         ]
       }
