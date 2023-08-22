@@ -169,6 +169,7 @@ type PathQuery struct {
 	blueprintId   ObjectId
 	blueprintType BlueprintType
 	where         []string
+	optional      bool
 }
 
 func (o *PathQuery) getBlueprintType() BlueprintType {
@@ -210,6 +211,11 @@ func (o *PathQuery) String() string {
 	for _, where := range o.where {
 		sb.WriteString(".where(" + where + ")")
 	}
+
+	if o.optional {
+		return "optional(" + sb.String() + ")"
+	}
+
 	return sb.String()
 }
 
@@ -370,5 +376,12 @@ func (o *MatchQuery) Where(where string) *MatchQuery {
 
 func (o *MatchQuery) Match(q *PathQuery) *MatchQuery {
 	o.match = append(o.match, *q)
+	return o
+}
+
+func (o *MatchQuery) Optional(q *PathQuery) *MatchQuery {
+	optional := *q
+	optional.optional = true
+	o.match = append(o.match, optional)
 	return o
 }
