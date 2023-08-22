@@ -69,16 +69,17 @@ func (o *QEElement) getLast() *QEElement {
 func (o *QEElement) String() string {
 	attrsSB := strings.Builder{}
 
-	// add first attribute to string builder without leading separator
 	if len(o.attributes) > 0 {
+		// add first attribute to string builder without leading separator
 		attrsSB.WriteString(o.attributes[0].String())
+
+		// remaining attributes added with leading separator
+		for _, a := range o.attributes[1:] {
+			attrsSB.WriteString(qEElementAttributeSep)
+			attrsSB.WriteString(a.String())
+		}
 	}
 
-	// remaining attributes added with leading separator
-	for _, a := range o.attributes[1:] {
-		attrsSB.WriteString(qEElementAttributeSep)
-		attrsSB.WriteString(a.String())
-	}
 	return fmt.Sprintf("%s(%s)", o.qeeType, attrsSB.String())
 }
 
