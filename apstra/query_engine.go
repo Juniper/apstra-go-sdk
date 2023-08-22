@@ -18,6 +18,7 @@ type QEQuery interface {
 	Do(context.Context, interface{}) error
 	String() string
 	getBlueprintType() BlueprintType
+	setOptional()
 }
 
 var _ QEQuery = &PathQuery{}
@@ -176,6 +177,10 @@ func (o *PathQuery) getBlueprintType() BlueprintType {
 	return o.blueprintType
 }
 
+func (o *PathQuery) setOptional() {
+	o.optional = true
+}
+
 func (o *PathQuery) Do(ctx context.Context, response interface{}) error {
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
@@ -285,9 +290,10 @@ type MatchQuery struct {
 	context       context.Context
 	blueprintId   ObjectId
 	blueprintType BlueprintType
-	match         []PathQuery
+	match         []QEQuery
 	firstElement  *MatchQueryElement
 	where         []string
+	optional      bool
 }
 
 //func (o *MatchQuery) Having(v QEAttrVal) *MatchQuery          {} // todo
@@ -315,6 +321,10 @@ func (o *MatchQuery) addElement(t string, v QEAttrVal) *MatchQuery {
 
 func (o *MatchQuery) getBlueprintType() BlueprintType {
 	return o.blueprintType
+}
+
+func (o *MatchQuery) setOptional() {
+	o.optional = true
 }
 
 func (o *MatchQuery) Do(ctx context.Context, response interface{}) error {
@@ -374,14 +384,13 @@ func (o *MatchQuery) Where(where string) *MatchQuery {
 	return o
 }
 
-func (o *MatchQuery) Match(q *PathQuery) *MatchQuery {
-	o.match = append(o.match, *q)
+func (o *MatchQuery) Match(q QEQuery) *MatchQuery {
+	o.match = append(o.match, q)
 	return o
 }
 
-func (o *MatchQuery) Optional(q *PathQuery) *MatchQuery {
-	optional := *q
-	optional.optional = true
-	o.match = append(o.match, optional)
+func (o *MatchQuery) Optional(q QEQuery) *MatchQuery {
+	q.setOptional()
+	o.match = append(o.match, q)
 	return o
 }
