@@ -11,17 +11,18 @@ import (
 // from each other. In Apstra 4.1.2 there are 10 CT primitives, so there are 10
 // implementations of the ConnectivityTemplatePrimitiveAttributes interface.
 type ConnectivityTemplatePrimitiveAttributes interface {
-	raw() (json.RawMessage, error)
-	PolicyTypeName() CtPrimitivePolicyTypeName
-	Label() string
 	Description() string
+	PolicyTypeName() CtPrimitivePolicyTypeName
 	fromRawJson(json.RawMessage) error
+	label() string
+	raw() (json.RawMessage, error)
 }
 
 // AttachSingleVlan
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachSingleVlan struct {
+	Label    string
 	Tagged   bool
 	VnNodeId *ObjectId
 }
@@ -56,7 +57,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) PolicyTypeName
 	return CtPrimitivePolicyTypeNameAttachSingleVlan
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "Virtual Network (Single)"
 }
 
@@ -68,6 +72,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) Description() 
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan struct {
+	Label            string
 	UntaggedVnNodeId *ObjectId
 	TaggedVnNodeIds  []ObjectId
 }
@@ -95,7 +100,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) PolicyTypeNa
 	return CtPrimitivePolicyTypeNameAttachMultipleVlan
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "Virtual Network (Multiple)"
 }
 
@@ -107,6 +115,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) Description(
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
+	Label              string
 	SecurityZone       *ObjectId
 	Tagged             bool
 	Vlan               *Vlan
@@ -155,7 +164,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) PolicyTypeNam
 	return CtPrimitivePolicyTypeNameAttachLogicalLink
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "IP Link"
 }
 
@@ -167,6 +179,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) Description()
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachStaticRoute{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachStaticRoute struct {
+	Label           string
 	ShareIpEndpoint bool
 	Network         *net.IPNet
 }
@@ -190,7 +203,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) PolicyTypeNam
 	return CtPrimitivePolicyTypeNameAttachStaticRoute
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "Static Route"
 }
 
@@ -212,6 +228,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachStaticRoute) fromRawJson(i
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute struct {
+	Label        string
 	Network      *net.IPNet
 	NextHop      net.IP
 	SecurityZone *ObjectId
@@ -243,7 +260,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) PolicyT
 	return CtPrimitivePolicyTypeNameAttachCustomStaticRoute
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "Custom Static Route"
 }
 
@@ -265,6 +285,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachCustomStaticRoute) fromRaw
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt struct {
+	Label              string
 	Asn                *uint32
 	Bfd                bool
 	Holdtime           *uint16
@@ -331,7 +352,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) Pol
 	return CtPrimitivePolicyTypeNameAttachIpEndpointWithBgpNsxt
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "BGP Peering (IP Endpoint)"
 }
 
@@ -343,6 +367,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachIpEndpointWithBgpNsxt) Des
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi struct {
+	Label                 string
 	Bfd                   bool
 	Holdtime              *uint16
 	Ipv4Safi              bool
@@ -408,7 +433,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
 	return CtPrimitivePolicyTypeNameAttachBgpOverSubinterfacesOrSvi
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "BGP Peering (Generic System)"
 }
 
@@ -420,6 +448,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpOverSubinterfacesOrSvi)
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface struct {
+	Label                 string
 	Bfd                   bool
 	Holdtime              *uint16
 	Ipv4Safi              bool
@@ -469,7 +498,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSvi
 	return CtPrimitivePolicyTypeNameAttachBgpWithPrefixPeeringForSviOrSubinterface
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSviOrSubinterface) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "Dynamic BGP Peering"
 }
 
@@ -491,6 +523,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachBgpWithPrefixPeeringForSvi
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy struct {
+	Label      string
 	RpToAttach *ObjectId
 }
 
@@ -515,7 +548,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) Pol
 	return CtPrimitivePolicyTypeNameAttachExistingRoutingPolicy
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "Routing Policy"
 }
 
@@ -527,6 +563,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy) Des
 var _ ConnectivityTemplatePrimitiveAttributes = &ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint{}
 
 type ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint struct {
+	Label                 string
 	RoutingZoneConstraint *ObjectId
 }
 
@@ -542,7 +579,10 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) Pol
 	return CtPrimitivePolicyTypeNameAttachRoutingZoneConstraint
 }
 
-func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) Label() string {
+func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) label() string {
+	if o.Label != "" {
+		return o.Label
+	}
 	return "Routing Zone Constraint"
 }
 

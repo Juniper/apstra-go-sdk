@@ -244,6 +244,7 @@ type ConnectivityTemplatePrimitiveUserData struct {
 
 type ConnectivityTemplatePrimitive struct {
 	Id          *ObjectId
+	Label       string
 	Attributes  ConnectivityTemplatePrimitiveAttributes
 	Subpolicies []*ConnectivityTemplatePrimitive // batch of pointers to pipelines
 	BatchId     *ObjectId
@@ -300,7 +301,7 @@ func (o *ConnectivityTemplatePrimitive) rawPipeline() ([]rawConnectivityTemplate
 	actual := rawConnectivityTemplatePolicy{
 		Description:    attributes.Description(),
 		Tags:           []string{}, // always empty slice
-		Label:          attributes.Label(),
+		Label:          o.Label,
 		PolicyTypeName: attributes.PolicyTypeName().raw(),
 		Attributes:     rawAttributes,
 		Id:             *o.Id,
@@ -324,7 +325,7 @@ func (o *ConnectivityTemplatePrimitive) rawPipeline() ([]rawConnectivityTemplate
 	pipeline := rawConnectivityTemplatePolicy{
 		Description:    attributes.Description(),
 		Tags:           []string{}, // always empty slice
-		Label:          attributes.Label() + string(policyTypePipelineSuffix),
+		Label:          o.Label + string(policyTypePipelineSuffix),
 		PolicyTypeName: ctPrimitivePolicyTypeNamePipeline,
 		Attributes:     rawPipelineAttribtes,
 		Id:             *o.PipelineId,
@@ -333,7 +334,7 @@ func (o *ConnectivityTemplatePrimitive) rawPipeline() ([]rawConnectivityTemplate
 	result := []rawConnectivityTemplatePolicy{pipeline, actual}
 
 	if len(o.Subpolicies) > 0 {
-		batchPolicies, err := rawBatch(*o.BatchId, attributes.Description(), attributes.Label(), o.Subpolicies)
+		batchPolicies, err := rawBatch(*o.BatchId, attributes.Description(), o.Label, o.Subpolicies)
 		if err != nil {
 			return nil, err
 		}
@@ -567,6 +568,7 @@ func parsePrimitiveTreeByPipelineId(pipelineId ObjectId, policyMap map[ObjectId]
 
 	return &ConnectivityTemplatePrimitive{
 		Id:          &actual.Id,
+		Label:       actual.Label,
 		Attributes:  attributes,
 		Subpolicies: subpolicies,
 		BatchId:     batchId,
