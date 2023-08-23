@@ -100,7 +100,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 		icfg1.Data.Label = "new name"
 		icfg1.Data.Condition = "role in [\"spine\"]"
 		log.Printf("testing UpdateConfiglet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.UpdateConfiglet(ctx, icfg1)
+		err = bpClient.UpdateConfiglet(ctx, icfg1.Id, icfg1.Data)
 		if err != nil {
 			t.Fatal(err)
 		}
