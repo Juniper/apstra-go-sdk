@@ -366,8 +366,8 @@ func TestCtLayout(t *testing.T) {
 								SessionAddressingIpv4: true,
 							},
 							Subpolicies: []*ConnectivityTemplatePrimitive{
-								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
-								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{RpToAttach: &rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{RpToAttach: &rp.Id}},
 							},
 						},
 						{
@@ -376,8 +376,8 @@ func TestCtLayout(t *testing.T) {
 								SessionAddressingIpv6: true,
 							},
 							Subpolicies: []*ConnectivityTemplatePrimitive{
-								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
-								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{RpToAttach: &rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{RpToAttach: &rp.Id}},
 							},
 						},
 						{
@@ -413,8 +413,8 @@ func TestCtLayout(t *testing.T) {
 								SessionAddressingIpv4: true,
 							},
 							Subpolicies: []*ConnectivityTemplatePrimitive{
-								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
-								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{RpToAttach: &rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{RpToAttach: &rp.Id}},
 							},
 						},
 						{
@@ -423,8 +423,8 @@ func TestCtLayout(t *testing.T) {
 								SessionAddressingIpv6: true,
 							},
 							Subpolicies: []*ConnectivityTemplatePrimitive{
-								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
-								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{&rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{RpToAttach: &rp.Id}},
+								{Attributes: &ConnectivityTemplatePrimitiveAttributesAttachExistingRoutingPolicy{RpToAttach: &rp.Id}},
 							},
 						},
 						{

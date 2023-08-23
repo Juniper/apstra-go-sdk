@@ -415,3 +415,33 @@ func TestMatchQueryWhere(t *testing.T) {
 		}
 	}
 }
+
+func TestQueryMatchOptional(t *testing.T) {
+	expected := "" +
+		"match(" +
+		"" + "node(type='system',system_type='switch').out().node(type='interface').out().node(type='link',name='n_link')," +
+		"" + "optional(" +
+		"" + "" + "node(type='link',name='n_link').in_().node(type='tag',name='n_tag')" +
+		"" + ")" +
+		")"
+	q1 := new(PathQuery).
+		Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(), {Key: "system_type", Value: QEStringVal("switch")}}).
+		Out([]QEEAttribute{}).
+		Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
+		Out([]QEEAttribute{}).
+		Node([]QEEAttribute{NodeTypeLink.QEEAttribute(), {Key: "name", Value: QEStringVal("n_link")}})
+
+	q2 := new(PathQuery).
+		Node([]QEEAttribute{NodeTypeLink.QEEAttribute(), {Key: "name", Value: QEStringVal("n_link")}}).
+		In([]QEEAttribute{}).
+		Node([]QEEAttribute{NodeTypeTag.QEEAttribute(), {Key: "name", Value: QEStringVal("n_tag")}})
+
+	result := new(MatchQuery).
+		Match(q1).
+		Optional(q2).
+		String()
+
+	if expected != result {
+		t.Fatalf("expected: %q, got %q", expected, result)
+	}
+}

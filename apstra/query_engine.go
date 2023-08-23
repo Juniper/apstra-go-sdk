@@ -18,6 +18,7 @@ type QEQuery interface {
 	Do(context.Context, interface{}) error
 	String() string
 	getBlueprintType() BlueprintType
+	setOptional()
 }
 
 var _ QEQuery = &PathQuery{}
@@ -69,16 +70,17 @@ func (o *QEElement) getLast() *QEElement {
 func (o *QEElement) String() string {
 	attrsSB := strings.Builder{}
 
-	// add first attribute to string builder without leading separator
 	if len(o.attributes) > 0 {
+		// add first attribute to string builder without leading separator
 		attrsSB.WriteString(o.attributes[0].String())
+
+		// remaining attributes added with leading separator
+		for _, a := range o.attributes[1:] {
+			attrsSB.WriteString(qEElementAttributeSep)
+			attrsSB.WriteString(a.String())
+		}
 	}
 
-	// remaining attributes added with leading separator
-	for _, a := range o.attributes[1:] {
-		attrsSB.WriteString(qEElementAttributeSep)
-		attrsSB.WriteString(a.String())
-	}
 	return fmt.Sprintf("%s(%s)", o.qeeType, attrsSB.String())
 }
 
@@ -168,10 +170,15 @@ type PathQuery struct {
 	blueprintId   ObjectId
 	blueprintType BlueprintType
 	where         []string
+	optional      bool
 }
 
 func (o *PathQuery) getBlueprintType() BlueprintType {
 	return o.blueprintType
+}
+
+func (o *PathQuery) setOptional() {
+	o.optional = true
 }
 
 func (o *PathQuery) Do(ctx context.Context, response interface{}) error {
@@ -209,6 +216,11 @@ func (o *PathQuery) String() string {
 	for _, where := range o.where {
 		sb.WriteString(".where(" + where + ")")
 	}
+
+	if o.optional {
+		return "optional(" + sb.String() + ")"
+	}
+
 	return sb.String()
 }
 
@@ -278,9 +290,10 @@ type MatchQuery struct {
 	context       context.Context
 	blueprintId   ObjectId
 	blueprintType BlueprintType
-	match         []PathQuery
+	match         []QEQuery
 	firstElement  *MatchQueryElement
 	where         []string
+	optional      bool
 }
 
 //func (o *MatchQuery) Having(v QEAttrVal) *MatchQuery          {} // todo
@@ -308,6 +321,10 @@ func (o *MatchQuery) addElement(t string, v QEAttrVal) *MatchQuery {
 
 func (o *MatchQuery) getBlueprintType() BlueprintType {
 	return o.blueprintType
+}
+
+func (o *MatchQuery) setOptional() {
+	o.optional = true
 }
 
 func (o *MatchQuery) Do(ctx context.Context, response interface{}) error {
@@ -367,7 +384,13 @@ func (o *MatchQuery) Where(where string) *MatchQuery {
 	return o
 }
 
-func (o *MatchQuery) Match(q *PathQuery) *MatchQuery {
-	o.match = append(o.match, *q)
+func (o *MatchQuery) Match(q QEQuery) *MatchQuery {
+	o.match = append(o.match, q)
+	return o
+}
+
+func (o *MatchQuery) Optional(q QEQuery) *MatchQuery {
+	q.setOptional()
+	o.match = append(o.match, q)
 	return o
 }
