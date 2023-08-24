@@ -18,6 +18,7 @@ const (
 	RelationshipTypeInstantiates
 	RelationshipTypeLink
 	RelationshipTypeLogicalDevice
+	RelationshipTypeMemberInterfaces
 	RelationshipTypeMemberVNs
 	RelationshipTypePartOfRack
 	RelationshipTypeTag
@@ -38,6 +39,7 @@ const (
 	relationshipTypeInstantiates       = relationshipType("instantiates")
 	relationshipTypeLink               = relationshipType("link")
 	relationshipTypeLogicalDevice      = relationshipType("logical_device")
+	relationshipTypeMemberInterfaces   = relationshipType("member_interfaces")
 	relationshipTypeMemberVNs          = relationshipType("member_vns")
 	relationshipTypePartOfRack         = relationshipType("part_of_rack")
 	relationshipTypeTag                = relationshipType("tag")
@@ -79,6 +81,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeLink)
 	case RelationshipTypeLogicalDevice:
 		return string(relationshipTypeLogicalDevice)
+	case RelationshipTypeMemberInterfaces:
+		return string(relationshipTypeMemberInterfaces)
 	case RelationshipTypeMemberVNs:
 		return string(relationshipTypeMemberVNs)
 	case RelationshipTypePartOfRack:
