@@ -12,7 +12,7 @@ const (
 	RelationshipTypeEpNested
 	RelationshipTypeEpTopLevel
 	RelationshipTypeHostedInterfaces
-	RelationshipTypeHostedVnInterfaces
+	RelationshipTypeHostedVnInstances
 	RelationshipTypeInterfaceMap
 	RelationshipTypeInstantiatedBy
 	RelationshipTypeInstantiates
@@ -24,26 +24,26 @@ const (
 	RelationshipTypeTag
 	RelationshipTypeUnknown = "unknown node type %s"
 
-	relationshipTypeNone               = relationshipType("")
-	relationshipTypeComposedOf         = relationshipType("composed_of")
-	relationshipTypeComposedOfSystems  = relationshipType("composed_of_systems")
-	relationshipTypeDeviceProfile      = relationshipType("device_profile")
-	relationshipTypeEpAffectedBy       = relationshipType("ep_affected_by")
-	relationshipTypeEpMemberOf         = relationshipType("ep_member_of")
-	relationshipTypeEpNested           = relationshipType("ep_nested")
-	relationshipTypeEpTopLevel         = relationshipType("ep_top_level")
-	relationshipTypeHostedInterfaces   = relationshipType("hosted_interfaces")
-	relationshipTypeHostedVnInterfaces = relationshipType("hosted_vn_interfaces")
-	relationshipTypeInterfaceMap       = relationshipType("interface_map")
-	relationshipTypeInstantiatedBy     = relationshipType("instantiated_by")
-	relationshipTypeInstantiates       = relationshipType("instantiates")
-	relationshipTypeLink               = relationshipType("link")
-	relationshipTypeLogicalDevice      = relationshipType("logical_device")
-	relationshipTypeMemberInterfaces   = relationshipType("member_interfaces")
-	relationshipTypeMemberVNs          = relationshipType("member_vns")
-	relationshipTypePartOfRack         = relationshipType("part_of_rack")
-	relationshipTypeTag                = relationshipType("tag")
-	relationshipTypeUnknown            = "unknown node type %d"
+	relationshipTypeNone              = relationshipType("")
+	relationshipTypeComposedOf        = relationshipType("composed_of")
+	relationshipTypeComposedOfSystems = relationshipType("composed_of_systems")
+	relationshipTypeDeviceProfile     = relationshipType("device_profile")
+	relationshipTypeEpAffectedBy      = relationshipType("ep_affected_by")
+	relationshipTypeEpMemberOf        = relationshipType("ep_member_of")
+	relationshipTypeEpNested          = relationshipType("ep_nested")
+	relationshipTypeEpTopLevel        = relationshipType("ep_top_level")
+	relationshipTypeHostedInterfaces  = relationshipType("hosted_interfaces")
+	relationshipTypeHostedVnInstances = relationshipType("hosted_vn_instances")
+	relationshipTypeInterfaceMap      = relationshipType("interface_map")
+	relationshipTypeInstantiatedBy    = relationshipType("instantiated_by")
+	relationshipTypeInstantiates      = relationshipType("instantiates")
+	relationshipTypeLink              = relationshipType("link")
+	relationshipTypeLogicalDevice     = relationshipType("logical_device")
+	relationshipTypeMemberInterfaces  = relationshipType("member_interfaces")
+	relationshipTypeMemberVNs         = relationshipType("member_vns")
+	relationshipTypePartOfRack        = relationshipType("part_of_rack")
+	relationshipTypeTag               = relationshipType("tag")
+	relationshipTypeUnknown           = "unknown node type %d"
 )
 
 type RelationshipType int
@@ -69,8 +69,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeEpTopLevel)
 	case RelationshipTypeHostedInterfaces:
 		return string(relationshipTypeHostedInterfaces)
-	case RelationshipTypeHostedVnInterfaces:
-		return string(relationshipTypeHostedVnInterfaces)
+	case RelationshipTypeHostedVnInstances:
+		return string(relationshipTypeHostedVnInstances)
 	case RelationshipTypeInterfaceMap:
 		return string(relationshipTypeInterfaceMap)
 	case RelationshipTypeInstantiatedBy:
