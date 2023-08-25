@@ -447,3 +447,32 @@ func TestQueryMatchOptional(t *testing.T) {
 		t.Fatalf("expected: %q, got %q", expected, result)
 	}
 }
+
+func TestRawQuery(t *testing.T) {
+	type testCase struct {
+		query                string
+		expected             string
+		expectedWithOptional string
+	}
+
+	testCases := []testCase{
+		{
+			query:                "node()",
+			expected:             "node()",
+			expectedWithOptional: "optional(node())",
+		},
+	}
+
+	for i, tc := range testCases {
+		q := new(RawQuery).SetQuery(tc.query)
+		qs := q.String()
+		if tc.expected != qs {
+			t.Fatalf("test %d without optional expected %q, got %q", i, tc.expected, qs)
+		}
+		q.setOptional()
+		qo := q.String()
+		if tc.expected != qs {
+			t.Fatalf("test %d with optional expected %q, got %q", i, tc.expectedWithOptional, qo)
+		}
+	}
+}

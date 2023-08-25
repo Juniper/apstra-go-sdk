@@ -387,3 +387,51 @@ func (o *MatchQuery) Optional(q QEQuery) *MatchQuery {
 	o.match = append(o.match, q)
 	return o
 }
+
+type RawQuery struct {
+	query         string
+	client        *Client
+	blueprintId   ObjectId
+	blueprintType BlueprintType
+	optional      bool
+}
+
+func (o *RawQuery) getBlueprintType() BlueprintType {
+	return o.blueprintType
+}
+
+func (o *RawQuery) setOptional() {
+	o.optional = true
+}
+
+func (o *RawQuery) Do(ctx context.Context, response interface{}) error {
+	return o.client.runQuery(ctx, o.blueprintId, o, response)
+}
+
+func (o *RawQuery) SetBlueprintId(id ObjectId) *RawQuery {
+	o.blueprintId = id
+	return o
+}
+
+func (o *RawQuery) SetBlueprintType(t BlueprintType) *RawQuery {
+	o.blueprintType = t
+	return o
+}
+
+func (o *RawQuery) SetClient(client *Client) *RawQuery {
+	o.client = client
+	return o
+}
+
+func (o *RawQuery) SetQuery(query string) *RawQuery {
+	o.query = query
+	return o
+}
+
+func (o *RawQuery) String() string {
+	if o.optional {
+		return o.query
+	}
+
+	return o.query
+}
