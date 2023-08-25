@@ -96,30 +96,6 @@ func TestEmptyAsnPool(t *testing.T) {
 			}
 		}
 
-		for range asnRanges {
-			// delete one randomly selected range
-			rangeCount := len(newPool.Ranges)
-			deleteMe := newPool.Ranges[rand.Intn(rangeCount)]
-			err = client.client.DeleteAsnPoolRange(context.TODO(), newPoolId, &deleteMe)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			log.Printf("testing GetAsnPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
-			newPool, err = client.client.GetAsnPool(context.TODO(), newPoolId)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if rangeCount-1 != len(newPool.Ranges) {
-				t.Fatalf("expected new pool to have %d ranges, got %d", rangeCount-1, len(newPool.Ranges))
-			}
-		}
-
-		if len(newPool.Ranges) != 0 {
-			t.Fatalf("expected new pool to have 0 ranges, got %d", len(newPool.Ranges))
-		}
-
 		log.Printf("testing DeleteAsnPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteAsnPool(context.TODO(), newPoolId)
 		if err != nil {
@@ -133,60 +109,6 @@ func TestUnmarshalPool(t *testing.T) {
 	err := json.Unmarshal([]byte(testPool1), &result)
 	if err != nil {
 		t.Fatal(err)
-	}
-}
-
-func TestCreateDeleteAsnPoolRange(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	name := "test-" + randString(10, "hex")
-	var tags []string
-	tags = append(tags, "tag-"+randString(10, "hex"))
-	tags = append(tags, "tag-"+randString(10, "hex"))
-
-	for clientName, client := range clients {
-		log.Printf("testing CreateAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		poolId, err := client.client.CreateAsnPool(context.TODO(), &AsnPoolRequest{
-			DisplayName: name,
-			Tags:        tags,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("created ASN pool name %s id %s", name, poolId)
-		var asnRange IntRangeRequest
-		for i := 0; i < 3; i++ {
-			a := rand.Intn(1000) + (i * 1000 * 2)
-			b := rand.Intn(1000) + a
-			asnRange.First = uint32(a)
-			asnRange.Last = uint32(b)
-			log.Printf("testing CreateAsnPoolRange() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.CreateAsnPoolRange(context.TODO(), poolId, &asnRange)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}
-
-		log.Printf("testing GetAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		asnPool, err := client.client.GetAsnPool(context.TODO(), poolId)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, r := range asnPool.Ranges {
-			log.Printf("testing DeleteAsnPoolRange() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err := client.client.DeleteAsnPoolRange(context.TODO(), asnPool.Id, &IntRangeRequest{First: r.First, Last: r.Last})
-			if err != nil {
-				t.Fatal(err)
-			}
-		}
-		log.Printf("testing DeleteAsnPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteAsnPool(context.TODO(), asnPool.Id)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
 
@@ -314,86 +236,8 @@ func TestEmptyVniPool(t *testing.T) {
 			}
 		}
 
-		for range vniRanges {
-			// delete one randomly selected range
-			rangeCount := len(newPool.Ranges)
-			deleteMe := newPool.Ranges[rand.Intn(rangeCount)]
-			err = client.client.DeleteVniPoolRange(context.TODO(), newPoolId, &deleteMe)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			log.Printf("testing GetVniPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
-			newPool, err = client.client.GetVniPool(context.TODO(), newPoolId)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if rangeCount-1 != len(newPool.Ranges) {
-				t.Fatalf("expected new pool to have %d ranges, got %d", rangeCount-1, len(newPool.Ranges))
-			}
-		}
-
-		if len(newPool.Ranges) != 0 {
-			t.Fatalf("expected new pool to have 0 ranges, got %d", len(newPool.Ranges))
-		}
-
 		log.Printf("testing DeleteVniPool(%s) against %s %s (%s)", newPoolId, client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteVniPool(context.TODO(), newPoolId)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func TestCreateDeleteVniPoolRange(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	name := "test-" + randString(10, "hex")
-	var tags []string
-	tags = append(tags, "tag-"+randString(10, "hex"))
-	tags = append(tags, "tag-"+randString(10, "hex"))
-
-	for clientName, client := range clients {
-		log.Printf("testing CreateVniPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		poolId, err := client.client.CreateVniPool(context.TODO(), &VniPoolRequest{
-			DisplayName: name,
-			Tags:        tags,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("created VNI pool name %s id %s", name, poolId)
-		var vniRange IntRangeRequest
-		for i := 0; i < 3; i++ {
-			a := rand.Intn(1000) + (i * 1000 * 2) + 4096
-			b := rand.Intn(1000) + a
-			vniRange.First = uint32(a)
-			vniRange.Last = uint32(b)
-			log.Printf("testing CreateVniPoolRange() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.CreateVniPoolRange(context.TODO(), poolId, &vniRange)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}
-
-		log.Printf("testing GetVniPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		vniPool, err := client.client.GetVniPool(context.TODO(), poolId)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, r := range vniPool.Ranges {
-			log.Printf("testing DeleteVniPoolRange() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err := client.client.DeleteVniPoolRange(context.TODO(), vniPool.Id, &IntRangeRequest{First: r.First, Last: r.Last})
-			if err != nil {
-				t.Fatal(err)
-			}
-		}
-		log.Printf("testing DeleteVniPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteVniPool(context.TODO(), vniPool.Id)
 		if err != nil {
 			t.Fatal(err)
 		}

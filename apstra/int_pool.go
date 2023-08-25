@@ -382,21 +382,6 @@ func (o *Client) createIntPoolRange(ctx context.Context, apiResourcesPoolById st
 	return o.updateIntPool(ctx, apiResourcesPoolById, poolId, req)
 }
 
-func (o *Client) IntPoolRangeExists(ctx context.Context, apiResourcesPoolById string, poolId ObjectId, IntRange IntfIntRange) (bool, error) {
-	poolInfo, err := o.getIntPool(ctx, apiResourcesPoolById, poolId)
-	if err != nil {
-		return false, fmt.Errorf("error getting Int ranges from pool '%s' - %w", poolId, err)
-	}
-	p, err := poolInfo.polish()
-	if err != nil {
-		return false, fmt.Errorf("error polishing Int ranges from pool '%s' - %w", poolId, err)
-	}
-	if p.Ranges.IndexOf(IntRange) >= 0 {
-		return true, nil
-	}
-	return false, nil
-}
-
 func (o *Client) deleteIntPoolRange(ctx context.Context, apiResourcesPoolById string, poolId ObjectId, deleteMe IntfIntRange) error {
 	// we read, then replace the pool range. this is not concurrency safe.
 	// Caller must take a lock
