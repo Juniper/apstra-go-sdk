@@ -12,11 +12,13 @@ const (
 	RelationshipTypeEpNested
 	RelationshipTypeEpTopLevel
 	RelationshipTypeHostedInterfaces
+	RelationshipTypeHostedVnInstances
 	RelationshipTypeInterfaceMap
 	RelationshipTypeInstantiatedBy
 	RelationshipTypeInstantiates
 	RelationshipTypeLink
 	RelationshipTypeLogicalDevice
+	RelationshipTypeMemberInterfaces
 	RelationshipTypeMemberVNs
 	RelationshipTypePartOfRack
 	RelationshipTypeTag
@@ -31,11 +33,13 @@ const (
 	relationshipTypeEpNested          = relationshipType("ep_nested")
 	relationshipTypeEpTopLevel        = relationshipType("ep_top_level")
 	relationshipTypeHostedInterfaces  = relationshipType("hosted_interfaces")
+	relationshipTypeHostedVnInstances = relationshipType("hosted_vn_instances")
 	relationshipTypeInterfaceMap      = relationshipType("interface_map")
 	relationshipTypeInstantiatedBy    = relationshipType("instantiated_by")
 	relationshipTypeInstantiates      = relationshipType("instantiates")
 	relationshipTypeLink              = relationshipType("link")
 	relationshipTypeLogicalDevice     = relationshipType("logical_device")
+	relationshipTypeMemberInterfaces  = relationshipType("member_interfaces")
 	relationshipTypeMemberVNs         = relationshipType("member_vns")
 	relationshipTypePartOfRack        = relationshipType("part_of_rack")
 	relationshipTypeTag               = relationshipType("tag")
@@ -65,6 +69,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeEpTopLevel)
 	case RelationshipTypeHostedInterfaces:
 		return string(relationshipTypeHostedInterfaces)
+	case RelationshipTypeHostedVnInstances:
+		return string(relationshipTypeHostedVnInstances)
 	case RelationshipTypeInterfaceMap:
 		return string(relationshipTypeInterfaceMap)
 	case RelationshipTypeInstantiatedBy:
@@ -75,6 +81,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeLink)
 	case RelationshipTypeLogicalDevice:
 		return string(relationshipTypeLogicalDevice)
+	case RelationshipTypeMemberInterfaces:
+		return string(relationshipTypeMemberInterfaces)
 	case RelationshipTypeMemberVNs:
 		return string(relationshipTypeMemberVNs)
 	case RelationshipTypePartOfRack:
