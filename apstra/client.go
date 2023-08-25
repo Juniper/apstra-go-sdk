@@ -1311,11 +1311,6 @@ func (o *Client) DeleteTemplate(ctx context.Context, id ObjectId) error {
 	return o.deleteTemplate(ctx, id)
 }
 
-// NewQuery returns a *PathQuery with embedded *Client
-func (o *Client) NewQuery(blueprint ObjectId) *PathQuery {
-	return o.newQuery(blueprint)
-}
-
 // ListAllInterfaceMapIds returns []ObjectId representing all interface maps
 func (o *Client) ListAllInterfaceMapIds(ctx context.Context) ([]ObjectId, error) {
 	return o.listAllInterfaceMapIds(ctx)
@@ -1770,7 +1765,9 @@ func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectI
 		} `json:"items"`
 	}
 
-	query := o.NewQuery(id).
+	query := new(PathQuery).
+		SetBlueprintId(id).
+		SetClient(o).
 		Node([]QEEAttribute{
 			{"type", QEStringVal("virtual_network_policy")},
 			{"name", QEStringVal("n_virtual_network_policy")},

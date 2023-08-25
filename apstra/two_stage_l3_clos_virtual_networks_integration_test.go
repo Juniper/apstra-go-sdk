@@ -208,12 +208,15 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			} `json:"items"`
 		}
 
-		query := client.client.NewQuery(bpClient.Id()).Node([]QEEAttribute{
-			{"type", QEStringVal("system")},
-			{"system_type", QEStringVal("switch")},
-			{"role", QEStringVal("leaf")},
-			{"name", QEStringVal("system")},
-		})
+		query := new(PathQuery).
+			SetClient(client.client).
+			SetBlueprintId(bpClient.Id()).
+			Node([]QEEAttribute{
+				{"type", QEStringVal("system")},
+				{"system_type", QEStringVal("switch")},
+				{"role", QEStringVal("leaf")},
+				{"name", QEStringVal("system")},
+			})
 
 		err = query.Do(ctx, &result)
 		if err != nil {

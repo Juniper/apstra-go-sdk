@@ -156,13 +156,6 @@ func (o QENone) String() string {
 	return "not_none()"
 }
 
-func (o *Client) newQuery(blueprintId ObjectId) *PathQuery {
-	return &PathQuery{
-		client:      o,
-		blueprintId: blueprintId,
-	}
-}
-
 type PathQuery struct {
 	firstElement  *QEElement
 	client        *Client
