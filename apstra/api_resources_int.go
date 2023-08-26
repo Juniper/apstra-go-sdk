@@ -102,24 +102,6 @@ func (o *Client) updateAsnPool(ctx context.Context, poolId ObjectId, pool *AsnPo
 	return o.updateIntPool(ctx, apiUrlResourcesAsnPoolById, poolId, (*IntPoolRequest)(pool))
 }
 
-func (o *Client) createAsnPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
-	// we read, then replace the pool range. this is not concurrency safe.
-	o.lock(clientApiResourceAsnPoolRangeMutex)
-	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
-	return o.createIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, newRange)
-}
-
-func (o *Client) asnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange IntfIntRange) (bool, error) {
-	return o.IntPoolRangeExists(ctx, apiUrlResourcesAsnPoolById, poolId, asnRange)
-}
-
-func (o *Client) deleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteMe IntfIntRange) error {
-	// we read, then replace the pool range. this is not concurrency safe.
-	o.lock(clientApiResourceAsnPoolRangeMutex)
-	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
-	return o.deleteIntPoolRange(ctx, apiUrlResourcesAsnPoolById, poolId, deleteMe)
-}
-
 // Following code will take care of Integer Pools
 
 func (o *Client) getIntPoolByName(ctx context.Context, desired string) (*rawIntPool, error) {
@@ -229,22 +211,4 @@ func (o *Client) deleteVniPool(ctx context.Context, poolId ObjectId) error {
 
 func (o *Client) updateVniPool(ctx context.Context, poolId ObjectId, pool *VniPoolRequest) error {
 	return o.updateIntPool(ctx, apiUrlResourcesVniPoolById, poolId, (*IntPoolRequest)(pool))
-}
-
-func (o *Client) createVniPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
-	// we read, then replace the pool range. this is not concurrency safe.
-	o.lock(clientApiResourceVniPoolRangeMutex)
-	defer o.unlock(clientApiResourceVniPoolRangeMutex)
-	return o.createIntPoolRange(ctx, apiUrlResourcesVniPoolById, poolId, newRange)
-}
-
-func (o *Client) vniPoolRangeExists(ctx context.Context, poolId ObjectId, VniRange IntfIntRange) (bool, error) {
-	return o.IntPoolRangeExists(ctx, apiUrlResourcesVniPoolById, poolId, VniRange)
-}
-
-func (o *Client) deleteVniPoolRange(ctx context.Context, poolId ObjectId, deleteMe IntfIntRange) error {
-	// we read, then replace the pool range. this is not concurrency safe.
-	o.lock(clientApiResourceVniPoolRangeMutex)
-	defer o.unlock(clientApiResourceVniPoolRangeMutex)
-	return o.deleteIntPoolRange(ctx, apiUrlResourcesVniPoolById, poolId, deleteMe)
 }

@@ -6,7 +6,6 @@ package apstra
 import (
 	"context"
 	"log"
-	"net"
 	"testing"
 )
 
@@ -102,28 +101,12 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		_, s, err := net.ParseCIDR("10.1.2.3/24")
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing addSubnetToIpPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.addSubnetToIpPool(context.TODO(), id, s)
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		log.Printf("testing GetIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pool, err := client.client.GetIp4Pool(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
 		log.Println(pool.Id, pool.Total)
-
-		log.Printf("testing deleteSubnetFromIpPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteSubnetFromIpPool(context.TODO(), id, s)
-		if err != nil {
-			t.Fatal(err)
-		}
 
 		log.Printf("testing DeleteIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteIp4Pool(context.TODO(), id)
@@ -225,28 +208,12 @@ func TestCreateGetDeleteIp6Pool(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		_, s, err := net.ParseCIDR("2001:db8::/32")
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing addSubnetToIpPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.addSubnetToIpPool(context.TODO(), id, s)
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		log.Printf("testing GetIp6Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		pool, err := client.client.GetIp6Pool(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
 		log.Println(pool.Id, pool.Total)
-
-		log.Printf("testing deleteSubnetFromIpPool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteSubnetFromIpPool(context.TODO(), id, s)
-		if err != nil {
-			t.Fatal(err)
-		}
 
 		log.Printf("testing DeleteIp6Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeleteIp6Pool(context.TODO(), id)

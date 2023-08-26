@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -36,10 +35,6 @@ const (
 	clientPollingIntervalMs = 1000
 
 	clientHttpHeadersMutex = iota
-	clientApiResourceAsnPoolRangeMutex
-	clientApiResourceIntegerPoolRangeMutex
-	clientApiResourceVniPoolRangeMutex
-	clientApiResourceIpPoolRangeMutex
 )
 
 type ClientErr struct {
@@ -382,29 +377,7 @@ func (o *Client) DeleteAsnPool(ctx context.Context, in ObjectId) error {
 
 // UpdateAsnPool updates an ASN pool by ObjectId with new ASN pool config
 func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPoolRequest) error {
-	// AsnPool "write" operations are not concurrency safe
-	// It is important that this lock is performed in the public method, rather than the private
-	// one below, because other callers of the private method implement their own locking.
-	o.lock(clientApiResourceAsnPoolRangeMutex)
-	defer o.unlock(clientApiResourceAsnPoolRangeMutex)
-
 	return o.updateAsnPool(ctx, id, cfg)
-}
-
-// CreateAsnPoolRange updates an ASN pool by adding a new AsnRange
-func (o *Client) CreateAsnPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
-	return o.createAsnPoolRange(ctx, poolId, newRange)
-}
-
-// AsnPoolRangeExists reports whether an exact match range (first and last ASN)
-// exists in ASN pool poolId
-func (o *Client) AsnPoolRangeExists(ctx context.Context, poolId ObjectId, asnRange IntfIntRange) (bool, error) {
-	return o.asnPoolRangeExists(ctx, poolId, asnRange)
-}
-
-// DeleteAsnPoolRange updates an ASN pool by adding a new AsnRange
-func (o *Client) DeleteAsnPoolRange(ctx context.Context, poolId ObjectId, deleteme IntfIntRange) error {
-	return o.deleteAsnPoolRange(ctx, poolId, deleteme)
 }
 
 // GetIntegerPools returns Integer Pools configured on Apstra
@@ -489,12 +462,6 @@ func (o *Client) DeleteIntegerPool(ctx context.Context, in ObjectId) error {
 
 // UpdateIntegerPool updates an Integer Pool by ObjectId with new Integer Pool config
 func (o *Client) UpdateIntegerPool(ctx context.Context, id ObjectId, cfg *IntPoolRequest) error {
-	// Integer Pool "write" operations are not concurrency safe
-	// It is important that this lock is performed in the public method, rather than the private
-	// one below, because other callers of the private method implement their own locking.
-	o.lock(clientApiResourceIntegerPoolRangeMutex)
-	defer o.unlock(clientApiResourceIntegerPoolRangeMutex)
-
 	if integerPoolForbidden().Includes(o.apiVersion) {
 		return fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
 	}
@@ -538,29 +505,7 @@ func (o *Client) DeleteVniPool(ctx context.Context, in ObjectId) error {
 
 // UpdateVniPool updates a VNI pool by ObjectId with new Vni pool config
 func (o *Client) UpdateVniPool(ctx context.Context, id ObjectId, cfg *VniPoolRequest) error {
-	// VniPool "write" operations are not concurrency safe
-	// It is important that this lock is performed in the public method, rather than the private
-	// one below, because other callers of the private method implement their own locking.
-	o.lock(clientApiResourceVniPoolRangeMutex)
-	defer o.unlock(clientApiResourceVniPoolRangeMutex)
-
 	return o.updateVniPool(ctx, id, cfg)
-}
-
-// CreateVniPoolRange updates a VNI pool by adding a new VniRange
-func (o *Client) CreateVniPoolRange(ctx context.Context, poolId ObjectId, newRange IntfIntRange) error {
-	return o.createVniPoolRange(ctx, poolId, newRange)
-}
-
-// VniPoolRangeExists reports whether an exact match range (first and last Vni)
-// exists in Vni pool poolId
-func (o *Client) VniPoolRangeExists(ctx context.Context, poolId ObjectId, VniRange IntfIntRange) (bool, error) {
-	return o.vniPoolRangeExists(ctx, poolId, VniRange)
-}
-
-// DeleteVniPoolRange updates a VNI pool by adding a new VniRange
-func (o *Client) DeleteVniPoolRange(ctx context.Context, poolId ObjectId, deleteme IntfIntRange) error {
-	return o.deleteVniPoolRange(ctx, poolId, deleteme)
 }
 
 // CreateAgentProfile creates a new Agent Profile identified by 'cfg'
@@ -855,24 +800,7 @@ func (o *Client) DeleteIp4Pool(ctx context.Context, id ObjectId) error {
 
 // UpdateIp4Pool updates (full replace) an existing IPv4 address pool using a NewIpPoolRequest object
 func (o *Client) UpdateIp4Pool(ctx context.Context, poolId ObjectId, request *NewIpPoolRequest) error {
-	// Ip4Pool "write" operations are not concurrency safe.
-	// It is important that this lock is performed in the public method, rather than the private
-	// one below, because other callers of the private method implement their own locking.
-	o.lock(clientApiResourceIpPoolRangeMutex)
-	defer o.unlock(clientApiResourceIpPoolRangeMutex)
 	return o.updateIpPool(ctx, fmt.Sprintf(apiUrlResourcesIp4PoolById, poolId), request)
-}
-
-// AddSubnetToIp4Pool adds a subnet to an IPv4 resource pool. Overlap with an existing subnet will
-// produce an error
-func (o *Client) AddSubnetToIp4Pool(ctx context.Context, poolId ObjectId, new *net.IPNet) error {
-	return o.addSubnetToIpPool(ctx, poolId, new)
-}
-
-// DeleteSubnetFromIp4Pool deletes a subnet from an IPv4 resource pool. If the subnet does not exist,
-// a ClientErr with type ErrNotfound will be returned.
-func (o *Client) DeleteSubnetFromIp4Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
-	return o.deleteSubnetFromIpPool(ctx, poolId, target)
 }
 
 // CreateIp6Pool creates an IPv6 resource pool
@@ -927,24 +855,7 @@ func (o *Client) DeleteIp6Pool(ctx context.Context, id ObjectId) error {
 
 // UpdateIp6Pool updates (full replace) an existing IPv6 address pool using a NewIpPoolRequest object
 func (o *Client) UpdateIp6Pool(ctx context.Context, poolId ObjectId, request *NewIpPoolRequest) error {
-	// Ip6Pool "write" operations are not concurrency safe.
-	// It is important that this lock is performed in the public method, rather than the private
-	// one below, because other callers of the private method implement their own locking.
-	o.lock(clientApiResourceIpPoolRangeMutex)
-	defer o.unlock(clientApiResourceIpPoolRangeMutex)
 	return o.updateIpPool(ctx, fmt.Sprintf(apiUrlResourcesIp6PoolById, poolId), request)
-}
-
-// AddSubnetToIp6Pool adds a subnet to an IPv6 resource pool. Overlap with an existing subnet will
-// produce an error
-func (o *Client) AddSubnetToIp6Pool(ctx context.Context, poolId ObjectId, new *net.IPNet) error {
-	return o.addSubnetToIpPool(ctx, poolId, new)
-}
-
-// DeleteSubnetFromIp6Pool deletes a subnet from an IPv6 resource pool. If the subnet does not exist,
-// a ClientErr with type ErrNotfound will be returned.
-func (o *Client) DeleteSubnetFromIp6Pool(ctx context.Context, poolId ObjectId, target *net.IPNet) error {
-	return o.deleteSubnetFromIpPool(ctx, poolId, target)
 }
 
 // ListLogicalDeviceIds returns a list of logical device IDs configured in Apstra
