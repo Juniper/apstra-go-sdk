@@ -67,19 +67,19 @@ const (
 	featureSwitchUnknown  = "unknown feature switch state '%d'"
 )
 
-type GenericSystemManagementLevel int
-type genericSystemManagementLevel string
+type SystemManagementLevel int
+type systemManagementLevel string
 
 const (
-	GenericSystemUnmanaged = GenericSystemManagementLevel(iota)
-	GenericSystemTelemetryOnly
-	GenericSystemFullControl
-	GenericSystemUnknown = "unknown generic system management level '%s'"
+	SystemManagementLevelUnmanaged = SystemManagementLevel(iota)
+	SystemManagementLevelTelemetryOnly
+	SystemManagementLevelFullControl
+	SystemManagementLevelUnknown = "unknown generic system management level '%s'"
 
-	genericSystemUnmanaged     = genericSystemManagementLevel("unmanaged")
-	genericSystemTelemetryOnly = genericSystemManagementLevel("telemetry_only")
-	genericSystemFullControl   = genericSystemManagementLevel("full_control")
-	genericSystemUnknown       = "unknown generic system management level '%d'"
+	systemManagementLevelUnmanaged     = systemManagementLevel("unmanaged")
+	systemManagementLevelTelemetryOnly = systemManagementLevel("telemetry_only")
+	systemManagementLevelFullControl   = systemManagementLevel("full_control")
+	systemManagementLevelUnknown       = "unknown generic system management level '%d'"
 )
 
 type RackLinkAttachmentType int
@@ -290,36 +290,36 @@ func (o featureSwitch) parse() (int, error) {
 	}
 }
 
-func (o GenericSystemManagementLevel) Int() int {
+func (o SystemManagementLevel) Int() int {
 	return int(o)
 }
 
-func (o GenericSystemManagementLevel) String() string {
+func (o SystemManagementLevel) String() string {
 	switch o {
-	case GenericSystemUnmanaged:
-		return string(genericSystemUnmanaged)
-	case GenericSystemTelemetryOnly:
-		return string(genericSystemTelemetryOnly)
-	case GenericSystemFullControl:
-		return string(genericSystemFullControl)
+	case SystemManagementLevelUnmanaged:
+		return string(systemManagementLevelUnmanaged)
+	case SystemManagementLevelTelemetryOnly:
+		return string(systemManagementLevelTelemetryOnly)
+	case SystemManagementLevelFullControl:
+		return string(systemManagementLevelFullControl)
 	default:
-		return fmt.Sprintf(genericSystemUnknown, o)
+		return fmt.Sprintf(systemManagementLevelUnknown, o)
 	}
 }
 
-func (o genericSystemManagementLevel) string() string {
+func (o systemManagementLevel) string() string {
 	return string(o)
 }
-func (o genericSystemManagementLevel) parse() (int, error) {
+func (o systemManagementLevel) parse() (int, error) {
 	switch o {
-	case genericSystemFullControl:
-		return int(GenericSystemFullControl), nil
-	case genericSystemUnmanaged:
-		return int(GenericSystemUnmanaged), nil
-	case genericSystemTelemetryOnly:
-		return int(GenericSystemTelemetryOnly), nil
+	case systemManagementLevelFullControl:
+		return int(SystemManagementLevelFullControl), nil
+	case systemManagementLevelUnmanaged:
+		return int(SystemManagementLevelUnmanaged), nil
+	case systemManagementLevelTelemetryOnly:
+		return int(SystemManagementLevelTelemetryOnly), nil
 	default:
-		return 0, fmt.Errorf(GenericSystemUnknown, o)
+		return 0, fmt.Errorf(SystemManagementLevelUnknown, o)
 	}
 }
 
@@ -870,7 +870,7 @@ func (o rawRackLink) polish(rack *rawRackType) (*RackLink, error) {
 type RackElementGenericSystemRequest struct {
 	Count            int
 	AsnDomain        FeatureSwitch
-	ManagementLevel  GenericSystemManagementLevel
+	ManagementLevel  SystemManagementLevel
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Loopback         FeatureSwitch
@@ -902,7 +902,7 @@ func (o *RackElementGenericSystemRequest) raw(tagMap map[ObjectId]DesignTagData)
 	return &rawRackElementGenericSystemRequest{
 		Count:            o.Count,
 		AsnDomain:        featureSwitch(o.AsnDomain.String()),
-		ManagementLevel:  genericSystemManagementLevel(o.ManagementLevel.String()),
+		ManagementLevel:  systemManagementLevel(o.ManagementLevel.String()),
 		PortChannelIdMin: o.PortChannelIdMin,
 		PortChannelIdMax: o.PortChannelIdMax,
 		Loopback:         featureSwitch(o.Loopback.String()),
@@ -914,22 +914,22 @@ func (o *RackElementGenericSystemRequest) raw(tagMap map[ObjectId]DesignTagData)
 }
 
 type rawRackElementGenericSystemRequest struct {
-	Count            int                          `json:"count"`
-	AsnDomain        featureSwitch                `json:"asn_domain"`
-	ManagementLevel  genericSystemManagementLevel `json:"management_level"`
-	PortChannelIdMin int                          `json:"port_channel_id_min"`
-	PortChannelIdMax int                          `json:"port_channel_id_max"`
-	Loopback         featureSwitch                `json:"loopback"`
-	Label            string                       `json:"label"`
-	LogicalDevice    ObjectId                     `json:"logical_device"`
-	Links            []rawRackLinkRequest         `json:"links"`
-	Tags             []string                     `json:"tags,omitempty"`
+	Count            int                   `json:"count"`
+	AsnDomain        featureSwitch         `json:"asn_domain"`
+	ManagementLevel  systemManagementLevel `json:"management_level"`
+	PortChannelIdMin int                   `json:"port_channel_id_min"`
+	PortChannelIdMax int                   `json:"port_channel_id_max"`
+	Loopback         featureSwitch         `json:"loopback"`
+	Label            string                `json:"label"`
+	LogicalDevice    ObjectId              `json:"logical_device"`
+	Links            []rawRackLinkRequest  `json:"links"`
+	Tags             []string              `json:"tags,omitempty"`
 }
 
 type RackElementGenericSystem struct {
 	Count            int
 	AsnDomain        FeatureSwitch
-	ManagementLevel  GenericSystemManagementLevel
+	ManagementLevel  SystemManagementLevel
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Loopback         FeatureSwitch
@@ -940,16 +940,16 @@ type RackElementGenericSystem struct {
 }
 
 type rawRackElementGenericSystem struct {
-	Count            int                          `json:"count"`
-	AsnDomain        featureSwitch                `json:"asn_domain"`
-	ManagementLevel  genericSystemManagementLevel `json:"management_level"`
-	PortChannelIdMin int                          `json:"port_channel_id_min"`
-	PortChannelIdMax int                          `json:"port_channel_id_max"`
-	Loopback         featureSwitch                `json:"loopback"`
-	Tags             []string                     `json:"tags"`
-	Label            string                       `json:"label"`
-	LogicalDevice    ObjectId                     `json:"logical_device"`
-	Links            []rawRackLink                `json:"links"`
+	Count            int                   `json:"count"`
+	AsnDomain        featureSwitch         `json:"asn_domain"`
+	ManagementLevel  systemManagementLevel `json:"management_level"`
+	PortChannelIdMin int                   `json:"port_channel_id_min"`
+	PortChannelIdMax int                   `json:"port_channel_id_max"`
+	Loopback         featureSwitch         `json:"loopback"`
+	Tags             []string              `json:"tags"`
+	Label            string                `json:"label"`
+	LogicalDevice    ObjectId              `json:"logical_device"`
+	Links            []rawRackLink         `json:"links"`
 }
 
 func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGenericSystem, error) {
@@ -1000,7 +1000,7 @@ func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGen
 	return &RackElementGenericSystem{
 		Count:            o.Count,
 		AsnDomain:        FeatureSwitch(asnDomain),
-		ManagementLevel:  GenericSystemManagementLevel(mgmtLevel),
+		ManagementLevel:  SystemManagementLevel(mgmtLevel),
 		PortChannelIdMin: o.PortChannelIdMin,
 		PortChannelIdMax: o.PortChannelIdMax,
 		Loopback:         FeatureSwitch(loopback),
