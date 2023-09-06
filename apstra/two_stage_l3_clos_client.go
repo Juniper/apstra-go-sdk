@@ -545,3 +545,43 @@ func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, id ObjectId,
 func (o *TwoStageL3ClosClient) DeleteConfiglet(ctx context.Context, id ObjectId) error {
 	return o.deleteConfiglet(ctx, id)
 }
+
+// GetAllSystemNodeInfos return map[ObjectId]SystemNodeInfo describing all
+// "system" nodes in the blueprint.
+func (o *TwoStageL3ClosClient) GetAllSystemNodeInfos(ctx context.Context) (map[ObjectId]SystemNodeInfo, error) {
+	rawNodeInfos, err := o.getAllSystemNodeInfos(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[ObjectId]SystemNodeInfo, len(rawNodeInfos))
+	for _, raw := range rawNodeInfos {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+
+		result[polished.Id] = *polished
+	}
+
+	return result, nil
+}
+
+// GetSystemNodeInfo returns a SystemNodeInfo describing a "system" node.
+func (o *TwoStageL3ClosClient) GetSystemNodeInfo(ctx context.Context, nodeId ObjectId) (*SystemNodeInfo, error) {
+	rawNodeInfos, err := o.getAllSystemNodeInfos(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, raw := range rawNodeInfos {
+		if raw.Id == nodeId {
+			return raw.polish()
+		}
+	}
+
+	return nil, ClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("system node %q not found in blueprint %q", nodeId, o.blueprintId),
+	}
+}
