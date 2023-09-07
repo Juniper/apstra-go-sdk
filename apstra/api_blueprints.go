@@ -10,12 +10,13 @@ import (
 )
 
 const (
-	apiUrlBlueprints        = "/api/blueprints"
-	apiUrlPathDelim         = "/"
-	apiUrlBlueprintsPrefix  = apiUrlBlueprints + apiUrlPathDelim
-	apiUrlBlueprintById     = apiUrlBlueprintsPrefix + "%s"
-	apiUrlBlueprintNodes    = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
-	apiUrlBlueprintNodeById = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
+	apiUrlBlueprints          = "/api/blueprints"
+	apiUrlPathDelim           = "/"
+	apiUrlBlueprintsPrefix    = apiUrlBlueprints + apiUrlPathDelim
+	apiUrlBlueprintById       = apiUrlBlueprintsPrefix + "%s"
+	apiUrlBlueprintByIdPrefix = apiUrlBlueprintById + apiUrlPathDelim
+	apiUrlBlueprintNodes      = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
+	apiUrlBlueprintNodeById   = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
 
 	initTypeFromTemplate      = "template_reference"
 	nodeQueryNodeTypeUrlParam = "node_type"

@@ -9,7 +9,9 @@ import (
 )
 
 const (
-	apiUrlBlueprintExperienceWebSystemInfo = apiUrlBlueprintById + apiUrlPathDelim + "experience/web/system-info"
+	apiUrlBlueprintExperienceWebSystemInfo = apiUrlBlueprintByIdPrefix + "experience/web/system-info"
+	apiUrlBlueprintSetNodeDomain           = apiUrlBlueprintByIdPrefix + "systems" + apiUrlPathDelim + "%s" + apiUrlPathDelim + "domain"
+	apiUrlBlueprintSetNodeLoopback         = apiUrlBlueprintByIdPrefix + "systems" + apiUrlPathDelim + "%s" + apiUrlPathDelim + "loopback" + apiUrlPathDelim + "%d"
 )
 
 type rawSystemNodeInfoLoopback struct {
@@ -53,7 +55,7 @@ type rawSystemNodeInfo struct {
 func (o rawSystemNodeInfo) polish() (*SystemNodeInfo, error) {
 	var asn *uint32
 	if o.DomainId != nil {
-		i64, err := strconv.ParseInt(*o.DomainId, 10, 32)
+		i64, err := strconv.ParseUint(*o.DomainId, 10, 32)
 		if err != nil {
 			return nil, fmt.Errorf("while parsing ASN string %q - %w", *o.DomainId, err)
 		}
@@ -155,4 +157,55 @@ func (o *TwoStageL3ClosClient) getAllSystemNodeInfos(ctx context.Context) ([]raw
 	}
 
 	return apiResponse.Data, nil
+}
+
+func (o *TwoStageL3ClosClient) SetGenericSystemAsn(ctx context.Context, id ObjectId, asn *uint32) error {
+	apiInput := struct {
+		DomainId *uint32 `json:"domain_id"`
+	}{
+		DomainId: asn,
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeDomain, o.blueprintId, id),
+		apiInput: &apiInput,
+	})
+	return convertTtaeToAceWherePossible(err)
+}
+
+func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv4(ctx context.Context, id ObjectId, ipNet *net.IPNet, instance int) error {
+	apiInput := struct {
+		Ipv4Addr *string `json:"ipv4_addr"`
+	}{}
+
+	if ipNet != nil {
+		s := ipNet.String()
+		apiInput.Ipv4Addr = &s
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
+		apiInput: &apiInput,
+	})
+	return convertTtaeToAceWherePossible(err)
+}
+
+func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv6(ctx context.Context, id ObjectId, ipNet *net.IPNet, instance int) error {
+	apiInput := struct {
+		Ipv6Addr *string `json:"ipv6_addr"`
+	}{}
+
+	if ipNet != nil {
+		s := ipNet.String()
+		apiInput.Ipv6Addr = &s
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
+		apiInput: &apiInput,
+	})
+	return convertTtaeToAceWherePossible(err)
 }
