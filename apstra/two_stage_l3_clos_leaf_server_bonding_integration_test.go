@@ -101,7 +101,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 		}
 
 		type testCase struct {
-			//request         CreateLinksWithNewServerRequest
+			//request         CreateLinksWithNewSystemRequest
 			switchIds       []ObjectId
 			linkCount       int
 			firstInterface  string
@@ -183,9 +183,9 @@ func TestSetGenericServerBonding(t *testing.T) {
 				})
 			}
 
-			request := CreateLinksWithNewServerRequest{
+			request := CreateLinksWithNewSystemRequest{
 				Links: links,
-				Server: CreateLinksWithNewServerRequestServer{
+				System: CreateLinksWithNewSystemRequestSystem{
 					Hostname:         randString(5, "hex"),
 					Label:            randString(5, "hex"),
 					LogicalDeviceId:  ObjectId(tc.logicalDeviceId),
@@ -194,8 +194,8 @@ func TestSetGenericServerBonding(t *testing.T) {
 					Tags:             hostTags,
 				},
 			}
-			log.Printf("testing CreateLinksWithNewServer() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			linkIds, err := bpClient.CreateLinksWithNewServer(ctx, &request)
+			log.Printf("testing CreateLinksWithNewSystem() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			linkIds, err := bpClient.CreateLinksWithNewSystem(ctx, &request)
 			if err != nil {
 				t.Fatalf("test case %d - %s", i, err)
 			}
@@ -211,8 +211,8 @@ func TestSetGenericServerBonding(t *testing.T) {
 			}
 
 			sort.Strings(systemTags)
-			sort.Strings(request.Server.Tags)
-			compareSlices(t, systemTags, request.Server.Tags, fmt.Sprintf("test case %d system tags", i))
+			sort.Strings(request.System.Tags)
+			compareSlices(t, systemTags, request.System.Tags, fmt.Sprintf("test case %d system tags", i))
 
 			var node struct {
 				PoMax int `json:"port_channel_id_max"`
@@ -222,11 +222,11 @@ func TestSetGenericServerBonding(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if request.Server.PortChannelIdMin != node.PoMin {
-				t.Fatalf("expected port channel id min: %d got %d", request.Server.PortChannelIdMin, node.PoMin)
+			if request.System.PortChannelIdMin != node.PoMin {
+				t.Fatalf("expected port channel id min: %d got %d", request.System.PortChannelIdMin, node.PoMin)
 			}
-			if request.Server.PortChannelIdMax != node.PoMax {
-				t.Fatalf("expected port channel id max: %d got %d", request.Server.PortChannelIdMax, node.PoMax)
+			if request.System.PortChannelIdMax != node.PoMax {
+				t.Fatalf("expected port channel id max: %d got %d", request.System.PortChannelIdMax, node.PoMax)
 			}
 
 			originalLinkTagDigests := make([]string, len(request.Links))

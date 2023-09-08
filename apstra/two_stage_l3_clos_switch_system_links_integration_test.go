@@ -28,11 +28,6 @@ func TestCreateDeleteServer(t *testing.T) {
 			}
 		}()
 
-		//bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, "c09e3975-6799-41a3-ab1a-d96f93cd5d3e")
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-
 		leafQuery := new(PathQuery).
 			SetBlueprintId(bpClient.Id()).
 			SetBlueprintType(BlueprintTypeStaging).
@@ -81,15 +76,16 @@ func TestCreateDeleteServer(t *testing.T) {
 			desiredTags = append(desiredTags, randString(5, "hex"))
 		}
 
-		log.Printf("testing CreateLinksWithNewServer() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		linkIds, err := bpClient.CreateLinksWithNewServer(ctx, &CreateLinksWithNewServerRequest{
-			Server: CreateLinksWithNewServerRequestServer{
+		log.Printf("testing CreateLinksWithNewSystem() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		linkIds, err := bpClient.CreateLinksWithNewSystem(ctx, &CreateLinksWithNewSystemRequest{
+			System: CreateLinksWithNewSystemRequestSystem{
 				Hostname:         randString(5, "hex"),
 				Label:            randString(5, "hex"),
 				LogicalDeviceId:  "AOS-2x10-1",
 				PortChannelIdMin: 0,
 				PortChannelIdMax: 0,
 				Tags:             desiredTags,
+				Type:             SystemTypeExternal,
 			},
 			Links: links,
 		})
