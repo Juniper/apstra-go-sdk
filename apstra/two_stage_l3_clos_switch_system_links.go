@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	apiUrlSwitchSystemLinks       = apiUrlBlueprintById + apiUrlPathDelim + "switch-system-links"
-	apiUrlDeleteSwitchSystemLinks = apiUrlBlueprintById + apiUrlPathDelim + "delete-switch-system-links"
+	apiUrlSwitchSystemLinks              = apiUrlBlueprintByIdPrefix + "switch-system-links"
+	apiUrlDeleteSwitchSystemLinks        = apiUrlBlueprintByIdPrefix + "delete-switch-system-links"
+	apiUrlBlueprintExternalGenericSystem = apiUrlBlueprintByIdPrefix + "external-generic-systems" + apiUrlPathDelim + "%s"
 )
 
 type SystemType int
@@ -239,6 +240,9 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 			Link struct {
 				ID ObjectId `json:"id"`
 			} `json:"n_link"`
+			System struct {
+				External bool `json:"external"`
+			} `json:"n_system"`
 		} `json:"items"`
 	}{}
 	query := new(PathQuery).
@@ -248,6 +252,7 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 		Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(),
 			{Key: "role", Value: QEStringVal("generic")},
 			{Key: "id", Value: QEStringVal(id)},
+			{Key: "name", Value: QEStringVal("n_system")},
 		}).
 		Out([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
 		Node([]QEEAttribute{NodeTypeInterface.QEEAttribute(),
@@ -275,7 +280,22 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 		linkIds[i] = item.Link.ID
 	}
 
-	return o.DeleteLinksFromSystem(ctx, linkIds)
+	err = o.DeleteLinksFromSystem(ctx, linkIds)
+	if err != nil {
+		return fmt.Errorf("failed to delete external system %q - %w", id, err)
+	}
+
+	if response.Items[0].System.External {
+		err = o.client.talkToApstra(ctx, &talkToApstraIn{
+			method: http.MethodDelete,
+			urlStr: fmt.Sprintf(apiUrlBlueprintExternalGenericSystem, o.blueprintId, id),
+		})
+		if err != nil {
+			return convertTtaeToAceWherePossible(err)
+		}
+	}
+
+	return nil
 }
 
 func (o *TwoStageL3ClosClient) AddLinksToSystem(ctx context.Context, linkRequests []CreateLinkRequest) ([]ObjectId, error) {
