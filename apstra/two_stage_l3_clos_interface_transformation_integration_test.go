@@ -64,7 +64,7 @@ func TestGetSetTransformationId(t *testing.T) {
 		}
 
 		ifName := "Ethernet1/1"
-		linkIds, err := bpClient.CreateLinksWithNewServer(ctx, &CreateLinksWithNewServerRequest{
+		linkIds, err := bpClient.CreateLinksWithNewSystem(ctx, &CreateLinksWithNewSystemRequest{
 			Links: []CreateLinkRequest{
 				{
 					SwitchEndpoint: SwitchLinkEndpoint{
@@ -74,7 +74,7 @@ func TestGetSetTransformationId(t *testing.T) {
 					},
 				},
 			},
-			Server: CreateLinksWithNewServerRequestServer{
+			System: CreateLinksWithNewSystemRequestSystem{
 				LogicalDeviceId: "AOS-1x10-1",
 			},
 		})

@@ -8,17 +8,71 @@ import (
 )
 
 const (
-	apiUrlSwitchSystemLinks       = apiUrlBlueprintById + apiUrlPathDelim + "switch-system-links"
-	apiUrlDeleteSwitchSystemLinks = apiUrlBlueprintById + apiUrlPathDelim + "delete-switch-system-links"
+	apiUrlSwitchSystemLinks              = apiUrlBlueprintByIdPrefix + "switch-system-links"
+	apiUrlDeleteSwitchSystemLinks        = apiUrlBlueprintByIdPrefix + "delete-switch-system-links"
+	apiUrlBlueprintExternalGenericSystem = apiUrlBlueprintByIdPrefix + "external-generic-systems" + apiUrlPathDelim + "%s"
 )
 
-type CreateLinksWithNewServerRequest struct {
-	Links  []CreateLinkRequest
-	Server CreateLinksWithNewServerRequestServer
+type SystemType int
+type systemType string
+
+const (
+	SystemTypeExternal = SystemType(iota)
+	SystemTypeSwitch
+	SystemTypeServer
+	SystemTypeUnknown = "unknown system type '%s'"
+
+	systemTypeExternal = systemType("external")
+	systemTypeSwitch   = systemType("switch")
+	systemTypeServer   = systemType("server")
+	systemTypeUnknown  = "unknown system type %d"
+)
+
+func (o SystemType) Int() int {
+	return int(o)
 }
 
-func (o *CreateLinksWithNewServerRequest) raw(ctx context.Context, client *Client) (*rawCreateLinksWithNewServerRequest, error) {
-	rs, err := o.Server.raw(ctx, "server", client)
+func (o SystemType) String() string {
+	switch o {
+	case SystemTypeExternal:
+		return string(systemTypeExternal)
+	case SystemTypeSwitch:
+		return string(systemTypeSwitch)
+	case SystemTypeServer:
+		return string(systemTypeServer)
+	default:
+		return fmt.Sprintf(systemTypeUnknown, o)
+	}
+}
+
+func (o SystemType) raw() systemType {
+	return systemType(o.String())
+}
+
+func (o systemType) string() string {
+	return string(o)
+}
+
+func (o systemType) parse() (int, error) {
+	switch o {
+	case systemTypeExternal:
+		return int(SystemTypeExternal), nil
+	case systemTypeSwitch:
+		return int(SystemTypeSwitch), nil
+	case systemTypeServer:
+		return int(SystemTypeServer), nil
+	default:
+		return 0, fmt.Errorf(SystemTypeUnknown, o)
+	}
+}
+
+type CreateLinksWithNewSystemRequest struct {
+	Links  []CreateLinkRequest
+	System CreateLinksWithNewSystemRequestSystem
+}
+
+func (o *CreateLinksWithNewSystemRequest) raw(ctx context.Context, client *Client) (*rawCreateLinksWithNewSystemRequest, error) {
+	rs, err := o.System.raw(ctx, client)
 	if err != nil {
 		return nil, err
 	}
@@ -28,18 +82,18 @@ func (o *CreateLinksWithNewServerRequest) raw(ctx context.Context, client *Clien
 		links[i] = *link.raw()
 	}
 
-	return &rawCreateLinksWithNewServerRequest{
-		NewSystems: []rawCreateLinksWithNewServerRequestServer{*rs},
+	return &rawCreateLinksWithNewSystemRequest{
+		NewSystems: []rawCreateLinksWithNewSystemRequestSystem{*rs},
 		Links:      links,
 	}, nil
 }
 
-type rawCreateLinksWithNewServerRequest struct {
-	NewSystems []rawCreateLinksWithNewServerRequestServer `json:"new_systems,omitempty"`
+type rawCreateLinksWithNewSystemRequest struct {
+	NewSystems []rawCreateLinksWithNewSystemRequestSystem `json:"new_systems,omitempty"`
 	Links      []rawCreateLinkRequest                     `json:"links"`
 }
 
-type CreateLinksWithNewServerRequestServer struct {
+type CreateLinksWithNewSystemRequestSystem struct {
 	Hostname         string
 	Label            string
 	LogicalDeviceId  ObjectId
@@ -47,9 +101,10 @@ type CreateLinksWithNewServerRequestServer struct {
 	PortChannelIdMin int
 	PortChannelIdMax int
 	Tags             []string
+	Type             SystemType
 }
 
-func (o *CreateLinksWithNewServerRequestServer) raw(ctx context.Context, systemType string, client *Client) (*rawCreateLinksWithNewServerRequestServer, error) {
+func (o *CreateLinksWithNewSystemRequestSystem) raw(ctx context.Context, client *Client) (*rawCreateLinksWithNewSystemRequestSystem, error) {
 	if o.LogicalDeviceId != "" && o.LogicalDevice != nil {
 		return nil, errors.New("both LogicalDevice (payload) and LogicalDeviceId (catalog ID) specified")
 	}
@@ -71,8 +126,8 @@ func (o *CreateLinksWithNewServerRequestServer) raw(ctx context.Context, systemT
 		rawLD = o.LogicalDevice.raw()
 	}
 
-	return &rawCreateLinksWithNewServerRequestServer{
-		SystemType:       systemType,
+	return &rawCreateLinksWithNewSystemRequestSystem{
+		SystemType:       o.Type.String(),
 		LogicalDevice:    *rawLD,
 		PortChannelIdMin: o.PortChannelIdMin,
 		PortChannelIdMax: o.PortChannelIdMax,
@@ -82,8 +137,8 @@ func (o *CreateLinksWithNewServerRequestServer) raw(ctx context.Context, systemT
 	}, nil
 }
 
-type rawCreateLinksWithNewServerRequestServer struct {
-	SystemType       string           `json:"system_type"`         // mandatory; only using "server"
+type rawCreateLinksWithNewSystemRequestSystem struct {
+	SystemType       string           `json:"system_type"`         // mandatory
 	LogicalDevice    rawLogicalDevice `json:"logical_device"`      // mandatory
 	PortChannelIdMin int              `json:"port_channel_id_min"` // mandatory; 0 is default
 	PortChannelIdMax int              `json:"port_channel_id_max"` // mandatory; 0 is default
@@ -145,10 +200,10 @@ type rawSwitchLinkEndpoint struct {
 	LagMode          string    `json:"lag_mode,omitempty"`
 }
 
-func (o *TwoStageL3ClosClient) CreateLinksWithNewServer(ctx context.Context, req *CreateLinksWithNewServerRequest) ([]ObjectId, error) {
+func (o *TwoStageL3ClosClient) CreateLinksWithNewSystem(ctx context.Context, req *CreateLinksWithNewSystemRequest) ([]ObjectId, error) {
 	apiInput, err := req.raw(ctx, o.Client())
 	if err != nil {
-		return nil, fmt.Errorf("error processing CreateLinksWithNewServerRequest, - %w", err)
+		return nil, fmt.Errorf("error processing CreateLinksWithNewSystemRequest, - %w", err)
 	}
 
 	apiResponse := struct {
@@ -185,6 +240,9 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 			Link struct {
 				ID ObjectId `json:"id"`
 			} `json:"n_link"`
+			System struct {
+				External bool `json:"external"`
+			} `json:"n_system"`
 		} `json:"items"`
 	}{}
 	query := new(PathQuery).
@@ -194,6 +252,7 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 		Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(),
 			{Key: "role", Value: QEStringVal("generic")},
 			{Key: "id", Value: QEStringVal(id)},
+			{Key: "name", Value: QEStringVal("n_system")},
 		}).
 		Out([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
 		Node([]QEEAttribute{NodeTypeInterface.QEEAttribute(),
@@ -221,7 +280,22 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 		linkIds[i] = item.Link.ID
 	}
 
-	return o.DeleteLinksFromSystem(ctx, linkIds)
+	err = o.DeleteLinksFromSystem(ctx, linkIds)
+	if err != nil {
+		return fmt.Errorf("failed to delete external system %q - %w", id, err)
+	}
+
+	if response.Items[0].System.External {
+		err = o.client.talkToApstra(ctx, &talkToApstraIn{
+			method: http.MethodDelete,
+			urlStr: fmt.Sprintf(apiUrlBlueprintExternalGenericSystem, o.blueprintId, id),
+		})
+		if err != nil {
+			return convertTtaeToAceWherePossible(err)
+		}
+	}
+
+	return nil
 }
 
 func (o *TwoStageL3ClosClient) AddLinksToSystem(ctx context.Context, linkRequests []CreateLinkRequest) ([]ObjectId, error) {
@@ -230,7 +304,7 @@ func (o *TwoStageL3ClosClient) AddLinksToSystem(ctx context.Context, linkRequest
 		rawLinkRequests[i] = *linkRequests[i].raw()
 	}
 
-	apiInput := rawCreateLinksWithNewServerRequest{Links: rawLinkRequests}
+	apiInput := rawCreateLinksWithNewSystemRequest{Links: rawLinkRequests}
 	var apiResponse struct {
 		Ids []ObjectId `json:"ids"`
 	}
