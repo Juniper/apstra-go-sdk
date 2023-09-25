@@ -31,7 +31,7 @@ type IbaWidget struct {
 
 type IbaWidgetData struct {
 	AggregationPeriod  time.Duration
-	Orderby            string
+	OrderBy            string
 	StageName          string
 	ShowContext        bool
 	Description        string
@@ -51,7 +51,7 @@ type IbaWidgetData struct {
 
 type rawIbaWidget struct {
 	AggregationPeriod  int      `json:"aggregation_period"`
-	Orderby            string   `json:"orderby"`
+	OrderBy            string   `json:"orderby"`
 	StageName          string   `json:"stage_name"`
 	ShowContext        bool     `json:"show_context"`
 	Description        string   `json:"description"`
@@ -81,13 +81,17 @@ func (o *rawIbaWidget) polish() (*IbaWidget, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failure parsing update time %s - %w", o.UpdatedAt, err)
 	}
+	wtype := IbaWidgetTypes.Parse(o.Type)
+	if wtype == nil {
+		return nil, fmt.Errorf("failure to parse returned Iba Widget type %s", o.Type)
+	}
 	return &IbaWidget{
 		Id:        ObjectId(o.Id),
 		CreatedAt: created,
 		UpdatedAt: updated,
 		Data: &IbaWidgetData{
 			AggregationPeriod:  time.Duration(float64(o.AggregationPeriod) * float64(time.Second)),
-			Orderby:            o.Orderby,
+			OrderBy:            o.OrderBy,
 			StageName:          o.StageName,
 			ShowContext:        o.ShowContext,
 			Description:        o.Description,
@@ -101,7 +105,7 @@ func (o *rawIbaWidget) polish() (*IbaWidget, error) {
 			MaxItems:           o.MaxItems,
 			CombineGraphs:      o.CombineGraphs,
 			VisibleColumns:     o.VisibleColumns,
-			Type:               *IbaWidgetTypes.Parse(o.Type),
+			Type:               *wtype,
 			UpdatedBy:          o.UpdatedBy,
 		},
 	}, nil
