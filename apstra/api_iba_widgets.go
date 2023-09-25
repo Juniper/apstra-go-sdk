@@ -8,39 +8,100 @@ import (
 )
 
 const (
-	apiUrlIBAWidgets       = "/api/blueprints/%s/iba/widgets"
-	apiUrlIBAWidgetsPrefix = apiUrlIBAWidgets + apiUrlPathDelim
-	apiUrlIBAWidgetsById   = apiUrlIBAWidgetsPrefix + "%s"
+	apiUrlIbaWidgets       = "/api/blueprints/%s/iba/widgets"
+	apiUrlIbaWidgetsPrefix = apiUrlIbaWidgets + apiUrlPathDelim
+	apiUrlIbaWidgetsById   = apiUrlIbaWidgetsPrefix + "%s"
 )
 
-type IBAWidget struct {
+type IbaWidgetType int
+type ibaWidgetType string
+
+const (
+	IbaWidgetTypeStage = IbaWidgetType(iota)
+	IbaWidgetTypeAnomalyHeatmap
+
+	ibaWidgetTypeStage          = ibaWidgetType("stage")
+	ibaWidgetTypeAnomalyHeatmap = ibaWidgetType("anomaly_heatmap")
+	ibaWidgetTypeUnknown        = "unknown widget type %s"
+
+	IbaWidgetTypeUnknown = "Unknown Widget Type %d"
+)
+
+func (o IbaWidgetType) Int() int {
+	return int(o)
+}
+
+func (o IbaWidgetType) String() string {
+	switch o {
+	case IbaWidgetTypeStage:
+		return string(ibaWidgetTypeStage)
+	case IbaWidgetTypeAnomalyHeatmap:
+		return string(ibaWidgetTypeAnomalyHeatmap)
+	default:
+		return fmt.Sprintf(IbaWidgetTypeUnknown, o)
+	}
+}
+
+func (o IbaWidgetType) string() string {
+	return o.String()
+}
+
+func (o *IbaWidgetType) FromString(s string) error {
+	i, err := ibaWidgetType(s).parse()
+	if err != nil {
+		return err
+	}
+	*o = IbaWidgetType(i)
+	return nil
+}
+
+func (o IbaWidgetType) raw() ibaWidgetType {
+	return ibaWidgetType(o.String())
+}
+
+func (o ibaWidgetType) parse() (int, error) {
+	switch o {
+	case ibaWidgetTypeStage:
+		return int(IbaWidgetTypeStage), nil
+	case ibaWidgetTypeAnomalyHeatmap:
+		return int(IbaWidgetTypeAnomalyHeatmap), nil
+	default:
+		return 0, fmt.Errorf(ibaWidgetTypeUnknown, o)
+	}
+}
+
+func (o ibaWidgetType) string() string {
+	return string(o)
+}
+
+type IbaWidget struct {
 	Id        ObjectId
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Data      *IBAWidgetData
+	Data      *IbaWidgetData
 }
 
-type IBAWidgetData struct {
-	AggregationPeriod  int
+type IbaWidgetData struct {
+	AggregationPeriod  time.Duration
 	Orderby            string
 	StageName          string
 	ShowContext        bool
 	Description        string
 	AnomalousOnly      bool
 	SpotlightMode      bool
-	ProbeId            string
+	ProbeId            ObjectId
 	Label              string
 	Filter             string
-	TimeSeriesDuration int
+	TimeSeriesDuration time.Duration
 	DataSource         string
 	MaxItems           int
 	CombineGraphs      string
 	VisibleColumns     []string
-	Type               string
+	Type               IbaWidgetType
 	UpdatedBy          string
 }
 
-type rawIBAWidget struct {
+type rawIbaWidget struct {
 	AggregationPeriod  int      `json:"aggregation_period"`
 	Orderby            string   `json:"orderby"`
 	StageName          string   `json:"stage_name"`
@@ -63,49 +124,54 @@ type rawIBAWidget struct {
 	UpdatedBy          string   `json:"updated_by"`
 }
 
-func (o *rawIBAWidget) polish() (*IBAWidget, error) {
+func (o *rawIbaWidget) polish() (*IbaWidget, error) {
 	created, err := time.Parse("2006-01-02T15:04:05.000000+0000", o.CreatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing create time %s - %w", o.CreatedAt, err)
+		return nil, fmt.Errorf("failure parsing create time %s - %w", o.CreatedAt, err)
 	}
 	updated, err := time.Parse("2006-01-02T15:04:05.000000+0000", o.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing update time %s - %w", o.UpdatedAt, err)
+		return nil, fmt.Errorf("failure parsing update time %s - %w", o.UpdatedAt, err)
 	}
-	return &IBAWidget{
+	var wtype IbaWidgetType
+	err = wtype.FromString(o.Type)
+	if err != nil {
+		return nil, fmt.Errorf("failure parsing widget type %w", err)
+	}
+	return &IbaWidget{
 		Id:        ObjectId(o.Id),
 		CreatedAt: created,
 		UpdatedAt: updated,
-		Data: &IBAWidgetData{
-			AggregationPeriod:  o.AggregationPeriod,
+		Data: &IbaWidgetData{
+			AggregationPeriod:  time.Duration(float64(o.AggregationPeriod) * float64(time.Second)),
 			Orderby:            o.Orderby,
 			StageName:          o.StageName,
 			ShowContext:        o.ShowContext,
 			Description:        o.Description,
 			AnomalousOnly:      o.AnomalousOnly,
 			SpotlightMode:      o.SpotlightMode,
-			ProbeId:            o.ProbeId,
+			ProbeId:            ObjectId(o.ProbeId),
 			Label:              o.Label,
 			Filter:             o.Filter,
-			TimeSeriesDuration: o.TimeSeriesDuration,
+			TimeSeriesDuration: time.Duration(float64(o.TimeSeriesDuration) * float64(time.Second)),
 			DataSource:         o.DataSource,
 			MaxItems:           o.MaxItems,
 			CombineGraphs:      o.CombineGraphs,
 			VisibleColumns:     o.VisibleColumns,
-			Type:               o.Type,
+			Type:               wtype,
 			UpdatedBy:          o.UpdatedBy,
 		},
 	}, nil
 }
 
-func (o *Client) getAllIBAWidgets(ctx context.Context, bp_id ObjectId) ([]rawIBAWidget, error) {
+func (o *Client) getAllIbaWidgets(ctx context.Context, bp_id ObjectId) ([]rawIbaWidget, error) {
 	response := &struct {
-		Items []rawIBAWidget `json:"items"`
+		Items []rawIbaWidget `json:"items"`
 	}{}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlIBAWidgets, bp_id),
+		urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bp_id),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -114,11 +180,11 @@ func (o *Client) getAllIBAWidgets(ctx context.Context, bp_id ObjectId) ([]rawIBA
 	return response.Items, nil
 }
 
-func (o *Client) getIBAWidget(ctx context.Context, bp_id ObjectId, id ObjectId) (*rawIBAWidget, error) {
-	response := &rawIBAWidget{}
+func (o *Client) getIbaWidget(ctx context.Context, bp_id ObjectId, id ObjectId) (*rawIbaWidget, error) {
+	response := &rawIbaWidget{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlIBAWidgetsById, bp_id, id),
+		urlStr:      fmt.Sprintf(apiUrlIbaWidgetsById, bp_id, id),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -127,14 +193,14 @@ func (o *Client) getIBAWidget(ctx context.Context, bp_id ObjectId, id ObjectId) 
 	return response, nil
 }
 
-func (o *Client) getIBAWidgetsByLabel(ctx context.Context, bp_id ObjectId, label string) ([]rawIBAWidget, error) {
-	allIBAWidgets, err := o.getAllIBAWidgets(ctx, bp_id)
+func (o *Client) getIbaWidgetsByLabel(ctx context.Context, bp_id ObjectId, label string) ([]rawIbaWidget, error) {
+	allIbaWidgets, err := o.getAllIbaWidgets(ctx, bp_id)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	var result []rawIBAWidget
-	for _, w := range allIBAWidgets {
+	var result []rawIbaWidget
+	for _, w := range allIbaWidgets {
 		if w.Label == label {
 			result = append(result, w)
 		}

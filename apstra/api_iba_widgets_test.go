@@ -9,14 +9,14 @@ import (
 	"testing"
 )
 
-func TestIBAWidgetsGet(t *testing.T) {
+func TestIbaWidgetsGet(t *testing.T) {
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
 	ctx := context.TODO()
 	for clientName, client := range clients {
-		log.Printf("testing GetAllIBAWidgets against %s %s (%s)", client.clientType, clientName,
+		log.Printf("testing GetAllIbaWidgets against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
 		bpids, err := client.client.ListAllBlueprintIds(ctx)
@@ -31,7 +31,7 @@ func TestIBAWidgetsGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		widgets, err := bpClient.GetAllIBAWidgets(ctx)
+		widgets, err := bpClient.GetAllIbaWidgets(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -40,7 +40,7 @@ func TestIBAWidgetsGet(t *testing.T) {
 			t.Fatalf("only got %d widgets", len(widgets))
 		}
 		for _, w := range widgets {
-			ws, err := bpClient.GetIBAWidgetsByLabel(context.TODO(), w.Data.Label)
+			ws, err := bpClient.GetIbaWidgetsByLabel(context.TODO(), w.Data.Label)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -48,10 +48,48 @@ func TestIBAWidgetsGet(t *testing.T) {
 				t.Fatalf("Was expecting only 1 widget with name %s got %d", w.Data.Label, len(ws))
 			}
 			if ws[0].Id != w.Id {
-				t.Fatalf("GetIBAWidgetsByLabel returned a different id than the original. Expected %s. Got %s",
+				t.Fatalf("GetIbaWidgetsByLabel returned a different id than the original. Expected %s. Got %s",
 					w.Id, ws[0].Id)
 			}
 			t.Logf("Found Widget Label %s ID %s", w.Id, w.Data.Label)
+		}
+	}
+}
+
+func TestIbaWidgetStrings(t *testing.T) {
+	type apiStringIota interface {
+		String() string
+		Int() int
+	}
+
+	type apiIotaString interface {
+		parse() (int, error)
+		string() string
+	}
+
+	type stringTestData struct {
+		stringVal  string
+		intType    apiStringIota
+		stringType apiIotaString
+	}
+	testData := []stringTestData{
+		{stringVal: "stage", intType: IbaWidgetTypeStage, stringType: ibaWidgetTypeStage},
+		{stringVal: "anomaly_heatmap", intType: IbaWidgetTypeAnomalyHeatmap, stringType: ibaWidgetTypeAnomalyHeatmap},
+	}
+
+	for i, td := range testData {
+		ii := td.intType.Int()
+		is := td.intType.String()
+		sp, err := td.stringType.parse()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ss := td.stringType.string()
+		if td.intType.String() != td.stringType.string() ||
+			td.intType.Int() != sp ||
+			td.stringType.string() != td.stringVal {
+			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
+				i, ii, sp, is, ss, td.stringVal)
 		}
 	}
 }

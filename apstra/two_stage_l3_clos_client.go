@@ -586,14 +586,14 @@ func (o *TwoStageL3ClosClient) GetSystemNodeInfo(ctx context.Context, nodeId Obj
 	}
 }
 
-// GetAllIBAWidgets returns a list of IBA Widgets in the blueprint
-func (o *TwoStageL3ClosClient) GetAllIBAWidgets(ctx context.Context) ([]IBAWidget, error) {
-	rawWidgets, err := o.client.getAllIBAWidgets(ctx, o.blueprintId)
+// GetAllIbaWidgets returns a list of IBA Widgets in the blueprint
+func (o *TwoStageL3ClosClient) GetAllIbaWidgets(ctx context.Context) ([]IbaWidget, error) {
+	rawWidgets, err := o.client.getAllIbaWidgets(ctx, o.blueprintId)
 	if err != nil {
 		return nil, err
 	}
 
-	widgets := make([]IBAWidget, len(rawWidgets))
+	widgets := make([]IbaWidget, len(rawWidgets))
 	for i, w := range rawWidgets {
 		pw, err := w.polish()
 		widgets[i] = *pw
@@ -605,14 +605,14 @@ func (o *TwoStageL3ClosClient) GetAllIBAWidgets(ctx context.Context) ([]IBAWidge
 	return widgets, nil
 }
 
-// GetIBAWidgetsByLabel returns a list of IBA Widgets in the blueprint that match the label
-func (o *TwoStageL3ClosClient) GetIBAWidgetsByLabel(ctx context.Context, label string) ([]IBAWidget, error) {
-	rawWidgets, err := o.client.getIBAWidgetsByLabel(ctx, o.blueprintId, label)
+// GetIbaWidgetsByLabel returns a list of IBA Widgets in the blueprint that match the label
+func (o *TwoStageL3ClosClient) GetIbaWidgetsByLabel(ctx context.Context, label string) ([]IbaWidget, error) {
+	rawWidgets, err := o.client.getIbaWidgetsByLabel(ctx, o.blueprintId, label)
 	if err != nil {
 		return nil, err
 	}
 
-	widgets := make([]IBAWidget, len(rawWidgets))
+	widgets := make([]IbaWidget, len(rawWidgets))
 	for i, w := range rawWidgets {
 		pw, err := w.polish()
 		widgets[i] = *pw
@@ -624,9 +624,9 @@ func (o *TwoStageL3ClosClient) GetIBAWidgetsByLabel(ctx context.Context, label s
 	return widgets, nil
 }
 
-// GetIBAWidget returns the IBA Widget that matches the ID
-func (o *TwoStageL3ClosClient) GetIBAWidget(ctx context.Context, id ObjectId) (*IBAWidget, error) {
-	rawWidget, err := o.client.getIBAWidget(ctx, o.blueprintId, id)
+// GetIbaWidget returns the IBA Widget that matches the ID
+func (o *TwoStageL3ClosClient) GetIbaWidget(ctx context.Context, id ObjectId) (*IbaWidget, error) {
+	rawWidget, err := o.client.getIbaWidget(ctx, o.blueprintId, id)
 	if err != nil {
 		return nil, err
 	}
