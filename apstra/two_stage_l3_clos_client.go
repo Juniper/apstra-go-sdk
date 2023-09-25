@@ -617,7 +617,7 @@ func (o *TwoStageL3ClosClient) GetIBAWidgetsByLabel(ctx context.Context, label s
 		pw, err := w.polish()
 		widgets[i] = *pw
 		if err != nil {
-			return widgets, err
+			return nil, err
 		}
 	}
 
