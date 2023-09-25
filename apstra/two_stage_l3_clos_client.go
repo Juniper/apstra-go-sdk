@@ -585,3 +585,51 @@ func (o *TwoStageL3ClosClient) GetSystemNodeInfo(ctx context.Context, nodeId Obj
 		err:     fmt.Errorf("system node %q not found in blueprint %q", nodeId, o.blueprintId),
 	}
 }
+
+// GetAllIBAWidgets returns a list of IBA Widgets in the blueprint
+func (o *TwoStageL3ClosClient) GetAllIBAWidgets(ctx context.Context) ([]IBAWidget, error) {
+	rawWidgets, err := o.client.getAllIBAWidgets(ctx, o.blueprintId)
+	if err != nil {
+		return nil, err
+	}
+
+	widgets := make([]IBAWidget, len(rawWidgets))
+	for i, w := range rawWidgets {
+		pw, err := w.polish()
+		widgets[i] = *pw
+		if err != nil {
+			return widgets, err
+		}
+	}
+
+	return widgets, nil
+}
+
+// GetIBAWidgetsByLabel returns a list of IBA Widgets in the blueprint that match the label
+func (o *TwoStageL3ClosClient) GetIBAWidgetsByLabel(ctx context.Context, label string) ([]IBAWidget, error) {
+	rawWidgets, err := o.client.getIBAWidgetsByLabel(ctx, o.blueprintId, label)
+	if err != nil {
+		return nil, err
+	}
+
+	widgets := make([]IBAWidget, len(rawWidgets))
+	for i, w := range rawWidgets {
+		pw, err := w.polish()
+		widgets[i] = *pw
+		if err != nil {
+			return widgets, err
+		}
+	}
+
+	return widgets, nil
+}
+
+// GetIBAWidget returns the IBA Widget that matches the ID
+func (o *TwoStageL3ClosClient) GetIBAWidget(ctx context.Context, id ObjectId) (*IBAWidget, error) {
+	rawWidget, err := o.client.getIBAWidget(ctx, o.blueprintId, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawWidget.polish()
+}
