@@ -3,6 +3,7 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"github.com/orsinium-labs/enum"
 	"net/http"
 	"time"
 )
@@ -13,66 +14,13 @@ const (
 	apiUrlIbaWidgetsById   = apiUrlIbaWidgetsPrefix + "%s"
 )
 
-type IbaWidgetType int
-type ibaWidgetType string
+type IbaWidgetType enum.Member[string]
 
-const (
-	IbaWidgetTypeStage = IbaWidgetType(iota)
-	IbaWidgetTypeAnomalyHeatmap
-
-	ibaWidgetTypeStage          = ibaWidgetType("stage")
-	ibaWidgetTypeAnomalyHeatmap = ibaWidgetType("anomaly_heatmap")
-	ibaWidgetTypeUnknown        = "unknown widget type %s"
-
-	IbaWidgetTypeUnknown = "Unknown Widget Type %d"
+var (
+	IbaWidgetTypeStage          = IbaWidgetType{"stage"}
+	IbaWidgetTypeAnomalyHeatmap = IbaWidgetType{"anomaly_heatmap"}
+	IbaWidgetTypes              = enum.New(IbaWidgetTypeStage, IbaWidgetTypeAnomalyHeatmap)
 )
-
-func (o IbaWidgetType) Int() int {
-	return int(o)
-}
-
-func (o IbaWidgetType) String() string {
-	switch o {
-	case IbaWidgetTypeStage:
-		return string(ibaWidgetTypeStage)
-	case IbaWidgetTypeAnomalyHeatmap:
-		return string(ibaWidgetTypeAnomalyHeatmap)
-	default:
-		return fmt.Sprintf(IbaWidgetTypeUnknown, o)
-	}
-}
-
-func (o IbaWidgetType) string() string {
-	return o.String()
-}
-
-func (o *IbaWidgetType) FromString(s string) error {
-	i, err := ibaWidgetType(s).parse()
-	if err != nil {
-		return err
-	}
-	*o = IbaWidgetType(i)
-	return nil
-}
-
-func (o IbaWidgetType) raw() ibaWidgetType {
-	return ibaWidgetType(o.String())
-}
-
-func (o ibaWidgetType) parse() (int, error) {
-	switch o {
-	case ibaWidgetTypeStage:
-		return int(IbaWidgetTypeStage), nil
-	case ibaWidgetTypeAnomalyHeatmap:
-		return int(IbaWidgetTypeAnomalyHeatmap), nil
-	default:
-		return 0, fmt.Errorf(ibaWidgetTypeUnknown, o)
-	}
-}
-
-func (o ibaWidgetType) string() string {
-	return string(o)
-}
 
 type IbaWidget struct {
 	Id        ObjectId
@@ -133,11 +81,6 @@ func (o *rawIbaWidget) polish() (*IbaWidget, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failure parsing update time %s - %w", o.UpdatedAt, err)
 	}
-	var wtype IbaWidgetType
-	err = wtype.FromString(o.Type)
-	if err != nil {
-		return nil, fmt.Errorf("failure parsing widget type %w", err)
-	}
 	return &IbaWidget{
 		Id:        ObjectId(o.Id),
 		CreatedAt: created,
@@ -158,7 +101,7 @@ func (o *rawIbaWidget) polish() (*IbaWidget, error) {
 			MaxItems:           o.MaxItems,
 			CombineGraphs:      o.CombineGraphs,
 			VisibleColumns:     o.VisibleColumns,
-			Type:               wtype,
+			Type:               *IbaWidgetTypes.Parse(o.Type),
 			UpdatedBy:          o.UpdatedBy,
 		},
 	}, nil
