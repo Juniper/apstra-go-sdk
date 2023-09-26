@@ -605,6 +605,17 @@ func (o *TwoStageL3ClosClient) GetAllIbaWidgets(ctx context.Context) ([]IbaWidge
 	return widgets, nil
 }
 
+// GetIbaWidgetByLabel returns the IBA Widgets in the blueprint which matches the specified
+// label, or an error in the case of no matches, or multiple matches
+func (o *TwoStageL3ClosClient) GetIbaWidgetByLabel(ctx context.Context, label string) (*IbaWidget, error) {
+	rawWidget, err := o.client.getIbaWidgetByLabel(ctx, o.blueprintId, label)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawWidget.polish()
+}
+
 // GetIbaWidgetsByLabel returns a list of IBA Widgets in the blueprint that match the label
 func (o *TwoStageL3ClosClient) GetIbaWidgetsByLabel(ctx context.Context, label string) ([]IbaWidget, error) {
 	rawWidgets, err := o.client.getIbaWidgetsByLabel(ctx, o.blueprintId, label)
