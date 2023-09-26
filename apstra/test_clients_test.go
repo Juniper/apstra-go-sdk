@@ -18,6 +18,7 @@ const (
 
 	envCloudlabsTopologyIdSep = ":"
 	envApstraApiKeyLogFile    = "SSLKEYLOGFILE"
+	envApstraExperimental     = "APSTRA_EXPERIMENTAL"
 )
 
 type testClientCfg struct {
@@ -40,6 +41,12 @@ func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, e
 	clientCfgs, err := getTestClientCfgs(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if _, ok := os.LookupEnv(envApstraExperimental); ok {
+		for k := range clientCfgs {
+			clientCfgs[k].cfg.Experimental = true
+		}
 	}
 
 	testClients = make(map[string]testClient, len(clientCfgs))
