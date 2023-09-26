@@ -1,4 +1,4 @@
-git package apstra
+package apstra
 
 import (
 	"context"
@@ -8,157 +8,107 @@ import (
 )
 
 const (
-	apiUrlDesignConfiglets       = apiUrlDesignPrefix + "configlets"
-	apiUrlDesignConfigletsPrefix = apiUrlDesignConfiglets + apiUrlPathDelim
-	apiUrlDesignConfigletsById   = apiUrlDesignConfigletsPrefix + "%s"
+	apiUrlIbaDashboards       = "/api/blueprints/%s/iba/dashboards"
+	apiUrlIbaDashboardsPrefix = apiUrlIbaDashboards + apiUrlPathDelim
+	apiUrlIbaDashboardsById   = apiUrlIbaDashboardsPrefix + "%s"
 )
 
 type rawIbaDashboard struct {
-	Description         string      `json:"description"`
-	Default             bool        `json:"default"`
-	CreatedAt           string      `json:"created_at"`
-	UpdatedAt           string      `json:"updated_at"`
-	Label               string      `json:"label"`
-	Grid                [][]string  `json:"grid"`
-	PredefinedDashboard string      `json:"predefined_dashboard"`
-	Id                  string      `json:"id"`
-	UpdatedBy           interface{} `json:"updated_by"`
+	Id                  string     `json:"id"`
+	Label               string     `json:"label"`
+	Description         string     `json:"description"`
+	Default             bool       `json:"default"`
+	CreatedAt           string     `json:"created_at"`
+	UpdatedAt           string     `json:"updated_at"`
+	Grid                [][]string `json:"grid"`
+	PredefinedDashboard string     `json:"predefined_dashboard"`
+	UpdatedBy           string     `json:"updated_by"`
 }
 
-type IBADashboard struct {
+type IbaDashboard struct {
 	Id             ObjectId
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
-	Data           *IBADashboardData
+	Data           *IbaDashboardData
 }
 
-type IBADashboardData struct {
-
+type IbaDashboardData struct {
+	Description         string
+	Default             bool
+	Label               string
+	IbaWidgetGrid       [][]ObjectId
+	PredefinedDashboard string
+	UpdatedBy           string
 }
 
-type rawConfigletData struct {
-	RefArchs    []refDesign             `json:"ref_archs"`
-	Generators  []rawConfigletGenerator `json:"generators"`
-	DisplayName string                  `json:"display_name"`
+type rawIbaDashboardData struct {
+	Label               string     `json:"label"`
+	Description         string     `json:"description"`
+	Default             bool       `json:"default"`
+	IbaWidgetGrid                [][]string `json:"grid"`
+	PredefinedDashboard string     `json:"predefined_dashboard"`
+	UpdatedBy           string     `json:"updated_by"`
 }
 
-type rawConfiglet struct {
-	RefArchs       []refDesign             `json:"ref_archs"`
-	Generators     []rawConfigletGenerator `json:"generators"`
-	CreatedAt      time.Time               `json:"created_at"`
-	Id             ObjectId                `json:"id,omitempty"`
-	LastModifiedAt time.Time               `json:"last_modified_at"`
-	DisplayName    string                  `json:"display_name"`
-}
+func (o *IbaDashboardData) raw() *rawIbaDashboardData {
+	IbaWidgetGrid := make([][]string,len(o.IbaWidgetGrid)
 
-func (o *ConfigletData) raw() *rawConfigletData {
-	refArchs := make([]refDesign, len(o.RefArchs))
-	for i, j := range o.RefArchs {
-		refArchs[i] = refDesign(j.String())
+	for i, g := range o.IbaWidgetGrid {
+		for _, v := range g {
+			IbaWidgetGrid[i] = append(IbaWidgetGrid[i], v.String())
+		}
 	}
 
-	generators := make([]rawConfigletGenerator, len(o.Generators))
-	for i, j := range o.Generators {
-		generators[i] = *j.raw()
-	}
-
-	return &rawConfigletData{
-		DisplayName: o.DisplayName,
-		RefArchs:    refArchs,
-		Generators:  generators,
+	return &rawIbaDashboardData{
+		Label:               o.Label,
+		Description:         o.Description,
+		Default:             o.Default,
+		IbaWidgetGrid:       IbaWidgetGrid,
+		PredefinedDashboard: o.PredefinedDashboard,
+		UpdatedBy:           o.UpdatedBy,
 	}
 }
 
-func (o *rawConfigletData) polish() (*ConfigletData, error) {
+func (o *rawIbaDashboard) polish() (*IbaDashboard, error) {
 	var err error
 
-	refArchs := make([]RefDesign, len(o.RefArchs))
-	for i, refArch := range o.RefArchs {
-		refArchs[i], err = refDesign(refArch).parse()
-		if err != nil {
-			return nil, err
+	IbaWidgetGrid := make([][]ObjectId,len(o.IbaWidgetGrid))
+	for i, g := range o.Data.IbaWidgetGrid {
+		for _, v := range g {
+			IbaWidgetGrid[i] = append(IbaWidgetGrid[i], v.String())
 		}
 	}
-	generators := make([]ConfigletGenerator, len(o.Generators))
-	for i, generator := range o.Generators {
-		polished, err := generator.polish()
-		if err != nil {
-			return nil, err
-		}
-		generators[i] = *polished
-	}
-	return &ConfigletData{
-		RefArchs:    refArchs,
-		Generators:  generators,
-		DisplayName: o.DisplayName,
-	}, nil
-}
 
-func (o *rawConfigletGenerator) polish() (*ConfigletGenerator, error) {
-	platform, err := o.ConfigStyle.parse()
+	created, err := time.Parse("2006-01-02T15:04:05.000000+0000", o.CreatedAt)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failure parsing create time %s - %w", o.CreatedAt, err)
 	}
-	section, err := o.Section.parse()
+	updated, err := time.Parse("2006-01-02T15:04:05.000000+0000", o.UpdatedAt)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failure parsing update time %s - %w", o.UpdatedAt, err)
 	}
-	return &ConfigletGenerator{
-		ConfigStyle:          PlatformOS(platform),
-		Section:              ConfigletSection(section),
-		TemplateText:         o.TemplateText,
-		NegationTemplateText: o.NegationTemplateText,
-		Filename:             o.Filename,
+	return &IbaDashboard{
+		Id:             ObjectId(o.Id),
+		CreatedAt:      created,
+		LastModifiedAt: updated,
+		Data:   &IbaDashboardData{
+			Description:         o.Description,
+			Default:             o.Default,
+			Label:               o.Label,
+			IbaWidgetGrid:       IbaWidgetGrid,
+			PredefinedDashboard: o.PredefinedDashboard,
+			UpdatedBy:           o.UpdatedBy,
+		} ,
 	}, nil
 }
 
-func (o *ConfigletGenerator) raw() *rawConfigletGenerator {
-	return &rawConfigletGenerator{
-		TemplateText:         o.TemplateText,
-		Filename:             o.Filename,
-		NegationTemplateText: o.NegationTemplateText,
-		ConfigStyle:          o.ConfigStyle.raw(),
-		Section:              o.Section.raw(),
-	}
-}
-
-func (o *rawConfiglet) polish() (*Configlet, error) {
-	var err error
-	refArchs := make([]RefDesign, len(o.RefArchs))
-	for i, refArch := range o.RefArchs {
-		refArchs[i], err = refDesign(refArch).parse()
-		if err != nil {
-			return nil, err
-		}
-	}
-	generators := make([]ConfigletGenerator, len(o.Generators))
-	for i, generator := range o.Generators {
-		polished, err := generator.polish()
-		if err != nil {
-			return nil, err
-		}
-		generators[i] = *polished
-	}
-	return &Configlet{
-		Id:             o.Id,
-		CreatedAt:      o.CreatedAt,
-		LastModifiedAt: o.LastModifiedAt,
-		Data: &ConfigletData{
-			RefArchs:    refArchs,
-			Generators:  generators,
-			DisplayName: o.DisplayName,
-		},
-	}, nil
-}
-
-func (o *Client) listAllConfiglets(ctx context.Context) ([]ObjectId, error) {
+func (o *Client) getAllIbaDashboards(ctx context.Context, blueprint_id ObjectId) ([]rawIbaDashboard, error) {
 	response := &struct {
-		Items []ObjectId `json:"items"`
+		Items []rawIbaDashboard `json:"items"`
 	}{}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodOptions,
-		urlStr:      apiUrlDesignConfiglets,
+		method: http.MethodGet, urlStr: fmt.Sprintf(apiUrlIbaDashboards, blueprint_id.String()),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -167,12 +117,10 @@ func (o *Client) listAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 	return response.Items, nil
 }
 
-func (o *Client) getConfiglet(ctx context.Context, id ObjectId) (*rawConfiglet, error) {
+func (o *Client) getDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) (*rawConfiglet, error) {
 	response := &rawConfiglet{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlDesignConfigletsById, id),
-		apiResponse: response,
+		method: http.MethodGet, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiResponse: response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -180,33 +128,26 @@ func (o *Client) getConfiglet(ctx context.Context, id ObjectId) (*rawConfiglet, 
 	return response, nil
 }
 
-func (o *Client) getConfigletByName(ctx context.Context, name string) (*rawConfiglet, error) {
-	configlets, err := o.getAllConfiglets(ctx)
+func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectId, label string) ([]rawIbaDashboard,
+	error) {
+	dashes, err := o.getAllIbaDashboards(ctx, blueprintId)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	foundIdx := -1
-	for i, configlet := range configlets {
-		if configlet.DisplayName == name {
-			if foundIdx >= 0 {
-				return nil, ClientErr{
-					errType: ErrMultipleMatch,
-					err:     fmt.Errorf("multiple Configlets have name %q", name),
-				}
-			}
-			foundIdx = i
+	var result []rawIbaDashboard
+	for _, w := range dashes {
+		if w.Label == label {
+			result = append(result, w)
 		}
 	}
-
-	if foundIdx >= 0 {
-		return &configlets[foundIdx], nil
+	if len(result) == 0 {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no Iba Dashboards with label '%s' found", label),
+		}
 	}
-
-	return nil, ClientErr{
-		errType: ErrNotfound,
-		err:     fmt.Errorf("no Configlet with name '%s' found", name),
-	}
+	return result, nil
 }
 
 func (o *Client) getAllConfiglets(ctx context.Context) ([]rawConfiglet, error) {
@@ -214,8 +155,7 @@ func (o *Client) getAllConfiglets(ctx context.Context) ([]rawConfiglet, error) {
 		Items []rawConfiglet `json:"items"`
 	}{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      apiUrlDesignConfiglets,
+		method: http.MethodGet, urlStr: apiUrlDesignConfiglets,
 		apiResponse: response,
 	})
 	if err != nil {
@@ -228,10 +168,8 @@ func (o *Client) createConfiglet(ctx context.Context, in *rawConfigletData) (Obj
 	response := &objectIdResponse{}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      apiUrlDesignConfiglets,
-		apiInput:    in,
-		apiResponse: response,
+		method: http.MethodPost, urlStr: apiUrlDesignConfiglets,
+		apiInput: in, apiResponse: response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
@@ -241,9 +179,7 @@ func (o *Client) createConfiglet(ctx context.Context, in *rawConfigletData) (Obj
 
 func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *rawConfigletData) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlDesignConfigletsById, id),
-		apiInput: in,
+		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlDesignConfigletsById, id), apiInput: in,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
@@ -253,7 +189,6 @@ func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *rawConfig
 
 func (o *Client) deleteConfiglet(ctx context.Context, id ObjectId) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlDesignConfigletsById, id),
+		method: http.MethodDelete, urlStr: fmt.Sprintf(apiUrlDesignConfigletsById, id),
 	})
 }
