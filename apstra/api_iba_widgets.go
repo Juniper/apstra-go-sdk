@@ -24,8 +24,8 @@ var (
 
 type IbaWidget struct {
 	Id        ObjectId
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	Data      *IbaWidgetData
 }
 
@@ -73,14 +73,14 @@ type rawIbaWidget struct {
 }
 
 func (o *rawIbaWidget) polish() (*IbaWidget, error) {
-	var created, updated *time.Time
+	var created, updated time.Time
 
 	if o.CreatedAt != nil {
 		t, err := time.Parse("2006-01-02T15:04:05.000000+0000", *o.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failure parsing create time %s - %w", *o.CreatedAt, err)
 		}
-		created = &t
+		created = t
 	}
 
 	if o.UpdatedAt != nil {
@@ -88,7 +88,7 @@ func (o *rawIbaWidget) polish() (*IbaWidget, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failure parsing create time %s - %w", *o.CreatedAt, err)
 		}
-		created = &t
+		created = t
 	}
 
 	widgetType := IbaWidgetTypes.Parse(o.Type)
