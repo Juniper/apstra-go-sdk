@@ -34,34 +34,6 @@ const (
 	resourceTypeUnknown = "resource type %d unknown"
 )
 
-// git grep -n 'spine_loopbacks'
-// git grep -n 'leaf_loopbacks'
-// git grep -n 'generic_loopbacks'
-// git grep -n 'access_loopbacks'
-// git grep -n 'superspine_loopbacks'
-//
-// git grep -n 'spine_leaf_link_ips'
-// git grep -n 'leaf_leaf_link_ips'
-// git grep -n 'access_l3_peer_link_link_ips'
-// git grep -n 'spine_superspine_link_ips'
-// git grep -n 'svi_subnets'
-// git grep -n 'mlag_domain_svi_subnets'
-// git grep -n 'to_generic_link_ips'
-//
-// git grep -n 'sz_leaf_loopbacks'
-// git grep -n 'sz_leaf_l3_peer_link_ips'
-// git grep -n 'sz_svi_subnets'
-// git grep -n 'sz_to_generic_link_ips'
-//
-// git grep -n 'spine_asns'
-// git grep -n 'leaf_asns'
-// git grep -n 'superspine_asns'
-// git grep -n 'access_asns'
-// git grep -n 'generic_asns' // missing?
-// git grep -n 'vxlan_l2_vnis' // missing?
-// git grep -n 'evpn_l3_vnis'
-// git grep -n 'external_vn_local_vnis' // missing?
-// git grep -n 'vtep_ips'
 const (
 	ResourceGroupNameNone = ResourceGroupName(iota)
 	ResourceGroupNameSuperspineAsn
