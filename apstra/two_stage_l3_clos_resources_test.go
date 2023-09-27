@@ -141,6 +141,7 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "spine_asns", intType: ResourceGroupNameSpineAsn, stringType: resourceGroupNameSpineAsn},
 		{stringVal: "leaf_asns", intType: ResourceGroupNameLeafAsn, stringType: resourceGroupNameLeafAsn},
 		{stringVal: "access_asns", intType: ResourceGroupNameAccessAsn, stringType: resourceGroupNameAccessAsn},
+		{stringVal: "generic_asns", intType: ResourceGroupNameGenericAsn, stringType: resourceGroupNameGenericAsn},
 		{stringVal: "superspine_loopback_ips", intType: ResourceGroupNameSuperspineIp4, stringType: resourceGroupNameSuperspineIp4},
 		{stringVal: "spine_loopback_ips", intType: ResourceGroupNameSpineIp4, stringType: resourceGroupNameSpineIp4},
 		{stringVal: "spine_loopback_ips_ipv6", intType: ResourceGroupNameSpineIp6, stringType: resourceGroupNameSpineIp6},

@@ -34,12 +34,41 @@ const (
 	resourceTypeUnknown = "resource type %d unknown"
 )
 
+// git grep -n 'spine_loopbacks'
+// git grep -n 'leaf_loopbacks'
+// git grep -n 'generic_loopbacks'
+// git grep -n 'access_loopbacks'
+// git grep -n 'superspine_loopbacks'
+//
+// git grep -n 'spine_leaf_link_ips'
+// git grep -n 'leaf_leaf_link_ips'
+// git grep -n 'access_l3_peer_link_link_ips'
+// git grep -n 'spine_superspine_link_ips'
+// git grep -n 'svi_subnets'
+// git grep -n 'mlag_domain_svi_subnets'
+// git grep -n 'to_generic_link_ips'
+//
+// git grep -n 'sz_leaf_loopbacks'
+// git grep -n 'sz_leaf_l3_peer_link_ips'
+// git grep -n 'sz_svi_subnets'
+// git grep -n 'sz_to_generic_link_ips'
+//
+// git grep -n 'spine_asns'
+// git grep -n 'leaf_asns'
+// git grep -n 'superspine_asns'
+// git grep -n 'access_asns'
+// git grep -n 'generic_asns' // missing?
+// git grep -n 'vxlan_l2_vnis' // missing?
+// git grep -n 'evpn_l3_vnis'
+// git grep -n 'external_vn_local_vnis' // missing?
+// git grep -n 'vtep_ips'
 const (
 	ResourceGroupNameNone = ResourceGroupName(iota)
 	ResourceGroupNameSuperspineAsn
 	ResourceGroupNameSpineAsn
 	ResourceGroupNameLeafAsn
 	ResourceGroupNameAccessAsn
+	ResourceGroupNameGenericAsn
 	ResourceGroupNameSuperspineIp4
 	ResourceGroupNameSpineIp4
 	ResourceGroupNameSpineIp6
@@ -70,6 +99,7 @@ const (
 	resourceGroupNameSpineAsn              = resourceGroupName("spine_asns")
 	resourceGroupNameLeafAsn               = resourceGroupName("leaf_asns")
 	resourceGroupNameAccessAsn             = resourceGroupName("access_asns")
+	resourceGroupNameGenericAsn            = resourceGroupName("generic_asns")
 	resourceGroupNameSuperspineIp4         = resourceGroupName("superspine_loopback_ips")
 	resourceGroupNameSpineIp4              = resourceGroupName("spine_loopback_ips")
 	resourceGroupNameSpineIp6              = resourceGroupName("spine_loopback_ips_ipv6")
@@ -124,6 +154,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 	case ResourceGroupNameLeafAsn:
 		return ResourceTypeAsnPool
 	case ResourceGroupNameAccessAsn:
+		return ResourceTypeAsnPool
+	case ResourceGroupNameGenericAsn:
 		return ResourceTypeAsnPool
 	case ResourceGroupNameSuperspineIp4:
 		return ResourceTypeIp4Pool
@@ -203,6 +235,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameLeafAsn
 	case ResourceGroupNameAccessAsn:
 		return resourceGroupNameAccessAsn
+	case ResourceGroupNameGenericAsn:
+		return resourceGroupNameGenericAsn
 	case ResourceGroupNameSuperspineIp4:
 		return resourceGroupNameSuperspineIp4
 	case ResourceGroupNameSpineIp4:
@@ -268,6 +302,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameLeafAsn), nil
 	case resourceGroupNameAccessAsn:
 		return int(ResourceGroupNameAccessAsn), nil
+	case resourceGroupNameGenericAsn:
+		return int(ResourceGroupNameGenericAsn), nil
 	case resourceGroupNameSuperspineIp4:
 		return int(ResourceGroupNameSuperspineIp4), nil
 	case resourceGroupNameSpineIp4:
