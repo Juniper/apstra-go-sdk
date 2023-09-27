@@ -5,155 +5,182 @@ package apstra
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net/http"
+	"reflect"
 	"testing"
 )
 
-func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
+func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
+
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
+	ctx := context.Background()
+	for clientName, client := range clients {
+		log.Printf("testing GetAllIbaWidgets against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 
-	Name := randString(10, "hex")
-	for _, client := range clients {
-		var cg []ConfigletGenerator
+		bpClient, _ := testBlueprintA(ctx, t, client.client)
+		// defer bpDelete(ctx)
+		var idResponse objectIdResponse
 
-		cg = append(cg, ConfigletGenerator{
-			ConfigStyle:  PlatformOSJunos,
-			Section:      ConfigletSectionSystem,
-			TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
+		probeA := struct {
+			Label     string `json:"label"`
+			Duration  int    `json:"duration"`
+			Threshold int    `json:"threshold"`
+		}{
+			Label:     "BGP Session Flapping",
+			Duration:  300,
+			Threshold: 40,
+		}
+		probeAUrlStr := fmt.Sprintf(apiUrlBlueprintByIdPrefix, bpClient.blueprintId) + "iba/predefined-probes/bgp_session"
+
+		probeB := struct {
+			Label     string `json:"label"`
+			Threshold int    `json:"threshold"`
+		}{
+			Label:     "Drain Traffic Anomaly",
+			Threshold: 100000,
+		}
+		probeBUrlStr := fmt.Sprintf(apiUrlBlueprintByIdPrefix, bpClient.blueprintId) + "iba/predefined-probes/drain_node_traffic_anomaly"
+
+		err = client.client.talkToApstra(ctx, &talkToApstraIn{
+			method:         http.MethodPost,
+			urlStr:         probeAUrlStr,
+			apiInput:       &probeA,
+			apiResponse:    &idResponse,
+			doNotLogin:     false,
+			unsynchronized: false,
 		})
-		var refarchs []RefDesign
+		if err != nil {
+			t.Fatal(err)
+		}
+		probeAId := idResponse.Id
 
-		refarchs = append(refarchs, RefDesignTwoStageL3Clos)
-
-		id1, err := client.client.CreateConfiglet(context.Background(), &ConfigletData{
-			DisplayName: Name,
-			RefArchs:    refarchs,
-			Generators:  cg,
+		err = client.client.talkToApstra(ctx, &talkToApstraIn{
+			method:         http.MethodPost,
+			urlStr:         probeBUrlStr,
+			apiInput:       &probeB,
+			apiResponse:    &idResponse,
+			doNotLogin:     false,
+			unsynchronized: false,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
+		probeBId := idResponse.Id
 
-		if err != nil {
-			t.Fatal(err)
+		widgetA := rawIbaWidget{
+			Type:      "stage",
+			Label:     probeA.Label,
+			ProbeId:   probeAId.String(),
+			StageName: "BGP Session",
 		}
-		log.Println(id1)
-		log.Println("Getting now")
-		c, err := client.client.GetConfiglet(context.Background(), id1)
-		if err != nil {
-			t.Fatal(err)
+
+		widgetB := rawIbaWidget{
+			Type:      "stage",
+			Label:     probeB.Label,
+			ProbeId:   probeBId.String(),
+			StageName: "excess_range",
 		}
-		log.Println(c)
-		g1 := len(c.Data.Generators)
-		c.Data.Generators = append(c.Data.Generators, ConfigletGenerator{
-			ConfigStyle:  PlatformOSJunos,
-			Section:      ConfigletSectionSystem,
-			TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
+
+		err = client.client.talkToApstra(ctx, &talkToApstraIn{
+			method:      http.MethodPost,
+			urlStr:      fmt.Sprintf(apiUrlBlueprintByIdPrefix, bpClient.blueprintId) + "iba/widgets",
+			apiInput:    &widgetA,
+			apiResponse: &idResponse,
 		})
-		log.Println("Update Config")
+		if err != nil {
+			t.Fatal(err)
+		}
+		widgetAId := idResponse.Id
 
-		err = client.client.UpdateConfiglet(context.Background(), id1, &ConfigletData{
-			DisplayName: c.Data.DisplayName,
-			RefArchs:    c.Data.RefArchs,
-			Generators:  c.Data.Generators,
+		err = client.client.talkToApstra(ctx, &talkToApstraIn{
+			method:      http.MethodPost,
+			urlStr:      fmt.Sprintf(apiUrlBlueprintByIdPrefix, bpClient.blueprintId) + "iba/widgets",
+			apiInput:    &widgetB,
+			apiResponse: &idResponse,
 		})
-
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Println("Get Configlet by Name")
-		c, err = client.client.GetConfigletByName(context.Background(), Name)
-		if err != nil {
-			t.Fatal(err)
+		widgetBId := idResponse.Id
+		data := IbaDashboardData{
+			Description:   "Test Dashboard",
+			Default:       false,
+			Label:         "Test Dash",
+			IbaWidgetGrid: [][]ObjectId{{widgetAId, widgetBId}, {widgetAId, widgetBId}},
 		}
-		g2 := len(c.Data.Generators)
-		log.Println(g1, g2)
-		if g1 == g2 {
-			t.Fatal("append did not work")
-		}
-		log.Println(c)
-		log.Println("Deleting now")
 
-		err = client.client.DeleteConfiglet(context.Background(), id1)
+		t.Log("Test Create Dashboard")
+		id, err := bpClient.CreateIbaDashboard(ctx, &data)
 		if err != nil {
+			t.Log(data)
 			t.Fatal(err)
 		}
 
-		log.Println("Testing an incorrect delete")
-		err = client.client.DeleteConfiglet(context.Background(), id1)
-		log.Println(err)
+		checkDashes := func() {
+			t.Log("Test GetIbaDashboard")
+			d1, err := bpClient.GetIbaDashboard(ctx, id)
+			if err != nil {
+				t.Log(id)
+				t.Fatal(err)
+			}
+			t.Log("Test GetIbaDashboardByLabel")
+			d2, err := bpClient.GetIbaDashboardByLabel(ctx, data.Label)
+			if err != nil {
+				t.Log(data.Label)
+				t.Fatal(err)
+			}
+			t.Log("Dashboard Data")
+			t.Log(data)
+			t.Log("IBA Probe by Id")
+			t.Log(d1)
+			t.Log("IBA Dashboard by Name")
+			t.Log(d2)
+
+			if !reflect.DeepEqual(d1, d2) {
+				t.Fatal("GetIbaDashboardByLabel gets different object than GetIbaDashboard")
+			}
+			t.Log("Ensure Data matches")
+			t.Log(d1.Data)
+
+			if d1.Data.Label != data.Label {
+				t.Fatal("IBA Dashboard Label mismatch")
+			}
+			if d1.Data.Default != data.Default {
+				t.Fatal("IBA Dasboard Default mismatch")
+			}
+			if d1.Data.Description != data.Description {
+				t.Fatal("IBA Dashboard Description mismatch")
+			}
+			if !reflect.DeepEqual(d1.Data.IbaWidgetGrid, data.IbaWidgetGrid) {
+				t.Fatal("Widget Grid mismatch")
+			}
+		}
+		checkDashes()
+
+		t.Log("Test Update Dashboard")
+		data.Label = "Test Dash 2"
+		data.IbaWidgetGrid = append(data.IbaWidgetGrid, []ObjectId{widgetAId, widgetBId})
+		data.Description = "Test Dashboard 2"
+		err = bpClient.UpdateIbaDashboard(ctx, id, &data)
+		if err != nil {
+			t.Log(data)
+			t.Fatal(err)
+		}
+		checkDashes()
+
+		t.Log("Test Delete Dashboard")
+		err = bpClient.DeleteIbaDashboard(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = bpClient.GetIbaDashboard(ctx, id)
 		if err == nil {
-			t.Fatal("Error :: Deleting non-existent item works")
+			t.Fatalf("Deleted but id %s is still available", id)
 		}
-	}
-}
-
-func TestConfigletStrings(t *testing.T) {
-	type apiStringIota interface {
-		String() string
-		Int() int
-	}
-
-	type apiIotaString interface {
-		parse() (int, error)
-		string() string
-	}
-
-	type stringTestData struct {
-		stringVal  string
-		intType    apiStringIota
-		stringType apiIotaString
-	}
-	testData := []stringTestData{
-		{stringVal: "system", intType: ConfigletSectionSystem, stringType: configletSectionSystem},
-		{stringVal: "interface", intType: ConfigletSectionInterface, stringType: configletSectionInterface},
-		{stringVal: "file", intType: ConfigletSectionFile, stringType: configletSectionFile},
-		{stringVal: "frr", intType: ConfigletSectionFRR, stringType: configletSectionFRR},
-		{stringVal: "ospf", intType: ConfigletSectionOSPF, stringType: configletSectionOSPF},
-		{stringVal: "system_top", intType: ConfigletSectionSystemTop, stringType: configletSectionSystemTop},
-		{stringVal: "set_based_system", intType: ConfigletSectionSetBasedSystem, stringType: configletSectionSetBasedSystem},
-		{stringVal: "set_based_interface", intType: ConfigletSectionSetBasedInterface, stringType: configletSectionSetBasedInterface},
-		{stringVal: "delete_based_interface", intType: ConfigletSectionDeleteBasedInterface, stringType: configletSectionDeleteBasedInterface},
-
-		{stringVal: "cumulus", intType: PlatformOSCumulus, stringType: platformOSCumulus},
-		{stringVal: "nxos", intType: PlatformOSNxos, stringType: platformOSNxos},
-		{stringVal: "eos", intType: PlatformOSEos, stringType: platformOSEos},
-		{stringVal: "junos", intType: PlatformOSJunos, stringType: platformOSJunos},
-		{stringVal: "sonic", intType: PlatformOSSonic, stringType: platformOSSonic},
-	}
-
-	for i, td := range testData {
-		ii := td.intType.Int()
-		is := td.intType.String()
-		sp, err := td.stringType.parse()
-		if err != nil {
-			t.Fatal(err)
-		}
-		ss := td.stringType.string()
-		if td.intType.String() != td.stringType.string() ||
-			td.intType.Int() != sp ||
-			td.stringType.string() != td.stringVal {
-			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
-				i, ii, sp, is, ss, td.stringVal)
-		}
-	}
-}
-
-func TestAllPlatformOSes(t *testing.T) {
-	all := AllPlatformOSes()
-	expected := 5
-	if len(all) != expected {
-		t.Fatalf("expected %d platform OSes, got %d", expected, len(all))
-	}
-}
-
-func TestAllConfigletSections(t *testing.T) {
-	all := AllConfigletSections()
-	expected := 9
-	if len(all) != expected {
-		t.Fatalf("expected %d configlet sections, got %d", expected, len(all))
 	}
 }

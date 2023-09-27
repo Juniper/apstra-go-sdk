@@ -17,12 +17,12 @@ type rawIbaDashboard struct {
 	Id                  string     `json:"id"`
 	Label               string     `json:"label"`
 	Description         string     `json:"description"`
-	Default             bool       `json:"default"`
+	Default             bool       `json:"default,omitempty"`
 	CreatedAt           string     `json:"created_at"`
 	UpdatedAt           string     `json:"updated_at"`
-	Grid                [][]string `json:"grid"`
-	PredefinedDashboard string     `json:"predefined_dashboard"`
-	UpdatedBy           string     `json:"updated_by"`
+	IbaWidgetGrid       [][]string `json:"grid"`
+	PredefinedDashboard string     `json:"predefined_dashboard,omitempty"`
+	UpdatedBy           string     `json:"updated_by,omitempty"`
 }
 
 type IbaDashboard struct {
@@ -44,14 +44,14 @@ type IbaDashboardData struct {
 type rawIbaDashboardData struct {
 	Label               string     `json:"label"`
 	Description         string     `json:"description"`
-	Default             bool       `json:"default"`
-	IbaWidgetGrid                [][]string `json:"grid"`
-	PredefinedDashboard string     `json:"predefined_dashboard"`
-	UpdatedBy           string     `json:"updated_by"`
+	Default             bool       `json:"default,omitempty"`
+	IbaWidgetGrid       [][]string `json:"grid"`
+	PredefinedDashboard string     `json:"predefined_dashboard,omitempty"`
+	UpdatedBy           string     `json:"updated_by,omitempty"`
 }
 
 func (o *IbaDashboardData) raw() *rawIbaDashboardData {
-	IbaWidgetGrid := make([][]string,len(o.IbaWidgetGrid)
+	IbaWidgetGrid := make([][]string, len(o.IbaWidgetGrid))
 
 	for i, g := range o.IbaWidgetGrid {
 		for _, v := range g {
@@ -72,10 +72,10 @@ func (o *IbaDashboardData) raw() *rawIbaDashboardData {
 func (o *rawIbaDashboard) polish() (*IbaDashboard, error) {
 	var err error
 
-	IbaWidgetGrid := make([][]ObjectId,len(o.IbaWidgetGrid))
-	for i, g := range o.Data.IbaWidgetGrid {
+	IbaWidgetGrid := make([][]ObjectId, len(o.IbaWidgetGrid))
+	for i, g := range o.IbaWidgetGrid {
 		for _, v := range g {
-			IbaWidgetGrid[i] = append(IbaWidgetGrid[i], v.String())
+			IbaWidgetGrid[i] = append(IbaWidgetGrid[i], ObjectId(v))
 		}
 	}
 
@@ -91,14 +91,14 @@ func (o *rawIbaDashboard) polish() (*IbaDashboard, error) {
 		Id:             ObjectId(o.Id),
 		CreatedAt:      created,
 		LastModifiedAt: updated,
-		Data:   &IbaDashboardData{
+		Data: &IbaDashboardData{
 			Description:         o.Description,
 			Default:             o.Default,
 			Label:               o.Label,
 			IbaWidgetGrid:       IbaWidgetGrid,
 			PredefinedDashboard: o.PredefinedDashboard,
 			UpdatedBy:           o.UpdatedBy,
-		} ,
+		},
 	}, nil
 }
 
@@ -117,8 +117,8 @@ func (o *Client) getAllIbaDashboards(ctx context.Context, blueprint_id ObjectId)
 	return response.Items, nil
 }
 
-func (o *Client) getDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) (*rawConfiglet, error) {
-	response := &rawConfiglet{}
+func (o *Client) getIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) (*rawIbaDashboard, error) {
+	response := &rawIbaDashboard{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodGet, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiResponse: response,
 	})
@@ -128,67 +128,57 @@ func (o *Client) getDashboard(ctx context.Context, blueprintId ObjectId, id Obje
 	return response, nil
 }
 
-func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectId, label string) ([]rawIbaDashboard,
-	error) {
+func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectId, label string) (*rawIbaDashboard, error) {
 	dashes, err := o.getAllIbaDashboards(ctx, blueprintId)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+	l := len(dashes)
 
-	var result []rawIbaDashboard
-	for _, w := range dashes {
-		if w.Label == label {
-			result = append(result, w)
-		}
-	}
-	if len(result) == 0 {
+	if l == 0 {
 		return nil, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("no Iba Dashboards with label '%s' found", label),
 		}
 	}
-	return result, nil
-}
 
-func (o *Client) getAllConfiglets(ctx context.Context) ([]rawConfiglet, error) {
-	response := &struct {
-		Items []rawConfiglet `json:"items"`
-	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodGet, urlStr: apiUrlDesignConfiglets,
-		apiResponse: response,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+	if l > 1 {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("%d Iba Dashboards with label '%s' found, expected 1", l, label),
+		}
 	}
-	return response.Items, nil
+
+	return &dashes[0], nil
 }
 
-func (o *Client) createConfiglet(ctx context.Context, in *rawConfigletData) (ObjectId, error) {
+func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *rawIbaDashboardData) (ObjectId, error) {
 	response := &objectIdResponse{}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodPost, urlStr: apiUrlDesignConfiglets,
+		method: http.MethodPost, urlStr: fmt.Sprintf(apiUrlIbaDashboards, blueprintId),
 		apiInput: in, apiResponse: response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Id, nil
 }
 
-func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *rawConfigletData) error {
+func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *rawIbaDashboardData) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlDesignConfigletsById, id), apiInput: in,
+		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiInput: in,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
+
 	return nil
 }
 
-func (o *Client) deleteConfiglet(ctx context.Context, id ObjectId) error {
+func (o *Client) deleteIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) error {
 	return o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodDelete, urlStr: fmt.Sprintf(apiUrlDesignConfigletsById, id),
+		method: http.MethodDelete, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id),
 	})
 }
