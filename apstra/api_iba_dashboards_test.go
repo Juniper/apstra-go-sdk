@@ -22,8 +22,8 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing GetAllIbaWidgets against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 
-		bpClient, _ := testBlueprintA(ctx, t, client.client)
-		// defer bpDelete(ctx)
+		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
+		defer bpDelete(ctx)
 		var idResponse objectIdResponse
 
 		probeA := struct {

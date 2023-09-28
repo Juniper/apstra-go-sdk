@@ -14,22 +14,22 @@ const (
 )
 
 type rawIbaDashboard struct {
-	Id                  string     `json:"id"`
-	Label               string     `json:"label"`
-	Description         string     `json:"description"`
-	Default             bool       `json:"default,omitempty"`
-	CreatedAt           string     `json:"created_at"`
-	UpdatedAt           string     `json:"updated_at"`
-	IbaWidgetGrid       [][]string `json:"grid"`
-	PredefinedDashboard string     `json:"predefined_dashboard,omitempty"`
-	UpdatedBy           string     `json:"updated_by,omitempty"`
+	Id                  string       `json:"id,omitempty"`
+	Label               string       `json:"label"`
+	Description         string       `json:"description"`
+	Default             bool         `json:"default,omitempty"`
+	CreatedAt           string       `json:"created_at,omitempty"`
+	UpdatedAt           string       `json:"updated_at,omitempty"`
+	IbaWidgetGrid       [][]ObjectId `json:"grid"`
+	PredefinedDashboard string       `json:"predefined_dashboard,omitempty"`
+	UpdatedBy           string       `json:"updated_by,omitempty"`
 }
 
 type IbaDashboard struct {
-	Id             ObjectId
-	CreatedAt      time.Time
-	LastModifiedAt time.Time
-	Data           *IbaDashboardData
+	Id        ObjectId
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Data      *IbaDashboardData
 }
 
 type IbaDashboardData struct {
@@ -41,25 +41,16 @@ type IbaDashboardData struct {
 	UpdatedBy           string
 }
 
-type rawIbaDashboardData struct {
-	Label               string     `json:"label"`
-	Description         string     `json:"description"`
-	Default             bool       `json:"default,omitempty"`
-	IbaWidgetGrid       [][]string `json:"grid"`
-	PredefinedDashboard string     `json:"predefined_dashboard,omitempty"`
-	UpdatedBy           string     `json:"updated_by,omitempty"`
-}
-
-func (o *IbaDashboardData) raw() *rawIbaDashboardData {
-	IbaWidgetGrid := make([][]string, len(o.IbaWidgetGrid))
+func (o *IbaDashboardData) raw() *rawIbaDashboard {
+	IbaWidgetGrid := make([][]ObjectId, len(o.IbaWidgetGrid))
 
 	for i, g := range o.IbaWidgetGrid {
 		for _, v := range g {
-			IbaWidgetGrid[i] = append(IbaWidgetGrid[i], v.String())
+			IbaWidgetGrid[i] = append(IbaWidgetGrid[i], v)
 		}
 	}
 
-	return &rawIbaDashboardData{
+	return &rawIbaDashboard{
 		Label:               o.Label,
 		Description:         o.Description,
 		Default:             o.Default,
@@ -88,9 +79,9 @@ func (o *rawIbaDashboard) polish() (*IbaDashboard, error) {
 		return nil, fmt.Errorf("failure parsing update time %s - %w", o.UpdatedAt, err)
 	}
 	return &IbaDashboard{
-		Id:             ObjectId(o.Id),
-		CreatedAt:      created,
-		LastModifiedAt: updated,
+		Id:        ObjectId(o.Id),
+		CreatedAt: created,
+		UpdatedAt: updated,
 		Data: &IbaDashboardData{
 			Description:         o.Description,
 			Default:             o.Default,
@@ -152,7 +143,7 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 	return &dashes[0], nil
 }
 
-func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *rawIbaDashboardData) (ObjectId, error) {
+func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *rawIbaDashboard) (ObjectId, error) {
 	response := &objectIdResponse{}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -166,7 +157,7 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 	return response.Id, nil
 }
 
-func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *rawIbaDashboardData) error {
+func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *rawIbaDashboard) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiInput: in,
 	})
