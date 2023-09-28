@@ -644,3 +644,46 @@ func (o *TwoStageL3ClosClient) GetIbaWidget(ctx context.Context, id ObjectId) (*
 
 	return rawWidget.polish()
 }
+
+// GetIbaDashboard returns the IBA Dashboard that matches the ID
+func (o *TwoStageL3ClosClient) GetIbaDashboard(ctx context.Context, id ObjectId) (*IbaDashboard, error) {
+	rawIbaDb, err := o.client.getIbaDashboard(ctx, o.blueprintId, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawIbaDb.polish()
+}
+
+// GetIbaDashboardByLabel returns the IBA Dashboard that matches the label.
+// It will return an error if more than one IBA dashboard matches the label.
+func (o *TwoStageL3ClosClient) GetIbaDashboardByLabel(ctx context.Context, label string) (*IbaDashboard, error) {
+	rawIbaDb, err := o.client.getIbaDashboardByLabel(ctx, o.blueprintId, label)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawIbaDb.polish()
+}
+
+// CreateIbaDashboard creates an IBA Dashboard and returns the id of the created dashboard on success,
+// or a blank and error on failure
+func (o *TwoStageL3ClosClient) CreateIbaDashboard(ctx context.Context, data *IbaDashboardData) (ObjectId, error) {
+
+	id, err := o.client.createIbaDashboard(ctx, o.blueprintId, data.raw())
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
+// UpdateIbaDashboard updates an IBA Dashboard and returns an error on failure
+func (o *TwoStageL3ClosClient) UpdateIbaDashboard(ctx context.Context, id ObjectId, data *IbaDashboardData) error {
+	return o.client.updateIbaDashboard(ctx, o.blueprintId, id, data.raw())
+}
+
+// DeleteIbaDashboard deletes an IBA Dashboard and returns an error on failure
+func (o *TwoStageL3ClosClient) DeleteIbaDashboard(ctx context.Context, id ObjectId) error {
+	return o.client.deleteIbaDashboard(ctx, o.blueprintId, id)
+}
