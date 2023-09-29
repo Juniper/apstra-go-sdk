@@ -596,10 +596,10 @@ func (o *TwoStageL3ClosClient) GetAllIbaWidgets(ctx context.Context) ([]IbaWidge
 	widgets := make([]IbaWidget, len(rawWidgets))
 	for i, w := range rawWidgets {
 		pw, err := w.polish()
-		widgets[i] = *pw
 		if err != nil {
-			return widgets, err
+			return nil, err
 		}
+		widgets[i] = *pw
 	}
 
 	return widgets, nil
@@ -655,10 +655,10 @@ func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDa
 	dashes := make([]IbaDashboard, len(rawDashes))
 	for i, w := range rawDashes {
 		pw, err := w.polish()
-		dashes[i] = *pw
 		if err != nil {
-			return dashes, err
+			return nil, err
 		}
+		dashes[i] = *pw
 	}
 
 	return dashes, nil
