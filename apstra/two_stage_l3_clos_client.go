@@ -645,6 +645,25 @@ func (o *TwoStageL3ClosClient) GetIbaWidget(ctx context.Context, id ObjectId) (*
 	return rawWidget.polish()
 }
 
+// GetAllIbaWidgets returns a list of IBA Widgets in the blueprint
+func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDashboard, error) {
+	rawDashes, err := o.client.getAllIbaDashboards(ctx, o.blueprintId)
+	if err != nil {
+		return nil, err
+	}
+
+	dashes := make([]IbaDashboard, len(rawDashes))
+	for i, w := range rawDashes {
+		pw, err := w.polish()
+		dashes[i] = *pw
+		if err != nil {
+			return dashes, err
+		}
+	}
+
+	return dashes, nil
+}
+
 // GetIbaDashboard returns the IBA Dashboard that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaDashboard(ctx context.Context, id ObjectId) (*IbaDashboard, error) {
 	rawIbaDb, err := o.client.getIbaDashboard(ctx, o.blueprintId, id)

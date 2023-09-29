@@ -20,7 +20,8 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 	}
 	ctx := context.Background()
 	for clientName, client := range clients {
-		log.Printf("testing GetAllIbaWidgets against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		log.Printf("testing IBA Dashboard code against %s %s (%s)", client.clientType, clientName,
+			client.client.ApiVersion())
 
 		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
 		defer bpDelete(ctx)
@@ -114,11 +115,24 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			IbaWidgetGrid: [][]ObjectId{{widgetAId, widgetBId}, {widgetAId, widgetBId}},
 		}
 
-		t.Log("Test Create Dashboard")
+		ds, err := bpClient.GetAllIbaDashboards(ctx)
+		l := len(ds)
+		if len(ds) != 0 {
+			t.Fatalf("Expected no dashboards. got %d", l)
+		}
+
+		t.Logf("Test Create Dashboard")
 		id, err := bpClient.CreateIbaDashboard(ctx, &data)
 		if err != nil {
 			t.Log(data)
 			t.Fatal(err)
+		}
+
+		ds, err = bpClient.GetAllIbaDashboards(ctx)
+		l = len(ds)
+		t.Logf("Found %d dashboards", l)
+		if len(ds) != 1 {
+			t.Fatalf("Expected 1 dashboards. got %d", l)
 		}
 
 		checkDashes := func() {
