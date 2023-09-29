@@ -117,7 +117,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 
 		ds, err := bpClient.GetAllIbaDashboards(ctx)
 		l := len(ds)
-		if len(ds) != 0 {
+		if l != 0 {
 			t.Fatalf("Expected no dashboards. got %d", l)
 		}
 
@@ -131,7 +131,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 		ds, err = bpClient.GetAllIbaDashboards(ctx)
 		l = len(ds)
 		t.Logf("Found %d dashboards", l)
-		if len(ds) != 1 {
+		if l != 1 {
 			t.Fatalf("Expected 1 dashboards. got %d", l)
 		}
 
