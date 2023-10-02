@@ -25,14 +25,14 @@ type IbaPredefinedProbeRequest struct {
 	Data json.RawMessage
 }
 
-func (o *Client) getAllIbaPredefinedProbes(ctx context.Context, bp_id ObjectId) ([]IbaPredefinedProbe, error) {
+func (o *Client) getAllIbaPredefinedProbes(ctx context.Context, bpId ObjectId) ([]IbaPredefinedProbe, error) {
 	response := &struct {
 		Items []IbaPredefinedProbe `json:"items"`
 	}{}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbes, bp_id),
+		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbes, bpId),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -54,12 +54,12 @@ func (o *Client) getIbaPredefinedProbeByName(ctx context.Context, bpId ObjectId,
 	return response, nil
 }
 
-func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpid ObjectId, in *IbaPredefinedProbeRequest) (ObjectId, error) {
+func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpId ObjectId, in *IbaPredefinedProbeRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbesByName, bpid, in.Name),
+		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbesByName, bpId, in.Name),
 		apiInput:    in.Data,
 		apiResponse: response,
 	})
