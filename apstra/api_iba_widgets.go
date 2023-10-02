@@ -134,6 +134,40 @@ func (o *rawIbaWidget) polish() (*IbaWidget, error) {
 	}, nil
 }
 
+func (o *IbaWidgetData) raw() *rawIbaWidget {
+	var aggPeriod, timeSeriesDuration int
+	if o.AggregationPeriod != nil {
+		aggPeriod = int(o.AggregationPeriod.Seconds())
+	} else {
+		aggPeriod = 1
+	}
+	if o.TimeSeriesDuration != nil {
+		timeSeriesDuration = int(o.TimeSeriesDuration.Seconds())
+	} else {
+		timeSeriesDuration = 1
+	}
+	return &rawIbaWidget{
+		AggregationPeriod:  &aggPeriod,
+		OrderBy:            o.OrderBy,
+		StageName:          o.StageName,
+		ShowContext:        o.ShowContext,
+		Description:        o.Description,
+		AnomalousOnly:      o.AnomalousOnly,
+		CreatedAt:          nil,
+		SpotlightMode:      o.SpotlightMode,
+		UpdatedAt:          nil,
+		ProbeId:            o.ProbeId.String(),
+		Label:              o.Label,
+		Filter:             o.Filter,
+		TimeSeriesDuration: &timeSeriesDuration,
+		DataSource:         o.DataSource,
+		MaxItems:           o.MaxItems,
+		CombineGraphs:      o.CombineGraphs,
+		VisibleColumns:     o.VisibleColumns,
+		Type:               o.Type.Value,
+	}
+}
+
 func (o *Client) getAllIbaWidgets(ctx context.Context, bp_id ObjectId) ([]rawIbaWidget, error) {
 	response := &struct {
 		Items []rawIbaWidget `json:"items"`
@@ -205,4 +239,19 @@ func (o *Client) getIbaWidgetByLabel(ctx context.Context, bpId ObjectId, label s
 		errType: ErrMultipleMatch,
 		err:     fmt.Errorf("multiple IBA widget with label %q found in blueprint %q", label, bpId),
 	}
+}
+
+func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *rawIbaWidget) (ObjectId, error) {
+	response := &objectIdResponse{}
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bpId),
+		apiInput:    &widget,
+		apiResponse: &response,
+	})
+	if err != nil {
+		return "", err
+	}
+	return response.Id, nil
 }

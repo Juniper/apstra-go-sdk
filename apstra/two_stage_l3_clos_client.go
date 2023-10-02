@@ -645,6 +645,34 @@ func (o *TwoStageL3ClosClient) GetIbaWidget(ctx context.Context, id ObjectId) (*
 	return rawWidget.polish()
 }
 
+// CreateIbaWidget creates an IBA Widget and returns the id of the created dashboard on success,
+// or a blank and error on failure
+func (o *TwoStageL3ClosClient) CreateIbaWidget(ctx context.Context, data *IbaWidgetData) (ObjectId, error) {
+	id, err := o.client.createIbaWidget(ctx, o.blueprintId, data.raw())
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
+// InstantiateIbaPredefinedProbe instantiates a predefined probe using the name and properties specified in data
+// and returns the id of the created probe on success, or a blank and error on failure.
+func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedProbe(ctx context.Context, data *IbaPredefinedProbeRequest) (ObjectId, error) {
+	return o.client.instantiatePredefinedIbaProbe(ctx, o.blueprintId, data)
+}
+
+// GetAllIbaPredefinedProbes lists all the Predefined IBA probes available to a blueprint
+func (o *TwoStageL3ClosClient) GetAllIbaPredefinedProbes(ctx context.Context) ([]IbaPredefinedProbe, error) {
+	return o.client.getAllIbaPredefinedProbes(ctx, o.blueprintId)
+}
+
+// GetIbaPredefinedProbeByName locates a predefined probe by name
+func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe,
+	error) {
+	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
+}
+
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDashboard, error) {
 	rawDashes, err := o.client.getAllIbaDashboards(ctx, o.blueprintId)
