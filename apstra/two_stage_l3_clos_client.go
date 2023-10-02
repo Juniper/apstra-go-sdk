@@ -658,7 +658,8 @@ func (o *TwoStageL3ClosClient) CreateIbaWidget(ctx context.Context, data *IbaWid
 }
 
 // InstantiateIbaPredefinedProbe instantiates a predefined probe with defaults and returns the id of the created
-// probe on success, or a blank and error on failure
+// probe on success, or a blank and error on failure. Please note that this code is for testing and is not fully
+// functional
 func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedProbe(ctx context.Context, data *IbaPredefinedProbe) (ObjectId,
 	error) {
 
