@@ -661,7 +661,6 @@ func (o *TwoStageL3ClosClient) CreateIbaWidget(ctx context.Context, data *IbaWid
 // probe on success, or a blank and error on failure. Please note that this code is for testing and is not fully
 // functional
 func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedProbe(ctx context.Context, data *IbaPredefinedProbeRequest) (ObjectId, error) {
-
 	id, err := o.client.instantiatePredefinedIbaProbe(ctx, o.blueprintId, data)
 	if err != nil {
 		return "", err
@@ -672,13 +671,17 @@ func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedProbe(ctx context.Context
 
 // GetAllIbaPredefinedProbes lists all the Predefined IBA probes available to a blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaPredefinedProbes(ctx context.Context) ([]IbaPredefinedProbe, error) {
-
 	p, err := o.client.getAllIbaPredefinedProbes(ctx, o.blueprintId)
 	if err != nil {
 		return nil, err
 	}
 
 	return p, nil
+}
+
+// GetPredefinedProbeByName lists all the Predefined IBA probes available to a blueprint
+func (o *TwoStageL3ClosClient) GetPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe, error) {
+	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
 }
 
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint
