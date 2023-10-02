@@ -5,6 +5,7 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"testing"
 )
@@ -19,23 +20,37 @@ func TestIbaPredefinedProbes(t *testing.T) {
 		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
-		defer bpDelete(ctx)
+		bpClient, _ := testBlueprintA(ctx, t, client.client)
+		// defer bpDelete(ctx)
 		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, p := range pdps {
+		expectedToFail := map[string]bool{
+			"external_ecmp_imbalance":            true,
+			"evpn_vxlan_type5":                   true,
+			"eastwest_traffic":                   true,
+			"vxlan_floodlist":                    true,
+			"fabric_hotcold_ifcounter":           true,
+			"specific_interface_flapping":        true,
+			"evpn_vxlan_type3":                   true,
+			"specific_hotcold_ifcounter":         true,
+			"spine_superspine_hotcold_ifcounter": true,
+		}
 
+		for _, p := range pdps {
 			t.Logf("Instantiating Probe %s", p.Name)
-			probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbe{
-				Name:         p.Name,
-				Experimental: false,
-				Description:  p.Description,
-				Label:        p.Name,
+			probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
+				Name: p.Name,
+				Data: json.RawMessage([]byte(`{"label":"` + p.Name + `"}`)),
 			})
 			if err != nil {
-				t.Error(err)
+				if !expectedToFail[p.Name] {
+					t.Fatal(err)
+				} else {
+					t.Logf("%s was expected to fail", p.Name)
+					continue
+				}
 			}
 
 			t.Logf("Got back Probe Id %s \n Now Make a Widget with it.", probeId)

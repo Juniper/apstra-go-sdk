@@ -15,10 +15,14 @@ const (
 
 type IbaPredefinedProbe struct {
 	Name         string          `json:"name"`
-	Label        string          `json:"label"`
 	Experimental bool            `json:"experimental"`
 	Description  string          `json:"description"`
 	Schema       json.RawMessage `json:"schema"`
+}
+
+type IbaPredefinedProbeRequest struct {
+	Name string
+	Data json.RawMessage
 }
 
 func (o *Client) getAllIbaPredefinedProbes(ctx context.Context, bp_id ObjectId) ([]IbaPredefinedProbe, error) {
@@ -50,15 +54,14 @@ func (o *Client) getIbaPredefinedProbeByName(ctx context.Context, bpId ObjectId,
 	return response, nil
 }
 
-func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpid ObjectId, in *IbaPredefinedProbe) (ObjectId, error) {
+func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpid ObjectId, in *IbaPredefinedProbeRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	input := struct {
-		Label string `json:"label"`
-	}{Label: in.Label}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodPost, urlStr: fmt.Sprintf(apiUrlIbaPredefinedProbesByName, bpid, in.Name),
-		apiInput: input, apiResponse: response,
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbesByName, bpid, in.Name),
+		apiInput:    in.Data,
+		apiResponse: response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
