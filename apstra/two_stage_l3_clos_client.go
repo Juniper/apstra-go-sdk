@@ -667,8 +667,9 @@ func (o *TwoStageL3ClosClient) GetAllIbaPredefinedProbes(ctx context.Context) ([
 	return o.client.getAllIbaPredefinedProbes(ctx, o.blueprintId)
 }
 
-// GetPredefinedProbeByName lists all the Predefined IBA probes available to a blueprint
-func (o *TwoStageL3ClosClient) GetPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe, error) {
+// GetIbaPredefinedProbeByName locates a predefined probe by name
+func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe,
+	error) {
 	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
 }
 

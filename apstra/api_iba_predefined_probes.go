@@ -42,16 +42,21 @@ func (o *Client) getAllIbaPredefinedProbes(ctx context.Context, bpId ObjectId) (
 }
 
 func (o *Client) getIbaPredefinedProbeByName(ctx context.Context, bpId ObjectId, name string) (*IbaPredefinedProbe, error) {
-	response := &IbaPredefinedProbe{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbesByName, bpId, name),
-		apiResponse: response,
-	})
+	pps, err := o.getAllIbaPredefinedProbes(ctx, bpId)
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		return nil, err
 	}
-	return response, nil
+
+	for _, p := range pps {
+		if p.Name == name {
+			return &p, nil
+		}
+	}
+
+	return nil, ClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("no Predefined Probe with name '%s' found", name),
+	}
 }
 
 func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpId ObjectId, in *IbaPredefinedProbeRequest) (ObjectId, error) {

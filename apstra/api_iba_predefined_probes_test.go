@@ -39,7 +39,22 @@ func TestIbaPredefinedProbes(t *testing.T) {
 		}
 
 		for _, p := range pdps {
+			t.Logf("Get Predefined Probe By Name %s", p.Name)
+			_, err := bpClient.GetIbaPredefinedProbeByName(ctx, p.Name)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			t.Logf("Try an obviously fake name : %s", "FAKE")
+			_, err = bpClient.GetIbaPredefinedProbeByName(ctx, "FAKE")
+			if err == nil {
+				t.Fatal("FAKE name should have failed, but succeeded")
+			} else {
+				t.Log(err)
+			}
+
 			t.Logf("Instantiating Probe %s", p.Name)
+
 			probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 				Name: p.Name,
 				Data: json.RawMessage([]byte(`{"label":"` + p.Name + `"}`)),
