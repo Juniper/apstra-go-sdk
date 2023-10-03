@@ -656,6 +656,11 @@ func (o *TwoStageL3ClosClient) CreateIbaWidget(ctx context.Context, data *IbaWid
 	return id, nil
 }
 
+// DeleteIbaWidget deletes an IBA Widget
+func (o *TwoStageL3ClosClient) DeleteIbaWidget(ctx context.Context, id ObjectId) error {
+	return o.client.deleteIbaWidget(ctx, o.blueprintId, id)
+}
+
 // InstantiateIbaPredefinedProbe instantiates a predefined probe using the name and properties specified in data
 // and returns the id of the created probe on success, or a blank and error on failure.
 func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedProbe(ctx context.Context, data *IbaPredefinedProbeRequest) (ObjectId, error) {
@@ -671,6 +676,11 @@ func (o *TwoStageL3ClosClient) GetAllIbaPredefinedProbes(ctx context.Context) ([
 func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe,
 	error) {
 	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
+}
+
+// DeleteIbaProbe deletes an IBA Widget
+func (o *TwoStageL3ClosClient) DeleteIbaProbe(ctx context.Context, id ObjectId) error {
+	return o.client.deleteIbaProbe(ctx, o.blueprintId, id)
 }
 
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint

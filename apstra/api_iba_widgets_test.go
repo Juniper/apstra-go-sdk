@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestIbaWidgetsGet(t *testing.T) {
+func TestIbaWidgets(t *testing.T) {
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
@@ -64,6 +64,16 @@ func TestIbaWidgetsGet(t *testing.T) {
 				t.Fatalf("GetIbaWidgetsByLabel returned a different id than the original. Expected %s. Got %s",
 					widget.Id, ws.Id)
 			}
+		}
+		t.Logf("Test Deletion of %s", wa.Data.Label)
+		err = bpClient.DeleteIbaWidget(ctx, widgetAId)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		wa, err = bpClient.GetIbaWidget(ctx, widgetAId)
+		if err == nil {
+			t.Fatalf("Widget with id %s should have been deleted", widgetAId)
 		}
 	}
 }

@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package apstra
+package apstra //
 
 import (
 	"context"
@@ -37,20 +37,19 @@ func TestIbaPredefinedProbes(t *testing.T) {
 			"specific_hotcold_ifcounter":         true,
 			"spine_superspine_hotcold_ifcounter": true,
 		}
+		t.Logf("Try an obviously fake name : %s", "FAKE")
+		_, err = bpClient.GetIbaPredefinedProbeByName(ctx, "FAKE")
+		if err == nil {
+			t.Fatal("FAKE name should have failed, but succeeded")
+		} else {
+			t.Log(err)
+		}
 
 		for _, p := range pdps {
 			t.Logf("Get Predefined Probe By Name %s", p.Name)
 			_, err := bpClient.GetIbaPredefinedProbeByName(ctx, p.Name)
 			if err != nil {
 				t.Fatal(err)
-			}
-
-			t.Logf("Try an obviously fake name : %s", "FAKE")
-			_, err = bpClient.GetIbaPredefinedProbeByName(ctx, "FAKE")
-			if err == nil {
-				t.Fatal("FAKE name should have failed, but succeeded")
-			} else {
-				t.Log(err)
 			}
 
 			t.Logf("Instantiating Probe %s", p.Name)
@@ -86,6 +85,26 @@ func TestIbaPredefinedProbes(t *testing.T) {
 				t.Fatal(err)
 			}
 			t.Logf("Widget %s created", widget.Data.Label)
+
+			t.Logf("Try to Delete Probe this should fail because a widget is using it")
+			err = bpClient.DeleteIbaProbe(ctx, probeId)
+			if err == nil {
+				t.Fatal("Probe Deletion should have failed")
+			} else {
+				t.Log(err)
+			}
+
+			t.Logf("Delete Widget and then the probe this path should succeed")
+			err = bpClient.DeleteIbaWidget(ctx, widgetId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("Delete probe")
+
+			err = bpClient.DeleteIbaProbe(ctx, probeId)
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 }
