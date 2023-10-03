@@ -22,7 +22,7 @@ func TestIbaWidgetsGet(t *testing.T) {
 		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
 		defer bpDelete(ctx)
 
-		widgetAId, widgetA, widgetBId, widgetB := testWidgets(ctx, t, bpClient)
+		widgetAId, widgetA, widgetBId, widgetB := testWidgetsAB(ctx, t, bpClient)
 
 		widgets, err := bpClient.GetAllIbaWidgets(ctx)
 		if err != nil {

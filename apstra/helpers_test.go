@@ -515,8 +515,7 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 
 // testWidgetsAB instantiates two predefined probes and creates widgets from them,
 // returning the widget Object Id and the IbaWidgetData object used for creation
-func testWidgets(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (ObjectId, IbaWidgetData,
-	ObjectId, IbaWidgetData) {
+func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (ObjectId, IbaWidgetData, ObjectId, IbaWidgetData) {
 	probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "bgp_session",
 		Data: []byte(`{

@@ -23,7 +23,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 
 		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
 		defer bpDelete(ctx)
-		widgetAId, _, widgetBId, _ := testWidgets(ctx, t, bpClient)
+		widgetAId, _, widgetBId, _ := testWidgetsAB(ctx, t, bpClient)
 
 		data := IbaDashboardData{
 			Description:   "Test Dashboard",
