@@ -65,5 +65,5 @@ func TestIbaWidgetsGet(t *testing.T) {
 					widget.Id, ws.Id)
 			}
 		}
-	}
+	}q
 }
