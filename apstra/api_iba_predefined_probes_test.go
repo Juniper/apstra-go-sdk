@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package apstra
+package apstra //
 
 import (
 	"context"
@@ -20,8 +20,8 @@ func TestIbaPredefinedProbes(t *testing.T) {
 		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, _ := testBlueprintA(ctx, t, client.client)
-		//		defer bpDelete(ctx)
+		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
+		defer bpDelete(ctx)
 		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 		if err != nil {
 			t.Fatal(err)
