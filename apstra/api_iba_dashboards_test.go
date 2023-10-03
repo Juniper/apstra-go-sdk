@@ -5,9 +5,8 @@ package apstra
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"log"
-	"net/http"
 	"reflect"
 	"testing"
 )
@@ -25,89 +24,53 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 
 		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
 		defer bpDelete(ctx)
-		var idResponse objectIdResponse
+		probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
+			Name: "bgp_session",
+			Data: json.RawMessage([]byte(`{
+			"Label":     "BGP Session Flapping",
+			"Duration":  300,
+			"Threshold": 40
+		}`)),
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
 
-		probeA := struct {
-			Label     string `json:"label"`
-			Duration  int    `json:"duration"`
-			Threshold int    `json:"threshold"`
-		}{
+		probeBId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
+			Name: "drain_node_traffic_anomaly",
+			Data: json.RawMessage([]byte(`{
+			"Label":     "Drain Traffic Anomaly",
+			"Threshold": 100000
+		}`)),
+		})
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		widgetA := IbaWidgetData{
+			Type:      IbaWidgetTypeStage,
 			Label:     "BGP Session Flapping",
-			Duration:  300,
-			Threshold: 40,
-		}
-		probeAUrlStr := fmt.Sprintf(apiUrlBlueprintByIdPrefix, bpClient.blueprintId) + "iba/predefined-probes/bgp_session"
-
-		probeB := struct {
-			Label     string `json:"label"`
-			Threshold int    `json:"threshold"`
-		}{
-			Label:     "Drain Traffic Anomaly",
-			Threshold: 100000,
-		}
-		probeBUrlStr := fmt.Sprintf(apiUrlBlueprintByIdPrefix, bpClient.blueprintId) + "iba/predefined-probes/drain_node_traffic_anomaly"
-
-		err = client.client.talkToApstra(ctx, &talkToApstraIn{
-			method:         http.MethodPost,
-			urlStr:         probeAUrlStr,
-			apiInput:       &probeA,
-			apiResponse:    &idResponse,
-			doNotLogin:     false,
-			unsynchronized: false,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		probeAId := idResponse.Id
-
-		err = client.client.talkToApstra(ctx, &talkToApstraIn{
-			method:         http.MethodPost,
-			urlStr:         probeBUrlStr,
-			apiInput:       &probeB,
-			apiResponse:    &idResponse,
-			doNotLogin:     false,
-			unsynchronized: false,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		probeBId := idResponse.Id
-
-		widgetA := rawIbaWidget{
-			Type:      "stage",
-			Label:     probeA.Label,
-			ProbeId:   probeAId.String(),
+			ProbeId:   probeAId,
 			StageName: "BGP Session",
 		}
+		widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-		widgetB := rawIbaWidget{
-			Type:      "stage",
-			Label:     probeB.Label,
-			ProbeId:   probeBId.String(),
+		widgetB := IbaWidgetData{
+			Type:      IbaWidgetTypeStage,
+			Label:     "Drain Traffic Anomaly",
+			ProbeId:   probeBId,
 			StageName: "excess_range",
 		}
+		widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
 
-		err = client.client.talkToApstra(ctx, &talkToApstraIn{
-			method:      http.MethodPost,
-			urlStr:      fmt.Sprintf(apiUrlBlueprintByIdPrefix, bpClient.blueprintId) + "iba/widgets",
-			apiInput:    &widgetA,
-			apiResponse: &idResponse,
-		})
 		if err != nil {
 			t.Fatal(err)
 		}
-		widgetAId := idResponse.Id
 
-		err = client.client.talkToApstra(ctx, &talkToApstraIn{
-			method:      http.MethodPost,
-			urlStr:      fmt.Sprintf(apiUrlBlueprintByIdPrefix, bpClient.blueprintId) + "iba/widgets",
-			apiInput:    &widgetB,
-			apiResponse: &idResponse,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		widgetBId := idResponse.Id
 		data := IbaDashboardData{
 			Description:   "Test Dashboard",
 			Default:       false,
