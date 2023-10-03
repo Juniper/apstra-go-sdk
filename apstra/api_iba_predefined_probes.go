@@ -11,6 +11,9 @@ const (
 	apiUrlIbaPredefinedProbes       = "/api/blueprints/%s/iba/predefined-probes"
 	apiUrlIbaPredefinedProbesPrefix = apiUrlIbaPredefinedProbes + apiUrlPathDelim
 	apiUrlIbaPredefinedProbesByName = apiUrlIbaPredefinedProbesPrefix + "%s"
+	apiUrlIbaProbes                 = "/api/blueprints/%s/probes"
+	apiUrlIbaProbesPrefix           = apiUrlIbaProbes + apiUrlPathDelim
+	apiUrlIbaProbesById             = apiUrlIbaProbesPrefix + "%s"
 )
 
 type IbaPredefinedProbe struct {
@@ -73,4 +76,11 @@ func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpId ObjectI
 	}
 
 	return response.Id, nil
+}
+
+func (o *Client) deleteIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId) error {
+	return o.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlIbaProbesById, bpId, id),
+	})
 }

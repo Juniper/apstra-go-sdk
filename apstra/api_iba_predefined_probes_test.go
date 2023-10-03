@@ -20,8 +20,8 @@ func TestIbaPredefinedProbes(t *testing.T) {
 		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
-		defer bpDelete(ctx)
+		bpClient, _ := testBlueprintA(ctx, t, client.client)
+		//		defer bpDelete(ctx)
 		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 		if err != nil {
 			t.Fatal(err)
@@ -36,6 +36,13 @@ func TestIbaPredefinedProbes(t *testing.T) {
 			"evpn_vxlan_type3":                   true,
 			"specific_hotcold_ifcounter":         true,
 			"spine_superspine_hotcold_ifcounter": true,
+		}
+		t.Logf("Try an obviously fake name : %s", "FAKE")
+		_, err = bpClient.GetIbaPredefinedProbeByName(ctx, "FAKE")
+		if err == nil {
+			t.Fatal("FAKE name should have failed, but succeeded")
+		} else {
+			t.Log(err)
 		}
 
 		t.Logf("Try an obviously fake name : %s", "FAKE")
@@ -86,6 +93,26 @@ func TestIbaPredefinedProbes(t *testing.T) {
 				t.Fatal(err)
 			}
 			t.Logf("Widget %s created", widget.Data.Label)
+
+			t.Logf("Try to Delete Probe this should fail because a widget is using it")
+			err = bpClient.DeleteIbaProbe(ctx, probeId)
+			if err == nil {
+				t.Fatal("Probe Deletion should have failed")
+			} else {
+				t.Log(err)
+			}
+
+			t.Logf("Delete Widget and then the probe this path should succeed")
+			err = bpClient.DeleteIbaWidget(ctx, widgetId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("Delete probe")
+
+			err = bpClient.DeleteIbaProbe(ctx, probeId)
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 }
