@@ -142,7 +142,7 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 
 	if l > 1 {
 		return nil, ClientErr{
-			errType: ErrNotfound,
+			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("%d Iba Dashboards with label '%s' found, expected 1", l, label),
 		}
 	}
