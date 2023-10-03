@@ -45,11 +45,25 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		data2 := IbaDashboardData{
+			Description:   "Test Dashboard Backup",
+			Default:       false,
+			Label:         "Test Dash B",
+			IbaWidgetGrid: [][]ObjectId{{widgetAId, widgetBId}, {widgetAId, widgetBId}},
+		}
+
+		t.Logf("Test Create Second Dashboard")
+		_, err = bpClient.CreateIbaDashboard(ctx, &data2)
+		if err != nil {
+			t.Log(data)
+			t.Fatal(err)
+		}
+
 		ds, err = bpClient.GetAllIbaDashboards(ctx)
 		l = len(ds)
 		t.Logf("Found %d dashboards", l)
-		if l != 1 {
-			t.Fatalf("Expected 1 dashboards. got %d", l)
+		if l != 2 {
+			t.Fatalf("Expected 2 dashboards. got %d", l)
 		}
 
 		checkDashes := func() {

@@ -124,7 +124,14 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	l := len(dashes)
+
+	var result []rawIbaDashboard
+	for _, w := range dashes {
+		if w.Label == label {
+			result = append(result, w)
+		}
+	}
+	l := len(result)
 
 	if l == 0 {
 		return nil, ClientErr{
@@ -140,7 +147,7 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 		}
 	}
 
-	return &dashes[0], nil
+	return &result[0], nil
 }
 
 func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *rawIbaDashboard) (ObjectId, error) {
