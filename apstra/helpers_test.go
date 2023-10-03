@@ -2,7 +2,6 @@ package apstra
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -514,16 +513,17 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, bpDeleteFunc
 }
 
-func testWidgets(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (ObjectId, IbaWidgetData, ObjectId,
-	IbaWidgetData) {
-
+// testWidgetsAB instantiates two predefined probes and creates widgets from them,
+// returning the widget Object Id and the IbaWidgetData object used for creation
+func testWidgets(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (ObjectId, IbaWidgetData,
+	ObjectId, IbaWidgetData) {
 	probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "bgp_session",
-		Data: json.RawMessage([]byte(`{
+		Data: []byte(`{
 			"Label":     "BGP Session Flapping",
 			"Duration":  300,
 			"Threshold": 40
-		}`)),
+		}`),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -531,10 +531,10 @@ func testWidgets(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClie
 
 	probeBId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "drain_node_traffic_anomaly",
-		Data: json.RawMessage([]byte(`{
+		Data: []byte(`{
 			"Label":     "Drain Traffic Anomaly",
 			"Threshold": 100000
-		}`)),
+		}`),
 	})
 
 	if err != nil {
