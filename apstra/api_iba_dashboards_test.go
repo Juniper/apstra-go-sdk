@@ -5,7 +5,6 @@ package apstra
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"reflect"
 	"testing"
@@ -24,52 +23,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 
 		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
 		defer bpDelete(ctx)
-		probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
-			Name: "bgp_session",
-			Data: json.RawMessage([]byte(`{
-			"Label":     "BGP Session Flapping",
-			"Duration":  300,
-			"Threshold": 40
-		}`)),
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		probeBId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
-			Name: "drain_node_traffic_anomaly",
-			Data: json.RawMessage([]byte(`{
-			"Label":     "Drain Traffic Anomaly",
-			"Threshold": 100000
-		}`)),
-		})
-
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		widgetA := IbaWidgetData{
-			Type:      IbaWidgetTypeStage,
-			Label:     "BGP Session Flapping",
-			ProbeId:   probeAId,
-			StageName: "BGP Session",
-		}
-		widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		widgetB := IbaWidgetData{
-			Type:      IbaWidgetTypeStage,
-			Label:     "Drain Traffic Anomaly",
-			ProbeId:   probeBId,
-			StageName: "excess_range",
-		}
-		widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
-
-		if err != nil {
-			t.Fatal(err)
-		}
+		widgetAId, _, widgetBId, _ := testWidgets(ctx, t, bpClient)
 
 		data := IbaDashboardData{
 			Description:   "Test Dashboard",
