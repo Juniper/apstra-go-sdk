@@ -55,22 +55,22 @@ type ModularDeviceSlotConfiguration struct {
 }
 
 type ModularDeviceProfile struct {
-	Label             string
-	ChassisProfileId  ObjectId
-	SlotConfiguration map[uint64]ModularDeviceSlotConfiguration
+	Label              string
+	ChassisProfileId   ObjectId
+	SlotConfigurations map[uint64]ModularDeviceSlotConfiguration
 }
 
 func (o *ModularDeviceProfile) raw() *rawModularDeviceProfile {
 	result := &rawModularDeviceProfile{
-		DeviceProfileType: DeviceProfileTypeModular.Value,
-		Label:             o.Label,
-		ChassisProfileId:  o.ChassisProfileId,
-		SlotConfiguration: make([]rawModularDeviceSlotConfiguration, len(o.SlotConfiguration)),
+		DeviceProfileType:  DeviceProfileTypeModular.Value,
+		Label:              o.Label,
+		ChassisProfileId:   o.ChassisProfileId,
+		SlotConfigurations: make([]rawModularDeviceSlotConfiguration, len(o.SlotConfigurations)),
 	}
 
 	var i int
-	for slotId, slotConfiguraiton := range o.SlotConfiguration {
-		result.SlotConfiguration[i] = rawModularDeviceSlotConfiguration{
+	for slotId, slotConfiguraiton := range o.SlotConfigurations {
+		result.SlotConfigurations[i] = rawModularDeviceSlotConfiguration{
 			SlotId:            slotId,
 			LinecardProfileId: slotConfiguraiton.LinecardProfileId,
 		}
@@ -81,21 +81,21 @@ func (o *ModularDeviceProfile) raw() *rawModularDeviceProfile {
 }
 
 type rawModularDeviceProfile struct {
-	DeviceProfileType string                              `json:"device_profile_type"`
-	Label             string                              `json:"label"`
-	ChassisProfileId  ObjectId                            `json:"chassis_profile_id"`
-	SlotConfiguration []rawModularDeviceSlotConfiguration `json:"slot_configuration"`
+	DeviceProfileType  string                              `json:"device_profile_type"`
+	Label              string                              `json:"label"`
+	ChassisProfileId   ObjectId                            `json:"chassis_profile_id"`
+	SlotConfigurations []rawModularDeviceSlotConfiguration `json:"slot_configuration"`
 }
 
 func (o *rawModularDeviceProfile) polish() *ModularDeviceProfile {
 	result := &ModularDeviceProfile{
-		Label:             o.Label,
-		ChassisProfileId:  o.ChassisProfileId,
-		SlotConfiguration: make(map[uint64]ModularDeviceSlotConfiguration, len(o.SlotConfiguration)),
+		Label:              o.Label,
+		ChassisProfileId:   o.ChassisProfileId,
+		SlotConfigurations: make(map[uint64]ModularDeviceSlotConfiguration, len(o.SlotConfigurations)),
 	}
 
-	for _, slotConfiguration := range o.SlotConfiguration {
-		result.SlotConfiguration[slotConfiguration.SlotId] = ModularDeviceSlotConfiguration{
+	for _, slotConfiguration := range o.SlotConfigurations {
+		result.SlotConfigurations[slotConfiguration.SlotId] = ModularDeviceSlotConfiguration{
 			LinecardProfileId: slotConfiguration.LinecardProfileId,
 		}
 	}
