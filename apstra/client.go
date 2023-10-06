@@ -1701,3 +1701,30 @@ func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectI
 
 	return OverlayControlProtocol(ocp), nil
 }
+
+// CreateModularDeviceProfile creates a ModularDeviceProfile in Apstra based
+// on the supplied object, and returns its ID.
+func (o *Client) CreateModularDeviceProfile(ctx context.Context, in *ModularDeviceProfile) (ObjectId, error) {
+	return o.createModularDeviceProfile(ctx, in.raw())
+}
+
+// GetModularDeviceProfile returns *ModularDeviceProfile found in Apstra with the supplied ID.
+func (o *Client) GetModularDeviceProfile(ctx context.Context, id ObjectId) (*ModularDeviceProfile, error) {
+	raw, err := o.getModularDeviceProfile(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish(), nil
+}
+
+// UpdateModularDeviceProfile updates a ModularDeviceProfile identified by id
+// using the supplied ModularDeviceProfile.
+func (o *Client) UpdateModularDeviceProfile(ctx context.Context, id ObjectId, cfg *ModularDeviceProfile) error {
+	return o.updateModularDeviceProfile(ctx, id, cfg.raw())
+}
+
+// DeleteModularDeviceProfile deletes the ModularDeviceProfile identified by id
+func (o *Client) DeleteModularDeviceProfile(ctx context.Context, id ObjectId) error {
+	return o.deleteModularDeviceProfile(ctx, id)
+}
