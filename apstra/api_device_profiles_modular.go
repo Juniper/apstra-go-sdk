@@ -38,10 +38,10 @@ func (o *ModularDeviceProfile) raw() *rawModularDeviceProfile {
 	}
 
 	var i int
-	for slotId, slotConfiguraiton := range o.SlotConfigurations {
+	for slotId, slotConfiguration := range o.SlotConfigurations {
 		result.SlotConfigurations[i] = rawModularDeviceSlotConfiguration{
 			SlotId:            slotId,
-			LinecardProfileId: slotConfiguraiton.LinecardProfileId,
+			LinecardProfileId: slotConfiguration.LinecardProfileId,
 		}
 		i++
 	}
