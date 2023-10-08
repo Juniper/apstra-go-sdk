@@ -14,37 +14,6 @@ var (
 	DeviceProfileTypeMonolithic = DeviceProfileType{Value: "monolithic"}
 )
 
-// https://35.92.136.236:47759/api/device-profiles
-//
-// POST
-// {
-//  "device_profile_type": "modular",
-//  "predefined": false,
-//  "label": "name",
-//  "chassis_profile_id": "Juniper_PTX10008",
-//  "slot_configuration": [
-//    {
-//      "linecard_profile_id": "Juniper_PTX10K_LC1201_36CD",
-//      "slot_id": 0
-//    }
-//  ]
-//}
-//
-// PUT
-// {
-//  "device_profile_type": "modular",
-//  "predefined": false,
-//  "id": "dfcfc410-6997-4825-8cb8-41fe8e78d528",
-//  "label": "LABEL GOES HERE2",
-//  "chassis_profile_id": "Juniper_PTX10008",
-//  "slot_configuration": [
-//    {
-//      "linecard_profile_id": "Juniper_PTX10K_LC1201_36CD",
-//      "slot_id": 0
-//    }
-//  ]
-//}
-
 type rawModularDeviceSlotConfiguration struct {
 	LinecardProfileId ObjectId `json:"linecard_profile_id"`
 	SlotId            uint64   `json:"slot_id"`
