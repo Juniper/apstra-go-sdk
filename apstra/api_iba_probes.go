@@ -13,24 +13,25 @@ const (
 )
 
 type IbaProbe struct {
-	Id                ObjectId    `json:"id"`
-	Label             string      `json:"label"`
-	TaskError         string      `json:"task_error"`
-	AnomalyCount      int         `json:"anomaly_count"`
-	Tags              []string    `json:"tags"`
-	LastError         interface{} `json:"last_error"`
-	UpdatedAt         string      `json:"updated_at"`
-	UpdatedBy         string      `json:"updated_by"`
-	Disabled          bool        `json:"disabled"`
-	ConfigCompletedAt string      `json:"config_completed_at"`
-	State             string      `json:"state"`
-	Version           int         `json:"version"`
-	HostNode          string      `json:"host_node"`
-	TaskState         string      `json:"task_state"`
-	ConfigStartedAt   string      `json:"config_started_at"`
-	IbaUnit           string      `json:"iba_unit"`
-	PredefinedProbe   string      `json:"predefined_probe"`
-	Description       string      `json:"description"`
+	Id                ObjectId                 `json:"id"`
+	Label             string                   `json:"label"`
+	TaskError         string                   `json:"task_error"`
+	Stages            []map[string]interface{} `json:"stages"`
+	AnomalyCount      int                      `json:"anomaly_count"`
+	Tags              []string                 `json:"tags"`
+	LastError         interface{}              `json:"last_error"`
+	UpdatedAt         string                   `json:"updated_at"`
+	UpdatedBy         string                   `json:"updated_by"`
+	Disabled          bool                     `json:"disabled"`
+	ConfigCompletedAt string                   `json:"config_completed_at"`
+	State             string                   `json:"state"`
+	Version           int                      `json:"version"`
+	HostNode          string                   `json:"host_node"`
+	TaskState         string                   `json:"task_state"`
+	ConfigStartedAt   string                   `json:"config_started_at"`
+	IbaUnit           string                   `json:"iba_unit"`
+	PredefinedProbe   string                   `json:"predefined_probe"`
+	Description       string                   `json:"description"`
 }
 
 func (o *Client) getAllIbaProbes(ctx context.Context, bpId ObjectId) ([]IbaProbe, error) {

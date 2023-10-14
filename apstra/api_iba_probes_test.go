@@ -70,13 +70,14 @@ func TestIbaProbes(t *testing.T) {
 			t.Logf("Description %s", p.Description)
 			t.Log(p)
 			t.Logf("Delete probe")
+			for _, i := range p.Stages {
+				t.Logf("Stage name %s", i["name"])
+			}
 			err = bpClient.DeleteIbaProbe(ctx, probeId)
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			t.Logf("Delete Probe again, this should fail")
-
 			err = bpClient.DeleteIbaProbe(ctx, probeId)
 			if err == nil {
 				t.Fatal("Probe Deletion should have failed")
