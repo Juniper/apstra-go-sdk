@@ -13,7 +13,7 @@ const (
 )
 
 type IbaProbe struct {
-	Id                string      `json:"id"`
+	Id                ObjectId    `json:"id"`
 	Label             string      `json:"label"`
 	TaskError         string      `json:"task_error"`
 	AnomalyCount      int         `json:"anomaly_count"`
