@@ -678,6 +678,16 @@ func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, 
 	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
 }
 
+// GetIbaProbe returns the IBA Probe that matches the ID
+func (o *TwoStageL3ClosClient) GetIbaProbe(ctx context.Context, id ObjectId) (*IbaProbe, error) {
+	probe, err := o.client.getIbaProbe(ctx, o.blueprintId, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return probe, err
+}
+
 // DeleteIbaProbe deletes an IBA Widget
 func (o *TwoStageL3ClosClient) DeleteIbaProbe(ctx context.Context, id ObjectId) error {
 	return o.client.deleteIbaProbe(ctx, o.blueprintId, id)
