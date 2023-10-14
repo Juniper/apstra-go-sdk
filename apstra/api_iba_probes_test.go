@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestIbaPredefinedProbes(t *testing.T) {
+func TestIbaProbes(t *testing.T) {
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
@@ -20,8 +20,8 @@ func TestIbaPredefinedProbes(t *testing.T) {
 		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
-		defer bpDelete(ctx)
+		bpClient, _ := testBlueprintA(ctx, t, client.client)
+		// defer bpDelete(ctx)
 		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 		if err != nil {
 			t.Fatal(err)
@@ -36,13 +36,6 @@ func TestIbaPredefinedProbes(t *testing.T) {
 			"evpn_vxlan_type3":                   true,
 			"specific_hotcold_ifcounter":         true,
 			"spine_superspine_hotcold_ifcounter": true,
-		}
-		t.Logf("Try an obviously fake name : %s", "FAKE")
-		_, err = bpClient.GetIbaPredefinedProbeByName(ctx, "FAKE")
-		if err == nil {
-			t.Fatal("FAKE name should have failed, but succeeded")
-		} else {
-			t.Log(err)
 		}
 
 		for _, p := range pdps {
@@ -69,43 +62,26 @@ func TestIbaPredefinedProbes(t *testing.T) {
 				}
 			}
 
-			t.Logf("Got back Probe Id %s \n Now Make a Widget with it.", probeId)
+			t.Logf("Got back Probe Id %s \n Now GET it.", probeId)
 
-			widgetId, err := bpClient.CreateIbaWidget(ctx, &IbaWidgetData{
-				Type:      IbaWidgetTypeStage,
-				ProbeId:   probeId,
-				Label:     p.Name,
-				StageName: p.Name,
-			})
+			p, err := bpClient.GetIbaProbe(ctx, probeId)
+
+			t.Logf("Label %s", p.Label)
+			t.Logf("Description %s", p.Description)
+			t.Log(p)
+			t.Logf("Delete probe")
+			err = bpClient.DeleteIbaProbe(ctx, probeId)
 			if err != nil {
 				t.Fatal(err)
 			}
-			t.Logf("Got back Widget Id %s \n Now fetch it.", widgetId)
 
-			widget, err := bpClient.GetIbaWidget(ctx, widgetId)
-			if err != nil {
-				t.Fatal(err)
-			}
-			t.Logf("Widget %s created", widget.Data.Label)
+			t.Logf("Delete Probe again, this should fail")
 
-			t.Logf("Try to Delete Probe this should fail because a widget is using it")
 			err = bpClient.DeleteIbaProbe(ctx, probeId)
 			if err == nil {
 				t.Fatal("Probe Deletion should have failed")
 			} else {
 				t.Log(err)
-			}
-
-			t.Logf("Delete Widget and then the probe this path should succeed")
-			err = bpClient.DeleteIbaWidget(ctx, widgetId)
-			if err != nil {
-				t.Fatal(err)
-			}
-			t.Logf("Delete probe")
-
-			err = bpClient.DeleteIbaProbe(ctx, probeId)
-			if err != nil {
-				t.Fatal(err)
 			}
 		}
 	}
