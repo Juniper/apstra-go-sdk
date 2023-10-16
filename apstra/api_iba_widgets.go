@@ -257,8 +257,8 @@ func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *raw
 }
 
 func (o *Client) deleteIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlIbaWidgetsById, bpId, id),
-	})
+	}))
 }
