@@ -53,8 +53,8 @@ func (o *Client) getIbaProbeByLabel(ctx context.Context, bpId ObjectId, label st
 	i := 0
 	for _, p := range pps {
 		if p.Label == label {
-			probe := p
-			i := i + 1
+			probe = p
+			i = i + 1
 		}
 	}
 	if i == 0 {
