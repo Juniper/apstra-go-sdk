@@ -256,6 +256,22 @@ func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *raw
 	return response.Id, nil
 }
 
+func (o *Client) updateIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId, widget *rawIbaWidget) error {
+	response := &objectIdResponse{}
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPut,
+		urlStr:      fmt.Sprintf(apiUrlIbaWidgetsById, bpId, id),
+		apiInput:    &widget,
+		apiResponse: &response,
+	})
+
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
+}
+
 func (o *Client) deleteIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId) error {
 	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
