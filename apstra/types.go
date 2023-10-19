@@ -31,6 +31,6 @@ func (o VNI) validate() error {
 }
 
 type RtPolicy struct {
-	ImportRTs []ObjectId `json:"import_RTs"`
-	ExportRTs []ObjectId `json:"export_RTs"`
+	ImportRTs []string `json:"import_RTs"`
+	ExportRTs []string `json:"export_RTs"`
 }
