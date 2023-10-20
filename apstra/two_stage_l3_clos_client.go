@@ -536,8 +536,7 @@ func (o *TwoStageL3ClosClient) CreateConfiglet(ctx context.Context, c *TwoStageL
 }
 
 // UpdateConfiglet updates a configlet imported into a blueprint.
-func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, id ObjectId,
-	c *TwoStageL3ClosConfigletData) error {
+func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, id ObjectId, c *TwoStageL3ClosConfigletData) error {
 	return o.updateConfiglet(ctx, id, c.raw())
 }
 
@@ -656,6 +655,11 @@ func (o *TwoStageL3ClosClient) CreateIbaWidget(ctx context.Context, data *IbaWid
 	return id, nil
 }
 
+// UpdateIbaWidget updates an IBA Widget.
+func (o *TwoStageL3ClosClient) UpdateIbaWidget(ctx context.Context, id ObjectId, c *IbaWidgetData) error {
+	return o.client.updateIbaWidget(ctx, o.blueprintId, id, c.raw())
+}
+
 // DeleteIbaWidget deletes an IBA Widget
 func (o *TwoStageL3ClosClient) DeleteIbaWidget(ctx context.Context, id ObjectId) error {
 	return o.client.deleteIbaWidget(ctx, o.blueprintId, id)
@@ -676,6 +680,16 @@ func (o *TwoStageL3ClosClient) GetAllIbaPredefinedProbes(ctx context.Context) ([
 func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe,
 	error) {
 	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
+}
+
+// GetIbaProbe returns the IBA Probe that matches the ID
+func (o *TwoStageL3ClosClient) GetIbaProbe(ctx context.Context, id ObjectId) (*IbaProbe, error) {
+	probe, err := o.client.getIbaProbe(ctx, o.blueprintId, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return probe, err
 }
 
 // DeleteIbaProbe deletes an IBA Widget

@@ -176,7 +176,7 @@ func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 }
 
 func (o *Client) deleteIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id),
-	})
+	}))
 }

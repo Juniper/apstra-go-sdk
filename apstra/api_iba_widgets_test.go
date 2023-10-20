@@ -65,6 +65,20 @@ func TestIbaWidgets(t *testing.T) {
 					widget.Id, ws.Id)
 			}
 		}
+
+		t.Logf("Update %s", wa.Data.Label)
+		wa.Data.Description = "This widget now updated"
+		err = bpClient.UpdateIbaWidget(ctx, widgetAId, wa.Data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		wa1, err := bpClient.GetIbaWidget(ctx, widgetAId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if wa.Data.Description != wa1.Data.Description {
+			t.Fatal("Looks like the update failed")
+		}
 		t.Logf("Test Deletion of %s", wa.Data.Label)
 		err = bpClient.DeleteIbaWidget(ctx, widgetAId)
 		if err != nil {
