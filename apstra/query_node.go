@@ -15,6 +15,7 @@ const (
 	NodeTypePolicy
 	NodeTypeRack
 	NodeTypeRedundancyGroup
+	NodeTypeRouteTargetPolicy
 	NodeTypeRoutingPolicy
 	NodeTypeSecurityZone
 	NodeTypeSystem
@@ -35,6 +36,7 @@ const (
 	nodeTypePolicy                 = nodeType("policy")
 	nodeTypeRack                   = nodeType("rack")
 	nodeTypeRedundancyGroup        = nodeType("redundancy_group")
+	nodeTypeRouteTargetPolicy      = nodeType("route_target_policy")
 	nodeTypeRoutingPolicy          = nodeType("routing_policy")
 	nodeTypeSecurityZone           = nodeType("security_zone")
 	nodeTypeSystem                 = nodeType("system")
@@ -73,6 +75,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeRack)
 	case NodeTypeRedundancyGroup:
 		return string(nodeTypeRedundancyGroup)
+	case NodeTypeRouteTargetPolicy:
+		return string(nodeTypeRouteTargetPolicy)
 	case NodeTypeRoutingPolicy:
 		return string(nodeTypeRoutingPolicy)
 	case NodeTypeSecurityZone:
