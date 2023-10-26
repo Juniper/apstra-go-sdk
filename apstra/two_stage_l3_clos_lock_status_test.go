@@ -19,6 +19,7 @@ func TestLockStatusStrings(t *testing.T) {
 		stringType apiIotaString
 	}
 	testData := []stringTestData{
+		{stringVal: "locked", intType: LockStatusLocked, stringType: lockStatusLocked},
 		{stringVal: "unlocked", intType: LockStatusUnlocked, stringType: lockStatusUnlocked},
 		{stringVal: "locked_by_restricted_user", intType: LockStatusLockedByRestrictedUser, stringType: lockStatusLockedByRestrictedUser},
 		{stringVal: "locked_by_admin", intType: LockStatusLockedByAdmin, stringType: lockStatusLockedByAdmin},
