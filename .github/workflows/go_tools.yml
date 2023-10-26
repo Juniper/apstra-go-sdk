@@ -19,3 +19,6 @@ jobs:
 
       - name: go vet
         run: make vet
+
+      - name: compliance
+        run: make compliance-check
