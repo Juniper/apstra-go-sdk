@@ -15,12 +15,14 @@ type lockStatus string
 
 const (
 	LockStatusUnlocked = LockStatus(iota)
+	LockStatusLocked
 	LockStatusLockedByRestrictedUser
 	LockStatusLockedByAdmin
 	LockStatusLockedByDeletedUser
 	LockStatusUnknown = "unknown lock status %s"
 
 	lockStatusUnlocked               = lockStatus("unlocked")
+	lockStatusLocked                 = lockStatus("locked")
 	lockStatusLockedByRestrictedUser = lockStatus("locked_by_restricted_user")
 	lockStatusLockedByAdmin          = lockStatus("locked_by_admin")
 	lockStatusLockedByDeletedUser    = lockStatus("locked_by_deleted_user")
@@ -31,6 +33,8 @@ func (o LockStatus) String() string {
 	switch o {
 	case LockStatusUnlocked:
 		return string(lockStatusUnlocked)
+	case LockStatusLocked:
+		return string(lockStatusLocked)
 	case LockStatusLockedByRestrictedUser:
 		return string(lockStatusLockedByRestrictedUser)
 	case LockStatusLockedByAdmin:
@@ -50,6 +54,8 @@ func (o lockStatus) parse() (int, error) {
 	switch o {
 	case lockStatusUnlocked:
 		return int(LockStatusUnlocked), nil
+	case lockStatusLocked:
+		return int(LockStatusLocked), nil
 	case lockStatusLockedByRestrictedUser:
 		return int(LockStatusLockedByRestrictedUser), nil
 	case lockStatusLockedByAdmin:
