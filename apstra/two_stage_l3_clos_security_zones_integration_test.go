@@ -74,10 +74,9 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 		label2 := "test-" + randStr2
 		log.Printf("testing UpdateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.UpdateSecurityZone(ctx, zoneId, &SecurityZoneData{
-			SzType:  SecurityZoneTypeEVPN,
-			VrfName: vrfName2,
-			Label:   label2,
-			//JunosEvpnIrbMode: junosEvpnIrbMode,
+			SzType:           SecurityZoneTypeEVPN,
+			VrfName:          vrfName2,
+			Label:            label2,
 			JunosEvpnIrbMode: &JunosEvpnIrbModeAsymmetric,
 		})
 		if err != nil {
