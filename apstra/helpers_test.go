@@ -488,10 +488,13 @@ func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 }
 
 func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+	templateId, templateDelete := testTemplateB(ctx, t, client)
+	defer templateDelete(ctx)
+
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
-		TemplateId: "L2_Virtual",
+		TemplateId: templateId,
 		FabricAddressingPolicy: &FabricAddressingPolicy{
 			SpineSuperspineLinks: AddressingSchemeIp46,
 			SpineLeafLinks:       AddressingSchemeIp46,
@@ -563,4 +566,51 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	}
 
 	return widgetAId, widgetA, widgetBId, widgetB
+}
+
+func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId, func(context.Context) error) {
+	rbt, err := client.GetRackBasedTemplate(ctx, "L2_Virtual")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rbt.Data.DisplayName = randString(5, "hex")
+	rbt.Data.FabricAddressingPolicy = &FabricAddressingPolicy{
+		SpineSuperspineLinks: AddressingSchemeIp46,
+		SpineLeafLinks:       AddressingSchemeIp46,
+	}
+	for k, v := range rbt.Data.RackInfo {
+		v.RackTypeData = nil
+		rbt.Data.RackInfo[k] = v
+	}
+
+	id, err := client.CreateRackBasedTemplate(ctx, &CreateRackBasedTemplateRequest{
+		DisplayName: rbt.Data.DisplayName,
+		Capability:  rbt.Data.Capability,
+		Spine: &TemplateElementSpineRequest{
+			Count:                   rbt.Data.Spine.Count,
+			ExternalLinkSpeed:       rbt.Data.Spine.ExternalLinkSpeed,
+			LinkPerSuperspineSpeed:  rbt.Data.Spine.LinkPerSuperspineSpeed,
+			LogicalDevice:           "AOS-7x10-Spine",
+			LinkPerSuperspineCount:  rbt.Data.Spine.LinkPerSuperspineCount,
+			ExternalLinksPerNode:    rbt.Data.Spine.ExternalLinksPerNode,
+			ExternalFacingNodeCount: rbt.Data.Spine.ExternalFacingNodeCount,
+			ExternalLinkCount:       rbt.Data.Spine.ExternalLinkCount,
+		},
+		RackInfos:              rbt.Data.RackInfo,
+		DhcpServiceIntent:      &rbt.Data.DhcpServiceIntent,
+		AntiAffinityPolicy:     &rbt.Data.AntiAffinityPolicy,
+		AsnAllocationPolicy:    &rbt.Data.AsnAllocationPolicy,
+		FabricAddressingPolicy: rbt.Data.FabricAddressingPolicy,
+		VirtualNetworkPolicy:   &rbt.Data.VirtualNetworkPolicy,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	deleteFunc := func(ctx context.Context) error {
+		return client.DeleteTemplate(ctx, id)
+	}
+
+	return id, deleteFunc
 }
