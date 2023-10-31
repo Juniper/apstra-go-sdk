@@ -33,9 +33,10 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 
 		log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		zoneId, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
-			SzType:  SecurityZoneTypeEVPN,
-			VrfName: vrfName,
-			Label:   label,
+			SzType:           SecurityZoneTypeEVPN,
+			VrfName:          vrfName,
+			Label:            label,
+			JunosEvpnIrbMode: &JunosEvpnIrbModeSymmetric,
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -62,15 +63,21 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 		if zone.Id != zoneId {
 			t.Fatalf("created vs. fetched zone IDs don't match: '%s' and '%s'", zone.Id, zoneId)
 		}
+		if securityZoneJunosEvpnIrbModeRequired().Includes(client.client.apiVersion) {
+			if zone.Data.JunosEvpnIrbMode.Value != JunosEvpnIrbModeSymmetric.Value {
+				t.Fatal()
+			}
+		}
 
 		randStr2 := randString(5, "hex")
 		vrfName2 := "test-" + randStr2
 		label2 := "test-" + randStr2
 		log.Printf("testing UpdateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.UpdateSecurityZone(ctx, zoneId, &SecurityZoneData{
-			SzType:  SecurityZoneTypeEVPN,
-			VrfName: vrfName2,
-			Label:   label2,
+			SzType:           SecurityZoneTypeEVPN,
+			VrfName:          vrfName2,
+			Label:            label2,
+			JunosEvpnIrbMode: &JunosEvpnIrbModeAsymmetric,
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -85,6 +92,10 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			t.Fatal()
 		}
 		if zone.Data.VrfName != vrfName2 {
+			t.Fatal()
+		}
+		if securityZoneJunosEvpnIrbModeRequired().Includes(client.client.apiVersion) &&
+			zone.Data.JunosEvpnIrbMode.Value != JunosEvpnIrbModeAsymmetric.Value {
 			t.Fatal()
 		}
 

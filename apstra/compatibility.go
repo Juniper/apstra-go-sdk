@@ -11,6 +11,9 @@ const (
 	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
 
 	integerPoolForbiddenVersions = "4.1.0, 4.1.1"
+
+	securityZoneJunosEvpnIrbModeRequiredVersions = "4.2.0"
+	securityZoneJunosEvpnIrbModeRequiredError    = "junos_evpn_irb_mode is required by Apstra 4.2 and later"
 )
 
 func parseVersionList(s string) StringSliceWithIncludes {
@@ -46,6 +49,10 @@ func podBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
 
 func integerPoolForbidden() StringSliceWithIncludes {
 	return parseVersionList(integerPoolForbiddenVersions)
+}
+
+func securityZoneJunosEvpnIrbModeRequired() StringSliceWithIncludes {
+	return parseVersionList(securityZoneJunosEvpnIrbModeRequiredVersions)
 }
 
 // ApstraApiSupportedVersions returns the Apstra versions supported by this

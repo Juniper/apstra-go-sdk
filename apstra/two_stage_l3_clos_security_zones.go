@@ -3,7 +3,16 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"github.com/orsinium-labs/enum"
 	"net/http"
+)
+
+type JunosEvpnIrbMode enum.Member[string]
+
+var (
+	JunosEvpnIrbModeSymmetric  = JunosEvpnIrbMode{Value: "symmetric"}
+	JunosEvpnIrbModeAsymmetric = JunosEvpnIrbMode{Value: "asymmetric"}
+	JunosEvpnIrbModes          = enum.New(JunosEvpnIrbModeSymmetric, JunosEvpnIrbModeAsymmetric)
 )
 
 const (
@@ -91,11 +100,12 @@ type SecurityZoneData struct {
 	SzType  SecurityZoneType
 	VrfName string
 
-	RoutingPolicyId ObjectId  // automatically assigned
-	RouteTarget     *string   // can be null
-	RtPolicy        *RtPolicy // can be null
-	VlanId          *Vlan     // can be null
-	VniId           *int      // can be null
+	RoutingPolicyId  ObjectId          // automatically assigned
+	RouteTarget      *string           // can be null
+	RtPolicy         *RtPolicy         // can be null
+	VlanId           *Vlan             // can be null
+	VniId            *int              // can be null
+	JunosEvpnIrbMode *JunosEvpnIrbMode // Apstra 4.2+ only
 }
 
 func (o SecurityZoneData) raw() *rawSecurityZone {
@@ -104,28 +114,35 @@ func (o SecurityZoneData) raw() *rawSecurityZone {
 		routeTarget = *o.RouteTarget
 	}
 
+	var junosEvpnIrbMode string
+	if o.JunosEvpnIrbMode != nil {
+		junosEvpnIrbMode = o.JunosEvpnIrbMode.Value
+	}
+
 	return &rawSecurityZone{
-		Label:           o.Label,
-		SzType:          o.SzType.raw(),
-		VrfName:         o.VrfName,
-		RoutingPolicyId: o.RoutingPolicyId,
-		RouteTarget:     routeTarget,
-		RtPolicy:        o.RtPolicy,
-		VlanId:          o.VlanId,
-		VniId:           o.VniId,
+		Label:            o.Label,
+		SzType:           o.SzType.raw(),
+		VrfName:          o.VrfName,
+		RoutingPolicyId:  o.RoutingPolicyId,
+		RouteTarget:      routeTarget,
+		RtPolicy:         o.RtPolicy,
+		VlanId:           o.VlanId,
+		VniId:            o.VniId,
+		JunosEvpnIrbMode: junosEvpnIrbMode,
 	}
 }
 
 type rawSecurityZone struct {
-	Id              ObjectId         `json:"id,omitempty"`
-	Label           string           `json:"label"`
-	SzType          securityZoneType `json:"sz_type"`
-	VrfName         string           `json:"vrf_name"`
-	RoutingPolicyId ObjectId         `json:"routing_policy_id,omitempty"`
-	RouteTarget     string           `json:"route_target,omitempty"`
-	RtPolicy        *RtPolicy        `json:"rt_policy,omitempty"`
-	VlanId          *Vlan            `json:"vlan_id,omitempty"`
-	VniId           *int             `json:"vni_id,omitempty"`
+	Id               ObjectId         `json:"id,omitempty"`
+	Label            string           `json:"label"`
+	SzType           securityZoneType `json:"sz_type"`
+	VrfName          string           `json:"vrf_name"`
+	RoutingPolicyId  ObjectId         `json:"routing_policy_id,omitempty"`
+	RouteTarget      string           `json:"route_target,omitempty"`
+	RtPolicy         *RtPolicy        `json:"rt_policy,omitempty"`
+	VlanId           *Vlan            `json:"vlan_id,omitempty"`
+	VniId            *int             `json:"vni_id,omitempty"`
+	JunosEvpnIrbMode string           `json:"junos_evpn_irb_mode,omitempty"`
 }
 
 func (o rawSecurityZone) polish() (*SecurityZone, error) {
@@ -143,14 +160,15 @@ func (o rawSecurityZone) polish() (*SecurityZone, error) {
 	return &SecurityZone{
 		Id: o.Id,
 		Data: &SecurityZoneData{
-			Label:           o.Label,
-			SzType:          SecurityZoneType(szType),
-			VrfName:         o.VrfName,
-			RoutingPolicyId: o.RoutingPolicyId,
-			RouteTarget:     routeTarget,
-			RtPolicy:        o.RtPolicy,
-			VlanId:          o.VlanId,
-			VniId:           o.VniId,
+			Label:            o.Label,
+			SzType:           SecurityZoneType(szType),
+			VrfName:          o.VrfName,
+			RoutingPolicyId:  o.RoutingPolicyId,
+			RouteTarget:      routeTarget,
+			RtPolicy:         o.RtPolicy,
+			VlanId:           o.VlanId,
+			VniId:            o.VniId,
+			JunosEvpnIrbMode: JunosEvpnIrbModes.Parse(o.JunosEvpnIrbMode),
 		},
 	}, nil
 }
