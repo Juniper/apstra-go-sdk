@@ -147,13 +147,17 @@ func (o *TwoStageL3ClosClient) SetInterfaceMapAssignments(ctx context.Context, a
 	return o.setInterfaceMapAssignments(ctx, assignments)
 }
 
-// CreateSecurityZone creates an Apstra Routing Zone / Security Zone / VRF
+// CreateSecurityZone creates an Apstra Routing Zone / Security Zone / VRF.
+// If cfg.JunosEvpnIrbMode is omitted, but the API's version-dependent behavior
+// requires that field, it will be set to JunosEvpnIrbModeAsymmetric in the
+// request sent to the API.
 func (o *TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg *SecurityZoneData) (ObjectId, error) {
-	if cfg.JunosEvpnIrbMode == nil && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion) {
-		return "", errors.New(securityZoneJunosEvpnIrbModeRequiredError)
+	raw := cfg.raw()
+	if raw.JunosEvpnIrbMode == "" && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion) {
+		raw.JunosEvpnIrbMode = JunosEvpnIrbModeAsymmetric.Value
 	}
 
-	response, err := o.createSecurityZone(ctx, cfg.raw())
+	response, err := o.createSecurityZone(ctx, raw)
 	if err != nil {
 		return "", err
 	}
