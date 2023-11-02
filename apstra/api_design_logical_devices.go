@@ -445,8 +445,6 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 	var found bool
 
 	for _, ld := range logicalDevices {
-		foo := &ld
-		_ = foo
 		if ld.Data.DisplayName == name {
 			if found {
 				return nil, ClientErr{
