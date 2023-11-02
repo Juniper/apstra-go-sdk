@@ -9,6 +9,7 @@ require (
 	github.com/google/go-licenses v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/orsinium-labs/enum v1.3.0
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	google.golang.org/protobuf v1.30.0
 )
 
@@ -39,7 +40,6 @@ require (
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/net v0.16.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
