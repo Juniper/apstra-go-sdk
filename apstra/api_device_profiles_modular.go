@@ -12,6 +12,7 @@ type DeviceProfileType enum.Member[string]
 var (
 	DeviceProfileTypeModular    = DeviceProfileType{Value: "modular"}
 	DeviceProfileTypeMonolithic = DeviceProfileType{Value: "monolithic"}
+	DeviceProfileTypes          = enum.New(DeviceProfileTypeModular, DeviceProfileTypeMonolithic)
 )
 
 type rawModularDeviceSlotConfiguration struct {
