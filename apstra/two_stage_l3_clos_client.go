@@ -770,3 +770,57 @@ func (o *TwoStageL3ClosClient) UpdateIbaDashboard(ctx context.Context, id Object
 func (o *TwoStageL3ClosClient) DeleteIbaDashboard(ctx context.Context, id ObjectId) error {
 	return o.client.deleteIbaDashboard(ctx, o.blueprintId, id)
 }
+
+// CreateRemoteGateway creates an EVPN remote / external gateway using the specified parameters
+func (o *TwoStageL3ClosClient) CreateRemoteGateway(ctx context.Context, in *RemoteGatewayData) (ObjectId, error) {
+	return o.createRemoteGateway(ctx, in.raw())
+}
+
+// GetRemoteGateway retrieves the remote / external gateway specified by id
+func (o *TwoStageL3ClosClient) GetRemoteGateway(ctx context.Context, id ObjectId) (*RemoteGateway, error) {
+	raw, err := o.getRemoteGateway(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
+}
+
+// GetRemoteGatewayByName retrieves the remote / external gateway specified by name
+func (o *TwoStageL3ClosClient) GetRemoteGatewayByName(ctx context.Context, name string) (*RemoteGateway, error) {
+	raw, err := o.getRemoteGatewayByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
+}
+
+// GetAllRemoteGateways retrieves all remote / external gateways
+func (o *TwoStageL3ClosClient) GetAllRemoteGateways(ctx context.Context) ([]RemoteGateway, error) {
+	rawGateways, err := o.getAllRemoteGateways(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]RemoteGateway, len(rawGateways))
+	for i, rawGateway := range rawGateways {
+		gateway, err := rawGateway.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *gateway
+	}
+
+	return result, nil
+}
+
+// UpdateRemoteGateway updates the remote / external gateway specified by id using the supplied parameters
+func (o *TwoStageL3ClosClient) UpdateRemoteGateway(ctx context.Context, id ObjectId, in *RemoteGatewayData) error {
+	return o.updateRemoteGateway(ctx, id, in.raw())
+}
+
+// DeleteRemoteGateway deletes the specified remote / external gateway
+func (o *TwoStageL3ClosClient) DeleteRemoteGateway(ctx context.Context, id ObjectId) error {
+	return o.deleteRemoteGateway(ctx, id)
+}

@@ -128,53 +128,43 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 		for i, cfg := range remoteGwCfgs {
 			cfg.LocalGwNodes = localGwNodes
 
-			log.Printf("testing createRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			ids[i], err = bp.createRemoteGateway(ctx, cfg.raw())
+			log.Printf("testing CreateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			ids[i], err = bp.CreateRemoteGateway(ctx, &cfg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			log.Printf("testing getRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			raw, err := bp.getRemoteGateway(ctx, ids[i])
+			log.Printf("testing GetRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			gatewayById, err := bp.GetRemoteGateway(ctx, ids[i])
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			polishedById, err := raw.polish()
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if ids[i] != polishedById.Id {
-				t.Fatalf("expected ID %q, got %q", ids[i], polishedById.Id)
+			if ids[i] != gatewayById.Id {
+				t.Fatalf("expected ID %q, got %q", ids[i], gatewayById.Id)
 			}
 
 			if cfg.Ttl == nil || cfg.KeepaliveTimer == nil || cfg.HoldtimeTimer == nil {
-				checkRemoteGatewayDataAreEqual(t, &cfg, polishedById.Data, true)
+				checkRemoteGatewayDataAreEqual(t, &cfg, gatewayById.Data, true)
 			} else {
-				checkRemoteGatewayDataAreEqual(t, &cfg, polishedById.Data, false)
+				checkRemoteGatewayDataAreEqual(t, &cfg, gatewayById.Data, false)
 			}
 
-			log.Printf("testing getRemoteGatewayByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			raw, err = bp.getRemoteGatewayByName(ctx, remoteGwCfgs[i].GwName)
+			log.Printf("testing GetRemoteGatewayByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			gatewayByName, err := bp.GetRemoteGatewayByName(ctx, remoteGwCfgs[i].GwName)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			polishedByName, err := raw.polish()
-			if err != nil {
-				t.Fatal(err)
+			if gatewayById.Id != gatewayByName.Id {
+				t.Fatalf("id fetched by ID doesn't match id fetched by name: %q vs. %q", gatewayById.Id, gatewayByName.Id)
 			}
 
-			if polishedById.Id != polishedByName.Id {
-				t.Fatalf("id fetched by ID doesn't match id fetched by name: %q vs. %q", polishedById.Id, polishedByName.Id)
-			}
-
-			checkRemoteGatewayDataAreEqual(t, polishedById.Data, polishedByName.Data, false)
+			checkRemoteGatewayDataAreEqual(t, gatewayById.Data, gatewayByName.Data, false)
 		}
 
 		log.Printf("testing getAllRemoteGateways() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		remoteGws, err := bp.getAllRemoteGateways(ctx)
+		remoteGws, err := bp.GetAllRemoteGateways(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -191,7 +181,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 		}
 
 		log.Printf("testing getAllRemoteGateways() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		remoteGws, err = bp.getAllRemoteGateways(ctx)
+		remoteGws, err = bp.GetAllRemoteGateways(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
