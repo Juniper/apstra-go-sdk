@@ -110,6 +110,12 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 		})
 	}
 
+	randomGwCfgWithNil := RemoteGatewayData{
+		RouteTypes:   RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(RemoteGatewayRouteTypesEnum.Members()))],
+		LocalGwNodes: nil,
+		GwAsn:        rand.Uint32(),
+	}
+
 	randTtl := uint8(rand.Int())
 	randKeepaliveTimer := uint16(rand.Int())
 	randHoldtimeTimer := uint16(rand.Int())
@@ -142,6 +148,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 
 		// populate blueprint-specific facts into random config slice
 		randomGwCfg.LocalGwNodes = localGwNodes[rand.Intn(len(localGwNodes)):]
+		randomGwCfgWithNil.LocalGwNodes = localGwNodes[rand.Intn(len(localGwNodes)):]
 
 		ids := make([]ObjectId, len(remoteGwCfgs))
 		for i, cfg := range remoteGwCfgs {
@@ -188,6 +195,22 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 			}
 
 			ensureRemoteGatewayDataEqual(t, gatewayById.Data, gatewayByName.Data, false)
+
+			randomGwCfgWithNil.GwName = randString(5, "hex")
+			randomGwCfgWithNil.GwIp = net.IPv4(uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()))
+			log.Printf("testing UpdateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bp.UpdateRemoteGateway(ctx, ids[i], &randomGwCfgWithNil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing GetRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			gatewayById, err = bp.GetRemoteGateway(ctx, ids[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ensureRemoteGatewayDataEqual(t, gatewayById.Data, &randomGwCfgWithNil, true)
 
 			randomGwCfg.GwName = randString(5, "hex")
 			randomGwCfg.GwIp = net.IPv4(uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()))
