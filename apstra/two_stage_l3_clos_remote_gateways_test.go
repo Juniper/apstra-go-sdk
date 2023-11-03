@@ -14,7 +14,7 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-func checkRemoteGatewayDataAreEqual(t *testing.T, a, b *RemoteGatewayData, skipNilValues bool) {
+func ensureRemoteGatewayDataEqual(t *testing.T, a, b *RemoteGatewayData, skipNilValues bool) {
 	sort.Slice(a.LocalGwNodes, func(i, j int) bool {
 		if a.LocalGwNodes[i] > a.LocalGwNodes[j] {
 			return true
@@ -101,13 +101,25 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 		remoteGwCfgs = append(remoteGwCfgs, RemoteGatewayData{
 			RouteTypes:     routeType,
 			LocalGwNodes:   nil, // blueprint-specific details set in client loop below
-			GwAsn:          uint32(rand.Int()),
+			GwAsn:          rand.Uint32(),
 			GwIp:           net.IPv4(uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int())),
 			GwName:         randString(5, "hex"),
 			Ttl:            nil,
 			KeepaliveTimer: nil,
 			HoldtimeTimer:  nil,
 		})
+	}
+
+	randTtl := uint8(rand.Int())
+	randKeepaliveTimer := uint16(rand.Int())
+	randHoldtimeTimer := uint16(rand.Int())
+	randomGwCfg := RemoteGatewayData{
+		RouteTypes:     RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(RemoteGatewayRouteTypesEnum.Members()))],
+		LocalGwNodes:   nil,
+		GwAsn:          rand.Uint32(),
+		Ttl:            &randTtl,
+		KeepaliveTimer: &randKeepaliveTimer,
+		HoldtimeTimer:  &randHoldtimeTimer,
 	}
 
 	for clientName, client := range clients {
@@ -119,15 +131,20 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 			}
 		}()
 
+		// populate blueprint-specific facts into config slice
 		localGwNodes, err := getSystemIdsByRole(ctx, bp, "leaf")
 		if err != nil {
 			t.Fatal(err)
 		}
+		for i := range remoteGwCfgs {
+			remoteGwCfgs[i].LocalGwNodes = localGwNodes
+		}
+
+		// populate blueprint-specific facts into random config slice
+		randomGwCfg.LocalGwNodes = localGwNodes[rand.Intn(len(localGwNodes)):]
 
 		ids := make([]ObjectId, len(remoteGwCfgs))
 		for i, cfg := range remoteGwCfgs {
-			cfg.LocalGwNodes = localGwNodes
-
 			log.Printf("testing CreateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			ids[i], err = bp.CreateRemoteGateway(ctx, &cfg)
 			if err != nil {
@@ -144,11 +161,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 				t.Fatalf("expected ID %q, got %q", ids[i], gatewayById.Id)
 			}
 
-			if cfg.Ttl == nil || cfg.KeepaliveTimer == nil || cfg.HoldtimeTimer == nil {
-				checkRemoteGatewayDataAreEqual(t, &cfg, gatewayById.Data, true)
-			} else {
-				checkRemoteGatewayDataAreEqual(t, &cfg, gatewayById.Data, false)
-			}
+			ensureRemoteGatewayDataEqual(t, &cfg, gatewayById.Data, true)
 
 			log.Printf("testing GetRemoteGatewayByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			gatewayByName, err := bp.GetRemoteGatewayByName(ctx, remoteGwCfgs[i].GwName)
@@ -160,10 +173,40 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 				t.Fatalf("id fetched by ID doesn't match id fetched by name: %q vs. %q", gatewayById.Id, gatewayByName.Id)
 			}
 
-			checkRemoteGatewayDataAreEqual(t, gatewayById.Data, gatewayByName.Data, false)
+			ensureRemoteGatewayDataEqual(t, gatewayById.Data, gatewayByName.Data, false)
+
+			log.Printf("testing UpdateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bp.UpdateRemoteGateway(ctx, ids[i], gatewayById.Data)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing GetRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			gatewayById, err = bp.GetRemoteGateway(ctx, ids[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ensureRemoteGatewayDataEqual(t, gatewayById.Data, gatewayByName.Data, false)
+
+			randomGwCfg.GwName = randString(5, "hex")
+			randomGwCfg.GwIp = net.IPv4(uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()))
+			log.Printf("testing UpdateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bp.UpdateRemoteGateway(ctx, ids[i], &randomGwCfg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing GetRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			gatewayById, err = bp.GetRemoteGateway(ctx, ids[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ensureRemoteGatewayDataEqual(t, gatewayById.Data, &randomGwCfg, false)
 		}
 
-		log.Printf("testing getAllRemoteGateways() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		log.Printf("testing GetAllRemoteGateways() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		remoteGws, err := bp.GetAllRemoteGateways(ctx)
 		if err != nil {
 			t.Fatal(err)
@@ -173,14 +216,14 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 		}
 
 		for _, id := range ids {
-			log.Printf("testing deleteRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bp.deleteRemoteGateway(ctx, id)
+			log.Printf("testing DeleteRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bp.DeleteRemoteGateway(ctx, id)
 			if err != nil {
 				t.Fatal(err)
 			}
 		}
 
-		log.Printf("testing getAllRemoteGateways() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		log.Printf("testing GetAllRemoteGateways() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		remoteGws, err = bp.GetAllRemoteGateways(ctx)
 		if err != nil {
 			t.Fatal(err)
