@@ -28,9 +28,9 @@ type rawRemoteGatewayRequest struct {
 	GwAsn          uint32     `json:"gw_asn"`
 	GwIp           string     `json:"gw_ip"`
 	GwName         string     `json:"gw_name"`
-	Ttl            *uint8     `json:"ttl"`
-	KeepaliveTimer *uint16    `json:"keepalive_timer"`
-	HoldtimeTimer  *uint16    `json:"holdtime_timer"`
+	Ttl            *uint8     `json:"ttl,omitempty"`
+	KeepaliveTimer *uint16    `json:"keepalive_timer,omitempty"`
+	HoldtimeTimer  *uint16    `json:"holdtime_timer,omitempty"`
 }
 
 type rawRemoteGatewayResponse struct {
