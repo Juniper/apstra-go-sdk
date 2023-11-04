@@ -31,6 +31,7 @@ type rawRemoteGatewayRequest struct {
 	Ttl            *uint8     `json:"ttl,omitempty"`
 	KeepaliveTimer *uint16    `json:"keepalive_timer,omitempty"`
 	HoldtimeTimer  *uint16    `json:"holdtime_timer,omitempty"`
+	Password       *string    `json:"password,omitempty"`
 }
 
 type rawRemoteGatewayResponse struct {
@@ -45,6 +46,7 @@ type rawRemoteGatewayResponse struct {
 	Ttl            *uint8  `json:"ttl"`
 	KeepaliveTimer *uint16 `json:"keepalive_timer"`
 	HoldtimeTimer  *uint16 `json:"holdtime_timer"`
+	Password       *string `json:"password,omitempty"`
 }
 
 func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
@@ -74,6 +76,7 @@ func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
 			Ttl:            o.Ttl,
 			KeepaliveTimer: o.KeepaliveTimer,
 			HoldtimeTimer:  o.HoldtimeTimer,
+			Password:       o.Password,
 		},
 	}, nil
 }
@@ -87,6 +90,7 @@ type RemoteGatewayData struct {
 	Ttl            *uint8
 	KeepaliveTimer *uint16
 	HoldtimeTimer  *uint16
+	Password       *string
 }
 
 type RemoteGateway struct {
@@ -104,6 +108,7 @@ func (o *RemoteGatewayData) raw() *rawRemoteGatewayRequest {
 		Ttl:            o.Ttl,
 		KeepaliveTimer: o.KeepaliveTimer,
 		HoldtimeTimer:  o.HoldtimeTimer,
+		Password:       o.Password,
 	}
 }
 

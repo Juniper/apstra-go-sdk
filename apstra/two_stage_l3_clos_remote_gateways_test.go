@@ -10,8 +10,6 @@ import (
 	"net"
 	"sort"
 	"testing"
-
-	"golang.org/x/exp/constraints"
 )
 
 func ensureRemoteGatewayDataEqual(t *testing.T, a, b *RemoteGatewayData, skipNilValues bool) {
@@ -67,9 +65,16 @@ func ensureRemoteGatewayDataEqual(t *testing.T, a, b *RemoteGatewayData, skipNil
 		}
 		t.Fatalf("remote gateway Holdtime timers don't match: %v vs. %v", a.HoldtimeTimer, b.HoldtimeTimer)
 	}
+
+	if !possiblyNilValuesMatch(a.Password, b.Password, skipNilValues) {
+		if a == nil || b == nil {
+			t.Fatalf("remote gateway Passwords don't match: %v vs. %v", a.Password, b.Password)
+		}
+		t.Fatalf("remote gateway Passwords don't match: %v vs. %v", a.Password, b.Password)
+	}
 }
 
-func possiblyNilValuesMatch[A constraints.Integer](a, b *A, skipNilValues bool) bool {
+func possiblyNilValuesMatch[A comparable](a, b *A, skipNilValues bool) bool {
 	if a == nil && b == nil { // two nil values match
 		return true
 	}
@@ -107,6 +112,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 			Ttl:            nil,
 			KeepaliveTimer: nil,
 			HoldtimeTimer:  nil,
+			Password:       nil,
 		})
 	}
 
@@ -119,6 +125,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 	randTtl := uint8(rand.Int())
 	randKeepaliveTimer := uint16(rand.Int())
 	randHoldtimeTimer := uint16(rand.Int())
+	randomPassword := randString(5, "hex")
 	randomGwCfg := RemoteGatewayData{
 		RouteTypes:     RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(RemoteGatewayRouteTypesEnum.Members()))],
 		LocalGwNodes:   nil,
@@ -126,6 +133,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 		Ttl:            &randTtl,
 		KeepaliveTimer: &randKeepaliveTimer,
 		HoldtimeTimer:  &randHoldtimeTimer,
+		Password:       &randomPassword,
 	}
 
 	for clientName, client := range clients {
