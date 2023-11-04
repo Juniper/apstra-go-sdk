@@ -31,7 +31,7 @@ type rawRemoteGatewayRequest struct {
 	Ttl            *uint8     `json:"ttl,omitempty"`
 	KeepaliveTimer *uint16    `json:"keepalive_timer,omitempty"`
 	HoldtimeTimer  *uint16    `json:"holdtime_timer,omitempty"`
-	Password       *string    `json:"password,omitempty"`
+	Password       *string    `json:"password"`
 }
 
 type rawRemoteGatewayResponse struct {
