@@ -65,13 +65,6 @@ func ensureRemoteGatewayDataEqual(t *testing.T, a, b *RemoteGatewayData, skipNil
 		}
 		t.Fatalf("remote gateway Holdtime timers don't match: %v vs. %v", a.HoldtimeTimer, b.HoldtimeTimer)
 	}
-
-	if !possiblyNilValuesMatch(a.Password, b.Password, skipNilValues) {
-		if a == nil || b == nil {
-			t.Fatalf("remote gateway Passwords don't match: %v vs. %v", a.Password, b.Password)
-		}
-		t.Fatalf("remote gateway Passwords don't match: %v vs. %v", a.Password, b.Password)
-	}
 }
 
 func possiblyNilValuesMatch[A comparable](a, b *A, skipNilValues bool) bool {

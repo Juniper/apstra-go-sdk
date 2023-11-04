@@ -46,7 +46,6 @@ type rawRemoteGatewayResponse struct {
 	Ttl            *uint8  `json:"ttl"`
 	KeepaliveTimer *uint16 `json:"keepalive_timer"`
 	HoldtimeTimer  *uint16 `json:"holdtime_timer"`
-	Password       *string `json:"password,omitempty"`
 }
 
 func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
@@ -76,7 +75,6 @@ func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
 			Ttl:            o.Ttl,
 			KeepaliveTimer: o.KeepaliveTimer,
 			HoldtimeTimer:  o.HoldtimeTimer,
-			Password:       o.Password,
 		},
 	}, nil
 }
