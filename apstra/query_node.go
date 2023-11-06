@@ -13,6 +13,7 @@ const (
 	NodeTypeLogicalDevice
 	NodeTypeMetadata
 	NodeTypePolicy
+	NodeTypeProtocol
 	NodeTypeRack
 	NodeTypeRedundancyGroup
 	NodeTypeRouteTargetPolicy
@@ -34,6 +35,7 @@ const (
 	nodeTypeLogicalDevice          = nodeType("logical_device")
 	nodeTypeMetadata               = nodeType("metadata")
 	nodeTypePolicy                 = nodeType("policy")
+	nodeTypeProtocol               = nodeType("protocol")
 	nodeTypeRack                   = nodeType("rack")
 	nodeTypeRedundancyGroup        = nodeType("redundancy_group")
 	nodeTypeRouteTargetPolicy      = nodeType("route_target_policy")
@@ -71,6 +73,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeMetadata)
 	case NodeTypePolicy:
 		return string(nodeTypePolicy)
+	case NodeTypeProtocol:
+		return string(nodeTypeProtocol)
 	case NodeTypeRack:
 		return string(nodeTypeRack)
 	case NodeTypeRedundancyGroup:

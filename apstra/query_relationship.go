@@ -22,6 +22,7 @@ const (
 	RelationshipTypeMemberVNs
 	RelationshipTypePartOfRack
 	RelationshipTypePolicy
+	RelationshipTypeProtocol
 	RelationshipTypeRouteTargetPolicy
 	RelationshipTypeTag
 	RelationshipTypeUnknown = "unknown node type %s"
@@ -45,6 +46,7 @@ const (
 	relationshipTypeMemberVNs         = relationshipType("member_vns")
 	relationshipTypePartOfRack        = relationshipType("part_of_rack")
 	relationshipTypePolicy            = relationshipType("policy")
+	relationshipTypeProtocol          = relationshipType("protocol")
 	relationshipTypeRouteTargetPolicy = relationshipType("route_target_policy")
 	relationshipTypeTag               = relationshipType("tag")
 	relationshipTypeUnknown           = "unknown node type %d"
@@ -93,6 +95,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypePartOfRack)
 	case RelationshipTypePolicy:
 		return string(relationshipTypePolicy)
+	case RelationshipTypeProtocol:
+		return string(relationshipTypeProtocol)
 	case RelationshipTypeRouteTargetPolicy:
 		return string(relationshipTypeRouteTargetPolicy)
 	case RelationshipTypeTag:

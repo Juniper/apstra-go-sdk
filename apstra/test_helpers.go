@@ -129,3 +129,35 @@ func countSystemLinkTypes(ctx context.Context, systemId ObjectId, client *TwoSta
 
 	return result, lagMembers, nil
 }
+
+func getSystemIdsByRole(ctx context.Context, bp *TwoStageL3ClosClient, role string) ([]ObjectId, error) {
+	leafQuery := new(PathQuery).
+		SetClient(bp.client).
+		SetBlueprintId(bp.Id()).
+		SetBlueprintType(BlueprintTypeStaging).
+		Node([]QEEAttribute{
+			NodeTypeSystem.QEEAttribute(),
+			{"role", QEStringVal(role)},
+			{"name", QEStringVal("n_system")},
+		})
+
+	var leafQueryResult struct {
+		Items []struct {
+			System struct {
+				Id ObjectId `json:"id"`
+			} `json:"n_system"`
+		} `json:"items"`
+	}
+
+	err := leafQuery.Do(ctx, &leafQueryResult)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]ObjectId, len(leafQueryResult.Items))
+	for i, item := range leafQueryResult.Items {
+		result[i] = item.System.Id
+	}
+
+	return result, nil
+}
