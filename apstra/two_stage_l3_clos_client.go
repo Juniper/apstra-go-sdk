@@ -311,6 +311,15 @@ func (o *TwoStageL3ClosClient) GetVirtualNetwork(ctx context.Context, vnId Objec
 	return raw.polish()
 }
 
+// GetVirtualNetworkByName returns *VirtualNetwork representing the given VN name
+func (o *TwoStageL3ClosClient) GetVirtualNetworkByName(ctx context.Context, name string) (*VirtualNetwork, error) {
+	raw, err := o.getVirtualNetworkByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	return raw.polish()
+}
+
 // GetAllVirtualNetworks return map[ObjectId]VirtualNetwork representing all
 // virtual networks configured in Apstra. NOTE: the underlying API call DOES NOT
 // RETURN the SVI information, so each map entry will have a nil slice at it's

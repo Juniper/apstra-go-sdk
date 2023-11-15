@@ -741,6 +741,38 @@ func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId Objec
 	return response, nil
 }
 
+func (o *TwoStageL3ClosClient) getVirtualNetworkByName(ctx context.Context, name string) (*rawVirtualNetwork, error) {
+	rawVns, err := o.getAllVirtualNetworks(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var found int
+	var rawVn rawVirtualNetwork
+	for i := range rawVns {
+		if rawVns[i].Label == name {
+			found++
+			rawVn = rawVns[i]
+		}
+	}
+
+	switch found {
+	case 0:
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("virtual network with label %q not found", name),
+		}
+	case 1:
+		// re-fetch is required here because data is missing when we "get all".
+		return o.getVirtualNetwork(ctx, rawVn.Id)
+	default:
+		return nil, ClientErr{
+			errType: ErrMultipleMatch,
+			err:     fmt.Errorf("found %d virtual networks with label %q", found, name),
+		}
+	}
+}
+
 func (o *TwoStageL3ClosClient) getAllVirtualNetworks(ctx context.Context) (map[ObjectId]rawVirtualNetwork, error) {
 	var response struct {
 		VirtualNetworks map[ObjectId]rawVirtualNetwork `json:"virtual_networks"`
