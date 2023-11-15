@@ -282,6 +282,15 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 		}
 		compareVirtualNetworkData(t, &createData, getById.Data, false)
 
+		getByName, err := bpClient.GetVirtualNetworkByName(ctx, getById.Data.Label)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if vnId != getByName.Id {
+			t.Fatalf("Virtual Network ID mismatch: %q vs. %q", vnId, getByName.Id)
+		}
+		compareVirtualNetworkData(t, &createData, getByName.Data, false)
+
 		newVlan := Vlan(100)
 		createData.ReservedVlanId = &newVlan
 		createData.Label = randString(10, "hex")
