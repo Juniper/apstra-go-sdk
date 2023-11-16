@@ -182,13 +182,18 @@ func (o *rawManagedSystemInfo) polish() (*ManagedSystemInfo, error) {
 		return nil, err
 	}
 
+	status, err := o.Status.polish()
+	if err != nil {
+		return nil, err
+	}
+
 	return &ManagedSystemInfo{
 		ContainerStatus: o.ContainerStatus,
 		DeviceKey:       o.DeviceKey,
 		Facts:           o.Facts,
 		Id:              o.Id,
 		Services:        o.Services,
-		Status:          *o.Status.polish(),
+		Status:          *status,
 		UserConfig:      *userConfig,
 	}, nil
 }
@@ -223,36 +228,41 @@ type SystemFacts struct {
 }
 
 type SystemStatus struct {
-	AgentStartTime  time.Time `json:"agent_start_time"`
-	CommState       string    `json:"comm_state"`
-	DeviceStartTime time.Time `json:"device_start_time"`
-	ErrorMessage    string    `json:"error_message"`
-	IsAcknowledged  bool      `json:"is_acknowledged"`
-	OperationMode   AgentMode `json:"operation_mode"`
-	State           string    `json:"state"`
+	AgentStartTime  time.Time             `json:"agent_start_time"`
+	CommState       string                `json:"comm_state"`
+	DeviceStartTime time.Time             `json:"device_start_time"`
+	ErrorMessage    string                `json:"error_message"`
+	IsAcknowledged  bool                  `json:"is_acknowledged"`
+	OperationMode   SystemManagementLevel `json:"operation_mode"`
+	State           string                `json:"state"`
 }
 
 type rawSystemStatus struct {
-	AgentStartTime  time.Time        `json:"agent_start_time"`
-	CommState       string           `json:"comm_state"`
-	DeviceStartTime time.Time        `json:"device_start_time"`
-	ErrorMessage    string           `json:"error_message"`
-	IsAcknowledged  bool             `json:"is_acknowledged"`
-	OperationMode   rawAgentMode     `json:"operation_mode"`
-	State           string           `json:"state"`
-	UserConfig      SystemUserConfig `json:"user_config"`
+	AgentStartTime  time.Time             `json:"agent_start_time"`
+	CommState       string                `json:"comm_state"`
+	DeviceStartTime time.Time             `json:"device_start_time"`
+	ErrorMessage    string                `json:"error_message"`
+	IsAcknowledged  bool                  `json:"is_acknowledged"`
+	OperationMode   systemManagementLevel `json:"operation_mode"`
+	State           string                `json:"state"`
+	UserConfig      SystemUserConfig      `json:"user_config"`
 }
 
-func (o *rawSystemStatus) polish() *SystemStatus {
+func (o *rawSystemStatus) polish() (*SystemStatus, error) {
+	operationMode, err := o.OperationMode.parse()
+	if err != nil {
+		return nil, err
+	}
+
 	return &SystemStatus{
 		AgentStartTime:  o.AgentStartTime,
 		CommState:       o.CommState,
 		DeviceStartTime: o.DeviceStartTime,
 		ErrorMessage:    o.ErrorMessage,
 		IsAcknowledged:  o.IsAcknowledged,
-		OperationMode:   AgentMode(o.OperationMode.parse()),
+		OperationMode:   SystemManagementLevel(operationMode),
 		State:           o.State,
-	}
+	}, nil
 }
 
 type systemUpdate struct {

@@ -112,6 +112,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 				Platform:        testSwitch.platform,
 				Label:           label,
 				AgentTypeOffbox: testSwitch.platform.offbox(),
+				OperationMode:   SystemManagementLevelFullControl,
 			})
 			if err != nil {
 				ace := &ClientErr{}
@@ -257,8 +258,6 @@ func TestSystemAgentsStrings(t *testing.T) {
 		{stringVal: "connected", intType: AgentCxnStateConnected, stringType: agentCxnStateConnected},
 		{stringVal: "disconnected", intType: AgentCxnStateDisconnected, stringType: agentCxnStateDisconnected},
 		{stringVal: "auth_failed", intType: AgentCxnStateAuthFail, stringType: agentCxnStateAuthFail},
-		{stringVal: "full_control", intType: AgentModeFull, stringType: agentModeFull},
-		{stringVal: "telemetry_only", intType: AgentModeTelemetry, stringType: agentModeTelemetry},
 
 		{stringVal: "", intType: AgentJobTypeNull, stringType: agentJobTypeNull},
 		{stringVal: "none", intType: AgentJobTypeNone, stringType: agentJobTypeNone},

@@ -24,6 +24,7 @@ const (
 	vSwitchTypeNexus  = "nxosv"
 	vSwitchTypeSonic  = "sonic-vs"
 	vSwitchTypeQfx    = "vqfx"
+	vSwitchTypeVmx    = "vmx"
 )
 
 type cloudlabsDeviceType string
@@ -35,6 +36,8 @@ func (o cloudlabsDeviceType) platform() AgentPlatform {
 	case vSwitchTypeNexus:
 		return AgentPlatformNXOS
 	case vSwitchTypeQfx:
+		return AgentPlatformJunos
+	case vSwitchTypeVmx:
 		return AgentPlatformJunos
 	default:
 		return AgentPlatformNull
@@ -216,6 +219,7 @@ func (o *cloudlabsTopology) getSwitchInfo() ([]cloudlabsSwitchInfo, error) {
 		case vSwitchTypeNexus:
 		case vSwitchTypeSonic:
 		case vSwitchTypeQfx:
+		case vSwitchTypeVmx:
 		default:
 			continue
 		}
