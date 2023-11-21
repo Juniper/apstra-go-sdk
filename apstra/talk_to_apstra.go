@@ -32,6 +32,7 @@ type talkToApstraIn struct {
 	apiResponse    interface{} // if non-nil we'll JSON decode Apstra response here
 	doNotLogin     bool        // when set, Client will not attempt login (we set for anti-recursion)
 	unsynchronized bool        // default behavior is to send apstraApiAsyncParamValFull, block until task completion
+	httpBodyWriter io.Writer   // when non-nil, http body will be written here instead of unpacked into apiResponse
 }
 
 type apstraErr struct {
@@ -218,7 +219,6 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 			// Try the request again
 			in.doNotLogin = true
-			// todo - reusing the context here is not great
 			return o.talkToApstra(ctx, in)
 		} // HTTP 401
 
@@ -227,6 +227,15 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
+
+	// If the caller gave us an httpBodyWriter, copy the response body into it and return
+	if in.httpBodyWriter != nil {
+		_, err := io.CopyBuffer(in.httpBodyWriter, resp.Body, nil)
+		if err != nil {
+			return fmt.Errorf("error while reading http response body - %w", err)
+		}
+		return nil
+	}
 
 	// figure out whether Apstra responded with a task ID
 	var tIdR taskIdResponse
