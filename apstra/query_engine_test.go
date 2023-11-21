@@ -497,8 +497,7 @@ func TestRawQueryWithBlueprint(t *testing.T) {
 
 		query := new(RawQuery).
 			SetBlueprintType(BlueprintTypeStaging).
-			SetClient(client.
-				client).
+			SetClient(client.client).
 			SetBlueprintId(bpClient.Id()).
 			SetQuery("node(type='system', role='leaf', name='n_system')")
 
