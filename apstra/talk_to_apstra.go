@@ -228,7 +228,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
-	// If the caller gave us an io.Writer, copy the response body into it and return
+	// If the caller gave us an httpBodyWriter, copy the response body into it and return
 	if in.httpBodyWriter != nil {
 		_, err := io.CopyBuffer(in.httpBodyWriter, resp.Body, nil)
 		if err != nil {
