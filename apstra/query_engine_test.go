@@ -5,7 +5,9 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"log"
+	"reflect"
 	"testing"
 )
 
@@ -473,6 +475,58 @@ func TestRawQuery(t *testing.T) {
 		qo := q.String()
 		if tc.expected != qs {
 			t.Fatalf("test %d with optional expected %q, got %q", i, tc.expectedWithOptional, qo)
+		}
+	}
+}
+
+func TestRawQueryWithBlueprint(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		defer func() {
+			err = bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		query := new(RawQuery).
+			SetBlueprintType(BlueprintTypeStaging).
+			SetClient(client.client).
+			SetBlueprintId(bpClient.Id()).
+			SetQuery("node(type='system', role='leaf', name='n_system')")
+
+		var queryResponse struct {
+			Count int `json:"count"`
+			Items []struct {
+				System struct {
+					Id    string `json:"id"`
+					Label string `json:"label"`
+				} `json:"n_system"`
+			} `json:"items"`
+		}
+
+		log.Printf("testing raw query against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err := query.Do(ctx, &queryResponse)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		qr1 := queryResponse
+
+		err = json.Unmarshal(query.RawResult(), &queryResponse)
+		if err != nil {
+			t.Fatal(err)
+		}
+		qr2 := queryResponse
+
+		if !reflect.DeepEqual(qr1, qr2) {
+			t.Fatalf("qr1 and qr2 should be equal, got:\n%q\n\nand:\n%q", qr1, qr2)
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -453,14 +454,32 @@ func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query QEQuery
 		Query string `json:"query"`
 	}{Query: query.String()}
 
+	// talkToApstra will copy the http response into this buffer
+	httpBody := new(bytes.Buffer)
+
 	err = o.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodPost,
 		url:            apstraUrl,
 		apiInput:       apiInput,
-		apiResponse:    response,
+		httpBodyWriter: httpBody,
 		unsynchronized: true,
 	})
-	return convertTtaeToAceWherePossible(err)
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	// save the raw http response into the query
+	query.setRawResult(httpBody.Bytes())
+
+	// unpack the http response into the caller-supplied struct, if any
+	if response != nil {
+		err = json.NewDecoder(httpBody).Decode(response)
+		if err != nil {
+			return fmt.Errorf("error while decoding API query response %q - %w", httpBody.String(), err)
+		}
+	}
+
+	return nil
 }
 
 func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType NodeType, response interface{}) error {
