@@ -225,22 +225,16 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		return newTalkToApstraErr(req, requestBody, resp, "")
 	}
 
+	// noinspection GoUnhandledErrorResult
+	defer resp.Body.Close()
+
 	// If the caller gave us an io.Writer, copy the response body into it and return
 	if in.httpBodyWriter != nil {
 		_, err := io.CopyBuffer(in.httpBodyWriter, resp.Body, nil)
 		if err != nil {
 			return fmt.Errorf("error while reading http response body - %w", err)
 		}
-
-		err = resp.Body.Close()
-		if err != nil {
-			return fmt.Errorf("error while closing http response body - %w", err)
-		}
-		return nil
 	}
-
-	// noinspection GoUnhandledErrorResult
-	defer resp.Body.Close()
 
 	// figure out whether Apstra responded with a task ID
 	var tIdR taskIdResponse
