@@ -234,6 +234,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		if err != nil {
 			return fmt.Errorf("error while reading http response body - %w", err)
 		}
+		return nil
 	}
 
 	// figure out whether Apstra responded with a task ID
