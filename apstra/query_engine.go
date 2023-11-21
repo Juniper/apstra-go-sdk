@@ -17,12 +17,15 @@ const (
 type QEQuery interface {
 	Do(context.Context, interface{}) error
 	String() string
+	RawResult() []byte
 	getBlueprintType() BlueprintType
 	setOptional()
+	setRawResult([]byte)
 }
 
 var _ QEQuery = &PathQuery{}
 var _ QEQuery = &MatchQuery{}
+var _ QEQuery = &RawQuery{}
 
 type QEEType int
 
@@ -164,6 +167,7 @@ type PathQuery struct {
 	blueprintType BlueprintType
 	where         []string
 	optional      bool
+	rawResult     []byte
 }
 
 func (o *PathQuery) getBlueprintType() BlueprintType {
@@ -174,8 +178,16 @@ func (o *PathQuery) setOptional() {
 	o.optional = true
 }
 
+func (o *PathQuery) setRawResult(in []byte) {
+	o.rawResult = in
+}
+
 func (o *PathQuery) Do(ctx context.Context, response interface{}) error {
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
+}
+
+func (o *PathQuery) RawResult() []byte {
+	return o.rawResult
 }
 
 func (o *PathQuery) SetBlueprintId(id ObjectId) *PathQuery {
@@ -287,6 +299,7 @@ type MatchQuery struct {
 	firstElement  *MatchQueryElement
 	where         []string
 	optional      bool
+	rawResult     []byte
 }
 
 //func (o *MatchQuery) Having(v QEAttrVal) *MatchQuery          {} // todo
@@ -320,11 +333,19 @@ func (o *MatchQuery) setOptional() {
 	o.optional = true
 }
 
+func (o *MatchQuery) setRawResult(in []byte) {
+	o.rawResult = in
+}
+
 func (o *MatchQuery) Do(ctx context.Context, response interface{}) error {
 	if o.client == nil {
 		return errors.New("attempt to execute query without setting client")
 	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
+}
+
+func (o *MatchQuery) RawResult() []byte {
+	return o.rawResult
 }
 
 func (o *MatchQuery) SetBlueprintId(id ObjectId) *MatchQuery {
@@ -394,6 +415,7 @@ type RawQuery struct {
 	blueprintId   ObjectId
 	blueprintType BlueprintType
 	optional      bool
+	rawResult     []byte
 }
 
 func (o *RawQuery) getBlueprintType() BlueprintType {
@@ -404,8 +426,16 @@ func (o *RawQuery) setOptional() {
 	o.optional = true
 }
 
+func (o *RawQuery) setRawResult(in []byte) {
+	o.rawResult = in
+}
+
 func (o *RawQuery) Do(ctx context.Context, response interface{}) error {
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
+}
+
+func (o *RawQuery) RawResult() []byte {
+	return o.rawResult
 }
 
 func (o *RawQuery) SetBlueprintId(id ObjectId) *RawQuery {
