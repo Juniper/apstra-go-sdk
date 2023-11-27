@@ -466,7 +466,7 @@ type RackElementLeafSwitchRequest struct {
 	LogicalDeviceId    ObjectId
 }
 
-func (o *RackElementLeafSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementLeafSwitchRequest, error) {
+func (o *RackElementLeafSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementLeafSwitch, error) {
 	tags := make([]string, len(o.Tags))
 	for i, tagId := range o.Tags {
 		if tagData, found := tagMap[tagId]; found {
@@ -476,7 +476,7 @@ func (o *RackElementLeafSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) (*
 		}
 	}
 
-	result := &rawRackElementLeafSwitchRequest{
+	result := &rawRackElementLeafSwitch{
 		Label:              o.Label,
 		LinkPerSpineCount:  o.LinkPerSpineCount,
 		LinkPerSpineSpeed:  o.LinkPerSpineSpeed.raw(),
@@ -494,22 +494,6 @@ func (o *RackElementLeafSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) (*
 		result.MlagVlanId = o.MlagInfo.MlagVlanId
 	}
 	return result, nil
-}
-
-type rawRackElementLeafSwitchRequest struct {
-	Label                       string                     `json:"label"`
-	LeafLeafL3LinkCount         int                        `json:"leaf_leaf_l3_link_count"`
-	LeafLeafL3LinkPortChannelId int                        `json:"leaf_leaf_l3_link_port_channel_id"`
-	LeafLeafL3LinkSpeed         *rawLogicalDevicePortSpeed `json:"leaf_leaf_l3_link_speed"`
-	LeafLeafLinkCount           int                        `json:"leaf_leaf_link_count"`
-	LeafLeafLinkPortChannelId   int                        `json:"leaf_leaf_link_port_channel_id"`
-	LeafLeafLinkSpeed           *rawLogicalDevicePortSpeed `json:"leaf_leaf_link_speed"`
-	LinkPerSpineCount           int                        `json:"link_per_spine_count"`
-	LinkPerSpineSpeed           *rawLogicalDevicePortSpeed `json:"link_per_spine_speed"`
-	LogicalDevice               ObjectId                   `json:"logical_device"`
-	MlagVlanId                  int                        `json:"mlag_vlan_id"`
-	RedundancyProtocol          leafRedundancyProtocol     `json:"redundancy_protocol,omitempty"`
-	Tags                        []string                   `json:"tags,omitempty"`
 }
 
 type RackElementLeafSwitch struct {
@@ -535,7 +519,7 @@ type rawRackElementLeafSwitch struct {
 	LogicalDevice               ObjectId                   `json:"logical_device"`
 	MlagVlanId                  int                        `json:"mlag_vlan_id"`
 	RedundancyProtocol          leafRedundancyProtocol     `json:"redundancy_protocol,omitempty"`
-	Tags                        []string                   `json:"tags"`
+	Tags                        []string                   `json:"tags,omitempty"`
 }
 
 func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSwitch, error) {
@@ -616,7 +600,7 @@ type RackElementAccessSwitchRequest struct {
 	EsiLagInfo         *EsiLagInfo
 }
 
-func (o *RackElementAccessSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementAccessSwitchRequest, error) {
+func (o *RackElementAccessSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementAccessSwitch, error) {
 	tags := make([]string, len(o.Tags))
 	for i, tagId := range o.Tags {
 		if tagData, found := tagMap[tagId]; found {
@@ -626,7 +610,7 @@ func (o *RackElementAccessSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) 
 		}
 	}
 
-	links := make([]rawRackLinkRequest, len(o.Links))
+	links := make([]rawRackLink, len(o.Links))
 	for i, l := range o.Links {
 		rawLink, err := l.raw(tagMap)
 		if err != nil {
@@ -641,7 +625,7 @@ func (o *RackElementAccessSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) 
 		accessAccessLinkCount = o.EsiLagInfo.AccessAccessLinkCount
 		accessAccessLinkSpeed = o.EsiLagInfo.AccessAccessLinkSpeed.raw()
 	}
-	return &rawRackElementAccessSwitchRequest{
+	return &rawRackElementAccessSwitch{
 		InstanceCount:         o.InstanceCount,
 		RedundancyProtocol:    o.RedundancyProtocol.raw(),
 		Links:                 links,
@@ -651,17 +635,6 @@ func (o *RackElementAccessSwitchRequest) raw(tagMap map[ObjectId]DesignTagData) 
 		LogicalDevice:         o.LogicalDeviceId,
 		Tags:                  tags,
 	}, nil
-}
-
-type rawRackElementAccessSwitchRequest struct {
-	InstanceCount         int                        `json:"instance_count"`
-	RedundancyProtocol    accessRedundancyProtocol   `json:"redundancy_protocol,omitempty"`
-	Links                 []rawRackLinkRequest       `json:"links"`
-	Label                 string                     `json:"label"`
-	LogicalDevice         ObjectId                   `json:"logical_device"`
-	AccessAccessLinkCount int                        `json:"access_access_link_count"`
-	AccessAccessLinkSpeed *rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
-	Tags                  []string                   `json:"tags,omitempty"`
 }
 
 type RackElementAccessSwitch struct {
@@ -682,7 +655,7 @@ type rawRackElementAccessSwitch struct {
 	LogicalDevice         ObjectId                   `json:"logical_device"`
 	AccessAccessLinkCount int                        `json:"access_access_link_count"`
 	AccessAccessLinkSpeed *rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
-	Tags                  []string                   `json:"tags"`
+	Tags                  []string                   `json:"tags,omitempty"`
 }
 
 func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAccessSwitch, error) {
@@ -758,7 +731,7 @@ type RackLinkRequest struct {
 	SwitchPeer         RackLinkSwitchPeer     // `json:"switch_peer"`
 }
 
-func (o RackLinkRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackLinkRequest, error) {
+func (o RackLinkRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackLink, error) {
 	tags := make([]string, len(o.Tags))
 	for i, tagId := range o.Tags {
 		if tagData, found := tagMap[tagId]; found {
@@ -776,7 +749,7 @@ func (o RackLinkRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackLinkReq
 		lagModePtr = nil
 	}
 
-	return &rawRackLinkRequest{
+	return &rawRackLink{
 		Label:              o.Label,
 		Tags:               tags,
 		LinkPerSwitchCount: o.LinkPerSwitchCount,
@@ -786,17 +759,6 @@ func (o RackLinkRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackLinkReq
 		LagMode:            lagModePtr,
 		SwitchPeer:         rackLinkSwitchPeer(o.SwitchPeer.String()),
 	}, nil
-}
-
-type rawRackLinkRequest struct {
-	Label              string                     `json:"label"`
-	LinkPerSwitchCount int                        `json:"link_per_switch_count"`
-	LinkSpeed          *rawLogicalDevicePortSpeed `json:"link_speed"`
-	TargetSwitchLabel  string                     `json:"target_switch_label"`
-	AttachmentType     rackLinkAttachmentType     `json:"attachment_type"`
-	LagMode            *rackLinkLagMode           `json:"lag_mode"` // do not "omitempty" // todo: explore this b/c the API sends 'null'
-	SwitchPeer         rackLinkSwitchPeer         `json:"switch_peer,omitempty"`
-	Tags               []string                   `json:"tags"`
 }
 
 type RackLink struct {
@@ -880,7 +842,7 @@ type RackElementGenericSystemRequest struct {
 	LogicalDeviceId  ObjectId
 }
 
-func (o *RackElementGenericSystemRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementGenericSystemRequest, error) {
+func (o *RackElementGenericSystemRequest) raw(tagMap map[ObjectId]DesignTagData) (*rawRackElementGenericSystem, error) {
 	tags := make([]string, len(o.Tags))
 	for i, tagId := range o.Tags {
 		if tagData, found := tagMap[tagId]; found {
@@ -890,7 +852,7 @@ func (o *RackElementGenericSystemRequest) raw(tagMap map[ObjectId]DesignTagData)
 		}
 	}
 
-	links := make([]rawRackLinkRequest, len(o.Links))
+	links := make([]rawRackLink, len(o.Links))
 	for i, l := range o.Links {
 		rawLink, err := l.raw(tagMap)
 		if err != nil {
@@ -899,7 +861,7 @@ func (o *RackElementGenericSystemRequest) raw(tagMap map[ObjectId]DesignTagData)
 		links[i] = *rawLink
 	}
 
-	return &rawRackElementGenericSystemRequest{
+	return &rawRackElementGenericSystem{
 		Count:            o.Count,
 		AsnDomain:        featureSwitch(o.AsnDomain.String()),
 		ManagementLevel:  systemManagementLevel(o.ManagementLevel.String()),
@@ -911,19 +873,6 @@ func (o *RackElementGenericSystemRequest) raw(tagMap map[ObjectId]DesignTagData)
 		LogicalDevice:    o.LogicalDeviceId,
 		Tags:             tags,
 	}, nil
-}
-
-type rawRackElementGenericSystemRequest struct {
-	Count            int                   `json:"count"`
-	AsnDomain        featureSwitch         `json:"asn_domain"`
-	ManagementLevel  systemManagementLevel `json:"management_level"`
-	PortChannelIdMin int                   `json:"port_channel_id_min"`
-	PortChannelIdMax int                   `json:"port_channel_id_max"`
-	Loopback         featureSwitch         `json:"loopback"`
-	Label            string                `json:"label"`
-	LogicalDevice    ObjectId              `json:"logical_device"`
-	Links            []rawRackLinkRequest  `json:"links"`
-	Tags             []string              `json:"tags,omitempty"`
 }
 
 type RackElementGenericSystem struct {
@@ -949,7 +898,7 @@ type rawRackElementGenericSystem struct {
 	Tags             []string              `json:"tags"`
 	Label            string                `json:"label"`
 	LogicalDevice    ObjectId              `json:"logical_device"`
-	Links            []rawRackLink         `json:"links"`
+	Links            []rawRackLink         `json:"links,omitempty"`
 }
 
 func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGenericSystem, error) {
@@ -1036,9 +985,9 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 		FabricConnectivityDesign: o.FabricConnectivityDesign.raw(),
 		LogicalDevices:           nil, // populated based on ldMap below
 		Tags:                     nil, // populated based on tagMap below
-		LeafSwitches:             make([]rawRackElementLeafSwitchRequest, len(o.LeafSwitches)),
-		AccessSwitches:           make([]rawRackElementAccessSwitchRequest, len(o.AccessSwitches)),
-		GenericSystems:           make([]rawRackElementGenericSystemRequest, len(o.GenericSystems)),
+		LeafSwitches:             make([]rawRackElementLeafSwitch, len(o.LeafSwitches)),
+		AccessSwitches:           make([]rawRackElementAccessSwitch, len(o.AccessSwitches)),
+		GenericSystems:           make([]rawRackElementGenericSystem, len(o.GenericSystems)),
 	}
 
 	// collect IDs of all logical devices relevant to this rack as a "set" of Object IDs
@@ -1180,14 +1129,14 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 }
 
 type rawRackTypeRequest struct {
-	DisplayName              string                               `json:"display_name"`
-	Description              string                               `json:"description"`
-	FabricConnectivityDesign fabricConnectivityDesign             `json:"fabric_connectivity_design"`
-	Tags                     []DesignTagData                      `json:"tags,omitempty"`
-	LogicalDevices           []rackElementLogicalDevice           `json:"logical_devices,omitempty"`
-	GenericSystems           []rawRackElementGenericSystemRequest `json:"generic_systems,omitempty"`
-	LeafSwitches             []rawRackElementLeafSwitchRequest    `json:"leafs,omitempty"`
-	AccessSwitches           []rawRackElementAccessSwitchRequest  `json:"access_switches,omitempty"`
+	DisplayName              string                        `json:"display_name"`
+	Description              string                        `json:"description"`
+	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
+	Tags                     []DesignTagData               `json:"tags,omitempty"`
+	LogicalDevices           []rackElementLogicalDevice    `json:"logical_devices,omitempty"`
+	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
+	LeafSwitches             []rawRackElementLeafSwitch    `json:"leafs,omitempty"`
+	AccessSwitches           []rawRackElementAccessSwitch  `json:"access_switches,omitempty"`
 }
 
 type RackType struct {

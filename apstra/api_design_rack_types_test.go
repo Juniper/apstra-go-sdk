@@ -141,11 +141,22 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for clientName, client := range clients {
-		leafLabel := "ll-" + randString(10, "hex")
+	leafLabel := "ll-" + randString(10, "hex")
 
-		log.Printf("testing CreateRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		rtr := &RackTypeRequest{
+	testCases := map[string]RackTypeRequest{
+		"leaf_only_no_tags": {
+			DisplayName:              "rdn " + randString(5, "hex"),
+			FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
+			LeafSwitches: []RackElementLeafSwitchRequest{
+				{
+					Label:             leafLabel,
+					LogicalDeviceId:   "AOS-48x10_6x40-leaf_spine",
+					LinkPerSpineCount: 2,
+					LinkPerSpineSpeed: "10G",
+				},
+			},
+		},
+		"leaf_generic_with_tags": {
 			DisplayName:              "rdn " + randString(5, "hex"),
 			FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
 			LeafSwitches: []RackElementLeafSwitchRequest{
@@ -177,25 +188,32 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 				},
 			},
 			AccessSwitches: nil,
-		}
+		},
+	}
 
-		id, err := client.client.CreateRackType(context.TODO(), rtr)
-		if err != nil {
-			t.Fatal(err)
-		}
+	for clientName, client := range clients {
+		for _, tCase := range testCases {
+			log.Printf("testing CreateRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			id, err := client.client.CreateRackType(context.TODO(), &tCase)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		log.Printf("testing GetRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		rt, err := client.client.GetRackType(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
+			log.Printf("testing GetRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			rt, err := client.client.GetRackType(context.TODO(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		log.Printf("testing DeleteRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteRackType(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
+			if id != rt.Id {
+				t.Fatalf("expected %q, got %q", id, rt.Id)
+			}
 
-		log.Printf("id: '%s'\n", rt.Id)
+			log.Printf("testing DeleteRackType() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = client.client.DeleteRackType(context.TODO(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 }
