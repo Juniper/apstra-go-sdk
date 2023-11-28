@@ -519,7 +519,7 @@ type rawRackElementLeafSwitch struct {
 	LogicalDevice               ObjectId                   `json:"logical_device"`
 	MlagVlanId                  int                        `json:"mlag_vlan_id"`
 	RedundancyProtocol          leafRedundancyProtocol     `json:"redundancy_protocol,omitempty"`
-	Tags                        []string                   `json:"tags,omitempty"`
+	Tags                        []string                   `json:"tags"`
 }
 
 func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSwitch, error) {
@@ -655,7 +655,7 @@ type rawRackElementAccessSwitch struct {
 	LogicalDevice         ObjectId                   `json:"logical_device"`
 	AccessAccessLinkCount int                        `json:"access_access_link_count"`
 	AccessAccessLinkSpeed *rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
-	Tags                  []string                   `json:"tags,omitempty"`
+	Tags                  []string                   `json:"tags"`
 }
 
 func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAccessSwitch, error) {
@@ -898,7 +898,7 @@ type rawRackElementGenericSystem struct {
 	Tags             []string              `json:"tags"`
 	Label            string                `json:"label"`
 	LogicalDevice    ObjectId              `json:"logical_device"`
-	Links            []rawRackLink         `json:"links,omitempty"`
+	Links            []rawRackLink         `json:"links"`
 }
 
 func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGenericSystem, error) {
