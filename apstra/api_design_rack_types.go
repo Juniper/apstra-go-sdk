@@ -963,12 +963,6 @@ func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGen
 	}, nil
 }
 
-type rackElementLogicalDevice struct {
-	Id          ObjectId                `json:"id"`
-	DisplayName string                  `json:"display_name"`
-	Panels      []rawLogicalDevicePanel `json:"panels"`
-}
-
 type RackTypeRequest struct {
 	DisplayName              string
 	Description              string
@@ -1098,7 +1092,7 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 	// prepare the []rawLogicalDevice we'll submit when creating the rack type
 	// using ldMap, which is the set of logical device IDs representing every
 	// device in the rack (leaf, access, generic)
-	result.LogicalDevices = make([]rackElementLogicalDevice, len(ldMap))
+	result.LogicalDevices = make([]rawLogicalDevice, len(ldMap))
 	i := 0
 	for id := range ldMap {
 		ld, err := client.getLogicalDevice(ctx, id)
@@ -1106,7 +1100,7 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 			return nil, err
 		}
 
-		result.LogicalDevices[i] = rackElementLogicalDevice{
+		result.LogicalDevices[i] = rawLogicalDevice{
 			Id:          ld.Id,
 			DisplayName: ld.DisplayName,
 			Panels:      ld.Panels,
@@ -1133,7 +1127,7 @@ type rawRackTypeRequest struct {
 	Description              string                        `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
 	Tags                     []DesignTagData               `json:"tags,omitempty"`
-	LogicalDevices           []rackElementLogicalDevice    `json:"logical_devices,omitempty"`
+	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
 	LeafSwitches             []rawRackElementLeafSwitch    `json:"leafs,omitempty"`
 	AccessSwitches           []rawRackElementAccessSwitch  `json:"access_switches,omitempty"`
