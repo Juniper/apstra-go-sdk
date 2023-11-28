@@ -1135,8 +1135,8 @@ type rawRackTypeRequest struct {
 
 type RackType struct {
 	Id             ObjectId
-	CreatedAt      time.Time
-	LastModifiedAt time.Time
+	CreatedAt      *time.Time
+	LastModifiedAt *time.Time
 	Data           *RackTypeData
 }
 
@@ -1155,8 +1155,8 @@ type rawRackType struct {
 	Description              string                        `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
 	Tags                     []DesignTagData               `json:"tags,omitempty"`
-	CreatedAt                time.Time                     `json:"created_at"`
-	LastModifiedAt           time.Time                     `json:"last_modified_at"`
+	CreatedAt                *time.Time                    `json:"created_at,omitempty"`
+	LastModifiedAt           *time.Time                    `json:"last_modified_at,omitempty"`
 	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
 	LeafSwitches             []rawRackElementLeafSwitch    `json:"leafs,omitempty"`
