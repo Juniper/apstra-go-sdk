@@ -519,7 +519,7 @@ type rawRackElementLeafSwitch struct {
 	LogicalDevice               ObjectId                   `json:"logical_device"`
 	MlagVlanId                  int                        `json:"mlag_vlan_id"`
 	RedundancyProtocol          leafRedundancyProtocol     `json:"redundancy_protocol,omitempty"`
-	Tags                        []string                   `json:"tags,omitempty"`
+	Tags                        []string                   `json:"tags"`
 }
 
 func (o *rawRackElementLeafSwitch) polish(rack *rawRackType) (*RackElementLeafSwitch, error) {
@@ -655,7 +655,7 @@ type rawRackElementAccessSwitch struct {
 	LogicalDevice         ObjectId                   `json:"logical_device"`
 	AccessAccessLinkCount int                        `json:"access_access_link_count"`
 	AccessAccessLinkSpeed *rawLogicalDevicePortSpeed `json:"access_access_link_speed"`
-	Tags                  []string                   `json:"tags,omitempty"`
+	Tags                  []string                   `json:"tags"`
 }
 
 func (o *rawRackElementAccessSwitch) polish(rack *rawRackType) (*RackElementAccessSwitch, error) {
@@ -898,7 +898,7 @@ type rawRackElementGenericSystem struct {
 	Tags             []string              `json:"tags"`
 	Label            string                `json:"label"`
 	LogicalDevice    ObjectId              `json:"logical_device"`
-	Links            []rawRackLink         `json:"links,omitempty"`
+	Links            []rawRackLink         `json:"links"`
 }
 
 func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGenericSystem, error) {
@@ -961,12 +961,6 @@ func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGen
 			DisplayName: pld.Data.DisplayName,
 		},
 	}, nil
-}
-
-type rackElementLogicalDevice struct {
-	Id          ObjectId                `json:"id"`
-	DisplayName string                  `json:"display_name"`
-	Panels      []rawLogicalDevicePanel `json:"panels"`
 }
 
 type RackTypeRequest struct {
@@ -1098,7 +1092,7 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 	// prepare the []rawLogicalDevice we'll submit when creating the rack type
 	// using ldMap, which is the set of logical device IDs representing every
 	// device in the rack (leaf, access, generic)
-	result.LogicalDevices = make([]rackElementLogicalDevice, len(ldMap))
+	result.LogicalDevices = make([]rawLogicalDevice, len(ldMap))
 	i := 0
 	for id := range ldMap {
 		ld, err := client.getLogicalDevice(ctx, id)
@@ -1106,7 +1100,7 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 			return nil, err
 		}
 
-		result.LogicalDevices[i] = rackElementLogicalDevice{
+		result.LogicalDevices[i] = rawLogicalDevice{
 			Id:          ld.Id,
 			DisplayName: ld.DisplayName,
 			Panels:      ld.Panels,
@@ -1133,7 +1127,7 @@ type rawRackTypeRequest struct {
 	Description              string                        `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
 	Tags                     []DesignTagData               `json:"tags,omitempty"`
-	LogicalDevices           []rackElementLogicalDevice    `json:"logical_devices,omitempty"`
+	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
 	LeafSwitches             []rawRackElementLeafSwitch    `json:"leafs,omitempty"`
 	AccessSwitches           []rawRackElementAccessSwitch  `json:"access_switches,omitempty"`
@@ -1141,8 +1135,8 @@ type rawRackTypeRequest struct {
 
 type RackType struct {
 	Id             ObjectId
-	CreatedAt      time.Time
-	LastModifiedAt time.Time
+	CreatedAt      *time.Time
+	LastModifiedAt *time.Time
 	Data           *RackTypeData
 }
 
@@ -1161,8 +1155,8 @@ type rawRackType struct {
 	Description              string                        `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
 	Tags                     []DesignTagData               `json:"tags,omitempty"`
-	CreatedAt                time.Time                     `json:"created_at"`
-	LastModifiedAt           time.Time                     `json:"last_modified_at"`
+	CreatedAt                *time.Time                    `json:"created_at,omitempty"`
+	LastModifiedAt           *time.Time                    `json:"last_modified_at,omitempty"`
 	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
 	LeafSwitches             []rawRackElementLeafSwitch    `json:"leafs,omitempty"`
