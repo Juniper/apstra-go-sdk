@@ -73,6 +73,28 @@ func compareSlices[A comparable](t *testing.T, a, b []A, info string) {
 	}
 }
 
+func compareSlicesAsSets[A comparable](t *testing.T, a, b []A, info string) {
+	if len(a) != len(b) {
+		t.Fatalf("%s slice length mismatch: %d vs %d", info, len(a), len(b))
+	}
+
+	mapA := make(map[A]bool, len(a))
+	for _, v := range a {
+		mapA[v] = true
+	}
+
+	mapB := make(map[A]bool, len(b))
+	for _, v := range b {
+		mapB[v] = true
+	}
+
+	for k := range mapA {
+		if _, ok := mapB[k]; !ok {
+			t.Fatalf("%s slice contents mismatch: element %v found only in one slice", info, k)
+		}
+	}
+}
+
 func jsonEqual(t *testing.T, m1, m2 json.RawMessage) bool {
 	var map1 interface{}
 	var map2 interface{}
