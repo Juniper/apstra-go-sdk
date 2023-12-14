@@ -6,9 +6,44 @@ package apstra
 import (
 	"context"
 	"log"
-	"strings"
 	"testing"
 )
+
+func compareConnectivityTemplateAssignments(a, b map[ObjectId]bool, intfId ObjectId, t *testing.T) {
+	if len(a) != len(b) {
+		t.Fatalf("Connectivity template assignment maps for interface %q have different length: %d vs. %d", intfId, len(a), len(b))
+	}
+
+	for ctId, aUsed := range a {
+		var ok bool
+		var bUsed bool
+		if bUsed, ok = b[ctId]; !ok {
+			t.Fatalf("Connectivity template assignment maps for interface %q don't both have connectivty template %q", intfId, ctId)
+		}
+
+		if aUsed != bUsed {
+			t.Fatalf("Connectivity template assignment maps for interface %q don't agree about connectivty template %q: a: %t b: %t",
+				intfId, ctId, aUsed, bUsed)
+		}
+	}
+}
+
+func compareInterfacesConnectivityTemplateAssignments(a, b map[ObjectId]map[ObjectId]bool, t *testing.T) {
+	if len(a) != len(b) {
+		t.Fatalf("Connectivity template assignment maps have different length: %d vs. %d", len(a), len(b))
+	}
+
+	for intfId, aCTs := range a {
+		// aCTs and bCTs are map[CT ID]bool indicating whether the CT is applied to intfId
+		var ok bool
+		var bCTs map[ObjectId]bool
+		if bCTs, ok = b[intfId]; !ok {
+			t.Fatalf("Connectivity template assignment map key missing: %q", intfId)
+		}
+
+		compareConnectivityTemplateAssignments(aCTs, bCTs, intfId, t)
+	}
+}
 
 func TestAssignClearCtToInterface(t *testing.T) {
 	ctx := context.Background()
@@ -18,8 +53,10 @@ func TestAssignClearCtToInterface(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	vnCount := 2
+
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -30,29 +67,17 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			}
 		}()
 
-		var systems struct {
-			Nodes map[ObjectId]struct {
-				Label      string     `json:"label"`
-				SystemType string     `json:"system_type"`
-				Role       systemRole `json:"role"`
-			} `json:"nodes"`
-		}
-
-		log.Printf("testing GetNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.GetNodes(ctx, NodeTypeSystem, &systems)
+		leafIds, err := getSystemIdsByRole(ctx, bpClient, "leaf")
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		// create assignments for the leaf switch nodes
-		assignments := make(SystemIdToInterfaceMapAssignment)
-		var bindings []VnBinding
-		for k, v := range systems.Nodes {
-			if v.SystemType != "switch" || v.Role != systemRoleLeaf {
-				continue
-			}
-			assignments[k.String()] = "Juniper_vQFX__AOS-7x10-Leaf"
-			bindings = append(bindings, VnBinding{SystemId: k})
+		assignments := make(SystemIdToInterfaceMapAssignment, len(leafIds))
+		bindings := make([]VnBinding, len(leafIds))
+		for i, leafId := range leafIds {
+			assignments[leafId.String()] = "Juniper_vQFX__AOS-7x10-Leaf"
+			bindings[i] = VnBinding{SystemId: leafId}
 		}
 
 		log.Printf("testing SetInterfaceMapAssignments() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -71,93 +96,80 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		vnId, err := bpClient.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-			DhcpService:               false,
-			Ipv4Enabled:               false,
-			Ipv4Subnet:                nil,
-			Ipv6Enabled:               false,
-			Ipv6Subnet:                nil,
-			Label:                     randString(6, "hex"),
-			ReservedVlanId:            nil,
-			RouteTarget:               "",
-			RtPolicy:                  nil,
-			SecurityZoneId:            szId,
-			SviIps:                    nil,
-			VirtualGatewayIpv4:        nil,
-			VirtualGatewayIpv6:        nil,
-			VirtualGatewayIpv4Enabled: false,
-			VirtualGatewayIpv6Enabled: false,
-			VnBindings:                bindings,
-			VnId:                      nil,
-			VnType:                    VnTypeVxlan,
-			VirtualMac:                nil,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		ct := ConnectivityTemplate{
-			Label: randString(5, "hex"),
-			Subpolicies: []*ConnectivityTemplatePrimitive{{
-				Attributes: &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
-					VnNodeId: &vnId,
-				},
-			}},
-		}
-
-		err = ct.SetIds()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = ct.SetUserData()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing CreateConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.CreateConnectivityTemplate(ctx, &ct)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		var leaf1Id *ObjectId
-		for id, system := range systems.Nodes {
-			if system.SystemType != "switch" || system.Role != systemRoleLeaf {
-				continue
+		vnIds := make([]ObjectId, vnCount)
+		cts := make([]ConnectivityTemplate, vnCount)
+		ctIds := make([]ObjectId, vnCount)
+		for i := 0; i < vnCount; i++ {
+			log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			vnIds[i], err = bpClient.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+				Label:          randString(6, "hex"),
+				SecurityZoneId: szId,
+				VnBindings:     bindings,
+				VnType:         VnTypeVxlan,
+			})
+			if err != nil {
+				t.Fatal(err)
 			}
-			if strings.HasSuffix(system.Label, "leaf1") {
-				leaf1Id = &id
-				break
+
+			cts[i] = ConnectivityTemplate{
+				Label: randString(5, "hex"),
+				Subpolicies: []*ConnectivityTemplatePrimitive{{
+					Attributes: &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
+						Tagged:   true,
+						VnNodeId: &vnIds[i],
+					},
+				}},
 			}
+
+			err = cts[i].SetIds()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = cts[i].SetUserData()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing CreateConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.CreateConnectivityTemplate(ctx, &cts[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ctIds[i] = *cts[i].Id
 		}
 
-		if leaf1Id == nil {
-			t.Fatal("failed to find leaf 1")
-		}
-
+		// Graph query which picks out generic-facing interfaces on leaf switches
 		query := new(PathQuery).
 			SetBlueprintType(BlueprintTypeStaging).
 			SetBlueprintId(bpClient.blueprintId).
 			SetClient(bpClient.client).
-			Node([]QEEAttribute{{"id", QEStringVal(leaf1Id.String())}}).
+			//Node([]QEEAttribute{{"id", QEStringVal(leaf1Id.String())}}).
+			Node([]QEEAttribute{
+				NodeTypeSystem.QEEAttribute(),
+				{"role", QEStringVal("leaf")},
+			}).
 			Out([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
 			Node([]QEEAttribute{
 				NodeTypeInterface.QEEAttribute(),
-				{"if_name", QEStringVal("ae1")},
+				{"name", QEStringVal("switch_port")},
 			}).
-			In([]QEEAttribute{RelationshipTypeComposedOf.QEEAttribute()}).
+			Out([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
+			Node([]QEEAttribute{NodeTypeLink.QEEAttribute()}).
+			In([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
+			Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
+			In([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
 			Node([]QEEAttribute{
-				NodeTypeInterface.QEEAttribute(),
-				{"name", QEStringVal("n_interface")},
+				NodeTypeSystem.QEEAttribute(),
+				{"role", QEStringVal("generic")},
 			})
 
 		var queryResponse struct {
 			Items []struct {
 				Interface struct {
 					Id ObjectId `json:"id"`
-				} `json:"n_interface"`
+				} `json:"switch_port"`
 			} `json:"items"`
 		}
 
@@ -165,36 +177,76 @@ func TestAssignClearCtToInterface(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(queryResponse.Items) != 1 {
-			t.Fatalf("expected 1 item, got %d items", len(queryResponse.Items))
+		if len(queryResponse.Items) == 0 {
+			t.Fatal("graph query found no generic-system-facing leaf switch ports")
 		}
-		interfaceId := queryResponse.Items[0].Interface.Id
 
-		ctsToAssign := []ObjectId{*ct.Id}
-		err = bpClient.SetApplicationPointConnectivityTemplates(ctx, interfaceId, ctsToAssign)
+		// collect the server-facing interfaces of leaf switches
+		leafInterfaceIds := make([]ObjectId, len(queryResponse.Items))
+		for i, item := range queryResponse.Items {
+			leafInterfaceIds[i] = item.Interface.Id
+		}
+
+		// assign a CT to a lone interface
+		err = bpClient.SetApplicationPointConnectivityTemplates(ctx, leafInterfaceIds[0], ctIds)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assignedCts, err := bpClient.GetInterfaceConnectivityTemplates(ctx, interfaceId)
+		assignedCts, err := bpClient.GetInterfaceConnectivityTemplates(ctx, leafInterfaceIds[0])
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		compareSlices(t, ctsToAssign, assignedCts, "assigned slices do not match intent")
+		compareSlicesAsSets(t, ctIds, assignedCts, "assigned slices do not match intent")
 
-		err = bpClient.DelApplicationPointConnectivityTemplates(ctx, interfaceId, ctsToAssign)
+		err = bpClient.DelApplicationPointConnectivityTemplates(ctx, leafInterfaceIds[0], ctIds)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assignedCts, err = bpClient.GetInterfaceConnectivityTemplates(ctx, interfaceId)
+		assignedCts, err = bpClient.GetInterfaceConnectivityTemplates(ctx, leafInterfaceIds[0])
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		if len(assignedCts) != 0 {
-			t.Fatalf("expected 0 interfaces assigned to interface, got %d", len(assignedCts))
+			t.Fatalf("expected 0 connectivity templates assigned to interface, got %d", len(assignedCts))
+		}
+
+		// create the outer map (keyed by application point ID)
+		ctAssignments := make(map[ObjectId]map[ObjectId]bool, len(leafInterfaceIds))
+		for _, interfaceId := range leafInterfaceIds {
+			// create the inner map (keyed by connectivity template ID)
+			ctAssignments[interfaceId] = make(map[ObjectId]bool, len(ctIds))
+			for _, ctId := range ctIds {
+				ctAssignments[interfaceId][ctId] = randBool()
+			}
+		}
+
+		// set the assignments selected above
+		err = bpClient.SetApplicationPointsConnectivityTemplates(ctx, ctAssignments)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// retrieve the assignments
+		apToPolicyInfo, err := bpClient.GetApplicationPointsConnectivityTemplates(ctx, leafInterfaceIds)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// check our work
+		compareInterfacesConnectivityTemplateAssignments(ctAssignments, apToPolicyInfo, t)
+
+		// loop over individual interfaces, checking each
+		for interfaceId, expected := range ctAssignments {
+			result, err := bpClient.GetApplicationPointConnectivityTemplates(ctx, interfaceId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			compareConnectivityTemplateAssignments(expected, result, interfaceId, t)
 		}
 	}
 }
