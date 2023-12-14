@@ -78,14 +78,14 @@ func compareSlicesAsSets[A comparable](t *testing.T, a, b []A, info string) {
 		t.Fatalf("%s slice length mismatch: %d vs %d", info, len(a), len(b))
 	}
 
-	mapA := make(map[A]bool, len(a))
+	mapA := make(map[A]struct{}, len(a))
 	for _, v := range a {
-		mapA[v] = true
+		mapA[v] = struct{}{}
 	}
 
-	mapB := make(map[A]bool, len(b))
+	mapB := make(map[A]struct{}, len(b))
 	for _, v := range b {
-		mapB[v] = true
+		mapB[v] = struct{}{}
 	}
 
 	for k := range mapA {

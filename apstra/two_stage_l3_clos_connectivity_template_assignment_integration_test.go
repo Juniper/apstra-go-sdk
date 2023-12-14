@@ -188,11 +188,13 @@ func TestAssignClearCtToInterface(t *testing.T) {
 		}
 
 		// assign a CT to a lone interface
+		log.Printf("testing SetApplicationPointConnectivityTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.SetApplicationPointConnectivityTemplates(ctx, leafInterfaceIds[0], ctIds)
 		if err != nil {
 			t.Fatal(err)
 		}
 
+		log.Printf("testing GetInterfaceConnectivityTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		assignedCts, err := bpClient.GetInterfaceConnectivityTemplates(ctx, leafInterfaceIds[0])
 		if err != nil {
 			t.Fatal(err)
@@ -225,12 +227,14 @@ func TestAssignClearCtToInterface(t *testing.T) {
 		}
 
 		// set the assignments selected above
+		log.Printf("testing SetApplicationPointsConnectivityTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = bpClient.SetApplicationPointsConnectivityTemplates(ctx, ctAssignments)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		// retrieve the assignments
+		log.Printf("testing GetApplicationPointsConnectivityTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		apToPolicyInfo, err := bpClient.GetApplicationPointsConnectivityTemplates(ctx, leafInterfaceIds)
 		if err != nil {
 			t.Fatal(err)
@@ -241,6 +245,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 
 		// loop over individual interfaces, checking each
 		for interfaceId, expected := range ctAssignments {
+			log.Printf("testing GetApplicationPointConnectivityTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			result, err := bpClient.GetApplicationPointConnectivityTemplates(ctx, interfaceId)
 			if err != nil {
 				t.Fatal(err)
