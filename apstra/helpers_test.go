@@ -14,6 +14,13 @@ import (
 	"time"
 )
 
+func randBool() bool {
+	if rand.Int63()%2 == 0 {
+		return true
+	}
+	return false
+}
+
 func randString(n int, style string) string {
 	var b64Letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
 	var hexLetters = []rune("0123456789abcdef")
