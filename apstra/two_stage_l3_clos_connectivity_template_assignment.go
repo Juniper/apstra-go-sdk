@@ -2,9 +2,11 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/orsinium-labs/enum"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -259,10 +261,22 @@ type applicationPoint struct {
 	Policies               []appPointChildPolicy `json:"policies"`
 }
 
-// fillMap fills the details of obj (endpoint?) policy usages for existing map entries.
-// It will not add new entries to the map.
-func (o applicationPoint) fillMap(in map[ObjectId]map[ObjectId]bool) error {
-	// Is this application point in the map (interesting to the caller)?
+// fillMap fills the details of obj (endpoint?) policy usages into the supplied map.
+// When force is false, fillMap will not add new entries to the map, using existing
+// (outer) map entries to gauge caller interest in each application point (outer map
+// key). When force is true, fillMap will add entries to the map.
+func (o applicationPoint) fillMap(in map[ObjectId]map[ObjectId]bool, force bool) error {
+	if in == nil {
+		return errors.New("fillMap must not be called with a nil map")
+	}
+
+	if force && len(o.Policies) > 0 {
+		// this application point has policies, and "force" is set. Add the application point ID
+		// to the map so it *looks interesting*
+		in[o.Id] = make(map[ObjectId]bool)
+	}
+
+	// only collect policy info from application points which have a map entry
 	if _, ok := in[o.Id]; ok {
 		for _, policyInfo := range o.Policies {
 			// parse the raw `state` string from the API
@@ -284,7 +298,7 @@ func (o applicationPoint) fillMap(in map[ObjectId]map[ObjectId]bool) error {
 
 	// having added (or not) this application point's policy info, recurse to child application points.
 	for _, child := range o.ChildApplicationPoints {
-		err := child.fillMap(in)
+		err := child.fillMap(in, force)
 		if err != nil {
 			return err
 		}
@@ -294,14 +308,40 @@ func (o applicationPoint) fillMap(in map[ObjectId]map[ObjectId]bool) error {
 
 }
 
-func (o *TwoStageL3ClosClient) GetApplicationPointsConnectivityTemplates(ctx context.Context, apIds []ObjectId) (map[ObjectId]map[ObjectId]bool, error) {
-	var apiResponse struct {
-		ApplicationPoints struct {
-			ChildApplicationPoints []applicationPoint `json:"children"`
-			ChildrenCount          int                `json:"children_count"`
-		} `json:"application_points"`
-		NodeTypes []string `json:"node_types"`
+type objPolicyApplicationPointsApiResponse struct {
+	ApplicationPoints struct {
+		ChildApplicationPoints []applicationPoint `json:"children"`
+		ChildrenCount          int                `json:"children_count"`
+	} `json:"application_points"`
+	NodeTypes []string `json:"node_types"`
+}
+
+func (o *TwoStageL3ClosClient) GetAllApplicationPointsConnectivityTemplates(ctx context.Context) (map[ObjectId]map[ObjectId]bool, error) {
+	var apiResponse objPolicyApplicationPointsApiResponse
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintObjPolicyApplicationPoints, o.Id()),
+		apiResponse: &apiResponse,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
 	}
+
+	// create the response struct.
+	response := make(map[ObjectId]map[ObjectId]bool)
+	for _, appPoint := range apiResponse.ApplicationPoints.ChildApplicationPoints {
+		err = appPoint.fillMap(response, true)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return response, nil
+}
+
+func (o *TwoStageL3ClosClient) GetConnectivityTemplatesByApplicationPoints(ctx context.Context, apIds []ObjectId) (map[ObjectId]map[ObjectId]bool, error) {
+	var apiResponse objPolicyApplicationPointsApiResponse
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -321,7 +361,7 @@ func (o *TwoStageL3ClosClient) GetApplicationPointsConnectivityTemplates(ctx con
 	}
 
 	for _, appPoint := range apiResponse.ApplicationPoints.ChildApplicationPoints {
-		err = appPoint.fillMap(response)
+		err = appPoint.fillMap(response, false)
 		if err != nil {
 			return nil, err
 		}
@@ -331,7 +371,7 @@ func (o *TwoStageL3ClosClient) GetApplicationPointsConnectivityTemplates(ctx con
 }
 
 func (o *TwoStageL3ClosClient) GetApplicationPointConnectivityTemplates(ctx context.Context, apId ObjectId) (map[ObjectId]bool, error) {
-	mapByApplicationPointId, err := o.GetApplicationPointsConnectivityTemplates(ctx, []ObjectId{apId})
+	mapByApplicationPointId, err := o.GetConnectivityTemplatesByApplicationPoints(ctx, []ObjectId{apId})
 	if err != nil {
 		return nil, err
 	}
@@ -344,4 +384,45 @@ func (o *TwoStageL3ClosClient) GetApplicationPointConnectivityTemplates(ctx cont
 		errType: ErrNotfound,
 		err:     fmt.Errorf("connectivity template usage map for interface %q not found", apId),
 	}
+}
+
+func (o *TwoStageL3ClosClient) GetApplicationPointsConnectivityTemplatesByCt(ctx context.Context, ctId ObjectId) (map[ObjectId]map[ObjectId]bool, error) {
+	var apiResponse objPolicyApplicationPointsApiResponse
+
+	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintObjPolicyApplicationPoints, o.Id()))
+	if err != nil {
+		return nil, err
+	}
+
+	params := apstraUrl.Query()
+	params.Set("policy", ctId.String())
+	apstraUrl.RawQuery = params.Encode()
+
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		url:         apstraUrl,
+		apiResponse: &apiResponse,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	result := make(map[ObjectId]map[ObjectId]bool)
+	for _, x := range apiResponse.ApplicationPoints.ChildApplicationPoints {
+		err = x.fillMap(result, true)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// clear unwanted CTs from the result (the API returns extra info despite the filter
+	for k1, v1 := range result {
+		for k2 := range v1 {
+			if k2 != ctId {
+				delete(result[k1], k2)
+			}
+		}
+	}
+
+	return result, nil
 }
