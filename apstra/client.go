@@ -1297,6 +1297,12 @@ func (o *Client) PatchNode(ctx context.Context, blueprint ObjectId, node ObjectI
 	return o.patchNode(ctx, blueprint, node, request, response)
 }
 
+// PatchNodes patches (only submitted fields are changed) nodes described
+// using the contents of 'request'.
+func (o *Client) PatchNodes(ctx context.Context, blueprint ObjectId, request []interface{}) error {
+	return o.patchNodes(ctx, blueprint, request)
+}
+
 // CreateRackType creates an Apstra Rack Type based on the contents of the
 // supplied RackTypeRequest.
 // Consistent with the Apstra UI and documentation, logical devices (switches,

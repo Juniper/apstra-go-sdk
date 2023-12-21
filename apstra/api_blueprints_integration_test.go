@@ -189,9 +189,6 @@ func TestGetNodes(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err != nil {
-			t.Fatal(err)
-		}
 
 		log.Printf("got %d nodes. Fetch each one...", len(response.Nodes))
 		var nodeB node
@@ -203,6 +200,66 @@ func TestGetNodes(t *testing.T) {
 			}
 			if !equal(nodeA, nodeB) {
 				t.Fatalf("nodes don't match:\n%v\n%v", nodeA, nodeB)
+			}
+		}
+	}
+}
+
+func TestPatchNodes(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		bpClient, bpDel := testBlueprintB(ctx, t, client.client)
+		defer func() {
+			err = bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		type node struct {
+			Id         ObjectId `json:"id"`
+			Label      string   `json:"label"`
+			SystemType string   `json:"system_type,omitempty"`
+		}
+
+		var getResponse struct {
+			Nodes map[ObjectId]node `json:"nodes"`
+		}
+		log.Printf("testing GetNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = bpClient.Client().GetNodes(ctx, bpClient.Id(), NodeTypeSystem, &getResponse)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var patch []interface{}
+		for k, v := range getResponse.Nodes {
+			if v.SystemType == "server" {
+				patch = append(patch, node{
+					Id:    k,
+					Label: randString(5, "hex"),
+				})
+			}
+		}
+
+		err = client.client.PatchNodes(ctx, bpClient.Id(), patch)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, n := range patch {
+			var result node
+			err = client.client.GetNode(ctx, bpClient.Id(), n.(node).Id, &result)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if n.(node).Label != result.Label {
+				t.Fatalf("patch expected label %s, got label %s", n.(node).Label, result.Label)
 			}
 		}
 	}

@@ -520,3 +520,16 @@ func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectI
 	})
 	return convertTtaeToAceWherePossible(err)
 }
+
+func (o *Client) patchNodes(ctx context.Context, blueprint ObjectId, request []interface{}) error {
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintNodes, blueprint),
+		apiInput: request,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
+}
