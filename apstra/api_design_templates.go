@@ -766,7 +766,7 @@ func (o *TemplateRackBased) OverlayControlProtocol() OverlayControlProtocol {
 
 type TemplateRackBasedData struct {
 	DisplayName            string
-	AntiAffinityPolicy     AntiAffinityPolicy
+	AntiAffinityPolicy     *AntiAffinityPolicy
 	VirtualNetworkPolicy   VirtualNetworkPolicy
 	AsnAllocationPolicy    AsnAllocationPolicy
 	FabricAddressingPolicy *FabricAddressingPolicy
@@ -789,7 +789,7 @@ type rawTemplateRackBased struct {
 	Id                     ObjectId                   `json:"id"`
 	Type                   templateType               `json:"type"`
 	DisplayName            string                     `json:"display_name"`
-	AntiAffinityPolicy     rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	AntiAffinityPolicy     *rawAntiAffinityPolicy     `json:"anti_affinity_policy,omitempty"`
 	CreatedAt              time.Time                  `json:"created_at"`
 	LastModifiedAt         time.Time                  `json:"last_modified_at"`
 	VirtualNetworkPolicy   rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
@@ -830,10 +830,12 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	antiAffinityPolicy, err := o.AntiAffinityPolicy.polish()
-	if err != nil {
-		return nil, err
+	var aa *AntiAffinityPolicy
+	if o.AntiAffinityPolicy != nil {
+		aa, err = o.AntiAffinityPolicy.polish()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if len(o.RackTypes) != len(o.RackTypeCounts) {
@@ -867,7 +869,7 @@ OUTER:
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplateRackBasedData{
 			DisplayName:            o.DisplayName,
-			AntiAffinityPolicy:     *antiAffinityPolicy,
+			AntiAffinityPolicy:     aa,
 			VirtualNetworkPolicy:   *v,
 			AsnAllocationPolicy:    *a,
 			FabricAddressingPolicy: f,
@@ -918,7 +920,7 @@ type rawTemplatePodBased struct {
 	Id                      ObjectId                   `json:"id"`
 	Type                    templateType               `json:"type"`
 	DisplayName             string                     `json:"display_name"`
-	AntiAffinityPolicy      rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	AntiAffinityPolicy      *rawAntiAffinityPolicy     `json:"anti_affinity_policy,omitempty"`
 	FabricAddressingPolicy  *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 	Superspine              rawSuperspine              `json:"superspine"`
 	CreatedAt               time.Time                  `json:"created_at"`
@@ -961,9 +963,12 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 	if err != nil {
 		return nil, err
 	}
-	antiAffinityPolicy, err := o.AntiAffinityPolicy.polish()
-	if err != nil {
-		return nil, err
+	var aap *AntiAffinityPolicy
+	if o.AntiAffinityPolicy != nil {
+		aap, err = o.AntiAffinityPolicy.polish()
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &TemplatePodBased{
 		Id:             o.Id,
@@ -972,7 +977,7 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplatePodBasedData{
 			DisplayName:             o.DisplayName,
-			AntiAffinityPolicy:      *antiAffinityPolicy,
+			AntiAffinityPolicy:      *aap,
 			FabricAddressingPolicy:  fap,
 			Superspine:              *superspine,
 			Capability:              TemplateCapability(capability),
@@ -1392,7 +1397,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 	if err != nil {
 		return nil, err
 	}
-	antiAffinityPolicy := o.AntiAffinityPolicy.raw()
+	var antiAffinityPolicy *rawAntiAffinityPolicy
 	asnAllocationPolicy := o.AsnAllocationPolicy.raw()
 
 	var fabricAddressingPolicy *rawFabricAddressingPolicy
@@ -1410,7 +1415,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		RackTypes:              rackTypes,
 		RackTypeCounts:         rackTypeCounts,
 		DhcpServiceIntent:      dhcpServiceIntent,
-		AntiAffinityPolicy:     *antiAffinityPolicy,
+		AntiAffinityPolicy:     antiAffinityPolicy,
 		AsnAllocationPolicy:    *asnAllocationPolicy,
 		FabricAddressingPolicy: fabricAddressingPolicy,
 		VirtualNetworkPolicy:   *virtualNetworkPolicy,
@@ -1425,7 +1430,7 @@ type rawCreateRackBasedTemplateRequest struct {
 	RackTypes              []rawRackType              `json:"rack_types"`
 	RackTypeCounts         []RackTypeCount            `json:"rack_type_counts"`
 	DhcpServiceIntent      DhcpServiceIntent          `json:"dhcp_service_intent"`
-	AntiAffinityPolicy     rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	AntiAffinityPolicy     *rawAntiAffinityPolicy     `json:"anti_affinity_policy,omitempty"`
 	AsnAllocationPolicy    rawAsnAllocationPolicy     `json:"asn_allocation_policy"`
 	FabricAddressingPolicy *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 	VirtualNetworkPolicy   rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
@@ -1509,7 +1514,7 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		Superspine:              *superspine,
 		RackBasedTemplates:      rawRackBasedTemplates,
 		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
-		AntiAffinityPolicy:      *antiAffinityPolicy,
+		AntiAffinityPolicy:      antiAffinityPolicy,
 		FabricAddressingPolicy:  fabricAddressingPolicy,
 	}, nil
 }
@@ -1521,7 +1526,7 @@ type rawCreatePodBasedTemplateRequest struct {
 	Superspine              rawSuperspine              `json:"superspine"`
 	RackBasedTemplates      []rawTemplateRackBased     `json:"rack_based_templates"`
 	RackBasedTemplateCounts []RackBasedTemplateCount   `json:"rack_based_template_counts"`
-	AntiAffinityPolicy      rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	AntiAffinityPolicy      *rawAntiAffinityPolicy     `json:"anti_affinity_policy,omitempty"`
 	FabricAddressingPolicy  *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 }
 
@@ -1565,7 +1570,7 @@ type CreateL3CollapsedTemplateRequest struct {
 	RackTypeIds          []ObjectId             `json:"rack_types"`
 	RackTypeCounts       []RackTypeCount        `json:"rack_type_counts"`
 	DhcpServiceIntent    DhcpServiceIntent      `json:"dhcp_service_intent"`
-	AntiAffinityPolicy   AntiAffinityPolicy     `json:"anti_affinity_policy"`
+	AntiAffinityPolicy   *AntiAffinityPolicy    `json:"anti_affinity_policy,omitempty"`
 	VirtualNetworkPolicy VirtualNetworkPolicy   `json:"virtual_network_policy"`
 }
 
@@ -1587,7 +1592,7 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 		RackTypes:            rackTypes,
 		RackTypeCounts:       o.RackTypeCounts,
 		DhcpServiceIntent:    o.DhcpServiceIntent,
-		AntiAffinityPolicy:   *o.AntiAffinityPolicy.raw(),
+		AntiAffinityPolicy:   o.AntiAffinityPolicy.raw(),
 		VirtualNetworkPolicy: *o.VirtualNetworkPolicy.raw(),
 	}, nil
 }
@@ -1601,7 +1606,7 @@ type rawCreateL3CollapsedTemplateRequest struct {
 	RackTypes            []rawRackType             `json:"rack_types"`
 	RackTypeCounts       []RackTypeCount           `json:"rack_type_counts"`
 	DhcpServiceIntent    DhcpServiceIntent         `json:"dhcp_service_intent"`
-	AntiAffinityPolicy   rawAntiAffinityPolicy     `json:"anti_affinity_policy"`
+	AntiAffinityPolicy   *rawAntiAffinityPolicy    `json:"anti_affinity_policy,omitempty"`
 	VirtualNetworkPolicy rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
 }
 
