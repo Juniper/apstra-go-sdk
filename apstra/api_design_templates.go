@@ -830,9 +830,9 @@ func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
 	if err != nil {
 		return nil, err
 	}
-	var aa *AntiAffinityPolicy
+	var aap *AntiAffinityPolicy
 	if o.AntiAffinityPolicy != nil {
-		aa, err = o.AntiAffinityPolicy.polish()
+		aap, err = o.AntiAffinityPolicy.polish()
 		if err != nil {
 			return nil, err
 		}
@@ -869,7 +869,7 @@ OUTER:
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplateRackBasedData{
 			DisplayName:            o.DisplayName,
-			AntiAffinityPolicy:     aa,
+			AntiAffinityPolicy:     aap,
 			VirtualNetworkPolicy:   *v,
 			AsnAllocationPolicy:    *a,
 			FabricAddressingPolicy: f,
@@ -908,7 +908,7 @@ func (o *TemplatePodBased) OverlayControlProtocol() OverlayControlProtocol {
 
 type TemplatePodBasedData struct {
 	DisplayName             string
-	AntiAffinityPolicy      AntiAffinityPolicy
+	AntiAffinityPolicy      *AntiAffinityPolicy
 	FabricAddressingPolicy  *FabricAddressingPolicy
 	Superspine              Superspine
 	Capability              TemplateCapability
@@ -977,7 +977,7 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplatePodBasedData{
 			DisplayName:             o.DisplayName,
-			AntiAffinityPolicy:      *aap,
+			AntiAffinityPolicy:      aap,
 			FabricAddressingPolicy:  fap,
 			Superspine:              *superspine,
 			Capability:              TemplateCapability(capability),
