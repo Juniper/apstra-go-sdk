@@ -9,21 +9,21 @@ import (
 	"testing"
 )
 
-func compareConnectivityTemplateAssignments(a, b map[ObjectId]bool, intfId ObjectId, t *testing.T) {
+func compareConnectivityTemplateAssignments(a, b map[ObjectId]bool, applicationPointId ObjectId, t *testing.T) {
 	if len(a) != len(b) {
-		t.Fatalf("Connectivity template assignment maps for interface %q have different length: %d vs. %d", intfId, len(a), len(b))
+		t.Fatalf("Connectivity template assignment maps for interface %q have different length: %d vs. %d", applicationPointId, len(a), len(b))
 	}
 
 	for ctId, aUsed := range a {
 		var ok bool
 		var bUsed bool
 		if bUsed, ok = b[ctId]; !ok {
-			t.Fatalf("Connectivity template assignment maps for interface %q don't both have connectivty template %q", intfId, ctId)
+			t.Fatalf("Connectivity template assignment maps for interface %q don't both have connectivty template %q", applicationPointId, ctId)
 		}
 
 		if aUsed != bUsed {
 			t.Fatalf("Connectivity template assignment maps for interface %q don't agree about connectivty template %q: a: %t b: %t",
-				intfId, ctId, aUsed, bUsed)
+				applicationPointId, ctId, aUsed, bUsed)
 		}
 	}
 }
@@ -33,15 +33,15 @@ func compareInterfacesConnectivityTemplateAssignments(a, b map[ObjectId]map[Obje
 		t.Fatalf("Connectivity template assignment maps have different length: %d vs. %d", len(a), len(b))
 	}
 
-	for intfId, aCTs := range a {
-		// aCTs and bCTs are map[CT ID]bool indicating whether the CT is applied to intfId
+	for applicationPointId, aCTs := range a {
+		// aCTs and bCTs are map[CT ID]bool indicating whether the CT is applied to applicationPointId
 		var ok bool
 		var bCTs map[ObjectId]bool
-		if bCTs, ok = b[intfId]; !ok {
-			t.Fatalf("Connectivity template assignment map key missing: %q", intfId)
+		if bCTs, ok = b[applicationPointId]; !ok {
+			t.Fatalf("Connectivity template assignment map key missing: %q", applicationPointId)
 		}
 
-		compareConnectivityTemplateAssignments(aCTs, bCTs, intfId, t)
+		compareConnectivityTemplateAssignments(aCTs, bCTs, applicationPointId, t)
 	}
 }
 
@@ -234,8 +234,8 @@ func TestAssignClearCtToInterface(t *testing.T) {
 		}
 
 		// retrieve the assignments
-		log.Printf("testing GetApplicationPointsConnectivityTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		apToPolicyInfo, err := bpClient.GetApplicationPointsConnectivityTemplates(ctx, leafInterfaceIds)
+		log.Printf("testing GetConnectivityTemplatesByApplicationPoints() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		apToPolicyInfo, err := bpClient.GetConnectivityTemplatesByApplicationPoints(ctx, leafInterfaceIds)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -252,6 +252,36 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			}
 
 			compareConnectivityTemplateAssignments(expected, result, interfaceId, t)
+		}
+
+		log.Printf("testing GetAllApplicationPointsConnectivityTemplates() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		all, err := bpClient.GetAllApplicationPointsConnectivityTemplates(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for applicationPointId, expectedCtInfo := range ctAssignments {
+			actualCtInfo, ok := all[applicationPointId]
+			if !ok {
+				t.Fatalf("GetAllApplicationPointsConnectivityTemplates() didn't find a record for %q", applicationPointId)
+			}
+
+			compareConnectivityTemplateAssignments(expectedCtInfo, actualCtInfo, applicationPointId, t)
+		}
+
+		for _, ctId := range ctIds {
+			log.Printf("testing GetApplicationPointsConnectivityTemplatesByCt() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			applicationPoints, err := bpClient.GetApplicationPointsConnectivityTemplatesByCt(ctx, ctId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for applicationPointId, applicationPointCtMap := range applicationPoints {
+				if applicationPointCtMap[ctId] != apToPolicyInfo[applicationPointId][ctId] {
+					t.Fatalf("application point %s, connectivity template %s, expected: %t actual: %t",
+						applicationPointId, ctId, applicationPointCtMap[ctId], apToPolicyInfo[applicationPointId][ctId])
+				}
+			}
 		}
 	}
 }

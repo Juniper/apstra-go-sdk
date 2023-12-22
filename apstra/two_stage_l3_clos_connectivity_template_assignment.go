@@ -2,14 +2,21 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/orsinium-labs/enum"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 const (
 	apiUrlBlueprintObjPolicyBatchApply        = apiUrlBlueprintById + apiUrlPathDelim + "obj-policy-batch-apply"
 	apiUrlBlueprintObjPolicyApplicationPoints = apiUrlBlueprintById + apiUrlPathDelim + "obj-policy-application-points"
+
+	objPolicyApplicationPageSizeValue = 1000
+	objPolicyApplicationPageSizeParam = "max_count"
+	objPolicyApplicationPageSkipParam = "offset_max_count"
 )
 
 // GetAllInterfacesConnectivityTemplates returns a map of ConnectivityTemplate
@@ -259,16 +266,44 @@ type applicationPoint struct {
 	Policies               []appPointChildPolicy `json:"policies"`
 }
 
-// fillMap fills the details of obj (endpoint?) policy usages for existing map entries.
-// It will not add new entries to the map.
-func (o applicationPoint) fillMap(in map[ObjectId]map[ObjectId]bool) error {
-	// Is this application point in the map (interesting to the caller)?
-	if _, ok := in[o.Id]; ok {
+// fillMap fills the details of obj (endpoint?) policy usages into the supplied map.
+// When force is false, fillMap will not add new entries to the map, using existing
+// (outer) map entries to gauge caller interest in each application point (outer map
+// key). When force is true, fillMap will add entries to the map.
+// The returned values are the counts of application points filled into the map, and
+// the total count of tree nodes with any policy applied
+func (o applicationPoint) fillMap(in map[ObjectId]map[ObjectId]bool, force bool) (int, int, error) {
+	// track candidate application points we've considered (n)
+	// and those we've added to the map (m)
+	var m, n int
+
+	if in == nil {
+		return 0, 0, errors.New("fillMap must not be called with a nil map")
+	}
+
+	if len(o.Policies) > 0 {
+		n++ // this is a candidate application point
+
+		if _, ok := in[o.Id]; !ok && force {
+			// this application point has policies, is not already in the map, and "force" is set.
+			// Add the application point ID to the map so it *looks interesting*
+			in[o.Id] = make(map[ObjectId]bool)
+		}
+	}
+
+	// only collect policy info from application points which have a map entry
+	if existingMap, ok := in[o.Id]; ok {
+		if len(existingMap) == 0 {
+			// We're about to add the first entry to the inner map.
+			// Increment the "added" counter (m)
+			m++
+		}
+
 		for _, policyInfo := range o.Policies {
 			// parse the raw `state` string from the API
 			state := appPointChildPolicyStateEnum.Parse(policyInfo.State)
 			if state == nil {
-				return fmt.Errorf(
+				return 0, 0, fmt.Errorf(
 					"unknown application point policy state %q found at policy %q, application point %q",
 					policyInfo.State, policyInfo.Policy, o.Id)
 			}
@@ -279,59 +314,126 @@ func (o applicationPoint) fillMap(in map[ObjectId]map[ObjectId]bool) error {
 			case appPointChildPolicyStateUnused:
 				in[o.Id][policyInfo.Policy] = false
 			}
+
 		}
 	}
 
 	// having added (or not) this application point's policy info, recurse to child application points.
 	for _, child := range o.ChildApplicationPoints {
-		err := child.fillMap(in)
+		cm, cn, err := child.fillMap(in, force)
 		if err != nil {
-			return err
+			return 0, 0, err
 		}
+
+		n += cn
+		m += cm
 	}
 
-	return nil
-
+	return m, n, nil
 }
 
-func (o *TwoStageL3ClosClient) GetApplicationPointsConnectivityTemplates(ctx context.Context, apIds []ObjectId) (map[ObjectId]map[ObjectId]bool, error) {
-	var apiResponse struct {
-		ApplicationPoints struct {
-			ChildApplicationPoints []applicationPoint `json:"children"`
-			ChildrenCount          int                `json:"children_count"`
-		} `json:"application_points"`
-		NodeTypes []string `json:"node_types"`
+type objPolicyApplicationPointsApiResponse struct {
+	ApplicationPointTree struct {
+		ChildApplicationPoints []applicationPoint `json:"children"`
+		ChildrenCount          int                `json:"children_count"`
+	} `json:"application_points"`
+	NodeTypes []string `json:"node_types"`
+}
+
+// fillMap fills the details of obj (endpoint?) policy usages into the supplied map.
+// When force is false, fillMap will not add new entries to the map, using existing
+// (outer) map entries to gauge caller interest in each application point (outer map
+// key). When force is true, fillMap will add entries to the map. The return values
+// indicate the count of values populated into the map and the count of application
+// point candidates encountered in the API response tree.
+func (o objPolicyApplicationPointsApiResponse) fillMap(in map[ObjectId]map[ObjectId]bool, force bool) (int, int, error) {
+	var m, n int
+	for _, childApplicationPoint := range o.ApplicationPointTree.ChildApplicationPoints {
+		cm, cn, err := childApplicationPoint.fillMap(in, force)
+		if err != nil {
+			return 0, 0, err
+		}
+
+		n += cn
+		m += cm
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintObjPolicyApplicationPoints, o.Id()),
-		apiResponse: &apiResponse,
-	})
+	return m, n, nil
+}
+
+// GetAllApplicationPointsConnectivityTemplates returns map[ObjectId]map[ObjectId]bool
+// The outer map is ApplicationPointId => CT state map
+// The inner map is ConnectivityTemplateId => State (bool) where
+//
+//	true: the CT is used on this Application Point
+//	false: the CT is not used on this Application Point, but it is valid here
+func (o *TwoStageL3ClosClient) GetAllApplicationPointsConnectivityTemplates(ctx context.Context) (map[ObjectId]map[ObjectId]bool, error) {
+	return o.getApplicationPointsConnectivityTemplatesByCt(ctx, "")
+}
+
+// GetConnectivityTemplatesByApplicationPoints returns map[ObjectId]map[ObjectId]bool
+// based on the supplied apIds ([]ObjectId representing Application Point IDs).
+// The outer map is ApplicationPointId => CT state map
+// The inner map is ConnectivityTemplateId => State (bool) where
+//
+//	true: the CT is used on this Application Point
+//	false: the CT is not used on this Application Point, but it is valid here
+func (o *TwoStageL3ClosClient) GetConnectivityTemplatesByApplicationPoints(ctx context.Context, apIds []ObjectId) (map[ObjectId]map[ObjectId]bool, error) {
+	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintObjPolicyApplicationPoints, o.Id()))
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		return nil, err
 	}
 
-	// create the response struct. We pre-populate the map with a nil slice to indicate
+	params := apstraUrl.Query()
+	params.Set(objPolicyApplicationPageSizeParam, strconv.Itoa(objPolicyApplicationPageSizeValue))
+
+	// create the result map. We pre-populate the map with a nil slice to indicate
 	// for each caller-supplied application point ID. Doing so indicates to fillmap()
 	// which application points are interesting to the caller.
-	response := make(map[ObjectId]map[ObjectId]bool, len(apIds))
+	result := make(map[ObjectId]map[ObjectId]bool, len(apIds))
 	for _, apId := range apIds {
-		response[apId] = make(map[ObjectId]bool)
+		result[apId] = make(map[ObjectId]bool)
 	}
 
-	for _, appPoint := range apiResponse.ApplicationPoints.ChildApplicationPoints {
-		err = appPoint.fillMap(response)
+	var iterationCount int
+	for { // API pagination loop
+		params.Set(objPolicyApplicationPageSkipParam, strconv.Itoa(iterationCount*objPolicyApplicationPageSizeValue))
+		apstraUrl.RawQuery = params.Encode()
+
+		var apiResponse objPolicyApplicationPointsApiResponse
+		err = o.client.talkToApstra(ctx, &talkToApstraIn{
+			method:         http.MethodGet,
+			url:            apstraUrl,
+			apiResponse:    &apiResponse,
+			unsynchronized: true,
+		})
+		if err != nil {
+			return nil, convertTtaeToAceWherePossible(err)
+		}
+
+		_, n, err := apiResponse.fillMap(result, false)
 		if err != nil {
 			return nil, err
 		}
+
+		if n < objPolicyApplicationPageSizeValue {
+			break // last page of results
+		}
+
+		iterationCount++
 	}
 
-	return response, nil
+	return result, nil
 }
 
+// GetApplicationPointConnectivityTemplates returns map[ObjectId]bool
+// based on the supplied apId (ObjectId representing an Application Point ID).
+// The map is ConnectivityTemplateId => State (bool) where
+//
+//	true: the CT is used on this Application Point
+//	false: the CT is not used on this Application Point, but it is valid here
 func (o *TwoStageL3ClosClient) GetApplicationPointConnectivityTemplates(ctx context.Context, apId ObjectId) (map[ObjectId]bool, error) {
-	mapByApplicationPointId, err := o.GetApplicationPointsConnectivityTemplates(ctx, []ObjectId{apId})
+	mapByApplicationPointId, err := o.GetConnectivityTemplatesByApplicationPoints(ctx, []ObjectId{apId})
 	if err != nil {
 		return nil, err
 	}
@@ -344,4 +446,84 @@ func (o *TwoStageL3ClosClient) GetApplicationPointConnectivityTemplates(ctx cont
 		errType: ErrNotfound,
 		err:     fmt.Errorf("connectivity template usage map for interface %q not found", apId),
 	}
+}
+
+// GetApplicationPointsConnectivityTemplatesByCt returns map[ObjectId]map[ObjectId]bool
+// based on the supplied ctId (ObjectId representing a Connectivity Template ID).
+// The outer map is ApplicationPointId => CT state map
+// The inner map is ConnectivityTemplateId => State (bool) where
+//
+//	true: the CT is used on this Application Point
+//	false: the CT is not used on this Application Point, but it is valid here
+//
+// Each inner map will only have a single key (the supplied ctId), but nested maps are
+// used here for consistency with similar calls.
+func (o *TwoStageL3ClosClient) GetApplicationPointsConnectivityTemplatesByCt(ctx context.Context, ctId ObjectId) (map[ObjectId]map[ObjectId]bool, error) {
+	return o.getApplicationPointsConnectivityTemplatesByCt(ctx, ctId)
+}
+
+// getApplicationPointsConnectivityTemplatesByCt returns map[ObjectId]map[ObjectId]bool
+// based on the supplied ctId (ObjectId representing a Connectivity Template ID), if any.
+// The outer map is ApplicationPointId => CT state map
+// The inner map is ConnectivityTemplateId => State (bool) where
+//
+//	true: the CT is used on this Application Point
+//	false: the CT is not used on this Application Point, but it is valid here
+//
+// Each inner map will only have a single key (the supplied ctId), but nested maps are
+// used here for consistency with similar calls.
+func (o *TwoStageL3ClosClient) getApplicationPointsConnectivityTemplatesByCt(ctx context.Context, ctId ObjectId) (map[ObjectId]map[ObjectId]bool, error) {
+	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintObjPolicyApplicationPoints, o.Id()))
+	if err != nil {
+		return nil, err
+	}
+
+	params := apstraUrl.Query()
+	if ctId != "" {
+		params.Set("policy", ctId.String())
+	}
+	params.Set(objPolicyApplicationPageSizeParam, strconv.Itoa(objPolicyApplicationPageSizeValue))
+
+	var iterationCount int
+	result := make(map[ObjectId]map[ObjectId]bool)
+	for { // API pagination loop
+		params.Set(objPolicyApplicationPageSkipParam, strconv.Itoa(iterationCount*objPolicyApplicationPageSizeValue))
+		apstraUrl.RawQuery = params.Encode()
+
+		var apiResponse objPolicyApplicationPointsApiResponse
+		err = o.client.talkToApstra(ctx, &talkToApstraIn{
+			method:         http.MethodGet,
+			url:            apstraUrl,
+			apiResponse:    &apiResponse,
+			unsynchronized: true,
+		})
+		if err != nil {
+			return nil, convertTtaeToAceWherePossible(err)
+		}
+
+		_, n, err := apiResponse.fillMap(result, true)
+		if err != nil {
+			return nil, err
+		}
+
+		if n < objPolicyApplicationPageSizeValue {
+			break // last page of results
+		}
+
+		iterationCount++
+	}
+
+	// The API has an application-point-centric view of the world. Even when
+	// we use a CT filter in our query, the API responds with unrelated CTs
+	// assigned to each matching application point.
+	// Clear unwanted CTs from the API response.
+	for k1, v1 := range result { // k1: Application Point ID; v1: CT status map
+		for k2 := range v1 { // k2: CT ID (value is a bool indicating whether the CT is applied)
+			if k2 != ctId {
+				delete(result[k1], k2) // unwanted map entry
+			}
+		}
+	}
+
+	return result, nil
 }
