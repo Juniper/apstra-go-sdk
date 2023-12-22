@@ -441,6 +441,17 @@ func TestQueryString(t *testing.T) {
 					Match(new(PathQuery).
 						Node(nil))),
 		},
+		"optional_raw_query": {
+			e: "match(" +
+				"" + "node()," +
+				"" + "optional(" +
+				"" + "" + "node()" +
+				"" + ")" +
+				")",
+			q: new(MatchQuery).Match(new(PathQuery).
+				Node(nil)).
+				Optional(new(RawQuery).SetQuery("node()")),
+		},
 	}
 
 	for tName, tCase := range testCases {
