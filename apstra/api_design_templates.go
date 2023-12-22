@@ -1014,7 +1014,7 @@ func (o *TemplateL3Collapsed) OverlayControlProtocol() OverlayControlProtocol {
 
 type TemplateL3CollapsedData struct {
 	DisplayName          string
-	AntiAffinityPolicy   AntiAffinityPolicy
+	AntiAffinityPolicy   *AntiAffinityPolicy
 	RackTypes            []RackType
 	Capability           TemplateCapability
 	MeshLinkSpeed        LogicalDevicePortSpeed
@@ -1028,7 +1028,7 @@ type rawTemplateL3Collapsed struct {
 	Id                   ObjectId                   `json:"id"`
 	Type                 templateType               `json:"type"`
 	DisplayName          string                     `json:"display_name"`
-	AntiAffinityPolicy   rawAntiAffinityPolicy      `json:"anti_affinity_policy"`
+	AntiAffinityPolicy   *rawAntiAffinityPolicy     `json:"anti_affinity_policy,omitempty"`
 	CreatedAt            time.Time                  `json:"created_at"`
 	LastModifiedAt       time.Time                  `json:"last_modified_at"`
 	RackTypes            []rawRackType              `json:"rack_types"`
@@ -1061,9 +1061,12 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	if err != nil {
 		return nil, err
 	}
-	antiAffinityPolicy, err := o.AntiAffinityPolicy.polish()
-	if err != nil {
-		return nil, err
+	var aap *AntiAffinityPolicy
+	if o.AntiAffinityPolicy != nil {
+		aap, err = o.AntiAffinityPolicy.polish()
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &TemplateL3Collapsed{
 		Id:             o.Id,
@@ -1072,7 +1075,7 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplateL3CollapsedData{
 			DisplayName:          o.DisplayName,
-			AntiAffinityPolicy:   *antiAffinityPolicy,
+			AntiAffinityPolicy:   aap,
 			RackTypes:            prt,
 			Capability:           TemplateCapability(capability),
 			MeshLinkSpeed:        o.MeshLinkSpeed.parse(),
@@ -1397,7 +1400,12 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 	if err != nil {
 		return nil, err
 	}
+
 	var antiAffinityPolicy *rawAntiAffinityPolicy
+	if o.AntiAffinityPolicy != nil {
+		antiAffinityPolicy = o.AntiAffinityPolicy.raw()
+	}
+
 	asnAllocationPolicy := o.AsnAllocationPolicy.raw()
 
 	var fabricAddressingPolicy *rawFabricAddressingPolicy
@@ -1583,6 +1591,12 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 		}
 		rackTypes[i] = *rt
 	}
+
+	var antiAffinityPolicy *rawAntiAffinityPolicy
+	if o.AntiAffinityPolicy != nil {
+		antiAffinityPolicy = o.AntiAffinityPolicy.raw()
+	}
+
 	return &rawCreateL3CollapsedTemplateRequest{
 		Type:                 templateTypeL3Collapsed,
 		DisplayName:          o.DisplayName,
@@ -1592,7 +1606,7 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 		RackTypes:            rackTypes,
 		RackTypeCounts:       o.RackTypeCounts,
 		DhcpServiceIntent:    o.DhcpServiceIntent,
-		AntiAffinityPolicy:   o.AntiAffinityPolicy.raw(),
+		AntiAffinityPolicy:   antiAffinityPolicy,
 		VirtualNetworkPolicy: *o.VirtualNetworkPolicy.raw(),
 	}, nil
 }
