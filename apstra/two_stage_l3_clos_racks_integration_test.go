@@ -32,14 +32,32 @@ func TestCreateDeleteRack(t *testing.T) {
 	}
 
 	testCases := map[string]TwoStageL3ClosRackRequest{
-		"single-rack": {
+		"rack-by-id": {
 			PodId:      "",
 			RackTypeId: rackTypeId,
+		},
+		"rack-by-obj": {
+			PodId: "",
+			RackType: &RackTypeRequest{
+				DisplayName:              "test",
+				Description:              "test rack",
+				FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
+				LeafSwitches: []RackElementLeafSwitchRequest{
+					{
+						Label:              "leaf",
+						LinkPerSpineCount:  1,
+						LinkPerSpineSpeed:  "10G",
+						RedundancyProtocol: LeafRedundancyProtocolNone,
+						Tags:               []ObjectId{"hypervisor", "firewall"},
+						LogicalDeviceId:    "AOS-7x10-Leaf",
+					},
+				},
+			},
 		},
 	}
 
 	for clientName, client := range clients {
-		bp, bpDel := testBlueprintC(ctx, t, client.client)
+		bp, bpDel := testBlueprintD(ctx, t, client.client)
 		defer func() {
 			err = bpDel(ctx)
 			if err != nil {
@@ -47,8 +65,8 @@ func TestCreateDeleteRack(t *testing.T) {
 			}
 		}()
 
-		for _, tCase := range testCases {
-			log.Printf("testing CreateRack() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		for tName, tCase := range testCases {
+			log.Printf("testing CreateRack(%s) against %s %s (%s)", tName, client.clientType, clientName, client.client.ApiVersion())
 			id, err := bp.CreateRack(ctx, &tCase)
 			if err != nil {
 				t.Fatal(err)

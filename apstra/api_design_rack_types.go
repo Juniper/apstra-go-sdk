@@ -1123,6 +1123,7 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 }
 
 type rawRackTypeRequest struct {
+	Id                       ObjectId                      `json:"id,omitempty"`
 	DisplayName              string                        `json:"display_name"`
 	Description              string                        `json:"description"`
 	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
@@ -1226,6 +1227,20 @@ func (o *rawRackType) tagByLabel(desired string) (*DesignTagData, bool) {
 		}
 	}
 	return nil, false
+}
+
+func (o *rawRackType) request() *rawRackTypeRequest {
+	return &rawRackTypeRequest{
+		Id:                       o.Id,
+		DisplayName:              o.DisplayName,
+		Description:              o.Description,
+		FabricConnectivityDesign: o.FabricConnectivityDesign,
+		Tags:                     o.Tags,
+		LogicalDevices:           o.LogicalDevices,
+		GenericSystems:           o.GenericSystems,
+		LeafSwitches:             o.LeafSwitches,
+		AccessSwitches:           o.AccessSwitches,
+	}
 }
 
 func (o *Client) listRackTypeIds(ctx context.Context) ([]ObjectId, error) {
