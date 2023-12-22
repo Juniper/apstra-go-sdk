@@ -390,6 +390,10 @@ func (o *MatchQuery) String() string {
 		sb.WriteString(".where(" + where + ")")
 	}
 
+	if o.optional {
+		return "optional(" + sb.String() + ")"
+	}
+
 	return sb.String()
 }
 
@@ -460,7 +464,7 @@ func (o *RawQuery) SetQuery(query string) *RawQuery {
 
 func (o *RawQuery) String() string {
 	if o.optional {
-		return o.query
+		return "optional(" + o.query + ")"
 	}
 
 	return o.query
