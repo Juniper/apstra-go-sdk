@@ -32,7 +32,7 @@ func main() {
 		Pass:       "password",
 		HttpClient: &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
 	}
-	client, err := clientCfg.NewClient()
+	client, err := clientCfg.NewClient(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}
