@@ -123,26 +123,6 @@ func TestQEEAttributeString(t *testing.T) {
 	}
 }
 
-func TestQueryString(t *testing.T) {
-	x := PathQuery{}
-	y := x.Node([]QEEAttribute{
-		{"type", QEStringVal("system")},
-		{"name", QEStringVal("n_system")},
-		{"system_type", QEStringVal("switch")},
-	}).
-		Out([]QEEAttribute{{"type", QEStringVal("logical_device")}}).
-		Node([]QEEAttribute{
-			{"type", QEStringVal("logical_device")},
-		}).
-		In([]QEEAttribute{{"type", QEStringVal("logical_device")}}).
-		Node([]QEEAttribute{
-			{"type", QEStringVal("interface_map")},
-			{"name", QEStringVal("n_interface_map")},
-		}).
-		String()
-	log.Println("\n", y)
-}
-
 func TestParsingQueryInfo(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
@@ -420,33 +400,69 @@ func TestMatchQueryWhere(t *testing.T) {
 	}
 }
 
-func TestQueryMatchOptional(t *testing.T) {
-	expected := "" +
-		"match(" +
-		"" + "node(type='system',system_type='switch').out().node(type='interface').out().node(type='link',name='n_link')," +
-		"" + "optional(" +
-		"" + "" + "node(type='link',name='n_link').in_().node(type='tag',name='n_tag')" +
-		"" + ")" +
-		")"
-	q1 := new(PathQuery).
-		Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(), {Key: "system_type", Value: QEStringVal("switch")}}).
-		Out([]QEEAttribute{}).
-		Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
-		Out([]QEEAttribute{}).
-		Node([]QEEAttribute{NodeTypeLink.QEEAttribute(), {Key: "name", Value: QEStringVal("n_link")}})
+func TestQueryString(t *testing.T) {
+	type testCase struct {
+		q QEQuery
+		e string
+	}
 
-	q2 := new(PathQuery).
-		Node([]QEEAttribute{NodeTypeLink.QEEAttribute(), {Key: "name", Value: QEStringVal("n_link")}}).
-		In([]QEEAttribute{}).
-		Node([]QEEAttribute{NodeTypeTag.QEEAttribute(), {Key: "name", Value: QEStringVal("n_tag")}})
+	testCases := map[string]testCase{
+		"optional_path_query": {
+			e: "match(" +
+				"" + "node(type='system',system_type='switch').out().node(type='interface').out().node(type='link',name='n_link')," +
+				"" + "optional(" +
+				"" + "" + "node(type='link',name='n_link').in_().node(type='tag',name='n_tag')" +
+				"" + ")" +
+				")",
+			q: new(MatchQuery).
+				Match(new(PathQuery).
+					Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(), {Key: "system_type", Value: QEStringVal("switch")}}).
+					Out([]QEEAttribute{}).
+					Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
+					Out([]QEEAttribute{}).
+					Node([]QEEAttribute{NodeTypeLink.QEEAttribute(), {Key: "name", Value: QEStringVal("n_link")}})).
+				Optional(new(PathQuery).
+					Node([]QEEAttribute{NodeTypeLink.QEEAttribute(), {Key: "name", Value: QEStringVal("n_link")}}).
+					In([]QEEAttribute{}).
+					Node([]QEEAttribute{NodeTypeTag.QEEAttribute(), {Key: "name", Value: QEStringVal("n_tag")}})),
+		},
+		"optional_match_query": {
+			e: "match(" +
+				"" + "node()," +
+				"" + "optional(" +
+				"" + "" + "match(" +
+				"" + "" + "" + "node()" +
+				"" + "" + ")" +
+				"" + ")" +
+				")",
+			q: new(MatchQuery).Match(new(PathQuery).
+				Node(nil)).
+				Optional(new(MatchQuery).
+					Match(new(PathQuery).
+						Node(nil))),
+		},
+		"optional_raw_query": {
+			e: "match(" +
+				"" + "node()," +
+				"" + "optional(" +
+				"" + "" + "node()" +
+				"" + ")" +
+				")",
+			q: new(MatchQuery).Match(new(PathQuery).
+				Node(nil)).
+				Optional(new(RawQuery).SetQuery("node()")),
+		},
+	}
 
-	result := new(MatchQuery).
-		Match(q1).
-		Optional(q2).
-		String()
-
-	if expected != result {
-		t.Fatalf("expected: %q, got %q", expected, result)
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+			r := tCase.q.String()
+			if tCase.e != r {
+				t.Fatalf("expected:\n%s\n\n got:\n%s", tCase.e, r)
+			}
+		})
 	}
 }
 
