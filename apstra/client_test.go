@@ -129,9 +129,17 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 func TestCRUDIntegerPools(t *testing.T) {
 	ctx := context.Background()
 
-	clients, err := getTestClients(context.Background(), t)
+	// get all clients
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	// remove clients which do not support integer pools
+	for clientName, client := range clients {
+		if integerPoolForbidden().Includes(client.client.apiVersion) {
+			delete(clients, clientName)
+		}
 	}
 
 	validate := func(req *IntPoolRequest, resp *IntPool) {
