@@ -325,15 +325,17 @@ const (
 	SystemRoleLeaf
 	SystemRoleSpine
 	SystemRoleSuperSpine
+	SystemRoleRedundancyGroup
 	SystemRoleUnknown = "unknown System Role '%s'"
 
-	systemRoleNone       = systemRole("")
-	systemRoleAccess     = systemRole("access")
-	systemRoleGeneric    = systemRole("generic")
-	systemRoleLeaf       = systemRole("leaf")
-	systemRoleSpine      = systemRole("spine")
-	systemRoleSuperSpine = systemRole("superspine")
-	systemRoleUnknown    = "unknown System Role '%d'"
+	systemRoleNone            = systemRole("")
+	systemRoleAccess          = systemRole("access")
+	systemRoleGeneric         = systemRole("generic")
+	systemRoleLeaf            = systemRole("leaf")
+	systemRoleSpine           = systemRole("spine")
+	systemRoleSuperSpine      = systemRole("superspine")
+	systemRoleRedundancyGroup = systemRole("redundancy_group")
+	systemRoleUnknown         = "unknown System Role '%d'"
 )
 
 func (o SystemRole) String() string {
@@ -358,6 +360,8 @@ func (o SystemRole) raw() systemRole {
 		return systemRoleSpine
 	case SystemRoleSuperSpine:
 		return systemRoleSuperSpine
+	case SystemRoleRedundancyGroup:
+		return systemRoleRedundancyGroup
 	default:
 		return systemRole(fmt.Sprintf(systemRoleUnknown, o))
 	}
@@ -390,6 +394,8 @@ func (o systemRole) parse() (int, error) {
 		return int(SystemRoleSpine), nil
 	case systemRoleSuperSpine:
 		return int(SystemRoleSuperSpine), nil
+	case systemRoleRedundancyGroup:
+		return int(SystemRoleRedundancyGroup), nil
 	default:
 		return 0, fmt.Errorf(SystemRoleUnknown, o)
 	}
