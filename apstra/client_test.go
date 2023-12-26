@@ -308,6 +308,14 @@ func TestCRUDIntegerPools(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		for i := len(pools) - 1; i >= 0; i-- {
+			if pools[i].Status == PoolStatusDeleting {
+				log.Printf("dropping pool %s from fetched pool list because it has status %s", pools[i].Id, pools[i].Status.String())
+				pools[i] = pools[len(pools)-1]
+				pools = pools[:len(pools)-1]
+			}
+		}
+
 		if len(pools) != beforePoolCount {
 			t.Fatalf("pools before creation: %d; after creation: %d", beforePoolCount, len(pools))
 		}
