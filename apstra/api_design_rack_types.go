@@ -71,16 +71,16 @@ type SystemManagementLevel int
 type systemManagementLevel string
 
 const (
-	SystemManagementLevelNone = SystemManagementLevel(iota)
-	SystemManagementLevelUnmanaged
+	SystemManagementLevelUnmanaged = SystemManagementLevel(iota)
 	SystemManagementLevelTelemetryOnly
 	SystemManagementLevelFullControl
+	SystemManagementLevelNone
 	SystemManagementLevelUnknown = "unknown generic system management level '%s'"
 
-	systemManagementLevelNone          = systemManagementLevel("")
 	systemManagementLevelUnmanaged     = systemManagementLevel("unmanaged")
 	systemManagementLevelTelemetryOnly = systemManagementLevel("telemetry_only")
 	systemManagementLevelFullControl   = systemManagementLevel("full_control")
+	systemManagementLevelNone          = systemManagementLevel("")
 	systemManagementLevelUnknown       = "unknown generic system management level '%d'"
 )
 
@@ -298,14 +298,14 @@ func (o SystemManagementLevel) Int() int {
 
 func (o SystemManagementLevel) String() string {
 	switch o {
-	case SystemManagementLevelNone:
-		return string(systemManagementLevelNone)
 	case SystemManagementLevelUnmanaged:
 		return string(systemManagementLevelUnmanaged)
 	case SystemManagementLevelTelemetryOnly:
 		return string(systemManagementLevelTelemetryOnly)
 	case SystemManagementLevelFullControl:
 		return string(systemManagementLevelFullControl)
+	case SystemManagementLevelNone:
+		return string(systemManagementLevelNone)
 	default:
 		return fmt.Sprintf(systemManagementLevelUnknown, o)
 	}
@@ -316,14 +316,14 @@ func (o systemManagementLevel) string() string {
 }
 func (o systemManagementLevel) parse() (int, error) {
 	switch o {
-	case systemManagementLevelNone:
-		return int(SystemManagementLevelNone), nil
 	case systemManagementLevelUnmanaged:
 		return int(SystemManagementLevelUnmanaged), nil
-	case systemManagementLevelFullControl:
-		return int(SystemManagementLevelFullControl), nil
 	case systemManagementLevelTelemetryOnly:
 		return int(SystemManagementLevelTelemetryOnly), nil
+	case systemManagementLevelFullControl:
+		return int(SystemManagementLevelFullControl), nil
+	case systemManagementLevelNone:
+		return int(SystemManagementLevelNone), nil
 	default:
 		return 0, fmt.Errorf(SystemManagementLevelUnknown, o)
 	}
