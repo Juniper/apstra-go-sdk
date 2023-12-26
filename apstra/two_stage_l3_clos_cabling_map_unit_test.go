@@ -30,9 +30,10 @@ func TestSwitchLinkStrings(t *testing.T) {
 		{stringVal: "global_anycast_vtep", intType: InterfaceTypeGlobalAnycastVtep, stringType: interfaceTypeGlobalAnycastVtep},
 		{stringVal: "subinterface", intType: InterfaceTypeSubinterface, stringType: interfaceTypeSubinterface},
 
-		{stringVal: "admin_down", intType: InterfaceOperationStateAdminDown, stringType: interfaceOperationStateAdminDown},
-		{stringVal: "deduced_down", intType: InterfaceOperationStateDown, stringType: interfaceOperationStateDown},
+		{stringVal: "", intType: InterfaceOperationStateNone, stringType: interfaceOperationStateNone},
 		{stringVal: "up", intType: InterfaceOperationStateUp, stringType: interfaceOperationStateUp},
+		{stringVal: "deduced_down", intType: InterfaceOperationStateDown, stringType: interfaceOperationStateDown},
+		{stringVal: "admin_down", intType: InterfaceOperationStateAdminDown, stringType: interfaceOperationStateAdminDown},
 
 		{stringVal: "access_l3_peer_link", intType: LinkRoleAccessL3PeerLink, stringType: linkRoleAccessL3PeerLink},
 		{stringVal: "access_server", intType: LinkRoleAccessServer, stringType: linkRoleAccessServer},
