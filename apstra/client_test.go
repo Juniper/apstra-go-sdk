@@ -60,27 +60,24 @@ func TestLoginBadPassword(t *testing.T) {
 
 func TestLogoutAuthFail(t *testing.T) {
 	ctx := context.Background()
-	clientCfgs, err := getTestClientCfgs(context.Background())
+
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	for name, cfg := range clientCfgs {
-		client, err := cfg.cfg.NewClient(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing Login() against %s %s (%s)", cfg.cfgType, name, client.ApiVersion())
-		err = client.Login(context.TODO())
+	for clientName, client := range clients {
+		log.Printf("testing Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.Login(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("client has this authtoken: '%s'", client.httpHeaders[apstraAuthHeader])
-		client.httpHeaders[apstraAuthHeader] = randJwt()
-		log.Printf("client authtoken changed to: '%s'", client.httpHeaders[apstraAuthHeader])
-		log.Printf("testing failed Logout() against %s %s (%s)", cfg.cfgType, name, client.ApiVersion())
-		err = client.Logout(context.TODO())
+		log.Printf("client has this authtoken: '%s'", client.client.httpHeaders[apstraAuthHeader])
+		client.client.httpHeaders[apstraAuthHeader] = randJwt()
+		log.Printf("client authtoken changed to: '%s'", client.client.httpHeaders[apstraAuthHeader])
+		log.Printf("testing Loout() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.Logout(ctx)
 		if err == nil {
 			t.Fatal(fmt.Errorf("tried logging out with bad token, did not get errror"))
 		}
