@@ -71,11 +71,13 @@ type SystemManagementLevel int
 type systemManagementLevel string
 
 const (
-	SystemManagementLevelUnmanaged = SystemManagementLevel(iota)
+	SystemManagementLevelNone = SystemManagementLevel(iota)
+	SystemManagementLevelUnmanaged
 	SystemManagementLevelTelemetryOnly
 	SystemManagementLevelFullControl
 	SystemManagementLevelUnknown = "unknown generic system management level '%s'"
 
+	systemManagementLevelNone          = systemManagementLevel("")
 	systemManagementLevelUnmanaged     = systemManagementLevel("unmanaged")
 	systemManagementLevelTelemetryOnly = systemManagementLevel("telemetry_only")
 	systemManagementLevelFullControl   = systemManagementLevel("full_control")
@@ -296,6 +298,8 @@ func (o SystemManagementLevel) Int() int {
 
 func (o SystemManagementLevel) String() string {
 	switch o {
+	case SystemManagementLevelNone:
+		return string(systemManagementLevelNone)
 	case SystemManagementLevelUnmanaged:
 		return string(systemManagementLevelUnmanaged)
 	case SystemManagementLevelTelemetryOnly:
@@ -312,10 +316,12 @@ func (o systemManagementLevel) string() string {
 }
 func (o systemManagementLevel) parse() (int, error) {
 	switch o {
-	case systemManagementLevelFullControl:
-		return int(SystemManagementLevelFullControl), nil
+	case systemManagementLevelNone:
+		return int(SystemManagementLevelNone), nil
 	case systemManagementLevelUnmanaged:
 		return int(SystemManagementLevelUnmanaged), nil
+	case systemManagementLevelFullControl:
+		return int(SystemManagementLevelFullControl), nil
 	case systemManagementLevelTelemetryOnly:
 		return int(SystemManagementLevelTelemetryOnly), nil
 	default:
