@@ -18,7 +18,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 	}
 
 	configletData := ConfigletData{
-		DisplayName: "TestImportConfiglet",
+		DisplayName: randString(5, "hex"),
 		RefArchs:    []RefDesign{RefDesignTwoStageL3Clos},
 		Generators: []ConfigletGenerator{{
 			ConfigStyle:  PlatformOSJunos,
