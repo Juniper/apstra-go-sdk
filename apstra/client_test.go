@@ -33,9 +33,11 @@ func TestLoginEmptyPassword(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing empty password Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		client.client.cfg.Pass = ""
-		err := client.client.Login(context.TODO())
+		clientType := client.clientType
+		client := *client.client // don't use iterator variable because it points to the shared client object
+		log.Printf("testing empty password Login() against %s %s (%s)", clientType, clientName, client.ApiVersion())
+		client.cfg.Pass = ""
+		err := client.Login(context.TODO())
 		if err == nil {
 			t.Fatal(fmt.Errorf("tried logging in with empty password, did not get errror"))
 		}
