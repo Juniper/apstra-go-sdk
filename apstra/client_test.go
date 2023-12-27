@@ -49,9 +49,13 @@ func TestLoginBadPassword(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing bad password Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		// replace the configured password while saving it in in `password`
+		password := client.client.cfg.Pass
 		client.client.cfg.Pass = randString(10, "hex")
+
+		log.Printf("testing bad password Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.Login(context.TODO())
+		client.client.cfg.Pass = password // restore the configured password
 		if err == nil {
 			t.Fatal(fmt.Errorf("tried logging in with bad password, did not get errror"))
 		}
