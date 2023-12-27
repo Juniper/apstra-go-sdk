@@ -513,14 +513,17 @@ func (o *TwoStageL3ClosClient) getApplicationPointsConnectivityTemplatesByCt(ctx
 		iterationCount++
 	}
 
-	// The API has an application-point-centric view of the world. Even when
-	// we use a CT filter in our query, the API responds with unrelated CTs
-	// assigned to each matching application point.
-	// Clear unwanted CTs from the API response.
-	for k1, v1 := range result { // k1: Application Point ID; v1: CT status map
-		for k2 := range v1 { // k2: CT ID (value is a bool indicating whether the CT is applied)
-			if k2 != ctId {
-				delete(result[k1], k2) // unwanted map entry
+	// did the caller specify a CT ID?
+	if ctId != "" {
+		// The API has an application-point-centric view of the world. Even when
+		// we use a CT filter in our query, the API responds with unrelated CTs
+		// assigned to each matching application point.
+		// Clear unwanted CTs from the API response.
+		for k1, v1 := range result { // k1: Application Point ID; v1: CT status map
+			for k2 := range v1 { // k2: CT ID (value is a bool indicating whether the CT is applied)
+				if k2 != ctId {
+					delete(result[k1], k2) // unwanted map entry
+				}
 			}
 		}
 	}
