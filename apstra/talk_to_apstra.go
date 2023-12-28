@@ -91,7 +91,7 @@ func convertTtaeToAceWherePossible(err error) error {
 // When `in.unsychronized` is false (the default), Apstra's 'async=full' query
 // string parameter is added to the returned result.
 func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
-	var result *url.URL
+	result := in.url
 	var err error
 
 	if in.url == nil {
@@ -99,8 +99,6 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error parsing url '%s' - %w", in.urlStr, err)
 		}
-	} else {
-		result = in.url
 	}
 
 	if result.Scheme == "" {
@@ -139,7 +137,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	if in.apiInput != nil {
 		requestBody, err = json.Marshal(in.apiInput)
 		if err != nil {
-			return fmt.Errorf("error marshaling payload in talkToApstra for url '%s' - %w", in.url, err)
+			return fmt.Errorf("error marshaling payload in talkToApstra for url '%s' - %w", apstraUrl.String(), err)
 		}
 	}
 
@@ -162,7 +160,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// create request
 	req, err := http.NewRequestWithContext(ctx, in.method, apstraUrl.String(), bytes.NewReader(requestBody))
 	if err != nil {
-		return fmt.Errorf("error creating http Request for url '%s' - %w", in.url, err)
+		return fmt.Errorf("error creating http Request for url '%s' - %w", apstraUrl.String(), err)
 	}
 
 	// set request httpHeaders
@@ -183,7 +181,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
 	req.Header.Del(apstraAuthHeader)
 	if err != nil { // check error from req.Do()
-		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", in.url, err)
+		return fmt.Errorf("error calling http.client.Do for url '%s' - %w", apstraUrl.String(), err)
 	}
 
 	o.logFunc(2, o.dumpHttpResponse, resp)
