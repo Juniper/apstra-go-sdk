@@ -6,6 +6,7 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-version"
 	"log"
 	"math/rand"
 	"sort"
@@ -19,7 +20,17 @@ func TestSetGenericServerBonding(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	addLinksToEsiAccessMinVersion, err := version.NewVersion("4.1.2")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	for clientName, client := range clients {
+		clientVersion, err := version.NewVersion(client.client.apiVersion)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		bpClient, bpDel := testBlueprintE(ctx, t, client.client)
 		defer func() {
 			err := bpDel(ctx)
@@ -27,11 +38,6 @@ func TestSetGenericServerBonding(t *testing.T) {
 				t.Fatal(err)
 			}
 		}()
-
-		//bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, "c09e3975-6799-41a3-ab1a-d96f93cd5d3e")
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
 
 		leafQuery := new(PathQuery).
 			SetBlueprintId(bpClient.Id()).
@@ -101,12 +107,12 @@ func TestSetGenericServerBonding(t *testing.T) {
 		}
 
 		type testCase struct {
-			//request         CreateLinksWithNewSystemRequest
 			switchIds       []ObjectId
 			linkCount       int
 			firstInterface  string
 			bondStrategy    string
 			logicalDeviceId string
+			systemType      SystemType
 		}
 
 		testCases := []testCase{
@@ -115,36 +121,63 @@ func TestSetGenericServerBonding(t *testing.T) {
 				linkCount:       1,
 				firstInterface:  "xe-0/0/5",
 				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeServer,
 			},
 			{
 				switchIds:       []ObjectId{leafIds[0]},
 				linkCount:       4,
 				firstInterface:  "xe-0/0/5",
 				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeServer,
+			},
+			{
+				switchIds:       []ObjectId{leafIds[0]},
+				linkCount:       1,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeExternal,
+			},
+			{
+				switchIds:       []ObjectId{leafIds[0]},
+				linkCount:       4,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeExternal,
 			},
 			{
 				switchIds:       []ObjectId{accessIds[0]},
 				linkCount:       1,
 				firstInterface:  "xe-0/0/5",
 				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeServer,
 			},
 			{
 				switchIds:       []ObjectId{accessIds[0]},
 				linkCount:       4,
 				firstInterface:  "xe-0/0/5",
 				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeServer,
 			},
 			{
 				switchIds:       leafIds,
 				linkCount:       4,
 				firstInterface:  "xe-0/0/5",
 				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeServer,
+			},
+			{
+				switchIds:       leafIds,
+				linkCount:       4,
+				firstInterface:  "xe-0/0/5",
+				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeExternal,
 			},
 			{
 				switchIds:       accessIds,
 				linkCount:       4,
 				firstInterface:  "xe-0/0/5",
 				logicalDeviceId: "AOS-4x10-1",
+				systemType:      SystemTypeServer,
 			},
 		}
 
@@ -153,6 +186,10 @@ func TestSetGenericServerBonding(t *testing.T) {
 			var hostTags []string
 			for j := 0; j < rand.Intn(5)+2; j++ {
 				hostTags = append(hostTags, randString(5, "hex"))
+			}
+
+			if sliceContainsAnyOf(accessIds, tc.switchIds) && clientVersion.LessThan(addLinksToEsiAccessMinVersion) {
+				continue TESTCASE // cannot use this test case against early apstra
 			}
 
 			var links []CreateLinkRequest
@@ -183,15 +220,23 @@ func TestSetGenericServerBonding(t *testing.T) {
 				})
 			}
 
+			// poId min/max can only be set for "internal" generic systems
+			var portChannelIdMin, portChannelIdMax int
+			if tc.systemType == SystemTypeServer {
+				portChannelIdMin = rand.Intn(100) + 100
+				portChannelIdMax = rand.Intn(100) + 200
+			}
+
 			request := CreateLinksWithNewSystemRequest{
 				Links: links,
 				System: CreateLinksWithNewSystemRequestSystem{
 					Hostname:         randString(5, "hex"),
 					Label:            randString(5, "hex"),
 					LogicalDeviceId:  ObjectId(tc.logicalDeviceId),
-					PortChannelIdMin: rand.Intn(100) + 100,
-					PortChannelIdMax: rand.Intn(100) + 200,
+					PortChannelIdMin: portChannelIdMin,
+					PortChannelIdMax: portChannelIdMax,
 					Tags:             hostTags,
+					Type:             tc.systemType,
 				},
 			}
 			log.Printf("testing CreateLinksWithNewSystem() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
