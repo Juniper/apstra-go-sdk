@@ -5,9 +5,8 @@ package apstra
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"strings"
+	"strconv"
 	"testing"
 )
 
@@ -188,66 +187,113 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 }
 
 func TestAddDeletePolicyRule(t *testing.T) {
-	// todo re-write this test to create required conditions
-	t.Skip("this test needs to be re-written - skipping")
+	ctx := context.Background()
+
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	skipMsg := make(map[string]string)
 	for clientName, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpIds, err := client.client.listAllBlueprintIds(context.TODO())
+		bp, bpDelete := testBlueprintA(ctx, t, client.client)
+		defer func() {
+			err := bpDelete(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		// collect leaf switch IDs
+		leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if len(bpIds) == 0 {
-			skipMsg[clientName] = fmt.Sprintf("cannot manipulate policy on '%s' with no blueprints", clientName)
-			continue
+		// prep VN bindings
+		bindings := make([]VnBinding, len(leafIds))
+		for i, leafId := range leafIds {
+			bindings[i] = VnBinding{SystemId: leafId}
 		}
 
-		bpId := bpIds[0]
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		dcClient, err := client.client.NewTwoStageL3ClosClient(context.TODO(), bpId)
+		// create a security zone (VNs live here)
+		szName := randString(5, "hex")
+		szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+			SzType:  SecurityZoneTypeEVPN,
+			Label:   szName,
+			VrfName: szName,
+		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		randStr := randString(5, "hex")
-		label := "new-" + randStr
-		log.Printf("adding new rule '%s'", label)
+		// create a couple of virtual networks we'll use a policy rule endpoints
+		vnIds := make([]ObjectId, 2)
+		for i := range vnIds {
+			vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+				Ipv4Enabled:    true,
+				Label:          "vn_" + strconv.Itoa(i),
+				SecurityZoneId: szId,
+				VnBindings:     bindings,
+				VnType:         VnTypeVxlan,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			vnIds[i] = vnId
+		}
+
+		// create a security policy
+		policyId, err := bp.CreatePolicy(ctx, &Policy{
+			Enabled:             false,
+			Label:               randString(5, "hex"),
+			SrcApplicationPoint: vnIds[0],
+			DstApplicationPoint: vnIds[1],
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		newRule := &PolicyRule{
-			Label:       label,
-			Description: "new rule " + randStr,
+			Label:       randString(5, "hex"),
+			Description: randString(5, "hex"),
 			Protocol:    "TCP",
 			Action:      PolicyRuleActionDenyLog,
 			SrcPort:     PortRanges{{5, 6}},
 			DstPort:     PortRanges{{7, 8}, {9, 10}},
 		}
 
-		policyId := ObjectId("lkmWBn_wM9ShK9VCCQk")
+		p, err := bp.getPolicy(ctx, policyId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ruleCount := len(p.Rules)
 
 		log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ruleId, err := dcClient.addPolicyRule(context.TODO(), newRule, 0, policyId)
+		ruleId, err := bp.addPolicyRule(context.TODO(), newRule, 0, policyId)
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("new rule id: '%s'", ruleId)
+
+		p, err = bp.getPolicy(ctx, policyId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(p.Rules) != ruleCount+1 {
+			t.Fatalf("expected %d rules, got %d rules", ruleCount+1, len(p.Rules))
+		}
+
 		log.Printf("testing deletePolicyRuleById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = dcClient.deletePolicyRuleById(context.TODO(), policyId, ruleId)
+		err = bp.deletePolicyRuleById(context.TODO(), policyId, ruleId)
 		if err != nil {
 			t.Fatal(err)
 		}
-	}
-	if len(skipMsg) > 0 {
-		sb := strings.Builder{}
-		for _, msg := range skipMsg {
-			sb.WriteString(msg + ";")
+
+		p, err = bp.getPolicy(ctx, policyId)
+		if err != nil {
+			t.Fatal(err)
 		}
-		t.Skip(sb.String())
+		if len(p.Rules) != ruleCount {
+			t.Fatalf("expected %d rules, got %d rules", ruleCount, len(p.Rules))
+		}
 	}
 }
