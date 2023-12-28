@@ -6,13 +6,16 @@ package apstra
 import (
 	"context"
 	"encoding/json"
+	"github.com/hashicorp/go-version"
 	"log"
 	"math/rand"
 	"testing"
 )
 
 func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
-	equal := func(a, b *PropertySetData) bool {
+	ctx := context.Background()
+
+	equalFunc := func(a, b *PropertySetData) bool {
 		if a.Label != b.Label {
 			return false
 		}
@@ -27,78 +30,94 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		return jsonEqual(t, a.Values, b.Values)
 	}
 
-	append_to_byte := func(a []byte, s string) []byte {
-		return []byte(string(a) + s)
-	}
-
-	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	samples := rand.Intn(10) + 3
-	ps := &PropertySetData{
+	testData := PropertySetData{
 		Label: randString(10, "hex"),
 	}
-	vals := make(map[string]string, samples)
 
-	for i := 0; i < samples; i++ {
+	sampleCount := rand.Intn(10) + 3
+	vals := make(map[string]string, sampleCount)
+	for i := 0; i < sampleCount; i++ {
 		vals["_"+randString(10, "hex")] = randString(10, "hex")
 	}
-	ps.Values, err = json.Marshal(vals)
+	testData.Values, err = json.Marshal(vals)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	nestedJsonMinVer, err := version.NewVersion("4.1.2")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing CreatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id1, err := client.client.CreatePropertySet(ctx, ps)
+		psData := testData // start with clean copy of psData in each loop
+
+		apiVersion, err := version.NewVersion(client.client.apiVersion)
 		if err != nil {
 			t.Fatal(err)
-		}
-		log.Printf("testing GetPropertySetByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ps1, err := client.client.GetPropertySetByLabel(ctx, ps.Label)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !equal(ps, ps1.Data) {
-			t.Fatal("Created and extracted objects are not equal")
 		}
 
-		ps.Label = randString(10, "hex")
-		for i := 0; i < samples; i++ {
+		log.Printf("testing CreatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		id1, err := client.client.CreatePropertySet(ctx, &psData)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing GetPropertySetByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		ps, err := client.client.GetPropertySetByLabel(ctx, psData.Label)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !equalFunc(&psData, ps.Data) {
+			t.Fatal("Created and fetched objects are not equal")
+		}
+
+		psData.Label = randString(10, "hex")
+		for i := 0; i < sampleCount; i++ {
 			vals["_"+randString(10, "hex")] = randString(10, "hex")
 		}
-		ps.Values, err = json.Marshal(vals)
-		ps.Values = append_to_byte(ps.Values[:len(ps.Values)-1], `,"inner_json":{"number":1, "string":"str1"}}`)
+
+		psData.Values, err = json.Marshal(vals)
 		if err != nil {
 			t.Fatal(err)
-		}
-		log.Printf("testing UpdatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.UpdatePropertySet(ctx, id1, ps)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing GetPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ps2, err := client.client.GetPropertySet(ctx, id1)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !equal(ps, ps2.Data) {
-			t.Fatal("ps and ps2 are not equal")
 		}
 
-		log.Printf("testing DeletePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		// nested JSON only supported by Apstra 4.1.2 and later
+		if apiVersion.GreaterThanOrEqual(nestedJsonMinVer) {
+			psData.Values = append(psData.Values[:len(psData.Values)-1], []byte(`,"inner_json":{"number":1, "string":"str1"}}`)...)
+		}
+
+		log.Printf("testing UpdatePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.UpdatePropertySet(ctx, id1, &psData)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		log.Printf("testing GetPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		ps, err = client.client.GetPropertySet(ctx, id1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !equalFunc(&psData, ps.Data) {
+			t.Fatal("psData and ps.Data are not equal")
+		}
+
+		log.Printf("testingt  DeletePropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.DeletePropertySet(ctx, id1)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("Testing GetPropertySet() against %s %s (%s). This should fail", client.clientType, clientName, client.client.ApiVersion())
-		ps2, err = client.client.GetPropertySet(ctx, id1)
+		log.Printf("Testing GetPropertySet() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		_, err = client.client.GetPropertySet(ctx, id1)
 		if err == nil {
-			t.Fatal("This Get Should have failed with a 404")
+			t.Fatal("Fetching a property set after deletion should have produced an error")
 		}
 	}
 }

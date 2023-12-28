@@ -114,14 +114,16 @@ type InterfaceOperationState int
 type interfaceOperationState string
 
 const (
-	InterfaceOperationStateAdminDown = InterfaceOperationState(iota)
-	InterfaceOperationStateDown
+	InterfaceOperationStateNone = InterfaceOperationState(iota)
 	InterfaceOperationStateUp
+	InterfaceOperationStateDown
+	InterfaceOperationStateAdminDown
 	InterfaceOperationStateUnknown = "unknown interface operation state '%s'"
 
-	interfaceOperationStateAdminDown = interfaceOperationState("admin_down")
-	interfaceOperationStateDown      = interfaceOperationState("deduced_down")
+	interfaceOperationStateNone      = interfaceOperationState("")
 	interfaceOperationStateUp        = interfaceOperationState("up")
+	interfaceOperationStateDown      = interfaceOperationState("deduced_down")
+	interfaceOperationStateAdminDown = interfaceOperationState("admin_down")
 	interfaceOperationStateUnknown   = "unknown interface operation state '%d'"
 )
 
@@ -131,12 +133,14 @@ func (o InterfaceOperationState) Int() int {
 
 func (o InterfaceOperationState) String() string {
 	switch o {
-	case InterfaceOperationStateAdminDown:
-		return string(interfaceOperationStateAdminDown)
-	case InterfaceOperationStateDown:
-		return string(interfaceOperationStateDown)
+	case InterfaceOperationStateNone:
+		return string(interfaceOperationStateNone)
 	case InterfaceOperationStateUp:
 		return string(interfaceOperationStateUp)
+	case InterfaceOperationStateDown:
+		return string(interfaceOperationStateDown)
+	case InterfaceOperationStateAdminDown:
+		return string(interfaceOperationStateAdminDown)
 	default:
 		return fmt.Sprintf(interfaceOperationStateUnknown, o)
 	}
@@ -152,12 +156,14 @@ func (o interfaceOperationState) string() string {
 
 func (o interfaceOperationState) parse() (int, error) {
 	switch o {
-	case interfaceOperationStateAdminDown:
-		return int(InterfaceOperationStateAdminDown), nil
-	case interfaceOperationStateDown:
-		return int(InterfaceOperationStateDown), nil
+	case interfaceOperationStateNone:
+		return int(InterfaceOperationStateNone), nil
 	case interfaceOperationStateUp:
 		return int(InterfaceOperationStateUp), nil
+	case interfaceOperationStateDown:
+		return int(InterfaceOperationStateDown), nil
+	case interfaceOperationStateAdminDown:
+		return int(InterfaceOperationStateAdminDown), nil
 	default:
 		return 0, fmt.Errorf(InterfaceOperationStateUnknown, o)
 	}

@@ -8,8 +8,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.19.3
 	github.com/google/go-licenses v1.6.0
 	github.com/google/uuid v1.3.0
+	github.com/hashicorp/go-version v1.6.0
 	github.com/orsinium-labs/enum v1.3.0
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	google.golang.org/protobuf v1.30.0
 )
 

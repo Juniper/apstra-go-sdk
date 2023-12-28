@@ -19,11 +19,11 @@ func TestModularDeviceProfile(t *testing.T) {
 
 	mdp1 := &ModularDeviceProfile{
 		Label:            randString(5, "hex"),
-		ChassisProfileId: "Juniper_PTX10008",
+		ChassisProfileId: "Juniper_QFX10016",
 		SlotConfigurations: map[uint64]ModularDeviceSlotConfiguration{
-			0: {LinecardProfileId: "Juniper_PTX10K_LC1201_36CD"},
-			2: {LinecardProfileId: "Juniper_PTX10K_LC1201_36CD"},
-			4: {LinecardProfileId: "Juniper_PTX10K_LC1201_36CD"},
+			0: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
+			2: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
+			4: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
 		},
 	}
 
@@ -44,11 +44,11 @@ func TestModularDeviceProfile(t *testing.T) {
 		}
 
 		mdp1.Label = randString(5, "hex")
-		mdp1.ChassisProfileId = "Juniper_PTX10016"
+		mdp1.ChassisProfileId = "Juniper_QFX10016"
 		mdp1.SlotConfigurations = map[uint64]ModularDeviceSlotConfiguration{
-			1: {LinecardProfileId: "Juniper_PTX10K_LC1202_36MR"},
-			3: {LinecardProfileId: "Juniper_PTX10K_LC1202_36MR"},
-			5: {LinecardProfileId: "Juniper_PTX10K_LC1202_36MR"},
+			1: {LinecardProfileId: "Juniper_QFX10000_30C"},
+			3: {LinecardProfileId: "Juniper_QFX10000_30C"},
+			5: {LinecardProfileId: "Juniper_QFX10000_30C"},
 		}
 		log.Printf("testing UpdateModularDeviceProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.UpdateModularDeviceProfile(ctx, id, mdp1)

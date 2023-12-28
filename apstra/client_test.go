@@ -33,9 +33,11 @@ func TestLoginEmptyPassword(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing empty password Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		client.client.cfg.Pass = ""
-		err := client.client.Login(context.TODO())
+		clientType := client.clientType
+		client := *client.client // don't use iterator variable because it points to the shared client object
+		log.Printf("testing empty password Login() against %s %s (%s)", clientType, clientName, client.ApiVersion())
+		client.cfg.Pass = ""
+		err := client.Login(context.TODO())
 		if err == nil {
 			t.Fatal(fmt.Errorf("tried logging in with empty password, did not get errror"))
 		}
@@ -49,9 +51,13 @@ func TestLoginBadPassword(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing bad password Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		// replace the configured password while saving it in in `password`
+		password := client.client.cfg.Pass
 		client.client.cfg.Pass = randString(10, "hex")
+
+		log.Printf("testing bad password Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		err = client.client.Login(context.TODO())
+		client.client.cfg.Pass = password // restore the configured password
 		if err == nil {
 			t.Fatal(fmt.Errorf("tried logging in with bad password, did not get errror"))
 		}
@@ -60,27 +66,24 @@ func TestLoginBadPassword(t *testing.T) {
 
 func TestLogoutAuthFail(t *testing.T) {
 	ctx := context.Background()
-	clientCfgs, err := getTestClientCfgs(context.Background())
+
+	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	for name, cfg := range clientCfgs {
-		client, err := cfg.cfg.NewClient(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing Login() against %s %s (%s)", cfg.cfgType, name, client.ApiVersion())
-		err = client.Login(context.TODO())
+	for clientName, client := range clients {
+		log.Printf("testing Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.Login(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("client has this authtoken: '%s'", client.httpHeaders[apstraAuthHeader])
-		client.httpHeaders[apstraAuthHeader] = randJwt()
-		log.Printf("client authtoken changed to: '%s'", client.httpHeaders[apstraAuthHeader])
-		log.Printf("testing failed Logout() against %s %s (%s)", cfg.cfgType, name, client.ApiVersion())
-		err = client.Logout(context.TODO())
+		log.Printf("client has this authtoken: '%s'", client.client.httpHeaders[apstraAuthHeader])
+		client.client.httpHeaders[apstraAuthHeader] = randJwt()
+		log.Printf("client authtoken changed to: '%s'", client.client.httpHeaders[apstraAuthHeader])
+		log.Printf("testing Loout() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.Logout(ctx)
 		if err == nil {
 			t.Fatal(fmt.Errorf("tried logging out with bad token, did not get errror"))
 		}
@@ -132,9 +135,17 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 func TestCRUDIntegerPools(t *testing.T) {
 	ctx := context.Background()
 
-	clients, err := getTestClients(context.Background(), t)
+	// get all clients
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	// remove clients which do not support integer pools
+	for clientName, client := range clients {
+		if integerPoolForbidden().Includes(client.client.apiVersion) {
+			delete(clients, clientName)
+		}
 	}
 
 	validate := func(req *IntPoolRequest, resp *IntPool) {
@@ -301,6 +312,14 @@ func TestCRUDIntegerPools(t *testing.T) {
 		pools, err = client.client.GetIntegerPools(ctx)
 		if err != nil {
 			t.Fatal(err)
+		}
+
+		for i := len(pools) - 1; i >= 0; i-- {
+			if pools[i].Status == PoolStatusDeleting {
+				log.Printf("dropping pool %s from fetched pool list because it has status %s", pools[i].Id, pools[i].Status.String())
+				pools[i] = pools[len(pools)-1]
+				pools = pools[:len(pools)-1]
+			}
 		}
 
 		if len(pools) != beforePoolCount {

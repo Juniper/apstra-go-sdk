@@ -472,11 +472,9 @@ func TestConnectivityTemplate404(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, client := range clients {
+	for clientName, client := range clients {
+		log.Printf("begin tests against %s, (%s)", clientName, client.client.apiVersion)
 		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		if err != nil {
-			t.Fatal(err)
-		}
 		defer func() {
 			err := bpDel(ctx)
 			if err != nil {
