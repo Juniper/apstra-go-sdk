@@ -5,7 +5,9 @@ package apstra
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
 	"testing"
 )
@@ -123,18 +125,100 @@ func TestGetAllPolicies(t *testing.T) {
 	}
 }
 
+func comparePolicyPortRanges(a PortRange, aName string, b PortRange, bName string, t *testing.T) {
+	if a.first != b.first {
+		t.Fatalf("Policy Port Ranges 'first' field don't match: %s has %d, %s has %d", aName, a.first, bName, b.first)
+	}
+
+	if a.last != b.last {
+		t.Fatalf("Policy Port Ranges 'last' field don't match: %s has %d, %s has %d", aName, a.last, bName, b.last)
+	}
+}
+
+func comparePolicyRules(aName string, a PolicyRule, bName string, b PolicyRule, t *testing.T) {
+	if a.Id != b.Id {
+		t.Fatalf("Policy Rule IDs don't match: %s has %q, %s has %q", aName, a.Id, bName, b.Id)
+	}
+
+	if a.Label != b.Label {
+		t.Fatalf("Policy Rule Labels don't match: %s has %q, %s has %q", aName, a.Label, bName, b.Label)
+	}
+
+	if a.Description != b.Description {
+		t.Fatalf("Policy Rule Descriptions don't match: %s has %q, %s has %q", aName, a.Description, bName, b.Description)
+	}
+
+	if a.Protocol != b.Protocol {
+		t.Fatalf("Policy Rule Protocols don't match: %s has %q, %s has %q", aName, a.Protocol, bName, b.Protocol)
+	}
+
+	if a.Action != b.Action {
+		t.Fatalf("Policy Rule Actions don't match: %s has %s, %s has %s", aName, a.Action, bName, b.Action)
+	}
+
+	if len(a.SrcPort) != len(b.SrcPort) {
+		t.Fatalf("Policy Rule Src Port Ranges don't match %s has %d ranges, %s has %d ranges", aName, len(a.SrcPort), bName, b.SrcPort)
+	}
+
+	for i := 0; i < len(a.SrcPort); i++ {
+		comparePolicyPortRanges(a.SrcPort[i], fmt.Sprintf("%s rule %d SrcPort", aName, i), b.SrcPort[i], fmt.Sprintf("%s rule %d SrcPort", bName, i), t)
+	}
+
+	if len(a.DstPort) != len(b.DstPort) {
+		t.Fatalf("Policy Rule Dst Port Ranges don't match %s has %d ranges, %s has %d ranges", aName, len(a.DstPort), bName, b.DstPort)
+	}
+
+	for i := 0; i < len(a.DstPort); i++ {
+		comparePolicyPortRanges(a.DstPort[i], fmt.Sprintf("%s rule %d DstPort", aName, i), b.DstPort[i], fmt.Sprintf("%s rule %d DstPort", bName, i), t)
+	}
+}
+
+func comparePolicies(a *Policy, aName string, b *Policy, bName string, t *testing.T) {
+	if a.Id != b.Id {
+		t.Fatalf("Policy IDs don't match: %s has %q, %s has %q", aName, a.Id, bName, b.Id)
+	}
+
+	if a.Enabled != b.Enabled {
+		t.Fatalf("Policy enabled switches don't match: %s has %t, %s has %t", aName, a.Enabled, bName, b.Enabled)
+	}
+
+	if a.Label != b.Label {
+		t.Fatalf("Policy Labels don't match: %s has %q, %s has %q", aName, a.Label, bName, b.Label)
+	}
+
+	if a.Description != b.Description {
+		t.Fatalf("Policy Descriptions don't match: %s has %q, %s has %q", aName, a.Description, bName, b.Description)
+	}
+
+	if a.SrcApplicationPoint.ObjectId() != b.SrcApplicationPoint.ObjectId() {
+		t.Fatalf("Policy SrcApplicationPoints don't match: %s has %q, %s has %q", aName, a.SrcApplicationPoint.ObjectId(), bName, b.SrcApplicationPoint.ObjectId())
+	}
+
+	if a.DstApplicationPoint.ObjectId() != b.DstApplicationPoint.ObjectId() {
+		t.Fatalf("Policy DstApplicationPoints don't match: %s has %q, %s has %q", aName, a.DstApplicationPoint.ObjectId(), bName, b.DstApplicationPoint.ObjectId())
+	}
+
+	compareSlicesAsSets(t, a.Tags, b.Tags, fmt.Sprintf("%s tags: %v, %s tags %v", aName, a.Tags, bName, b.Tags))
+
+	if len(a.Rules) != len(b.Rules) {
+		t.Fatalf("Policy ruleset sizes don't match: %s has %d rules, %s has %d rules", aName, len(a.Rules), bName, len(b.Rules))
+	}
+
+	for i := 0; i < len(a.Rules); i++ {
+		comparePolicyRules(fmt.Sprintf("%s rule %d", aName, i), a.Rules[i], fmt.Sprintf("%s rule %d", bName, i), b.Rules[i], t)
+	}
+}
+
 func TestCreateDatacenterPolicy(t *testing.T) {
-	// todo: rewrite this test to create the required conditions
-	t.Skip()
-	return
 	ctx := context.Background()
+
 	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
+		bp, bpDel := testBlueprintA(ctx, t, client.client)
 		defer func() {
 			err = bpDel(ctx)
 			if err != nil {
@@ -142,47 +226,74 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 			}
 		}()
 
-		log.Printf("testing listAllVirtualNetworkIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		vnIds, err := bpClient.listAllVirtualNetworkIds(ctx)
+		// collect leaf switch IDs
+		leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		// find two virtual network IDs in the same routing zone
-		var src, dst ObjectId
-		rzToVnId := make(map[ObjectId]ObjectId)
-		for _, vnId := range vnIds {
-			log.Printf("testing getVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			vn, err := bpClient.GetVirtualNetwork(ctx, vnId)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if dstVN, found := rzToVnId[vn.Data.SecurityZoneId]; !found {
-				rzToVnId[vn.Data.SecurityZoneId] = vnId
-			} else {
-				src = vnId
-				dst = dstVN
-				break
-			}
+		// prep VN bindings
+		bindings := make([]VnBinding, len(leafIds))
+		for i, leafId := range leafIds {
+			bindings[i] = VnBinding{SystemId: leafId}
 		}
 
-		randStr := randString(5, "hex")
-		label := "label-" + randStr
-		description := "description of " + randStr
-		log.Printf("testing createPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policyId, err := bpClient.createPolicy(context.TODO(), &Policy{
-			Enabled:             true,
-			Label:               label,
-			Description:         description,
-			SrcApplicationPoint: src,
-			DstApplicationPoint: dst,
-			Rules:               nil,
-			Tags:                nil,
+		// create a security zone (VNs live here)
+		szName := randString(5, "hex")
+		szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+			SzType:  SecurityZoneTypeEVPN,
+			Label:   szName,
+			VrfName: szName,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Printf("created policy id: '%s'", policyId)
+
+		// create a couple of virtual networks we'll use a policy rule endpoints
+		vnIds := make([]ObjectId, 2)
+		for i := range vnIds {
+			vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+				Ipv4Enabled:    true,
+				Label:          "vn_" + strconv.Itoa(i),
+				SecurityZoneId: szId,
+				VnBindings:     bindings,
+				VnType:         VnTypeVxlan,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			vnIds[i] = vnId
+		}
+
+		tags := make([]string, rand.Intn(4))
+		for i := range tags {
+			tags[i] = randString(5, "hex")
+		}
+
+		policy1 := Policy{
+			Enabled:             randBool(),
+			Label:               randString(5, "hex"),
+			Description:         randString(5, "hex"),
+			SrcApplicationPoint: vnIds[0],
+			DstApplicationPoint: vnIds[1],
+			Rules:               nil,
+			Tags:                tags,
+		}
+
+		log.Printf("testing CreatePolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		policyId, err := bp.CreatePolicy(ctx, &policy1)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		policy1.Id = policyId
+
+		policy2, err := bp.GetPolicy(ctx, policy1.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		comparePolicies(&policy1, "as created", policy2, "as fetched", t)
 	}
 }
 
