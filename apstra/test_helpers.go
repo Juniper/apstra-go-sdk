@@ -183,3 +183,21 @@ func getSystemIdsByRole(ctx context.Context, bp *TwoStageL3ClosClient, role stri
 
 	return result, nil
 }
+
+func sliceContains[A comparable](s []A, item A) bool {
+	for _, element := range s {
+		if element == item {
+			return true
+		}
+	}
+	return false
+}
+
+func sliceContainsAnyOf[A comparable](s, items []A) bool {
+	for _, item := range items {
+		if sliceContains(s, item) {
+			return true
+		}
+	}
+	return false
+}
