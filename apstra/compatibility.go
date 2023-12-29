@@ -3,12 +3,12 @@ package apstra
 import "strings"
 
 const (
-	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2"
+	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2, 4.2.0"
 	apstraSupportedVersionSep  = ","
 
-	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
+	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0"
 
-	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2"
+	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0"
 
 	integerPoolForbiddenVersions = "4.1.0, 4.1.1"
 
