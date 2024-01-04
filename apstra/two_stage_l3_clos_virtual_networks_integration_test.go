@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"math/rand"
 	"testing"
 )
 
@@ -106,6 +107,16 @@ func compareVirtualNetworkData(t *testing.T, a, b *VirtualNetworkData, strict bo
 
 	if a.Ipv6Subnet.String() != b.Ipv6Subnet.String() {
 		t.Fatalf("Ipv6Subnet mismatch: %q vs. %q", a.Ipv6Subnet.String(), b.Ipv6Subnet.String())
+	}
+
+	aL3Mtu := a.L3Mtu != nil
+	bL3Mtu := b.L3Mtu != nil
+	if (aL3Mtu || bL3Mtu) && !(aL3Mtu && bL3Mtu) { //xor
+		t.Fatalf("L3 MTU setting mismatch: set %t vs. set %t", aL3Mtu, bL3Mtu)
+	}
+
+	if aL3Mtu && bL3Mtu && (*a.L3Mtu != *b.L3Mtu) {
+		t.Fatalf("L3 MTU setting mismatch: %d vs. %d", *a.L3Mtu, *b.L3Mtu)
 	}
 
 	if a.Label != b.Label {
@@ -237,8 +248,15 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			}
 		}
 
+		var l3Mtu *int
+		if !vnL3MtuForbidden().Includes(client.client.apiVersion) {
+			x := 1280 + (2 * rand.Intn(3969)) // 1280 - 9216 even numbers only
+			l3Mtu = &x
+		}
+
 		createData := VirtualNetworkData{
 			Ipv4Enabled:               true,
+			L3Mtu:                     l3Mtu,
 			Label:                     label,
 			SecurityZoneId:            zoneId,
 			SviIps:                    sviIps[:1],
@@ -255,15 +273,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 		log.Printf("created virtual network - id:'%s', name: '%s', label:'%s'", vnId, vrfName, label)
 
 		log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		shouldFail, err := bpClient.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-			Ipv4Enabled:               true,
-			Label:                     label,
-			SecurityZoneId:            zoneId,
-			SviIps:                    sviIps[1:],
-			VirtualGatewayIpv4Enabled: true,
-			VnBindings:                vnBindings[1:],
-			VnType:                    VnTypeVxlan,
-		})
+		shouldFail, err := bpClient.CreateVirtualNetwork(ctx, &createData)
 		if err == nil {
 			t.Fatalf("Creating two virtual networks with name %q should have failed, but %q and %q seem to coexist",
 				label, vnId, shouldFail)
@@ -294,6 +304,11 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 		newVlan := Vlan(100)
 		createData.ReservedVlanId = &newVlan
 		createData.Label = randString(10, "hex")
+		if !vnL3MtuForbidden().Includes(client.client.apiVersion) {
+			x := 1280 + (2 * rand.Intn(3969)) // 1280 - 9216 even numbers only
+			createData.L3Mtu = &x
+		}
+
 		for i := range createData.VnBindings {
 			createData.VnBindings[i].VlanId = &newVlan
 		}
