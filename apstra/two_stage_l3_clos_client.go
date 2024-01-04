@@ -294,6 +294,10 @@ func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyI
 
 // CreateVirtualNetwork creates a new virtual network according to the supplied VirtualNetworkData
 func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, in *VirtualNetworkData) (ObjectId, error) {
+	if in.L3Mtu != nil && vnL3MtuForbidden().Includes(o.client.apiVersion) {
+		return "", errors.New(vnL3MtuForbiddenError)
+	}
+
 	return o.createVirtualNetwork(ctx, in.raw())
 }
 
@@ -344,8 +348,12 @@ func (o *TwoStageL3ClosClient) GetAllVirtualNetworks(ctx context.Context) (map[O
 
 // UpdateVirtualNetwork updates the virtual network specified by ID using the
 // VirtualNetworkData and HTTP method PUT.
-func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, cfg *VirtualNetworkData) error {
-	return o.updateVirtualNetwork(ctx, id, cfg.raw())
+func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, in *VirtualNetworkData) error {
+	if in.L3Mtu != nil && vnL3MtuForbidden().Includes(o.client.apiVersion) {
+		return errors.New(vnL3MtuForbiddenError)
+	}
+
+	return o.updateVirtualNetwork(ctx, id, in.raw())
 }
 
 // DeleteVirtualNetwork deletes the virtual network specified by id from the

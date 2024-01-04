@@ -523,6 +523,7 @@ type VirtualNetworkData struct {
 	Ipv4Subnet                *net.IPNet
 	Ipv6Enabled               bool
 	Ipv6Subnet                *net.IPNet
+	L3Mtu                     *int
 	Label                     string
 	ReservedVlanId            *Vlan
 	RouteTarget               string
@@ -546,6 +547,12 @@ func (o *VirtualNetworkData) raw() *rawVirtualNetwork {
 	}
 	if o.Ipv6Subnet != nil {
 		ipv6Subnet = o.Ipv6Subnet.String()
+	}
+
+	var l3Mtu *int
+	if o.L3Mtu != nil {
+		mtu := *o.L3Mtu
+		l3Mtu = &mtu
 	}
 
 	sviIps := make([]rawSviIp, len(o.SviIps))
@@ -572,6 +579,7 @@ func (o *VirtualNetworkData) raw() *rawVirtualNetwork {
 		Ipv4Subnet:                ipv4Subnet,
 		Ipv6Enabled:               o.Ipv6Enabled,
 		Ipv6Subnet:                ipv6Subnet,
+		L3Mtu:                     l3Mtu,
 		Label:                     o.Label,
 		ReservedVlanId:            o.ReservedVlanId,
 		RouteTarget:               o.RouteTarget,
@@ -596,6 +604,7 @@ type rawVirtualNetwork struct {
 	Ipv4Subnet                string          `json:"ipv4_subnet,omitempty"`
 	Ipv6Enabled               bool            `json:"ipv6_enabled"`
 	Ipv6Subnet                string          `json:"ipv6_subnet,omitempty"`
+	L3Mtu                     *int            `json:"l3_mtu,omitempty"`
 	Label                     string          `json:"label"`
 	ReservedVlanId            *Vlan           `json:"reserved_vlan_id,omitempty"`
 	RouteTarget               string          `json:"route_target,omitempty"` // not mentioned in swagger, seen in 4.1.1: "10000:1"
@@ -640,6 +649,12 @@ func (o rawVirtualNetwork) polish() (*VirtualNetwork, error) {
 		}
 	}
 
+	var l3mtu *int
+	if o.L3Mtu != nil {
+		mtu := *o.L3Mtu
+		l3mtu = &mtu
+	}
+
 	sviIps := make([]SviIp, len(o.SviIps))
 	for i, sviIp := range o.SviIps {
 		SviIp, err := sviIp.parse()
@@ -680,6 +695,7 @@ func (o rawVirtualNetwork) polish() (*VirtualNetwork, error) {
 			Ipv4Subnet:                ipv4Subnet,
 			Ipv6Enabled:               o.Ipv6Enabled,
 			Ipv6Subnet:                ipv6Subnet,
+			L3Mtu:                     l3mtu,
 			Label:                     o.Label,
 			ReservedVlanId:            o.ReservedVlanId,
 			RouteTarget:               o.RouteTarget,
