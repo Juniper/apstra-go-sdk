@@ -42,7 +42,7 @@ func TestNodeTagging(t *testing.T) {
 				System struct {
 					Id ObjectId `json:"id"`
 				} `json:"n_system"`
-			} `json:"items""`
+			} `json:"items"`
 		}
 
 		err = query.Do(ctx, &queryResponse)
