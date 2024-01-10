@@ -227,7 +227,6 @@ func (o *Client) getApiVersion(ctx context.Context) (string, error) {
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
 func (o *Client) lock(id string) {
-
 	o.syncLock.Lock() // lock the map of locks - no defer unlock here, we unlock aggressively in the 'found' case below.
 	if mu, found := o.sync[id]; found {
 		o.syncLock.Unlock()

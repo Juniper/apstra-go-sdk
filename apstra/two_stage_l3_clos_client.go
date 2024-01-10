@@ -266,17 +266,35 @@ func (o *TwoStageL3ClosClient) UpdateSecurityZone(ctx context.Context, zoneId Ob
 
 // GetAllPolicies returns []Policy representing all policies configured within the DC blueprint
 func (o *TwoStageL3ClosClient) GetAllPolicies(ctx context.Context) ([]Policy, error) {
-	return o.getAllPolicies(ctx)
+	policies, err := o.getAllPolicies(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]Policy, len(policies))
+	for i, raw := range policies {
+		polished, err := raw.polish()
+		if err != nil {
+			return nil, err
+		}
+		result[i] = *polished
+	}
+	return result, nil
 }
 
 // GetPolicy returns *Policy representing policy 'id' within the DC blueprint
 func (o *TwoStageL3ClosClient) GetPolicy(ctx context.Context, id ObjectId) (*Policy, error) {
-	return o.getPolicy(ctx, id)
+	raw, err := o.getPolicy(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
 }
 
 // CreatePolicy creates a policy within the DC blueprint, returns its ID
-func (o *TwoStageL3ClosClient) CreatePolicy(ctx context.Context, policy *Policy) (ObjectId, error) {
-	return o.createPolicy(ctx, policy)
+func (o *TwoStageL3ClosClient) CreatePolicy(ctx context.Context, data *PolicyData) (ObjectId, error) {
+	return o.createPolicy(ctx, data.request())
 }
 
 // DeletePolicy deletes policy 'id' within the DC blueprint
@@ -285,8 +303,8 @@ func (o *TwoStageL3ClosClient) DeletePolicy(ctx context.Context, id ObjectId) er
 }
 
 // UpdatePolicy calls PUT to replace the configuration of policy 'id' within the DC blueprint
-func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, policy *Policy) error {
-	return o.updatePolicy(ctx, id, policy)
+func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, data *PolicyData) error {
+	return o.updatePolicy(ctx, id, data.request())
 }
 
 // AddPolicyRule adds a policy rule at 'position' (bumping all other rules
@@ -294,7 +312,7 @@ func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, po
 // on the list, etc... Use -1 for last on the list. The returned ObjectId
 // represents the new rule
 func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRule, position int, policyId ObjectId) (ObjectId, error) {
-	return o.addPolicyRule(ctx, rule, position, policyId)
+	return o.addPolicyRule(ctx, rule.raw(), position, policyId)
 }
 
 // DeletePolicyRuleById deletes the given rule. If the rule doesn't exist, a

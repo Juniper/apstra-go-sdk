@@ -16,7 +16,7 @@ const (
 	securityZoneJunosEvpnIrbModeRequiredError    = "junos_evpn_irb_mode is required by Apstra 4.2 and later"
 
 	vnL3MtuForbiddenVersions = "4.1.0, 4.1.1, 4.1.2"
-	vnL3MtuForbiddenError    = "Virtual Network operations support L3 MTU option only with Apstra 4.2 and later"
+	vnL3MtuForbiddenError    = "virtual network operations support L3 MTU option only with Apstra 4.2 and later"
 )
 
 func parseVersionList(s string) StringSliceWithIncludes {

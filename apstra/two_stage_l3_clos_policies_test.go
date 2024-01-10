@@ -178,6 +178,10 @@ func comparePolicies(a *Policy, aName string, b *Policy, bName string, t *testin
 		t.Fatalf("Policy IDs don't match: %s has %q, %s has %q", aName, a.Id, bName, b.Id)
 	}
 
+	comparePolicyData(a.Data, aName, b.Data, bName, t)
+}
+
+func comparePolicyData(a *PolicyData, aName string, b *PolicyData, bName string, t *testing.T) {
 	if a.Enabled != b.Enabled {
 		t.Fatalf("Policy enabled switches don't match: %s has %t, %s has %t", aName, a.Enabled, bName, b.Enabled)
 	}
@@ -270,30 +274,69 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 			tags[i] = randString(5, "hex")
 		}
 
-		policy1 := Policy{
-			Enabled:             randBool(),
-			Label:               randString(5, "hex"),
-			Description:         randString(5, "hex"),
-			SrcApplicationPoint: vnIds[0],
-			DstApplicationPoint: vnIds[1],
-			Rules:               nil,
-			Tags:                tags,
+		policyDatas := []PolicyData{
+			{
+				Enabled:             randBool(),
+				Label:               randString(5, "hex"),
+				Description:         randString(5, "hex"),
+				SrcApplicationPoint: PolicyApplicationPointData{Id: vnIds[0]},
+				DstApplicationPoint: PolicyApplicationPointData{Id: vnIds[1]},
+				Rules:               nil,
+				Tags:                tags,
+			},
+			{
+				Enabled:             randBool(),
+				Label:               randString(5, "hex"),
+				Description:         randString(5, "hex"),
+				SrcApplicationPoint: PolicyApplicationPointData{Id: vnIds[1]},
+				DstApplicationPoint: PolicyApplicationPointData{Id: vnIds[0]},
+				Rules:               nil,
+				Tags:                tags,
+			},
 		}
 
-		log.Printf("testing CreatePolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policyId, err := bp.CreatePolicy(ctx, &policy1)
-		if err != nil {
-			t.Fatal(err)
+		var previousPolicy *Policy
+		var previousPolicyId ObjectId
+		for i, policyData := range policyDatas {
+			policyData := policyData
+			if previousPolicy == nil {
+				log.Printf("testing CreatePolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+				previousPolicyId, err = bp.CreatePolicy(ctx, &policyData)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				created := Policy{
+					Id:   previousPolicyId,
+					Data: &policyData,
+				}
+
+				log.Printf("testing GetPolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+				previousPolicy, err = bp.GetPolicy(ctx, previousPolicyId)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				comparePolicies(&created, "created", previousPolicy, "fetched", t)
+			}
+
+			log.Printf("testing UpdatePolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+			err = bp.UpdatePolicy(ctx, previousPolicyId, &policyData)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing GetPolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+			previousPolicy, err = bp.GetPolicy(ctx, previousPolicyId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			comparePolicies(&Policy{
+				Id:   previousPolicyId,
+				Data: &policyData,
+			}, "updated", previousPolicy, "fetched", t)
 		}
-
-		policy1.Id = policyId
-
-		policy2, err := bp.GetPolicy(ctx, policy1.Id)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		comparePolicies(&policy1, "as created", policy2, "as fetched", t)
 	}
 }
 
@@ -354,11 +397,11 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		}
 
 		// create a security policy
-		policyId, err := bp.CreatePolicy(ctx, &Policy{
+		policyId, err := bp.CreatePolicy(ctx, &PolicyData{
 			Enabled:             false,
 			Label:               randString(5, "hex"),
-			SrcApplicationPoint: vnIds[0],
-			DstApplicationPoint: vnIds[1],
+			SrcApplicationPoint: PolicyApplicationPointData{Id: vnIds[0]},
+			DstApplicationPoint: PolicyApplicationPointData{Id: vnIds[1]},
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -380,7 +423,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		ruleCount := len(p.Rules)
 
 		log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ruleId, err := bp.addPolicyRule(context.TODO(), newRule, 0, policyId)
+		ruleId, err := bp.addPolicyRule(context.TODO(), newRule.raw(), 0, policyId)
 		if err != nil {
 			t.Fatal(err)
 		}
