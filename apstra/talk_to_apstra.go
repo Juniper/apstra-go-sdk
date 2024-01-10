@@ -167,11 +167,11 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	if in.apiInput != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	o.lock(clientMutexHttpHeaders)
+	o.lock(mutexKeyHttpHeaders)
 	for k, v := range o.httpHeaders {
 		req.Header.Set(k, v)
 	}
-	o.unlock(clientMutexHttpHeaders)
+	o.unlock(mutexKeyHttpHeaders)
 
 	o.logFunc(2, o.dumpHttpRequest, req)
 

@@ -34,8 +34,8 @@ const (
 
 	clientPollingIntervalMs = 1000
 
-	clientMutexIdSep       = ":"
-	clientMutexHttpHeaders = "http headers"
+	mutexKeySeparator   = ":"
+	mutexKeyHttpHeaders = "http headers"
 )
 
 type ClientErr struct {

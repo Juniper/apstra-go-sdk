@@ -72,7 +72,7 @@ func (o *TwoStageL3ClosClient) lockId(ids ...ObjectId) string {
 	var buf bytes.Buffer
 	buf.WriteString(o.blueprintId.String())
 	for _, id := range ids {
-		buf.WriteString(clientMutexIdSep + id.String())
+		buf.WriteString(mutexKeySeparator + id.String())
 	}
 	return buf.String()
 }
