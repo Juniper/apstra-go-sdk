@@ -34,7 +34,8 @@ const (
 
 	clientPollingIntervalMs = 1000
 
-	clientHttpHeadersMutex = iota
+	mutexKeySeparator   = ":"
+	mutexKeyHttpHeaders = "http headers"
 )
 
 type ClientErr struct {
@@ -111,7 +112,7 @@ type Client struct {
 	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
 	ctx         context.Context         // copied from ClientCfg, for async operations
 	logger      Logger                  // logs sent here
-	sync        map[int]*sync.Mutex     // some client operations are not concurrency safe. Their locks live here.
+	sync        map[string]*sync.Mutex  // some client operations are not concurrency safe. Their locks live here.
 	syncLock    sync.Mutex              // control access to the 'sync' map
 }
 
@@ -190,7 +191,7 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		httpHeaders: map[string]string{"Accept": "application/json"},
 		logger:      logger,
 		taskMonChan: make(chan *taskMonitorMonReq),
-		sync:        make(map[int]*sync.Mutex),
+		sync:        make(map[string]*sync.Mutex),
 		ctx:         context.Background(),
 	}
 
@@ -225,7 +226,7 @@ func (o *Client) getApiVersion(ctx context.Context) (string, error) {
 }
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
-func (o *Client) lock(id int) {
+func (o *Client) lock(id string) {
 
 	o.syncLock.Lock() // lock the map of locks - no defer unlock here, we unlock aggressively in the 'found' case below.
 	if mu, found := o.sync[id]; found {
@@ -242,7 +243,7 @@ func (o *Client) lock(id int) {
 }
 
 // unlock releases the named *sync.Mutex in Client.sync
-func (o *Client) unlock(id int) {
+func (o *Client) unlock(id string) {
 	o.sync[id].Unlock()
 }
 

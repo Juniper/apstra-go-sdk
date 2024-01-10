@@ -1,6 +1,7 @@
 package apstra
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -64,6 +65,16 @@ type TwoStageL3ClosClient struct {
 // Id returns the client's Blueprint ID
 func (o *TwoStageL3ClosClient) Id() ObjectId {
 	return o.blueprintId
+}
+
+// lockId returns a string intended to be used with Client.lock()
+func (o *TwoStageL3ClosClient) lockId(ids ...ObjectId) string {
+	var buf bytes.Buffer
+	buf.WriteString(o.blueprintId.String())
+	for _, id := range ids {
+		buf.WriteString(mutexKeySeparator + id.String())
+	}
+	return buf.String()
 }
 
 // SetType sets the client's internal BlueprintType value (staging, etc...).
