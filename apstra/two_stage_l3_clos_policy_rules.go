@@ -16,16 +16,6 @@ const (
 	portRangesSep = ","
 )
 
-// RULE_SCHEMA = {
-//    'id': s.Optional(s.NodeId(description='ID of the rule node')),
-//    'label': s.GenericName(description='Unique user-friendly name of the rule'),
-//    'protocol': s.SecurityRuleProtocol(),
-//    'src_port': s.PortSetOrAny(),
-//    'dst_port': s.PortSetOrAny(),
-//    'description': s.Optional(s.Description(), load_default=''),
-//    'action': s.SecurityRuleAction() //             ['deny', 'deny_log', 'permit', 'permit_log'],
-//}
-
 type PolicyRuleAction enum.Member[string]
 
 var (
@@ -146,14 +136,17 @@ func (o rawPolicyRule) polish() (*PolicyRule, error) {
 	if action == nil {
 		return nil, fmt.Errorf("unknown policy rule action %q", o.Action)
 	}
+
 	srcPort, err := o.SrcPort.parse()
 	if err != nil {
 		return nil, err
 	}
+
 	dstPort, err := o.DstPort.parse()
 	if err != nil {
 		return nil, err
 	}
+
 	return &PolicyRule{
 		Id:          o.Id,
 		Label:       o.Label,
