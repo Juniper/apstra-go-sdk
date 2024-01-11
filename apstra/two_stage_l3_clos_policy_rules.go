@@ -23,7 +23,34 @@ var (
 	PolicyRuleActionDenyLog   = PolicyRuleAction{Value: "deny_log"}
 	PolicyRuleActionPermit    = PolicyRuleAction{Value: "permit"}
 	PolicyRuleActionPermitLog = PolicyRuleAction{Value: "permit_log"}
-	PolicyRuleActions         = enum.New(PolicyRuleActionDeny, PolicyRuleActionDenyLog, PolicyRuleActionPermit, PolicyRuleActionPermitLog)
+	PolicyRuleActions         = enum.New(
+		PolicyRuleActionDeny,
+		PolicyRuleActionDenyLog,
+		PolicyRuleActionPermit,
+		PolicyRuleActionPermitLog,
+	)
+)
+
+type PolicyRuleProtocol enum.Member[string]
+
+var (
+	PolicyRuleProtocolIcmp = PolicyRuleProtocol{Value: "ICMP"}
+	PolicyRuleProtocolIp   = PolicyRuleProtocol{Value: "IP"}
+	PolicyRuleProtocolTcp  = PolicyRuleProtocol{Value: "TCP"}
+	PolicyRuleProtocolUdp  = PolicyRuleProtocol{Value: "UDP"}
+	PolicyRuleProtocols    = enum.New(
+		PolicyRuleProtocolIcmp,
+		PolicyRuleProtocolIp,
+		PolicyRuleProtocolTcp,
+		PolicyRuleProtocolUdp,
+	)
+)
+
+type TcpStateQualifier enum.Member[string]
+
+var (
+	TcpStateQualifierEstablished = TcpStateQualifier{Value: "established"}
+	TcpStateQualifiers           = enum.New(TcpStateQualifierEstablished)
 )
 
 type PortRange struct {
@@ -100,41 +127,63 @@ func (o PortRanges) string() string {
 }
 
 type PolicyRule struct {
-	Id          ObjectId
-	Label       string
-	Description string
-	Protocol    string
-	Action      PolicyRuleAction
-	SrcPort     PortRanges
-	DstPort     PortRanges
+	Id                ObjectId
+	Label             string
+	Description       string
+	Protocol          PolicyRuleProtocol
+	Action            PolicyRuleAction
+	SrcPort           PortRanges
+	DstPort           PortRanges
+	TcpStateQualifier *TcpStateQualifier
 }
 
 func (o PolicyRule) raw() *rawPolicyRule {
+	var tcpStateQualifier *string
+	if o.TcpStateQualifier != nil {
+		s := o.TcpStateQualifier.Value
+		tcpStateQualifier = &s
+	}
+
 	return &rawPolicyRule{
-		Id:          o.Id,
-		Label:       o.Label,
-		Description: o.Description,
-		Protocol:    o.Protocol,
-		Action:      o.Action.Value,
-		SrcPort:     rawPortRanges(o.SrcPort.string()),
-		DstPort:     rawPortRanges(o.DstPort.string()),
+		Id:                o.Id,
+		Label:             o.Label,
+		Description:       o.Description,
+		Protocol:          o.Protocol.Value,
+		Action:            o.Action.Value,
+		SrcPort:           rawPortRanges(o.SrcPort.string()),
+		DstPort:           rawPortRanges(o.DstPort.string()),
+		TcpStateQualifier: tcpStateQualifier,
 	}
 }
 
 type rawPolicyRule struct {
-	Id          ObjectId      `json:"id,omitempty"`
-	Label       string        `json:"label"`
-	Description string        `json:"description"`
-	Protocol    string        `json:"protocol"`
-	Action      string        `json:"action"`
-	SrcPort     rawPortRanges `json:"src_port"`
-	DstPort     rawPortRanges `json:"dst_port"`
+	Id                ObjectId      `json:"id,omitempty"`
+	Label             string        `json:"label"`
+	Description       string        `json:"description"`
+	Protocol          string        `json:"protocol"`
+	Action            string        `json:"action"`
+	SrcPort           rawPortRanges `json:"src_port"`
+	DstPort           rawPortRanges `json:"dst_port"`
+	TcpStateQualifier *string       `json:"tcp_state_qualifier,omitempty"`
 }
 
 func (o rawPolicyRule) polish() (*PolicyRule, error) {
 	action := PolicyRuleActions.Parse(o.Action)
 	if action == nil {
-		return nil, fmt.Errorf("unknown policy rule action %q", o.Action)
+		return nil, fmt.Errorf("policy rule %q has unknown action %q", o.Id, o.Action)
+	}
+
+	protocol := PolicyRuleProtocols.Parse(o.Protocol)
+	if protocol == nil {
+		return nil, fmt.Errorf("policy rule %q has unknown protocol %q", o.Id, o.Protocol)
+	}
+
+	var tcpStateQualifier *TcpStateQualifier
+	if o.TcpStateQualifier != nil {
+		tcpStateQualifier = TcpStateQualifiers.Parse(*o.TcpStateQualifier)
+		if tcpStateQualifier == nil {
+			return nil, fmt.Errorf("cannot parse policy rule %q tcp state qualifier: %q", o.Id, *o.TcpStateQualifier)
+		}
 	}
 
 	srcPort, err := o.SrcPort.parse()
@@ -148,13 +197,14 @@ func (o rawPolicyRule) polish() (*PolicyRule, error) {
 	}
 
 	return &PolicyRule{
-		Id:          o.Id,
-		Label:       o.Label,
-		Description: o.Description,
-		Protocol:    o.Protocol,
-		Action:      *action,
-		SrcPort:     srcPort,
-		DstPort:     dstPort,
+		Id:                o.Id,
+		Label:             o.Label,
+		Description:       o.Description,
+		Protocol:          *protocol,
+		Action:            *action,
+		SrcPort:           srcPort,
+		DstPort:           dstPort,
+		TcpStateQualifier: tcpStateQualifier,
 	}, nil
 }
 

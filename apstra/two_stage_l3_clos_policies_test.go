@@ -410,7 +410,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		newRule := &PolicyRule{
 			Label:       randString(5, "hex"),
 			Description: randString(5, "hex"),
-			Protocol:    "TCP",
+			Protocol:    PolicyRuleProtocolTcp,
 			Action:      PolicyRuleActionDenyLog,
 			SrcPort:     PortRanges{{5, 6}},
 			DstPort:     PortRanges{{7, 8}, {9, 10}},
@@ -423,7 +423,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		ruleCount := len(p.Rules)
 
 		log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ruleId, err := bp.addPolicyRule(context.TODO(), newRule.raw(), 0, policyId)
+		ruleId, err := bp.AddPolicyRule(ctx, newRule, 0, policyId)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -437,7 +437,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		}
 
 		log.Printf("testing deletePolicyRuleById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bp.deletePolicyRuleById(context.TODO(), policyId, ruleId)
+		err = bp.deletePolicyRuleById(ctx, policyId, ruleId)
 		if err != nil {
 			t.Fatal(err)
 		}
