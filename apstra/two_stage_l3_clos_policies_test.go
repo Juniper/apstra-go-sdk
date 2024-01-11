@@ -171,6 +171,16 @@ func comparePolicyRules(aName string, a PolicyRule, bName string, b PolicyRule, 
 	for i := 0; i < len(a.DstPort); i++ {
 		comparePolicyPortRanges(a.DstPort[i], fmt.Sprintf("%s rule %d DstPort", aName, i), b.DstPort[i], fmt.Sprintf("%s rule %d DstPort", bName, i), t)
 	}
+
+	aTcpStateQualifier := a.TcpStateQualifier != nil
+	bTcpStateQualifier := b.TcpStateQualifier != nil
+	if (aTcpStateQualifier || bTcpStateQualifier) && !(aTcpStateQualifier && bTcpStateQualifier) { //xor
+		t.Fatalf("TCP state qualifier presence mismatch -- a: %t vs. b: %t", aTcpStateQualifier, bTcpStateQualifier)
+	}
+
+	if aTcpStateQualifier && bTcpStateQualifier && (a.TcpStateQualifier.Value != b.TcpStateQualifier.Value) {
+		t.Fatalf("TCP state qualifier value mismatch -- a: %q vs. b: %q", a.TcpStateQualifier.Value, b.TcpStateQualifier.Value)
+	}
 }
 
 func comparePolicies(a *Policy, aName string, b *Policy, bName string, t *testing.T) {
@@ -408,12 +418,13 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		}
 
 		newRule := &PolicyRule{
-			Label:       randString(5, "hex"),
-			Description: randString(5, "hex"),
-			Protocol:    PolicyRuleProtocolTcp,
-			Action:      PolicyRuleActionDenyLog,
-			SrcPort:     PortRanges{{5, 6}},
-			DstPort:     PortRanges{{7, 8}, {9, 10}},
+			Label:             randString(5, "hex"),
+			Description:       randString(5, "hex"),
+			Protocol:          PolicyRuleProtocolTcp,
+			Action:            PolicyRuleActionDenyLog,
+			SrcPort:           PortRanges{{5, 6}},
+			DstPort:           PortRanges{{7, 8}, {9, 10}},
+			TcpStateQualifier: &TcpStateQualifierEstablished,
 		}
 
 		p, err := bp.getPolicy(ctx, policyId)
