@@ -35,13 +35,13 @@ type Policy struct {
 }
 
 type PolicyData struct {
-	Enabled             bool                       `json:"enabled"`
-	Label               string                     `json:"label"`
-	Description         string                     `json:"description"`
-	SrcApplicationPoint PolicyApplicationPointData `json:"src_application_point"`
-	DstApplicationPoint PolicyApplicationPointData `json:"dst_application_point"`
-	Rules               []PolicyRule               `json:"rules"`
-	Tags                []string                   `json:"tags"`
+	Enabled             bool                        `json:"enabled"`
+	Label               string                      `json:"label"`
+	Description         string                      `json:"description"`
+	SrcApplicationPoint *PolicyApplicationPointData `json:"src_application_point"`
+	DstApplicationPoint *PolicyApplicationPointData `json:"dst_application_point"`
+	Rules               []PolicyRule                `json:"rules"`
+	Tags                []string                    `json:"tags"`
 }
 
 func (o PolicyData) request() *policyRequest {
@@ -71,14 +71,14 @@ type policyRequest struct {
 }
 
 type rawPolicy struct {
-	Enabled             bool                       `json:"enabled"`
-	Label               string                     `json:"label"`
-	Description         string                     `json:"description"`
-	SrcApplicationPoint PolicyApplicationPointData `json:"src_application_point"`
-	DstApplicationPoint PolicyApplicationPointData `json:"dst_application_point"`
-	Rules               []rawPolicyRule            `json:"rules"`
-	Tags                []string                   `json:"tags"`
-	Id                  ObjectId                   `json:"id"`
+	Enabled             bool                        `json:"enabled"`
+	Label               string                      `json:"label"`
+	Description         string                      `json:"description"`
+	SrcApplicationPoint *PolicyApplicationPointData `json:"src_application_point"`
+	DstApplicationPoint *PolicyApplicationPointData `json:"dst_application_point"`
+	Rules               []rawPolicyRule             `json:"rules"`
+	Tags                []string                    `json:"tags"`
+	Id                  ObjectId                    `json:"id"`
 }
 
 func (o rawPolicy) polish() (*Policy, error) {
