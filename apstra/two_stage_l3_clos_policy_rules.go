@@ -54,18 +54,18 @@ var (
 )
 
 type PortRange struct {
-	first uint16
+	First uint16
 	last  uint16
 }
 
 func (o PortRange) string() string {
 	switch {
-	case o.first == o.last:
-		return strconv.Itoa(int(o.first))
-	case o.first < o.last:
-		return strconv.Itoa(int(o.first)) + portRangeSep + strconv.Itoa(int(o.last))
+	case o.First == o.last:
+		return strconv.Itoa(int(o.First))
+	case o.First < o.last:
+		return strconv.Itoa(int(o.First)) + portRangeSep + strconv.Itoa(int(o.last))
 	default:
-		return strconv.Itoa(int(o.last)) + portRangeSep + strconv.Itoa(int(o.first))
+		return strconv.Itoa(int(o.last)) + portRangeSep + strconv.Itoa(int(o.First))
 	}
 }
 
@@ -105,7 +105,7 @@ func (o rawPortRanges) parse() (PortRanges, error) {
 			return nil, fmt.Errorf("port spec '%s' falls outside of range %d-%d", raw, 0, math.MaxUint16)
 		}
 		result[i] = PortRange{
-			first: uint16(first),
+			First: uint16(first),
 			last:  uint16(last),
 		}
 	}
