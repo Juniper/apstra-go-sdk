@@ -64,8 +64,8 @@ type policyRequest struct {
 	Enabled             bool            `json:"enabled"`
 	Label               string          `json:"label"`
 	Description         string          `json:"description"`
-	SrcApplicationPoint ObjectId        `json:"src_application_point"`
-	DstApplicationPoint ObjectId        `json:"dst_application_point"`
+	SrcApplicationPoint ObjectId        `json:"src_application_point,omitempty"`
+	DstApplicationPoint ObjectId        `json:"dst_application_point,omitempty"`
 	Rules               []rawPolicyRule `json:"rules"`
 	Tags                []string        `json:"tags"`
 }
@@ -74,8 +74,8 @@ type rawPolicy struct {
 	Enabled             bool                        `json:"enabled"`
 	Label               string                      `json:"label"`
 	Description         string                      `json:"description"`
-	SrcApplicationPoint *PolicyApplicationPointData `json:"src_application_point"`
-	DstApplicationPoint *PolicyApplicationPointData `json:"dst_application_point"`
+	SrcApplicationPoint *PolicyApplicationPointData `json:"src_application_point,omitempty"`
+	DstApplicationPoint *PolicyApplicationPointData `json:"dst_application_point,omitempty"`
 	Rules               []rawPolicyRule             `json:"rules"`
 	Tags                []string                    `json:"tags"`
 	Id                  ObjectId                    `json:"id"`
