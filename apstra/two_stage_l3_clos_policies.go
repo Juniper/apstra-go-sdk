@@ -47,7 +47,7 @@ type PolicyData struct {
 func (o PolicyData) request() *policyRequest {
 	rules := make([]rawPolicyRule, len(o.Rules))
 	for i, rule := range o.Rules {
-		rules[i] = *rule.raw()
+		rules[i] = *rule.Data.raw()
 	}
 	return &policyRequest{
 		Enabled:             o.Enabled,
