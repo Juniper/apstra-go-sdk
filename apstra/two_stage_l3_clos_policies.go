@@ -189,7 +189,7 @@ func (o *TwoStageL3ClosClient) getPolicyByLabel(ctx context.Context, label strin
 			err:     fmt.Errorf("policy with label %q not found", label),
 		}
 	case 1:
-		policy := policies[1]
+		policy := policies[0]
 		return &policy, nil
 	default:
 		return nil, ClientErr{
