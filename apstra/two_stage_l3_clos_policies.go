@@ -156,6 +156,45 @@ func (o *TwoStageL3ClosClient) getPolicy(ctx context.Context, id ObjectId) (*raw
 	return response, nil
 }
 
+func (o *TwoStageL3ClosClient) getPoliciesByLabel(ctx context.Context, label string) ([]rawPolicy, error) {
+	allPolicies, err := o.getAllPolicies(ctx)
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	var policies []rawPolicy
+	for _, policy := range allPolicies {
+		if policy.Label == label {
+			policies = append(policies, policy)
+		}
+	}
+
+	return policies, nil
+}
+
+func (o *TwoStageL3ClosClient) getPolicyByLabel(ctx context.Context, label string) (*rawPolicy, error) {
+	policies, err := o.getPoliciesByLabel(ctx, label)
+	if err != nil {
+		return nil, err
+	}
+
+	switch len(policies) {
+	case 0:
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("policy with label %q not found", label),
+		}
+	case 1:
+		policy := policies[1]
+		return &policy, nil
+	default:
+		return nil, ClientErr{
+			errType: ErrMultipleMatch,
+			err:     fmt.Errorf("found multiple (%d) policies with label %q", len(policies), label),
+		}
+	}
+}
+
 func (o *TwoStageL3ClosClient) createPolicy(ctx context.Context, data *policyRequest) (ObjectId, error) {
 	var response objectIdResponse
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{

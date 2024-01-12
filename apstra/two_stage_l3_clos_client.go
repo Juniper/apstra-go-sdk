@@ -292,6 +292,16 @@ func (o *TwoStageL3ClosClient) GetPolicy(ctx context.Context, id ObjectId) (*Pol
 	return raw.polish()
 }
 
+// GetPolicyByLabel returns *Policy representing policy identified by 'label' within the DC blueprint
+func (o *TwoStageL3ClosClient) GetPolicyByLabel(ctx context.Context, label string) (*Policy, error) {
+	raw, err := o.getPolicyByLabel(ctx, label)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
+}
+
 // CreatePolicy creates a policy within the DC blueprint, returns its ID
 func (o *TwoStageL3ClosClient) CreatePolicy(ctx context.Context, data *PolicyData) (ObjectId, error) {
 	return o.createPolicy(ctx, data.request())
