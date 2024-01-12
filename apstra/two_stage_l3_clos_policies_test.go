@@ -20,17 +20,17 @@ func TestPortRangeString(t *testing.T) {
 	tests = append(tests, struct {
 		data     PortRange
 		expected string
-	}{data: PortRange{First: 10, last: 10}, expected: "10"})
+	}{data: PortRange{First: 10, Last: 10}, expected: "10"})
 
 	tests = append(tests, struct {
 		data     PortRange
 		expected string
-	}{data: PortRange{First: 10, last: 20}, expected: "10-20"})
+	}{data: PortRange{First: 10, Last: 20}, expected: "10-20"})
 
 	tests = append(tests, struct {
 		data     PortRange
 		expected string
-	}{data: PortRange{First: 20, last: 10}, expected: "10-20"})
+	}{data: PortRange{First: 20, Last: 10}, expected: "10-20"})
 
 	for _, test := range tests {
 		if test.expected != test.data.string() {
@@ -48,7 +48,7 @@ func portRangeSlicesMatch(a, b []PortRange) bool {
 		if a[i].First != b[i].First {
 			return false
 		}
-		if a[i].last != b[i].last {
+		if a[i].Last != b[i].Last {
 			return false
 		}
 	}
@@ -64,22 +64,22 @@ func TestRawPortRangesParse(t *testing.T) {
 	tests = append(tests, struct {
 		data     rawPortRanges
 		expected []PortRange
-	}{data: "10", expected: []PortRange{{First: 10, last: 10}}})
+	}{data: "10", expected: []PortRange{{First: 10, Last: 10}}})
 
 	tests = append(tests, struct {
 		data     rawPortRanges
 		expected []PortRange
-	}{data: "10,11", expected: []PortRange{{First: 10, last: 10}, {First: 11, last: 11}}})
+	}{data: "10,11", expected: []PortRange{{First: 10, Last: 10}, {First: 11, Last: 11}}})
 
 	tests = append(tests, struct {
 		data     rawPortRanges
 		expected []PortRange
-	}{data: "12,11", expected: []PortRange{{First: 12, last: 12}, {First: 11, last: 11}}})
+	}{data: "12,11", expected: []PortRange{{First: 12, Last: 12}, {First: 11, Last: 11}}})
 
 	tests = append(tests, struct {
 		data     rawPortRanges
 		expected []PortRange
-	}{data: "10-11,12-13", expected: []PortRange{{First: 10, last: 11}, {First: 12, last: 13}}})
+	}{data: "10-11,12-13", expected: []PortRange{{First: 10, Last: 11}, {First: 12, Last: 13}}})
 
 	for i, test := range tests {
 		parsed, err := test.data.parse()
@@ -130,8 +130,8 @@ func comparePolicyPortRanges(a PortRange, aName string, b PortRange, bName strin
 		t.Fatalf("Policy Port Ranges 'first' field don't match: %s has %d, %s has %d", aName, a.First, bName, b.First)
 	}
 
-	if a.last != b.last {
-		t.Fatalf("Policy Port Ranges 'last' field don't match: %s has %d, %s has %d", aName, a.last, bName, b.last)
+	if a.Last != b.Last {
+		t.Fatalf("Policy Port Ranges 'last' field don't match: %s has %d, %s has %d", aName, a.Last, bName, b.Last)
 	}
 }
 
