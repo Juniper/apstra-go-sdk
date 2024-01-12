@@ -20,17 +20,17 @@ func TestPortRangeString(t *testing.T) {
 	tests = append(tests, struct {
 		data     PortRange
 		expected string
-	}{data: PortRange{first: 10, last: 10}, expected: "10"})
+	}{data: PortRange{First: 10, Last: 10}, expected: "10"})
 
 	tests = append(tests, struct {
 		data     PortRange
 		expected string
-	}{data: PortRange{first: 10, last: 20}, expected: "10-20"})
+	}{data: PortRange{First: 10, Last: 20}, expected: "10-20"})
 
 	tests = append(tests, struct {
 		data     PortRange
 		expected string
-	}{data: PortRange{first: 20, last: 10}, expected: "10-20"})
+	}{data: PortRange{First: 20, Last: 10}, expected: "10-20"})
 
 	for _, test := range tests {
 		if test.expected != test.data.string() {
@@ -45,10 +45,10 @@ func portRangeSlicesMatch(a, b []PortRange) bool {
 	}
 
 	for i := 0; i < len(a); i++ {
-		if a[i].first != b[i].first {
+		if a[i].First != b[i].First {
 			return false
 		}
-		if a[i].last != b[i].last {
+		if a[i].Last != b[i].Last {
 			return false
 		}
 	}
@@ -64,22 +64,22 @@ func TestRawPortRangesParse(t *testing.T) {
 	tests = append(tests, struct {
 		data     rawPortRanges
 		expected []PortRange
-	}{data: "10", expected: []PortRange{{first: 10, last: 10}}})
+	}{data: "10", expected: []PortRange{{First: 10, Last: 10}}})
 
 	tests = append(tests, struct {
 		data     rawPortRanges
 		expected []PortRange
-	}{data: "10,11", expected: []PortRange{{first: 10, last: 10}, {first: 11, last: 11}}})
+	}{data: "10,11", expected: []PortRange{{First: 10, Last: 10}, {First: 11, Last: 11}}})
 
 	tests = append(tests, struct {
 		data     rawPortRanges
 		expected []PortRange
-	}{data: "12,11", expected: []PortRange{{first: 12, last: 12}, {first: 11, last: 11}}})
+	}{data: "12,11", expected: []PortRange{{First: 12, Last: 12}, {First: 11, Last: 11}}})
 
 	tests = append(tests, struct {
 		data     rawPortRanges
 		expected []PortRange
-	}{data: "10-11,12-13", expected: []PortRange{{first: 10, last: 11}, {first: 12, last: 13}}})
+	}{data: "10-11,12-13", expected: []PortRange{{First: 10, Last: 11}, {First: 12, Last: 13}}})
 
 	for i, test := range tests {
 		parsed, err := test.data.parse()
@@ -126,12 +126,12 @@ func TestGetAllPolicies(t *testing.T) {
 }
 
 func comparePolicyPortRanges(a PortRange, aName string, b PortRange, bName string, t *testing.T) {
-	if a.first != b.first {
-		t.Fatalf("Policy Port Ranges 'first' field don't match: %s has %d, %s has %d", aName, a.first, bName, b.first)
+	if a.First != b.First {
+		t.Fatalf("Policy Port Ranges 'first' field don't match: %s has %d, %s has %d", aName, a.First, bName, b.First)
 	}
 
-	if a.last != b.last {
-		t.Fatalf("Policy Port Ranges 'last' field don't match: %s has %d, %s has %d", aName, a.last, bName, b.last)
+	if a.Last != b.Last {
+		t.Fatalf("Policy Port Ranges 'last' field don't match: %s has %d, %s has %d", aName, a.Last, bName, b.Last)
 	}
 }
 
@@ -140,6 +140,20 @@ func comparePolicyRules(aName string, a PolicyRule, bName string, b PolicyRule, 
 		t.Fatalf("Policy Rule IDs don't match: %s has %q, %s has %q", aName, a.Id, bName, b.Id)
 	}
 
+	aData := a.Data != nil
+	bData := b.Data != nil
+
+	if (aData || bData) && !(aData && bData) { //xor
+		t.Fatalf("Policy Rule data presence mismatch -- a: %t vs. b: %t", aData, bData)
+	}
+
+	if aData && bData {
+		comparePolicyRuleData(aName, a.Data, bName, b.Data, t)
+	}
+
+}
+
+func comparePolicyRuleData(aName string, a *PolicyRuleData, bName string, b *PolicyRuleData, t *testing.T) {
 	if a.Label != b.Label {
 		t.Fatalf("Policy Rule Labels don't match: %s has %q, %s has %q", aName, a.Label, bName, b.Label)
 	}
@@ -171,6 +185,16 @@ func comparePolicyRules(aName string, a PolicyRule, bName string, b PolicyRule, 
 	for i := 0; i < len(a.DstPort); i++ {
 		comparePolicyPortRanges(a.DstPort[i], fmt.Sprintf("%s rule %d DstPort", aName, i), b.DstPort[i], fmt.Sprintf("%s rule %d DstPort", bName, i), t)
 	}
+
+	aTcpStateQualifier := a.TcpStateQualifier != nil
+	bTcpStateQualifier := b.TcpStateQualifier != nil
+	if (aTcpStateQualifier || bTcpStateQualifier) && !(aTcpStateQualifier && bTcpStateQualifier) { //xor
+		t.Fatalf("TCP state qualifier presence mismatch -- a: %t vs. b: %t", aTcpStateQualifier, bTcpStateQualifier)
+	}
+
+	if aTcpStateQualifier && bTcpStateQualifier && (a.TcpStateQualifier.Value != b.TcpStateQualifier.Value) {
+		t.Fatalf("TCP state qualifier value mismatch -- a: %q vs. b: %q", a.TcpStateQualifier.Value, b.TcpStateQualifier.Value)
+	}
 }
 
 func comparePolicies(a *Policy, aName string, b *Policy, bName string, t *testing.T) {
@@ -178,6 +202,10 @@ func comparePolicies(a *Policy, aName string, b *Policy, bName string, t *testin
 		t.Fatalf("Policy IDs don't match: %s has %q, %s has %q", aName, a.Id, bName, b.Id)
 	}
 
+	comparePolicyData(a.Data, aName, b.Data, bName, t)
+}
+
+func comparePolicyData(a *PolicyData, aName string, b *PolicyData, bName string, t *testing.T) {
 	if a.Enabled != b.Enabled {
 		t.Fatalf("Policy enabled switches don't match: %s has %t, %s has %t", aName, a.Enabled, bName, b.Enabled)
 	}
@@ -190,12 +218,12 @@ func comparePolicies(a *Policy, aName string, b *Policy, bName string, t *testin
 		t.Fatalf("Policy Descriptions don't match: %s has %q, %s has %q", aName, a.Description, bName, b.Description)
 	}
 
-	if a.SrcApplicationPoint.ObjectId() != b.SrcApplicationPoint.ObjectId() {
-		t.Fatalf("Policy SrcApplicationPoints don't match: %s has %q, %s has %q", aName, a.SrcApplicationPoint.ObjectId(), bName, b.SrcApplicationPoint.ObjectId())
+	if a.SrcApplicationPoint.Id != b.SrcApplicationPoint.Id {
+		t.Fatalf("Policy SrcApplicationPoints don't match: %s has %q, %s has %q", aName, a.SrcApplicationPoint.Id, bName, b.SrcApplicationPoint.Id)
 	}
 
-	if a.DstApplicationPoint.ObjectId() != b.DstApplicationPoint.ObjectId() {
-		t.Fatalf("Policy DstApplicationPoints don't match: %s has %q, %s has %q", aName, a.DstApplicationPoint.ObjectId(), bName, b.DstApplicationPoint.ObjectId())
+	if a.DstApplicationPoint.Id != b.DstApplicationPoint.Id {
+		t.Fatalf("Policy DstApplicationPoints don't match: %s has %q, %s has %q", aName, a.DstApplicationPoint.Id, bName, b.DstApplicationPoint.Id)
 	}
 
 	compareSlicesAsSets(t, a.Tags, b.Tags, fmt.Sprintf("%s tags: %v, %s tags %v", aName, a.Tags, bName, b.Tags))
@@ -270,30 +298,69 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 			tags[i] = randString(5, "hex")
 		}
 
-		policy1 := Policy{
-			Enabled:             randBool(),
-			Label:               randString(5, "hex"),
-			Description:         randString(5, "hex"),
-			SrcApplicationPoint: vnIds[0],
-			DstApplicationPoint: vnIds[1],
-			Rules:               nil,
-			Tags:                tags,
+		policyDatas := []PolicyData{
+			{
+				Enabled:             randBool(),
+				Label:               randString(5, "hex"),
+				Description:         randString(5, "hex"),
+				SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
+				DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
+				Rules:               nil,
+				Tags:                tags,
+			},
+			{
+				Enabled:             randBool(),
+				Label:               randString(5, "hex"),
+				Description:         randString(5, "hex"),
+				SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
+				DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
+				Rules:               nil,
+				Tags:                tags,
+			},
 		}
 
-		log.Printf("testing CreatePolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policyId, err := bp.CreatePolicy(ctx, &policy1)
-		if err != nil {
-			t.Fatal(err)
+		var previousPolicy *Policy
+		var previousPolicyId ObjectId
+		for i, policyData := range policyDatas {
+			policyData := policyData
+			if previousPolicy == nil {
+				log.Printf("testing CreatePolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+				previousPolicyId, err = bp.CreatePolicy(ctx, &policyData)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				created := Policy{
+					Id:   previousPolicyId,
+					Data: &policyData,
+				}
+
+				log.Printf("testing GetPolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+				previousPolicy, err = bp.GetPolicy(ctx, previousPolicyId)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				comparePolicies(&created, "created", previousPolicy, "fetched", t)
+			}
+
+			log.Printf("testing UpdatePolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+			err = bp.UpdatePolicy(ctx, previousPolicyId, &policyData)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			log.Printf("testing GetPolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+			previousPolicy, err = bp.GetPolicy(ctx, previousPolicyId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			comparePolicies(&Policy{
+				Id:   previousPolicyId,
+				Data: &policyData,
+			}, "updated", previousPolicy, "fetched", t)
 		}
-
-		policy1.Id = policyId
-
-		policy2, err := bp.GetPolicy(ctx, policy1.Id)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		comparePolicies(&policy1, "as created", policy2, "as fetched", t)
 	}
 }
 
@@ -354,23 +421,24 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		}
 
 		// create a security policy
-		policyId, err := bp.CreatePolicy(ctx, &Policy{
+		policyId, err := bp.CreatePolicy(ctx, &PolicyData{
 			Enabled:             false,
 			Label:               randString(5, "hex"),
-			SrcApplicationPoint: vnIds[0],
-			DstApplicationPoint: vnIds[1],
+			SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
+			DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		newRule := &PolicyRule{
-			Label:       randString(5, "hex"),
-			Description: randString(5, "hex"),
-			Protocol:    "TCP",
-			Action:      PolicyRuleActionDenyLog,
-			SrcPort:     PortRanges{{5, 6}},
-			DstPort:     PortRanges{{7, 8}, {9, 10}},
+		newRule := &PolicyRuleData{
+			Label:             randString(5, "hex"),
+			Description:       randString(5, "hex"),
+			Protocol:          PolicyRuleProtocolTcp,
+			Action:            PolicyRuleActionDenyLog,
+			SrcPort:           PortRanges{{5, 6}},
+			DstPort:           PortRanges{{7, 8}, {9, 10}},
+			TcpStateQualifier: &TcpStateQualifierEstablished,
 		}
 
 		p, err := bp.getPolicy(ctx, policyId)
@@ -380,7 +448,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		ruleCount := len(p.Rules)
 
 		log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ruleId, err := bp.addPolicyRule(context.TODO(), newRule, 0, policyId)
+		ruleId, err := bp.AddPolicyRule(ctx, newRule, 0, policyId)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -394,7 +462,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		}
 
 		log.Printf("testing deletePolicyRuleById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bp.deletePolicyRuleById(context.TODO(), policyId, ruleId)
+		err = bp.deletePolicyRuleById(ctx, policyId, ruleId)
 		if err != nil {
 			t.Fatal(err)
 		}
