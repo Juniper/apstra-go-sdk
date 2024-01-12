@@ -218,12 +218,12 @@ func comparePolicyData(a *PolicyData, aName string, b *PolicyData, bName string,
 		t.Fatalf("Policy Descriptions don't match: %s has %q, %s has %q", aName, a.Description, bName, b.Description)
 	}
 
-	if a.SrcApplicationPoint.ObjectId() != b.SrcApplicationPoint.ObjectId() {
-		t.Fatalf("Policy SrcApplicationPoints don't match: %s has %q, %s has %q", aName, a.SrcApplicationPoint.ObjectId(), bName, b.SrcApplicationPoint.ObjectId())
+	if a.SrcApplicationPoint.Id != b.SrcApplicationPoint.Id {
+		t.Fatalf("Policy SrcApplicationPoints don't match: %s has %q, %s has %q", aName, a.SrcApplicationPoint.Id, bName, b.SrcApplicationPoint.Id)
 	}
 
-	if a.DstApplicationPoint.ObjectId() != b.DstApplicationPoint.ObjectId() {
-		t.Fatalf("Policy DstApplicationPoints don't match: %s has %q, %s has %q", aName, a.DstApplicationPoint.ObjectId(), bName, b.DstApplicationPoint.ObjectId())
+	if a.DstApplicationPoint.Id != b.DstApplicationPoint.Id {
+		t.Fatalf("Policy DstApplicationPoints don't match: %s has %q, %s has %q", aName, a.DstApplicationPoint.Id, bName, b.DstApplicationPoint.Id)
 	}
 
 	compareSlicesAsSets(t, a.Tags, b.Tags, fmt.Sprintf("%s tags: %v, %s tags %v", aName, a.Tags, bName, b.Tags))

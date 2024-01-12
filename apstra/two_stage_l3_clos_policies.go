@@ -45,6 +45,14 @@ type PolicyData struct {
 }
 
 func (o PolicyData) request() *policyRequest {
+	var srcApplicationPoint, dstApplicationPoint ObjectId
+	if o.SrcApplicationPoint != nil {
+		srcApplicationPoint = o.SrcApplicationPoint.Id
+	}
+	if o.DstApplicationPoint != nil {
+		dstApplicationPoint = o.DstApplicationPoint.Id
+	}
+
 	rules := make([]rawPolicyRule, len(o.Rules))
 	for i, rule := range o.Rules {
 		rules[i] = *rule.Data.raw()
@@ -53,8 +61,8 @@ func (o PolicyData) request() *policyRequest {
 		Enabled:             o.Enabled,
 		Label:               o.Label,
 		Description:         o.Description,
-		SrcApplicationPoint: o.SrcApplicationPoint.ObjectId(),
-		DstApplicationPoint: o.DstApplicationPoint.ObjectId(),
+		SrcApplicationPoint: srcApplicationPoint,
+		DstApplicationPoint: dstApplicationPoint,
 		Rules:               rules,
 		Tags:                o.Tags,
 	}
@@ -120,10 +128,6 @@ type PolicyApplicationPointData struct {
 	Id    ObjectId `json:"id"`
 	Label string   `json:"label"`
 	Type  string   `json:"type"` // group, internal, external, security_zone, virtual_network
-}
-
-func (o PolicyApplicationPointData) ObjectId() ObjectId {
-	return o.Id
 }
 
 func (o *TwoStageL3ClosClient) getAllPolicies(ctx context.Context) ([]rawPolicy, error) {
