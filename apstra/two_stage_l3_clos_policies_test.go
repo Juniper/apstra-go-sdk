@@ -140,6 +140,20 @@ func comparePolicyRules(aName string, a PolicyRule, bName string, b PolicyRule, 
 		t.Fatalf("Policy Rule IDs don't match: %s has %q, %s has %q", aName, a.Id, bName, b.Id)
 	}
 
+	aData := a.Data != nil
+	bData := b.Data != nil
+
+	if (aData || bData) && !(aData && bData) { //xor
+		t.Fatalf("Policy Rule data presence mismatch -- a: %t vs. b: %t", aData, bData)
+	}
+
+	if aData && bData {
+		comparePolicyRuleData(aName, a.Data, bName, b.Data, t)
+	}
+
+}
+
+func comparePolicyRuleData(aName string, a *PolicyRuleData, bName string, b *PolicyRuleData, t *testing.T) {
 	if a.Label != b.Label {
 		t.Fatalf("Policy Rule Labels don't match: %s has %q, %s has %q", aName, a.Label, bName, b.Label)
 	}
@@ -417,7 +431,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		newRule := &PolicyRule{
+		newRule := &PolicyRuleData{
 			Label:             randString(5, "hex"),
 			Description:       randString(5, "hex"),
 			Protocol:          PolicyRuleProtocolTcp,

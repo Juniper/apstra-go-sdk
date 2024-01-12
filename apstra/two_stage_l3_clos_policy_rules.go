@@ -127,7 +127,11 @@ func (o PortRanges) string() string {
 }
 
 type PolicyRule struct {
-	Id                ObjectId
+	Id   ObjectId
+	Data *PolicyRuleData
+}
+
+type PolicyRuleData struct {
 	Label             string
 	Description       string
 	Protocol          PolicyRuleProtocol
@@ -137,7 +141,7 @@ type PolicyRule struct {
 	TcpStateQualifier *TcpStateQualifier
 }
 
-func (o PolicyRule) raw() *rawPolicyRule {
+func (o PolicyRuleData) raw() *rawPolicyRule {
 	var tcpStateQualifier *string
 	if o.TcpStateQualifier != nil {
 		s := o.TcpStateQualifier.Value
@@ -145,7 +149,6 @@ func (o PolicyRule) raw() *rawPolicyRule {
 	}
 
 	return &rawPolicyRule{
-		Id:                o.Id,
 		Label:             o.Label,
 		Description:       o.Description,
 		Protocol:          o.Protocol.Value,
@@ -197,14 +200,16 @@ func (o rawPolicyRule) polish() (*PolicyRule, error) {
 	}
 
 	return &PolicyRule{
-		Id:                o.Id,
-		Label:             o.Label,
-		Description:       o.Description,
-		Protocol:          *protocol,
-		Action:            *action,
-		SrcPort:           srcPort,
-		DstPort:           dstPort,
-		TcpStateQualifier: tcpStateQualifier,
+		Id: o.Id,
+		Data: &PolicyRuleData{
+			Label:             o.Label,
+			Description:       o.Description,
+			Protocol:          *protocol,
+			Action:            *action,
+			SrcPort:           srcPort,
+			DstPort:           dstPort,
+			TcpStateQualifier: tcpStateQualifier,
+		},
 	}, nil
 }
 

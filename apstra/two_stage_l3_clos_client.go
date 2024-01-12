@@ -311,7 +311,7 @@ func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, da
 // down). Position 0 makes the new policy first on the list, 1 makes it second
 // on the list, etc... Use -1 for last on the list. The returned ObjectId
 // represents the new rule
-func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRule, position int, policyId ObjectId) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRuleData, position int, policyId ObjectId) (ObjectId, error) {
 	return o.addPolicyRule(ctx, rule.raw(), position, policyId)
 }
 
