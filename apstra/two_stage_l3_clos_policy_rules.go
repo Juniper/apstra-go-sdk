@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/orsinium-labs/enum"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -118,6 +119,14 @@ func (o PortRanges) string() string {
 	if len(o) == 0 {
 		return portAny
 	}
+
+	sort.Slice(o, func(i, j int) bool {
+		if o[i].First < o[j].First {
+			return true
+		}
+		return false
+	})
+
 	sb := strings.Builder{}
 	sb.WriteString(o[0].string())
 	for _, pr := range o[1:] {
