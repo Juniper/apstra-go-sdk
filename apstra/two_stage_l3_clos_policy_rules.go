@@ -19,6 +19,10 @@ const (
 
 type PolicyRuleAction enum.Member[string]
 
+func (o PolicyRuleAction) String() string {
+	return o.Value
+}
+
 var (
 	PolicyRuleActionDeny      = PolicyRuleAction{Value: "deny"}
 	PolicyRuleActionDenyLog   = PolicyRuleAction{Value: "deny_log"}
@@ -34,6 +38,10 @@ var (
 
 type PolicyRuleProtocol enum.Member[string]
 
+func (o PolicyRuleProtocol) String() string {
+	return o.Value
+}
+
 var (
 	PolicyRuleProtocolIcmp = PolicyRuleProtocol{Value: "ICMP"}
 	PolicyRuleProtocolIp   = PolicyRuleProtocol{Value: "IP"}
@@ -48,6 +56,10 @@ var (
 )
 
 type TcpStateQualifier enum.Member[string]
+
+func (o TcpStateQualifier) String() string {
+	return o.Value
+}
 
 var (
 	TcpStateQualifierEstablished = TcpStateQualifier{Value: "established"}

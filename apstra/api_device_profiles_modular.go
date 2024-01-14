@@ -9,6 +9,10 @@ import (
 
 type DeviceProfileType enum.Member[string]
 
+func (o DeviceProfileType) String() string {
+	return o.Value
+}
+
 var (
 	DeviceProfileTypeModular    = DeviceProfileType{Value: "modular"}
 	DeviceProfileTypeMonolithic = DeviceProfileType{Value: "monolithic"}

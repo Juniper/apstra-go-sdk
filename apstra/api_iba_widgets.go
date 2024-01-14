@@ -16,6 +16,10 @@ const (
 
 type IbaWidgetType enum.Member[string]
 
+func (o IbaWidgetType) String() string {
+	return o.Value
+}
+
 var (
 	IbaWidgetTypeStage          = IbaWidgetType{Value: "stage"}
 	IbaWidgetTypeAnomalyHeatmap = IbaWidgetType{Value: "anomaly_heatmap"}

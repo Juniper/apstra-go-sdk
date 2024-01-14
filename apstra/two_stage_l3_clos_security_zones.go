@@ -9,6 +9,10 @@ import (
 
 type JunosEvpnIrbMode enum.Member[string]
 
+func (o JunosEvpnIrbMode) String() string {
+	return o.Value
+}
+
 var (
 	JunosEvpnIrbModeSymmetric  = JunosEvpnIrbMode{Value: "symmetric"}
 	JunosEvpnIrbModeAsymmetric = JunosEvpnIrbMode{Value: "asymmetric"}

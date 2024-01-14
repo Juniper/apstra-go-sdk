@@ -16,6 +16,10 @@ const (
 
 type RemoteGatewayRouteTypes enum.Member[string]
 
+func (o RemoteGatewayRouteTypes) String() string {
+	return o.Value
+}
+
 var (
 	RemoteGatewayRouteTypesAll      = RemoteGatewayRouteTypes{Value: "all"}
 	RemoteGatewayRouteTypesFiveOnly = RemoteGatewayRouteTypes{Value: "type5_only"}

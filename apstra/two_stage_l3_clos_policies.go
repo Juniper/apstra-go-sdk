@@ -14,6 +14,10 @@ const (
 
 type PolicyApplicationPointType enum.Member[string]
 
+func (o PolicyApplicationPointType) String() string {
+	return o.Value
+}
+
 var (
 	PolicyApplicationPointTypeGroup          = PolicyApplicationPointType{Value: "group"}
 	PolicyApplicationPointTypeInternal       = PolicyApplicationPointType{Value: "internal"}
