@@ -13,6 +13,15 @@ func (o JunosEvpnIrbMode) String() string {
 	return o.Value
 }
 
+func (o *JunosEvpnIrbMode) FromString(s string) error {
+	t := JunosEvpnIrbModes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse JunosEvpnIrbMode %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
 var (
 	JunosEvpnIrbModeSymmetric  = JunosEvpnIrbMode{Value: "symmetric"}
 	JunosEvpnIrbModeAsymmetric = JunosEvpnIrbMode{Value: "asymmetric"}

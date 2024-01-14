@@ -13,6 +13,15 @@ func (o DeviceProfileType) String() string {
 	return o.Value
 }
 
+func (o *DeviceProfileType) FromString(s string) error {
+	t := DeviceProfileTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse DeviceProfileType %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
 var (
 	DeviceProfileTypeModular    = DeviceProfileType{Value: "modular"}
 	DeviceProfileTypeMonolithic = DeviceProfileType{Value: "monolithic"}

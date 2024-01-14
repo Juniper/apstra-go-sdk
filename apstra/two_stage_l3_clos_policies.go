@@ -18,6 +18,15 @@ func (o PolicyApplicationPointType) String() string {
 	return o.Value
 }
 
+func (o *PolicyApplicationPointType) FromString(s string) error {
+	t := PolicyApplicationPointTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse PolicyApplicationPointType %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
 var (
 	PolicyApplicationPointTypeGroup          = PolicyApplicationPointType{Value: "group"}
 	PolicyApplicationPointTypeInternal       = PolicyApplicationPointType{Value: "internal"}

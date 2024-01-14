@@ -20,6 +20,15 @@ func (o IbaWidgetType) String() string {
 	return o.Value
 }
 
+func (o *IbaWidgetType) FromString(s string) error {
+	t := IbaWidgetTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse IbaWidgetTypes %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
 var (
 	IbaWidgetTypeStage          = IbaWidgetType{Value: "stage"}
 	IbaWidgetTypeAnomalyHeatmap = IbaWidgetType{Value: "anomaly_heatmap"}
