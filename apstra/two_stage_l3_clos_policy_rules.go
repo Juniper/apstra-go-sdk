@@ -19,6 +19,19 @@ const (
 
 type PolicyRuleAction enum.Member[string]
 
+func (o PolicyRuleAction) String() string {
+	return o.Value
+}
+
+func (o *PolicyRuleAction) FromString(s string) error {
+	t := PolicyRuleActions.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse PolicyRuleAction %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
 var (
 	PolicyRuleActionDeny      = PolicyRuleAction{Value: "deny"}
 	PolicyRuleActionDenyLog   = PolicyRuleAction{Value: "deny_log"}
@@ -34,6 +47,19 @@ var (
 
 type PolicyRuleProtocol enum.Member[string]
 
+func (o PolicyRuleProtocol) String() string {
+	return o.Value
+}
+
+func (o *PolicyRuleProtocol) FromString(s string) error {
+	t := PolicyRuleProtocols.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse PolicyRuleProtocol %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
 var (
 	PolicyRuleProtocolIcmp = PolicyRuleProtocol{Value: "ICMP"}
 	PolicyRuleProtocolIp   = PolicyRuleProtocol{Value: "IP"}
@@ -48,6 +74,19 @@ var (
 )
 
 type TcpStateQualifier enum.Member[string]
+
+func (o TcpStateQualifier) String() string {
+	return o.Value
+}
+
+func (o *TcpStateQualifier) FromString(s string) error {
+	t := TcpStateQualifiers.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse TcpStateQualifier %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
 
 var (
 	TcpStateQualifierEstablished = TcpStateQualifier{Value: "established"}

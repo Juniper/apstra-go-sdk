@@ -16,6 +16,19 @@ const (
 
 type RemoteGatewayRouteTypes enum.Member[string]
 
+func (o RemoteGatewayRouteTypes) String() string {
+	return o.Value
+}
+
+func (o *RemoteGatewayRouteTypes) FromString(s string) error {
+	t := RemoteGatewayRouteTypesEnum.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse RemoteGatewayRouteTypes %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
 var (
 	RemoteGatewayRouteTypesAll      = RemoteGatewayRouteTypes{Value: "all"}
 	RemoteGatewayRouteTypesFiveOnly = RemoteGatewayRouteTypes{Value: "type5_only"}
