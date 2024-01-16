@@ -304,6 +304,21 @@ func (o *TwoStageL3ClosClient) GetPolicyByLabel(ctx context.Context, label strin
 
 // CreatePolicy creates a policy within the DC blueprint, returns its ID
 func (o *TwoStageL3ClosClient) CreatePolicy(ctx context.Context, data *PolicyData) (ObjectId, error) {
+	var tcpStateQualifier bool
+	for _, rule := range data.Rules {
+		if rule.Data.TcpStateQualifier != nil {
+			tcpStateQualifier = true
+			break
+		}
+	}
+
+	if tcpStateQualifier && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion) {
+		return "", ClientErr{
+			errType: ErrCompatibility,
+			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
+		}
+	}
+
 	return o.createPolicy(ctx, data.request())
 }
 
@@ -314,6 +329,21 @@ func (o *TwoStageL3ClosClient) DeletePolicy(ctx context.Context, id ObjectId) er
 
 // UpdatePolicy calls PUT to replace the configuration of policy 'id' within the DC blueprint
 func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, data *PolicyData) error {
+	var tcpStateQualifier bool
+	for _, rule := range data.Rules {
+		if rule.Data.TcpStateQualifier != nil {
+			tcpStateQualifier = true
+			break
+		}
+	}
+
+	if tcpStateQualifier && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion) {
+		return ClientErr{
+			errType: ErrCompatibility,
+			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
+		}
+	}
+
 	return o.updatePolicy(ctx, id, data.request())
 }
 
@@ -322,6 +352,13 @@ func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, da
 // on the list, etc... Use -1 for last on the list. The returned ObjectId
 // represents the new rule
 func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRuleData, position int, policyId ObjectId) (ObjectId, error) {
+	if rule.TcpStateQualifier != nil && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion) {
+		return "", ClientErr{
+			errType: ErrCompatibility,
+			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
+		}
+	}
+
 	return o.addPolicyRule(ctx, rule.raw(), position, policyId)
 }
 
