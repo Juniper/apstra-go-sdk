@@ -12,6 +12,9 @@ const (
 
 	integerPoolForbiddenVersions = "4.1.0, 4.1.1"
 
+	policyRuleTcpStateQualifierForbidenVersions = "4.1.0, 4.1.1"
+	policyRuleTcpStateQualifierForbidenError    = "tcp_state_qualifier permitted only with Apstra 4.1.2 and later"
+
 	securityZoneJunosEvpnIrbModeRequiredVersions = "4.2.0"
 	securityZoneJunosEvpnIrbModeRequiredError    = "junos_evpn_irb_mode is required by Apstra 4.2 and later"
 
@@ -52,6 +55,10 @@ func podBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
 
 func integerPoolForbidden() StringSliceWithIncludes {
 	return parseVersionList(integerPoolForbiddenVersions)
+}
+
+func policyRuleTcpStateQualifierForbidden() StringSliceWithIncludes {
+	return parseVersionList(policyRuleTcpStateQualifierForbidenVersions)
 }
 
 func securityZoneJunosEvpnIrbModeRequired() StringSliceWithIncludes {
