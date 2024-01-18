@@ -19,7 +19,9 @@ const (
 	apiUrlBlueprintNodes      = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
 	apiUrlBlueprintNodeById   = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
 
-	initTypeFromTemplate      = "template_reference"
+	initTypeFromTemplate   = "template_reference"
+	initTypeTemplateInline = "rack_based_template_inline"
+
 	nodeQueryNodeTypeUrlParam = "node_type"
 )
 
