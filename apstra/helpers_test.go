@@ -593,7 +593,6 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 
 	id, err := client.CreateRackBasedTemplate(ctx, &CreateRackBasedTemplateRequest{
 		DisplayName: rbt.Data.DisplayName,
-		Capability:  rbt.Data.Capability,
 		Spine: &TemplateElementSpineRequest{
 			Count:                  rbt.Data.Spine.Count,
 			LinkPerSuperspineSpeed: rbt.Data.Spine.LinkPerSuperspineSpeed,
