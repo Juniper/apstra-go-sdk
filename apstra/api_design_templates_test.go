@@ -523,15 +523,11 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 		DisplayName: dn,
 		Capability:  TemplateCapabilityBlueprint,
 		Spine: &TemplateElementSpineRequest{
-			Count:                   2,
-			ExternalLinkSpeed:       "10G",
-			LinkPerSuperspineSpeed:  "10G",
-			LogicalDevice:           "AOS-7x10-Spine",
-			LinkPerSuperspineCount:  1,
-			Tags:                    []ObjectId{"firewall", "hypervisor"},
-			ExternalLinksPerNode:    0,
-			ExternalFacingNodeCount: 0,
-			ExternalLinkCount:       0,
+			Count:                  2,
+			LinkPerSuperspineSpeed: "10G",
+			LogicalDevice:          "AOS-7x10-Spine",
+			LinkPerSuperspineCount: 1,
+			Tags:                   []ObjectId{"firewall", "hypervisor"},
 		},
 		RackInfos: map[ObjectId]TemplateRackBasedRackInfo{
 			"access_switch": {
@@ -582,14 +578,11 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 		DisplayName: rbtdn,
 		Capability:  TemplateCapabilityBlueprint,
 		Spine: &TemplateElementSpineRequest{
-			Count:                   2,
-			LinkPerSuperspineSpeed:  "10G",
-			LogicalDevice:           "AOS-7x10-Spine",
-			LinkPerSuperspineCount:  1,
-			Tags:                    nil,
-			ExternalLinksPerNode:    0,
-			ExternalFacingNodeCount: 0,
-			ExternalLinkCount:       0,
+			Count:                  2,
+			LinkPerSuperspineSpeed: "10G",
+			LogicalDevice:          "AOS-7x10-Spine",
+			LinkPerSuperspineCount: 1,
+			Tags:                   nil,
 		},
 		RackInfos: map[ObjectId]TemplateRackBasedRackInfo{
 			"access_switch": {
@@ -616,8 +609,6 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			Capability:  TemplateCapabilityPod,
 			Superspine: &TemplateElementSuperspineRequest{
 				PlaneCount:         1,
-				ExternalLinkCount:  0,
-				ExternalLinkSpeed:  "10G",
 				Tags:               nil,
 				SuperspinePerPlane: 4,
 				LogicalDeviceId:    "AOS-4x40_8x10-1",
