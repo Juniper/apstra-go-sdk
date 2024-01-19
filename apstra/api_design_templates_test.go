@@ -521,7 +521,6 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 	dn := randString(5, "hex")
 	req := CreateRackBasedTemplateRequest{
 		DisplayName: dn,
-		Capability:  TemplateCapabilityBlueprint,
 		Spine: &TemplateElementSpineRequest{
 			Count:                  2,
 			LinkPerSuperspineSpeed: "10G",
@@ -576,7 +575,6 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 	rbtdn := "rbtr-" + dn
 	rbtr := CreateRackBasedTemplateRequest{
 		DisplayName: rbtdn,
-		Capability:  TemplateCapabilityBlueprint,
 		Spine: &TemplateElementSpineRequest{
 			Count:                  2,
 			LinkPerSuperspineSpeed: "10G",
@@ -606,7 +604,6 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 		pbtdn := "pbtr-" + dn
 		pbtr := CreatePodBasedTemplateRequest{
 			DisplayName: pbtdn,
-			Capability:  TemplateCapabilityPod,
 			Superspine: &TemplateElementSuperspineRequest{
 				PlaneCount:         1,
 				Tags:               nil,
@@ -672,7 +669,6 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 
 	req := &CreateL3CollapsedTemplateRequest{
 		DisplayName:   dn,
-		Capability:    TemplateCapabilityBlueprint,
 		MeshLinkCount: 1,
 		MeshLinkSpeed: "10G",
 		RackTypeIds:   []ObjectId{"L3_collapsed_acs"},
@@ -832,7 +828,6 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				id, err := client.client.createRackBasedTemplate(context.Background(), &rawCreateRackBasedTemplateRequest{
 					Type:                   cloneMe.Type,
 					DisplayName:            fmt.Sprintf("%s-%d", templateName, i),
-					Capability:             cloneMe.Capability,
 					Spine:                  cloneMe.Spine,
 					RackTypes:              cloneMe.RackTypes,
 					RackTypeCounts:         cloneMe.RackTypeCounts,
@@ -854,7 +849,6 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				id, err := client.client.createPodBasedTemplate(context.Background(), &rawCreatePodBasedTemplateRequest{
 					Type:                    cloneMe.Type,
 					DisplayName:             fmt.Sprintf("%s-%d", templateName, i),
-					Capability:              cloneMe.Capability,
 					Superspine:              cloneMe.Superspine,
 					RackBasedTemplates:      cloneMe.RackBasedTemplates,
 					RackBasedTemplateCounts: cloneMe.RackBasedTemplateCounts,
@@ -873,7 +867,6 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				id, err := client.client.createL3CollapsedTemplate(context.Background(), &rawCreateL3CollapsedTemplateRequest{
 					Type:                 cloneMe.Type,
 					DisplayName:          fmt.Sprintf("%s-%d", templateName, i),
-					Capability:           cloneMe.Capability,
 					MeshLinkCount:        cloneMe.MeshLinkCount,
 					MeshLinkSpeed:        *cloneMe.MeshLinkSpeed,
 					RackTypes:            cloneMe.RackTypes,

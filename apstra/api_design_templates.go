@@ -371,9 +371,6 @@ func (o TemplateCapability) String() string {
 		return fmt.Sprintf(templateCapabilityUnknown, o)
 	}
 }
-func (o TemplateCapability) raw() templateCapability {
-	return templateCapability(o.String())
-}
 func (o templateCapability) string() string {
 	return string(o)
 }
@@ -1308,7 +1305,6 @@ func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]rawTemplateL
 
 type CreateRackBasedTemplateRequest struct {
 	DisplayName            string
-	Capability             TemplateCapability
 	Spine                  *TemplateElementSpineRequest
 	RackInfos              map[ObjectId]TemplateRackBasedRackInfo
 	DhcpServiceIntent      *DhcpServiceIntent
@@ -1379,7 +1375,6 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 	return &rawCreateRackBasedTemplateRequest{
 		Type:                   templateTypeRackBased,
 		DisplayName:            o.DisplayName,
-		Capability:             o.Capability.raw(),
 		Spine:                  *spine,
 		RackTypes:              rackTypes,
 		RackTypeCounts:         rackTypeCounts,
@@ -1394,7 +1389,6 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 type rawCreateRackBasedTemplateRequest struct {
 	Type                   templateType               `json:"type"`
 	DisplayName            string                     `json:"display_name"`
-	Capability             templateCapability         `json:"capability,omitempty"`
 	Spine                  rawSpine                   `json:"spine"`
 	RackTypes              []rawRackType              `json:"rack_types"`
 	RackTypeCounts         []RackTypeCount            `json:"rack_type_counts"`
@@ -1437,7 +1431,6 @@ func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *C
 
 type CreatePodBasedTemplateRequest struct {
 	DisplayName             string
-	Capability              TemplateCapability
 	Superspine              *TemplateElementSuperspineRequest
 	RackBasedTemplateIds    []ObjectId
 	RackBasedTemplateCounts []RackBasedTemplateCount
@@ -1479,7 +1472,6 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 	return &rawCreatePodBasedTemplateRequest{
 		Type:                    templateTypePodBased,
 		DisplayName:             o.DisplayName,
-		Capability:              o.Capability.raw(),
 		Superspine:              *superspine,
 		RackBasedTemplates:      rawRackBasedTemplates,
 		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
@@ -1491,7 +1483,6 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 type rawCreatePodBasedTemplateRequest struct {
 	Type                    templateType               `json:"type"`
 	DisplayName             string                     `json:"display_name"`
-	Capability              templateCapability         `json:"capability"`
 	Superspine              rawSuperspine              `json:"superspine"`
 	RackBasedTemplates      []rawTemplateRackBased     `json:"rack_based_templates"`
 	RackBasedTemplateCounts []RackBasedTemplateCount   `json:"rack_based_template_counts"`
@@ -1533,7 +1524,6 @@ func (o *Client) updatePodBasedTemplate(ctx context.Context, id ObjectId, in *Cr
 
 type CreateL3CollapsedTemplateRequest struct {
 	DisplayName          string                 `json:"display_name"`
-	Capability           TemplateCapability     `json:"capability"`
 	MeshLinkCount        int                    `json:"mesh_link_count"`
 	MeshLinkSpeed        LogicalDevicePortSpeed `json:"mesh_link_speed"`
 	RackTypeIds          []ObjectId             `json:"rack_types"`
@@ -1561,7 +1551,6 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 	return &rawCreateL3CollapsedTemplateRequest{
 		Type:                 templateTypeL3Collapsed,
 		DisplayName:          o.DisplayName,
-		Capability:           o.Capability.raw(),
 		MeshLinkCount:        o.MeshLinkCount,
 		MeshLinkSpeed:        *o.MeshLinkSpeed.raw(),
 		RackTypes:            rackTypes,
@@ -1575,7 +1564,6 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 type rawCreateL3CollapsedTemplateRequest struct {
 	Type                 templateType              `json:"type"`
 	DisplayName          string                    `json:"display_name"`
-	Capability           templateCapability        `json:"capability"`
 	MeshLinkCount        int                       `json:"mesh_link_count"`
 	MeshLinkSpeed        rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
 	RackTypes            []rawRackType             `json:"rack_types"`
