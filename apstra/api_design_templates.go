@@ -518,27 +518,19 @@ type RackBasedTemplateCount struct {
 }
 
 type Spine struct {
-	Count                   int
-	ExternalLinkSpeed       LogicalDevicePortSpeed
-	LinkPerSuperspineSpeed  LogicalDevicePortSpeed
-	LogicalDevice           LogicalDeviceData
-	LinkPerSuperspineCount  int
-	Tags                    []DesignTagData
-	ExternalLinksPerNode    int
-	ExternalFacingNodeCount int
-	ExternalLinkCount       int
+	Count                  int
+	LinkPerSuperspineSpeed LogicalDevicePortSpeed
+	LogicalDevice          LogicalDeviceData
+	LinkPerSuperspineCount int
+	Tags                   []DesignTagData
 }
 
 type TemplateElementSpineRequest struct {
-	Count                   int
-	ExternalLinkSpeed       LogicalDevicePortSpeed
-	LinkPerSuperspineSpeed  LogicalDevicePortSpeed
-	LogicalDevice           ObjectId
-	LinkPerSuperspineCount  int
-	Tags                    []ObjectId
-	ExternalLinksPerNode    int
-	ExternalFacingNodeCount int
-	ExternalLinkCount       int
+	Count                  int
+	LinkPerSuperspineSpeed LogicalDevicePortSpeed
+	LogicalDevice          ObjectId
+	LinkPerSuperspineCount int
+	Tags                   []ObjectId
 }
 
 func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (*rawSpine, error) {
@@ -557,37 +549,24 @@ func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (
 	}
 
 	return &rawSpine{
-		Count:                   o.Count,
-		ExternalLinkSpeed:       o.ExternalLinkSpeed.raw(),
-		LinkPerSuperspineSpeed:  o.LinkPerSuperspineSpeed.raw(),
-		LogicalDevice:           *logicalDevice,
-		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
-		Tags:                    tags,
-		ExternalLinksPerNode:    o.ExternalLinksPerNode,
-		ExternalFacingNodeCount: o.ExternalFacingNodeCount,
-		ExternalLinkCount:       o.ExternalLinkCount,
+		Count:                  o.Count,
+		LinkPerSuperspineSpeed: o.LinkPerSuperspineSpeed.raw(),
+		LogicalDevice:          *logicalDevice,
+		LinkPerSuperspineCount: o.LinkPerSuperspineCount,
+		Tags:                   tags,
 	}, nil
 }
 
 type rawSpine struct {
-	Count                   int                        `json:"count"`
-	ExternalLinkSpeed       *rawLogicalDevicePortSpeed `json:"external_link_speed,omitempty"`
-	LinkPerSuperspineSpeed  *rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
-	LogicalDevice           rawLogicalDevice           `json:"logical_device"`
-	LinkPerSuperspineCount  int                        `json:"link_per_superspine_count"`
-	Tags                    []DesignTagData            `json:"tags"`
-	ExternalLinksPerNode    int                        `json:"external_links_per_node,omitempty"`
-	ExternalFacingNodeCount int                        `json:"external_facing_node_count,omitempty"`
-	ExternalLinkCount       int                        `json:"external_link_count,omitempty"`
+	Count                  int                        `json:"count"`
+	LinkPerSuperspineSpeed *rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
+	LogicalDevice          rawLogicalDevice           `json:"logical_device"`
+	LinkPerSuperspineCount int                        `json:"link_per_superspine_count"`
+	Tags                   []DesignTagData            `json:"tags"`
 }
 
 func (o rawSpine) polish() (*Spine, error) {
 	ld, err := o.LogicalDevice.polish()
-
-	var externalLinkSpeed LogicalDevicePortSpeed
-	if o.ExternalLinkSpeed != nil {
-		externalLinkSpeed = o.ExternalLinkSpeed.parse()
-	}
 
 	var linkPerSuperspineSpeed LogicalDevicePortSpeed
 	if o.LinkPerSuperspineSpeed != nil {
@@ -596,24 +575,18 @@ func (o rawSpine) polish() (*Spine, error) {
 
 	return &Spine{
 		Count:                  o.Count,
-		ExternalLinkSpeed:      externalLinkSpeed,
 		LinkPerSuperspineSpeed: linkPerSuperspineSpeed,
 		LogicalDevice: LogicalDeviceData{
 			DisplayName: ld.Data.DisplayName,
 			Panels:      ld.Data.Panels,
 		},
-		LinkPerSuperspineCount:  o.LinkPerSuperspineCount,
-		Tags:                    o.Tags,
-		ExternalLinksPerNode:    o.ExternalLinksPerNode,
-		ExternalFacingNodeCount: o.ExternalFacingNodeCount,
-		ExternalLinkCount:       o.ExternalLinkCount,
+		LinkPerSuperspineCount: o.LinkPerSuperspineCount,
+		Tags:                   o.Tags,
 	}, err
 }
 
 type Superspine struct {
 	PlaneCount         int
-	ExternalLinkCount  int
-	ExternalLinkSpeed  LogicalDevicePortSpeed
 	Tags               []DesignTagData
 	SuperspinePerPlane int
 	LogicalDevice      LogicalDeviceData
@@ -621,8 +594,6 @@ type Superspine struct {
 
 type TemplateElementSuperspineRequest struct {
 	PlaneCount         int
-	ExternalLinkCount  int
-	ExternalLinkSpeed  LogicalDevicePortSpeed
 	Tags               []ObjectId
 	SuperspinePerPlane int
 	LogicalDeviceId    ObjectId
@@ -645,8 +616,6 @@ func (o *TemplateElementSuperspineRequest) raw(ctx context.Context, client *Clie
 
 	return &rawSuperspine{
 		PlaneCount:         o.PlaneCount,
-		ExternalLinkCount:  o.ExternalLinkCount,
-		ExternalLinkSpeed:  o.ExternalLinkSpeed.raw(),
 		Tags:               tags,
 		SuperspinePerPlane: o.SuperspinePerPlane,
 		LogicalDevice:      *logicalDevice,
@@ -654,12 +623,10 @@ func (o *TemplateElementSuperspineRequest) raw(ctx context.Context, client *Clie
 }
 
 type rawSuperspine struct {
-	PlaneCount         int                        `json:"plane_count"`
-	ExternalLinkCount  int                        `json:"external_link_count"`
-	ExternalLinkSpeed  *rawLogicalDevicePortSpeed `json:"external_link_speed"`
-	Tags               []DesignTagData            `json:"tags"`
-	SuperspinePerPlane int                        `json:"superspine_per_plane"`
-	LogicalDevice      rawLogicalDevice           `json:"logical_device"`
+	PlaneCount         int              `json:"plane_count"`
+	Tags               []DesignTagData  `json:"tags"`
+	SuperspinePerPlane int              `json:"superspine_per_plane"`
+	LogicalDevice      rawLogicalDevice `json:"logical_device"`
 }
 
 func (o rawSuperspine) polish() (*Superspine, error) {
@@ -667,14 +634,8 @@ func (o rawSuperspine) polish() (*Superspine, error) {
 	if err != nil {
 		return nil, err
 	}
-	var externalLinkSpeed LogicalDevicePortSpeed
-	if o.ExternalLinkSpeed != nil {
-		externalLinkSpeed = o.ExternalLinkSpeed.parse()
-	}
 	return &Superspine{
 		PlaneCount:         o.PlaneCount,
-		ExternalLinkCount:  o.ExternalLinkCount,
-		ExternalLinkSpeed:  externalLinkSpeed,
 		Tags:               o.Tags,
 		SuperspinePerPlane: o.SuperspinePerPlane,
 		LogicalDevice: LogicalDeviceData{
