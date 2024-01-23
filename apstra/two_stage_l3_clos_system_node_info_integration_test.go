@@ -161,7 +161,8 @@ func TestSetSystemLoopbackIpv4v6(t *testing.T) {
 		bpClient, deleteFunc := testBlueprintG(ctx, t, client.client)
 		defer deleteFunc(ctx)
 
-		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: true})
+		ipv6Enabled := true
+		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: &ipv6Enabled})
 		if err != nil {
 			t.Fatal(err)
 		}

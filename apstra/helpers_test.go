@@ -440,7 +440,7 @@ func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 		RackInfos: map[ObjectId]TemplateRackBasedRackInfo{
 			rackId: {Count: 1},
 		},
-		FabricAddressingPolicy: &FabricAddressingPolicy{
+		FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{
 			SpineSuperspineLinks: AddressingSchemeIp4,
 			SpineLeafLinks:       AddressingSchemeIp4,
 		},
@@ -502,7 +502,7 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
-		FabricAddressingPolicy: &FabricAddressingPolicy{
+		FabricAddressingPolicy: &BlueprintRequestFabricAddressingPolicy{
 			SpineSuperspineLinks: AddressingSchemeIp46,
 			SpineLeafLinks:       AddressingSchemeIp46,
 		},
@@ -582,7 +582,7 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 	}
 
 	rbt.Data.DisplayName = randString(5, "hex")
-	rbt.Data.FabricAddressingPolicy = &FabricAddressingPolicy{
+	rbt.Data.FabricAddressingPolicy = &TemplateFabricAddressingPolicy410Only{
 		SpineSuperspineLinks: AddressingSchemeIp46,
 		SpineLeafLinks:       AddressingSchemeIp46,
 	}

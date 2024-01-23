@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"math/rand"
 	"testing"
 )
 
@@ -49,26 +50,71 @@ func TestGetAllBlueprintStatus(t *testing.T) {
 }
 
 func TestCreateDeleteBlueprint(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for clientName, client := range clients {
+		var blueprintFabricAddressingPolicy *BlueprintRequestFabricAddressingPolicy
+		if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.client.apiVersion) {
+			// forbidden in the template means we can use this feature in the blueprint
+			blueprintFabricAddressingPolicy = &BlueprintRequestFabricAddressingPolicy{}
+
+			if !fabricL3MtuForbidden().Includes(client.client.apiVersion) {
+				fabricL3Mtu := uint16(rand.Intn(550)*2 + 8000) // even number 8000 - 9100
+				blueprintFabricAddressingPolicy.FabricL3Mtu = &fabricL3Mtu
+				blueprintFabricAddressingPolicy.SpineLeafLinks = AddressingSchemeIp46
+				blueprintFabricAddressingPolicy.SpineSuperspineLinks = AddressingSchemeIp46
+			}
+		}
+
+		req := CreateBlueprintFromTemplateRequest{
+			RefDesign:              RefDesignTwoStageL3Clos,
+			Label:                  randString(10, "hex"),
+			TemplateId:             "L2_Virtual_EVPN",
+			FabricAddressingPolicy: blueprintFabricAddressingPolicy,
+		}
+
 		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		name := randString(10, "hex")
-		id, err := client.client.CreateBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      name,
-			TemplateId: "L2_Virtual_EVPN",
-		})
+		id, err := client.client.CreateBlueprintFromTemplate(ctx, &req)
 		if err != nil {
 			t.Fatal(err)
 		}
 
+		bp, err := client.client.GetBlueprint(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if id != bp.Id {
+			t.Fatalf("expected id %q, got %q", id, bp.Id)
+		}
+
+		if req.Label != bp.Label {
+			t.Fatalf("expected label %q, got %q", req.Label, bp.Label)
+		}
+
+		bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if req.FabricAddressingPolicy != nil && req.FabricAddressingPolicy.FabricL3Mtu != nil {
+			fap, err := bpClient.GetFabricAddressingPolicy(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if *req.FabricAddressingPolicy.FabricL3Mtu != *fap.FabricL3Mtu {
+				t.Fatalf("expected fabric MTU %d, got %d", *req.FabricAddressingPolicy.FabricL3Mtu, *fap.FabricL3Mtu)
+			}
+		}
+
 		log.Printf("got id '%s', deleting blueprint...\n", id)
 		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.TODO(), id)
+		err = client.client.deleteBlueprint(ctx, id)
 		if err != nil {
 			t.Fatal(err)
 		}

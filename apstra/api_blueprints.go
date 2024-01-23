@@ -35,6 +35,56 @@ const (
 	refDesignUnknown        = refDesign("unknown reference design %d")
 )
 
+type BlueprintRequestFabricAddressingPolicy struct {
+	SpineSuperspineLinks AddressingScheme
+	SpineLeafLinks       AddressingScheme
+	FabricL3Mtu          *uint16
+}
+
+func (o *BlueprintRequestFabricAddressingPolicy) raw() *rawBlueprintRequestFabricAddressingPolicy {
+	var fabricL3Mtu *uint16
+	if o.FabricL3Mtu != nil {
+		t := *o.FabricL3Mtu // copy the pointed-to value
+		fabricL3Mtu = &t
+	}
+
+	return &rawBlueprintRequestFabricAddressingPolicy{
+		SpineSuperspineLinks: o.SpineSuperspineLinks.raw(),
+		SpineLeafLinks:       o.SpineLeafLinks.raw(),
+		FabricL3Mtu:          fabricL3Mtu,
+	}
+}
+
+type rawBlueprintRequestFabricAddressingPolicy struct {
+	SpineSuperspineLinks addressingScheme `json:"spine_superspine_links"`
+	SpineLeafLinks       addressingScheme `json:"spine_leaf_links"`
+	FabricL3Mtu          *uint16          `json:"fabric_l3_mtu,omitempty"`
+}
+
+func (o *rawBlueprintRequestFabricAddressingPolicy) polish() (*BlueprintRequestFabricAddressingPolicy, error) {
+	var fabricL3Mtu *uint16
+	if o.FabricL3Mtu != nil {
+		t := *o.FabricL3Mtu // copy the pointed-to value
+		fabricL3Mtu = &t
+	}
+
+	ssl, err := o.SpineSuperspineLinks.parse()
+	if err != nil {
+		return nil, err
+	}
+
+	sll, err := o.SpineLeafLinks.parse()
+	if err != nil {
+		return nil, err
+	}
+
+	return &BlueprintRequestFabricAddressingPolicy{
+		SpineSuperspineLinks: AddressingScheme(ssl),
+		SpineLeafLinks:       AddressingScheme(sll),
+		FabricL3Mtu:          fabricL3Mtu,
+	}, nil
+}
+
 type RefDesign int
 type refDesign string
 
@@ -262,11 +312,11 @@ type CreateBlueprintFromTemplateRequest struct {
 	RefDesign              RefDesign
 	Label                  string
 	TemplateId             ObjectId
-	FabricAddressingPolicy *FabricAddressingPolicy
+	FabricAddressingPolicy *BlueprintRequestFabricAddressingPolicy
 }
 
 func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTemplateRequest {
-	var fap *rawFabricAddressingPolicy
+	var fap *rawBlueprintRequestFabricAddressingPolicy
 	if o.FabricAddressingPolicy != nil {
 		fap = o.FabricAddressingPolicy.raw()
 	}
@@ -280,11 +330,11 @@ func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTempla
 }
 
 type rawCreateBlueprintFromTemplateRequest struct {
-	RefDesign              string                     `json:"design"`
-	Label                  string                     `json:"label"`
-	InitType               string                     `json:"init_type"`
-	TemplateId             ObjectId                   `json:"template_id"`
-	FabricAddressingPolicy *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
+	RefDesign              string                                     `json:"design"`
+	Label                  string                                     `json:"label"`
+	InitType               string                                     `json:"init_type"`
+	TemplateId             ObjectId                                   `json:"template_id"`
+	FabricAddressingPolicy *rawBlueprintRequestFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 }
 
 func (o *Client) listAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
