@@ -61,30 +61,6 @@ type rawBlueprintRequestFabricAddressingPolicy struct {
 	FabricL3Mtu          *uint16          `json:"fabric_l3_mtu,omitempty"`
 }
 
-func (o *rawBlueprintRequestFabricAddressingPolicy) polish() (*BlueprintRequestFabricAddressingPolicy, error) {
-	var fabricL3Mtu *uint16
-	if o.FabricL3Mtu != nil {
-		t := *o.FabricL3Mtu // copy the pointed-to value
-		fabricL3Mtu = &t
-	}
-
-	ssl, err := o.SpineSuperspineLinks.parse()
-	if err != nil {
-		return nil, err
-	}
-
-	sll, err := o.SpineLeafLinks.parse()
-	if err != nil {
-		return nil, err
-	}
-
-	return &BlueprintRequestFabricAddressingPolicy{
-		SpineSuperspineLinks: AddressingScheme(ssl),
-		SpineLeafLinks:       AddressingScheme(sll),
-		FabricL3Mtu:          fabricL3Mtu,
-	}, nil
-}
-
 type RefDesign int
 type refDesign string
 
