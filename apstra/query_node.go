@@ -7,6 +7,7 @@ const (
 	NodeTypeEpApplicationInstance
 	NodeTypeEpEndpointPolicy
 	NodeTypeEpGroup
+	NodeTypeFabricAddressingPolicy
 	NodeTypeInterface
 	NodeTypeInterfaceMap
 	NodeTypeLink
@@ -29,6 +30,7 @@ const (
 	nodeTypeEpApplicationInstance  = nodeType("ep_application_instance")
 	nodeTypeEpEndpointPolicy       = nodeType("ep_endpoint_policy")
 	nodeTypeEpGroup                = nodeType("ep_group")
+	nodeTypeFabricAddressingPolicy = nodeType("fabric_addressing_policy")
 	nodeTypeInterface              = nodeType("interface")
 	nodeTypeInterfaceMap           = nodeType("interface_map")
 	nodeTypeLink                   = nodeType("link")
@@ -61,6 +63,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeEpEndpointPolicy)
 	case NodeTypeEpGroup:
 		return string(nodeTypeEpGroup)
+	case NodeTypeFabricAddressingPolicy:
+		return string(nodeTypeFabricAddressingPolicy)
 	case NodeTypeInterface:
 		return string(nodeTypeInterface)
 	case NodeTypeInterfaceMap:
