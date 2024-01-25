@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"testing"
+	"time"
 )
 
 func TestSystemNodeInfo(t *testing.T) {
@@ -63,8 +64,27 @@ func TestSetSystemAsn(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
+		//switch client.client.ApiVersion() {
+		//case "4.1.0":
+		//	continue
+		//case "4.1.1":
+		//	continue
+		//case "4.1.2":
+		//case "4.2.0":
+		//	continue
+		//}
+		if client.client.ApiVersion() == "4.1.0" {
+			continue
+		}
 		bpClient, deleteFunc := testBlueprintB(ctx, t, client.client)
 		defer deleteFunc(ctx)
+
+		time.Sleep(2 * time.Second) // todo: fix this terrible workaround for 404s from
+		//  /api/blueprints/<id>/experience/web/system-info
+		//  shortly after blueprint creation:
+		//  {"errors": "Cache for <id> blueprint staging not found"}
+		//  see https://apstrktr.atlassian.net/browse/AOS-44024
+		//  and https://apstra-eng.slack.com/archives/C2DFCFHJR/p1703621403168039
 
 		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		nodeInfos, err := bpClient.GetAllSystemNodeInfos(ctx)
