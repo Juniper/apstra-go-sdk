@@ -32,10 +32,6 @@ func (o *TwoStageL3ClosClient) GetFabricAddressingPolicy(ctx context.Context) (*
 }
 
 func (o *TwoStageL3ClosClient) SetFabricAddressingPolicy(ctx context.Context, in *TwoStageL3ClosFabricAddressingPolicy) error {
-	if *in.EsiMacMsb%2 != 0 {
-		return fmt.Errorf("fabric addressing policy esi mac msb must be even, got %d", in.EsiMacMsb)
-	}
-
 	if in.FabricL3Mtu != nil && fabricL3MtuForbidden().Includes(o.client.apiVersion) {
 		return ClientErr{
 			errType: ErrCompatibility,
