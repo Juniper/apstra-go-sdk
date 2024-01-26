@@ -64,15 +64,6 @@ func TestSetSystemAsn(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		//switch client.client.ApiVersion() {
-		//case "4.1.0":
-		//	continue
-		//case "4.1.1":
-		//	continue
-		//case "4.1.2":
-		//case "4.2.0":
-		//	continue
-		//}
 		if client.client.ApiVersion() == "4.1.0" {
 			continue
 		}
