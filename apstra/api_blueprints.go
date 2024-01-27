@@ -19,7 +19,9 @@ const (
 	apiUrlBlueprintNodes      = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
 	apiUrlBlueprintNodeById   = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
 
-	initTypeFromTemplate      = "template_reference"
+	initTypeFromTemplate   = "template_reference"
+	initTypeTemplateInline = "rack_based_template_inline"
+
 	nodeQueryNodeTypeUrlParam = "node_type"
 )
 
@@ -32,6 +34,32 @@ const (
 	refDesignFreeform       = refDesign("freeform")
 	refDesignUnknown        = refDesign("unknown reference design %d")
 )
+
+type BlueprintRequestFabricAddressingPolicy struct {
+	SpineSuperspineLinks AddressingScheme
+	SpineLeafLinks       AddressingScheme
+	FabricL3Mtu          *uint16
+}
+
+func (o *BlueprintRequestFabricAddressingPolicy) raw() *rawBlueprintRequestFabricAddressingPolicy {
+	var fabricL3Mtu *uint16
+	if o.FabricL3Mtu != nil {
+		t := *o.FabricL3Mtu // copy the pointed-to value
+		fabricL3Mtu = &t
+	}
+
+	return &rawBlueprintRequestFabricAddressingPolicy{
+		SpineSuperspineLinks: o.SpineSuperspineLinks.raw(),
+		SpineLeafLinks:       o.SpineLeafLinks.raw(),
+		FabricL3Mtu:          fabricL3Mtu,
+	}
+}
+
+type rawBlueprintRequestFabricAddressingPolicy struct {
+	SpineSuperspineLinks addressingScheme `json:"spine_superspine_links"`
+	SpineLeafLinks       addressingScheme `json:"spine_leaf_links"`
+	FabricL3Mtu          *uint16          `json:"fabric_l3_mtu,omitempty"`
+}
 
 type RefDesign int
 type refDesign string
@@ -260,11 +288,11 @@ type CreateBlueprintFromTemplateRequest struct {
 	RefDesign              RefDesign
 	Label                  string
 	TemplateId             ObjectId
-	FabricAddressingPolicy *FabricAddressingPolicy
+	FabricAddressingPolicy *BlueprintRequestFabricAddressingPolicy
 }
 
 func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTemplateRequest {
-	var fap *rawFabricAddressingPolicy
+	var fap *rawBlueprintRequestFabricAddressingPolicy
 	if o.FabricAddressingPolicy != nil {
 		fap = o.FabricAddressingPolicy.raw()
 	}
@@ -278,11 +306,11 @@ func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTempla
 }
 
 type rawCreateBlueprintFromTemplateRequest struct {
-	RefDesign              string                     `json:"design"`
-	Label                  string                     `json:"label"`
-	InitType               string                     `json:"init_type"`
-	TemplateId             ObjectId                   `json:"template_id"`
-	FabricAddressingPolicy *rawFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
+	RefDesign              string                                     `json:"design"`
+	Label                  string                                     `json:"label"`
+	InitType               string                                     `json:"init_type"`
+	TemplateId             ObjectId                                   `json:"template_id"`
+	FabricAddressingPolicy *rawBlueprintRequestFabricAddressingPolicy `json:"fabric_addressing_policy,omitempty"`
 }
 
 func (o *Client) listAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {

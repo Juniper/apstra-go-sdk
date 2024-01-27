@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -11,8 +12,9 @@ const (
 )
 
 type TwoStageL3ClosFabricAddressingPolicy struct {
-	Ipv6Enabled bool  `json:"ipv6_enabled"`
-	EsiMacMsb   uint8 `json:"esi_mac_msb"`
+	Ipv6Enabled *bool   `json:"ipv6_enabled,omitempty"`
+	EsiMacMsb   *uint8  `json:"esi_mac_msb,omitempty"`
+	FabricL3Mtu *uint16 `json:"fabric_l3_mtu,omitempty"`
 }
 
 func (o *TwoStageL3ClosClient) GetFabricAddressingPolicy(ctx context.Context) (*TwoStageL3ClosFabricAddressingPolicy, error) {
@@ -30,8 +32,11 @@ func (o *TwoStageL3ClosClient) GetFabricAddressingPolicy(ctx context.Context) (*
 }
 
 func (o *TwoStageL3ClosClient) SetFabricAddressingPolicy(ctx context.Context, in *TwoStageL3ClosFabricAddressingPolicy) error {
-	if in.EsiMacMsb%2 != 0 {
-		return fmt.Errorf("fabric addressing policy esi mac msb must be even, got %d", in.EsiMacMsb)
+	if in.FabricL3Mtu != nil && fabricL3MtuForbidden().Includes(o.client.apiVersion) {
+		return ClientErr{
+			errType: ErrCompatibility,
+			err:     errors.New(fabricL3MtuForbiddenError),
+		}
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{

@@ -327,7 +327,8 @@ func TestCtLayout(t *testing.T) {
 			}
 		}()
 
-		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: true})
+		ipv6Enabled := true
+		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: &ipv6Enabled})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -341,10 +342,6 @@ func TestCtLayout(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		//sz := SecurityZone{}
-		//rp := DcRoutingPolicy{}
-		_ = client
 
 		vlan := Vlan(11)
 		ct := ConnectivityTemplate{

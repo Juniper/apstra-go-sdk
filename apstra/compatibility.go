@@ -10,6 +10,9 @@ const (
 
 	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0"
 
+	fabricL3MtuForbiddenVersions = "4.1.0, 4.1.1, 4.1.2"
+	fabricL3MtuForbiddenError    = "fabric_l3_mtu permitted only with Apstra 4.2.0 and later"
+
 	integerPoolForbiddenVersions = "4.1.0, 4.1.1"
 
 	policyRuleTcpStateQualifierForbidenVersions = "4.1.0, 4.1.1"
@@ -51,6 +54,10 @@ func rackBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes 
 
 func podBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
 	return parseVersionList(podBasedTemplateFabricAddressingPolicyForbiddenVersions)
+}
+
+func fabricL3MtuForbidden() StringSliceWithIncludes {
+	return parseVersionList(fabricL3MtuForbiddenVersions)
 }
 
 func integerPoolForbidden() StringSliceWithIncludes {

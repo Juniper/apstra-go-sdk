@@ -705,6 +705,11 @@ func (o *Client) GetAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, 
 
 // CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
 func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlueprintFromTemplateRequest) (ObjectId, error) {
+	if req.FabricAddressingPolicy != nil &&
+		req.FabricAddressingPolicy.FabricL3Mtu != nil &&
+		fabricL3MtuForbidden().Includes(o.apiVersion) {
+		return "", errors.New(fabricL3MtuForbiddenError)
+	}
 	return o.createBlueprintFromTemplate(ctx, req.raw())
 }
 
