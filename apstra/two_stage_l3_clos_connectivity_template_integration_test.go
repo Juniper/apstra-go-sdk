@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/go-version"
 	"log"
 	"math/rand"
 	"net"
@@ -129,8 +130,9 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 	}
 
 	type testCase struct {
-		ct      *ConnectivityTemplate
-		eStatus CtPrimitiveStatus
+		ct                *ConnectivityTemplate
+		eStatus           CtPrimitiveStatus
+		versionConstraint version.Constraints
 	}
 
 	update := &ConnectivityTemplate{
@@ -156,22 +158,25 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 			}
 		}()
 
+		apiVersion := version.Must(version.NewVersion(bpClient.client.apiVersion))
+
 		sz, err := bpClient.GetSecurityZoneByVrfName(ctx, "default")
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		vlan10 := Vlan(10)
+		sixThousand := uint16(6000)
 
-		testCases := []testCase{
-			{
+		testCases := map[string]testCase{
+			"a": {
 				ct: &ConnectivityTemplate{
 					Subpolicies: nil,
 					Tags:        nil,
 				},
 				eStatus: CtPrimitiveStatusIncomplete,
 			},
-			{
+			"b": {
 				ct: &ConnectivityTemplate{
 					Label:       randString(5, "hex"),
 					Description: randString(10, "hex"),
@@ -180,7 +185,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 				},
 				eStatus: CtPrimitiveStatusIncomplete,
 			},
-			{
+			"c": {
 				ct: &ConnectivityTemplate{
 					Label:       randString(5, "hex"),
 					Description: randString(10, "hex"),
@@ -227,82 +232,109 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 				},
 				eStatus: CtPrimitiveStatusReady,
 			},
+			"d": {
+				versionConstraint: version.MustConstraints(version.NewConstraint(">=4.2.0")),
+				ct: &ConnectivityTemplate{
+					Label:       randString(5, "hex"),
+					Description: randString(10, "hex"),
+					Subpolicies: []*ConnectivityTemplatePrimitive{
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
+								SecurityZone:       &sz.Id,
+								Tagged:             false,
+								IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
+								IPv6AddressingType: CtPrimitiveIPv6AddressingTypeLinkLocal,
+								L3Mtu:              &sixThousand,
+							},
+						},
+					},
+					Tags: randomTags,
+				},
+				eStatus: CtPrimitiveStatusReady,
+			},
 		}
 
-		for i, tc := range testCases {
-			err = tc.ct.SetIds()
-			if err != nil {
-				t.Fatal(err)
-			}
+		for tName, tCase := range testCases {
+			tName, tCase := tName, tCase
+			t.Run(tName, func(t *testing.T) {
+				if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(apiVersion) {
+					t.Skipf("skipping test case %q because it cannot be run with Apstra %s", tName, apiVersion)
+				}
 
-			err = tc.ct.SetUserData()
-			if err != nil {
-				t.Fatal(err)
-			}
+				err = tCase.ct.SetIds()
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			log.Printf("testing CreateConnectivityTemplate(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.CreateConnectivityTemplate(ctx, tc.ct)
-			if err != nil {
-				t.Fatal(err)
-			}
+				err = tCase.ct.SetUserData()
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			log.Printf("testing GetConnectivityTemplate(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			read, err := bpClient.GetConnectivityTemplate(ctx, *tc.ct.Id)
-			if err != nil {
-				t.Fatal(err)
-			}
-			compareCts(t, tc.ct, read, fmt.Sprintf("while comparing connectivity templates test case %d:", i))
+				log.Printf("testing CreateConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.CreateConnectivityTemplate(ctx, tCase.ct)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			log.Printf("testing GetConnectivityTemplateState(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			ctState, err := bpClient.GetConnectivityTemplateState(ctx, *tc.ct.Id)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if tc.eStatus != ctState.Status {
-				t.Fatalf("expected status %q, got status %q", tc.eStatus.String(), ctState.Status.String())
-			}
+				log.Printf("testing GetConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				read, err := bpClient.GetConnectivityTemplate(ctx, *tCase.ct.Id)
+				if err != nil {
+					t.Fatal(err)
+				}
+				compareCts(t, tCase.ct, read, fmt.Sprintf("while comparing connectivity templates test case %q:", tName))
 
-			u := update
-			id := *tc.ct.Id
-			u.Id = &id
-			err = u.SetIds()
-			if err != nil {
-				t.Fatal(err)
-			}
+				log.Printf("testing GetConnectivityTemplateState() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				ctState, err := bpClient.GetConnectivityTemplateState(ctx, *tCase.ct.Id)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if tCase.eStatus != ctState.Status {
+					t.Fatalf("expected status %q, got status %q", tCase.eStatus.String(), ctState.Status.String())
+				}
 
-			err = u.SetUserData()
-			if err != nil {
-				t.Fatal(err)
-			}
+				u := update
+				id := *tCase.ct.Id
+				u.Id = &id
+				err = u.SetIds()
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			log.Printf("testing UpdateConnectivityTemplate(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.UpdateConnectivityTemplate(ctx, u)
-			if err != nil {
-				t.Fatal(err)
-			}
+				err = u.SetUserData()
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			log.Printf("testing GetConnectivityTemplate(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			read, err = bpClient.GetConnectivityTemplate(ctx, *tc.ct.Id)
-			if err != nil {
-				t.Fatal(err)
-			}
-			compareCts(t, u, read, fmt.Sprintf("while comparing connectivity templates test case %d:", i))
+				log.Printf("testing UpdateConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.UpdateConnectivityTemplate(ctx, u)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			log.Printf("testing DeleteConnectivityTemplate(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.DeleteConnectivityTemplate(ctx, *tc.ct.Id)
-			if err != nil {
-				t.Fatal(err)
-			}
+				log.Printf("testing GetConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				read, err = bpClient.GetConnectivityTemplate(ctx, *tCase.ct.Id)
+				if err != nil {
+					t.Fatal(err)
+				}
+				compareCts(t, u, read, fmt.Sprintf("while comparing connectivity templates test case %q:", tName))
 
-			log.Printf("testing GetConnectivityTemplate(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			read, err = bpClient.GetConnectivityTemplate(ctx, *tc.ct.Id)
-			if err == nil {
-				t.Fatal("GetConnectivityTemplate() against deleted ID should have produced an error")
-			}
-			var ace ClientErr
-			if !(errors.As(err, &ace) && ace.errType == ErrNotfound) {
-				t.Fatalf("expected ErrNotFound, got %s", err.Error())
-			}
+				log.Printf("testing DeleteConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.DeleteConnectivityTemplate(ctx, *tCase.ct.Id)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				log.Printf("testing GetConnectivityTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				read, err = bpClient.GetConnectivityTemplate(ctx, *tCase.ct.Id)
+				if err == nil {
+					t.Fatal("GetConnectivityTemplate() against deleted ID should have produced an error")
+				}
+				var ace ClientErr
+				if !(errors.As(err, &ace) && ace.errType == ErrNotfound) {
+					t.Fatalf("expected ErrNotFound, got %s", err.Error())
+				}
+			})
 		}
 	}
 }

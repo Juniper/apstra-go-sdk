@@ -121,6 +121,7 @@ type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	Vlan               *Vlan
 	IPv4AddressingType CtPrimitiveIPv4AddressingType
 	IPv6AddressingType CtPrimitiveIPv6AddressingType
+	L3Mtu              *uint16
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) fromRawJson(in json.RawMessage) error {
@@ -155,6 +156,7 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) raw() (json.R
 		Ipv4AddressingType: o.IPv4AddressingType.raw(),
 		Ipv6AddressingType: o.IPv6AddressingType.raw(),
 		SecurityZone:       o.SecurityZone,
+		L3Mtu:              o.L3Mtu,
 	}
 
 	return json.Marshal(&raw)
@@ -645,6 +647,7 @@ type rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	Ipv4AddressingType ctPrimitiveIPv4AddressingType `json:"ipv4_addressing_type"`
 	Ipv6AddressingType ctPrimitiveIPv6AddressingType `json:"ipv6_addressing_type"`
 	SecurityZone       *ObjectId                     `json:"security_zone"`
+	L3Mtu              *uint16                       `json:"l3_mtu"`
 }
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink) polish(t *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) error {
@@ -675,6 +678,7 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink) polish(t *C
 	t.Vlan = o.Vlan
 	t.IPv4AddressingType = CtPrimitiveIPv4AddressingType(ipv4AddressingType)
 	t.IPv6AddressingType = CtPrimitiveIPv6AddressingType(ipv6AddressingType)
+	t.L3Mtu = o.L3Mtu
 
 	return nil
 }
