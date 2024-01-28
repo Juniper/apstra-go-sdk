@@ -12,6 +12,7 @@ const (
 	apiUrlBlueprintExperienceWebSystemInfo = apiUrlBlueprintByIdPrefix + "experience/web/system-info"
 	apiUrlBlueprintSetNodeDomain           = apiUrlBlueprintByIdPrefix + "systems" + apiUrlPathDelim + "%s" + apiUrlPathDelim + "domain"
 	apiUrlBlueprintSetNodeLoopback         = apiUrlBlueprintByIdPrefix + "systems" + apiUrlPathDelim + "%s" + apiUrlPathDelim + "loopback" + apiUrlPathDelim + "%d"
+	apiUrlBlueprintSetPortChannelIdMinMax  = apiUrlBlueprintByIdPrefix + "port-channel-id"
 )
 
 type rawSystemNodeInfoLoopback struct {
@@ -22,29 +23,29 @@ type rawSystemNodeInfoLoopback struct {
 
 type rawSystemNodeInfo struct {
 	DomainId *string `json:"domain_id"`
-	//UplinkedSystemIds interface{} `json:"uplinked_system_ids"`
-	//DeployMode        interface{} `json:"deploy_mode"`
+	// UplinkedSystemIds interface{} `json:"uplinked_system_ids"`
+	// DeployMode        interface{} `json:"deploy_mode"`
 	Id             ObjectId                   `json:"id"`
 	Label          string                     `json:"label"`
 	PodId          ObjectId                   `json:"pod_id"`
 	InterfaceMapId *ObjectId                  `json:"interface_map_id"`
 	Loopback       *rawSystemNodeInfoLoopback `json:"loopback"`
 	Hostname       string                     `json:"hostname"`
-	//UnicastVtep        interface{}            `json:"unicast_vtep"`
+	// UnicastVtep        interface{}            `json:"unicast_vtep"`
 	Role systemRole `json:"role"`
-	//SystemId           interface{}   `json:"system_id"`
-	//Hidden             bool          `json:"hidden"`
-	//AnycastVtep        interface{}   `json:"anycast_vtep"`
+	// SystemId           interface{}   `json:"system_id"`
+	// Hidden             bool          `json:"hidden"`
+	// AnycastVtep        interface{}   `json:"anycast_vtep"`
 	RackId *ObjectId `json:"rack_id"`
-	//LogicalVtep        interface{}   `json:"logical_vtep"`
-	//SuperspinePlaneId  interface{}   `json:"superspine_plane_id"`
+	// LogicalVtep        interface{}   `json:"logical_vtep"`
+	// SuperspinePlaneId  interface{}   `json:"superspine_plane_id"`
 	LogicalDeviceId ObjectId `json:"logical_device_id"`
 	Tags            []string `json:"tags"`
-	//HypervisorId       interface{} `json:"hypervisor_id"`
-	//RedundancyProtocol interface{} `json:"redundancy_protocol"`
+	// HypervisorId       interface{} `json:"hypervisor_id"`
+	// RedundancyProtocol interface{} `json:"redundancy_protocol"`
 	External         bool `json:"external"`
 	PortChannelIdMin int  `json:"port_channel_id_min"`
-	//PositionData      interface{} `json:"position_data"`
+	// PositionData      interface{} `json:"position_data"`
 	PortChannelIdMax  int                   `json:"port_channel_id_max"`
 	RedundancyGroupId *ObjectId             `json:"redundancy_group_id"`
 	GroupLabel        *string               `json:"group_label"`
@@ -206,6 +207,35 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv6(ctx context.Context,
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
 		apiInput: &apiInput,
+	})
+	return convertTtaeToAceWherePossible(err)
+}
+
+func (o *TwoStageL3ClosClient) SetSystemPortChannelMinMax(ctx context.Context, id ObjectId, min, max int) error {
+	type portChannelStruct struct {
+		SystemId         ObjectId `json:"system_id"`
+		PortChannelIdMin int      `json:"port_channel_id_min"`
+		PortChannelIdMax int      `json:"port_channel_id_max"`
+	}
+
+	type apiInput struct {
+		Systems []portChannelStruct `json:"systems"`
+	}
+
+	input := apiInput{
+		Systems: []portChannelStruct{
+			{
+				PortChannelIdMin: min,
+				PortChannelIdMax: max,
+				SystemId:         id,
+			},
+		},
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPost,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintSetPortChannelIdMinMax, o.blueprintId),
+		apiInput: &input,
 	})
 	return convertTtaeToAceWherePossible(err)
 }
