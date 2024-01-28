@@ -217,6 +217,7 @@ func (o *TwoStageL3ClosClient) SetSystemPortChannelMinMax(ctx context.Context, i
 		PortChannelIdMin int      `json:"port_channel_id_min"`
 		PortChannelIdMax int      `json:"port_channel_id_max"`
 	}
+
 	type apiInput struct {
 		Systems []portChannelStruct `json:"systems"`
 	}
@@ -236,6 +237,5 @@ func (o *TwoStageL3ClosClient) SetSystemPortChannelMinMax(ctx context.Context, i
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetPortChannelIdMinMax, o.blueprintId),
 		apiInput: &input,
 	})
-
 	return convertTtaeToAceWherePossible(err)
 }
