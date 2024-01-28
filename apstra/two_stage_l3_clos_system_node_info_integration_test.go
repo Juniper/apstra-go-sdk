@@ -284,3 +284,70 @@ func TestSetSystemLoopbackIpv4v6(t *testing.T) {
 		}
 	}
 }
+
+func TestSetSystemPortChannelIdMinMax(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		bpClient, deleteFunc := testBlueprintG(ctx, t, client.client)
+		defer deleteFunc(ctx)
+
+		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		nodeInfos, err := bpClient.GetAllSystemNodeInfos(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var systemIds []ObjectId
+		for id, info := range nodeInfos {
+			if info.Role == SystemRoleGeneric {
+				systemIds = append(systemIds, id)
+			}
+		}
+
+		channelIdMinMap := make(map[ObjectId]int, len(systemIds))
+		channelIdMaxMap := make(map[ObjectId]int, len(systemIds))
+		channelId := 1
+		channelIdIncrement := 5
+		var max int
+		for _, id := range systemIds {
+			channelIdMinMap[id] = channelId
+			max = channelId + channelIdIncrement
+			channelIdMaxMap[id] = max
+			log.Printf("testing SetSystemPortChannelMinMax against %s %s (%s)", client.clientType, clientName,
+				client.client.ApiVersion())
+			log.Printf("testing SetSystemPortChannelMinMax for %s as %d, %d", id, channelId, max)
+
+			err = bpClient.SetSystemPortChannelMinMax(ctx, id, channelId, max)
+			if err != nil {
+				t.Fatal(err)
+			}
+			channelId = max + 1
+		}
+
+		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		nodeInfos, err = bpClient.GetAllSystemNodeInfos(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for nodeId, channelIdMin := range channelIdMinMap {
+
+			log.Printf(" for generic id %s port channel id min = %d, port channel id max = %d", nodeId,
+				nodeInfos[nodeId].PortChannelIdMin, nodeInfos[nodeId].PortChannelIdMax)
+
+			if nodeInfos[nodeId].PortChannelIdMin != channelIdMin {
+				t.Fatalf("Expected Port Channel Id Min %d for Generic System %s Got %d",
+					nodeInfos[nodeId].PortChannelIdMin, nodeId, channelIdMin)
+			}
+			if nodeInfos[nodeId].PortChannelIdMax != channelIdMaxMap[nodeId] {
+				t.Fatalf("Expected Port Channel Id Max %d for Generic System %s Got %d",
+					nodeInfos[nodeId].PortChannelIdMax, nodeId, channelIdMin)
+			}
+		}
+	}
+}
