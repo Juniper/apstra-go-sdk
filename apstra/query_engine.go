@@ -183,6 +183,9 @@ func (o *PathQuery) setRawResult(in []byte) {
 }
 
 func (o *PathQuery) Do(ctx context.Context, response interface{}) error {
+	if o.client == nil {
+		return errors.New("cannot execute PathQuery when embedded client is nil")
+	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
 
@@ -339,7 +342,7 @@ func (o *MatchQuery) setRawResult(in []byte) {
 
 func (o *MatchQuery) Do(ctx context.Context, response interface{}) error {
 	if o.client == nil {
-		return errors.New("attempt to execute query without setting client")
+		return errors.New("cannot execute MatchQuery when embedded client is nil")
 	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
@@ -435,6 +438,9 @@ func (o *RawQuery) setRawResult(in []byte) {
 }
 
 func (o *RawQuery) Do(ctx context.Context, response interface{}) error {
+	if o.client == nil {
+		return errors.New("cannot execute RawQuery when embedded client is nil")
+	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
 }
 
