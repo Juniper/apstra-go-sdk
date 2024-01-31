@@ -259,6 +259,17 @@ func (o *Client) Logout(ctx context.Context) error {
 	return o.logout(ctx)
 }
 
+func (o *Client) AuthToken() (string, error) {
+	o.lock(mutexKeyHttpHeaders)
+	defer o.unlock(mutexKeyHttpHeaders)
+
+	if token, ok := o.httpHeaders[apstraAuthHeader]; ok {
+		return token, nil
+	}
+
+	return "", errors.New("not logged in")
+}
+
 // GetBlueprint returns *Blueprint detailing the requested blueprint
 func (o *Client) GetBlueprint(ctx context.Context, in ObjectId) (*Blueprint, error) {
 	return o.getBlueprint(ctx, in)

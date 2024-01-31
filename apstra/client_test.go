@@ -327,3 +327,60 @@ func TestCRUDIntegerPools(t *testing.T) {
 		}
 	}
 }
+
+func TestAuthToken(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tc := range clients {
+		err = tc.client.login(ctx)
+		if err != nil {
+			t.Fatal()
+		}
+
+		// make a copy of the client object so we don't disrupt other tests by
+		// messing with the token
+		client := *tc.client
+
+		// copy the map which contains the authtoken from old client to new
+		client.httpHeaders = make(map[string]string)
+		tc.client.lock(mutexKeyHttpHeaders)
+		for k, v := range tc.client.httpHeaders {
+			client.httpHeaders[k] = v
+		}
+		tc.client.unlock(mutexKeyHttpHeaders)
+
+		// log in the client (just in case)
+		err = client.Login(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// fetch the token
+		token, err := client.AuthToken()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(strings.Split(token, ".")) != 3 {
+			t.Fatalf("a JWT should have 3 parts, this has %d parts: %q", len(strings.Split(token, ".")), token)
+		}
+
+		// log out the client
+		err = client.logout(ctx)
+		if err != nil {
+			t.Fatal()
+		}
+
+		// fetch the token
+		token, err = client.AuthToken()
+		if err == nil {
+			t.Fatal("fetching a token from a logged-out client should produce an error")
+		}
+		if len(token) != 0 {
+			t.Fatal("fetching a token from a logged-out client should produce an empty string")
+		}
+	}
+}
