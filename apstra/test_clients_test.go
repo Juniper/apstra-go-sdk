@@ -13,6 +13,8 @@ import (
 )
 
 const (
+	clientTimeoutSeconds = 30
+
 	clientTypeCloudlabs = "cloudlabs"
 	clientTypeAws       = "aws"
 
@@ -47,6 +49,10 @@ func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, e
 		for k := range clientCfgs {
 			clientCfgs[k].cfg.Experimental = true
 		}
+	}
+
+	for k := range clientCfgs {
+		clientCfgs[k].cfg.Timeout = clientTimeoutSeconds * time.Second
 	}
 
 	testClients = make(map[string]testClient, len(clientCfgs))
