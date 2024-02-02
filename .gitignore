@@ -1,2 +1,3 @@
 .apstra*
 test_*.log
+.testconfig.hcl
