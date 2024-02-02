@@ -83,7 +83,23 @@ func awsInstanceIdsFromEnv() []string {
 // getAwsTestClientCfgs returns map[string]testClientCfg keyed by
 // AWS instance ID
 func getAwsTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
-	topologyIds := awsInstanceIdsFromEnv()
+	cfg, err := GetTestConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	var topologyIds []string
+	if len(cfg.AwsTopologyIds) > 0 {
+		topologyIds = make([]string, len(cfg.AwsTopologyIds))
+		for i, s := range cfg.AwsTopologyIds {
+			topologyIds[i] = s
+			i++
+		}
+	}
+
+	if len(topologyIds) == 0 {
+		topologyIds = awsInstanceIdsFromEnv()
+	}
 
 	result := make(map[string]testClientCfg, len(topologyIds))
 	for _, id := range topologyIds {

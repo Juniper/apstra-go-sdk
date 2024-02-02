@@ -243,7 +243,22 @@ func (o *cloudlabsTopology) getSwitchInfo() ([]cloudlabsSwitchInfo, error) {
 // getCloudlabsTestClientCfgs returns map[string]testClientCfg keyed by
 // cloudlab topology ID
 func getCloudlabsTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
-	topologyIds := cloudLabsTopologyIdsFromEnv()
+	cfg, err := GetTestConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	var topologyIds []string
+	if len(cfg.CloudlabsTopologyIds) > 0 {
+		topologyIds = make([]string, len(cfg.CloudlabsTopologyIds))
+		for i, s := range cfg.CloudlabsTopologyIds {
+			topologyIds[i] = s
+		}
+	}
+
+	if len(topologyIds) == 0 {
+		topologyIds = cloudLabsTopologyIdsFromEnv()
+	}
 
 	result := make(map[string]testClientCfg, len(topologyIds))
 	for _, id := range topologyIds {
