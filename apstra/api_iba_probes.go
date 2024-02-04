@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -91,4 +92,18 @@ func (o *Client) deleteIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId)
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlIbaProbesById, bpId, id),
 	}))
+}
+
+func (o *Client) createIbaProbe(ctx context.Context, bpId ObjectId, probeJson json.RawMessage) (ObjectId, error) {
+	response := objectIdResponse{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlIbaProbes, bpId),
+		apiInput:    probeJson,
+		apiResponse: &response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, err
 }

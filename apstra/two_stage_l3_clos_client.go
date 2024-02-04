@@ -3,6 +3,7 @@ package apstra
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -797,9 +798,14 @@ func (o *TwoStageL3ClosClient) GetIbaProbe(ctx context.Context, id ObjectId) (*I
 	return probe, err
 }
 
-// DeleteIbaProbe deletes an IBA Widget
+// DeleteIbaProbe deletes an IBA Probe
 func (o *TwoStageL3ClosClient) DeleteIbaProbe(ctx context.Context, id ObjectId) error {
 	return o.client.deleteIbaProbe(ctx, o.blueprintId, id)
+}
+
+// CreateIbaProbe creates an IBA Probe
+func (o *TwoStageL3ClosClient) CreateIbaProbe(ctx context.Context, probeJson json.RawMessage) (ObjectId, error) {
+	return o.client.createIbaProbe(ctx, o.blueprintId, probeJson)
 }
 
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint
