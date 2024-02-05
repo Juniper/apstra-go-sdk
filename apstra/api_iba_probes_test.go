@@ -20,73 +20,73 @@ func TestIbaProbes(t *testing.T) {
 		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, _ := testBlueprintA(ctx, t, client.client)
-		// defer bpDelete(ctx)
-		// pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
-		// if err != nil {
-		// 	t.Fatal(err)
-		// }
-		// expectedToFail := map[string]bool{
-		// 	"external_ecmp_imbalance":            true,
-		// 	"evpn_vxlan_type5":                   true,
-		// 	"eastwest_traffic":                   true,
-		// 	"vxlan_floodlist":                    true,
-		// 	"fabric_hotcold_ifcounter":           true,
-		// 	"specific_interface_flapping":        true,
-		// 	"evpn_vxlan_type3":                   true,
-		// 	"specific_hotcold_ifcounter":         true,
-		// 	"spine_superspine_hotcold_ifcounter": true,
-		// }
+		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
+		defer bpDelete(ctx)
+		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		expectedToFail := map[string]bool{
+			"external_ecmp_imbalance":            true,
+			"evpn_vxlan_type5":                   true,
+			"eastwest_traffic":                   true,
+			"vxlan_floodlist":                    true,
+			"fabric_hotcold_ifcounter":           true,
+			"specific_interface_flapping":        true,
+			"evpn_vxlan_type3":                   true,
+			"specific_hotcold_ifcounter":         true,
+			"spine_superspine_hotcold_ifcounter": true,
+		}
 
-		// for _, p := range pdps {
-		// 	t.Logf("Get Predefined Probe By Name %s", p.Name)
-		// 	_, err := bpClient.GetIbaPredefinedProbeByName(ctx, p.Name)
-		// 	if err != nil {
-		// 		t.Fatal(err)
-		// 	}
-		// 	t.Log(p.Description)
-		// 	t.Log(p.Schema)
-		//
-		// 	t.Logf("Instantiating Probe %s", p.Name)
-		//
-		// 	probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
-		// 		Name: p.Name,
-		// 		Data: json.RawMessage([]byte(`{"label":"` + p.Name + `"}`)),
-		// 	})
-		// 	if err != nil {
-		// 		if !expectedToFail[p.Name] {
-		// 			t.Fatal(err)
-		// 		} else {
-		// 			t.Logf("%s was expected to fail", p.Name)
-		// 			continue
-		// 		}
-		// 	}
-		//
-		// 	t.Logf("Got back Probe Id %s \n Now GET it.", probeId)
-		//
-		// 	p, err := bpClient.GetIbaProbe(ctx, probeId)
-		//
-		// 	t.Logf("Label %s", p.Label)
-		// 	t.Logf("Description %s", p.Description)
-		// 	t.Log(p)
-		// 	t.Logf("Delete probe")
-		// 	for _, i := range p.Stages {
-		// 		t.Logf("Stage name %s", i["name"])
-		// 	}
-		// 	err = bpClient.DeleteIbaProbe(ctx, probeId)
-		// 	if err != nil {
-		// 		t.Fatal(err)
-		// 	}
-		// 	t.Logf("Delete Probe again, this should fail")
-		// 	err = bpClient.DeleteIbaProbe(ctx, probeId)
-		// 	if err == nil {
-		// 		t.Fatal("Probe Deletion should have failed")
-		// 	} else {
-		// 		t.Log(err)
-		// 	}
-		// }
+		for _, p := range pdps {
+			t.Logf("Get Predefined Probe By Name %s", p.Name)
+			_, err := bpClient.GetIbaPredefinedProbeByName(ctx, p.Name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Log(p.Description)
+			t.Log(p.Schema)
+
+			t.Logf("Instantiating Probe %s", p.Name)
+
+			probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
+				Name: p.Name,
+				Data: json.RawMessage([]byte(`{"label":"` + p.Name + `"}`)),
+			})
+			if err != nil {
+				if !expectedToFail[p.Name] {
+					t.Fatal(err)
+				} else {
+					t.Logf("%s was expected to fail", p.Name)
+					continue
+				}
+			}
+
+			t.Logf("Got back Probe Id %s \n Now GET it.", probeId)
+
+			p, err := bpClient.GetIbaProbe(ctx, probeId)
+
+			t.Logf("Label %s", p.Label)
+			t.Logf("Description %s", p.Description)
+			t.Log(p)
+			t.Logf("Delete probe")
+			for _, i := range p.Stages {
+				t.Logf("Stage name %s", i["name"])
+			}
+			err = bpClient.DeleteIbaProbe(ctx, probeId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("Delete Probe again, this should fail")
+			err = bpClient.DeleteIbaProbe(ctx, probeId)
+			if err == nil {
+				t.Fatal("Probe Deletion should have failed")
+			} else {
+				t.Log(err)
+			}
+		}
 		probeStr := `{
-  "label": "Bandwidth Utilization",
+  "label": "Test Probe",
   "description": "The probe calculates interfaces bandwidth",
   "processors": [
     {
@@ -413,7 +413,20 @@ func TestIbaProbes(t *testing.T) {
     }
   ]
 }`
-		_, err = bpClient.CreateIbaProbe(ctx, json.RawMessage(probeStr))
-		log.Println(err)
+		log.Println("Create Probe With Json")
+		id, err := bpClient.CreateIbaProbe(ctx, json.RawMessage(probeStr))
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Println("Test Get Probe")
+		p, err := bpClient.GetIbaProbe(ctx, id)
+		if p.Label != "Test Probe" {
+			t.Fatalf("Error : Expected Test Probe, got %s", p.Label)
+		}
+		log.Println("Delete the probe")
+		err = bpClient.DeleteIbaProbe(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 }
