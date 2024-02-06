@@ -69,6 +69,12 @@ func TestIbaProbes(t *testing.T) {
 			t.Logf("Label %s", p.Label)
 			t.Logf("Description %s", p.Description)
 			t.Log(p)
+			t.Log("Get IBA probe state")
+			ps, err := bpClient.GetIbaProbeState(ctx, probeId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Printf("Probe state is %s", ps.State)
 			t.Logf("Delete probe")
 			for _, i := range p.Stages {
 				t.Logf("Stage name %s", i["name"])
@@ -413,17 +419,22 @@ func TestIbaProbes(t *testing.T) {
     }
   ]
 }`
-		log.Println("Create Probe With Json")
-		id, err := bpClient.CreateIbaProbe(ctx, json.RawMessage(probeStr))
+		t.Log("Create Probe With Json")
+		id, err := bpClient.CreateIbaProbeFromJson(ctx, json.RawMessage(probeStr))
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Println("Test Get Probe")
+		t.Log("Test Get Probe")
 		p, err := bpClient.GetIbaProbe(ctx, id)
 		if p.Label != "Test Probe" {
 			t.Fatalf("Error : Expected Test Probe, got %s", p.Label)
 		}
-		log.Println("Delete the probe")
+		ps, err := bpClient.GetIbaProbeState(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("Probe state is %s", ps.State)
+		t.Log("Delete the probe")
 		err = bpClient.DeleteIbaProbe(ctx, id)
 		if err != nil {
 			t.Fatal(err)

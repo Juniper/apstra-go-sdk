@@ -16,8 +16,19 @@ const (
 type IbaProbe struct {
 	Id              ObjectId                 `json:"id"`
 	Label           string                   `json:"label"`
+	Tags            []string                 `json:"tags"`
+	Stages          []map[string]interface{} `json:"stages"`
+	Processors      []map[string]interface{} `json:"processors"`
+	PredefinedProbe string                   `json:"predefined_probe"`
+	Description     string                   `json:"description"`
+}
+
+type IbaProbeState struct {
+	Id              ObjectId                 `json:"id"`
+	Label           string                   `json:"label"`
 	TaskError       string                   `json:"task_error"`
 	Stages          []map[string]interface{} `json:"stages"`
+	Processors      []map[string]interface{} `json:"processors"`
 	AnomalyCount    int                      `json:"anomaly_count"`
 	Tags            []string                 `json:"tags"`
 	Disabled        bool                     `json:"disabled"`
@@ -27,6 +38,18 @@ type IbaProbe struct {
 	IbaUnit         string                   `json:"iba_unit"`
 	PredefinedProbe string                   `json:"predefined_probe"`
 	Description     string                   `json:"description"`
+}
+
+func (o *IbaProbeState) IbaProbe() IbaProbe {
+	return IbaProbe{
+		Id:              o.Id,
+		Label:           o.Label,
+		Tags:            o.Tags,
+		Stages:          o.Stages,
+		Processors:      o.Processors,
+		PredefinedProbe: o.PredefinedProbe,
+		Description:     o.Description,
+	}
 }
 
 func (o *Client) getAllIbaProbes(ctx context.Context, bpId ObjectId) ([]IbaProbe, error) {
@@ -87,6 +110,20 @@ func (o *Client) getIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId) (*
 	return response, nil
 }
 
+func (o *Client) getIbaProbeState(ctx context.Context, bpId ObjectId, id ObjectId) (*IbaProbeState, error) {
+	response := &IbaProbeState{}
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlIbaProbesById, bpId, id),
+		apiResponse: response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+	return response, nil
+}
+
 func (o *Client) deleteIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId) error {
 	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
@@ -94,7 +131,8 @@ func (o *Client) deleteIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId)
 	}))
 }
 
-func (o *Client) createIbaProbe(ctx context.Context, bpId ObjectId, probeJson json.RawMessage) (ObjectId, error) {
+func (o *Client) createIbaProbeFromJson(ctx context.Context, bpId ObjectId, probeJson json.RawMessage) (ObjectId,
+	error) {
 	response := objectIdResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
