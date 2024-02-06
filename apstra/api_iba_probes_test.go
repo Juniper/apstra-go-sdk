@@ -426,6 +426,9 @@ func TestIbaProbes(t *testing.T) {
 		}
 		t.Log("Test Get Probe")
 		p, err := bpClient.GetIbaProbe(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if p.Label != "Test Probe" {
 			t.Fatalf("Error : Expected Test Probe, got %s", p.Label)
 		}

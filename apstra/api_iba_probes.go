@@ -143,5 +143,5 @@ func (o *Client) createIbaProbeFromJson(ctx context.Context, bpId ObjectId, prob
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
-	return response.Id, err
+	return response.Id, nil
 }
