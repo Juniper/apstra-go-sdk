@@ -798,7 +798,6 @@ func (o *TwoStageL3ClosClient) GetIbaProbe(ctx context.Context, id ObjectId) (*I
 }
 
 // GetIbaProbeState returns the State of the IBA Probe that matches the ID
-
 func (o *TwoStageL3ClosClient) GetIbaProbeState(ctx context.Context, id ObjectId) (*IbaProbeState, error) {
 	probe, err := o.client.getIbaProbeState(ctx, o.blueprintId, id)
 	if err != nil {
