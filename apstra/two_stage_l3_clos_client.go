@@ -812,9 +812,8 @@ func (o *TwoStageL3ClosClient) DeleteIbaProbe(ctx context.Context, id ObjectId) 
 	return o.client.deleteIbaProbe(ctx, o.blueprintId, id)
 }
 
-// CreateIbaProbe creates an IBA Probe
-func (o *TwoStageL3ClosClient) CreateIbaProbeFromJson(ctx context.Context, probeJson json.RawMessage) (ObjectId,
-	error) {
+// CreateIbaProbeFromJson creates an IBA Probe
+func (o *TwoStageL3ClosClient) CreateIbaProbeFromJson(ctx context.Context, probeJson json.RawMessage) (ObjectId, error) {
 	return o.client.createIbaProbeFromJson(ctx, o.blueprintId, probeJson)
 }
 
