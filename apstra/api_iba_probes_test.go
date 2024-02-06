@@ -65,6 +65,9 @@ func TestIbaProbes(t *testing.T) {
 			t.Logf("Got back Probe Id %s \n Now GET it.", probeId)
 
 			p, err := bpClient.GetIbaProbe(ctx, probeId)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			t.Logf("Label %s", p.Label)
 			t.Logf("Description %s", p.Description)
@@ -75,10 +78,10 @@ func TestIbaProbes(t *testing.T) {
 				t.Fatal(err)
 			}
 			log.Printf("Probe state is %s", ps.State)
-			t.Logf("Delete probe")
 			for _, i := range p.Stages {
 				t.Logf("Stage name %s", i["name"])
 			}
+			t.Logf("Delete probe")
 			err = bpClient.DeleteIbaProbe(ctx, probeId)
 			if err != nil {
 				t.Fatal(err)
