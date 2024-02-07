@@ -20,8 +20,8 @@ func TestIbaProbes(t *testing.T) {
 		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, _ := testBlueprintA(ctx, t, client.client)
-		// defer bpDelete(ctx)
+		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
+		defer bpDelete(ctx)
 		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 		if err != nil {
 			t.Fatal(err)
@@ -65,14 +65,23 @@ func TestIbaProbes(t *testing.T) {
 			t.Logf("Got back Probe Id %s \n Now GET it.", probeId)
 
 			p, err := bpClient.GetIbaProbe(ctx, probeId)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			t.Logf("Label %s", p.Label)
 			t.Logf("Description %s", p.Description)
 			t.Log(p)
-			t.Logf("Delete probe")
+			t.Log("Get IBA probe state")
+			ps, err := bpClient.GetIbaProbeState(ctx, probeId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Printf("Probe state is %s", ps.State)
 			for _, i := range p.Stages {
 				t.Logf("Stage name %s", i["name"])
 			}
+			t.Logf("Delete probe")
 			err = bpClient.DeleteIbaProbe(ctx, probeId)
 			if err != nil {
 				t.Fatal(err)
@@ -84,6 +93,357 @@ func TestIbaProbes(t *testing.T) {
 			} else {
 				t.Log(err)
 			}
+		}
+		probeStr := `{
+  "label": "Test Probe",
+  "description": "The probe calculates interfaces bandwidth",
+  "processors": [
+    {
+      "name": "Egress traffic",
+      "type": "if_counter",
+      "properties": {
+        "description": "str(interface.description or '')",
+        "counter_type": "tx_bps",
+        "graph_query": "node('system', name='system', system_type='switch', deploy_mode='deploy').out('hosted_interfaces').node('interface', if_type=is_in(['ip','ethernet', 'port_channel']), name='interface').out('link').node('link', name='link')",
+        "query_group_by": [],
+        "query_tag_filter": {
+          "filter": {},
+          "operation": "and"
+        },
+        "interface": "interface.if_name",
+        "system_id": "system.system_id",
+        "group": "str('mlag_peer' if link.role in ['leaf_peer_link', 'leaf_l3_peer_link'] else ('leaf_access' if 'access' in link.role else link.role))",
+        "query_expansion": {},
+        "enable_streaming": false
+      },
+      "inputs": {},
+      "outputs": {
+        "out": "egress_traffic"
+      }
+    },
+    {
+      "name": "Ingress traffic",
+      "type": "if_counter",
+      "properties": {
+        "description": "str(interface.description or '')",
+        "counter_type": "rx_bps",
+        "graph_query": "node('system', name='system', system_type='switch', deploy_mode='deploy').out('hosted_interfaces').node('interface', if_type=is_in(['ip','ethernet', 'port_channel']), name='interface').out('link').node('link', name='link')",
+        "query_group_by": [],
+        "query_tag_filter": {
+          "filter": {},
+          "operation": "and"
+        },
+        "interface": "interface.if_name",
+        "system_id": "system.system_id",
+        "group": "str('mlag_peer' if link.role in ['leaf_peer_link', 'leaf_l3_peer_link'] else ('leaf_access' if 'access' in link.role else link.role))",
+        "query_expansion": {},
+        "enable_streaming": false
+      },
+      "inputs": {},
+      "outputs": {
+        "out": "ingress_traffic"
+      }
+    },
+    {
+      "name": "Egress traffic first summary",
+      "type": "periodic_average",
+      "properties": {
+        "graph_query": [],
+        "period": 120,
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "egress_traffic",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "egress_traffic_first_summary"
+      }
+    },
+    {
+      "name": "Ingress traffic first summary",
+      "type": "periodic_average",
+      "properties": {
+        "graph_query": [],
+        "period": 120,
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "ingress_traffic",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "ingress_traffic_first_summary"
+      }
+    },
+    {
+      "name": "Bucketed egress traffic",
+      "type": "sum",
+      "properties": {
+        "group_by": [
+          "group"
+        ],
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "egress_traffic_first_summary",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "egress_by_group_traffic"
+      }
+    },
+    {
+      "name": "Bucketed ingress traffic",
+      "type": "sum",
+      "properties": {
+        "group_by": [
+          "group"
+        ],
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "ingress_traffic_first_summary",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "ingress_by_group_traffic"
+      }
+    },
+    {
+      "name": "Egress traffic second summary",
+      "type": "periodic_average",
+      "properties": {
+        "graph_query": [],
+        "period": 3600,
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "egress_traffic_first_summary",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "egress_traffic_second_summary"
+      }
+    },
+    {
+      "name": "Ingress traffic second summary",
+      "type": "periodic_average",
+      "properties": {
+        "graph_query": [],
+        "period": 3600,
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "ingress_traffic_first_summary",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "ingress_traffic_second_summary"
+      }
+    },
+    {
+      "name": "Egress by group traffic first summary",
+      "type": "periodic_average",
+      "properties": {
+        "graph_query": [],
+        "period": 120,
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "egress_by_group_traffic",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "egress_by_group_traffic_first_summary"
+      }
+    },
+    {
+      "name": "Ingress by group traffic first summary",
+      "type": "periodic_average",
+      "properties": {
+        "graph_query": [],
+        "period": 120,
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "ingress_by_group_traffic",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "ingress_by_group_traffic_first_summary"
+      }
+    },
+    {
+      "name": "Egress by group traffic second summary",
+      "type": "periodic_average",
+      "properties": {
+        "graph_query": [],
+        "period": 3600,
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "egress_by_group_traffic_first_summary",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "egress_by_group_traffic_second_summary"
+      }
+    },
+    {
+      "name": "Ingress by group traffic second summary",
+      "type": "periodic_average",
+      "properties": {
+        "graph_query": [],
+        "period": 3600,
+        "enable_streaming": false
+      },
+      "inputs": {
+        "in": {
+          "stage": "ingress_by_group_traffic_first_summary",
+          "column": "value"
+        }
+      },
+      "outputs": {
+        "out": "ingress_by_group_traffic_second_summary"
+      }
+    }
+  ],
+  "stages": [
+    {
+      "name": "ingress_by_group_traffic",
+      "retention_duration": 86400,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "ingress_traffic_second_summary",
+      "enable_metric_logging": true,
+      "retention_duration": 2592000,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "egress_traffic_first_summary",
+      "enable_metric_logging": true,
+      "retention_duration": 3600,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "ingress_by_group_traffic_second_summary",
+      "enable_metric_logging": true,
+      "retention_duration": 2592000,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "egress_by_group_traffic_second_summary",
+      "enable_metric_logging": true,
+      "retention_duration": 2592000,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "egress_traffic",
+      "retention_duration": 86400,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "ingress_traffic_first_summary",
+      "enable_metric_logging": true,
+      "retention_duration": 3600,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "egress_traffic_second_summary",
+      "enable_metric_logging": true,
+      "retention_duration": 2592000,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "egress_by_group_traffic_first_summary",
+      "enable_metric_logging": true,
+      "retention_duration": 3600,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "egress_by_group_traffic",
+      "retention_duration": 86400,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "ingress_traffic",
+      "retention_duration": 86400,
+      "units": {
+        "value": "bps"
+      }
+    },
+    {
+      "name": "ingress_by_group_traffic_first_summary",
+      "enable_metric_logging": true,
+      "retention_duration": 3600,
+      "units": {
+        "value": "bps"
+      }
+    }
+  ]
+}`
+		t.Log("Create Probe With Json")
+		id, err := bpClient.CreateIbaProbeFromJson(ctx, json.RawMessage(probeStr))
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log("Test Get Probe")
+		p, err := bpClient.GetIbaProbe(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if p.Label != "Test Probe" {
+			t.Fatalf("Error : Expected Test Probe, got %s", p.Label)
+		}
+		ps, err := bpClient.GetIbaProbeState(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("Probe state is %s", ps.State)
+		t.Log("Delete the probe")
+		err = bpClient.DeleteIbaProbe(ctx, id)
+		if err != nil {
+			t.Fatal(err)
 		}
 	}
 }
