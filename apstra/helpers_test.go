@@ -348,6 +348,41 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, bpDeleteFunc
 }
 
+func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignTwoStageL3Clos,
+		Label:      randString(5, "hex"),
+		TemplateId: "L2_Virtual_EVPN",
+		FabricAddressingPolicy: &BlueprintRequestFabricAddressingPolicy{
+			SpineSuperspineLinks: AddressingSchemeIp46,
+			SpineLeafLinks:       AddressingSchemeIp46,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpDeleteFunc := func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	}
+
+	if client.apiVersion != "4.1.0" {
+		youKnowIt := true
+		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: &youKnowIt})
+		if err != nil {
+			defer bpDeleteFunc(ctx)
+			t.Fatal(err)
+		}
+	}
+
+	return bpClient, bpDeleteFunc
+}
+
 func TestItemInSlice(t *testing.T) {
 	type testCase struct {
 		item     any

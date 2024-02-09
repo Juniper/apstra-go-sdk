@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	apiUrlIbaProbes       = "/api/blueprints/%s/probes"
+	apiUrlIbaProbes       = apiUrlBlueprintById + apiUrlPathDelim + "probes"
 	apiUrlIbaProbesPrefix = apiUrlIbaProbes + apiUrlPathDelim
 	apiUrlIbaProbesById   = apiUrlIbaProbesPrefix + "%s"
 )
