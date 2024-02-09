@@ -1,8 +1,10 @@
 package apstra
 
 import (
+	"context"
 	"fmt"
 	"github.com/orsinium-labs/enum"
+	"net/http"
 )
 
 const (
@@ -178,4 +180,31 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 		MaxEvpnRoutes:                                 o.MaxEvpnRoutes,
 		AntiAffinityPolicy:                            antiAffinityPolicy,
 	}, nil
+}
+
+func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFabricSettings) error {
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintFabricSettings, o.blueprintId),
+		apiInput: in,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
+}
+
+func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*rawFabricSettings, error) {
+	var response rawFabricSettings
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintFabricSettings, o.blueprintId),
+		apiResponse: &response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return &response, nil
 }
