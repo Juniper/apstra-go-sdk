@@ -990,3 +990,18 @@ func (o *TwoStageL3ClosClient) RefreshNodeIdsByType(ctx context.Context, nt Node
 
 	return o.nodeIdsByType[nt], nil
 }
+
+// SetFabricSettings sets the specified fabric settings
+func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
+	return o.setFabricSettings(ctx, in.raw())
+}
+
+// GetFabricSettings gets the fabric settings
+func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
+	raw, err := o.getFabricSettings(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
+}
