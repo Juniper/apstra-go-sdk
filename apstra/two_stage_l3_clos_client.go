@@ -931,3 +931,18 @@ func (o *TwoStageL3ClosClient) UpdateRemoteGateway(ctx context.Context, id Objec
 func (o *TwoStageL3ClosClient) DeleteRemoteGateway(ctx context.Context, id ObjectId) error {
 	return o.deleteRemoteGateway(ctx, id)
 }
+
+// SetFabricSettings sets the specified fabric settings
+func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
+	return o.setFabricSettings(ctx, in.raw())
+}
+
+// GetFabricSettings gets the fabric settings
+func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
+	raw, err := o.getFabricSettings(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
+}
