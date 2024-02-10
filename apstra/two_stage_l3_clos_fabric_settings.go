@@ -177,7 +177,7 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 		MaxMlagRoutes:                                 o.MaxMlagRoutes,
 		JunosExOverlayEcmpDisabled:                    junosExOverlayEcmp.Value == FeatureSwitchEnumDisabled.Value,
 		DefaultSviL3Mtu:                               o.DefaultSviL3Mtu,
-		JunosEvpnMaxNexthopAndInterfaceNumberDisabled: junosEvpnMaxNexthopAndInterfaceNumber.Value == FeatureSwitchEnumEnabled.Value,
+		JunosEvpnMaxNexthopAndInterfaceNumberDisabled: junosEvpnMaxNexthopAndInterfaceNumber.Value == FeatureSwitchEnumDisabled.Value,
 		FabricL3Mtu:                                   o.FabricL3Mtu,
 		Ipv6Enabled:                                   o.Ipv6Enabled,
 		OverlayControlProtocol:                        ocp,
