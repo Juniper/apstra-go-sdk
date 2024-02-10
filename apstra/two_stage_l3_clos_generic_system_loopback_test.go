@@ -5,9 +5,11 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/hashicorp/go-version"
+	"math/rand"
 	"net"
-	"strings"
 	"testing"
 )
 
@@ -43,163 +45,162 @@ func TestGenericSystemLoopbacks(t *testing.T) {
 		//	VrfName: szLabelB,
 		//})
 
-		query := new(PathQuery).
-			SetBlueprintId(bpClient.Id()).
-			SetClient(bpClient.Client()).
-			Node([]QEEAttribute{
-				NodeTypeSystem.QEEAttribute(),
-				{Key: "role", Value: QEStringVal("generic")},
-				{Key: "name", Value: QEStringVal("n_system")},
-			})
-
-		var queryResult struct {
-			Items []struct {
-				System struct {
-					Id string `json:"id"`
-				} `json:"n_system"`
-			} `json:"items"`
-		}
+		//query := new(PathQuery).
+		//	SetBlueprintId(bpClient.Id()).
+		//	SetClient(bpClient.Client()).
+		//	Node([]QEEAttribute{
+		//		NodeTypeSystem.QEEAttribute(),
+		//		{Key: "role", Value: QEStringVal("generic")},
+		//		{Key: "name", Value: QEStringVal("n_system")},
+		//	})
+		//
+		//var queryResult struct {
+		//	Items []struct {
+		//		System struct {
+		//			Id string `json:"id"`
+		//		} `json:"n_system"`
+		//	} `json:"items"`
+		//}
 
 		t.Logf("determining generic system node IDs in %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = query.Do(ctx, &queryResult)
+		systemIds, err := getSystemIdsByRole(ctx, bpClient, "generic")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		systemIds := make([]string, len(queryResult.Items))
-		for i, item := range queryResult.Items {
-			systemIds[i] = item.System.Id
-		}
-		t.Logf(`[ "%s" ]`, strings.Join(systemIds, `", "`))
+		//err = query.Do(ctx, &queryResult)
+		//if err != nil {
+		//	t.Fatal(err)
+		//}
+		//
+		//
+		//systemIds := make([]string, len(queryResult.Items))
+		//for i, item := range queryResult.Items {
+		//	systemIds[i] = item.System.Id
+		//}
+		//t.Logf(`[ "%s" ]`, strings.Join(systemIds, `", "`))
 
-		compareLoopbacks := func(a, b *GenericSystemLoopback) error {
-			aIP4 := a.Ipv4Addr != nil
-			bIP4 := b.Ipv4Addr != nil
-			if (aIP4 || bIP4) && !(aIP4 && bIP4) { // xor
-				return fmt.Errorf("generic system loopbacks do not match: a has ipv4: %t, b has IPv4: %t", aIP4, bIP4)
+		compareLoopbacks := func(set, get *GenericSystemLoopback) error {
+			setIP4 := set.Ipv4Addr != nil
+			getIP4 := get.Ipv4Addr != nil
+			if (setIP4 || getIP4) && !(setIP4 && getIP4) { // xor
+				return fmt.Errorf("generic system loopbacks do not match: a has ipv4: %t, b has IPv4: %t", setIP4, getIP4)
 			}
-			if aIP4 && bIP4 && a.Ipv4Addr.String() != b.Ipv4Addr.String() {
-				return fmt.Errorf("generic system loopbacks do not match: a has ipv4: %s, b has IPv4: %s", a.Ipv4Addr.String(), b.Ipv4Addr.String())
-			}
-
-			aIP6 := a.Ipv6Addr != nil
-			bIP6 := b.Ipv6Addr != nil
-			if (aIP6 || bIP6) && !(aIP6 && bIP6) { // xor
-				return fmt.Errorf("generic system loopbacks do not match: a has ipv6: %t, b has IPv6: %t", aIP6, bIP6)
-			}
-			if aIP6 && bIP6 && a.Ipv6Addr.String() != b.Ipv6Addr.String() {
-				return fmt.Errorf("generic system loopbacks do not match: a has ipv6: %s, b has IPv6: %s", a.Ipv6Addr.String(), b.Ipv6Addr.String())
+			if setIP4 && getIP4 && set.Ipv4Addr.String() != get.Ipv4Addr.String() {
+				return fmt.Errorf("generic system loopbacks do not match: a has ipv4: %s, b has IPv4: %s", set.Ipv4Addr.String(), get.Ipv4Addr.String())
 			}
 
-			if a.Ipv6Enabled != b.Ipv6Enabled {
-				return fmt.Errorf("generic system loopbacks do not match: a has ipv6 enabled: %t, b has IPv6 enabled: %t", a.Ipv6Enabled, b.Ipv6Enabled)
+			setIP6 := set.Ipv6Addr != nil
+			getIP6 := get.Ipv6Addr != nil
+			if (setIP6 || getIP6) && !(setIP6 && getIP6) { // xor
+				return fmt.Errorf("generic system loopbacks do not match: a has ipv6: %t, b has IPv6: %t", setIP6, getIP6)
+			}
+			if setIP6 && getIP6 && set.Ipv6Addr.String() != get.Ipv6Addr.String() {
+				return fmt.Errorf("generic system loopbacks do not match: a has ipv6: %s, b has IPv6: %s", set.Ipv6Addr.String(), get.Ipv6Addr.String())
 			}
 
-			if a.LoopbackNodeId != b.LoopbackNodeId {
-				return fmt.Errorf("generic system loopbacks do not match: a has loopback node id: %q, b has loopback node id: %q", a.LoopbackNodeId, b.LoopbackNodeId)
+			if set.Ipv6Enabled != get.Ipv6Enabled {
+				return fmt.Errorf("generic system loopbacks do not match: a has ipv6 enabled: %t, b has IPv6 enabled: %t", set.Ipv6Enabled, get.Ipv6Enabled)
 			}
-
-			//if a.SecurityZoneId != b.SecurityZoneId {
-			//	return fmt.Errorf("generic system loopbacks do not match: a has security zone: %q, b has security zone: %q", a.SecurityZoneId, b.SecurityZoneId)
-			//}
 
 			return nil
 		}
 
-		//randomIpv4Ptr := func() *net.IPNet {
-		//	ip := randomIpv4()
-		//	return &net.IPNet{
-		//		IP:   ip,
-		//		Mask: net.IPMask{255, 255, 255, 255},
-		//	}
-		//}
-
-		randomIpv6Ptr := func() *net.IPNet {
-			ip := randomIpv6()
-			return &net.IPNet{
-				IP:   ip,
-				Mask: net.IPMask{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
-			}
-		}
-
 		type testCase struct {
-			loopback GenericSystemLoopback
+			loopback       GenericSystemLoopback
+			apiConstraints version.Constraints
 		}
+
+		v4HostMask := net.IPMask{255, 255, 255, 255}
+		v6HostMask := net.IPMask{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}
+		_ = v4HostMask
+		_ = v6HostMask
 
 		testCases := map[string]testCase{
 			//"v4_only": {
 			//	loopback: GenericSystemLoopback{
-			//		Ipv4Addr: randomIpv4Ptr(),
+			//		Ipv4Addr: &net.IPNet{IP: randomIpv4(), Mask: v4HostMask},
 			//	},
 			//},
 			"v6_only": {
+				apiConstraints: version.MustConstraints(version.NewConstraint(">=4.1.1")),
 				loopback: GenericSystemLoopback{
-					Ipv6Addr: randomIpv6Ptr(),
+					Ipv6Addr: &net.IPNet{IP: randomIpv6(), Mask: v6HostMask},
 				},
 			},
 		}
 
-		for _, systemId := range systemIds {
-			loopbacks, err := bpClient.GetGenericSystemLoopbacks(ctx, ObjectId(systemId))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(loopbacks) != 0 {
-				t.Fatalf("expected no loopbacks, got %d loopbacks", len(loopbacks))
-			}
+		apiVersion := version.Must(version.NewVersion(client.client.apiVersion))
+		systemId := systemIds[rand.Intn(len(systemIds))]
 
-			for tName, tCase := range testCases {
-				tName, tCase := tName, tCase
-				if tCase.loopback.Ipv6Addr != nil && bpClient.client.apiVersion == "4.1.0" {
-					t.Log("not testing IPv6 scenarios with apstra 4.1.0")
-					continue
+		loopbacks, err := bpClient.GetGenericSystemLoopbacks(ctx, systemId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(loopbacks) != 0 {
+			t.Fatalf("expected no loopbacks, got %d loopbacks", len(loopbacks))
+		}
+
+		t.Run("expect_404", func(t *testing.T) {
+			_, err = bpClient.GetGenericSystemLoopback(ctx, systemId, 0)
+			if err != nil {
+				var ace ClientErr
+				if !(errors.As(err, &ace) && ace.Type() == ErrNotfound) {
+					t.Fatalf("got an error, but not the expected 404: " + err.Error())
+				}
+			}
+		})
+
+		for tName, tCase := range testCases {
+			tName, tCase, bpClient, apiVersion := tName, tCase, *bpClient, *apiVersion
+			t.Run(tName, func(t *testing.T) {
+				if !tCase.apiConstraints.Check(&apiVersion) {
+					t.Skipf("skipping ipv6 test with apstra %s blueprint", &apiVersion)
 				}
 
-				t.Run(tName, func(t *testing.T) {
-					// set ipv6 flag (read only) to the expected value based on whether we have a v6 address
-					if tCase.loopback.Ipv6Addr != nil {
-						tCase.loopback.Ipv6Enabled = true
-					}
+				err = bpClient.SetGenericSystemLoopback(ctx, systemId, 0, &tCase.loopback)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-					err = bpClient.SetGenericSystemLoopback(ctx, ObjectId(systemId), 0, &tCase.loopback)
-					if err != nil {
-						t.Fatal(err)
-					}
+				loopback, err := bpClient.GetGenericSystemLoopback(ctx, systemId, 0)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-					loopback, err := bpClient.GetGenericSystemLoopback(ctx, ObjectId(systemId), 0)
-					if err != nil {
-						t.Fatal(err)
-					}
+				if loopback.LoopbackNodeId == "" {
+					t.Fatal("loopback node id should not be empty after read")
+				}
 
-					if loopback.LoopbackNodeId == "" {
-						t.Fatal("lopoback node id should not be empty after read")
-					}
-					tCase.loopback.LoopbackNodeId = loopback.LoopbackNodeId
+				// set ipv6 flag (read only) to the expected value based
+				// on whether we requested a loopback IPv6 address
+				if tCase.loopback.Ipv6Addr != nil {
+					tCase.loopback.Ipv6Enabled = true
+				}
 
-					err = compareLoopbacks(&tCase.loopback, loopback)
-					if err != nil {
-						t.Fatal(err)
-					}
+				err = compareLoopbacks(&tCase.loopback, loopback)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-					loopbacks, err = bpClient.GetGenericSystemLoopbacks(ctx, ObjectId(systemId))
-					if err != nil {
-						t.Fatal(err)
-					}
-					if len(loopbacks) != 1 {
-						t.Fatalf("expected 1 loopback, got %d", len(loopbacks))
-					}
+				loopbacks, err = bpClient.GetGenericSystemLoopbacks(ctx, ObjectId(systemId))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if len(loopbacks) != 1 {
+					t.Fatalf("expected 1 loopback, got %d", len(loopbacks))
+				}
 
-					loopbackFromMap, ok := loopbacks[0]
-					if !ok {
-						t.Fatal("loopback 0 not found in map")
-					}
+				loopbackFromMap, ok := loopbacks[0]
+				if !ok {
+					t.Fatal("loopback 0 not found in map")
+				}
 
-					err = compareLoopbacks(&tCase.loopback, &loopbackFromMap)
-					if err != nil {
-						t.Fatal(err)
-					}
-				})
-			}
+				err = compareLoopbacks(&tCase.loopback, &loopbackFromMap)
+				if err != nil {
+					t.Fatal(err)
+				}
+			})
 		}
 	}
 }

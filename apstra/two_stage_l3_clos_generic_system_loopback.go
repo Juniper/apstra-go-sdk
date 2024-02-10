@@ -19,7 +19,7 @@ type GenericSystemLoopback struct {
 	Ipv6Addr       *net.IPNet
 	Ipv6Enabled    bool
 	LoopbackNodeId ObjectId
-	//SecurityZoneId ObjectId
+	SecurityZoneId ObjectId
 }
 
 func (o GenericSystemLoopback) raw() *rawGenericSystemLoopback {
@@ -32,9 +32,9 @@ func (o GenericSystemLoopback) raw() *rawGenericSystemLoopback {
 	}
 
 	return &rawGenericSystemLoopback{
-		Ipv4Addr: ipv4Addr,
-		Ipv6Addr: ipv6Addr,
-		//SecurityZoneId: o.SecurityZoneId,
+		Ipv4Addr:       ipv4Addr,
+		Ipv6Addr:       ipv6Addr,
+		SecurityZoneId: o.SecurityZoneId,
 	}
 }
 
@@ -43,7 +43,7 @@ type rawGenericSystemLoopback struct {
 	Ipv6Addr       string   `json:"ipv6_addr,omitempty"`
 	Ipv6Enabled    *bool    `json:"ipv6_enabled"`
 	LoopbackNodeId ObjectId `json:"loopback_node_id,omitempty"`
-	//SecurityZoneId ObjectId `json:"sz_id,omitempty"`
+	SecurityZoneId ObjectId `json:"sz_id,omitempty"`
 }
 
 func (o rawGenericSystemLoopback) polish() (*GenericSystemLoopback, error) {
@@ -75,7 +75,7 @@ func (o rawGenericSystemLoopback) polish() (*GenericSystemLoopback, error) {
 		Ipv6Addr:       ipv6Addr,
 		Ipv6Enabled:    ipv6Enabled,
 		LoopbackNodeId: o.LoopbackNodeId,
-		//SecurityZoneId: o.SecurityZoneId,
+		SecurityZoneId: o.SecurityZoneId,
 	}, nil
 }
 

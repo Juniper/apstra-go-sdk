@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -348,16 +349,24 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, bpDeleteFunc
 }
 
+// testBlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient and a cleanup function
+// which deletes the test blueprint. If the client is newer that Apstra 4.1.0, the blueprint will use a dual-stack
+// fabric and have ipv6 enabled.
 func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpRequest := CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
-		FabricAddressingPolicy: &BlueprintRequestFabricAddressingPolicy{
+	}
+
+	if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion) {
+		bpRequest.FabricAddressingPolicy = &BlueprintRequestFabricAddressingPolicy{
 			SpineSuperspineLinks: AddressingSchemeIp46,
 			SpineLeafLinks:       AddressingSchemeIp46,
-		},
-	})
+		}
+	}
+
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &bpRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -371,12 +380,28 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		return client.DeleteBlueprint(ctx, bpId)
 	}
 
-	if client.apiVersion != "4.1.0" {
-		youKnowIt := true
-		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: &youKnowIt})
-		if err != nil {
-			defer bpDeleteFunc(ctx)
-			t.Fatal(err)
+	// set fabric addressing to enable IPv6
+	if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion) {
+		if client.apiVersion == "4.2.1" {
+			// todo - this is temporary
+			err = client.talkToApstra(ctx, &talkToApstraIn{
+				method: http.MethodPatch,
+				urlStr: fmt.Sprintf("/api/blueprints/%s/fabric-settings", bpId),
+				apiInput: struct {
+					Ipv6Enabled bool `json:"ipv6_enabled"`
+				}{
+					Ipv6Enabled: true,
+				},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+		} else {
+			err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: toPtr(true)})
+			if err != nil {
+				defer bpDeleteFunc(ctx)
+				t.Fatal(err)
+			}
 		}
 	}
 
@@ -650,4 +675,8 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 	}
 
 	return id, deleteFunc
+}
+
+func toPtr[A any](a A) *A {
+	return &a
 }
