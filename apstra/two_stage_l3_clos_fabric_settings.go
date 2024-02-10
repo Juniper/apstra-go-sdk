@@ -73,6 +73,11 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		junosEvpnMaxNexthopAndInterfaceNumber = FeatureSwitchEnumEnabled.String()
 	}
 
+	var antiAffinityPolicy *rawAntiAffinityPolicy
+	if o.AntiAffinityPolicy != nil {
+		antiAffinityPolicy = o.AntiAffinityPolicy.raw()
+	}
+
 	return &rawFabricSettings{
 		JunosEvpnDuplicateMacRecoveryTime:     o.JunosEvpnDuplicateMacRecoveryTime,
 		MaxExternalRoutes:                     o.MaxExternalRoutes,
@@ -91,7 +96,7 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		OverlayControlProtocol:                o.OverlayControlProtocol.String(),
 		ExternalRouterMtu:                     o.ExternalRouterMtu,
 		MaxEvpnRoutes:                         o.MaxEvpnRoutes,
-		AntiAffinity:                          o.AntiAffinityPolicy.raw(),
+		AntiAffinity:                          antiAffinityPolicy,
 	}
 }
 
