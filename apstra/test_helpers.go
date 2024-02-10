@@ -201,3 +201,7 @@ func sliceContainsAnyOf[A comparable](s, items []A) bool {
 	}
 	return false
 }
+
+func toPtr[A any](a A) *A {
+	return &a
+}

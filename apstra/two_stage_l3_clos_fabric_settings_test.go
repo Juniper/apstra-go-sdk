@@ -18,6 +18,34 @@ func TestSetGetFabricSettings(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	compareAntiAffinityPolicy := func(set, get AntiAffinityPolicy) error {
+		if set.Algorithm != get.Algorithm {
+			return fmt.Errorf("set AntiAffinityPolicy Algorithm %s got %s", set.Algorithm, get.Algorithm)
+		}
+
+		if set.MaxLinksPerPort != get.MaxLinksPerPort {
+			return fmt.Errorf("set AntiAffinityPolicy MaxLinksPerPort %d got %d", set.MaxLinksPerPort, get.MaxLinksPerPort)
+		}
+
+		if set.MaxLinksPerSlot != get.MaxLinksPerSlot {
+			return fmt.Errorf("set AntiAffinityPolicy MaxLinksPerSlot %d got %d", set.MaxLinksPerSlot, get.MaxLinksPerSlot)
+		}
+
+		if set.MaxPerSystemLinksPerPort != get.MaxPerSystemLinksPerPort {
+			return fmt.Errorf("set AntiAffinityPolicy MaxPerSystemLinksPerPort %d got %d", set.MaxPerSystemLinksPerPort, get.MaxPerSystemLinksPerPort)
+		}
+
+		if set.MaxPerSystemLinksPerSlot != get.MaxPerSystemLinksPerSlot {
+			return fmt.Errorf("set AntiAffinityPolicy MaxPerSystemLinksPerSlot %d got %d", set.MaxPerSystemLinksPerSlot, get.MaxPerSystemLinksPerSlot)
+		}
+
+		if set.Mode != get.Mode {
+			return fmt.Errorf("set AntiAffinityPolicy Mode %s got %s", set.Mode, get.Mode)
+		}
+
+		return nil
+	}
+
 	compareFabricSettings := func(set, get FabricSettings) error {
 		if set.JunosEvpnDuplicateMacRecoveryTime != nil &&
 			*set.JunosEvpnDuplicateMacRecoveryTime != *get.JunosEvpnDuplicateMacRecoveryTime {
@@ -32,6 +60,22 @@ func TestSetGetFabricSettings(t *testing.T) {
 			return fmt.Errorf("set EsiMacMsb %d got %d", *set.EsiMacMsb, *get.EsiMacMsb)
 		}
 
+		if set.JunosGracefulRestart != get.JunosGracefulRestart {
+			return fmt.Errorf("set JunosGracefulRestart %t got %t", set.JunosGracefulRestart, get.JunosGracefulRestart)
+		}
+
+		if set.OptimiseSzFootprint != get.OptimiseSzFootprint {
+			return fmt.Errorf("set OptimiseSzFootprint %t got %t", set.OptimiseSzFootprint, get.OptimiseSzFootprint)
+		}
+
+		if set.JunosEvpnRoutingInstanceVlanAware != get.JunosEvpnRoutingInstanceVlanAware {
+			return fmt.Errorf("set JunosEvpnRoutingInstanceVlanAware %t got %t", set.JunosEvpnRoutingInstanceVlanAware, get.JunosEvpnRoutingInstanceVlanAware)
+		}
+
+		if set.EvpnGenerateType5HostRoutes != get.EvpnGenerateType5HostRoutes {
+			return fmt.Errorf("set EvpnGenerateType5HostRoutes %t got %t", set.EvpnGenerateType5HostRoutes, get.EvpnGenerateType5HostRoutes)
+		}
+
 		if set.MaxFabricRoutes != nil && *set.MaxFabricRoutes != *get.MaxFabricRoutes {
 			return fmt.Errorf("set MaxFabricRoutes %d got %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
 		}
@@ -40,13 +84,30 @@ func TestSetGetFabricSettings(t *testing.T) {
 			return fmt.Errorf("set MaxMlagRoutes %d got %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
 		}
 
+		if set.JunosExOverlayEcmpDisabled != get.JunosEvpnRoutingInstanceVlanAware {
+			return fmt.Errorf("set JunosEvpnRoutingInstanceVlanAware %t got %t", set.JunosEvpnRoutingInstanceVlanAware, get.JunosEvpnRoutingInstanceVlanAware)
+		}
+
 		if set.DefaultSviL3Mtu != nil && *set.DefaultSviL3Mtu != *get.DefaultSviL3Mtu {
 			return fmt.Errorf("set DefaultSviL3Mtu  %d got %d", *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu)
+		}
+
+		if set.JunosEvpnMaxNexthopAndInterfaceNumberDisabled != get.JunosEvpnMaxNexthopAndInterfaceNumberDisabled {
+			return fmt.Errorf("set JunosEvpnMaxNexthopAndInterfaceNumberDisabled %t got %t", set.JunosEvpnMaxNexthopAndInterfaceNumberDisabled, get.JunosEvpnMaxNexthopAndInterfaceNumberDisabled)
 		}
 
 		if set.FabricL3Mtu != nil && *set.FabricL3Mtu != *get.FabricL3Mtu {
 			return fmt.Errorf("set FabricL3Mtu  %d got %d", *set.FabricL3Mtu, *get.FabricL3Mtu)
 		}
+
+		if set.Ipv6Enabled != get.Ipv6Enabled {
+			return fmt.Errorf("set Ipv6Enabled %t got %t", set.Ipv6Enabled, get.Ipv6Enabled)
+		}
+
+		// don't check overlay control protocol - it's an immutable value. attempts to set it have no effect.
+		//if set.OverlayControlProtocol != get.OverlayControlProtocol {
+		//	return fmt.Errorf("set OverlayControlProtocol %s got %s", set.OverlayControlProtocol, get.OverlayControlProtocol)
+		//}
 
 		if set.ExternalRouterMtu != nil && *set.ExternalRouterMtu != *get.ExternalRouterMtu {
 			return fmt.Errorf("set ExternalRouterMtu %d got %d", *set.ExternalRouterMtu, *get.ExternalRouterMtu)
@@ -54,6 +115,13 @@ func TestSetGetFabricSettings(t *testing.T) {
 
 		if set.MaxEvpnRoutes != nil && *set.MaxEvpnRoutes != *get.MaxEvpnRoutes {
 			return fmt.Errorf("set MaxEvpnRoutes %d got %d", *set.MaxEvpnRoutes, *get.MaxEvpnRoutes)
+		}
+
+		if set.AntiAffinityPolicy != nil {
+			err = compareAntiAffinityPolicy(*get.AntiAffinityPolicy, *set.AntiAffinityPolicy)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -64,41 +132,29 @@ func TestSetGetFabricSettings(t *testing.T) {
 		versionConstraint *version.Constraint
 	}
 
-	uint32ptr := func(i uint32) *uint32 {
-		return &i
-	}
-
-	uint16ptr := func(i uint16) *uint16 {
-		return &i
-	}
-
-	uint8ptr := func(i uint8) *uint8 {
-		return &i
-	}
-
 	testCases := map[string]testCase{
 		"zerovalues": {
 			fabricSettings: FabricSettings{},
 		},
 		"lotsofvalues": {
 			fabricSettings: FabricSettings{
-				JunosEvpnDuplicateMacRecoveryTime:             uint16ptr(16),
-				MaxExternalRoutes:                             uint32ptr(239832),
-				EsiMacMsb:                                     uint8ptr(32),
+				JunosEvpnDuplicateMacRecoveryTime:             toPtr(uint16(16)),
+				MaxExternalRoutes:                             toPtr(uint32(239832)),
+				EsiMacMsb:                                     toPtr(uint8(32)),
 				JunosGracefulRestart:                          false,
 				OptimiseSzFootprint:                           true,
 				JunosEvpnRoutingInstanceVlanAware:             true,
 				EvpnGenerateType5HostRoutes:                   true,
-				MaxFabricRoutes:                               uint32ptr(84231),
-				MaxMlagRoutes:                                 uint32ptr(76112),
+				MaxFabricRoutes:                               toPtr(uint32(84231)),
+				MaxMlagRoutes:                                 toPtr(uint32(76112)),
 				JunosExOverlayEcmpDisabled:                    false,
-				DefaultSviL3Mtu:                               uint16ptr(9100),
+				DefaultSviL3Mtu:                               toPtr(uint16(9100)),
 				JunosEvpnMaxNexthopAndInterfaceNumberDisabled: false,
-				FabricL3Mtu:                                   uint16ptr(9178),
+				FabricL3Mtu:                                   toPtr(uint16(9178)),
 				Ipv6Enabled:                                   true,
 				OverlayControlProtocol:                        OverlayControlProtocolEvpn,
-				ExternalRouterMtu:                             uint16ptr(9100),
-				MaxEvpnRoutes:                                 uint32ptr(92342),
+				ExternalRouterMtu:                             toPtr(uint16(9100)),
+				MaxEvpnRoutes:                                 toPtr(uint32(92342)),
 				AntiAffinityPolicy:                            nil,
 			},
 		},
@@ -120,9 +176,13 @@ func TestSetGetFabricSettings(t *testing.T) {
 			}
 
 			log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, apiVersion)
-			_, err := bpClient.GetFabricSettings(ctx)
+			fs, err := bpClient.GetFabricSettings(ctx)
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			if fs.OverlayControlProtocol != OverlayControlProtocolEvpn {
+				t.Fatalf("expected OverlayControlProtocol %q, got %q", OverlayControlProtocolEvpn, fs.OverlayControlProtocol)
 			}
 		})
 
