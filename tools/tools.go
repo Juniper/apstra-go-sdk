@@ -3,6 +3,6 @@
 package tools
 
 import (
-        // license compliance
-        _ "github.com/chrismarget-j/go-licenses"
+	// license compliance
+	_ "github.com/chrismarget-j/go-licenses"
 )
