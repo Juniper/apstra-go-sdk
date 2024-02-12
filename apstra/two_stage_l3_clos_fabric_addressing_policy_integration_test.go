@@ -54,7 +54,7 @@ func TestGetSetGetFAP(t *testing.T) {
 		ipv6Enabled := true
 
 		var fabricL3Mtu *uint16
-		if !fabricL3MtuForbidden().Includes(client.client.apiVersion) {
+		if !fabricL3MtuForbidden().Includes(client.client.apiVersion.String()) {
 			flm := uint16(rand.Intn(550)*2 + 8000) // even number 8000 - 9100
 			fabricL3Mtu = &flm
 		}

@@ -158,7 +158,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 			}
 		}()
 
-		apiVersion := version.Must(version.NewVersion(bpClient.client.apiVersion))
+		apiVersion := version.Must(version.NewVersion(bpClient.client.apiVersion.String()))
 
 		sz, err := bpClient.GetSecurityZoneByVrfName(ctx, "default")
 		if err != nil {

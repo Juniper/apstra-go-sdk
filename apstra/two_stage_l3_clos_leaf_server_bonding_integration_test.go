@@ -26,7 +26,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		clientVersion, err := version.NewVersion(client.client.apiVersion)
+		clientVersion, err := version.NewVersion(client.client.apiVersion.String())
 		if err != nil {
 			t.Fatal(err)
 		}

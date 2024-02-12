@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/go-version"
 	"log"
 	"net/http"
 	"net/url"
@@ -102,7 +103,7 @@ func (o ObjectId) String() string {
 
 // Client interacts with an AOS API server
 type Client struct {
-	apiVersion  string                  // as reported by apstra API
+	apiVersion  *version.Version        // as reported by apstra API
 	baseUrl     *url.URL                // everything up to the file path, generated based on env and cfg
 	cfg         ClientCfg               // passed by the caller when creating Client
 	id          ObjectId                // Apstra user ID
@@ -195,12 +196,13 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		ctx:         context.Background(),
 	}
 
-	v, err := c.getApiVersion(ctx)
+	// must call getApiVersion() before apiVersionSupported()
+	_, err = c.getApiVersion(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if !apstraSupportedApi().Includes(v) {
+	if !c.apiVersionSupported() {
 		msg := fmt.Sprintf("unsupported API version: '%s'", c.apiVersion)
 		c.logStr(0, msg)
 		if !c.cfg.Experimental {
@@ -213,16 +215,35 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 	return c, nil
 }
 
-func (o *Client) getApiVersion(ctx context.Context) (string, error) {
-	if o.apiVersion != "" {
+func (o *Client) getApiVersion(ctx context.Context) (*version.Version, error) {
+	if o.apiVersion != nil {
 		return o.apiVersion, nil
 	}
-	apiVersion, err := o.getVersionsApi(ctx)
+
+	apiResponse, err := o.getVersionsApi(ctx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	o.apiVersion = apiVersion.Version
+
+	o.apiVersion, err = version.NewVersion(apiResponse.Version)
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing API version string %q - %w", apiResponse.Version, err)
+	}
+
 	return o.apiVersion, nil
+}
+
+func (o *Client) apiVersionSupported() bool {
+	if o.apiVersion == nil {
+		panic("apiVersionSupported() invoked before o.apiVersion got populated")
+	}
+	for _, constraint := range supportedApiVersionsAsConstraints() {
+		if constraint.Check(o.apiVersion) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
@@ -382,7 +403,7 @@ func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPoolReq
 
 // GetIntegerPools returns Integer Pools configured on Apstra
 func (o *Client) GetIntegerPools(ctx context.Context) ([]IntPool, error) {
-	if integerPoolForbidden().Includes(o.apiVersion) {
+	if integerPoolForbidden().Includes(o.apiVersion.String()) {
 		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
 	}
 
@@ -405,7 +426,7 @@ func (o *Client) GetIntegerPools(ctx context.Context) ([]IntPool, error) {
 
 // GetIntegerPoolByName returns Integer Pools configured on Apstra
 func (o *Client) GetIntegerPoolByName(ctx context.Context, desired string) (*IntPool, error) {
-	if integerPoolForbidden().Includes(o.apiVersion) {
+	if integerPoolForbidden().Includes(o.apiVersion.String()) {
 		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
 	}
 
@@ -418,7 +439,7 @@ func (o *Client) GetIntegerPoolByName(ctx context.Context, desired string) (*Int
 
 // ListIntegerPoolIds returns Integer Pools configured on Apstra
 func (o *Client) ListIntegerPoolIds(ctx context.Context) ([]ObjectId, error) {
-	if integerPoolForbidden().Includes(o.apiVersion) {
+	if integerPoolForbidden().Includes(o.apiVersion.String()) {
 		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
 	}
 
@@ -427,7 +448,7 @@ func (o *Client) ListIntegerPoolIds(ctx context.Context) ([]ObjectId, error) {
 
 // CreateIntegerPool adds an Integer Pool to Apstra
 func (o *Client) CreateIntegerPool(ctx context.Context, in *IntPoolRequest) (ObjectId, error) {
-	if integerPoolForbidden().Includes(o.apiVersion) {
+	if integerPoolForbidden().Includes(o.apiVersion.String()) {
 		return "", fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
 	}
 
@@ -440,7 +461,7 @@ func (o *Client) CreateIntegerPool(ctx context.Context, in *IntPoolRequest) (Obj
 
 // GetIntegerPool returns, by ObjectId, a specific Integer Pool
 func (o *Client) GetIntegerPool(ctx context.Context, in ObjectId) (*IntPool, error) {
-	if integerPoolForbidden().Includes(o.apiVersion) {
+	if integerPoolForbidden().Includes(o.apiVersion.String()) {
 		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
 	}
 
@@ -453,7 +474,7 @@ func (o *Client) GetIntegerPool(ctx context.Context, in ObjectId) (*IntPool, err
 
 // DeleteIntegerPool deletes an Integer Pool, by ObjectId from Apstra
 func (o *Client) DeleteIntegerPool(ctx context.Context, in ObjectId) error {
-	if integerPoolForbidden().Includes(o.apiVersion) {
+	if integerPoolForbidden().Includes(o.apiVersion.String()) {
 		return fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
 	}
 
@@ -462,7 +483,7 @@ func (o *Client) DeleteIntegerPool(ctx context.Context, in ObjectId) error {
 
 // UpdateIntegerPool updates an Integer Pool by ObjectId with new Integer Pool config
 func (o *Client) UpdateIntegerPool(ctx context.Context, id ObjectId, cfg *IntPoolRequest) error {
-	if integerPoolForbidden().Includes(o.apiVersion) {
+	if integerPoolForbidden().Includes(o.apiVersion.String()) {
 		return fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
 	}
 
@@ -707,7 +728,7 @@ func (o *Client) GetAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, 
 func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlueprintFromTemplateRequest) (ObjectId, error) {
 	if req.FabricAddressingPolicy != nil &&
 		req.FabricAddressingPolicy.FabricL3Mtu != nil &&
-		fabricL3MtuForbidden().Includes(o.apiVersion) {
+		fabricL3MtuForbidden().Includes(o.apiVersion.String()) {
 		return "", errors.New(fabricL3MtuForbiddenError)
 	}
 	return o.createBlueprintFromTemplate(ctx, req.raw())
@@ -1375,7 +1396,7 @@ func (o *Client) Logf(msgLevel int, msg string, a ...any) {
 
 // ApiVersion returns the version string reported by the Apstra API
 func (o *Client) ApiVersion() string {
-	return o.apiVersion
+	return o.apiVersion.String()
 }
 
 // GetDeviceProfile returns device profile

@@ -956,7 +956,7 @@ func TestAllOverlayControlProtocols(t *testing.T) {
 
 func TestRackBasedTemplateMethods(t *testing.T) {
 	ctx := context.Background()
-	var apiVersion string
+	var apiVersionString string
 
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
@@ -1094,7 +1094,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 			return fmt.Errorf("asn allocation policy spine asn scheme mismatch expected %q got %q", req.AsnAllocationPolicy.SpineAsnScheme, rbt.AsnAllocationPolicy.SpineAsnScheme)
 		}
 
-		if !rackBasedTemplateFabricAddressingPolicyForbidden().Includes(apiVersion) {
+		if !rackBasedTemplateFabricAddressingPolicyForbidden().Includes(apiVersionString) {
 			err = compareFabricAddressingPolicy(*req.FabricAddressingPolicy, *rbt.FabricAddressingPolicy)
 			if err != nil {
 				return err
@@ -1164,7 +1164,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		apiVersion = client.client.apiVersion
+		apiVersionString = client.client.apiVersion.String()
 		for i, tc := range testCases {
 			log.Printf("testing CreateRackBasedTemplate(testCase[%d]) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
 			id, err := client.client.CreateRackBasedTemplate(ctx, &tc.request)

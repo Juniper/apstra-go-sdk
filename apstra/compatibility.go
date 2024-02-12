@@ -1,8 +1,17 @@
 package apstra
 
-import "strings"
+import (
+	"github.com/hashicorp/go-version"
+	"strings"
+)
 
 const (
+	apstra410 = "4.1.0"
+	apstra411 = "4.1.1"
+	apstra412 = "4.1.2"
+	apstra420 = "4.2.0"
+	apstra421 = "4.2.1"
+
 	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2, 4.2.0"
 	apstraSupportedVersionSep  = ","
 
@@ -24,6 +33,25 @@ const (
 	vnL3MtuForbiddenVersions = "4.1.0, 4.1.1, 4.1.2"
 	vnL3MtuForbiddenError    = "virtual network operations support L3 MTU option only with Apstra 4.2 and later"
 )
+
+// SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"
+func SupportedApiVersions() []string {
+	return []string{
+		apstra410,
+		apstra411,
+		apstra412,
+		apstra420,
+	}
+}
+
+func supportedApiVersionsAsConstraints() []version.Constraints {
+	s := SupportedApiVersions()
+	result := make([]version.Constraints, len(s))
+	for i, v := range s {
+		result[i] = version.MustConstraints(version.NewConstraint(v))
+	}
+	return result
+}
 
 func parseVersionList(s string) StringSliceWithIncludes {
 	result := strings.Split(s, apstraSupportedVersionSep)

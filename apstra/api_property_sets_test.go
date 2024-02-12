@@ -57,7 +57,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 	for clientName, client := range clients {
 		psData := testData // start with clean copy of psData in each loop
 
-		apiVersion, err := version.NewVersion(client.client.apiVersion)
+		apiVersionString, err := version.NewVersion(client.client.apiVersion.String())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -89,7 +89,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		}
 
 		// nested JSON only supported by Apstra 4.1.2 and later
-		if apiVersion.GreaterThanOrEqual(nestedJsonMinVer) {
+		if apiVersionString.GreaterThanOrEqual(nestedJsonMinVer) {
 			psData.Values = append(psData.Values[:len(psData.Values)-1], []byte(`,"inner_json":{"number":1, "string":"str1"}}`)...)
 		}
 
