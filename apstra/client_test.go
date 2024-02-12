@@ -143,7 +143,7 @@ func TestCRUDIntegerPools(t *testing.T) {
 
 	// remove clients which do not support integer pools
 	for clientName, client := range clients {
-		if integerPoolForbidden().Includes(client.client.apiVersion) {
+		if integerPoolForbidden().Includes(client.client.apiVersion.String()) {
 			delete(clients, clientName)
 		}
 	}

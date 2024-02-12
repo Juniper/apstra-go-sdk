@@ -59,11 +59,11 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 
 	for clientName, client := range clients {
 		var blueprintFabricAddressingPolicy *BlueprintRequestFabricAddressingPolicy
-		if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.client.apiVersion) {
+		if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.client.apiVersion.String()) {
 			// forbidden in the template means we can use this feature in the blueprint
 			blueprintFabricAddressingPolicy = &BlueprintRequestFabricAddressingPolicy{}
 
-			if !fabricL3MtuForbidden().Includes(client.client.apiVersion) {
+			if !fabricL3MtuForbidden().Includes(client.client.apiVersion.String()) {
 				fabricL3Mtu := uint16(rand.Intn(550)*2 + 8000) // even number 8000 - 9100
 				blueprintFabricAddressingPolicy.FabricL3Mtu = &fabricL3Mtu
 				blueprintFabricAddressingPolicy.SpineLeafLinks = AddressingSchemeIp46

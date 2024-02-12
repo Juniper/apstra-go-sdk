@@ -165,7 +165,7 @@ func (o *TwoStageL3ClosClient) SetInterfaceMapAssignments(ctx context.Context, a
 // request sent to the API.
 func (o *TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg *SecurityZoneData) (ObjectId, error) {
 	raw := cfg.raw()
-	if raw.JunosEvpnIrbMode == "" && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion) {
+	if raw.JunosEvpnIrbMode == "" && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion.String()) {
 		raw.JunosEvpnIrbMode = JunosEvpnIrbModeAsymmetric.Value
 	}
 
@@ -258,7 +258,7 @@ func (o *TwoStageL3ClosClient) GetAllSecurityZones(ctx context.Context) ([]Secur
 
 // UpdateSecurityZone replaces the configuration of zone zoneId with the supplied CreateSecurityZoneCfg
 func (o *TwoStageL3ClosClient) UpdateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *SecurityZoneData) error {
-	if cfg.JunosEvpnIrbMode == nil && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion) {
+	if cfg.JunosEvpnIrbMode == nil && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion.String()) {
 		return errors.New(securityZoneJunosEvpnIrbModeRequiredError)
 	}
 
@@ -313,7 +313,7 @@ func (o *TwoStageL3ClosClient) CreatePolicy(ctx context.Context, data *PolicyDat
 		}
 	}
 
-	if tcpStateQualifier && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion) {
+	if tcpStateQualifier && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion.String()) {
 		return "", ClientErr{
 			errType: ErrCompatibility,
 			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
@@ -338,7 +338,7 @@ func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, da
 		}
 	}
 
-	if tcpStateQualifier && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion) {
+	if tcpStateQualifier && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion.String()) {
 		return ClientErr{
 			errType: ErrCompatibility,
 			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
@@ -353,7 +353,7 @@ func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, da
 // on the list, etc... Use -1 for last on the list. The returned ObjectId
 // represents the new rule
 func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRuleData, position int, policyId ObjectId) (ObjectId, error) {
-	if rule.TcpStateQualifier != nil && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion) {
+	if rule.TcpStateQualifier != nil && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion.String()) {
 		return "", ClientErr{
 			errType: ErrCompatibility,
 			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
@@ -371,7 +371,7 @@ func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyI
 
 // CreateVirtualNetwork creates a new virtual network according to the supplied VirtualNetworkData
 func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, in *VirtualNetworkData) (ObjectId, error) {
-	if in.L3Mtu != nil && vnL3MtuForbidden().Includes(o.client.apiVersion) {
+	if in.L3Mtu != nil && vnL3MtuForbidden().Includes(o.client.apiVersion.String()) {
 		return "", errors.New(vnL3MtuForbiddenError)
 	}
 
@@ -426,7 +426,7 @@ func (o *TwoStageL3ClosClient) GetAllVirtualNetworks(ctx context.Context) (map[O
 // UpdateVirtualNetwork updates the virtual network specified by ID using the
 // VirtualNetworkData and HTTP method PUT.
 func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, in *VirtualNetworkData) error {
-	if in.L3Mtu != nil && vnL3MtuForbidden().Includes(o.client.apiVersion) {
+	if in.L3Mtu != nil && vnL3MtuForbidden().Includes(o.client.apiVersion.String()) {
 		return errors.New(vnL3MtuForbiddenError)
 	}
 

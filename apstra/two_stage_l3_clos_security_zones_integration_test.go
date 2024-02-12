@@ -63,7 +63,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 		if zone.Id != zoneId {
 			t.Fatalf("created vs. fetched zone IDs don't match: '%s' and '%s'", zone.Id, zoneId)
 		}
-		if securityZoneJunosEvpnIrbModeRequired().Includes(client.client.apiVersion) {
+		if securityZoneJunosEvpnIrbModeRequired().Includes(client.client.apiVersion.String()) {
 			if zone.Data.JunosEvpnIrbMode.Value != JunosEvpnIrbModeSymmetric.Value {
 				t.Fatal()
 			}
@@ -94,7 +94,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 		if zone.Data.VrfName != vrfName2 {
 			t.Fatal()
 		}
-		if securityZoneJunosEvpnIrbModeRequired().Includes(client.client.apiVersion) &&
+		if securityZoneJunosEvpnIrbModeRequired().Includes(client.client.apiVersion.String()) &&
 			zone.Data.JunosEvpnIrbMode.Value != JunosEvpnIrbModeAsymmetric.Value {
 			t.Fatal()
 		}

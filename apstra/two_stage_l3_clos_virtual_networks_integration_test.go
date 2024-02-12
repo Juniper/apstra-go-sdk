@@ -249,7 +249,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 		}
 
 		var l3Mtu *int
-		if !vnL3MtuForbidden().Includes(client.client.apiVersion) {
+		if !vnL3MtuForbidden().Includes(client.client.apiVersion.String()) {
 			x := 1280 + (2 * rand.Intn(3969)) // 1280 - 9216 even numbers only
 			l3Mtu = &x
 		}
@@ -304,7 +304,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 		newVlan := Vlan(100)
 		createData.ReservedVlanId = &newVlan
 		createData.Label = randString(10, "hex")
-		if !vnL3MtuForbidden().Includes(client.client.apiVersion) {
+		if !vnL3MtuForbidden().Includes(client.client.apiVersion.String()) {
 			x := 1280 + (2 * rand.Intn(3969)) // 1280 - 9216 even numbers only
 			createData.L3Mtu = &x
 		}
