@@ -934,15 +934,23 @@ func (o *TwoStageL3ClosClient) DeleteRemoteGateway(ctx context.Context, id Objec
 
 // SetFabricSettings sets the specified fabric settings
 func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
-	return o.setFabricSettings(ctx, in.raw())
+	switch {
+	case fabricSettingsApiOk.Check(o.client.apiVersion):
+		return o.setFabricSettings(ctx, in.raw())
+	}
+	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 }
 
 // GetFabricSettings gets the fabric settings
 func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
-	raw, err := o.getFabricSettings(ctx)
-	if err != nil {
-		return nil, err
-	}
+	switch {
+	case fabricSettingsApiOk.Check(o.client.apiVersion):
+		raw, err := o.getFabricSettings(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return raw.polish()
 
-	return raw.polish()
+	}
+	return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 }
