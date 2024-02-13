@@ -61,6 +61,7 @@ type TwoStageL3ClosClient struct {
 	blueprintId   ObjectId
 	Mutex         Mutex
 	blueprintType BlueprintType
+	nodeIdsByType map[NodeType][]ObjectId
 }
 
 // Id returns the client's Blueprint ID
@@ -930,4 +931,62 @@ func (o *TwoStageL3ClosClient) UpdateRemoteGateway(ctx context.Context, id Objec
 // DeleteRemoteGateway deletes the specified remote / external gateway
 func (o *TwoStageL3ClosClient) DeleteRemoteGateway(ctx context.Context, id ObjectId) error {
 	return o.deleteRemoteGateway(ctx, id)
+}
+
+func (o *TwoStageL3ClosClient) refreshNodeIdsByType(ctx context.Context, nt NodeType) error {
+	query := new(PathQuery).
+		SetBlueprintId(o.blueprintId).
+		SetClient(o.client).
+		Node([]QEEAttribute{
+			nt.QEEAttribute(),
+			{Key: "name", Value: QEStringVal("node")},
+		})
+
+	var queryResponse struct {
+		Items []struct {
+			Node struct {
+				Id ObjectId `json:"id"`
+			} `json:"node"`
+		} `json:"items"`
+	}
+
+	err := query.Do(ctx, &queryResponse)
+	if err != nil {
+		return fmt.Errorf("failed to query for %s nodes - %w", nt.String(), convertTtaeToAceWherePossible(err))
+	}
+
+	o.nodeIdsByType[nt] = make([]ObjectId, len(queryResponse.Items))
+	for i, item := range queryResponse.Items {
+		o.nodeIdsByType[nt][i] = item.Node.Id
+	}
+
+	return nil
+}
+
+func (o *TwoStageL3ClosClient) NodeIdsByType(ctx context.Context, nt NodeType) ([]ObjectId, error) {
+	o.client.lock(o.blueprintId.String() + "_" + "node_ids")
+	defer o.client.unlock(o.blueprintId.String() + "_" + "node_ids")
+
+	if nodeIds, ok := o.nodeIdsByType[nt]; ok {
+		return nodeIds, nil // already done!
+	}
+
+	err := o.refreshNodeIdsByType(ctx, nt)
+	if err != nil {
+		return nil, err
+	}
+
+	return o.nodeIdsByType[nt], nil
+}
+
+func (o *TwoStageL3ClosClient) RefreshNodeIdsByType(ctx context.Context, nt NodeType) ([]ObjectId, error) {
+	o.client.lock(o.blueprintId.String() + "_" + "node_ids")
+	defer o.client.unlock(o.blueprintId.String() + "_" + "node_ids")
+
+	err := o.refreshNodeIdsByType(ctx, nt)
+	if err != nil {
+		return nil, err
+	}
+
+	return o.nodeIdsByType[nt], nil
 }

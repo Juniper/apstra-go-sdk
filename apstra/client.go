@@ -138,9 +138,11 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
 			RefDesignTwoStageL3Clos.String(), blueprintId, bp.Design)
 	}
+
 	result := &TwoStageL3ClosClient{
-		client:      o,
-		blueprintId: blueprintId,
+		client:        o,
+		blueprintId:   blueprintId,
+		nodeIdsByType: make(map[NodeType][]ObjectId),
 	}
 	result.Mutex = &TwoStageL3ClosMutex{client: result}
 
