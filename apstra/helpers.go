@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"io"
 	"net"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -73,4 +74,26 @@ func uuid1AsObjectId() (ObjectId, error) {
 		return "", fmt.Errorf("failed while invoking uuid>NewUUID() - %w", err)
 	}
 	return ObjectId(uuid1.String()), nil
+}
+
+func toPtr[A any](a A) *A {
+	return &a
+}
+
+func stringerPtrToStringPtr(in fmt.Stringer) *string {
+	if in == nil {
+		return nil
+	}
+	// this interesting thing checks to make sure this thing is really nil...
+	if reflect.ValueOf(in).Kind() == reflect.Ptr && reflect.ValueOf(in).IsNil() {
+		return nil
+	}
+	return toPtr(in.String())
+}
+
+func featureSwitchEnumFromStringPtr(in *string) *FeatureSwitchEnum {
+	if in == nil {
+		return nil
+	}
+	return FeatureSwitchEnums.Parse(*in)
 }

@@ -34,6 +34,10 @@ const (
 	vnL3MtuForbiddenError    = "virtual network operations support L3 MTU option only with Apstra 4.2 and later"
 )
 
+var (
+	fabricSettingsApiOk = version.MustConstraints(version.NewConstraint(">=" + apstra421))
+)
+
 // SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"
 func SupportedApiVersions() []string {
 	return []string{
