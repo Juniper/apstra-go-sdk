@@ -17,18 +17,19 @@ const (
 type GenericSystemLoopback struct {
 	Ipv4Addr       *net.IPNet
 	Ipv6Addr       *net.IPNet
-	Ipv6Enabled    bool
 	LoopbackNodeId ObjectId
 	SecurityZoneId ObjectId
 }
 
 func (o GenericSystemLoopback) raw() *rawGenericSystemLoopback {
-	var ipv4Addr, ipv6Addr string
+	var ipv4Addr, ipv6Addr *string
 	if o.Ipv4Addr != nil {
-		ipv4Addr = o.Ipv4Addr.String()
+		s := o.Ipv4Addr.String()
+		ipv4Addr = &s
 	}
 	if o.Ipv6Addr != nil {
-		ipv6Addr = o.Ipv6Addr.String()
+		s := o.Ipv6Addr.String()
+		ipv6Addr = &s
 	}
 
 	return &rawGenericSystemLoopback{
@@ -39,9 +40,8 @@ func (o GenericSystemLoopback) raw() *rawGenericSystemLoopback {
 }
 
 type rawGenericSystemLoopback struct {
-	Ipv4Addr       string   `json:"ipv4_addr,omitempty"`
-	Ipv6Addr       string   `json:"ipv6_addr,omitempty"`
-	Ipv6Enabled    *bool    `json:"ipv6_enabled"`
+	Ipv4Addr       *string  `json:"ipv4_addr"` // do not omitempty - we must send `null` to remove the address
+	Ipv6Addr       *string  `json:"ipv6_addr"` // do not omitempty - we must send `null` to remove the address
 	LoopbackNodeId ObjectId `json:"loopback_node_id,omitempty"`
 	SecurityZoneId ObjectId `json:"sz_id,omitempty"`
 }
@@ -50,30 +50,24 @@ func (o rawGenericSystemLoopback) polish() (*GenericSystemLoopback, error) {
 	var err error
 
 	var ipv4Addr *net.IPNet
-	if o.Ipv4Addr != "" {
-		_, ipv4Addr, err = net.ParseCIDR(o.Ipv4Addr)
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed parsing loopback 'ipv4_addr' from API: %q - %w", o.Ipv4Addr, err)
+	if o.Ipv4Addr != nil {
+		_, ipv4Addr, err = net.ParseCIDR(*o.Ipv4Addr)
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing loopback 'ipv4_addr' from API: %q - %w", *o.Ipv4Addr, err)
+		}
 	}
 
 	var ipv6Addr *net.IPNet
-	if o.Ipv6Addr != "" {
-		_, ipv6Addr, err = net.ParseCIDR(o.Ipv6Addr)
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed parsing loopback 'ipv6_addr' from API: %q - %w", o.Ipv6Addr, err)
-	}
-
-	var ipv6Enabled bool
-	if o.Ipv6Enabled != nil {
-		ipv6Enabled = *o.Ipv6Enabled
+	if o.Ipv6Addr != nil {
+		_, ipv6Addr, err = net.ParseCIDR(*o.Ipv6Addr)
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing loopback 'ipv6_addr' from API: %q - %w", *o.Ipv6Addr, err)
+		}
 	}
 
 	return &GenericSystemLoopback{
 		Ipv4Addr:       ipv4Addr,
 		Ipv6Addr:       ipv6Addr,
-		Ipv6Enabled:    ipv6Enabled,
 		LoopbackNodeId: o.LoopbackNodeId,
 		SecurityZoneId: o.SecurityZoneId,
 	}, nil
