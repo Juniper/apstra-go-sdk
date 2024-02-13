@@ -163,6 +163,57 @@ func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFab
 	return nil
 }
 
+func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *FabricSettings) error {
+	if in.JunosEvpnDuplicateMacRecoveryTime != nil {
+		err := o.setJunosEvpnDuplicateMacRecoveryTime420(ctx, *in.JunosEvpnDuplicateMacRecoveryTime)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (o *TwoStageL3ClosClient) setJunosEvpnDuplicateMacRecoveryTime420(ctx context.Context, in uint16) error {
+	query := new(PathQuery).
+		SetBlueprintId(o.blueprintId).
+		SetClient(o.client).
+		Node([]QEEAttribute{
+			NodeTypeVirtualNetworkPolicy.QEEAttribute(),
+			{Key: "name", Value: QEStringVal("n_virtual_network_policy")},
+		})
+
+	var queryResponse struct {
+		Items []struct {
+			VirtualNetworkPolicy struct {
+				Id ObjectId `json:"id"`
+			} `json:"n_virtual_network_policy"`
+		} `json:"items"`
+	}
+
+	err := query.Do(ctx, &queryResponse)
+	if err != nil {
+		return fmt.Errorf("failed to query virtual_network_policy node - %w", convertTtaeToAceWherePossible(err))
+	}
+	if len(queryResponse.Items) != 1 {
+		return fmt.Errorf("expected (1) one virtual_network_policy node - Got %d", len(queryResponse.Items))
+	}
+
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodPatch,
+		urlStr: fmt.Sprintf(apiUrlBlueprintNodeById, o.blueprintId, queryResponse.Items[0].VirtualNetworkPolicy.Id),
+		apiInput: &struct {
+			JEDMRT uint16 `json:"junos_evpn_duplicate_mac_recovery_time"`
+		}{
+			JEDMRT: in,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to set virtual_network_policy node - %w", convertTtaeToAceWherePossible(err))
+	}
+
+	return nil
+}
+
 func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*rawFabricSettings, error) {
 	var response rawFabricSettings
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
