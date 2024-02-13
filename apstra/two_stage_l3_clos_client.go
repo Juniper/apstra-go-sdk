@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/go-version"
 	"net"
 	"net/url"
 	"time"
@@ -937,6 +938,8 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 	switch {
 	case fabricSettingsApiOk.Check(o.client.apiVersion):
 		return o.setFabricSettings(ctx, in.raw())
+	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
+		return o.setFabricSettings420(ctx, in)
 	}
 	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 }

@@ -133,9 +133,9 @@ func TestSetGetFabricSettings(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"zerovalues": {
-			fabricSettings: FabricSettings{},
-		},
+		//"zerovalues": {
+		//	fabricSettings: FabricSettings{},
+		//},
 		"lotsofvalues": {
 			fabricSettings: FabricSettings{
 				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),

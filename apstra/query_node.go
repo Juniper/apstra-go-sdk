@@ -24,6 +24,7 @@ const (
 	NodeTypeTag
 	NodeTypeVirtualNetwork
 	NodeTypeVirtualNetworkInstance
+	NodeTypeVirtualNetworkPolicy
 	NodeTypeUnknown = "unknown node type %s"
 
 	nodeTypeNone                   = nodeType("")
@@ -47,6 +48,7 @@ const (
 	nodeTypeTag                    = nodeType("tag")
 	nodeTypeVirtualNetwork         = nodeType("virtual_network")
 	nodeTypeVirtualNetworkInstance = nodeType("vn_instance")
+	nodeTypeVirtualNetworkPolicy   = nodeType("virtual_network_policy")
 	nodeTypeUnknown                = "unknown node type %d"
 )
 
@@ -97,6 +99,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeVirtualNetwork)
 	case NodeTypeVirtualNetworkInstance:
 		return string(nodeTypeVirtualNetworkInstance)
+	case NodeTypeVirtualNetworkPolicy:
+		return string(nodeTypeVirtualNetworkPolicy)
 	default:
 		return fmt.Sprintf(nodeTypeUnknown, o)
 	}
