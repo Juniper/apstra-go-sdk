@@ -20,6 +20,7 @@ const (
 	NodeTypeRouteTargetPolicy
 	NodeTypeRoutingPolicy
 	NodeTypeSecurityZone
+	NodeTypeSecurityZonePolicy
 	NodeTypeSystem
 	NodeTypeTag
 	NodeTypeVirtualNetwork
@@ -44,6 +45,7 @@ const (
 	nodeTypeRouteTargetPolicy      = nodeType("route_target_policy")
 	nodeTypeRoutingPolicy          = nodeType("routing_policy")
 	nodeTypeSecurityZone           = nodeType("security_zone")
+	nodeTypeSecurityZonePolicy     = nodeType("security_zone_policy")
 	nodeTypeSystem                 = nodeType("system")
 	nodeTypeTag                    = nodeType("tag")
 	nodeTypeVirtualNetwork         = nodeType("virtual_network")
@@ -91,6 +93,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeRoutingPolicy)
 	case NodeTypeSecurityZone:
 		return string(nodeTypeSecurityZone)
+	case NodeTypeSecurityZonePolicy:
+		return string(nodeTypeSecurityZonePolicy)
 	case NodeTypeSystem:
 		return string(nodeTypeSystem)
 	case NodeTypeTag:

@@ -63,7 +63,7 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 			// forbidden in the template means we can use this feature in the blueprint
 			blueprintFabricAddressingPolicy = &BlueprintRequestFabricAddressingPolicy{}
 
-			if !fabricL3MtuForbidden().Includes(client.client.apiVersion.String()) {
+			if !fabricL3MtuForbidden.Check(client.client.apiVersion) {
 				fabricL3Mtu := uint16(rand.Intn(550)*2 + 8000) // even number 8000 - 9100
 				blueprintFabricAddressingPolicy.FabricL3Mtu = &fabricL3Mtu
 				blueprintFabricAddressingPolicy.SpineLeafLinks = AddressingSchemeIp46
