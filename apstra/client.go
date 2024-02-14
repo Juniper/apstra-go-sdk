@@ -256,7 +256,7 @@ func (o *Client) lock(id string) {
 
 		mu.Lock()
 	} else {
-		mu := &sync.Mutex{}
+		mu = new(sync.Mutex)
 		mu.Lock()
 		o.sync[id] = mu
 
@@ -266,7 +266,14 @@ func (o *Client) lock(id string) {
 
 // unlock releases the named *sync.Mutex in Client.sync
 func (o *Client) unlock(id string) {
-	o.sync[id].Unlock()
+	o.syncLock.Lock()
+	defer o.syncLock.Unlock()
+
+	if mu, ok := o.sync[id]; ok {
+		mu.Unlock()
+	} else {
+		panic("attempt to unlock unknown mutex: '" + id + "'")
+	}
 }
 
 // Login submits username and password from the ClientCfg (Client.cfg) to the

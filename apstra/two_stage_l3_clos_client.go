@@ -964,8 +964,9 @@ func (o *TwoStageL3ClosClient) refreshNodeIdsByType(ctx context.Context, nt Node
 }
 
 func (o *TwoStageL3ClosClient) NodeIdsByType(ctx context.Context, nt NodeType) ([]ObjectId, error) {
-	o.client.lock(o.blueprintId.String() + "_" + "node_ids")
-	defer o.client.unlock(o.blueprintId.String() + "_" + "node_ids")
+	lockId := o.lockId("node_ids")
+	o.client.lock(lockId)
+	defer o.client.unlock(lockId)
 
 	if nodeIds, ok := o.nodeIdsByType[nt]; ok {
 		return nodeIds, nil // already done!
@@ -980,8 +981,9 @@ func (o *TwoStageL3ClosClient) NodeIdsByType(ctx context.Context, nt NodeType) (
 }
 
 func (o *TwoStageL3ClosClient) RefreshNodeIdsByType(ctx context.Context, nt NodeType) ([]ObjectId, error) {
-	o.client.lock(o.blueprintId.String() + "_" + "node_ids")
-	defer o.client.unlock(o.blueprintId.String() + "_" + "node_ids")
+	lockId := o.lockId("node_ids")
+	o.client.lock(lockId)
+	defer o.client.unlock(lockId)
 
 	err := o.refreshNodeIdsByType(ctx, nt)
 	if err != nil {
