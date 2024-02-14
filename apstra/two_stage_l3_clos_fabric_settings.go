@@ -3,6 +3,7 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-version"
 	"github.com/orsinium-labs/enum"
 	"net/http"
 )
@@ -226,28 +227,35 @@ func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFab
 // setFabricSettings420 does the same job as setFabricSettings, but for Apstra 4.2.0, which controls
 // the parameters in rawFabricSettings in 3 different places
 func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *rawFabricSettings) error {
-	err := o.setSzFootprintOptimization420(ctx, in.OptimiseSzFootprint)
-	if err != nil {
-		return err
-	}
+	err := o.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{
+		Ipv6Enabled: in.Ipv6Enabled,
+		EsiMacMsb:   in.EsiMacMsb,
+		FabricL3Mtu: in.FabricL3Mtu,
+	})
 
 	err = o.setVirtualNetworkPolicy420(ctx, in)
 	if err != nil {
 		return err
 	}
 
-	err = o.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{
-		Ipv6Enabled: in.Ipv6Enabled,
-		EsiMacMsb:   in.EsiMacMsb,
-		FabricL3Mtu: in.FabricL3Mtu,
-	})
+	err = o.setSzFootprintOptimization420(ctx, in.OptimiseSzFootprint)
+	if err != nil {
+		return err
+	}
 
-	// todo: find remaining settings which need to be set here
+	err = o.setAntiAffinityPolicy420(ctx, in.AntiAffinity)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (o *TwoStageL3ClosClient) getSzFootprintOptimization420(ctx context.Context) (string, error) {
+	if !o.client.apiVersion.Equal(version.Must(version.NewVersion(apstra420))) {
+		return "", fmt.Errorf("getSzFootprintOptimization420() must not be invoked with apstra %s", o.client.apiVersion)
+	}
+
 	securityZonePolicyNodeIds, err := o.NodeIdsByType(ctx, NodeTypeSecurityZonePolicy)
 	if err != nil {
 		return "", err
@@ -271,6 +279,10 @@ func (o *TwoStageL3ClosClient) getSzFootprintOptimization420(ctx context.Context
 func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context, in *string) error {
 	if in == nil {
 		return nil
+	}
+
+	if !o.client.apiVersion.Equal(version.Must(version.NewVersion(apstra420))) {
+		return fmt.Errorf("setSzFootprintOptimization420() must not be invoked with apstra %s", o.client.apiVersion)
 	}
 
 	securityZonePolicyNodeIds, err := o.NodeIdsByType(ctx, NodeTypeSecurityZonePolicy)
