@@ -33,14 +33,18 @@ type templateCapability string
 
 const (
 	AntiAffinityModeDisabled = AntiAffinityMode(iota)
+	AntiAffinityModeEnabledLoose
+	AntiAffinityModeEnabledStrict
 	AntiAffinityModeLoose
 	AntiAffinityModeStrict
 	AntiAffinityModeUnknown = "unknown anti affinity mode %s"
 
-	antiAffinityModeDisabled = antiAffinityMode("disabled")
-	antiAffinityModeLoose    = antiAffinityMode("loose")
-	antiAffinityModeStrict   = antiAffinityMode("strict")
-	antiAffinityModeUnknown  = "unknown anti affinity mode %d"
+	antiAffinityModeDisabled      = antiAffinityMode("disabled")
+	antiAffinityModeEnabledLoose  = antiAffinityMode("enabled_loose")
+	antiAffinityModeEnabledStrict = antiAffinityMode("enabled_strict")
+	antiAffinityModeLoose         = antiAffinityMode("loose")
+	antiAffinityModeStrict        = antiAffinityMode("strict")
+	antiAffinityModeUnknown       = "unknown anti affinity mode %d"
 )
 
 const (
@@ -117,6 +121,10 @@ func (o AntiAffinityMode) String() string {
 	switch o {
 	case AntiAffinityModeDisabled:
 		return string(antiAffinityModeDisabled)
+	case AntiAffinityModeEnabledLoose:
+		return string(antiAffinityModeEnabledLoose)
+	case AntiAffinityModeEnabledStrict:
+		return string(antiAffinityModeEnabledStrict)
 	case AntiAffinityModeLoose:
 		return string(antiAffinityModeLoose)
 	case AntiAffinityModeStrict:
@@ -138,6 +146,10 @@ func (o antiAffinityMode) parse() (int, error) {
 	switch o {
 	case antiAffinityModeDisabled:
 		return int(AntiAffinityModeDisabled), nil
+	case antiAffinityModeEnabledLoose:
+		return int(AntiAffinityModeEnabledLoose), nil
+	case antiAffinityModeEnabledStrict:
+		return int(AntiAffinityModeEnabledStrict), nil
 	case antiAffinityModeLoose:
 		return int(AntiAffinityModeLoose), nil
 	case antiAffinityModeStrict:

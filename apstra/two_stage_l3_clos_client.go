@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/go-version"
 	"net"
 	"net/url"
 	"time"
@@ -991,4 +992,37 @@ func (o *TwoStageL3ClosClient) RefreshNodeIdsByType(ctx context.Context, nt Node
 	}
 
 	return o.nodeIdsByType[nt], nil
+}
+
+// GetFabricSettings gets the fabric settings
+func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
+	var raw *rawFabricSettings
+	var err error
+
+	switch {
+	case fabricSettingsApiOk.Check(o.client.apiVersion):
+		raw, err = o.getFabricSettings(ctx)
+	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
+		raw, err = o.getFabricSettings420(ctx)
+	default:
+		return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return raw.polish()
+
+}
+
+// SetFabricSettings sets the specified fabric settings
+func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
+	switch {
+	case fabricSettingsApiOk.Check(o.client.apiVersion):
+		return o.setFabricSettings(ctx, in.raw())
+	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
+		return o.setFabricSettings420(ctx, in.raw())
+	}
+
+	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 }

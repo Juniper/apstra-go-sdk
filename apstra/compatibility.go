@@ -19,8 +19,7 @@ const (
 
 	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0"
 
-	fabricL3MtuForbiddenVersions = "4.1.0, 4.1.1, 4.1.2"
-	fabricL3MtuForbiddenError    = "fabric_l3_mtu permitted only with Apstra 4.2.0 and later"
+	fabricL3MtuForbiddenError = "fabric_l3_mtu permitted only with Apstra 4.2.0 and later"
 
 	integerPoolForbiddenVersions = "4.1.0, 4.1.1"
 
@@ -32,6 +31,11 @@ const (
 
 	vnL3MtuForbiddenVersions = "4.1.0, 4.1.1, 4.1.2"
 	vnL3MtuForbiddenError    = "virtual network operations support L3 MTU option only with Apstra 4.2 and later"
+)
+
+var (
+	fabricSettingsApiOk  = version.MustConstraints(version.NewConstraint(">=" + apstra421))
+	fabricL3MtuForbidden = version.MustConstraints(version.NewConstraint("<=" + apstra412))
 )
 
 // SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"
@@ -84,10 +88,6 @@ func podBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
 	return parseVersionList(podBasedTemplateFabricAddressingPolicyForbiddenVersions)
 }
 
-func fabricL3MtuForbidden() StringSliceWithIncludes {
-	return parseVersionList(fabricL3MtuForbiddenVersions)
-}
-
 func integerPoolForbidden() StringSliceWithIncludes {
 	return parseVersionList(integerPoolForbiddenVersions)
 }
@@ -102,10 +102,4 @@ func securityZoneJunosEvpnIrbModeRequired() StringSliceWithIncludes {
 
 func vnL3MtuForbidden() StringSliceWithIncludes {
 	return parseVersionList(vnL3MtuForbiddenVersions)
-}
-
-// ApstraApiSupportedVersions returns the Apstra versions supported by this
-// SDK version.
-func ApstraApiSupportedVersions() StringSliceWithIncludes {
-	return apstraSupportedApi()
 }

@@ -737,7 +737,7 @@ func (o *Client) GetAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, 
 func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlueprintFromTemplateRequest) (ObjectId, error) {
 	if req.FabricAddressingPolicy != nil &&
 		req.FabricAddressingPolicy.FabricL3Mtu != nil &&
-		fabricL3MtuForbidden().Includes(o.apiVersion.String()) {
+		fabricL3MtuForbidden.Check(o.apiVersion) {
 		return "", errors.New(fabricL3MtuForbiddenError)
 	}
 	return o.createBlueprintFromTemplate(ctx, req.raw())

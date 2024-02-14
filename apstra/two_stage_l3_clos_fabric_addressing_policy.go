@@ -32,7 +32,13 @@ func (o *TwoStageL3ClosClient) GetFabricAddressingPolicy(ctx context.Context) (*
 }
 
 func (o *TwoStageL3ClosClient) SetFabricAddressingPolicy(ctx context.Context, in *TwoStageL3ClosFabricAddressingPolicy) error {
-	if in.FabricL3Mtu != nil && fabricL3MtuForbidden().Includes(o.client.apiVersion.String()) {
+	if in.Ipv6Enabled == nil &&
+		in.EsiMacMsb == nil &&
+		in.FabricL3Mtu == nil {
+		return nil // nothing to do if all relevant input fields are nil
+	}
+
+	if in.FabricL3Mtu != nil && fabricL3MtuForbidden.Check(o.client.apiVersion) {
 		return ClientErr{
 			errType: ErrCompatibility,
 			err:     errors.New(fabricL3MtuForbiddenError),

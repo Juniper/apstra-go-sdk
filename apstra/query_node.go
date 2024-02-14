@@ -4,6 +4,7 @@ import "fmt"
 
 const (
 	NodeTypeNone = NodeType(iota)
+	NodeTypeAntiAffinityPolicy
 	NodeTypeEpApplicationInstance
 	NodeTypeEpEndpointPolicy
 	NodeTypeEpGroup
@@ -20,13 +21,16 @@ const (
 	NodeTypeRouteTargetPolicy
 	NodeTypeRoutingPolicy
 	NodeTypeSecurityZone
+	NodeTypeSecurityZonePolicy
 	NodeTypeSystem
 	NodeTypeTag
 	NodeTypeVirtualNetwork
 	NodeTypeVirtualNetworkInstance
+	NodeTypeVirtualNetworkPolicy
 	NodeTypeUnknown = "unknown node type %s"
 
 	nodeTypeNone                   = nodeType("")
+	nodeTypeAntiAffinityPolicy     = nodeType("anti_affinity_policy")
 	nodeTypeEpApplicationInstance  = nodeType("ep_application_instance")
 	nodeTypeEpEndpointPolicy       = nodeType("ep_endpoint_policy")
 	nodeTypeEpGroup                = nodeType("ep_group")
@@ -43,10 +47,12 @@ const (
 	nodeTypeRouteTargetPolicy      = nodeType("route_target_policy")
 	nodeTypeRoutingPolicy          = nodeType("routing_policy")
 	nodeTypeSecurityZone           = nodeType("security_zone")
+	nodeTypeSecurityZonePolicy     = nodeType("security_zone_policy")
 	nodeTypeSystem                 = nodeType("system")
 	nodeTypeTag                    = nodeType("tag")
 	nodeTypeVirtualNetwork         = nodeType("virtual_network")
 	nodeTypeVirtualNetworkInstance = nodeType("vn_instance")
+	nodeTypeVirtualNetworkPolicy   = nodeType("virtual_network_policy")
 	nodeTypeUnknown                = "unknown node type %d"
 )
 
@@ -57,6 +63,8 @@ func (o NodeType) String() string {
 	switch o {
 	case NodeTypeNone:
 		return string(nodeTypeNone)
+	case NodeTypeAntiAffinityPolicy:
+		return string(nodeTypeAntiAffinityPolicy)
 	case NodeTypeEpApplicationInstance:
 		return string(nodeTypeEpApplicationInstance)
 	case NodeTypeEpEndpointPolicy:
@@ -89,6 +97,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeRoutingPolicy)
 	case NodeTypeSecurityZone:
 		return string(nodeTypeSecurityZone)
+	case NodeTypeSecurityZonePolicy:
+		return string(nodeTypeSecurityZonePolicy)
 	case NodeTypeSystem:
 		return string(nodeTypeSystem)
 	case NodeTypeTag:
@@ -97,6 +107,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeVirtualNetwork)
 	case NodeTypeVirtualNetworkInstance:
 		return string(nodeTypeVirtualNetworkInstance)
+	case NodeTypeVirtualNetworkPolicy:
+		return string(nodeTypeVirtualNetworkPolicy)
 	default:
 		return fmt.Sprintf(nodeTypeUnknown, o)
 	}
