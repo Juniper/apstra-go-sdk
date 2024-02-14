@@ -40,14 +40,14 @@ func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy420(ctx context.Context) (
 		return nil, fmt.Errorf("expected 1 %s node, got %d", NodeTypeVirtualNetworkPolicy.String(), len(vnpNodeIds))
 	}
 
-	var vnpNode rawVirtualNetworkPolicy420
+	var result rawVirtualNetworkPolicy420
 
-	err = o.client.GetNode(ctx, o.blueprintId, vnpNodeIds[0], &vnpNode)
+	err = o.client.GetNode(ctx, o.blueprintId, vnpNodeIds[0], &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &vnpNode, nil
+	return &result, nil
 }
 
 func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, in *rawFabricSettings) error {
