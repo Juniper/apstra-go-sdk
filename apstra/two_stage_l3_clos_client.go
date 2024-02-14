@@ -934,31 +934,6 @@ func (o *TwoStageL3ClosClient) DeleteRemoteGateway(ctx context.Context, id Objec
 	return o.deleteRemoteGateway(ctx, id)
 }
 
-// SetFabricSettings sets the specified fabric settings
-func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
-	switch {
-	case fabricSettingsApiOk.Check(o.client.apiVersion):
-		return o.setFabricSettings(ctx, in.raw())
-	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
-		return o.setFabricSettings420(ctx, in.raw())
-	}
-	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
-}
-
-// GetFabricSettings gets the fabric settings
-func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
-	switch {
-	case fabricSettingsApiOk.Check(o.client.apiVersion):
-		raw, err := o.getFabricSettings(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return raw.polish()
-
-	}
-	return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
-}
-
 func (o *TwoStageL3ClosClient) refreshNodeIdsByType(ctx context.Context, nt NodeType) error {
 	query := new(PathQuery).
 		SetBlueprintId(o.blueprintId).
@@ -1017,17 +992,6 @@ func (o *TwoStageL3ClosClient) RefreshNodeIdsByType(ctx context.Context, nt Node
 	return o.nodeIdsByType[nt], nil
 }
 
-// SetFabricSettings sets the specified fabric settings
-func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
-	switch {
-	case fabricSettingsApiOk.Check(o.client.apiVersion):
-		return o.setFabricSettings(ctx, in.raw())
-	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
-		return o.setFabricSettings420(ctx, in)
-	}
-	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
-}
-
 // GetFabricSettings gets the fabric settings
 func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
 	switch {
@@ -1040,4 +1004,15 @@ func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSe
 
 	}
 	return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
+}
+
+// SetFabricSettings sets the specified fabric settings
+func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
+	switch {
+	case fabricSettingsApiOk.Check(o.client.apiVersion):
+		return o.setFabricSettings(ctx, in.raw())
+	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
+		return o.setFabricSettings420(ctx, in)
+	}
+	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 }
