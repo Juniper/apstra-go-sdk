@@ -129,14 +129,16 @@ func TestSetGetFabricSettings(t *testing.T) {
 
 	type testCase struct {
 		fabricSettings    FabricSettings
-		versionConstraint *version.Constraint
+		versionConstraint version.Constraints
 	}
 
 	testCases := map[string]testCase{
 		"zerovalues": {
-			fabricSettings: FabricSettings{},
+			versionConstraint: version.MustConstraints(version.NewConstraint(">" + apstra412)),
+			fabricSettings:    FabricSettings{},
 		},
 		"lotsofvalues": {
+			versionConstraint: version.MustConstraints(version.NewConstraint(">" + apstra412)),
 			fabricSettings: FabricSettings{
 				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),
 				MaxExternalRoutes:                     toPtr(uint32(239832)),
@@ -165,6 +167,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 			},
 		},
 		"different_values": {
+			versionConstraint: version.MustConstraints(version.NewConstraint(">" + apstra412)),
 			fabricSettings: FabricSettings{
 				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(15)),
 				MaxExternalRoutes:                     toPtr(uint32(239732)),
