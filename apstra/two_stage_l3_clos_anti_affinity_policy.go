@@ -28,3 +28,24 @@ func (o *TwoStageL3ClosClient) getAntiAffinityPolicy420(ctx context.Context) (*r
 
 	return &result, nil
 }
+
+func (o *TwoStageL3ClosClient) setAntiAffinityPolicy420(ctx context.Context, in *rawAntiAffinityPolicy) error {
+	if in == nil {
+		return nil
+	}
+
+	if !version.MustConstraints(version.NewConstraint("<=" + apstra420)).Check(o.client.apiVersion) {
+		return fmt.Errorf("apstra %s does not support %q", o.client.apiVersion, apiUrlBlueprintAntiAffinityPolicy)
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintAntiAffinityPolicy, o.blueprintId),
+		apiInput: &in,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
+}
