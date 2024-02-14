@@ -133,9 +133,9 @@ func TestSetGetFabricSettings(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		//"zerovalues": {
-		//	fabricSettings: FabricSettings{},
-		//},
+		"zerovalues": {
+			fabricSettings: FabricSettings{},
+		},
 		"lotsofvalues": {
 			fabricSettings: FabricSettings{
 				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),
@@ -155,7 +155,14 @@ func TestSetGetFabricSettings(t *testing.T) {
 				OverlayControlProtocol:                toPtr(OverlayControlProtocolEvpn),
 				ExternalRouterMtu:                     toPtr(uint16(9100)),
 				MaxEvpnRoutes:                         toPtr(uint32(92342)),
-				AntiAffinityPolicy:                    nil,
+				AntiAffinityPolicy: &AntiAffinityPolicy{
+					Algorithm:                AlgorithmHeuristic,
+					MaxLinksPerPort:          2,
+					MaxLinksPerSlot:          2,
+					MaxPerSystemLinksPerPort: 2,
+					MaxPerSystemLinksPerSlot: 2,
+					Mode:                     AntiAffinityModeEnabledLoose,
+				},
 			},
 		},
 	}
@@ -170,7 +177,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 		}()
 
 		t.Run("initial fetch", func(t *testing.T) {
-			if !version.MustConstraints(version.NewConstraint(">=" + apstra421)).Check(bpClient.client.apiVersion) {
+			if !version.MustConstraints(version.NewConstraint(">=" + apstra420)).Check(bpClient.client.apiVersion) {
 				t.Skipf("skipping test %q due to mismatch version %q", "initial fetch", bpClient.client.apiVersion)
 			}
 
