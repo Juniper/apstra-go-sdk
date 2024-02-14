@@ -24,14 +24,33 @@ type rawVirtualNetworkPolicy420 struct {
 	JunosEvpnMaxNexthopAndInterfaceNumber *string `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"` // enabled/disabled
 	ExternalRouterMtu                     *uint16 `json:"external_router_mtu,omitempty"`
 	MaxEvpnRoutes                         *uint32 `json:"max_evpn_routes,omitempty"`
+	OverlayControlProtocol                *string `json:"overlay_control_protocol,omitempty"`
 	//FrrRdVlanOffset                       string `json:"frr_rd_vlan_offset,omitempty"` // not exposed in web UI
 	//CumulusBridgeMacDerivation            string `json:"cumulus_bridge_mac_derivation,omitempty"`   // skipping cumulus support
-	//OverlayControlProtocol                string `json:"overlay_control_protocol,omitempty"`        // immutable
 	//DefaultFabricEviRouteTarget           string `json:"default_fabric_evi_route_target,omitempty"` // undocumented
 	//CumulusVxlanArpSuppression            string `json:"cumulus_vxlan_arp_suppression,omitempty"`   // skipping cumulus support
 }
 
-func (o *TwoStageL3ClosClient) setRawVirtualNetworkPolicy420(ctx context.Context, in *rawFabricSettings) error {
+func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy420(ctx context.Context) (*rawVirtualNetworkPolicy420, error) {
+	vnpNodeIds, err := o.NodeIdsByType(ctx, NodeTypeVirtualNetworkPolicy)
+	if err != nil {
+		return nil, err
+	}
+	if len(vnpNodeIds) != 1 {
+		return nil, fmt.Errorf("expected 1 %s node, got %d", NodeTypeVirtualNetworkPolicy.String(), len(vnpNodeIds))
+	}
+
+	var vnpNode rawVirtualNetworkPolicy420
+
+	err = o.client.GetNode(ctx, o.blueprintId, vnpNodeIds[0], &vnpNode)
+	if err != nil {
+		return nil, err
+	}
+
+	return &vnpNode, nil
+}
+
+func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, in *rawFabricSettings) error {
 	if in.JunosEvpnDuplicateMacRecoveryTime == nil &&
 		in.MaxExternalRoutes == nil &&
 		in.JunosGracefulRestart == nil &&

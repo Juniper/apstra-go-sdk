@@ -43,17 +43,17 @@ type FabricSettings struct {
 }
 
 func (o FabricSettings) raw() *rawFabricSettings {
-
 	var antiAffinityPolicy *rawAntiAffinityPolicy
 	if o.AntiAffinityPolicy != nil {
 		antiAffinityPolicy = o.AntiAffinityPolicy.raw()
 	}
-	var junosEvpnRoutingInstanceType *string
+
+	var jeriType *string
 	if o.JunosEvpnRoutingInstanceVlanAware != nil {
 		if o.JunosEvpnRoutingInstanceVlanAware.String() == FeatureSwitchEnumEnabled.String() {
-			junosEvpnRoutingInstanceType = toPtr(junosEvpnRoutingInstanceTypeVlanAware.Value)
+			jeriType = toPtr(junosEvpnRoutingInstanceTypeVlanAware.Value)
 		} else {
-			junosEvpnRoutingInstanceType = toPtr(junosEvpnRoutingInstanceTypeDefault.Value)
+			jeriType = toPtr(junosEvpnRoutingInstanceTypeDefault.Value)
 		}
 	}
 	return &rawFabricSettings{
@@ -62,7 +62,7 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		EsiMacMsb:                             o.EsiMacMsb,
 		JunosGracefulRestart:                  stringerPtrToStringPtr(o.JunosGracefulRestart),
 		OptimiseSzFootprint:                   stringerPtrToStringPtr(o.OptimiseSzFootprint),
-		JunosEvpnRoutingInstanceType:          junosEvpnRoutingInstanceType,
+		JunosEvpnRoutingInstanceType:          jeriType,
 		EvpnGenerateType5HostRoutes:           stringerPtrToStringPtr(o.EvpnGenerateType5HostRoutes),
 		MaxFabricRoutes:                       o.MaxFabricRoutes,
 		MaxMlagRoutes:                         o.MaxMlagRoutes,
@@ -150,6 +150,66 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 	}, nil
 }
 
+func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*rawFabricSettings, error) {
+	var response rawFabricSettings
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintFabricSettings, o.blueprintId),
+		apiResponse: &response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return &response, nil
+}
+
+func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*rawFabricSettings, error) {
+	fabricAddressingPolicy, err := o.GetFabricAddressingPolicy(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	virtualNetworkPolicy, err := o.getVirtualNetworkPolicy420(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	optimiseFootprint, err := o.getSzFootprintOptimization420(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	antiAffinityPolicy, err := o.getAntiAffinityPolicy420(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &rawFabricSettings{
+		EsiMacMsb:   fabricAddressingPolicy.EsiMacMsb,
+		FabricL3Mtu: fabricAddressingPolicy.FabricL3Mtu,
+		Ipv6Enabled: fabricAddressingPolicy.Ipv6Enabled,
+
+		JunosEvpnDuplicateMacRecoveryTime:     virtualNetworkPolicy.JunosEvpnDuplicateMacRecoveryTime,
+		MaxExternalRoutes:                     virtualNetworkPolicy.MaxExternalRoutes,
+		JunosGracefulRestart:                  virtualNetworkPolicy.JunosGracefulRestart,
+		JunosEvpnRoutingInstanceType:          virtualNetworkPolicy.JunosEvpnRoutingInstanceType,
+		EvpnGenerateType5HostRoutes:           virtualNetworkPolicy.EvpnGenerateType5HostRoutes,
+		MaxFabricRoutes:                       virtualNetworkPolicy.MaxFabricRoutes,
+		MaxMlagRoutes:                         virtualNetworkPolicy.MaxMlagRoutes,
+		JunosExOverlayEcmp:                    virtualNetworkPolicy.JunosExOverlayEcmp,
+		DefaultSviL3Mtu:                       virtualNetworkPolicy.DefaultSviL3Mtu,
+		JunosEvpnMaxNexthopAndInterfaceNumber: virtualNetworkPolicy.JunosEvpnMaxNexthopAndInterfaceNumber,
+		ExternalRouterMtu:                     virtualNetworkPolicy.ExternalRouterMtu,
+		MaxEvpnRoutes:                         virtualNetworkPolicy.MaxEvpnRoutes,
+		OverlayControlProtocol:                virtualNetworkPolicy.OverlayControlProtocol,
+
+		OptimiseSzFootprint: &optimiseFootprint,
+
+		AntiAffinity: antiAffinityPolicy,
+	}, nil
+}
+
 func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFabricSettings) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
@@ -163,67 +223,76 @@ func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFab
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *FabricSettings) error {
-	if in.JunosEvpnDuplicateMacRecoveryTime != nil {
-		err := o.setJunosEvpnDuplicateMacRecoveryTime420(ctx, *in.JunosEvpnDuplicateMacRecoveryTime)
-		if err != nil {
-			return err
-		}
+// setFabricSettings420 does the same job as setFabricSettings, but for Apstra 4.2.0, which controls
+// the parameters in rawFabricSettings in 3 different places
+func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *rawFabricSettings) error {
+	err := o.setSzFootprintOptimization420(ctx, in.OptimiseSzFootprint)
+	if err != nil {
+		return err
 	}
+
+	err = o.setVirtualNetworkPolicy420(ctx, in)
+	if err != nil {
+		return err
+	}
+
+	err = o.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{
+		Ipv6Enabled: in.Ipv6Enabled,
+		EsiMacMsb:   in.EsiMacMsb,
+		FabricL3Mtu: in.FabricL3Mtu,
+	})
+
+	// todo: find remaining settings which need to be set here
+
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) setJunosEvpnDuplicateMacRecoveryTime420(ctx context.Context, in uint16) error {
-	query := new(PathQuery).
-		SetBlueprintId(o.blueprintId).
-		SetClient(o.client).
-		Node([]QEEAttribute{
-			NodeTypeVirtualNetworkPolicy.QEEAttribute(),
-			{Key: "name", Value: QEStringVal("n_virtual_network_policy")},
-		})
-
-	var queryResponse struct {
-		Items []struct {
-			VirtualNetworkPolicy struct {
-				Id ObjectId `json:"id"`
-			} `json:"n_virtual_network_policy"`
-		} `json:"items"`
-	}
-
-	err := query.Do(ctx, &queryResponse)
+func (o *TwoStageL3ClosClient) getSzFootprintOptimization420(ctx context.Context) (string, error) {
+	securityZonePolicyNodeIds, err := o.NodeIdsByType(ctx, NodeTypeSecurityZonePolicy)
 	if err != nil {
-		return fmt.Errorf("failed to query virtual_network_policy node - %w", convertTtaeToAceWherePossible(err))
+		return "", err
 	}
-	if len(queryResponse.Items) != 1 {
-		return fmt.Errorf("expected (1) one virtual_network_policy node - Got %d", len(queryResponse.Items))
+	if len(securityZonePolicyNodeIds) != 1 {
+		return "", fmt.Errorf("expected 1 %s, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
+	}
+
+	var node struct {
+		FootprintOptimise string `json:"footprint_optimise"`
+	}
+
+	err = o.client.GetNode(ctx, o.blueprintId, securityZonePolicyNodeIds[0], &node)
+	if err != nil {
+		return "", err
+	}
+
+	return node.FootprintOptimise, nil
+}
+
+func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context, in *string) error {
+	if in == nil {
+		return nil
+	}
+
+	securityZonePolicyNodeIds, err := o.NodeIdsByType(ctx, NodeTypeSecurityZonePolicy)
+	if err != nil {
+		return err
+	}
+	if len(securityZonePolicyNodeIds) != 1 {
+		return fmt.Errorf("expected 1 %s, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
 	}
 
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPatch,
-		urlStr: fmt.Sprintf(apiUrlBlueprintNodeById, o.blueprintId, queryResponse.Items[0].VirtualNetworkPolicy.Id),
+		urlStr: fmt.Sprintf(apiUrlBlueprintNodeById, o.blueprintId, securityZonePolicyNodeIds[0]),
 		apiInput: &struct {
-			JEDMRT uint16 `json:"junos_evpn_duplicate_mac_recovery_time"`
+			FootprintOptimise string `json:"footprint_optimise"`
 		}{
-			JEDMRT: in,
+			FootprintOptimise: *in,
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to set virtual_network_policy node - %w", convertTtaeToAceWherePossible(err))
+		return fmt.Errorf("failed to patch %s node - %w", NodeTypeSecurityZonePolicy.String(), convertTtaeToAceWherePossible(err))
 	}
 
 	return nil
-}
-
-func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*rawFabricSettings, error) {
-	var response rawFabricSettings
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintFabricSettings, o.blueprintId),
-		apiResponse: &response,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-
-	return &response, nil
 }

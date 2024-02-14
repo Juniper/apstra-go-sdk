@@ -4,6 +4,7 @@ import "fmt"
 
 const (
 	NodeTypeNone = NodeType(iota)
+	NodeTypeAntiAffinityPolicy
 	NodeTypeEpApplicationInstance
 	NodeTypeEpEndpointPolicy
 	NodeTypeEpGroup
@@ -29,6 +30,7 @@ const (
 	NodeTypeUnknown = "unknown node type %s"
 
 	nodeTypeNone                   = nodeType("")
+	nodeTypeAntiAffinityPolicy     = nodeType("anti_affinity_policy")
 	nodeTypeEpApplicationInstance  = nodeType("ep_application_instance")
 	nodeTypeEpEndpointPolicy       = nodeType("ep_endpoint_policy")
 	nodeTypeEpGroup                = nodeType("ep_group")
@@ -61,6 +63,8 @@ func (o NodeType) String() string {
 	switch o {
 	case NodeTypeNone:
 		return string(nodeTypeNone)
+	case NodeTypeAntiAffinityPolicy:
+		return string(nodeTypeAntiAffinityPolicy)
 	case NodeTypeEpApplicationInstance:
 		return string(nodeTypeEpApplicationInstance)
 	case NodeTypeEpEndpointPolicy:
