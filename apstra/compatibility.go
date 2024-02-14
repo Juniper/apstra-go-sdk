@@ -88,10 +88,6 @@ func podBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
 	return parseVersionList(podBasedTemplateFabricAddressingPolicyForbiddenVersions)
 }
 
-//func fabricL3MtuForbidden() StringSliceWithIncludes {
-//	return parseVersionList(fabricL3MtuForbiddenVersions)
-//}
-
 func integerPoolForbidden() StringSliceWithIncludes {
 	return parseVersionList(integerPoolForbiddenVersions)
 }
