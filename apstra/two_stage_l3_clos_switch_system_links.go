@@ -2,6 +2,7 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -230,8 +231,43 @@ func (o *TwoStageL3ClosClient) DeleteLinksFromSystem(ctx context.Context, ids []
 		urlStr:   fmt.Sprintf(apiUrlDeleteSwitchSystemLinks, o.blueprintId),
 		apiInput: &apiInput,
 	})
+	if err == nil {
+		return nil
+	}
 
-	return convertTtaeToAceWherePossible(err)
+	// if we got here, then we have an error
+	err = convertTtaeToAceWherePossible(err)
+	var ace ClientErr
+	if !errors.As(err, &ace) {
+		return err // cannot handle
+	}
+
+	if ace.Type() != ErrCtAssignedToLink {
+		return err // cannot handle
+	}
+
+	var ds detailedStatus
+	if json.Unmarshal([]byte(ace.Error()), &ds) != nil {
+		return err // unmarshal fail - surface the original error
+	}
+
+	var linkErrs struct {
+		LinkIds []string `json:"link_ids"`
+	}
+	if json.Unmarshal(ds.Errors, &linkErrs) != nil {
+		return err // unmarshal fail - surface the original error
+	}
+
+	var aceDetail ErrCtAssignedToLinkDetail
+	for _, linkIdErr := range linkErrs.LinkIds {
+		matches := regexpLinkHasCtAssignedErr.FindStringSubmatch(linkIdErr)
+		if len(matches) == 2 {
+			aceDetail.LinkIds = append(aceDetail.LinkIds, ObjectId(matches[1]))
+		}
+	}
+
+	ace.detail = aceDetail
+	return ace
 }
 
 func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id ObjectId) error {

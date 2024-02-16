@@ -46,6 +46,13 @@ type getAllTasksResponse struct {
 	} `json:"items"`
 }
 
+type detailedStatus struct {
+	ApiResponse            json.RawMessage `json:"api_response"`
+	ConfigBlueprintVersion int             `json:"config_blueprint_version"`
+	Errors                 json.RawMessage `json:"errors"`
+	ErrorCode              int             `json:"error_code"`
+}
+
 // getTaskResponse is sent by Apstra in response to GET at
 // 'apiUrlTaskPrefix + blueprintId + apiUrlTaskSuffix + taskId'
 type getTaskResponse struct {
@@ -58,20 +65,15 @@ type getTaskResponse struct {
 		Data    json.RawMessage   `json:"data"`
 		Method  string            `json:"method"`
 	} `json:"request_data"`
-	UserId         string `json:"user_id"`
-	LastUpdatedAt  string `json:"last_updated_at"`
-	UserName       string `json:"user_name"`
-	CreatedAt      string `json:"created_at"`
-	DetailedStatus struct {
-		ApiResponse            json.RawMessage `json:"api_response"`
-		ConfigBlueprintVersion int             `json:"config_blueprint_version"`
-		Errors                 json.RawMessage `json:"errors"`
-		ErrorCode              int             `json:"error_code"`
-	} `json:"detailed_status"`
-	ConfigLastUpdatedAt string `json:"config_last_updated_at"`
-	UserIp              string `json:"user_ip"`
-	Type                string `json:"type"`
-	Id                  TaskId `json:"id"`
+	UserId              string         `json:"user_id"`
+	LastUpdatedAt       string         `json:"last_updated_at"`
+	UserName            string         `json:"user_name"`
+	CreatedAt           string         `json:"created_at"`
+	DetailedStatus      detailedStatus `json:"detailed_status"`
+	ConfigLastUpdatedAt string         `json:"config_last_updated_at"`
+	UserIp              string         `json:"user_ip"`
+	Type                string         `json:"type"`
+	Id                  TaskId         `json:"id"`
 }
 
 // taskMonitorMonReq uniquely identifies an Apstra task which can be tracked at
