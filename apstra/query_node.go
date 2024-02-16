@@ -6,6 +6,7 @@ const (
 	NodeTypeNone = NodeType(iota)
 	NodeTypeAntiAffinityPolicy
 	NodeTypeEpApplicationInstance
+	NodeTypeDomain
 	NodeTypeEpEndpointPolicy
 	NodeTypeEpGroup
 	NodeTypeFabricAddressingPolicy
@@ -32,6 +33,7 @@ const (
 	nodeTypeNone                   = nodeType("")
 	nodeTypeAntiAffinityPolicy     = nodeType("anti_affinity_policy")
 	nodeTypeEpApplicationInstance  = nodeType("ep_application_instance")
+	nodeTypeDomain                 = nodeType("domain")
 	nodeTypeEpEndpointPolicy       = nodeType("ep_endpoint_policy")
 	nodeTypeEpGroup                = nodeType("ep_group")
 	nodeTypeFabricAddressingPolicy = nodeType("fabric_addressing_policy")
@@ -67,6 +69,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeAntiAffinityPolicy)
 	case NodeTypeEpApplicationInstance:
 		return string(nodeTypeEpApplicationInstance)
+	case NodeTypeDomain:
+		return string(nodeTypeDomain)
 	case NodeTypeEpEndpointPolicy:
 		return string(nodeTypeEpEndpointPolicy)
 	case NodeTypeEpGroup:
