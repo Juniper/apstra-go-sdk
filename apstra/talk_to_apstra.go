@@ -11,6 +11,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -21,6 +22,13 @@ const (
 	errResponseBodyLimit            = 4096
 	errResponseStringLimit          = 1024
 	peekSizeForApstraTaskIdResponse = math.MaxUint8
+
+	linkHasCtAssignedErrRegexString = "Link with id (.*) can not be deleted since some of its interfaces have connectivity templates assigned"
+)
+
+var (
+	regexpApiUrlDeleteSwitchSystemLinks = regexp.MustCompile(strings.ReplaceAll(apiUrlDeleteSwitchSystemLinks, "%s", ".*"))
+	regexpLinkHasCtAssignedErr          = regexp.MustCompile(linkHasCtAssignedErrRegexString)
 )
 
 // talkToApstraIn is the input structure for the Client.talkToApstra() function
@@ -68,6 +76,8 @@ func convertTtaeToAceWherePossible(err error) error {
 				return ClientErr{errType: ErrCannotChangeTransform, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "does not exist"):
 				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+			case regexpLinkHasCtAssignedErr.MatchString(ttae.Msg) && regexpApiUrlDeleteSwitchSystemLinks.MatchString(ttae.Request.URL.Path):
+				return ClientErr{errType: ErrCtAssignedToLink, err: errors.New(ttae.Msg)}
 			}
 		case http.StatusInternalServerError:
 			switch {

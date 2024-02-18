@@ -32,6 +32,7 @@ const (
 	ErrUncommitted
 	ErrWrongType
 	ErrReadOnly
+	ErrCtAssignedToLink
 
 	clientPollingIntervalMs = 1000
 
@@ -39,9 +40,14 @@ const (
 	mutexKeyHttpHeaders = "http headers"
 )
 
+type ErrCtAssignedToLinkDetail struct {
+	LinkIds []ObjectId
+}
+
 type ClientErr struct {
 	errType int
 	err     error
+	detail  interface{}
 }
 
 func (o ClientErr) Error() string {
@@ -50,6 +56,10 @@ func (o ClientErr) Error() string {
 
 func (o ClientErr) Type() int {
 	return o.errType
+}
+
+func (o ClientErr) Detail() interface{} {
+	return o.detail
 }
 
 type apstraHttpClient interface {
