@@ -676,7 +676,3 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 
 	return id, deleteFunc
 }
-
-func toPtr[A any](a A) *A {
-	return &a
-}
