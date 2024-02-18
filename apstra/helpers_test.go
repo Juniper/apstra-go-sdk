@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -348,6 +349,65 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, bpDeleteFunc
 }
 
+// testBlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient and a cleanup function
+// which deletes the test blueprint. If the client is newer that Apstra 4.1.0, the blueprint will use a dual-stack
+// fabric and have ipv6 enabled.
+func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+	bpRequest := CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignTwoStageL3Clos,
+		Label:      randString(5, "hex"),
+		TemplateId: "L2_Virtual_EVPN",
+	}
+
+	if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion.String()) {
+		bpRequest.FabricAddressingPolicy = &BlueprintRequestFabricAddressingPolicy{
+			SpineSuperspineLinks: AddressingSchemeIp46,
+			SpineLeafLinks:       AddressingSchemeIp46,
+		}
+	}
+
+	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &bpRequest)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bpDeleteFunc := func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	}
+
+	// set fabric addressing to enable IPv6
+	if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion.String()) {
+		if client.apiVersion.String() == "4.2.1" {
+			// todo - this is temporary
+			err = client.talkToApstra(ctx, &talkToApstraIn{
+				method: http.MethodPatch,
+				urlStr: fmt.Sprintf("/api/blueprints/%s/fabric-settings", bpId),
+				apiInput: struct {
+					Ipv6Enabled bool `json:"ipv6_enabled"`
+				}{
+					Ipv6Enabled: true,
+				},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+		} else {
+			err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: toPtr(true)})
+			if err != nil {
+				defer bpDeleteFunc(ctx)
+				t.Fatal(err)
+			}
+		}
+	}
+
+	return bpClient, bpDeleteFunc
+}
+
 func TestItemInSlice(t *testing.T) {
 	type testCase struct {
 		item     any
@@ -615,4 +675,8 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 	}
 
 	return id, deleteFunc
+}
+
+func toPtr[A any](a A) *A {
+	return &a
 }
