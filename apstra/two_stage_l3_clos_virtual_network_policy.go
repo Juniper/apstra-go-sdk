@@ -12,23 +12,19 @@ const (
 )
 
 type rawVirtualNetworkPolicy420 struct {
+	DefaultSviL3Mtu                       *uint16 `json:"default_svi_l3_mtu,omitempty"`
+	EvpnGenerateType5HostRoutes           *string `json:"evpn_generate_type5_host_routes,omitempty"`
+	ExternalRouterMtu                     *uint16 `json:"external_router_mtu,omitempty"`
 	JunosEvpnDuplicateMacRecoveryTime     *uint16 `json:"junos_evpn_duplicate_mac_recovery_time,omitempty"`
+	JunosEvpnMaxNexthopAndInterfaceNumber *string `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"`
+	JunosEvpnRoutingInstanceType          *string `json:"junos_evpn_routing_instance_type,omitempty"`
+	JunosExOverlayEcmp                    *string `json:"junos_ex_overlay_ecmp,omitempty"`
+	JunosGracefulRestart                  *string `json:"junos_graceful_restart,omitempty"`
+	MaxEvpnRoutes                         *uint32 `json:"max_evpn_routes,omitempty"`
 	MaxExternalRoutes                     *uint32 `json:"max_external_routes,omitempty"`
-	JunosGracefulRestart                  *string `json:"junos_graceful_restart,omitempty"`           // enabled/disabled
-	JunosEvpnRoutingInstanceType          *string `json:"junos_evpn_routing_instance_type,omitempty"` // default/vlan_aware
-	EvpnGenerateType5HostRoutes           *string `json:"evpn_generate_type5_host_routes,omitempty"`  // enabled/disabled
 	MaxFabricRoutes                       *uint32 `json:"max_fabric_routes,omitempty"`
 	MaxMlagRoutes                         *uint32 `json:"max_mlag_routes,omitempty"`
-	JunosExOverlayEcmp                    *string `json:"junos_ex_overlay_ecmp,omitempty"` // enabled/disabled
-	DefaultSviL3Mtu                       *uint16 `json:"default_svi_l3_mtu,omitempty"`
-	JunosEvpnMaxNexthopAndInterfaceNumber *string `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"` // enabled/disabled
-	ExternalRouterMtu                     *uint16 `json:"external_router_mtu,omitempty"`
-	MaxEvpnRoutes                         *uint32 `json:"max_evpn_routes,omitempty"`
 	OverlayControlProtocol                *string `json:"overlay_control_protocol,omitempty"`
-	//FrrRdVlanOffset                       string `json:"frr_rd_vlan_offset,omitempty"` // not exposed in web UI
-	//CumulusBridgeMacDerivation            string `json:"cumulus_bridge_mac_derivation,omitempty"`   // skipping cumulus support
-	//DefaultFabricEviRouteTarget           string `json:"default_fabric_evi_route_target,omitempty"` // undocumented
-	//CumulusVxlanArpSuppression            string `json:"cumulus_vxlan_arp_suppression,omitempty"`   // skipping cumulus support
 }
 
 func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy420(ctx context.Context) (*rawVirtualNetworkPolicy420, error) {
@@ -51,18 +47,18 @@ func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy420(ctx context.Context) (
 }
 
 func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, in *rawFabricSettings) error {
-	if in.JunosEvpnDuplicateMacRecoveryTime == nil &&
-		in.MaxExternalRoutes == nil &&
-		in.JunosGracefulRestart == nil &&
-		in.JunosEvpnRoutingInstanceType == nil &&
+	if in.DefaultSviL3Mtu == nil &&
 		in.EvpnGenerateType5HostRoutes == nil &&
-		in.MaxFabricRoutes == nil &&
-		in.MaxMlagRoutes == nil &&
-		in.JunosExOverlayEcmp == nil &&
-		in.DefaultSviL3Mtu == nil &&
-		in.JunosEvpnMaxNexthopAndInterfaceNumber == nil &&
 		in.ExternalRouterMtu == nil &&
-		in.MaxEvpnRoutes == nil {
+		in.JunosEvpnDuplicateMacRecoveryTime == nil &&
+		in.JunosEvpnMaxNexthopAndInterfaceNumber == nil &&
+		in.JunosEvpnRoutingInstanceType == nil &&
+		in.JunosExOverlayEcmp == nil &&
+		in.JunosGracefulRestart == nil &&
+		in.MaxEvpnRoutes == nil &&
+		in.MaxExternalRoutes == nil &&
+		in.MaxFabricRoutes == nil &&
+		in.MaxMlagRoutes == nil {
 		return nil // nothing to do if all relevant input fields are nil
 	}
 
@@ -71,18 +67,82 @@ func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, i
 	}
 
 	apiInput := rawVirtualNetworkPolicy420{
-		JunosEvpnDuplicateMacRecoveryTime:     in.JunosEvpnDuplicateMacRecoveryTime,
-		MaxExternalRoutes:                     in.MaxExternalRoutes,
-		JunosGracefulRestart:                  in.JunosGracefulRestart,
-		JunosEvpnRoutingInstanceType:          in.JunosEvpnRoutingInstanceType,
+		DefaultSviL3Mtu:                       in.DefaultSviL3Mtu,
 		EvpnGenerateType5HostRoutes:           in.EvpnGenerateType5HostRoutes,
+		ExternalRouterMtu:                     in.ExternalRouterMtu,
+		JunosEvpnDuplicateMacRecoveryTime:     in.JunosEvpnDuplicateMacRecoveryTime,
+		JunosEvpnMaxNexthopAndInterfaceNumber: in.JunosEvpnMaxNexthopAndInterfaceNumber,
+		JunosEvpnRoutingInstanceType:          in.JunosEvpnRoutingInstanceType,
+		JunosExOverlayEcmp:                    in.JunosExOverlayEcmp,
+		JunosGracefulRestart:                  in.JunosGracefulRestart,
+		MaxEvpnRoutes:                         in.MaxEvpnRoutes,
+		MaxExternalRoutes:                     in.MaxExternalRoutes,
 		MaxFabricRoutes:                       in.MaxFabricRoutes,
 		MaxMlagRoutes:                         in.MaxMlagRoutes,
-		JunosExOverlayEcmp:                    in.JunosExOverlayEcmp,
-		DefaultSviL3Mtu:                       in.DefaultSviL3Mtu,
-		JunosEvpnMaxNexthopAndInterfaceNumber: in.JunosEvpnMaxNexthopAndInterfaceNumber,
-		ExternalRouterMtu:                     in.ExternalRouterMtu,
-		MaxEvpnRoutes:                         in.MaxEvpnRoutes,
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintVirtualNetworkPolicy, o.blueprintId),
+		apiInput: &apiInput,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
+}
+
+type rawVirtualNetworkPolicy41x struct {
+	EvpnGenerateType5HostRoutes *string `json:"evpn_generate_type5_host_routes"`
+	ExternalRouterMtu           *uint16 `json:"external_router_mtu"`
+	MaxFabricRoutes             *uint32 `json:"max_fabric_routes"`
+	MaxMlagRoutes               *uint32 `json:"max_mlag_routes"`
+	MaxEvpnRoutes               *uint32 `json:"max_evpn_routes"`
+	MaxExternalRoutes           *uint32 `json:"max_external_routes"`
+	OverlayControlProtocol      *string `json:"overlay_control_protocol"`
+}
+
+func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy41x(ctx context.Context) (*rawVirtualNetworkPolicy41x, error) {
+	vnpNodeIds, err := o.NodeIdsByType(ctx, NodeTypeVirtualNetworkPolicy)
+	if err != nil {
+		return nil, err
+	}
+	if len(vnpNodeIds) != 1 {
+		return nil, fmt.Errorf("expected 1 %s node, got %d", NodeTypeVirtualNetworkPolicy.String(), len(vnpNodeIds))
+	}
+
+	var result rawVirtualNetworkPolicy41x
+
+	err = o.client.GetNode(ctx, o.blueprintId, vnpNodeIds[0], &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy41x(ctx context.Context, in *rawFabricSettings) error {
+	if in.EvpnGenerateType5HostRoutes == nil &&
+		in.ExternalRouterMtu == nil &&
+		in.MaxEvpnRoutes == nil &&
+		in.MaxExternalRoutes == nil &&
+		in.MaxFabricRoutes == nil &&
+		in.MaxMlagRoutes == nil {
+		return nil // nothing to do if all relevant input fields are nil
+	}
+
+	if !o.client.apiVersion.Equal(version.Must(version.NewVersion(apstra412))) {
+		return fmt.Errorf("setRawVirtualNetworkPolicy412() must not be invoked with apstra %s", o.client.apiVersion)
+	}
+
+	apiInput := rawVirtualNetworkPolicy41x{
+		EvpnGenerateType5HostRoutes: in.EvpnGenerateType5HostRoutes,
+		ExternalRouterMtu:           in.ExternalRouterMtu,
+		MaxEvpnRoutes:               in.MaxEvpnRoutes,
+		MaxExternalRoutes:           in.MaxExternalRoutes,
+		MaxFabricRoutes:             in.MaxFabricRoutes,
+		MaxMlagRoutes:               in.MaxMlagRoutes,
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{

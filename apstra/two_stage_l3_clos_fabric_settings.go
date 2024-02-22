@@ -20,27 +20,25 @@ var (
 	junosEvpnRoutingInstanceTypes         = enum.New(junosEvpnRoutingInstanceTypeVlanAware, junosEvpnRoutingInstanceTypeDefault)
 )
 
-type FabricSettings struct {
-	JunosEvpnDuplicateMacRecoveryTime     *uint16                 // supported in 4.2.0 (not in GUI)
-	MaxExternalRoutes                     *uint32                 // supported in 4.2.0 ( virtual-network-policy)
-	EsiMacMsb                             *uint8                  // supported in 4.2.0 (fabric-addressing-policy)
-	JunosGracefulRestart                  *FeatureSwitchEnum      // supported in 4.2.0 ( virtual-network-policy)
-	OptimiseSzFootprint                   *FeatureSwitchEnum      // supported in 4.2.0 (patch fabric-settings node)
-	JunosEvpnRoutingInstanceVlanAware     *FeatureSwitchEnum      // supported in 4.2.0 ( virtual-network-policy)
-	EvpnGenerateType5HostRoutes           *FeatureSwitchEnum      // supported in 4.2.0 ( virtual-network-policy)
-	MaxFabricRoutes                       *uint32                 // supported in 4.2.0 ( virtual-network-policy)
-	MaxMlagRoutes                         *uint32                 // supported in 4.2.0 ( virtual-network-policy)
-	JunosExOverlayEcmp                    *FeatureSwitchEnum      // supported in 4.2.0 ( virtual-network-policy)
-	DefaultSviL3Mtu                       *uint16                 // supported in 4.2.0 ( virtual-network-policy)
-	JunosEvpnMaxNexthopAndInterfaceNumber *FeatureSwitchEnum      // supported in 4.2.0 ( virtual-network-policy)
-	FabricL3Mtu                           *uint16                 // supported in 4.2.0 (fabric-addressing-policy)
-	Ipv6Enabled                           *bool                   // supported in 4.2.0 (fabric-addressing-policy)
-	OverlayControlProtocol                *OverlayControlProtocol // supported in 4.2.0 ( virtual-network-policy)
-	ExternalRouterMtu                     *uint16                 // supported in 4.2.0 ( virtual-network-policy)
-	MaxEvpnRoutes                         *uint32                 // supported in 4.2.0 (virtual-network-policy)
-	AntiAffinityPolicy                    *AntiAffinityPolicy     // supported in 4.2.0 (anti-affinity-policy)
-	//DefaultFabricEviRouteTarget                 string   					Not Exposed via WebUI
-	//FrrRdVlanOffset                             string					Not Exposed via WebUI
+type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.1.0
+	AntiAffinityPolicy                    *AntiAffinityPolicy     // /anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy
+	DefaultSviL3Mtu                       *uint16                 // virtual_network_policy node	not supported					not supported					not supported.
+	EsiMacMsb                             *uint8                  // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
+	EvpnGenerateType5HostRoutes           *FeatureSwitchEnum      // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	ExternalRouterMtu                     *uint16                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	FabricL3Mtu                           *uint16                 // /fabric-addressing-policy		not supported					not supported					not supported
+	Ipv6Enabled                           *bool                   // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
+	JunosEvpnDuplicateMacRecoveryTime     *uint16                 // virtual_network_policy node	not supported					not supported					not supported
+	JunosEvpnMaxNexthopAndInterfaceNumber *FeatureSwitchEnum      // virtual_network_policy node	not supported					not supported					not supported
+	JunosEvpnRoutingInstanceVlanAware     *FeatureSwitchEnum      // virtual_network_policy node	not supported					not supported					not supported
+	JunosExOverlayEcmp                    *FeatureSwitchEnum      // virtual_network_policy node	not supported					not supported					not supported
+	JunosGracefulRestart                  *FeatureSwitchEnum      // virtual_network_policy node	not supported					not supported					not supported
+	MaxEvpnRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	MaxExternalRoutes                     *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	MaxFabricRoutes                       *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	MaxMlagRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	OptimiseSzFootprint                   *FeatureSwitchEnum      // security_zone_policy node		not supported					not supported					not supported
+	OverlayControlProtocol                *OverlayControlProtocol // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
 }
 
 func (o FabricSettings) raw() *rawFabricSettings {
@@ -58,48 +56,46 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		}
 	}
 	return &rawFabricSettings{
-		JunosEvpnDuplicateMacRecoveryTime:     o.JunosEvpnDuplicateMacRecoveryTime,
-		MaxExternalRoutes:                     o.MaxExternalRoutes,
-		EsiMacMsb:                             o.EsiMacMsb,
-		JunosGracefulRestart:                  stringerPtrToStringPtr(o.JunosGracefulRestart),
-		OptimiseSzFootprint:                   stringerPtrToStringPtr(o.OptimiseSzFootprint),
-		JunosEvpnRoutingInstanceType:          jeriType,
-		EvpnGenerateType5HostRoutes:           stringerPtrToStringPtr(o.EvpnGenerateType5HostRoutes),
-		MaxFabricRoutes:                       o.MaxFabricRoutes,
-		MaxMlagRoutes:                         o.MaxMlagRoutes,
-		JunosExOverlayEcmp:                    stringerPtrToStringPtr(o.JunosExOverlayEcmp),
+		AntiAffinity:                          antiAffinityPolicy,
 		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
-		JunosEvpnMaxNexthopAndInterfaceNumber: stringerPtrToStringPtr(o.JunosEvpnMaxNexthopAndInterfaceNumber),
+		EsiMacMsb:                             o.EsiMacMsb,
+		EvpnGenerateType5HostRoutes:           stringerPtrToStringPtr(o.EvpnGenerateType5HostRoutes),
+		ExternalRouterMtu:                     o.ExternalRouterMtu,
 		FabricL3Mtu:                           o.FabricL3Mtu,
 		Ipv6Enabled:                           o.Ipv6Enabled,
-		OverlayControlProtocol:                stringerPtrToStringPtr(o.OverlayControlProtocol),
-		ExternalRouterMtu:                     o.ExternalRouterMtu,
+		JunosEvpnDuplicateMacRecoveryTime:     o.JunosEvpnDuplicateMacRecoveryTime,
+		JunosEvpnMaxNexthopAndInterfaceNumber: stringerPtrToStringPtr(o.JunosEvpnMaxNexthopAndInterfaceNumber),
+		JunosEvpnRoutingInstanceType:          jeriType,
+		JunosExOverlayEcmp:                    stringerPtrToStringPtr(o.JunosExOverlayEcmp),
+		JunosGracefulRestart:                  stringerPtrToStringPtr(o.JunosGracefulRestart),
 		MaxEvpnRoutes:                         o.MaxEvpnRoutes,
-		AntiAffinity:                          antiAffinityPolicy,
+		MaxExternalRoutes:                     o.MaxExternalRoutes,
+		MaxFabricRoutes:                       o.MaxFabricRoutes,
+		MaxMlagRoutes:                         o.MaxMlagRoutes,
+		OptimiseSzFootprint:                   stringerPtrToStringPtr(o.OptimiseSzFootprint),
+		OverlayControlProtocol:                stringerPtrToStringPtr(o.OverlayControlProtocol),
 	}
 }
 
 type rawFabricSettings struct {
-	JunosEvpnDuplicateMacRecoveryTime     *uint16                `json:"junos_evpn_duplicate_mac_recovery_time,omitempty"`
-	MaxExternalRoutes                     *uint32                `json:"max_external_routes,omitempty"`
-	EsiMacMsb                             *uint8                 `json:"esi_mac_msb,omitempty"`
-	JunosGracefulRestart                  *string                `json:"junos_graceful_restart,omitempty"`
-	OptimiseSzFootprint                   *string                `json:"optimise_sz_footprint,omitempty"`
-	JunosEvpnRoutingInstanceType          *string                `json:"junos_evpn_routing_instance_type,omitempty"`
-	EvpnGenerateType5HostRoutes           *string                `json:"evpn_generate_type5_host_routes,omitempty"`
-	MaxFabricRoutes                       *uint32                `json:"max_fabric_routes,omitempty"`
-	MaxMlagRoutes                         *uint32                `json:"max_mlag_routes,omitempty"`
-	JunosExOverlayEcmp                    *string                `json:"junos_ex_overlay_ecmp,omitempty"`
+	AntiAffinity                          *rawAntiAffinityPolicy `json:"anti_affinity,omitempty"`
 	DefaultSviL3Mtu                       *uint16                `json:"default_svi_l3_mtu,omitempty"`
-	JunosEvpnMaxNexthopAndInterfaceNumber *string                `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"`
+	EsiMacMsb                             *uint8                 `json:"esi_mac_msb,omitempty"`
+	EvpnGenerateType5HostRoutes           *string                `json:"evpn_generate_type5_host_routes,omitempty"`
+	ExternalRouterMtu                     *uint16                `json:"external_router_mtu,omitempty"`
 	FabricL3Mtu                           *uint16                `json:"fabric_l3_mtu,omitempty"`
 	Ipv6Enabled                           *bool                  `json:"ipv6_enabled,omitempty"`
-	OverlayControlProtocol                *string                `json:"overlay_control_protocol,omitempty"`
-	ExternalRouterMtu                     *uint16                `json:"external_router_mtu,omitempty"`
+	JunosEvpnDuplicateMacRecoveryTime     *uint16                `json:"junos_evpn_duplicate_mac_recovery_time,omitempty"`
+	JunosEvpnMaxNexthopAndInterfaceNumber *string                `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"`
+	JunosEvpnRoutingInstanceType          *string                `json:"junos_evpn_routing_instance_type,omitempty"`
+	JunosExOverlayEcmp                    *string                `json:"junos_ex_overlay_ecmp,omitempty"`
+	JunosGracefulRestart                  *string                `json:"junos_graceful_restart,omitempty"`
 	MaxEvpnRoutes                         *uint32                `json:"max_evpn_routes,omitempty"`
-	AntiAffinity                          *rawAntiAffinityPolicy `json:"anti_affinity,omitempty"`
-	//FrrRdVlanOffset                       string                `json:"frr_rd_vlan_offset"`
-	//DefaultFabricEviRouteTarget           string                `json:"default_fabric_evi_route_target"`
+	MaxExternalRoutes                     *uint32                `json:"max_external_routes,omitempty"`
+	MaxFabricRoutes                       *uint32                `json:"max_fabric_routes,omitempty"`
+	MaxMlagRoutes                         *uint32                `json:"max_mlag_routes,omitempty"`
+	OptimiseSzFootprint                   *string                `json:"optimise_sz_footprint,omitempty"`
+	OverlayControlProtocol                *string                `json:"overlay_control_protocol,omitempty"`
 }
 
 func (o rawFabricSettings) polish() (*FabricSettings, error) {
@@ -130,24 +126,24 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 		return nil, err
 	}
 	return &FabricSettings{
-		JunosEvpnDuplicateMacRecoveryTime:     o.JunosEvpnDuplicateMacRecoveryTime,
-		MaxExternalRoutes:                     o.MaxExternalRoutes,
-		EsiMacMsb:                             o.EsiMacMsb,
-		JunosGracefulRestart:                  featureSwitchEnumFromStringPtr(o.JunosGracefulRestart),
-		OptimiseSzFootprint:                   featureSwitchEnumFromStringPtr(o.OptimiseSzFootprint),
-		JunosEvpnRoutingInstanceVlanAware:     junosEvpnRoutingInstanceVlanAware,
-		EvpnGenerateType5HostRoutes:           featureSwitchEnumFromStringPtr(o.EvpnGenerateType5HostRoutes),
-		MaxFabricRoutes:                       o.MaxFabricRoutes,
-		MaxMlagRoutes:                         o.MaxMlagRoutes,
-		JunosExOverlayEcmp:                    featureSwitchEnumFromStringPtr(o.JunosExOverlayEcmp),
+		AntiAffinityPolicy:                    antiAffinityPolicy,
 		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
-		JunosEvpnMaxNexthopAndInterfaceNumber: featureSwitchEnumFromStringPtr(o.JunosEvpnMaxNexthopAndInterfaceNumber),
+		EsiMacMsb:                             o.EsiMacMsb,
+		EvpnGenerateType5HostRoutes:           featureSwitchEnumFromStringPtr(o.EvpnGenerateType5HostRoutes),
+		ExternalRouterMtu:                     o.ExternalRouterMtu,
 		FabricL3Mtu:                           o.FabricL3Mtu,
 		Ipv6Enabled:                           o.Ipv6Enabled,
-		OverlayControlProtocol:                ocp,
-		ExternalRouterMtu:                     o.ExternalRouterMtu,
+		JunosEvpnDuplicateMacRecoveryTime:     o.JunosEvpnDuplicateMacRecoveryTime,
+		JunosEvpnMaxNexthopAndInterfaceNumber: featureSwitchEnumFromStringPtr(o.JunosEvpnMaxNexthopAndInterfaceNumber),
+		JunosEvpnRoutingInstanceVlanAware:     junosEvpnRoutingInstanceVlanAware,
+		JunosExOverlayEcmp:                    featureSwitchEnumFromStringPtr(o.JunosExOverlayEcmp),
+		JunosGracefulRestart:                  featureSwitchEnumFromStringPtr(o.JunosGracefulRestart),
 		MaxEvpnRoutes:                         o.MaxEvpnRoutes,
-		AntiAffinityPolicy:                    antiAffinityPolicy,
+		MaxExternalRoutes:                     o.MaxExternalRoutes,
+		MaxFabricRoutes:                       o.MaxFabricRoutes,
+		MaxMlagRoutes:                         o.MaxMlagRoutes,
+		OptimiseSzFootprint:                   featureSwitchEnumFromStringPtr(o.OptimiseSzFootprint),
+		OverlayControlProtocol:                ocp,
 	}, nil
 }
 
@@ -165,6 +161,8 @@ func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*rawFabri
 	return &response, nil
 }
 
+// getFabricSettings420 does the same job as setFabricSettings, but for Apstra 4.2.0, which collects
+// the parameters in rawFabricSettings from 3 different places
 func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*rawFabricSettings, error) {
 	fabricAddressingPolicy, err := o.GetFabricAddressingPolicy(ctx)
 	if err != nil {
@@ -181,33 +179,62 @@ func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*rawFa
 		return nil, err
 	}
 
-	antiAffinityPolicy, err := o.getAntiAffinityPolicy420(ctx)
+	antiAffinityPolicy, err := o.getAntiAffinityPolicy(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &rawFabricSettings{
-		EsiMacMsb:   fabricAddressingPolicy.EsiMacMsb,
-		FabricL3Mtu: fabricAddressingPolicy.FabricL3Mtu,
-		Ipv6Enabled: fabricAddressingPolicy.Ipv6Enabled,
-
-		JunosEvpnDuplicateMacRecoveryTime:     virtualNetworkPolicy.JunosEvpnDuplicateMacRecoveryTime,
-		MaxExternalRoutes:                     virtualNetworkPolicy.MaxExternalRoutes,
-		JunosGracefulRestart:                  virtualNetworkPolicy.JunosGracefulRestart,
-		JunosEvpnRoutingInstanceType:          virtualNetworkPolicy.JunosEvpnRoutingInstanceType,
+		AntiAffinity:                          antiAffinityPolicy,
+		DefaultSviL3Mtu:                       virtualNetworkPolicy.DefaultSviL3Mtu,
+		EsiMacMsb:                             fabricAddressingPolicy.EsiMacMsb,
 		EvpnGenerateType5HostRoutes:           virtualNetworkPolicy.EvpnGenerateType5HostRoutes,
+		ExternalRouterMtu:                     virtualNetworkPolicy.ExternalRouterMtu,
+		FabricL3Mtu:                           fabricAddressingPolicy.FabricL3Mtu,
+		Ipv6Enabled:                           fabricAddressingPolicy.Ipv6Enabled,
+		JunosEvpnDuplicateMacRecoveryTime:     virtualNetworkPolicy.JunosEvpnDuplicateMacRecoveryTime,
+		JunosEvpnMaxNexthopAndInterfaceNumber: virtualNetworkPolicy.JunosEvpnMaxNexthopAndInterfaceNumber,
+		JunosEvpnRoutingInstanceType:          virtualNetworkPolicy.JunosEvpnRoutingInstanceType,
+		JunosExOverlayEcmp:                    virtualNetworkPolicy.JunosExOverlayEcmp,
+		JunosGracefulRestart:                  virtualNetworkPolicy.JunosGracefulRestart,
+		MaxEvpnRoutes:                         virtualNetworkPolicy.MaxEvpnRoutes,
+		MaxExternalRoutes:                     virtualNetworkPolicy.MaxExternalRoutes,
 		MaxFabricRoutes:                       virtualNetworkPolicy.MaxFabricRoutes,
 		MaxMlagRoutes:                         virtualNetworkPolicy.MaxMlagRoutes,
-		JunosExOverlayEcmp:                    virtualNetworkPolicy.JunosExOverlayEcmp,
-		DefaultSviL3Mtu:                       virtualNetworkPolicy.DefaultSviL3Mtu,
-		JunosEvpnMaxNexthopAndInterfaceNumber: virtualNetworkPolicy.JunosEvpnMaxNexthopAndInterfaceNumber,
-		ExternalRouterMtu:                     virtualNetworkPolicy.ExternalRouterMtu,
-		MaxEvpnRoutes:                         virtualNetworkPolicy.MaxEvpnRoutes,
+		OptimiseSzFootprint:                   &optimiseFootprint,
 		OverlayControlProtocol:                virtualNetworkPolicy.OverlayControlProtocol,
+	}, nil
+}
 
-		OptimiseSzFootprint: &optimiseFootprint,
+// getFabricSettings41x does the same job as setFabricSettings, but for Apstra 4.1.x, which collects
+// the parameters in rawFabricSettings from 3 different places
+func (o *TwoStageL3ClosClient) getFabricSettings41x(ctx context.Context) (*rawFabricSettings, error) {
+	fabricAddressingPolicy, err := o.GetFabricAddressingPolicy(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-		AntiAffinity: antiAffinityPolicy,
+	virtualNetworkPolicy, err := o.getVirtualNetworkPolicy41x(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	antiAffinityPolicy, err := o.getAntiAffinityPolicy(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &rawFabricSettings{
+		AntiAffinity:                antiAffinityPolicy,
+		EsiMacMsb:                   fabricAddressingPolicy.EsiMacMsb,
+		EvpnGenerateType5HostRoutes: virtualNetworkPolicy.EvpnGenerateType5HostRoutes,
+		ExternalRouterMtu:           virtualNetworkPolicy.ExternalRouterMtu,
+		Ipv6Enabled:                 fabricAddressingPolicy.Ipv6Enabled,
+		MaxEvpnRoutes:               virtualNetworkPolicy.MaxEvpnRoutes,
+		MaxExternalRoutes:           virtualNetworkPolicy.MaxExternalRoutes,
+		MaxFabricRoutes:             virtualNetworkPolicy.MaxFabricRoutes,
+		MaxMlagRoutes:               virtualNetworkPolicy.MaxMlagRoutes,
+		OverlayControlProtocol:      virtualNetworkPolicy.OverlayControlProtocol,
 	}, nil
 }
 
@@ -232,6 +259,9 @@ func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *raw
 		EsiMacMsb:   in.EsiMacMsb,
 		FabricL3Mtu: in.FabricL3Mtu,
 	})
+	if err != nil {
+		return err
+	}
 
 	err = o.setVirtualNetworkPolicy420(ctx, in)
 	if err != nil {
@@ -243,7 +273,31 @@ func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *raw
 		return err
 	}
 
-	err = o.setAntiAffinityPolicy420(ctx, in.AntiAffinity)
+	err = o.setAntiAffinityPolicy(ctx, in.AntiAffinity)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// setFabricSettings41x does the same job as setFabricSettings, but for Apstra 4.1.x, which controls
+// the parameters in rawFabricSettings in 3 different places
+func (o *TwoStageL3ClosClient) setFabricSettings41x(ctx context.Context, in *rawFabricSettings) error {
+	err := o.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{
+		Ipv6Enabled: in.Ipv6Enabled,
+		EsiMacMsb:   in.EsiMacMsb,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = o.setVirtualNetworkPolicy41x(ctx, in)
+	if err != nil {
+		return err
+	}
+
+	err = o.setAntiAffinityPolicy(ctx, in.AntiAffinity)
 	if err != nil {
 		return err
 	}

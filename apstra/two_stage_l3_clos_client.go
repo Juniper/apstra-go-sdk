@@ -1004,6 +1004,8 @@ func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSe
 		raw, err = o.getFabricSettings(ctx)
 	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
 		raw, err = o.getFabricSettings420(ctx)
+	case version.MustConstraints(version.NewConstraint(">=" + apstra410 + ",<" + apstra420)).Check(o.client.apiVersion):
+		raw, err = o.getFabricSettings41x(ctx)
 	default:
 		return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 	}
@@ -1022,6 +1024,8 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 		return o.setFabricSettings(ctx, in.raw())
 	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
 		return o.setFabricSettings420(ctx, in.raw())
+	case version.MustConstraints(version.NewConstraint(">=" + apstra410 + ",<" + apstra420)).Check(o.client.apiVersion):
+		return o.setFabricSettings41x(ctx, in.raw())
 	}
 
 	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
