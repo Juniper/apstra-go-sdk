@@ -43,17 +43,17 @@ func TestEnumValues(t *testing.T) {
 	checkString := func(t testing.TB, d string, s string, e enum.Value) {
 		t.Helper()
 		if s != e.String() {
-			t.Errorf("%s: expected %s, got %s", d, s, e.String())
+			t.Fatalf("%s: expected %s, got %s", d, s, e.String())
 		}
 	}
 
 	checkEqual := func(t testing.TB, d string, e bool, a, b enum.Value) {
 		t.Helper()
 		if e && !a.Equal(b) {
-			t.Errorf("%s expected enum %q of type %q to be equal enum %q of type %q, but it is not", d, a.String(), a.Type(), b.String(), b.Type())
+			t.Fatalf("%s expected enum %q of type %q to be equal enum %q of type %q, but it is not", d, a.String(), a.Type(), b.String(), b.Type())
 		}
 		if !e && a.Equal(b) {
-			t.Errorf("%s did not expect enum %q of type %q to be equal enum %q of type %q, but it is", d, a.String(), a.Type(), b.String(), b.Type())
+			t.Fatalf("%s did not expect enum %q of type %q to be equal enum %q of type %q, but it is", d, a.String(), a.Type(), b.String(), b.Type())
 		}
 	}
 
@@ -108,7 +108,7 @@ func TestNewEnum(t *testing.T) {
 			t.Parallel()
 			e := enum.New(tCase.t, tCase.s)
 			if tCase.expNil != (e == nil) {
-				t.Errorf("expected e == nil: %t, got %t", tCase.expNil, e == nil)
+				t.Fatalf("expected e == nil: %t, got %t", tCase.expNil, e == nil)
 			}
 		})
 	}
@@ -135,18 +135,18 @@ func TestEnumTypes(t *testing.T) {
 		t.Helper()
 
 		if (a == nil) != (b == nil) {
-			t.Errorf("a == nil: %t; b == nil: %t", a == nil, b == nil)
+			t.Fatalf("a == nil: %t; b == nil: %t", a == nil, b == nil)
 		}
 
 		if len(a) != len(b) {
-			t.Errorf("a has %d items, b has %d items", len(a), len(b))
+			t.Fatalf("a has %d items, b has %d items", len(a), len(b))
 		}
 
 		sort.Strings(a)
 		sort.Strings(b)
 		for i := 0; i < len(a); i++ {
 			if a[i] != b[i] {
-				t.Errorf("a[%d] == %q; b[%d] == %q", i, a[i], i, b[i])
+				t.Fatalf("a[%d] == %q; b[%d] == %q", i, a[i], i, b[i])
 			}
 		}
 	}
@@ -161,7 +161,10 @@ func TestEnumTypes(t *testing.T) {
 				t.Fatalf("Values() returned nil: %t; expected nil: %t", values == nil, tCase.strings == nil)
 			}
 
-			stringsFromValues := make([]string, len(values))
+			var stringsFromValues []string
+			if values != nil {
+				stringsFromValues = make([]string, len(values))
+			}
 			for i, v := range values {
 				stringsFromValues[i] = v.String()
 			}
