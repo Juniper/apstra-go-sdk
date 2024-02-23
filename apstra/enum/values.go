@@ -6,21 +6,17 @@ const (
 	Sauce
 )
 
-var enumTypeToFuncs = map[EnumType][]func() Value{
-	Flavor: {
-		FlavorChocolate,
-		FlavorStrawberry,
-		FlavorVanilla,
-	},
-	Size: {
-		SizeSmall,
-		SizeMedium,
-		SizeLarge,
-	},
-	Sauce: {
-		SauceChocolate,
-		SauceCaramel,
-	},
+var enumFuncs = []func() Value{
+	FlavorChocolate,
+	FlavorStrawberry,
+	FlavorVanilla,
+
+	SizeSmall,
+	SizeMedium,
+	SizeLarge,
+
+	SauceChocolate,
+	SauceCaramel,
 }
 
 func FlavorChocolate() Value  { return newInstance(Flavor, "chocolate") }
