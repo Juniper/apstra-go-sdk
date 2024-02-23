@@ -1,52 +1,71 @@
 package enum
 
 import (
-	ole "github.com/orsinium-labs/enum"
+	olEnum "github.com/orsinium-labs/enum"
 )
 
-const (
-	ValueStateUnknown = valueState(iota)
-	ValueStateNull
-	ValueStateKnown
+type EnumType int
 
-	Unknown = Type(iota)
-	FeatureSwitchx
-)
-
-type valueState uint8
-
-type Type int
-
-type enum struct {
-	enumType Type
-	state    valueState
-	value    ole.Member[string]
+type Value interface {
+	Equal(instance Value) bool
+	String() string
+	Type() EnumType
+	member() olEnum.Member[string]
 }
 
-func (o enum) String() string {
+func newInstance(t EnumType, s string) Value {
+	return value{
+		enumType: t,
+		value:    &olEnum.Member[string]{Value: s},
+	}
+}
+
+var _ Value = new(value)
+
+type value struct {
+	enumType EnumType
+	value    *olEnum.Member[string]
+}
+
+func (o value) Equal(e Value) bool {
+	if o.enumType != e.Type() {
+		return false
+	}
+
+	return o.value.Value == e.String()
+}
+
+func (o value) String() string {
 	return o.value.Value
 }
 
-func (o enum) IsNull() bool {
-	return o.state == ValueStateNull
+func (o value) Type() EnumType {
+	return o.enumType
 }
 
-func (o enum) IsUnknown() bool {
-	return o.state == ValueStateUnknown
+func (o value) member() olEnum.Member[string] {
+	return *o.value
 }
 
-type FeatureSwitch enum
+// New returns n Value based on t and s, or nil if t, s or the
+// t, s combination is invalid.
+func New(t EnumType, s string) Value {
+	if valueFuncs, ok := enumTypeToFuncs[t]; ok {
+		members := make([]olEnum.Member[string], len(valueFuncs))
+		for i, valueFunc := range valueFuncs {
+			members[i] = valueFunc().(value).member()
+		}
 
-var (
-	featureSwitchValues = ole.New(
-		ole.Member[string]{Value: "disabled"},
-		ole.Member[string]{Value: "enabled"},
-	)
-)
+		e := olEnum.New(members...).Parse(s)
+		if e == nil {
+			return nil // s not a valid member of they enum type
+		}
 
-func NewFeatureSwitchFromString(s string) (FeatureSwitch, error) {
-	e := featureSwitchValues.Parse(s)
-	if e == nil {
-		return
+		return value{
+			enumType: t,
+			value:    e,
+		}
 	}
+
+	return nil // t not a valid enum type
 }

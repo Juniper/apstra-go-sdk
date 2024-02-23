@@ -1,0 +1,114 @@
+package enum_test
+
+import (
+	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+)
+
+func TestEnumValues(t *testing.T) {
+	type testCase struct {
+		enum1   enum.Value
+		string1 string
+		enum2   enum.Value
+		string2 string
+		equal   bool
+	}
+
+	testCases := map[string]testCase{
+		"identical": {
+			enum1:   enum.SizeLarge(),
+			string1: "large",
+			enum2:   enum.SizeLarge(),
+			string2: "large",
+			equal:   true,
+		},
+		"same_type": {
+			enum1:   enum.SizeSmall(),
+			string1: "small",
+			enum2:   enum.SizeLarge(),
+			string2: "large",
+			equal:   false,
+		},
+		"same_value": {
+			enum1:   enum.FlavorChocolate(),
+			string1: "chocolate",
+			enum2:   enum.SauceChocolate(),
+			string2: "chocolate",
+			equal:   false,
+		},
+	}
+
+	checkString := func(t testing.TB, d string, s string, e enum.Value) {
+		t.Helper()
+		if s != e.String() {
+			t.Errorf("%s: expected %s, got %s", d, s, e.String())
+		}
+	}
+
+	checkEqual := func(t testing.TB, d string, e bool, a, b enum.Value) {
+		t.Helper()
+		if e && !a.Equal(b) {
+			t.Errorf("%s expected enum %q of type %q to be equal enum %q of type %q, but it is not", d, a.String(), a.Type(), b.String(), b.Type())
+		}
+		if !e && a.Equal(b) {
+			t.Errorf("%s did not expect enum %q of type %q to be equal enum %q of type %q, but it is", d, a.String(), a.Type(), b.String(), b.Type())
+		}
+	}
+
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+			checkString(t, "enum1 string", tCase.string1, tCase.enum1)
+			checkString(t, "enum2 string", tCase.string2, tCase.enum2)
+			checkEqual(t, "testCase enum1 and enum2", tCase.equal, tCase.enum1, tCase.enum2)
+			e := enum.New(tCase.enum1.Type(), tCase.string1)
+			checkEqual(t, "testCase enum1 and enum from string", true, tCase.enum1, e)
+			e = enum.New(tCase.enum2.Type(), tCase.string2)
+			checkEqual(t, "testCase enum2 and enum from string", true, tCase.enum2, e)
+		})
+	}
+}
+
+func TestNewEnum(t *testing.T) {
+	type testCase struct {
+		t      enum.EnumType
+		s      string
+		expNil bool
+	}
+
+	testCases := map[string]testCase{
+		"valid": {
+			t:      enum.Size,
+			s:      "small",
+			expNil: false,
+		},
+		"bad_string": {
+			t:      enum.Size,
+			s:      "bogus",
+			expNil: true,
+		},
+		"bad_type": {
+			t:      -1,
+			s:      "small",
+			expNil: true,
+		},
+		"bad_both": {
+			t:      -1,
+			s:      "bogus",
+			expNil: true,
+		},
+	}
+
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+			e := enum.New(tCase.t, tCase.s)
+			if tCase.expNil != (e == nil) {
+				t.Errorf("expected e == nil: %t, got %t", tCase.expNil, e == nil)
+			}
+		})
+	}
+}
