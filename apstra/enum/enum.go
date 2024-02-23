@@ -6,6 +6,30 @@ import (
 
 type EnumType int
 
+func (o EnumType) Values() []Value {
+	if memberFuncs, ok := enumTypeToFuncs[o]; ok {
+		result := make([]Value, len(memberFuncs))
+		for i, f := range memberFuncs {
+			result[i] = f()
+		}
+		return result
+	}
+
+	return nil
+}
+
+func (o EnumType) Strings() []string {
+	if memberFuncs, ok := enumTypeToFuncs[o]; ok {
+		result := make([]string, len(memberFuncs))
+		for i, f := range memberFuncs {
+			result[i] = f().String()
+		}
+		return result
+	}
+
+	return nil
+}
+
 type Value interface {
 	Equal(instance Value) bool
 	String() string

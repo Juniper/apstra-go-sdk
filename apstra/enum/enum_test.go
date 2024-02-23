@@ -1,6 +1,7 @@
 package enum_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
@@ -109,6 +110,62 @@ func TestNewEnum(t *testing.T) {
 			if tCase.expNil != (e == nil) {
 				t.Errorf("expected e == nil: %t, got %t", tCase.expNil, e == nil)
 			}
+		})
+	}
+}
+
+func TestEnumTypes(t *testing.T) {
+	type testCase struct {
+		enumType enum.EnumType
+		strings  []string
+	}
+
+	testCases := map[string]testCase{
+		"valid": {
+			enumType: enum.Size,
+			strings:  []string{"small", "medium", "large"},
+		},
+		"invalid": {
+			enumType: -1,
+			strings:  nil,
+		},
+	}
+
+	compareStringSlices := func(t testing.TB, a, b []string) {
+		t.Helper()
+
+		if (a == nil) != (b == nil) {
+			t.Errorf("a == nil: %t; b == nil: %t", a == nil, b == nil)
+		}
+
+		if len(a) != len(b) {
+			t.Errorf("a has %d items, b has %d items", len(a), len(b))
+		}
+
+		sort.Strings(a)
+		sort.Strings(b)
+		for i := 0; i < len(a); i++ {
+			if a[i] != b[i] {
+				t.Errorf("a[%d] == %q; b[%d] == %q", i, a[i], i, b[i])
+			}
+		}
+	}
+
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+			compareStringSlices(t, tCase.strings, tCase.enumType.Strings())
+			values := tCase.enumType.Values()
+			if (values == nil) != (tCase.strings == nil) {
+				t.Fatalf("Values() returned nil: %t; expected nil: %t", values == nil, tCase.strings == nil)
+			}
+
+			stringsFromValues := make([]string, len(values))
+			for i, v := range values {
+				stringsFromValues[i] = v.String()
+			}
+			compareStringSlices(t, tCase.strings, stringsFromValues)
 		})
 	}
 }
