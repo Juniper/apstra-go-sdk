@@ -130,7 +130,6 @@ func TestSetGetFabricSettings(t *testing.T) {
 
 	testCases := map[string]testCase{
 		"no_fabric_settings": {
-			//versionConstraint: version.MustConstraints(version.NewConstraint(">" + apstra412)),
 			fabricSettings: FabricSettings{},
 		},
 		"41x_compatible_1": {
@@ -146,7 +145,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 				EsiMacMsb:                   toPtr(uint8(4)),
 				EvpnGenerateType5HostRoutes: &FeatureSwitchEnumEnabled,
 				ExternalRouterMtu:           toPtr(uint16(9002)),
-				Ipv6Enabled:                 toPtr(false),
+				Ipv6Enabled:                 toPtr(false), // do not enable because it's a one-way trip
 				MaxEvpnRoutes:               toPtr(uint32(10000)),
 				MaxExternalRoutes:           toPtr(uint32(11000)),
 				MaxFabricRoutes:             toPtr(uint32(12000)),
@@ -166,7 +165,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 				EsiMacMsb:                   toPtr(uint8(6)),
 				EvpnGenerateType5HostRoutes: &FeatureSwitchEnumDisabled,
 				ExternalRouterMtu:           toPtr(uint16(9004)),
-				Ipv6Enabled:                 toPtr(false),
+				Ipv6Enabled:                 toPtr(false), // do not enable because it's a one-way trip
 				MaxEvpnRoutes:               toPtr(uint32(20000)),
 				MaxExternalRoutes:           toPtr(uint32(21000)),
 				MaxFabricRoutes:             toPtr(uint32(22000)),
@@ -189,7 +188,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 				DefaultSviL3Mtu:                       toPtr(uint16(9100)),
 				JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumDisabled,
 				FabricL3Mtu:                           toPtr(uint16(9178)),
-				Ipv6Enabled:                           toPtr(false),
+				Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
 				ExternalRouterMtu:                     toPtr(uint16(9100)),
 				MaxEvpnRoutes:                         toPtr(uint32(92342)),
 				AntiAffinityPolicy: &AntiAffinityPolicy{
@@ -218,7 +217,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 				DefaultSviL3Mtu:                       toPtr(uint16(9050)),
 				JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumEnabled,
 				FabricL3Mtu:                           toPtr(uint16(9176)),
-				Ipv6Enabled:                           toPtr(false),
+				Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
 				ExternalRouterMtu:                     toPtr(uint16(9050)),
 				MaxEvpnRoutes:                         toPtr(uint32(92332)),
 				AntiAffinityPolicy: &AntiAffinityPolicy{
@@ -247,7 +246,8 @@ func TestSetGetFabricSettings(t *testing.T) {
 			tName, tCase := tName, tCase
 			t.Run(tName, func(t *testing.T) {
 				if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(bpClient.client.apiVersion) {
-					t.Skipf("skipping test %q due to mismatch version %q", tName, bpClient.client.apiVersion)
+					t.Skipf("skipping test %q due to version constraints: %q. API version %q",
+						tName, tCase.versionConstraint, bpClient.client.apiVersion)
 				}
 
 				log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
