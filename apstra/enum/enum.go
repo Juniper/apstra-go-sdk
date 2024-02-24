@@ -66,7 +66,7 @@ func (o value) Type() EnumType {
 	return o.enumType
 }
 
-// New returns n Value based on t and s, or nil if t, s or the
+// New returns a Value based on t and s, or nil if t, s or the
 // t, s combination is invalid.
 func New(t EnumType, s string) Value {
 	if valueFuncs, ok := enumTypeToFuncs[t]; ok {
