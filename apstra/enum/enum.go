@@ -4,8 +4,6 @@ import (
 	olEnum "github.com/orsinium-labs/enum"
 )
 
-var enumTypeToFuncs = enumFuncsToMapByType()
-
 type EnumType int
 
 func (o EnumType) Values() []Value {
@@ -36,7 +34,6 @@ type Value interface {
 	Equal(instance Value) bool
 	String() string
 	Type() EnumType
-	member() olEnum.Member[string]
 }
 
 func newInstance(t EnumType, s string) Value {
@@ -69,17 +66,13 @@ func (o value) Type() EnumType {
 	return o.enumType
 }
 
-func (o value) member() olEnum.Member[string] {
-	return *o.value
-}
-
 // New returns n Value based on t and s, or nil if t, s or the
 // t, s combination is invalid.
 func New(t EnumType, s string) Value {
 	if valueFuncs, ok := enumTypeToFuncs[t]; ok {
 		members := make([]olEnum.Member[string], len(valueFuncs))
 		for i, valueFunc := range valueFuncs {
-			members[i] = valueFunc().(value).member()
+			members[i] = *valueFunc().(value).value
 		}
 
 		e := olEnum.New(members...).Parse(s)
@@ -96,7 +89,7 @@ func New(t EnumType, s string) Value {
 	return nil // t not a valid enum type
 }
 
-func enumFuncsToMapByType() map[EnumType][]func() Value {
+var enumTypeToFuncs = func() map[EnumType][]func() Value {
 	result := make(map[EnumType][]func() Value)
 	for _, f := range enumFuncs {
 		current := result[f().Type()]
@@ -104,4 +97,4 @@ func enumFuncsToMapByType() map[EnumType][]func() Value {
 		result[f().Type()] = current
 	}
 	return result
-}
+}()
