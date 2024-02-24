@@ -94,13 +94,13 @@ func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, i
 }
 
 type rawVirtualNetworkPolicy41x struct {
-	EvpnGenerateType5HostRoutes *string `json:"evpn_generate_type5_host_routes"`
-	ExternalRouterMtu           *uint16 `json:"external_router_mtu"`
-	MaxFabricRoutes             *uint32 `json:"max_fabric_routes"`
-	MaxMlagRoutes               *uint32 `json:"max_mlag_routes"`
-	MaxEvpnRoutes               *uint32 `json:"max_evpn_routes"`
-	MaxExternalRoutes           *uint32 `json:"max_external_routes"`
-	OverlayControlProtocol      *string `json:"overlay_control_protocol"`
+	EvpnGenerateType5HostRoutes *string `json:"evpn_generate_type5_host_routes,omitempty"`
+	ExternalRouterMtu           *uint16 `json:"external_router_mtu,omitempty"`
+	MaxFabricRoutes             *uint32 `json:"max_fabric_routes,omitempty"`
+	MaxMlagRoutes               *uint32 `json:"max_mlag_routes,omitempty"`
+	MaxEvpnRoutes               *uint32 `json:"max_evpn_routes,omitempty"`
+	MaxExternalRoutes           *uint32 `json:"max_external_routes,omitempty"`
+	OverlayControlProtocol      *string `json:"overlay_control_protocol,omitempty"`
 }
 
 func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy41x(ctx context.Context) (*rawVirtualNetworkPolicy41x, error) {
@@ -132,11 +132,7 @@ func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy41x(ctx context.Context, i
 		return nil // nothing to do if all relevant input fields are nil
 	}
 
-	if !o.client.apiVersion.Equal(version.Must(version.NewVersion(apstra412))) {
-		return fmt.Errorf("setRawVirtualNetworkPolicy412() must not be invoked with apstra %s", o.client.apiVersion)
-	}
-
-	apiInput := rawVirtualNetworkPolicy41x{
+	patch := rawVirtualNetworkPolicy41x{
 		EvpnGenerateType5HostRoutes: in.EvpnGenerateType5HostRoutes,
 		ExternalRouterMtu:           in.ExternalRouterMtu,
 		MaxEvpnRoutes:               in.MaxEvpnRoutes,
@@ -145,13 +141,17 @@ func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy41x(ctx context.Context, i
 		MaxMlagRoutes:               in.MaxMlagRoutes,
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintVirtualNetworkPolicy, o.blueprintId),
-		apiInput: &apiInput,
-	})
+	fabricNodeIds, err := o.NodeIdsByType(ctx, NodeTypeVirtualNetworkPolicy)
 	if err != nil {
-		return convertTtaeToAceWherePossible(err)
+		return err
+	}
+	if len(fabricNodeIds) != 1 {
+		return fmt.Errorf("expected 1 %s node ID, got %d", NodeTypeFabricAddressingPolicy, len(fabricNodeIds))
+	}
+
+	err = o.PatchNode(ctx, fabricNodeIds[0], &patch, nil)
+	if err != nil {
+		return fmt.Errorf("failed patching %s node %q - %w", NodeTypeFabricAddressingPolicy, fabricNodeIds[0], err)
 	}
 
 	return nil
