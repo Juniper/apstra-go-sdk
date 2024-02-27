@@ -11,7 +11,8 @@ const (
 	apiUrlBlueprintAntiAffinityPolicy = apiUrlBlueprintByIdPrefix + "anti-affinity-policy"
 )
 
-func (o *TwoStageL3ClosClient) getAntiAffinityPolicy420(ctx context.Context) (*rawAntiAffinityPolicy, error) {
+// getAntiAffinityPolicy is for Apstra 4.2.0 and earlier (not available in 4.2.1)
+func (o *TwoStageL3ClosClient) getAntiAffinityPolicy(ctx context.Context) (*rawAntiAffinityPolicy, error) {
 	if !version.MustConstraints(version.NewConstraint("<=" + apstra420)).Check(o.client.apiVersion) {
 		return nil, fmt.Errorf("apstra %s does not support %q", o.client.apiVersion, apiUrlBlueprintAntiAffinityPolicy)
 	}
@@ -29,7 +30,8 @@ func (o *TwoStageL3ClosClient) getAntiAffinityPolicy420(ctx context.Context) (*r
 	return &result, nil
 }
 
-func (o *TwoStageL3ClosClient) setAntiAffinityPolicy420(ctx context.Context, in *rawAntiAffinityPolicy) error {
+// setAntiAffinityPolicy is for Apstra 4.2.0 and earlier (not available in 4.2.1)
+func (o *TwoStageL3ClosClient) setAntiAffinityPolicy(ctx context.Context, in *rawAntiAffinityPolicy) error {
 	if in == nil {
 		return nil
 	}

@@ -134,6 +134,15 @@ func (o AntiAffinityMode) String() string {
 	}
 }
 
+func (o *AntiAffinityMode) FromString(s string) error {
+	i, err := antiAffinityMode(s).parse()
+	if err != nil {
+		return err
+	}
+	*o = AntiAffinityMode(i)
+	return nil
+}
+
 func (o AntiAffinityMode) raw() antiAffinityMode {
 	return antiAffinityMode(o.String())
 }
