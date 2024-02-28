@@ -360,9 +360,9 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	}
 
 	if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion.String()) {
-		bpRequest.FabricAddressingPolicy = &BlueprintRequestFabricAddressingPolicy{
-			SpineSuperspineLinks: AddressingSchemeIp46,
-			SpineLeafLinks:       AddressingSchemeIp46,
+		bpRequest.FabricSettings = &FabricSettings{
+			SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
 		}
 	}
 
@@ -562,9 +562,9 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
-		FabricAddressingPolicy: &BlueprintRequestFabricAddressingPolicy{
-			SpineSuperspineLinks: AddressingSchemeIp46,
-			SpineLeafLinks:       AddressingSchemeIp46,
+		FabricSettings: &FabricSettings{
+			SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
 		},
 	})
 	if err != nil {

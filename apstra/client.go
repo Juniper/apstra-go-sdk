@@ -746,12 +746,18 @@ func (o *Client) GetAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, 
 
 // CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
 func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlueprintFromTemplateRequest) (ObjectId, error) {
-	if req.FabricAddressingPolicy != nil &&
-		req.FabricAddressingPolicy.FabricL3Mtu != nil &&
+	if req.FabricSettings != nil &&
+		req.FabricSettings.FabricL3Mtu != nil &&
 		fabricL3MtuForbidden.Check(o.apiVersion) {
 		return "", errors.New(fabricL3MtuForbiddenError)
 	}
-	return o.createBlueprintFromTemplate(ctx, req.raw())
+
+	switch {
+	case version.MustConstraints(version.NewConstraint(">=" + apstra421)).Check(o.apiVersion):
+		return o.createBlueprintFromTemplate(ctx, req.raw())
+	default:
+		return o.createBlueprintFromTemplate420(ctx, req.raw420())
+	}
 }
 
 // GetBlueprintStatus returns *BlueprintStatus for the specified blueprint ID
