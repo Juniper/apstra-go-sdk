@@ -344,6 +344,55 @@ func TestCreateDeleteBlueprintNew(t *testing.T) {
 				},
 			},
 		},
+		"4.1.2_specific_test": {
+			// set fabricMTU in the fabricSettings object.
+			versionConstraints: version.MustConstraints(version.NewConstraint(apstra412)),
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &FabricSettings{
+					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					FabricL3Mtu:          toPtr(uint16(9178)),
+				},
+			},
+		},
+		"lots_of_values": {
+			// 4.2.1 put all the goodies in there from fabric_settings
+			versionConstraints: version.MustConstraints(version.NewConstraint(">" + apstra412)),
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &FabricSettings{
+					JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),
+					MaxExternalRoutes:                     toPtr(uint32(239832)),
+					EsiMacMsb:                             toPtr(uint8(32)),
+					JunosGracefulRestart:                  &FeatureSwitchEnumDisabled,
+					OptimiseSzFootprint:                   &FeatureSwitchEnumEnabled,
+					JunosEvpnRoutingInstanceVlanAware:     &FeatureSwitchEnumEnabled,
+					EvpnGenerateType5HostRoutes:           &FeatureSwitchEnumEnabled,
+					MaxFabricRoutes:                       toPtr(uint32(84231)),
+					MaxMlagRoutes:                         toPtr(uint32(76112)),
+					JunosExOverlayEcmp:                    &FeatureSwitchEnumDisabled,
+					DefaultSviL3Mtu:                       toPtr(uint16(9100)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumDisabled,
+					FabricL3Mtu:                           toPtr(uint16(9178)),
+					Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
+					ExternalRouterMtu:                     toPtr(uint16(9100)),
+					MaxEvpnRoutes:                         toPtr(uint32(92342)),
+					AntiAffinityPolicy: &AntiAffinityPolicy{
+						Algorithm:                AlgorithmHeuristic,
+						MaxLinksPerPort:          2,
+						MaxLinksPerSlot:          2,
+						MaxPerSystemLinksPerPort: 2,
+						MaxPerSystemLinksPerSlot: 2,
+						Mode:                     AntiAffinityModeEnabledLoose,
+					},
+				},
+			},
+		},
 	}
 
 	fetchFabricAddressingScheme := func(t testing.TB, client *TwoStageL3ClosClient) (AddressingScheme, AddressingScheme) {
