@@ -1,8 +1,9 @@
 package apstra
 
 import (
-	"github.com/hashicorp/go-version"
 	"strings"
+
+	"github.com/hashicorp/go-version"
 )
 
 const (
@@ -34,8 +35,11 @@ const (
 )
 
 var (
-	fabricSettingsApiOk  = version.MustConstraints(version.NewConstraint(">=" + apstra421))
-	fabricL3MtuForbidden = version.MustConstraints(version.NewConstraint("<=" + apstra412))
+	geApstra421 = version.MustConstraints(version.NewConstraint(">=" + apstra421))
+	leApstra412 = version.MustConstraints(version.NewConstraint("<=" + apstra412))
+
+	fabricSettingsApiOk  = geApstra421
+	fabricL3MtuForbidden = leApstra412
 )
 
 // SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"

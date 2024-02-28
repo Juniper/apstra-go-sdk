@@ -10,6 +10,7 @@ const (
 	NodeTypeEpEndpointPolicy
 	NodeTypeEpGroup
 	NodeTypeFabricAddressingPolicy
+	NodeTypeFabricPolicy
 	NodeTypeInterface
 	NodeTypeInterfaceMap
 	NodeTypeLink
@@ -37,6 +38,7 @@ const (
 	nodeTypeEpEndpointPolicy       = nodeType("ep_endpoint_policy")
 	nodeTypeEpGroup                = nodeType("ep_group")
 	nodeTypeFabricAddressingPolicy = nodeType("fabric_addressing_policy")
+	nodeTypeFabricPolicy           = nodeType("fabric_policy")
 	nodeTypeInterface              = nodeType("interface")
 	nodeTypeInterfaceMap           = nodeType("interface_map")
 	nodeTypeLink                   = nodeType("link")
@@ -58,8 +60,10 @@ const (
 	nodeTypeUnknown                = "unknown node type %d"
 )
 
-type NodeType int
-type nodeType string
+type (
+	NodeType int
+	nodeType string
+)
 
 func (o NodeType) String() string {
 	switch o {
@@ -77,6 +81,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeEpGroup)
 	case NodeTypeFabricAddressingPolicy:
 		return string(nodeTypeFabricAddressingPolicy)
+	case NodeTypeFabricPolicy:
+		return string(nodeTypeFabricPolicy)
 	case NodeTypeInterface:
 		return string(nodeTypeInterface)
 	case NodeTypeInterfaceMap:
