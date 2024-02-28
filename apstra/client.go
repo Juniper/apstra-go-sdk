@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/hashicorp/go-version"
 )
 
 const (
@@ -1719,35 +1720,40 @@ func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*Blu
 }
 
 func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectId) (OverlayControlProtocol, error) {
-	var result struct {
-		Items []struct {
-			VirtualNetworkPolicy struct {
-				OverlayControlProtocol overlayControlProtocol `json:"overlay_control_protocol"`
-			} `json:"n_virtual_network_policy"`
-		} `json:"items"`
+	nodeAttributes := []QEEAttribute{{"name", QEStringVal("node")}}
+	switch {
+	case geApstra421.Check(o.apiVersion):
+		nodeAttributes = append(nodeAttributes, NodeTypeFabricPolicy.QEEAttribute())
+	default:
+		nodeAttributes = append(nodeAttributes, NodeTypeVirtualNetworkPolicy.QEEAttribute())
 	}
 
 	query := new(PathQuery).
 		SetBlueprintId(id).
 		SetClient(o).
-		Node([]QEEAttribute{
-			{"type", QEStringVal("virtual_network_policy")},
-			{"name", QEStringVal("n_virtual_network_policy")},
-		})
+		Node(nodeAttributes)
 
-	err := query.Do(ctx, &result)
+	var queryResult struct {
+		Items []struct {
+			VirtualNetworkPolicy struct {
+				OverlayControlProtocol overlayControlProtocol `json:"overlay_control_protocol"`
+			} `json:"node"`
+		} `json:"items"`
+	}
+
+	err := query.Do(ctx, &queryResult)
 	if err != nil {
 		return 0, fmt.Errorf("error querying blueprint virtual network policy - %w", err)
 	}
 
-	if len(result.Items) != 1 {
-		return 0, fmt.Errorf("expected 1 overlay_control_protocol node, got %d", len(result.Items))
+	if len(queryResult.Items) != 1 {
+		return 0, fmt.Errorf("expected 1 overlay_control_protocol node, got %d", len(queryResult.Items))
 	}
 
-	ocp, err := result.Items[0].VirtualNetworkPolicy.OverlayControlProtocol.parse()
+	ocp, err := queryResult.Items[0].VirtualNetworkPolicy.OverlayControlProtocol.parse()
 	if err != nil {
 		return 0, fmt.Errorf("error parsing overlay control protocol %q - %w",
-			result.Items[0].VirtualNetworkPolicy.OverlayControlProtocol, err)
+			queryResult.Items[0].VirtualNetworkPolicy.OverlayControlProtocol, err)
 	}
 
 	return OverlayControlProtocol(ocp), nil

@@ -12,6 +12,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestClientLog(t *testing.T) {
@@ -22,7 +24,6 @@ func TestClientLog(t *testing.T) {
 
 	for clientName, client := range clients {
 		client.client.Logf(1, "log test - client '%s'", clientName)
-
 	}
 }
 
@@ -324,6 +325,65 @@ func TestCRUDIntegerPools(t *testing.T) {
 
 		if len(pools) != beforePoolCount {
 			t.Fatalf("pools before creation: %d; after creation: %d", beforePoolCount, len(pools))
+		}
+	}
+}
+
+func TestBlueprintOverlayControlProtocol(t *testing.T) {
+	ctx := context.Background()
+
+	// get all clients
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	type testCase struct {
+		templateId ObjectId
+		expected   OverlayControlProtocol
+	}
+
+	testCases := map[string]testCase{
+		"L2_Virtual_EVPN": {
+			templateId: "L2_Virtual_EVPN",
+			expected:   OverlayControlProtocolEvpn,
+		},
+		"L2_Virtual": {
+			templateId: "L2_Virtual",
+			expected:   OverlayControlProtocolNone,
+		},
+	}
+
+	createBlueprint := func(t testing.TB, templateId ObjectId, client *Client) ObjectId {
+		t.Helper()
+
+		id, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
+			RefDesign:  RefDesignTwoStageL3Clos,
+			Label:      randString(5, "hex"),
+			TemplateId: templateId,
+		})
+		require.NoError(t, err)
+
+		t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, id)) })
+
+		return id
+	}
+
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+		for clientName, client := range clients {
+			clientName, client := clientName, client
+			t.Run(tName, func(t *testing.T) {
+				t.Parallel()
+
+				bpId := createBlueprint(t, tCase.templateId, client.client)
+
+				t.Logf("testing BlueprintOverlayControlProtocol(%s) against %s %s (%s)", bpId, client.clientType, clientName, client.client.ApiVersion())
+				ocp, err := client.client.BlueprintOverlayControlProtocol(ctx, bpId)
+				require.NoError(t, err)
+
+				if tCase.expected != ocp {
+					t.Fatalf("expected overlay control protocol %q, got %q", tCase.expected, ocp)
+				}
+			})
 		}
 	}
 }
