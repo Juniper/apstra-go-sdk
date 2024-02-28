@@ -1019,6 +1019,10 @@ func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSe
 
 // SetFabricSettings sets the specified fabric settings
 func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
+	if in.SpineLeafLinks != nil || in.SpineSuperspineLinks != nil {
+		return errors.New("SpineLeafLinks and SpineSuperspineLinks must be nil in SetFabricSettings()")
+	}
+
 	switch {
 	case fabricSettingsApiOk.Check(o.client.apiVersion):
 		return o.setFabricSettings(ctx, in.raw())

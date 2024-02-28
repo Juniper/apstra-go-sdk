@@ -39,6 +39,8 @@ type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.
 	MaxMlagRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
 	OptimiseSzFootprint                   *FeatureSwitchEnum      // security_zone_policy node		not supported					not supported					not supported
 	OverlayControlProtocol                *OverlayControlProtocol // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	SpineLeafLinks                        *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
+	SpineSuperspineLinks                  *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
 }
 
 func (o FabricSettings) raw() *rawFabricSettings {
@@ -55,6 +57,7 @@ func (o FabricSettings) raw() *rawFabricSettings {
 			jeriType = toPtr(junosEvpnRoutingInstanceTypeDefault.Value)
 		}
 	}
+
 	return &rawFabricSettings{
 		AntiAffinity:                          antiAffinityPolicy,
 		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
@@ -74,6 +77,26 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		MaxMlagRoutes:                         o.MaxMlagRoutes,
 		OptimiseSzFootprint:                   stringerPtrToStringPtr(o.OptimiseSzFootprint),
 		OverlayControlProtocol:                stringerPtrToStringPtr(o.OverlayControlProtocol),
+		SpineLeafLinks:                        addressingScheme(o.SpineLeafLinks.String()),
+		SpineSuperspineLinks:                  addressingScheme(o.SpineSuperspineLinks.String()),
+	}
+}
+
+func (o FabricSettings) rawBlueprintRequestFabricAddressingPolicy() *rawBlueprintRequestFabricAddressingPolicy {
+	var spineSuperspineLinks addressingScheme
+	if o.SpineSuperspineLinks != nil {
+		spineSuperspineLinks = addressingScheme(o.SpineSuperspineLinks.String())
+	}
+
+	var spineLeafLinks addressingScheme
+	if o.SpineLeafLinks != nil {
+		spineLeafLinks = addressingScheme(o.SpineLeafLinks.String())
+	}
+
+	return &rawBlueprintRequestFabricAddressingPolicy{
+		SpineSuperspineLinks: spineSuperspineLinks,
+		SpineLeafLinks:       spineLeafLinks,
+		FabricL3Mtu:          o.FabricL3Mtu,
 	}
 }
 
@@ -96,6 +119,13 @@ type rawFabricSettings struct {
 	MaxMlagRoutes                         *uint32                `json:"max_mlag_routes,omitempty"`
 	OptimiseSzFootprint                   *string                `json:"optimise_sz_footprint,omitempty"`
 	OverlayControlProtocol                *string                `json:"overlay_control_protocol,omitempty"`
+	SpineLeafLinks                        addressingScheme       `json:"spine_leaf_links,omitempty"`       // ['ipv4', 'ipv6', 'ipv4_ipv6'],
+	SpineSuperspineLinks                  addressingScheme       `json:"spine_superspine_links,omitempty"` // ['ipv4', 'ipv6', 'ipv4_ipv6']
+	// leaf_loopbacks ['ipv4', 'ipv4_ipv6']
+	// spine_loopbacks ['ipv4', 'ipv4_ipv6']
+	// mlag_svi_subnets ['ipv4', 'ipv4_ipv6']
+	// leaf_l3_peer_links ['ipv4', 'ipv4_ipv6']
+	// default_fabric_evi_route_target
 }
 
 func (o rawFabricSettings) polish() (*FabricSettings, error) {
@@ -125,6 +155,25 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	var spineLeafLinks *AddressingScheme
+	if o.SpineLeafLinks != "" {
+		i, err := o.SpineLeafLinks.parse()
+		if err != nil {
+			return nil, err
+		}
+		spineLeafLinks = toPtr(AddressingScheme(i))
+	}
+
+	var spineSuperspineLinks *AddressingScheme
+	if o.SpineSuperspineLinks != "" {
+		i, err := o.SpineSuperspineLinks.parse()
+		if err != nil {
+			return nil, err
+		}
+		spineSuperspineLinks = toPtr(AddressingScheme(i))
+	}
+
 	return &FabricSettings{
 		AntiAffinityPolicy:                    antiAffinityPolicy,
 		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
@@ -144,6 +193,8 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 		MaxMlagRoutes:                         o.MaxMlagRoutes,
 		OptimiseSzFootprint:                   featureSwitchEnumFromStringPtr(o.OptimiseSzFootprint),
 		OverlayControlProtocol:                ocp,
+		SpineLeafLinks:                        spineLeafLinks,
+		SpineSuperspineLinks:                  spineSuperspineLinks,
 	}, nil
 }
 
