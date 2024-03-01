@@ -35,6 +35,8 @@ const (
 )
 
 var (
+	geApstra411 = version.MustConstraints(version.NewConstraint(">=" + apstra411))
+	geApstra420 = version.MustConstraints(version.NewConstraint(">=" + apstra420))
 	geApstra421 = version.MustConstraints(version.NewConstraint(">=" + apstra421))
 	leApstra412 = version.MustConstraints(version.NewConstraint("<=" + apstra412))
 

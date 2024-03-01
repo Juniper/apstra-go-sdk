@@ -58,6 +58,16 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		}
 	}
 
+	var spineLeafLinks *addressingScheme
+	if o.SpineLeafLinks != nil {
+		spineLeafLinks = toPtr(addressingScheme(o.SpineLeafLinks.String()))
+	}
+
+	var spineSuperspineLinks *addressingScheme
+	if o.SpineSuperspineLinks != nil {
+		spineSuperspineLinks = toPtr(addressingScheme(o.SpineSuperspineLinks.String()))
+	}
+
 	return &rawFabricSettings{
 		AntiAffinity:                          antiAffinityPolicy,
 		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
@@ -77,8 +87,8 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		MaxMlagRoutes:                         o.MaxMlagRoutes,
 		OptimiseSzFootprint:                   stringerPtrToStringPtr(o.OptimiseSzFootprint),
 		OverlayControlProtocol:                stringerPtrToStringPtr(o.OverlayControlProtocol),
-		SpineLeafLinks:                        addressingScheme(o.SpineLeafLinks.String()),
-		SpineSuperspineLinks:                  addressingScheme(o.SpineSuperspineLinks.String()),
+		SpineLeafLinks:                        spineLeafLinks,
+		SpineSuperspineLinks:                  spineSuperspineLinks,
 	}
 }
 
@@ -119,8 +129,8 @@ type rawFabricSettings struct {
 	MaxMlagRoutes                         *uint32                `json:"max_mlag_routes,omitempty"`
 	OptimiseSzFootprint                   *string                `json:"optimise_sz_footprint,omitempty"`
 	OverlayControlProtocol                *string                `json:"overlay_control_protocol,omitempty"`
-	SpineLeafLinks                        addressingScheme       `json:"spine_leaf_links,omitempty"`       // ['ipv4', 'ipv6', 'ipv4_ipv6'],
-	SpineSuperspineLinks                  addressingScheme       `json:"spine_superspine_links,omitempty"` // ['ipv4', 'ipv6', 'ipv4_ipv6']
+	SpineLeafLinks                        *addressingScheme      `json:"spine_leaf_links,omitempty"`       // ['ipv4', 'ipv6', 'ipv4_ipv6'],
+	SpineSuperspineLinks                  *addressingScheme      `json:"spine_superspine_links,omitempty"` // ['ipv4', 'ipv6', 'ipv4_ipv6']
 	// leaf_loopbacks ['ipv4', 'ipv4_ipv6']
 	// spine_loopbacks ['ipv4', 'ipv4_ipv6']
 	// mlag_svi_subnets ['ipv4', 'ipv4_ipv6']
@@ -157,7 +167,7 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 	}
 
 	var spineLeafLinks *AddressingScheme
-	if o.SpineLeafLinks != "" {
+	if o.SpineLeafLinks != nil {
 		i, err := o.SpineLeafLinks.parse()
 		if err != nil {
 			return nil, err
@@ -166,7 +176,7 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 	}
 
 	var spineSuperspineLinks *AddressingScheme
-	if o.SpineSuperspineLinks != "" {
+	if o.SpineSuperspineLinks != nil {
 		i, err := o.SpineSuperspineLinks.parse()
 		if err != nil {
 			return nil, err
