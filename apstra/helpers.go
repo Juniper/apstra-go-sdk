@@ -3,12 +3,13 @@ package apstra
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"net"
 	"reflect"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func pp(in interface{}, out io.Writer) error {
@@ -53,8 +54,10 @@ func itemInSlice[A comparable](item A, slice []A) bool {
 	return false
 }
 
-var uuidInit bool
-var uuidInitMutex sync.Mutex
+var (
+	uuidInit      bool
+	uuidInitMutex sync.Mutex
+)
 
 // initUUID sets the "hardware address" used for generating UUIDv1 strings to "apstra"
 func initUUID() {

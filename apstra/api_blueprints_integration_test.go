@@ -9,6 +9,9 @@ import (
 	"log"
 	"math/rand"
 	"testing"
+
+	"github.com/hashicorp/go-version"
+	"github.com/stretchr/testify/require"
 )
 
 func TestListAllBlueprintIds(t *testing.T) {
@@ -58,24 +61,24 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		var blueprintFabricAddressingPolicy *BlueprintRequestFabricAddressingPolicy
+		var fabricSettings *FabricSettings
 		if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.client.apiVersion.String()) {
 			// forbidden in the template means we can use this feature in the blueprint
-			blueprintFabricAddressingPolicy = &BlueprintRequestFabricAddressingPolicy{}
+			fabricSettings = &FabricSettings{}
 
 			if !fabricL3MtuForbidden.Check(client.client.apiVersion) {
 				fabricL3Mtu := uint16(rand.Intn(550)*2 + 8000) // even number 8000 - 9100
-				blueprintFabricAddressingPolicy.FabricL3Mtu = &fabricL3Mtu
-				blueprintFabricAddressingPolicy.SpineLeafLinks = AddressingSchemeIp46
-				blueprintFabricAddressingPolicy.SpineSuperspineLinks = AddressingSchemeIp46
+				fabricSettings.FabricL3Mtu = &fabricL3Mtu
+				fabricSettings.SpineLeafLinks = toPtr(AddressingSchemeIp46)
+				fabricSettings.SpineSuperspineLinks = toPtr(AddressingSchemeIp46)
 			}
 		}
 
 		req := CreateBlueprintFromTemplateRequest{
-			RefDesign:              RefDesignTwoStageL3Clos,
-			Label:                  randString(10, "hex"),
-			TemplateId:             "L2_Virtual_EVPN",
-			FabricAddressingPolicy: blueprintFabricAddressingPolicy,
+			RefDesign:      RefDesignTwoStageL3Clos,
+			Label:          randString(10, "hex"),
+			TemplateId:     "L2_Virtual_EVPN",
+			FabricSettings: fabricSettings,
 		}
 
 		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -102,13 +105,13 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if req.FabricAddressingPolicy != nil && req.FabricAddressingPolicy.FabricL3Mtu != nil {
+		if req.FabricSettings != nil && req.FabricSettings.FabricL3Mtu != nil {
 			fap, err := bpClient.GetFabricAddressingPolicy(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if *req.FabricAddressingPolicy.FabricL3Mtu != *fap.FabricL3Mtu {
-				t.Fatalf("expected fabric MTU %d, got %d", *req.FabricAddressingPolicy.FabricL3Mtu, *fap.FabricL3Mtu)
+			if *req.FabricSettings.FabricL3Mtu != *fap.FabricL3Mtu {
+				t.Fatalf("expected fabric MTU %d, got %d", *req.FabricSettings.FabricL3Mtu, *fap.FabricL3Mtu)
 			}
 		}
 
@@ -308,5 +311,421 @@ func TestPatchNodes(t *testing.T) {
 				t.Fatalf("patch expected label %s, got label %s", n.(node).Label, result.Label)
 			}
 		}
+	}
+}
+
+func TestCreateDeleteEvpnBlueprint(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	type testCase struct {
+		req                CreateBlueprintFromTemplateRequest
+		versionConstraints version.Constraints
+	}
+
+	testCases := map[string]testCase{
+		"simple": {
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+			},
+		},
+		"4.1.1_and_later": {
+			versionConstraints: geApstra411,
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &FabricSettings{
+					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+				},
+			},
+		},
+		"4.2.0_specific_test": {
+			versionConstraints: geApstra420,
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &FabricSettings{
+					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					FabricL3Mtu:          toPtr(uint16(9178)),
+				},
+			},
+		},
+		"lots_of_values": {
+			versionConstraints: geApstra420,
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &FabricSettings{
+					JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),
+					MaxExternalRoutes:                     toPtr(uint32(239832)),
+					EsiMacMsb:                             toPtr(uint8(32)),
+					JunosGracefulRestart:                  &FeatureSwitchEnumDisabled,
+					OptimiseSzFootprint:                   &FeatureSwitchEnumDisabled,
+					JunosEvpnRoutingInstanceVlanAware:     &FeatureSwitchEnumDisabled,
+					EvpnGenerateType5HostRoutes:           &FeatureSwitchEnumDisabled,
+					MaxFabricRoutes:                       toPtr(uint32(84231)),
+					MaxMlagRoutes:                         toPtr(uint32(76112)),
+					JunosExOverlayEcmp:                    &FeatureSwitchEnumDisabled,
+					DefaultSviL3Mtu:                       toPtr(uint16(9100)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumDisabled,
+					FabricL3Mtu:                           toPtr(uint16(9178)),
+					Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
+					ExternalRouterMtu:                     toPtr(uint16(9100)),
+					MaxEvpnRoutes:                         toPtr(uint32(92342)),
+					AntiAffinityPolicy: &AntiAffinityPolicy{
+						Algorithm:                AlgorithmHeuristic,
+						MaxLinksPerPort:          2,
+						MaxLinksPerSlot:          2,
+						MaxPerSystemLinksPerPort: 2,
+						MaxPerSystemLinksPerSlot: 2,
+						Mode:                     AntiAffinityModeEnabledLoose,
+					},
+					SpineLeafLinks:       toPtr(AddressingSchemeIp4),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp4),
+				},
+			},
+		},
+		"different_values": {
+			versionConstraints: geApstra420,
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &FabricSettings{
+					JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(14)),
+					MaxExternalRoutes:                     toPtr(uint32(233832)),
+					EsiMacMsb:                             toPtr(uint8(50)),
+					JunosGracefulRestart:                  &FeatureSwitchEnumEnabled,
+					OptimiseSzFootprint:                   &FeatureSwitchEnumEnabled,
+					JunosEvpnRoutingInstanceVlanAware:     &FeatureSwitchEnumEnabled,
+					EvpnGenerateType5HostRoutes:           &FeatureSwitchEnumEnabled,
+					MaxFabricRoutes:                       toPtr(uint32(82231)),
+					MaxMlagRoutes:                         toPtr(uint32(74112)),
+					JunosExOverlayEcmp:                    &FeatureSwitchEnumEnabled,
+					DefaultSviL3Mtu:                       toPtr(uint16(9070)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumEnabled,
+					FabricL3Mtu:                           toPtr(uint16(9172)),
+					Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
+					ExternalRouterMtu:                     toPtr(uint16(9080)),
+					MaxEvpnRoutes:                         toPtr(uint32(91342)),
+					AntiAffinityPolicy: &AntiAffinityPolicy{
+						Algorithm:                AlgorithmHeuristic,
+						MaxLinksPerPort:          4,
+						MaxLinksPerSlot:          4,
+						MaxPerSystemLinksPerPort: 4,
+						MaxPerSystemLinksPerSlot: 4,
+						Mode:                     AntiAffinityModeEnabledLoose,
+					},
+					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+				},
+			},
+		},
+	}
+
+	fetchFabricAddressingScheme := func(t testing.TB, client *TwoStageL3ClosClient) (AddressingScheme, AddressingScheme) {
+		t.Helper()
+
+		query := new(PathQuery).
+			SetClient(client.client).
+			SetBlueprintId(client.blueprintId)
+		if version.MustConstraints(version.NewConstraint(">=" + apstra421)).Check(client.client.apiVersion) {
+			query.Node([]QEEAttribute{
+				NodeTypeFabricPolicy.QEEAttribute(),
+				{Key: "name", Value: QEStringVal("node")},
+			})
+		} else {
+			query.Node([]QEEAttribute{
+				NodeTypeFabricAddressingPolicy.QEEAttribute(),
+				{Key: "name", Value: QEStringVal("node")},
+			})
+		}
+
+		var queryResponse struct {
+			Items []struct {
+				Node struct {
+					SpineLeafLinks       addressingScheme `json:"spine_leaf_links"`
+					SpineSuperspineLinks addressingScheme `json:"spine_superspine_links"`
+				} `json:"node"`
+			} `json:"items"`
+		}
+
+		err := query.Do(ctx, &queryResponse)
+		require.NoError(t, err)
+
+		if len(queryResponse.Items) != 1 {
+			t.Fatalf("got %d responses when querying for fabric addressing", len(queryResponse.Items))
+		}
+
+		spineLeaf, err := queryResponse.Items[0].Node.SpineLeafLinks.parse()
+		require.NoError(t, err)
+		spineSuperspine, err := queryResponse.Items[0].Node.SpineLeafLinks.parse()
+		require.NoError(t, err)
+
+		return AddressingScheme(spineLeaf), AddressingScheme(spineSuperspine)
+	}
+
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			for clientName, client := range clients {
+				if tCase.versionConstraints != nil && !tCase.versionConstraints.Check(client.client.apiVersion) {
+					t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.versionConstraints)
+				}
+
+				t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				id, err := client.client.CreateBlueprintFromTemplate(ctx, &tCase.req)
+				require.NoError(t, err)
+
+				t.Logf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+				require.NoError(t, err)
+
+				if tCase.req.FabricSettings != nil {
+					t.Logf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					fabricSettings, err := bpClient.GetFabricSettings(ctx)
+					require.NoError(t, err)
+
+					t.Logf("comparing create-time vs. fetched blueprint fabric settings against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					compareFabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
+
+					if tCase.req.FabricSettings.SpineLeafLinks != nil || tCase.req.FabricSettings.SpineSuperspineLinks != nil {
+						spineLeaf, spineSuperspine := fetchFabricAddressingScheme(t, bpClient)
+
+						if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
+							t.Fatalf("expected spine leaf addressing: %q, got %q", *tCase.req.FabricSettings.SpineLeafLinks, spineLeaf)
+						}
+
+						if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
+							t.Fatalf("expected spine superspine addressing: %q, got %q", *tCase.req.FabricSettings.SpineSuperspineLinks, spineSuperspine)
+						}
+					}
+				}
+
+				t.Logf("testing DeleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = client.client.DeleteBlueprint(ctx, id)
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	type testCase struct {
+		req                CreateBlueprintFromTemplateRequest
+		versionConstraints version.Constraints
+	}
+
+	testCases := map[string]testCase{
+		"simple": {
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual",
+			},
+		},
+		"4.1.1_and_later": {
+			versionConstraints: geApstra411,
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual",
+				FabricSettings: &FabricSettings{
+					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+				},
+			},
+		},
+		"4.2.0_specific_test": {
+			versionConstraints: geApstra420,
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual",
+				FabricSettings: &FabricSettings{
+					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					FabricL3Mtu:          toPtr(uint16(9178)),
+				},
+			},
+		},
+		"lots_of_values": {
+			versionConstraints: geApstra420,
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual",
+				FabricSettings: &FabricSettings{
+					JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),
+					MaxExternalRoutes:                     toPtr(uint32(239832)),
+					EsiMacMsb:                             toPtr(uint8(32)),
+					JunosGracefulRestart:                  &FeatureSwitchEnumDisabled,
+					OptimiseSzFootprint:                   &FeatureSwitchEnumDisabled,
+					JunosEvpnRoutingInstanceVlanAware:     &FeatureSwitchEnumDisabled,
+					EvpnGenerateType5HostRoutes:           &FeatureSwitchEnumDisabled,
+					MaxFabricRoutes:                       toPtr(uint32(84231)),
+					MaxMlagRoutes:                         toPtr(uint32(76112)),
+					JunosExOverlayEcmp:                    &FeatureSwitchEnumDisabled,
+					DefaultSviL3Mtu:                       toPtr(uint16(9100)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumDisabled,
+					FabricL3Mtu:                           toPtr(uint16(9178)),
+					Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
+					ExternalRouterMtu:                     toPtr(uint16(9100)),
+					MaxEvpnRoutes:                         toPtr(uint32(92342)),
+					AntiAffinityPolicy: &AntiAffinityPolicy{
+						Algorithm:                AlgorithmHeuristic,
+						MaxLinksPerPort:          2,
+						MaxLinksPerSlot:          2,
+						MaxPerSystemLinksPerPort: 2,
+						MaxPerSystemLinksPerSlot: 2,
+						Mode:                     AntiAffinityModeEnabledLoose,
+					},
+					SpineLeafLinks:       toPtr(AddressingSchemeIp4),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp4),
+				},
+			},
+		},
+		"different_values": {
+			versionConstraints: geApstra420,
+			req: CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(5, "hex"),
+				TemplateId: "L2_Virtual",
+				FabricSettings: &FabricSettings{
+					JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(14)),
+					MaxExternalRoutes:                     toPtr(uint32(233832)),
+					EsiMacMsb:                             toPtr(uint8(50)),
+					JunosGracefulRestart:                  &FeatureSwitchEnumEnabled,
+					OptimiseSzFootprint:                   &FeatureSwitchEnumEnabled,
+					JunosEvpnRoutingInstanceVlanAware:     &FeatureSwitchEnumEnabled,
+					EvpnGenerateType5HostRoutes:           &FeatureSwitchEnumEnabled,
+					MaxFabricRoutes:                       toPtr(uint32(82231)),
+					MaxMlagRoutes:                         toPtr(uint32(74112)),
+					JunosExOverlayEcmp:                    &FeatureSwitchEnumEnabled,
+					DefaultSviL3Mtu:                       toPtr(uint16(9070)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumEnabled,
+					FabricL3Mtu:                           toPtr(uint16(9172)),
+					Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
+					ExternalRouterMtu:                     toPtr(uint16(9080)),
+					MaxEvpnRoutes:                         toPtr(uint32(91342)),
+					AntiAffinityPolicy: &AntiAffinityPolicy{
+						Algorithm:                AlgorithmHeuristic,
+						MaxLinksPerPort:          4,
+						MaxLinksPerSlot:          4,
+						MaxPerSystemLinksPerPort: 4,
+						MaxPerSystemLinksPerSlot: 4,
+						Mode:                     AntiAffinityModeEnabledLoose,
+					},
+					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+				},
+			},
+		},
+	}
+
+	fetchFabricAddressingScheme := func(t testing.TB, client *TwoStageL3ClosClient) (AddressingScheme, AddressingScheme) {
+		t.Helper()
+
+		query := new(PathQuery).
+			SetClient(client.client).
+			SetBlueprintId(client.blueprintId)
+		if version.MustConstraints(version.NewConstraint(">=" + apstra421)).Check(client.client.apiVersion) {
+			query.Node([]QEEAttribute{
+				NodeTypeFabricPolicy.QEEAttribute(),
+				{Key: "name", Value: QEStringVal("node")},
+			})
+		} else {
+			query.Node([]QEEAttribute{
+				NodeTypeFabricAddressingPolicy.QEEAttribute(),
+				{Key: "name", Value: QEStringVal("node")},
+			})
+		}
+
+		var queryResponse struct {
+			Items []struct {
+				Node struct {
+					SpineLeafLinks       addressingScheme `json:"spine_leaf_links"`
+					SpineSuperspineLinks addressingScheme `json:"spine_superspine_links"`
+				} `json:"node"`
+			} `json:"items"`
+		}
+
+		err := query.Do(ctx, &queryResponse)
+		require.NoError(t, err)
+
+		if len(queryResponse.Items) != 1 {
+			t.Fatalf("got %d responses when querying for fabric addressing", len(queryResponse.Items))
+		}
+
+		spineLeaf, err := queryResponse.Items[0].Node.SpineLeafLinks.parse()
+		require.NoError(t, err)
+		spineSuperspine, err := queryResponse.Items[0].Node.SpineLeafLinks.parse()
+		require.NoError(t, err)
+
+		return AddressingScheme(spineLeaf), AddressingScheme(spineSuperspine)
+	}
+
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			for clientName, client := range clients {
+				if tCase.versionConstraints != nil && !tCase.versionConstraints.Check(client.client.apiVersion) {
+					t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.versionConstraints)
+				}
+
+				t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				id, err := client.client.CreateBlueprintFromTemplate(ctx, &tCase.req)
+				require.NoError(t, err)
+
+				t.Logf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+				require.NoError(t, err)
+
+				if tCase.req.FabricSettings != nil {
+					t.Logf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					fabricSettings, err := bpClient.GetFabricSettings(ctx)
+					require.NoError(t, err)
+
+					t.Logf("comparing create-time vs. fetched blueprint fabric settings against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					compareFabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
+
+					if tCase.req.FabricSettings.SpineLeafLinks != nil || tCase.req.FabricSettings.SpineSuperspineLinks != nil {
+						spineLeaf, spineSuperspine := fetchFabricAddressingScheme(t, bpClient)
+
+						if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
+							t.Fatalf("expected spine leaf addressing: %q, got %q", *tCase.req.FabricSettings.SpineLeafLinks, spineLeaf)
+						}
+
+						if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
+							t.Fatalf("expected spine superspine addressing: %q, got %q", *tCase.req.FabricSettings.SpineSuperspineLinks, spineSuperspine)
+						}
+					}
+				}
+
+				t.Logf("testing DeleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = client.client.DeleteBlueprint(ctx, id)
+				require.NoError(t, err)
+			}
+		})
 	}
 }
