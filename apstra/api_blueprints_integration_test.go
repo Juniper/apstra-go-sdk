@@ -6,11 +6,12 @@ package apstra
 import (
 	"context"
 	"encoding/json"
-	"github.com/hashicorp/go-version"
-	"github.com/stretchr/testify/require"
 	"log"
 	"math/rand"
 	"testing"
+
+	"github.com/hashicorp/go-version"
+	"github.com/stretchr/testify/require"
 )
 
 func TestListAllBlueprintIds(t *testing.T) {

@@ -3,9 +3,10 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/go-version"
 	"github.com/orsinium-labs/enum"
-	"net/http"
 )
 
 const (

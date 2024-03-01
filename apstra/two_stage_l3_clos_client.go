@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"net"
 	"net/url"
 	"time"
+
+	"github.com/hashicorp/go-version"
 )
 
 const (
@@ -18,8 +19,10 @@ const (
 	dcClientRetryBackoff = 100 * time.Millisecond
 )
 
-type BlueprintType int
-type blueprintType string
+type (
+	BlueprintType int
+	blueprintType string
+)
 
 const (
 	BlueprintTypeNone = BlueprintType(iota)
@@ -785,8 +788,7 @@ func (o *TwoStageL3ClosClient) GetAllIbaPredefinedProbes(ctx context.Context) ([
 }
 
 // GetIbaPredefinedProbeByName locates a predefined probe by name
-func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe,
-	error) {
+func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe, error) {
 	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
 }
 
@@ -861,7 +863,6 @@ func (o *TwoStageL3ClosClient) GetIbaDashboardByLabel(ctx context.Context, label
 // CreateIbaDashboard creates an IBA Dashboard and returns the id of the created dashboard on success,
 // or a blank and error on failure
 func (o *TwoStageL3ClosClient) CreateIbaDashboard(ctx context.Context, data *IbaDashboardData) (ObjectId, error) {
-
 	id, err := o.client.createIbaDashboard(ctx, o.blueprintId, data.raw())
 	if err != nil {
 		return "", err
@@ -1014,7 +1015,6 @@ func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSe
 	}
 
 	return raw.polish()
-
 }
 
 // SetFabricSettings sets the specified fabric settings

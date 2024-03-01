@@ -61,8 +61,10 @@ type rawBlueprintRequestFabricAddressingPolicy struct {
 	FabricL3Mtu          *uint16          `json:"fabric_l3_mtu,omitempty"`
 }
 
-type RefDesign int
-type refDesign string
+type (
+	RefDesign int
+	refDesign string
+)
 
 func (o RefDesign) String() string {
 	switch o {
@@ -250,7 +252,6 @@ type rawBlueprintStatus struct {
 	//     "drain": 0,
 	//     "deploy": 0
 	//   },
-
 }
 
 func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {

@@ -5,9 +5,10 @@ package apstra
 
 import (
 	"context"
-	"github.com/hashicorp/go-version"
 	"log"
 	"testing"
+
+	"github.com/hashicorp/go-version"
 )
 
 func compareAntiAffinityPolicy(t testing.TB, set, get AntiAffinityPolicy) {
