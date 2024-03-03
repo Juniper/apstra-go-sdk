@@ -279,6 +279,84 @@ func TestSetGetFabricSettings(t *testing.T) {
 	}
 }
 
+func TestFabricSettingsRoutesMaxDefaultVsZero(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type testCase struct {
+		name              string
+		fabricSettings    FabricSettings
+		versionConstraint version.Constraints
+	}
+
+	// testCases are a slice here to ensure run order
+	testCases := []testCase{
+		{
+			name:           "defaults",
+			fabricSettings: FabricSettings{},
+		},
+		{
+			name: "values",
+			fabricSettings: FabricSettings{
+				MaxEvpnRoutes:     toPtr(uint32(10000)),
+				MaxExternalRoutes: toPtr(uint32(11000)),
+				MaxFabricRoutes:   toPtr(uint32(12000)),
+				MaxMlagRoutes:     toPtr(uint32(13000)),
+			},
+		},
+		{
+			name: "zeros",
+			fabricSettings: FabricSettings{
+				MaxEvpnRoutes:     toPtr(uint32(0)),
+				MaxExternalRoutes: toPtr(uint32(0)),
+				MaxFabricRoutes:   toPtr(uint32(0)),
+				MaxMlagRoutes:     toPtr(uint32(0)),
+			},
+		},
+		{
+			name:           "restore_defaults",
+			fabricSettings: FabricSettings{},
+		},
+	}
+
+	for clientName, client := range clients {
+		client := client
+		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
+		defer func() {
+			err = bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		for _, tCase := range testCases {
+			tCase := tCase
+			t.Run(tCase.name, func(t *testing.T) {
+				if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(bpClient.client.apiVersion) {
+					t.Skipf("skipping test %q due to version constraints: %q. API version %q",
+						tCase.name, tCase.versionConstraint, bpClient.client.apiVersion)
+				}
+
+				log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
+				err = bpClient.SetFabricSettings(ctx, &tCase.fabricSettings)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
+				fs, err := bpClient.GetFabricSettings(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				compareFabricSettings(t, tCase.fabricSettings, *fs)
+			})
+		}
+	}
+}
+
 func TestSetGetFabricSettingsV6(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
