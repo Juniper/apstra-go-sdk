@@ -124,10 +124,10 @@ type rawFabricSettings struct {
 	JunosEvpnRoutingInstanceType          *string                `json:"junos_evpn_routing_instance_type,omitempty"`
 	JunosExOverlayEcmp                    *string                `json:"junos_ex_overlay_ecmp,omitempty"`
 	JunosGracefulRestart                  *string                `json:"junos_graceful_restart,omitempty"`
-	MaxEvpnRoutes                         *uint32                `json:"max_evpn_routes,omitempty"`
-	MaxExternalRoutes                     *uint32                `json:"max_external_routes,omitempty"`
-	MaxFabricRoutes                       *uint32                `json:"max_fabric_routes,omitempty"`
-	MaxMlagRoutes                         *uint32                `json:"max_mlag_routes,omitempty"`
+	MaxEvpnRoutes                         *uint32                `json:"max_evpn_routes"`
+	MaxExternalRoutes                     *uint32                `json:"max_external_routes"`
+	MaxFabricRoutes                       *uint32                `json:"max_fabric_routes"`
+	MaxMlagRoutes                         *uint32                `json:"max_mlag_routes"`
 	OptimiseSzFootprint                   *string                `json:"optimise_sz_footprint,omitempty"`
 	OverlayControlProtocol                *string                `json:"overlay_control_protocol,omitempty"`
 	SpineLeafLinks                        *addressingScheme      `json:"spine_leaf_links,omitempty"`       // ['ipv4', 'ipv6', 'ipv4_ipv6'],
