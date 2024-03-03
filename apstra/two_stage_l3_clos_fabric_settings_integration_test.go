@@ -90,18 +90,30 @@ func compareFabricSettings(t testing.TB, set, get FabricSettings) {
 		t.Errorf("set JunosGracefulRestart %s got %s", *set.JunosGracefulRestart, *get.JunosGracefulRestart)
 	}
 
+	if (set.MaxEvpnRoutes == nil) != (get.MaxEvpnRoutes == nil) {
+		t.Errorf("set MaxEvpnRoutes - set nil: %t got nil: %t", set.MaxEvpnRoutes == nil, get.MaxEvpnRoutes == nil)
+	}
 	if set.MaxEvpnRoutes != nil && *set.MaxEvpnRoutes != *get.MaxEvpnRoutes {
 		t.Errorf("set MaxEvpnRoutes %d got %d", *set.MaxEvpnRoutes, *get.MaxEvpnRoutes)
 	}
 
+	if (set.MaxExternalRoutes == nil) != (get.MaxExternalRoutes == nil) {
+		t.Errorf("set MaxExternalRoutes - set nil: %t got nil: %t", set.MaxExternalRoutes == nil, get.MaxExternalRoutes == nil)
+	}
 	if set.MaxExternalRoutes != nil && *set.MaxExternalRoutes != *get.MaxExternalRoutes {
 		t.Errorf("set MaxExternalRoutes %d got %d", *set.MaxExternalRoutes, *get.MaxExternalRoutes)
 	}
 
+	if (set.MaxFabricRoutes == nil) != (get.MaxFabricRoutes == nil) {
+		t.Errorf("set MaxFabricRoutes - set nil: %t got nil: %t", set.MaxFabricRoutes == nil, get.MaxFabricRoutes == nil)
+	}
 	if set.MaxFabricRoutes != nil && *set.MaxFabricRoutes != *get.MaxFabricRoutes {
 		t.Errorf("set MaxFabricRoutes %d got %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
 	}
 
+	if (set.MaxMlagRoutes == nil) != (get.MaxMlagRoutes == nil) {
+		t.Errorf("set MaxMlagRoutes - set nil: %t got nil: %t", set.MaxMlagRoutes == nil, get.MaxMlagRoutes == nil)
+	}
 	if set.MaxMlagRoutes != nil && *set.MaxMlagRoutes != *get.MaxMlagRoutes {
 		t.Errorf("set MaxMlagRoutes %d got %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
 	}
