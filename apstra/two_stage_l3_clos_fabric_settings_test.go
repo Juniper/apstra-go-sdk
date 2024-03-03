@@ -42,53 +42,24 @@ func compareAntiAffinityPolicy(t testing.TB, set, get AntiAffinityPolicy) {
 func compareFabricSettings(t testing.TB, set, get FabricSettings) {
 	t.Helper()
 
-	if set.JunosEvpnDuplicateMacRecoveryTime != nil &&
-		*set.JunosEvpnDuplicateMacRecoveryTime != *get.JunosEvpnDuplicateMacRecoveryTime {
-		t.Errorf("set junosEvpnDuplicateMacRecoveryTime %d got %d", *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime)
-	}
-
-	if set.MaxExternalRoutes != nil && *set.MaxExternalRoutes != *get.MaxExternalRoutes {
-		t.Errorf("set MaxExternalRoutes %d got %d", *set.MaxExternalRoutes, *get.MaxExternalRoutes)
-	}
-
-	if set.EsiMacMsb != nil && *set.EsiMacMsb != *get.EsiMacMsb {
-		t.Errorf("set EsiMacMsb %d got %d", *set.EsiMacMsb, *get.EsiMacMsb)
-	}
-
-	if set.JunosGracefulRestart != nil && *set.JunosGracefulRestart != *get.JunosGracefulRestart {
-		t.Errorf("set JunosGracefulRestart %s got %s", *set.JunosGracefulRestart, *get.JunosGracefulRestart)
-	}
-
-	if set.OptimiseSzFootprint != nil && *set.OptimiseSzFootprint != *get.OptimiseSzFootprint {
-		t.Errorf("set OptimiseSzFootprint %s got %s", *set.OptimiseSzFootprint, *get.OptimiseSzFootprint)
-	}
-
-	if set.JunosEvpnRoutingInstanceVlanAware != nil && *set.JunosEvpnRoutingInstanceVlanAware != *get.JunosEvpnRoutingInstanceVlanAware {
-		t.Errorf("set JunosEvpnRoutingInstanceVlanAware %s got %s", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
-	}
-
-	if set.EvpnGenerateType5HostRoutes != nil && *set.EvpnGenerateType5HostRoutes != *get.EvpnGenerateType5HostRoutes {
-		t.Errorf("set EvpnGenerateType5HostRoutes %s got %s", *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes)
-	}
-
-	if set.MaxFabricRoutes != nil && *set.MaxFabricRoutes != *get.MaxFabricRoutes {
-		t.Errorf("set MaxFabricRoutes %d got %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
-	}
-
-	if set.MaxMlagRoutes != nil && *set.MaxMlagRoutes != *get.MaxMlagRoutes {
-		t.Errorf("set MaxMlagRoutes %d got %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
-	}
-
-	if set.JunosEvpnRoutingInstanceVlanAware != nil && *set.JunosEvpnRoutingInstanceVlanAware != *get.JunosEvpnRoutingInstanceVlanAware {
-		t.Errorf("set JunosEvpnRoutingInstanceVlanAware %s got %s", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
+	if set.AntiAffinityPolicy != nil {
+		compareAntiAffinityPolicy(t, *get.AntiAffinityPolicy, *set.AntiAffinityPolicy)
 	}
 
 	if set.DefaultSviL3Mtu != nil && *set.DefaultSviL3Mtu != *get.DefaultSviL3Mtu {
 		t.Errorf("set DefaultSviL3Mtu  %d got %d", *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu)
 	}
 
-	if set.JunosEvpnMaxNexthopAndInterfaceNumber != nil && *set.JunosEvpnMaxNexthopAndInterfaceNumber != *get.JunosEvpnMaxNexthopAndInterfaceNumber {
-		t.Errorf("set JunosEvpnMaxNexthopAndInterfaceNumber %s got %s", *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber)
+	if set.EsiMacMsb != nil && *set.EsiMacMsb != *get.EsiMacMsb {
+		t.Errorf("set EsiMacMsb %d got %d", *set.EsiMacMsb, *get.EsiMacMsb)
+	}
+
+	if set.EvpnGenerateType5HostRoutes != nil && *set.EvpnGenerateType5HostRoutes != *get.EvpnGenerateType5HostRoutes {
+		t.Errorf("set EvpnGenerateType5HostRoutes %s got %s", *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes)
+	}
+
+	if set.ExternalRouterMtu != nil && *set.ExternalRouterMtu != *get.ExternalRouterMtu {
+		t.Errorf("set ExternalRouterMtu %d got %d", *set.ExternalRouterMtu, *get.ExternalRouterMtu)
 	}
 
 	if set.FabricL3Mtu != nil && *set.FabricL3Mtu != *get.FabricL3Mtu {
@@ -99,22 +70,50 @@ func compareFabricSettings(t testing.TB, set, get FabricSettings) {
 		t.Errorf("set Ipv6Enabled %t got %t", *set.Ipv6Enabled, *get.Ipv6Enabled)
 	}
 
-	// don't check overlay control protocol - it's an immutable value. attempts to set it have no effect.
-	//if set.OverlayControlProtocol != get.OverlayControlProtocol {
-	//	t.Errorf("set OverlayControlProtocol %s got %s", set.OverlayControlProtocol, get.OverlayControlProtocol)
-	//}
+	if set.JunosEvpnDuplicateMacRecoveryTime != nil && *set.JunosEvpnDuplicateMacRecoveryTime != *get.JunosEvpnDuplicateMacRecoveryTime {
+		t.Errorf("set junosEvpnDuplicateMacRecoveryTime %d got %d", *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime)
+	}
 
-	if set.ExternalRouterMtu != nil && *set.ExternalRouterMtu != *get.ExternalRouterMtu {
-		t.Errorf("set ExternalRouterMtu %d got %d", *set.ExternalRouterMtu, *get.ExternalRouterMtu)
+	if set.JunosEvpnRoutingInstanceVlanAware != nil && *set.JunosEvpnRoutingInstanceVlanAware != *get.JunosEvpnRoutingInstanceVlanAware {
+		t.Errorf("set JunosEvpnRoutingInstanceVlanAware %s got %s", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
+	}
+
+	if set.JunosEvpnMaxNexthopAndInterfaceNumber != nil && *set.JunosEvpnMaxNexthopAndInterfaceNumber != *get.JunosEvpnMaxNexthopAndInterfaceNumber {
+		t.Errorf("set JunosEvpnMaxNexthopAndInterfaceNumber %s got %s", *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber)
+	}
+
+	if set.JunosExOverlayEcmp != nil && *set.JunosExOverlayEcmp != *get.JunosExOverlayEcmp {
+		t.Errorf("set JunosExOverlayEcmp %s got %s", *set.JunosExOverlayEcmp, *get.JunosExOverlayEcmp)
+	}
+
+	if set.JunosGracefulRestart != nil && *set.JunosGracefulRestart != *get.JunosGracefulRestart {
+		t.Errorf("set JunosGracefulRestart %s got %s", *set.JunosGracefulRestart, *get.JunosGracefulRestart)
 	}
 
 	if set.MaxEvpnRoutes != nil && *set.MaxEvpnRoutes != *get.MaxEvpnRoutes {
 		t.Errorf("set MaxEvpnRoutes %d got %d", *set.MaxEvpnRoutes, *get.MaxEvpnRoutes)
 	}
 
-	if set.AntiAffinityPolicy != nil {
-		compareAntiAffinityPolicy(t, *get.AntiAffinityPolicy, *set.AntiAffinityPolicy)
+	if set.MaxExternalRoutes != nil && *set.MaxExternalRoutes != *get.MaxExternalRoutes {
+		t.Errorf("set MaxExternalRoutes %d got %d", *set.MaxExternalRoutes, *get.MaxExternalRoutes)
 	}
+
+	if set.MaxFabricRoutes != nil && *set.MaxFabricRoutes != *get.MaxFabricRoutes {
+		t.Errorf("set MaxFabricRoutes %d got %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
+	}
+
+	if set.MaxMlagRoutes != nil && *set.MaxMlagRoutes != *get.MaxMlagRoutes {
+		t.Errorf("set MaxMlagRoutes %d got %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
+	}
+
+	if set.OptimiseSzFootprint != nil && *set.OptimiseSzFootprint != *get.OptimiseSzFootprint {
+		t.Errorf("set OptimiseSzFootprint %s got %s", *set.OptimiseSzFootprint, *get.OptimiseSzFootprint)
+	}
+
+	// don't check overlay control protocol - it's an immutable value. attempts to set it have no effect.
+	//if set.OverlayControlProtocol != get.OverlayControlProtocol {
+	//	t.Errorf("set OverlayControlProtocol %s got %s", set.OverlayControlProtocol, get.OverlayControlProtocol)
+	//}
 }
 
 func TestSetGetFabricSettings(t *testing.T) {
