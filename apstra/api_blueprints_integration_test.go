@@ -729,3 +729,84 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	blueprintRequest := CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignTwoStageL3Clos,
+		Label:      randString(5, "hex"),
+		TemplateId: "L2_Virtual",
+	}
+
+	type testCase struct {
+		name string
+		//versionConstraints   version.Constraints
+		fabricSettings FabricSettings
+	}
+
+	testCases := []testCase{
+		{
+			name:           "create_with_defaults",
+			fabricSettings: FabricSettings{},
+		},
+		{
+			name: "create_with_zeros",
+			fabricSettings: FabricSettings{
+				MaxEvpnRoutes:     toPtr(uint32(0)),
+				MaxExternalRoutes: toPtr(uint32(0)),
+				MaxFabricRoutes:   toPtr(uint32(0)),
+				MaxMlagRoutes:     toPtr(uint32(0)),
+			},
+		},
+		{
+			name: "create_with_values",
+			fabricSettings: FabricSettings{
+				MaxEvpnRoutes:     toPtr(uint32(20001)),
+				MaxExternalRoutes: toPtr(uint32(20002)),
+				MaxFabricRoutes:   toPtr(uint32(20003)),
+				MaxMlagRoutes:     toPtr(uint32(20004)),
+			},
+		},
+	}
+
+	for clientName, client := range clients {
+		t.Run(client.client.apiVersion.String(), func(t *testing.T) {
+			if !geApstra421.Check(client.client.apiVersion) {
+				t.Skipf("skipping Apstra %s client due to version constraint", client.client.apiVersion)
+			}
+
+			for _, tCase := range testCases {
+				clientName, client := clientName, client
+				tCase := tCase
+
+				t.Run(tCase.name, func(t *testing.T) {
+
+					bpr := blueprintRequest
+					bpr.FabricSettings = &tCase.fabricSettings
+					t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					id, err := client.client.CreateBlueprintFromTemplate(ctx, &bpr)
+					require.NoError(t, err)
+
+					t.Logf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+					require.NoError(t, err)
+
+					t.Logf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					fabricSettings, err := bpClient.GetFabricSettings(ctx)
+					require.NoError(t, err)
+
+					t.Logf("comparing create-time vs. fetched blueprint fabric settings against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					compareFabricSettings(t, tCase.fabricSettings, *fabricSettings)
+
+					t.Logf("testing DeleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					err = client.client.DeleteBlueprint(ctx, id)
+					require.NoError(t, err)
+				})
+			}
+		})
+	}
+}

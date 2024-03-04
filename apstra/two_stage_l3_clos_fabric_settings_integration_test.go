@@ -42,53 +42,24 @@ func compareAntiAffinityPolicy(t testing.TB, set, get AntiAffinityPolicy) {
 func compareFabricSettings(t testing.TB, set, get FabricSettings) {
 	t.Helper()
 
-	if set.JunosEvpnDuplicateMacRecoveryTime != nil &&
-		*set.JunosEvpnDuplicateMacRecoveryTime != *get.JunosEvpnDuplicateMacRecoveryTime {
-		t.Errorf("set junosEvpnDuplicateMacRecoveryTime %d got %d", *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime)
-	}
-
-	if set.MaxExternalRoutes != nil && *set.MaxExternalRoutes != *get.MaxExternalRoutes {
-		t.Errorf("set MaxExternalRoutes %d got %d", *set.MaxExternalRoutes, *get.MaxExternalRoutes)
-	}
-
-	if set.EsiMacMsb != nil && *set.EsiMacMsb != *get.EsiMacMsb {
-		t.Errorf("set EsiMacMsb %d got %d", *set.EsiMacMsb, *get.EsiMacMsb)
-	}
-
-	if set.JunosGracefulRestart != nil && *set.JunosGracefulRestart != *get.JunosGracefulRestart {
-		t.Errorf("set JunosGracefulRestart %s got %s", *set.JunosGracefulRestart, *get.JunosGracefulRestart)
-	}
-
-	if set.OptimiseSzFootprint != nil && *set.OptimiseSzFootprint != *get.OptimiseSzFootprint {
-		t.Errorf("set OptimiseSzFootprint %s got %s", *set.OptimiseSzFootprint, *get.OptimiseSzFootprint)
-	}
-
-	if set.JunosEvpnRoutingInstanceVlanAware != nil && *set.JunosEvpnRoutingInstanceVlanAware != *get.JunosEvpnRoutingInstanceVlanAware {
-		t.Errorf("set JunosEvpnRoutingInstanceVlanAware %s got %s", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
-	}
-
-	if set.EvpnGenerateType5HostRoutes != nil && *set.EvpnGenerateType5HostRoutes != *get.EvpnGenerateType5HostRoutes {
-		t.Errorf("set EvpnGenerateType5HostRoutes %s got %s", *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes)
-	}
-
-	if set.MaxFabricRoutes != nil && *set.MaxFabricRoutes != *get.MaxFabricRoutes {
-		t.Errorf("set MaxFabricRoutes %d got %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
-	}
-
-	if set.MaxMlagRoutes != nil && *set.MaxMlagRoutes != *get.MaxMlagRoutes {
-		t.Errorf("set MaxMlagRoutes %d got %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
-	}
-
-	if set.JunosEvpnRoutingInstanceVlanAware != nil && *set.JunosEvpnRoutingInstanceVlanAware != *get.JunosEvpnRoutingInstanceVlanAware {
-		t.Errorf("set JunosEvpnRoutingInstanceVlanAware %s got %s", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
+	if set.AntiAffinityPolicy != nil {
+		compareAntiAffinityPolicy(t, *get.AntiAffinityPolicy, *set.AntiAffinityPolicy)
 	}
 
 	if set.DefaultSviL3Mtu != nil && *set.DefaultSviL3Mtu != *get.DefaultSviL3Mtu {
 		t.Errorf("set DefaultSviL3Mtu  %d got %d", *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu)
 	}
 
-	if set.JunosEvpnMaxNexthopAndInterfaceNumber != nil && *set.JunosEvpnMaxNexthopAndInterfaceNumber != *get.JunosEvpnMaxNexthopAndInterfaceNumber {
-		t.Errorf("set JunosEvpnMaxNexthopAndInterfaceNumber %s got %s", *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber)
+	if set.EsiMacMsb != nil && *set.EsiMacMsb != *get.EsiMacMsb {
+		t.Errorf("set EsiMacMsb %d got %d", *set.EsiMacMsb, *get.EsiMacMsb)
+	}
+
+	if set.EvpnGenerateType5HostRoutes != nil && *set.EvpnGenerateType5HostRoutes != *get.EvpnGenerateType5HostRoutes {
+		t.Errorf("set EvpnGenerateType5HostRoutes %s got %s", *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes)
+	}
+
+	if set.ExternalRouterMtu != nil && *set.ExternalRouterMtu != *get.ExternalRouterMtu {
+		t.Errorf("set ExternalRouterMtu %d got %d", *set.ExternalRouterMtu, *get.ExternalRouterMtu)
 	}
 
 	if set.FabricL3Mtu != nil && *set.FabricL3Mtu != *get.FabricL3Mtu {
@@ -99,22 +70,62 @@ func compareFabricSettings(t testing.TB, set, get FabricSettings) {
 		t.Errorf("set Ipv6Enabled %t got %t", *set.Ipv6Enabled, *get.Ipv6Enabled)
 	}
 
-	// don't check overlay control protocol - it's an immutable value. attempts to set it have no effect.
-	//if set.OverlayControlProtocol != get.OverlayControlProtocol {
-	//	t.Errorf("set OverlayControlProtocol %s got %s", set.OverlayControlProtocol, get.OverlayControlProtocol)
-	//}
-
-	if set.ExternalRouterMtu != nil && *set.ExternalRouterMtu != *get.ExternalRouterMtu {
-		t.Errorf("set ExternalRouterMtu %d got %d", *set.ExternalRouterMtu, *get.ExternalRouterMtu)
+	if set.JunosEvpnDuplicateMacRecoveryTime != nil && *set.JunosEvpnDuplicateMacRecoveryTime != *get.JunosEvpnDuplicateMacRecoveryTime {
+		t.Errorf("set junosEvpnDuplicateMacRecoveryTime %d got %d", *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime)
 	}
 
+	if set.JunosEvpnRoutingInstanceVlanAware != nil && *set.JunosEvpnRoutingInstanceVlanAware != *get.JunosEvpnRoutingInstanceVlanAware {
+		t.Errorf("set JunosEvpnRoutingInstanceVlanAware %s got %s", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
+	}
+
+	if set.JunosEvpnMaxNexthopAndInterfaceNumber != nil && *set.JunosEvpnMaxNexthopAndInterfaceNumber != *get.JunosEvpnMaxNexthopAndInterfaceNumber {
+		t.Errorf("set JunosEvpnMaxNexthopAndInterfaceNumber %s got %s", *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber)
+	}
+
+	if set.JunosExOverlayEcmp != nil && *set.JunosExOverlayEcmp != *get.JunosExOverlayEcmp {
+		t.Errorf("set JunosExOverlayEcmp %s got %s", *set.JunosExOverlayEcmp, *get.JunosExOverlayEcmp)
+	}
+
+	if set.JunosGracefulRestart != nil && *set.JunosGracefulRestart != *get.JunosGracefulRestart {
+		t.Errorf("set JunosGracefulRestart %s got %s", *set.JunosGracefulRestart, *get.JunosGracefulRestart)
+	}
+
+	if (set.MaxEvpnRoutes == nil) != (get.MaxEvpnRoutes == nil) {
+		t.Errorf("set MaxEvpnRoutes - set nil: %t got nil: %t", set.MaxEvpnRoutes == nil, get.MaxEvpnRoutes == nil)
+	}
 	if set.MaxEvpnRoutes != nil && *set.MaxEvpnRoutes != *get.MaxEvpnRoutes {
 		t.Errorf("set MaxEvpnRoutes %d got %d", *set.MaxEvpnRoutes, *get.MaxEvpnRoutes)
 	}
 
-	if set.AntiAffinityPolicy != nil {
-		compareAntiAffinityPolicy(t, *get.AntiAffinityPolicy, *set.AntiAffinityPolicy)
+	if (set.MaxExternalRoutes == nil) != (get.MaxExternalRoutes == nil) {
+		t.Errorf("set MaxExternalRoutes - set nil: %t got nil: %t", set.MaxExternalRoutes == nil, get.MaxExternalRoutes == nil)
 	}
+	if set.MaxExternalRoutes != nil && *set.MaxExternalRoutes != *get.MaxExternalRoutes {
+		t.Errorf("set MaxExternalRoutes %d got %d", *set.MaxExternalRoutes, *get.MaxExternalRoutes)
+	}
+
+	if (set.MaxFabricRoutes == nil) != (get.MaxFabricRoutes == nil) {
+		t.Errorf("set MaxFabricRoutes - set nil: %t got nil: %t", set.MaxFabricRoutes == nil, get.MaxFabricRoutes == nil)
+	}
+	if set.MaxFabricRoutes != nil && *set.MaxFabricRoutes != *get.MaxFabricRoutes {
+		t.Errorf("set MaxFabricRoutes %d got %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
+	}
+
+	if (set.MaxMlagRoutes == nil) != (get.MaxMlagRoutes == nil) {
+		t.Errorf("set MaxMlagRoutes - set nil: %t got nil: %t", set.MaxMlagRoutes == nil, get.MaxMlagRoutes == nil)
+	}
+	if set.MaxMlagRoutes != nil && *set.MaxMlagRoutes != *get.MaxMlagRoutes {
+		t.Errorf("set MaxMlagRoutes %d got %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
+	}
+
+	if set.OptimiseSzFootprint != nil && *set.OptimiseSzFootprint != *get.OptimiseSzFootprint {
+		t.Errorf("set OptimiseSzFootprint %s got %s", *set.OptimiseSzFootprint, *get.OptimiseSzFootprint)
+	}
+
+	// don't check overlay control protocol - it's an immutable value. attempts to set it have no effect.
+	//if set.OverlayControlProtocol != get.OverlayControlProtocol {
+	//	t.Errorf("set OverlayControlProtocol %s got %s", set.OverlayControlProtocol, get.OverlayControlProtocol)
+	//}
 }
 
 func TestSetGetFabricSettings(t *testing.T) {
@@ -249,6 +260,84 @@ func TestSetGetFabricSettings(t *testing.T) {
 				if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(bpClient.client.apiVersion) {
 					t.Skipf("skipping test %q due to version constraints: %q. API version %q",
 						tName, tCase.versionConstraint, bpClient.client.apiVersion)
+				}
+
+				log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
+				err = bpClient.SetFabricSettings(ctx, &tCase.fabricSettings)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
+				fs, err := bpClient.GetFabricSettings(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				compareFabricSettings(t, tCase.fabricSettings, *fs)
+			})
+		}
+	}
+}
+
+func TestFabricSettingsRoutesMaxDefaultVsZero(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type testCase struct {
+		name              string
+		fabricSettings    FabricSettings
+		versionConstraint version.Constraints
+	}
+
+	// testCases are a slice here to ensure run order
+	testCases := []testCase{
+		{
+			name:           "defaults",
+			fabricSettings: FabricSettings{},
+		},
+		{
+			name: "values",
+			fabricSettings: FabricSettings{
+				MaxEvpnRoutes:     toPtr(uint32(10000)),
+				MaxExternalRoutes: toPtr(uint32(11000)),
+				MaxFabricRoutes:   toPtr(uint32(12000)),
+				MaxMlagRoutes:     toPtr(uint32(13000)),
+			},
+		},
+		{
+			name: "zeros",
+			fabricSettings: FabricSettings{
+				MaxEvpnRoutes:     toPtr(uint32(0)),
+				MaxExternalRoutes: toPtr(uint32(0)),
+				MaxFabricRoutes:   toPtr(uint32(0)),
+				MaxMlagRoutes:     toPtr(uint32(0)),
+			},
+		},
+		{
+			name:           "restore_defaults",
+			fabricSettings: FabricSettings{},
+		},
+	}
+
+	for clientName, client := range clients {
+		client := client
+		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
+		defer func() {
+			err = bpDel(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		for _, tCase := range testCases {
+			tCase := tCase
+			t.Run(tCase.name, func(t *testing.T) {
+				if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(bpClient.client.apiVersion) {
+					t.Skipf("skipping test %q due to version constraints: %q. API version %q",
+						tCase.name, tCase.versionConstraint, bpClient.client.apiVersion)
 				}
 
 				log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
