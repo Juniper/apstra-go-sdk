@@ -403,17 +403,22 @@ func (o *Client) getBlueprintByName(ctx context.Context, name string) (*Blueprin
 
 func (o *Client) getAllBlueprintStatus(ctx context.Context) ([]rawBlueprintStatus, error) {
 	response := &getBluePrintsResponse{}
-	return response.Items, o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlBlueprints,
 		apiResponse: response,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return response.Items, nil
 }
 
 func (o *Client) getBlueprintStatus(ctx context.Context, id ObjectId) (*rawBlueprintStatus, error) {
 	blueprintStatuses, err := o.getAllBlueprintStatus(ctx)
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		return nil, err
 	}
 
 	// try to find the requested blueprint
