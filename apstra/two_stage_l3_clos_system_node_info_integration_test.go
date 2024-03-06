@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"regexp"
 	"sync"
 	"testing"
 	"time"
@@ -377,7 +378,7 @@ func TestSetGenericSystemLoopbackIPs(t *testing.T) {
 				}
 			}
 			if len(testBlueprints[i].genericSystems) == 0 {
-				t.Fatal("no generic systems found in blueprint")
+				t.Error("no generic systems found in blueprint")
 			}
 		}(i)
 		i++
@@ -386,13 +387,52 @@ func TestSetGenericSystemLoopbackIPs(t *testing.T) {
 	wg.Wait()
 
 	type testCase struct {
-		ip4           *net.IPNet
-		ip6           *net.IPNet
-		expectedError string
+		ip4          *net.IPNet
+		ip6          *net.IPNet
+		errGetRegexp string
+		errSetRegexp string
 	}
 
 	testCases := map[string]testCase{
-		"a": {},
+		"empty": {
+			errGetRegexp: "Loopback with ID [0-9]+ for system .* is not found",
+		},
+		"v4_only": {
+			ip4: &net.IPNet{
+				IP:   randomIpv4(),
+				Mask: net.CIDRMask(32, 32),
+			},
+		},
+		"v6_only": {
+			ip6: &net.IPNet{
+				IP:   randomIpv6(),
+				Mask: net.CIDRMask(128, 128),
+			},
+		},
+		"v4_and_v6": {
+			ip4: &net.IPNet{
+				IP:   randomIpv4(),
+				Mask: net.CIDRMask(32, 32),
+			},
+			ip6: &net.IPNet{
+				IP:   randomIpv6(),
+				Mask: net.CIDRMask(128, 128),
+			},
+		},
+		"v4_bogus_mask": {
+			ip4: &net.IPNet{
+				IP:   randomIpv4(),
+				Mask: net.CIDRMask(24, 32),
+			},
+			errSetRegexp: "ip4 value does not contain a valid mask for loopback interfaces",
+		},
+		"v6_bogus_mask": {
+			ip6: &net.IPNet{
+				IP:   randomIpv6(),
+				Mask: net.CIDRMask(64, 128),
+			},
+			errSetRegexp: "ip6 value does not contain a valid mask for loopback interfaces",
+		},
 	}
 
 	for tName, tCase := range testCases {
@@ -402,7 +442,7 @@ func TestSetGenericSystemLoopbackIPs(t *testing.T) {
 				tCase := tCase
 				testBlueprint := testBlueprint
 				t.Run(testBlueprint.name, func(t *testing.T) {
-					// t.Parallel()
+					t.Parallel()
 
 					gsNodeId := testBlueprint.genericSystems[0]
 					bp := testBlueprint.bpClient
@@ -411,20 +451,36 @@ func TestSetGenericSystemLoopbackIPs(t *testing.T) {
 						Ipv4Addr: tCase.ip4,
 						Ipv6Addr: tCase.ip6,
 					})
-					if len(tCase.expectedError) == 0 {
+					if len(tCase.errSetRegexp) == 0 {
 						require.NoError(t, err)
 					} else {
-						assert.ErrorContains(t, err, tCase.expectedError)
+						if assert.Error(t, err) {
+							assert.Regexp(t, regexp.MustCompile(tCase.errSetRegexp), err.Error())
+						}
+						return
 					}
 
-					lo, err := bp.GetGenericSystemLoopback(ctx, gsNodeId, 0)
-					require.NoError(t, err)
-
-					if !(tCase.ip4.String() == lo.Ipv4Addr.String()) {
-						t.Errorf("expected %s / got %s", tCase.ip4, lo.Ipv4Addr)
+					lo0, err := bp.GetGenericSystemLoopback(ctx, gsNodeId, 0)
+					if len(tCase.errGetRegexp) == 0 {
+						require.NoError(t, err)
+					} else {
+						if assert.Error(t, err) {
+							assert.Regexp(t, regexp.MustCompile(tCase.errGetRegexp), err.Error())
+						}
+						return
 					}
-					if !(tCase.ip6.String() == lo.Ipv6Addr.String()) {
-						t.Errorf("expected %s / got %s", tCase.ip6, lo.Ipv6Addr)
+
+					if tCase.ip4 == nil {
+						tCase.ip4 = new(net.IPNet)
+					}
+					if !(lo0.Ipv4Addr.String() == tCase.ip4.String()) {
+						t.Errorf("expected %s / got %s", tCase.ip4, lo0.Ipv4Addr)
+					}
+					if tCase.ip6 == nil {
+						tCase.ip6 = new(net.IPNet)
+					}
+					if !(lo0.Ipv6Addr.String() == tCase.ip6.String()) {
+						t.Errorf("expected %s / got %s", tCase.ip6, lo0.Ipv6Addr)
 					}
 				})
 			}

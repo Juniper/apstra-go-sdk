@@ -15,21 +15,25 @@ const (
 	apiUrlDesignTemplateById    = apiUrlDesignTemplatesPrefix + "%s"
 )
 
-type AntiAffninityAlgorithm int
-type antiAffinityAlgorithm string
-type AntiAffinityMode int
-type antiAffinityMode string
-type TemplateType int
-type templateType string
-type AsnAllocationScheme int
-type asnAllocationScheme string
-type AddressingScheme int
-type addressingScheme string
+type (
+	AntiAffninityAlgorithm int
+	antiAffinityAlgorithm  string
+	AntiAffinityMode       int
+	antiAffinityMode       string
+	TemplateType           int
+	templateType           string
+	AsnAllocationScheme    int
+	asnAllocationScheme    string
+	AddressingScheme       int
+	addressingScheme       string
+)
 
-type OverlayControlProtocol int
-type overlayControlProtocol string
-type TemplateCapability int
-type templateCapability string
+type (
+	OverlayControlProtocol int
+	overlayControlProtocol string
+	TemplateCapability     int
+	templateCapability     string
+)
 
 const (
 	AntiAffinityModeDisabled = AntiAffinityMode(iota)
@@ -366,6 +370,7 @@ func (o *OverlayControlProtocol) FromString(in string) error {
 func (o overlayControlProtocol) string() string {
 	return string(o)
 }
+
 func (o overlayControlProtocol) parse() (int, error) {
 	switch o {
 	case overlayControlProtocolNone:
@@ -380,6 +385,7 @@ func (o overlayControlProtocol) parse() (int, error) {
 func (o TemplateCapability) Int() int {
 	return int(o)
 }
+
 func (o TemplateCapability) String() string {
 	switch o {
 	case TemplateCapabilityBlueprint:
@@ -392,9 +398,11 @@ func (o TemplateCapability) String() string {
 		return fmt.Sprintf(templateCapabilityUnknown, o)
 	}
 }
+
 func (o templateCapability) string() string {
 	return string(o)
 }
+
 func (o templateCapability) parse() (int, error) {
 	switch o {
 	case templateCapabilityBlueprint:
@@ -454,7 +462,6 @@ func (o *rawAntiAffinityPolicy) polish() (*AntiAffinityPolicy, error) {
 		MaxPerSystemLinksPerSlot: o.MaxPerSystemLinksPerSlot,
 		Mode:                     AntiAffinityMode(mode),
 	}, nil
-
 }
 
 type VirtualNetworkPolicy struct {
@@ -1196,7 +1203,7 @@ func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemp
 		switch rbt.Type {
 		case "":
 			result.RackBasedTemplates[i].Type = templateTypeRackBased
-		case templateTypeRackBased: //fallthrough
+		case templateTypeRackBased: // fallthrough
 		default:
 			return nil, fmt.Errorf("rack-based template '%s' within pod-based template '%s' claims to be type '%s', expected '%s'",
 				rbt.DisplayName, result.Id, rbt.Type, templateTypeRackBased)
@@ -1366,8 +1373,8 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 	switch {
 	case o.Spine == nil:
 		return nil, errors.New("spine cannot be <nil> when creating a rack-based template")
-	case o.AntiAffinityPolicy == nil:
-		return nil, errors.New("anti-affinity policy cannot be <nil> when creating a rack-based template")
+	case o.AntiAffinityPolicy == nil && leApstra420.Check(client.apiVersion):
+		return nil, fmt.Errorf("anti-affinity policy cannot be <nil> when creating a rack-based template with Apstra %s", leApstra420)
 	case o.AsnAllocationPolicy == nil:
 		return nil, errors.New("asn allocation policy cannot be <nil> when creating a rack-based template")
 	case o.VirtualNetworkPolicy == nil:

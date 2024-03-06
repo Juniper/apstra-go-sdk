@@ -194,7 +194,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIPs(ctx context.Context, 
 
 		maskOnes, maskBits := gslo.Ipv4Addr.Mask.Size()
 		if maskBits != 32 || maskOnes != maskBits {
-			return errors.New("ip4 does not contain a valid mask - " + gslo.Ipv4Addr.Mask.String())
+			return errors.New("ip4 value does not contain a valid mask for loopback interfaces - " + gslo.Ipv4Addr.Mask.String())
 		}
 
 		apiInput.Ipv4Addr = toPtr(gslo.Ipv4Addr.String())
@@ -207,7 +207,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIPs(ctx context.Context, 
 
 		maskOnes, maskBits := gslo.Ipv6Addr.Mask.Size()
 		if maskBits != 128 || maskOnes != maskBits {
-			return errors.New("ip6 does not contain a valid mask - " + gslo.Ipv6Addr.Mask.String())
+			return errors.New("ip6 value does not contain a valid mask for loopback interfaces - " + gslo.Ipv6Addr.Mask.String())
 		}
 
 		apiInput.Ipv6Addr = toPtr(gslo.Ipv6Addr.String())

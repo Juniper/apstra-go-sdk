@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"log"
 	"math/rand"
 	"net"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func randBool() bool {
@@ -24,8 +25,8 @@ func randBool() bool {
 }
 
 func randString(n int, style string) string {
-	var b64Letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
-	var hexLetters = []rune("0123456789abcdef")
+	b64Letters := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
+	hexLetters := []rune("0123456789abcdef")
 	var letters []rune
 	b := make([]rune, n)
 	switch style {
@@ -99,11 +100,11 @@ func keyLogWriterFromEnv(keyLogEnv string) (*os.File, error) {
 		fileName = filepath.Join(dirname, fileName[2:])
 	}
 
-	err := os.MkdirAll(filepath.Dir(fileName), os.FileMode(0600))
+	err := os.MkdirAll(filepath.Dir(fileName), os.FileMode(0o600))
 	if err != nil {
 		return nil, err
 	}
-	return os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	return os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 }
 
 // First tick should come immediately, certainly
@@ -151,7 +152,7 @@ func TestImmediateTickerSecondTick(t *testing.T) {
 func testBlueprintA(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L3_Collapsed_ESI",
@@ -169,7 +170,7 @@ func testBlueprintA(ctx context.Context, t *testing.T, client *Client) *TwoStage
 func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual",
@@ -183,7 +184,7 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStage
 }
 
 func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
@@ -205,7 +206,7 @@ func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 }
 
 func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_ESI_2x_Links",
@@ -259,7 +260,7 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 }
 
 func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_ESI_Access",
@@ -357,7 +358,7 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		}
 	}
 
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &bpRequest)
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &bpRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -525,7 +526,7 @@ func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		return templateDeleteFunc(ctx)
 	}
 
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
@@ -550,20 +551,21 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStage
 
 	templateId := testTemplateB(ctx, t, client)
 
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
 		FabricSettings: &FabricSettings{
 			SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
 			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-			Ipv6Enabled:          toPtr(true),
 		},
 	})
 	require.NoError(t, err)
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
+
+	require.NoError(t, bpClient.SetFabricSettings(ctx, &FabricSettings{Ipv6Enabled: toPtr(true)}))
 
 	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
 
@@ -592,7 +594,6 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 			"Threshold": 100000
 		}`),
 	})
-
 	if err != nil {
 		t.Fatal(err)
 	}
