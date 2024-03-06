@@ -765,11 +765,13 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlu
 		return id, err
 	}
 
-	if !req.SkipCablingReadinessCheck {
-		err = o.waitForBlueprintCabling(ctx, id)
-		if err != nil {
-			return id, err
-		}
+	if req.SkipCablingReadinessCheck {
+		return id, nil
+	}
+
+	err = o.waitForBlueprintCabling(ctx, id)
+	if err != nil {
+		return id, err
 	}
 
 	return id, nil
