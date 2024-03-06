@@ -35,13 +35,7 @@ func TestGetBlueprintAnomalies(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDelete := testBlueprintB(ctx, t, client.client)
-		defer func() {
-			err := bpDelete(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintB(ctx, t, client.client)
 
 		log.Printf("testing GetBlueprintAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		anomalies, err := client.client.GetBlueprintAnomalies(ctx, bpClient.Id())
@@ -62,13 +56,7 @@ func TestGetBlueprintNodeAnomalyCounts(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDelete := testBlueprintB(ctx, t, client.client)
-		defer func() {
-			err := bpDelete(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintB(ctx, t, client.client)
 
 		log.Printf("testing GetBlueprintAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		anomalies, err := client.client.GetBlueprintNodeAnomalyCounts(ctx, bpClient.Id())
@@ -89,13 +77,7 @@ func TestGetBlueprintServiceAnomalyCounts(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDelete := testBlueprintB(ctx, t, client.client)
-		defer func() {
-			err := bpDelete(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintB(ctx, t, client.client)
 
 		log.Printf("testing GetBlueprintAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		anomalies, err := client.client.GetBlueprintServiceAnomalyCounts(ctx, bpClient.Id())

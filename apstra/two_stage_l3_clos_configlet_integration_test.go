@@ -42,13 +42,7 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 			}
 		}()
 
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		log.Printf("testing ImportConfigletById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpConfigletId, err := bpClient.ImportConfigletById(ctx, catalogConfigletId, `role in ["spine", "leaf"]`, "")

@@ -29,13 +29,7 @@ func TestGetCablingMapLinks(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintB(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintB(ctx, t, client.client)
 
 		log.Printf("testing GetCablingMapLinks() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		links, err := bpClient.GetCablingMapLinks(ctx)

@@ -28,12 +28,8 @@ func TestSetGetResourceAllocation(t *testing.T) {
 		asnPoolWait := sync.WaitGroup{}
 		bpWait := sync.WaitGroup{}
 		bpWait.Add(1)
-		bpClient, bpDel := testBlueprintB(ctx, t, client.client)
+		bpClient := testBlueprintB(ctx, t, client.client)
 		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Error(err)
-			}
 			bpWait.Done()      // resource pool deletion is waiting for this
 			asnPoolWait.Wait() // wait for resource pool deletion to complete
 		}()

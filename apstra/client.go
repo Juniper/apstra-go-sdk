@@ -753,6 +753,10 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlu
 		return "", errors.New(fabricL3MtuForbiddenError)
 	}
 
+	if req.FabricSettings != nil && req.FabricSettings.Ipv6Enabled != nil && *req.FabricSettings.Ipv6Enabled {
+		return "", errors.New("IPv6 cannot be enabled during blueprint creation")
+	}
+
 	var id ObjectId
 	var err error
 	switch {

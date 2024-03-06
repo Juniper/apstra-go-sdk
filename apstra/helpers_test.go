@@ -13,6 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func randBool() bool {
@@ -23,8 +25,8 @@ func randBool() bool {
 }
 
 func randString(n int, style string) string {
-	var b64Letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
-	var hexLetters = []rune("0123456789abcdef")
+	b64Letters := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
+	hexLetters := []rune("0123456789abcdef")
 	var letters []rune
 	b := make([]rune, n)
 	switch style {
@@ -98,11 +100,11 @@ func keyLogWriterFromEnv(keyLogEnv string) (*os.File, error) {
 		fileName = filepath.Join(dirname, fileName[2:])
 	}
 
-	err := os.MkdirAll(filepath.Dir(fileName), os.FileMode(0600))
+	err := os.MkdirAll(filepath.Dir(fileName), os.FileMode(0o600))
 	if err != nil {
 		return nil, err
 	}
-	return os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	return os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 }
 
 // First tick should come immediately, certainly
@@ -147,52 +149,42 @@ func TestImmediateTickerSecondTick(t *testing.T) {
 	log.Printf("start %s first tick %s second tick %s", start, firstTick, secondTick)
 }
 
-func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+func testBlueprintA(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L3_Collapsed_ESI",
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
 
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
-func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual",
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
-
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
 func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
@@ -214,7 +206,7 @@ func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 }
 
 func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_ESI_2x_Links",
@@ -268,7 +260,7 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 }
 
 func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_ESI_Access",
@@ -366,7 +358,7 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		}
 	}
 
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &bpRequest)
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &bpRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -534,7 +526,7 @@ func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		return templateDeleteFunc(ctx)
 	}
 
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
@@ -554,11 +546,12 @@ func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, deleteFunc
 }
 
-func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	templateId, templateDelete := testTemplateB(ctx, t, client)
-	defer templateDelete(ctx)
+func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
 
-	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
+	templateId := testTemplateB(ctx, t, client)
+
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
@@ -567,20 +560,16 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
 		},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
+	require.NoError(t, bpClient.SetFabricSettings(ctx, &FabricSettings{Ipv6Enabled: toPtr(true)}))
 
-	return bpClient, bpDeleteFunc
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+
+	return bpClient
 }
 
 // testWidgetsAB instantiates two predefined probes and creates widgets from them,
@@ -605,7 +594,6 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 			"Threshold": 100000
 		}`),
 	})
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -635,11 +623,11 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	return widgetAId, widgetA, widgetBId, widgetB
 }
 
-func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId, func(context.Context) error) {
+func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {
+	t.Helper()
+
 	rbt, err := client.GetRackBasedTemplate(ctx, "L2_Virtual")
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	rbt.Data.DisplayName = randString(5, "hex")
 	rbt.Data.FabricAddressingPolicy = &TemplateFabricAddressingPolicy410Only{
@@ -666,13 +654,9 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 		FabricAddressingPolicy: rbt.Data.FabricAddressingPolicy,
 		VirtualNetworkPolicy:   &rbt.Data.VirtualNetworkPolicy,
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	deleteFunc := func(ctx context.Context) error {
-		return client.DeleteTemplate(ctx, id)
-	}
+	t.Cleanup(func() { require.NoError(t, client.DeleteTemplate(ctx, id)) })
 
-	return id, deleteFunc
+	return id
 }

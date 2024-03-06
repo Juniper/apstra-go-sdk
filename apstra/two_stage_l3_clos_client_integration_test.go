@@ -19,13 +19,7 @@ func TestNodeIdsByType(t *testing.T) {
 
 	for clientName, client := range clients {
 		testBlueprintANodeCount := 4
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		if len(bpClient.nodeIdsByType) != 0 {
 			t.Fatal("nodeIdsByType should be empty with a new blueprint client")

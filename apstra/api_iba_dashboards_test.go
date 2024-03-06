@@ -21,8 +21,8 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 		log.Printf("testing IBA Dashboard code against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
-		defer bpDelete(ctx)
+		bpClient := testBlueprintA(ctx, t, client.client)
+
 		widgetAId, _, widgetBId, _ := testWidgetsAB(ctx, t, bpClient)
 
 		data := IbaDashboardData{

@@ -132,13 +132,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		type metadataNode struct {
 			Tags         interface{} `json:"tags,omitempty"`
@@ -211,13 +205,7 @@ func TestGetNodes(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintB(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintB(ctx, t, client.client)
 
 		type node struct {
 			Id         ObjectId `json:"id"`
@@ -262,13 +250,7 @@ func TestPatchNodes(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintB(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintB(ctx, t, client.client)
 
 		type node struct {
 			Id         ObjectId `json:"id"`
