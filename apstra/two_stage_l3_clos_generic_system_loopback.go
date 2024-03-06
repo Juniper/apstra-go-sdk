@@ -18,6 +18,7 @@ type GenericSystemLoopback struct {
 	Ipv4Addr       *net.IPNet
 	Ipv6Addr       *net.IPNet
 	LoopbackNodeId ObjectId
+	LoopbackId     uint32
 	SecurityZoneId ObjectId
 }
 

@@ -147,16 +147,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		apiVersion := version.Must(version.NewVersion(bpClient.client.apiVersion.String()))
 
@@ -348,16 +339,7 @@ func TestCtLayout(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		ipv6Enabled := true
 		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: &ipv6Enabled})
@@ -503,13 +485,7 @@ func TestConnectivityTemplate404(t *testing.T) {
 
 	for clientName, client := range clients {
 		log.Printf("begin tests against %s, (%s)", clientName, client.client.apiVersion)
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		_, err = bpClient.GetConnectivityTemplate(ctx, "bogus")
 		if err == nil {

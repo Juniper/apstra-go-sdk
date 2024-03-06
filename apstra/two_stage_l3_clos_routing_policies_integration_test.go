@@ -112,13 +112,7 @@ func TestRoutingPolicies(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		log.Printf("testing GetDefaultRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		defaultPolicy, err := bpClient.GetDefaultRoutingPolicy(ctx)
@@ -417,13 +411,7 @@ func TestRoutingPolicy404(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		log.Printf("testing GetDefaultRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		_, err := bpClient.GetRoutingPolicy(ctx, "bogus")

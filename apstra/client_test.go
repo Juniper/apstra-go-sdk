@@ -95,12 +95,10 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 	ctx := context.Background()
 
 	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	type testCase struct {
-		bpFunc      func(context.Context, *testing.T, *Client) (*TwoStageL3ClosClient, func(context.Context) error)
+		bpFunc      func(context.Context, *testing.T, *Client) *TwoStageL3ClosClient
 		expectedOcp OverlayControlProtocol
 	}
 
@@ -111,19 +109,11 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 
 	for clientName, client := range clients {
 		for i := range testCases {
-			bpClient, bpDel := testCases[i].bpFunc(ctx, t, client.client)
-			defer func() {
-				err := bpDel(ctx)
-				if err != nil {
-					t.Fatal(err)
-				}
-			}()
+			bpClient := testCases[i].bpFunc(ctx, t, client.client)
 
 			log.Printf("testing BlueprintOverlayControlProtocol() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			ocp, err := bpClient.client.BlueprintOverlayControlProtocol(ctx, bpClient.blueprintId)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			if ocp != testCases[i].expectedOcp {
 				t.Fatalf("expected overlay control protocol %q, got %q", testCases[i].expectedOcp.String(), ocp.String())

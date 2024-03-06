@@ -23,13 +23,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 	vrfName := "test-" + randStr
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		zoneId, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
@@ -188,13 +182,7 @@ func TestGetDefaultRoutingZone(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		log.Printf("testing GetSecurityZoneByVrfName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		sz, err := bpClient.GetSecurityZoneByVrfName(ctx, "default")
@@ -214,13 +202,7 @@ func TestGetSetSecurityZoneDHCPServers(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		log.Printf("testing GetSecurityZoneByVrfName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		sz, err := bpClient.GetSecurityZoneByVrfName(ctx, "default")

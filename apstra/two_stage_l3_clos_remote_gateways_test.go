@@ -130,13 +130,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bp, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bp := testBlueprintA(ctx, t, client.client)
 
 		// populate blueprint-specific facts into config slice
 		localGwNodes, err := getSystemIdsByRole(ctx, bp, "leaf")

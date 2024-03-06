@@ -8,8 +8,12 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSystemNodeInfo(t *testing.T) {
@@ -22,21 +26,15 @@ func TestSystemNodeInfo(t *testing.T) {
 	for clientName, client := range clients {
 		log.Printf("testing ListAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		bpIds, err := client.client.ListAllBlueprintIds(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 
 		var bpClient *TwoStageL3ClosClient
 		if len(bpIds) > 0 {
 			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			bpClient, err = client.client.NewTwoStageL3ClosClient(ctx, bpIds[0])
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 		} else {
-			var deleteFunc func(ctx2 context.Context) error
-			bpClient, deleteFunc = testBlueprintA(ctx, t, client.client)
-			defer deleteFunc(ctx)
+			bpClient = testBlueprintA(ctx, t, client.client)
 		}
 
 		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -48,9 +46,7 @@ func TestSystemNodeInfo(t *testing.T) {
 		for nodeId := range nodeInfos {
 			log.Printf("testing GetSystemNodeInfo() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			nodeInfo, err := bpClient.GetSystemNodeInfo(ctx, nodeId)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 			log.Println(nodeInfo.Id)
 		}
 	}
@@ -67,8 +63,7 @@ func TestSetSystemAsn(t *testing.T) {
 		if client.client.ApiVersion() == "4.1.0" {
 			continue
 		}
-		bpClient, deleteFunc := testBlueprintB(ctx, t, client.client)
-		defer deleteFunc(ctx)
+		bpClient := testBlueprintB(ctx, t, client.client)
 
 		time.Sleep(2 * time.Second) // todo: fix this terrible workaround for 404s from
 		//  /api/blueprints/<id>/experience/web/system-info
@@ -169,14 +164,7 @@ func TestSetSystemLoopbackIpv4v6(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, deleteFunc := testBlueprintG(ctx, t, client.client)
-		defer deleteFunc(ctx)
-
-		ipv6Enabled := true
-		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: &ipv6Enabled})
-		if err != nil {
-			t.Fatal(err)
-		}
+		bpClient := testBlueprintG(ctx, t, client.client)
 
 		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		nodeInfos, err := bpClient.GetAllSystemNodeInfos(ctx)
@@ -184,16 +172,16 @@ func TestSetSystemLoopbackIpv4v6(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		var systemIds []ObjectId
+		var genericIDs []ObjectId
 		for id, info := range nodeInfos {
 			if info.Role == SystemRoleGeneric {
-				systemIds = append(systemIds, id)
+				genericIDs = append(genericIDs, id)
 			}
 		}
 
-		ipv4Map := make(map[ObjectId]net.IPNet, len(systemIds))
-		ipv6Map := make(map[ObjectId]net.IPNet, len(systemIds))
-		for _, id := range systemIds {
+		ipv4Map := make(map[ObjectId]net.IPNet, len(genericIDs))
+		ipv6Map := make(map[ObjectId]net.IPNet, len(genericIDs))
+		for _, id := range genericIDs {
 			ipv4Map[id] = net.IPNet{
 				IP:   randomIpv4(),
 				Mask: net.CIDRMask(rand.Intn(9)+24, 32),
@@ -273,7 +261,7 @@ func TestSetSystemLoopbackIpv4v6(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		for _, id := range systemIds {
+		for _, id := range genericIDs {
 			if nodeInfos[id].LoopbackIpv4 != nil {
 				t.Fatalf("expected node %q to have no Loopback IPv4, got %s", id, nodeInfos[id].LoopbackIpv4)
 			}
@@ -293,8 +281,7 @@ func TestSetSystemPortChannelIdMinMax(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, deleteFunc := testBlueprintG(ctx, t, client.client)
-		defer deleteFunc(ctx)
+		bpClient := testBlueprintG(ctx, t, client.client)
 
 		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		nodeInfos, err := bpClient.GetAllSystemNodeInfos(ctx)
@@ -351,5 +338,96 @@ func TestSetSystemPortChannelIdMinMax(t *testing.T) {
 					nodeInfos[nodeId].PortChannelIdMax, nodeId, channelIdMaxMap[nodeId])
 			}
 		}
+	}
+}
+
+func TestSetGenericSystemLoopbackIPs(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	// this struct represents each test environment we'll run test cases against
+	type testBlueprint struct {
+		name           string
+		testClient     testClient
+		bpClient       *TwoStageL3ClosClient
+		genericSystems []ObjectId
+	}
+
+	wg := new(sync.WaitGroup)
+	wg.Add(len(clients))
+
+	testBlueprints := make([]testBlueprint, len(clients))
+
+	var i int
+	for name, client := range clients {
+		name, client := name, client
+		go func(i int) {
+			defer wg.Done()
+
+			testBlueprints[i].name = name
+			testBlueprints[i].testClient = client
+			testBlueprints[i].bpClient = testBlueprintG(ctx, t, client.client)
+
+			nodeInfos, err := testBlueprints[i].bpClient.GetAllSystemNodeInfos(ctx)
+			require.NoError(t, err)
+			for id, info := range nodeInfos {
+				if info.Role == SystemRoleGeneric {
+					testBlueprints[i].genericSystems = append(testBlueprints[i].genericSystems, id)
+				}
+			}
+			if len(testBlueprints[i].genericSystems) == 0 {
+				t.Fatal("no generic systems found in blueprint")
+			}
+		}(i)
+		i++
+	}
+
+	wg.Wait()
+
+	type testCase struct {
+		ip4           *net.IPNet
+		ip6           *net.IPNet
+		expectedError string
+	}
+
+	testCases := map[string]testCase{
+		"a": {},
+	}
+
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+		t.Run(tName, func(t *testing.T) {
+			for _, testBlueprint := range testBlueprints {
+				tCase := tCase
+				testBlueprint := testBlueprint
+				t.Run(testBlueprint.name, func(t *testing.T) {
+					// t.Parallel()
+
+					gsNodeId := testBlueprint.genericSystems[0]
+					bp := testBlueprint.bpClient
+
+					err := bp.SetGenericSystemLoopbackIPs(ctx, gsNodeId, GenericSystemLoopback{
+						Ipv4Addr: tCase.ip4,
+						Ipv6Addr: tCase.ip6,
+					})
+					if len(tCase.expectedError) == 0 {
+						require.NoError(t, err)
+					} else {
+						assert.ErrorContains(t, err, tCase.expectedError)
+					}
+
+					lo, err := bp.GetGenericSystemLoopback(ctx, gsNodeId, 0)
+					require.NoError(t, err)
+
+					if !(tCase.ip4.String() == lo.Ipv4Addr.String()) {
+						t.Errorf("expected %s / got %s", tCase.ip4, lo.Ipv4Addr)
+					}
+					if !(tCase.ip6.String() == lo.Ipv6Addr.String()) {
+						t.Errorf("expected %s / got %s", tCase.ip6, lo.Ipv6Addr)
+					}
+				})
+			}
+		})
 	}
 }

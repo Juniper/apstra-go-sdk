@@ -2,10 +2,12 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -170,6 +172,50 @@ func (o *TwoStageL3ClosClient) SetGenericSystemAsn(ctx context.Context, id Objec
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeDomain, o.blueprintId, id),
+		apiInput: &apiInput,
+	})
+	return convertTtaeToAceWherePossible(err)
+}
+
+// SetGenericSystemLoopbackIPs configures the loopback interface identified by
+// gslo.LoopbackId belonging to the system identified by gsId to use the ipv4
+// and ipv6 addresses specified in gslo. the LoopbackNodeId and SecurityZoneId
+// fields within gslo are ignored.
+func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIPs(ctx context.Context, gsId ObjectId, gslo GenericSystemLoopback) error {
+	var apiInput struct {
+		Ipv4Addr *string `json:"ipv4_addr"` // this is a pointer so we can clear values with `null`
+		Ipv6Addr *string `json:"ipv6_addr"` // this is a pointer so we can clear values with `null`
+	}
+
+	if gslo.Ipv4Addr != nil {
+		if gslo.Ipv4Addr.IP.To4() == nil {
+			return fmt.Errorf("ip4 value does not contain a valid IPv4 address - %X", []byte(gslo.Ipv4Addr.IP))
+		}
+
+		maskOnes, maskBits := gslo.Ipv4Addr.Mask.Size()
+		if maskBits != 32 || maskOnes != maskBits {
+			return errors.New("ip4 does not contain a valid mask - " + gslo.Ipv4Addr.Mask.String())
+		}
+
+		apiInput.Ipv4Addr = toPtr(gslo.Ipv4Addr.String())
+	}
+
+	if gslo.Ipv6Addr != nil {
+		if gslo.Ipv6Addr.IP.To16() == nil || !strings.Contains(gslo.Ipv6Addr.IP.String(), ":") {
+			return fmt.Errorf("ip6 value does not contain a valid IPv6 address - %X", []byte(gslo.Ipv6Addr.IP))
+		}
+
+		maskOnes, maskBits := gslo.Ipv6Addr.Mask.Size()
+		if maskBits != 128 || maskOnes != maskBits {
+			return errors.New("ip6 does not contain a valid mask - " + gslo.Ipv6Addr.Mask.String())
+		}
+
+		apiInput.Ipv6Addr = toPtr(gslo.Ipv6Addr.String())
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, gsId, gslo.LoopbackId),
 		apiInput: &apiInput,
 	})
 	return convertTtaeToAceWherePossible(err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"log"
 	"math/rand"
 	"net"
@@ -147,48 +148,38 @@ func TestImmediateTickerSecondTick(t *testing.T) {
 	log.Printf("start %s first tick %s second tick %s", start, firstTick, secondTick)
 }
 
-func testBlueprintA(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+func testBlueprintA(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L3_Collapsed_ESI",
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
 
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
-func testBlueprintB(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual",
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
-
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
 func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
@@ -554,9 +545,10 @@ func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, deleteFunc
 }
 
-func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
-	templateId, templateDelete := testTemplateB(ctx, t, client)
-	defer templateDelete(ctx)
+func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
+	templateId := testTemplateB(ctx, t, client)
 
 	bpId, err := client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
@@ -565,22 +557,17 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		FabricSettings: &FabricSettings{
 			SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
 			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+			Ipv6Enabled:          toPtr(true),
 		},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
 
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
 // testWidgetsAB instantiates two predefined probes and creates widgets from them,
@@ -635,11 +622,11 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	return widgetAId, widgetA, widgetBId, widgetB
 }
 
-func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId, func(context.Context) error) {
+func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {
+	t.Helper()
+
 	rbt, err := client.GetRackBasedTemplate(ctx, "L2_Virtual")
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	rbt.Data.DisplayName = randString(5, "hex")
 	rbt.Data.FabricAddressingPolicy = &TemplateFabricAddressingPolicy410Only{
@@ -666,13 +653,9 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 		FabricAddressingPolicy: rbt.Data.FabricAddressingPolicy,
 		VirtualNetworkPolicy:   &rbt.Data.VirtualNetworkPolicy,
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	deleteFunc := func(ctx context.Context) error {
-		return client.DeleteTemplate(ctx, id)
-	}
+	t.Cleanup(func() { require.NoError(t, client.DeleteTemplate(ctx, id)) })
 
-	return id, deleteFunc
+	return id
 }

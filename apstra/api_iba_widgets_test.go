@@ -19,8 +19,7 @@ func TestIbaWidgets(t *testing.T) {
 		log.Printf("testing IBA Widget Code against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
-		defer bpDelete(ctx)
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		widgetAId, widgetA, widgetBId, widgetB := testWidgetsAB(ctx, t, bpClient)
 

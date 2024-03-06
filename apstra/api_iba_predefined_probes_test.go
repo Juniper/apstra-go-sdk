@@ -6,6 +6,7 @@ package apstra //
 import (
 	"context"
 	"encoding/json"
+	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
 )
@@ -20,12 +21,9 @@ func TestIbaPredefinedProbes(t *testing.T) {
 		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
-		defer bpDelete(ctx)
+		bpClient := testBlueprintA(ctx, t, client.client)
 		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		expectedToFail := map[string]bool{
 			"external_ecmp_imbalance":            true,
 			"evpn_vxlan_type5":                   true,

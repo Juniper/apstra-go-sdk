@@ -20,8 +20,7 @@ func TestIbaProbes(t *testing.T) {
 		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 
-		bpClient, bpDelete := testBlueprintA(ctx, t, client.client)
-		defer bpDelete(ctx)
+		bpClient := testBlueprintA(ctx, t, client.client)
 		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 		if err != nil {
 			t.Fatal(err)

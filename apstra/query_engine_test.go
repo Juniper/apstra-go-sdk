@@ -131,13 +131,7 @@ func TestParsingQueryInfo(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		// the type of info we expect the query to return (a slice of these)
 		var qResponse struct {
@@ -503,13 +497,7 @@ func TestRawQueryWithBlueprint(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintA(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintA(ctx, t, client.client)
 
 		query := new(RawQuery).
 			SetBlueprintType(BlueprintTypeStaging).
