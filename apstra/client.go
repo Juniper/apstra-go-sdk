@@ -34,6 +34,7 @@ const (
 	ErrWrongType
 	ErrReadOnly
 	ErrCtAssignedToLink
+	ErrTimeout
 
 	clientPollingIntervalMs = 1000
 
@@ -752,12 +753,28 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlu
 		return "", errors.New(fabricL3MtuForbiddenError)
 	}
 
+	var id ObjectId
+	var err error
 	switch {
-	case version.MustConstraints(version.NewConstraint(">=" + apstra421)).Check(o.apiVersion):
-		return o.createBlueprintFromTemplate(ctx, req.raw())
+	case geApstra421.Check(o.apiVersion):
+		id, err = o.createBlueprintFromTemplate(ctx, req.raw())
 	default:
-		return o.createBlueprintFromTemplate420(ctx, req.raw420())
+		id, err = o.createBlueprintFromTemplate420(ctx, req.raw420())
 	}
+	if err != nil {
+		return id, err
+	}
+
+	if req.SkipCablingReadinessCheck {
+		return id, nil
+	}
+
+	err = o.waitForBlueprintCabling(ctx, id)
+	if err != nil {
+		return id, err
+	}
+
+	return id, nil
 }
 
 // GetBlueprintStatus returns *BlueprintStatus for the specified blueprint ID

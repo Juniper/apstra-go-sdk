@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -23,6 +24,8 @@ const (
 	initTypeTemplateInline = "rack_based_template_inline"
 
 	nodeQueryNodeTypeUrlParam = "node_type"
+
+	cablingMapMaxWaitSec = 30
 )
 
 const (
@@ -286,10 +289,11 @@ func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
 }
 
 type CreateBlueprintFromTemplateRequest struct {
-	RefDesign      RefDesign
-	Label          string
-	TemplateId     ObjectId
-	FabricSettings *FabricSettings
+	RefDesign                 RefDesign
+	Label                     string
+	TemplateId                ObjectId
+	FabricSettings            *FabricSettings
+	SkipCablingReadinessCheck bool
 }
 
 func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTemplateRequest {
@@ -472,6 +476,40 @@ func (o *Client) getBlueprintStatusByName(ctx context.Context, desired string) (
 			errType: ErrMultipleMatch,
 			err:     fmt.Errorf("multiple blueprints with name '%s' found", desired),
 		}
+	}
+}
+
+func (o *Client) waitForBlueprintCabling(ctx context.Context, bpId ObjectId) error {
+	var ace ClientErr
+	deadline := time.Now().Add(cablingMapMaxWaitSec * time.Second)
+
+	for {
+		// create a new bp client with every loop iteration so we can be sure the blueprint exists
+		bp, err := o.NewTwoStageL3ClosClient(ctx, bpId)
+		if err != nil {
+			return err
+		}
+
+		// try to fetch the cabling map
+		_, err = bp.GetCablingMapLinks(ctx)
+		if err == nil {
+			return nil // success! we're done here.
+		}
+		if errors.As(err, &ace) && ace.Type() == ErrNotfound {
+			// Have we been trying too long?
+			if time.Now().After(deadline) {
+				return ClientErr{
+					errType: ErrTimeout,
+					err:     fmt.Errorf("timed out waiting for blueprint %q cabling map to become available", bpId),
+				}
+			}
+
+			// 404 is likely a transient error. try again after delay.
+			time.Sleep(clientPollingIntervalMs * time.Millisecond)
+			continue
+		}
+
+		return err // any other error is fatal
 	}
 }
 
