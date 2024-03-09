@@ -6,6 +6,8 @@ package apstra
 import (
 	"context"
 	"errors"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"log"
 	"math/rand"
 	"net"
@@ -13,10 +15,6 @@ import (
 	"strconv"
 	"sync"
 	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestSystemNodeInfo(t *testing.T) {
@@ -63,23 +61,15 @@ func TestSetSystemAsn(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		if client.client.ApiVersion() == "4.1.0" {
+		if ltApstra411.Check(client.client.apiVersion) {
 			continue
 		}
-		bpClient := testBlueprintB(ctx, t, client.client)
 
-		time.Sleep(2 * time.Second) // todo: fix this terrible workaround for 404s from
-		//  /api/blueprints/<id>/experience/web/system-info
-		//  shortly after blueprint creation:
-		//  {"errors": "Cache for <id> blueprint staging not found"}
-		//  see https://apstrktr.atlassian.net/browse/AOS-44024
-		//  and https://apstra-eng.slack.com/archives/C2DFCFHJR/p1703621403168039
+		bpClient := testBlueprintB(ctx, t, client.client)
 
 		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		nodeInfos, err := bpClient.GetAllSystemNodeInfos(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 
 		var systemIds []ObjectId
 		for id, info := range nodeInfos {
@@ -97,16 +87,12 @@ func TestSetSystemAsn(t *testing.T) {
 			asn := asnMap[id]
 			log.Printf("testing SetGenericSystemAsn() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = bpClient.SetGenericSystemAsn(ctx, id, &asn)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 		}
 
 		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		nodeInfos, err = bpClient.GetAllSystemNodeInfos(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 
 		for nodeId, asn := range asnMap {
 			if nodeInfos[nodeId].Asn == nil {
@@ -117,17 +103,12 @@ func TestSetSystemAsn(t *testing.T) {
 			}
 
 			log.Printf("testing SetGenericSystemAsn() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.SetGenericSystemAsn(ctx, nodeId, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, bpClient.SetGenericSystemAsn(ctx, nodeId, nil))
 		}
 
 		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		nodeInfos, err = bpClient.GetAllSystemNodeInfos(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 
 		for _, id := range systemIds {
 			if nodeInfos[id].Asn != nil {
