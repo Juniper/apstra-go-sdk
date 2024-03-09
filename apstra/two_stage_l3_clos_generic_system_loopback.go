@@ -2,9 +2,11 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -14,6 +16,8 @@ const (
 	apiUrlGenericSystemSystemLoopbackById = apiUrlGenericSystemSystemLoopback + apiUrlPathDelim + "%d"
 )
 
+var _ json.Marshaler = &GenericSystemLoopback{}
+
 type GenericSystemLoopback struct {
 	Ipv4Addr       *net.IPNet
 	Ipv6Addr       *net.IPNet
@@ -22,23 +26,78 @@ type GenericSystemLoopback struct {
 	SecurityZoneId ObjectId
 }
 
-func (o GenericSystemLoopback) raw() *rawGenericSystemLoopback {
-	var ipv4Addr, ipv6Addr *string
-	if o.Ipv4Addr != nil {
-		s := o.Ipv4Addr.String()
-		ipv4Addr = &s
-	}
-	if o.Ipv6Addr != nil {
-		s := o.Ipv6Addr.String()
-		ipv6Addr = &s
+func (o GenericSystemLoopback) MarshalJSON() ([]byte, error) {
+	var r struct {
+		Ipv4Addr *string `json:"ipv4_addr"` // do not omitempty - we must send `null` to remove the address
+		Ipv6Addr *string `json:"ipv6_addr"` // do not omitempty - we must send `null` to remove the address
 	}
 
-	return &rawGenericSystemLoopback{
-		Ipv4Addr:       ipv4Addr,
-		Ipv6Addr:       ipv6Addr,
-		SecurityZoneId: o.SecurityZoneId,
+	stringify := func(ipNet net.IPNet) (string, error) {
+		s := ipNet.String()
+		if strings.Contains(s, "<nil>") {
+			return "", fmt.Errorf("IPNet object does not render to string: %s", s)
+		}
+
+		parts := strings.Split(s, "/")
+		if len(parts) != 2 {
+			return "", fmt.Errorf("IPNet object has unexpected string form: %s", s)
+		}
+
+		switch len(parts[1]) {
+		case 1: // e.g. /8 is okay
+		case 2: // e.g. /24 is okay
+		case 3: // e.g. /128 is okay (for ipv6)
+		default:
+			return "", fmt.Errorf("IPNet object may have discontiguous bitmask: %s", s)
+		}
+
+		return s, nil
 	}
+
+	if o.Ipv4Addr != nil {
+		var s string
+		var err error
+		if len(o.Ipv4Addr.IP) > 0 {
+			s, err = stringify(*o.Ipv4Addr)
+			if err != nil {
+				return nil, err
+			}
+		}
+		r.Ipv4Addr = &s
+	}
+
+	if o.Ipv6Addr != nil {
+		var s string
+		var err error
+		if len(o.Ipv6Addr.IP) > 0 {
+			s, err = stringify(*o.Ipv6Addr)
+			if err != nil {
+				return nil, err
+			}
+		}
+		r.Ipv6Addr = &s
+	}
+
+	return json.Marshal(r)
 }
+
+//func (o GenericSystemLoopback) raw() *rawGenericSystemLoopback {
+//	var ipv4Addr, ipv6Addr *string
+//	if o.Ipv4Addr != nil {
+//		s := o.Ipv4Addr.String()
+//		ipv4Addr = &s
+//	}
+//	if o.Ipv6Addr != nil {
+//		s := o.Ipv6Addr.String()
+//		ipv6Addr = &s
+//	}
+//
+//	return &rawGenericSystemLoopback{
+//		Ipv4Addr:       ipv4Addr,
+//		Ipv6Addr:       ipv6Addr,
+//		SecurityZoneId: o.SecurityZoneId,
+//	}
+//}
 
 type rawGenericSystemLoopback struct {
 	Ipv4Addr       *string  `json:"ipv4_addr"` // do not omitempty - we must send `null` to remove the address
@@ -162,19 +221,19 @@ func (o *TwoStageL3ClosClient) getGenericSystemLoopbacks(ctx context.Context, no
 	return resultMap, nil
 }
 
-func (o *TwoStageL3ClosClient) SetGenericSystemLoopback(ctx context.Context, nodeId ObjectId, loopbackId int, in *GenericSystemLoopback) error {
-	return o.setGenericSystemLoopback(ctx, nodeId, loopbackId, in.raw())
-}
-
-func (o *TwoStageL3ClosClient) setGenericSystemLoopback(ctx context.Context, nodeId ObjectId, loopbackId int, in *rawGenericSystemLoopback) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlGenericSystemSystemLoopbackById, o.blueprintId, nodeId, loopbackId),
-		apiInput: in,
-	})
-	if err != nil {
-		return convertTtaeToAceWherePossible(err)
-	}
-
-	return nil
-}
+//func (o *TwoStageL3ClosClient) SetGenericSystemLoopback(ctx context.Context, nodeId ObjectId, loopbackId int, in *GenericSystemLoopback) error {
+//	return o.setGenericSystemLoopback(ctx, nodeId, loopbackId, in.raw())
+//}
+//
+//func (o *TwoStageL3ClosClient) setGenericSystemLoopback(ctx context.Context, nodeId ObjectId, loopbackId int, in *rawGenericSystemLoopback) error {
+//	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+//		method:   http.MethodPatch,
+//		urlStr:   fmt.Sprintf(apiUrlGenericSystemSystemLoopbackById, o.blueprintId, nodeId, loopbackId),
+//		apiInput: in,
+//	})
+//	if err != nil {
+//		return convertTtaeToAceWherePossible(err)
+//	}
+//
+//	return nil
+//}

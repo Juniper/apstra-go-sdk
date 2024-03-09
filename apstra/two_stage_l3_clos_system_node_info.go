@@ -2,12 +2,12 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/orsinium-labs/enum"
 )
@@ -208,82 +208,72 @@ func (o *TwoStageL3ClosClient) SetGenericSystemAsn(ctx context.Context, id Objec
 // SetGenericSystemLoopbackIPs configures the loopback interface identified by
 // gslo.LoopbackId belonging to the system identified by gsId to use the ipv4
 // and ipv6 addresses specified in gslo. the LoopbackNodeId and SecurityZoneId
-// fields within gslo are ignored.
+// fields within gslo are ignored. When either IP address is nil, it will not
+// be changed. To clear an IP address, the *net.IPNet must be non-nil with an
+// empty net.IP inside.
 func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIPs(ctx context.Context, gsId ObjectId, gslo GenericSystemLoopback) error {
-	var apiInput struct {
-		Ipv4Addr *string `json:"ipv4_addr"` // this is a pointer so we can clear values with `null`
-		Ipv6Addr *string `json:"ipv6_addr"` // this is a pointer so we can clear values with `null`
-	}
-
 	if gslo.Ipv4Addr != nil {
-		if gslo.Ipv4Addr.IP.To4() == nil {
-			return fmt.Errorf("ip4 value does not contain a valid IPv4 address - %X", []byte(gslo.Ipv4Addr.IP))
-		}
-
 		maskOnes, maskBits := gslo.Ipv4Addr.Mask.Size()
 		if maskBits != 32 || maskOnes != maskBits {
 			return errors.New("ip4 value does not contain a valid mask for loopback interfaces - " + gslo.Ipv4Addr.Mask.String())
 		}
-
-		apiInput.Ipv4Addr = toPtr(gslo.Ipv4Addr.String())
 	}
 
 	if gslo.Ipv6Addr != nil {
-		if gslo.Ipv6Addr.IP.To16() == nil || !strings.Contains(gslo.Ipv6Addr.IP.String(), ":") {
-			return fmt.Errorf("ip6 value does not contain a valid IPv6 address - %X", []byte(gslo.Ipv6Addr.IP))
-		}
-
 		maskOnes, maskBits := gslo.Ipv6Addr.Mask.Size()
 		if maskBits != 128 || maskOnes != maskBits {
 			return errors.New("ip6 value does not contain a valid mask for loopback interfaces - " + gslo.Ipv6Addr.Mask.String())
 		}
-
-		apiInput.Ipv6Addr = toPtr(gslo.Ipv6Addr.String())
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	rawMessage, err := json.Marshal(gslo)
+	if err != nil {
+		return err
+	}
+
+	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, gsId, gslo.LoopbackId),
-		apiInput: &apiInput,
+		apiInput: json.RawMessage(rawMessage),
 	})
 	return convertTtaeToAceWherePossible(err)
 }
 
-func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv4(ctx context.Context, id ObjectId, ipNet *net.IPNet, instance int) error {
-	apiInput := struct {
-		Ipv4Addr *string `json:"ipv4_addr"`
-	}{}
-
-	if ipNet != nil {
-		s := ipNet.String()
-		apiInput.Ipv4Addr = &s
-	}
-
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
-		apiInput: &apiInput,
-	})
-	return convertTtaeToAceWherePossible(err)
-}
-
-func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv6(ctx context.Context, id ObjectId, ipNet *net.IPNet, instance int) error {
-	apiInput := struct {
-		Ipv6Addr *string `json:"ipv6_addr"`
-	}{}
-
-	if ipNet != nil {
-		s := ipNet.String()
-		apiInput.Ipv6Addr = &s
-	}
-
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
-		apiInput: &apiInput,
-	})
-	return convertTtaeToAceWherePossible(err)
-}
+//func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv4(ctx context.Context, id ObjectId, ipNet *net.IPNet, instance int) error {
+//	apiInput := struct {
+//		Ipv4Addr *string `json:"ipv4_addr"`
+//	}{}
+//
+//	if ipNet != nil {
+//		s := ipNet.String()
+//		apiInput.Ipv4Addr = &s
+//	}
+//
+//	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+//		method:   http.MethodPatch,
+//		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
+//		apiInput: &apiInput,
+//	})
+//	return convertTtaeToAceWherePossible(err)
+//}
+//
+//func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv6(ctx context.Context, id ObjectId, ipNet *net.IPNet, instance int) error {
+//	apiInput := struct {
+//		Ipv6Addr *string `json:"ipv6_addr"`
+//	}{}
+//
+//	if ipNet != nil {
+//		s := ipNet.String()
+//		apiInput.Ipv6Addr = &s
+//	}
+//
+//	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+//		method:   http.MethodPatch,
+//		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
+//		apiInput: &apiInput,
+//	})
+//	return convertTtaeToAceWherePossible(err)
+//}
 
 func (o *TwoStageL3ClosClient) SetSystemPortChannelMinMax(ctx context.Context, id ObjectId, min, max int) error {
 	type portChannelStruct struct {

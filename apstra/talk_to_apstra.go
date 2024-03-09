@@ -54,11 +54,23 @@ type taskIdResponse struct {
 	TaskId      TaskId   `json:"task_id"`
 }
 
+func mustMatchString(pattern, s string) bool {
+	matched, err := regexp.MatchString(pattern, s)
+	if err != nil {
+		panic(err)
+	}
+	return matched
+}
+
 func convertTtaeToAceWherePossible(err error) error {
 	var ttae TalkToApstraErr
 	if errors.As(err, &ttae) {
 		switch ttae.Response.StatusCode {
 		case http.StatusNotFound:
+			switch {
+			case mustMatchString("Loopback with ID [0-9]+ for system .* is not found", ttae.Msg):
+				return ClientErr{errType: ErrInterfaceNotFound, err: errors.New(ttae.Msg)}
+			}
 			return ClientErr{errType: ErrNotfound, err: err}
 		case http.StatusConflict:
 			return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
@@ -266,7 +278,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	// we got a task ID, instead of the expected response object. tasks are
 	// per-blueprint, so we need to figure out the blueprint ID for task
-	//progress query reasons.
+	// progress query reasons.
 	var bpId ObjectId
 
 	// maybe the blueprintId is in the URL?

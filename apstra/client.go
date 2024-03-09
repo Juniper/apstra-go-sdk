@@ -35,6 +35,7 @@ const (
 	ErrReadOnly
 	ErrCtAssignedToLink
 	ErrTimeout
+	ErrInterfaceNotFound
 
 	clientPollingIntervalMs = 1000
 
