@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/orsinium-labs/enum"
 )
 
 const (
@@ -15,6 +17,22 @@ const (
 	apiUrlBlueprintSetNodeDomain           = apiUrlBlueprintByIdPrefix + "systems" + apiUrlPathDelim + "%s" + apiUrlPathDelim + "domain"
 	apiUrlBlueprintSetNodeLoopback         = apiUrlBlueprintByIdPrefix + "systems" + apiUrlPathDelim + "%s" + apiUrlPathDelim + "loopback" + apiUrlPathDelim + "%d"
 	apiUrlBlueprintSetPortChannelIdMinMax  = apiUrlBlueprintByIdPrefix + "port-channel-id"
+)
+
+type DeployMode enum.Member[string]
+
+var (
+	DeployModeDeploy   = DeployMode{Value: "deploy"}
+	DeployModeDrain    = DeployMode{Value: "drain"}
+	DeployModeReady    = DeployMode{Value: "ready"}
+	DeployModeUndeploy = DeployMode{Value: "undeploy"}
+
+	DeployModes = enum.New(
+		DeployModeDeploy,
+		DeployModeDrain,
+		DeployModeReady,
+		DeployModeUndeploy,
+	)
 )
 
 type rawSystemNodeInfoLoopback struct {
@@ -26,7 +44,7 @@ type rawSystemNodeInfoLoopback struct {
 type rawSystemNodeInfo struct {
 	DomainId *string `json:"domain_id"`
 	// UplinkedSystemIds interface{} `json:"uplinked_system_ids"`
-	// DeployMode        interface{} `json:"deploy_mode"`
+	DeployMode     *string                    `json:"deploy_mode"`
 	Id             ObjectId                   `json:"id"`
 	Label          string                     `json:"label"`
 	PodId          ObjectId                   `json:"pod_id"`
@@ -66,6 +84,14 @@ func (o rawSystemNodeInfo) polish() (*SystemNodeInfo, error) {
 		asn = &i32
 	}
 
+	var deployMode *DeployMode
+	if o.DeployMode != nil {
+		deployMode = DeployModes.Parse(*o.DeployMode)
+		if deployMode == nil {
+			return nil, fmt.Errorf("failed to parse deploy mode %q", deployMode)
+		}
+	}
+
 	var loopbackId *ObjectId
 	var loopbackIPv4, loopbackIPv6 *net.IPNet
 	if o.Loopback != nil {
@@ -100,6 +126,7 @@ func (o rawSystemNodeInfo) polish() (*SystemNodeInfo, error) {
 
 	return &SystemNodeInfo{
 		Asn:               asn,
+		DeployMode:        deployMode,
 		DeviceProfileId:   o.DeviceProfileId,
 		External:          o.External,
 		GroupLabel:        o.GroupLabel,
@@ -124,6 +151,7 @@ func (o rawSystemNodeInfo) polish() (*SystemNodeInfo, error) {
 
 type SystemNodeInfo struct {
 	Asn               *uint32
+	DeployMode        *DeployMode
 	DeviceProfileId   *ObjectId
 	External          bool
 	GroupLabel        *string
