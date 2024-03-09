@@ -35,11 +35,35 @@ const (
 )
 
 var (
+	eqApstra410 = version.MustConstraints(version.NewConstraint("=" + apstra410))
+	eqApstra411 = version.MustConstraints(version.NewConstraint("=" + apstra411))
+	eqApstra412 = version.MustConstraints(version.NewConstraint("=" + apstra412))
+	eqApstra420 = version.MustConstraints(version.NewConstraint("=" + apstra420))
+	eqApstra421 = version.MustConstraints(version.NewConstraint("=" + apstra421))
+
+	geApstra410 = version.MustConstraints(version.NewConstraint(">=" + apstra410))
 	geApstra411 = version.MustConstraints(version.NewConstraint(">=" + apstra411))
+	geApstra412 = version.MustConstraints(version.NewConstraint(">=" + apstra412))
 	geApstra420 = version.MustConstraints(version.NewConstraint(">=" + apstra420))
 	geApstra421 = version.MustConstraints(version.NewConstraint(">=" + apstra421))
+
+	gtApstra410 = version.MustConstraints(version.NewConstraint(">" + apstra410))
+	gtApstra411 = version.MustConstraints(version.NewConstraint(">" + apstra411))
+	gtApstra412 = version.MustConstraints(version.NewConstraint(">" + apstra412))
+	gtApstra420 = version.MustConstraints(version.NewConstraint(">" + apstra420))
+	gtApstra421 = version.MustConstraints(version.NewConstraint(">" + apstra421))
+
+	leApstra410 = version.MustConstraints(version.NewConstraint("<=" + apstra410))
+	leApstra411 = version.MustConstraints(version.NewConstraint("<=" + apstra411))
 	leApstra412 = version.MustConstraints(version.NewConstraint("<=" + apstra412))
 	leApstra420 = version.MustConstraints(version.NewConstraint("<=" + apstra420))
+	leApstra421 = version.MustConstraints(version.NewConstraint("<=" + apstra421))
+
+	ltApstra410 = version.MustConstraints(version.NewConstraint("<" + apstra410))
+	ltApstra411 = version.MustConstraints(version.NewConstraint("<" + apstra411))
+	ltApstra412 = version.MustConstraints(version.NewConstraint("<" + apstra412))
+	ltApstra420 = version.MustConstraints(version.NewConstraint("<" + apstra420))
+	ltApstra421 = version.MustConstraints(version.NewConstraint("<" + apstra421))
 
 	fabricSettingsApiOk  = geApstra421
 	fabricL3MtuForbidden = leApstra412
