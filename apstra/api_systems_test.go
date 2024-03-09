@@ -97,12 +97,6 @@ func TestSystemsStrings(t *testing.T) {
 		{stringVal: "normal", intType: SystemAdminStateNormal, stringType: systemAdminStateNormal},
 		{stringVal: "decomm", intType: SystemAdminStateDecomm, stringType: systemAdminStateDecomm},
 		{stringVal: "maint", intType: SystemAdminStateMaint, stringType: systemAdminStateMaint},
-
-		{stringVal: "", intType: NodeDeployModeNone, stringType: nodeDeployModeNone},
-		{stringVal: "deploy", intType: NodeDeployModeDeploy, stringType: nodeDeployModeDeploy},
-		{stringVal: "undeploy", intType: NodeDeployModeUndeploy, stringType: nodeDeployModeUndeploy},
-		{stringVal: "ready", intType: NodeDeployModeReady, stringType: nodeDeployModeReady},
-		{stringVal: "drain", intType: NodeDeployModeDrain, stringType: nodeDeployModeDrain},
 	}
 
 	for i, td := range testData {
@@ -119,13 +113,5 @@ func TestSystemsStrings(t *testing.T) {
 			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
 				i, ii, sp, is, ss, td.stringVal)
 		}
-	}
-}
-
-func TestAllNodeDeployModes(t *testing.T) {
-	all := AllNodeDeployModes()
-	expected := 5
-	if len(all) != expected {
-		t.Fatalf("expected %d node deploy modes, got %d", expected, len(all))
 	}
 }

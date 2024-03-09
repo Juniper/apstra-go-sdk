@@ -79,76 +79,6 @@ func (o rawSystemAdminState) parse() (int, error) {
 	}
 }
 
-type NodeDeployMode int
-type nodeDeployMode string
-
-const (
-	NodeDeployModeNone = NodeDeployMode(iota)
-	NodeDeployModeDeploy
-	NodeDeployModeUndeploy
-	NodeDeployModeReady
-	NodeDeployModeDrain
-	NodeDeployModeUnknown = "unknown node deploy mode '%s'"
-
-	nodeDeployModeNone     = nodeDeployMode("")
-	nodeDeployModeDeploy   = nodeDeployMode("deploy")
-	nodeDeployModeUndeploy = nodeDeployMode("undeploy")
-	nodeDeployModeReady    = nodeDeployMode("ready")
-	nodeDeployModeDrain    = nodeDeployMode("drain")
-	nodeDeployModeUnknown  = "unknown node deploy mode '%d'"
-)
-
-func (o NodeDeployMode) Int() int {
-	return int(o)
-}
-
-func (o NodeDeployMode) String() string {
-	switch o {
-	case NodeDeployModeNone:
-		return string(nodeDeployModeNone)
-	case NodeDeployModeDeploy:
-		return string(nodeDeployModeDeploy)
-	case NodeDeployModeUndeploy:
-		return string(nodeDeployModeUndeploy)
-	case NodeDeployModeReady:
-		return string(nodeDeployModeReady)
-	case NodeDeployModeDrain:
-		return string(nodeDeployModeDrain)
-	default:
-		return fmt.Sprintf(nodeDeployModeUnknown, o)
-	}
-}
-
-func (o *NodeDeployMode) FromString(in string) error {
-	i, err := nodeDeployMode(in).parse()
-	if err != nil {
-		return err
-	}
-	*o = NodeDeployMode(i)
-	return nil
-}
-
-func (o nodeDeployMode) string() string {
-	return string(o)
-}
-
-func (o nodeDeployMode) parse() (int, error) {
-	switch o {
-	case nodeDeployModeNone:
-		return int(NodeDeployModeNone), nil
-	case nodeDeployModeDeploy:
-		return int(NodeDeployModeDeploy), nil
-	case nodeDeployModeUndeploy:
-		return int(NodeDeployModeUndeploy), nil
-	case nodeDeployModeReady:
-		return int(NodeDeployModeReady), nil
-	case nodeDeployModeDrain:
-		return int(NodeDeployModeDrain), nil
-	default:
-		return 0, fmt.Errorf(NodeDeployModeUnknown, o)
-	}
-}
-
 type SystemId string
 
 type optionsSystemsResponse struct {
@@ -390,18 +320,4 @@ func (o *Client) deleteSystem(ctx context.Context, id SystemId) error {
 		method: method,
 		url:    apstraUrl,
 	})
-}
-
-func AllNodeDeployModes() []NodeDeployMode {
-	i := 0
-	var result []NodeDeployMode
-	for {
-		var ndm NodeDeployMode
-		err := ndm.FromString(NodeDeployMode(i).String())
-		if err != nil {
-			return result[:i]
-		}
-		result = append(result, ndm)
-		i++
-	}
 }
