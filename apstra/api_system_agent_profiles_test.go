@@ -5,7 +5,9 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
 )
@@ -92,6 +94,57 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+		}
+	}
+}
+
+func TestClient_UpdateAgentProfile(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(context.Background(), t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		log.Printf("testing GetAllSystemAgents() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		agents, err := client.client.GetAllSystemAgents(ctx)
+		require.NoError(t, err)
+
+		var profileWithAckedSystem ObjectId
+		for _, agent := range agents {
+			if agent.Config.Profile == "" {
+				continue
+			}
+
+			systemInfo, err := client.client.GetSystemInfo(ctx, agent.Status.SystemId)
+			require.NoError(t, err)
+
+			if systemInfo.Status.IsAcknowledged {
+				profileWithAckedSystem = agent.Config.Profile
+				break
+			}
+		}
+
+		if profileWithAckedSystem == "" {
+			t.Skipf("no agent profile")
+		}
+
+		profile, err := client.client.GetAgentProfile(ctx, profileWithAckedSystem)
+		require.NoError(t, err)
+
+		origPlatform := profile.Platform
+		_ = origPlatform
+		profile.Platform = ""
+
+		err = client.client.UpdateAgentProfile(ctx, profile.Id, &AgentProfileConfig{
+			Label:    profile.Label,
+			Platform: "",
+		})
+		require.Error(t, err)
+		var ace ClientErr
+		if !(errors.As(err, &ace) && ace.errType == ErrAgentProfilePlatformRequired) {
+			t.Fatalf("error should have been type %d, err is %q", ErrAgentProfilePlatformRequired, err.Error())
 		}
 	}
 }

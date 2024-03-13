@@ -64,6 +64,8 @@ func convertTtaeToAceWherePossible(err error) error {
 			return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
 		case http.StatusUnprocessableEntity:
 			switch {
+			case strings.Contains(ttae.Msg, "No value in either user config or profile"):
+				return ClientErr{errType: ErrAgentProfilePlatformRequired, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "already exists"):
 				return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "No node with id: "):

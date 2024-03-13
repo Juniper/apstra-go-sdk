@@ -35,6 +35,7 @@ const (
 	ErrReadOnly
 	ErrCtAssignedToLink
 	ErrTimeout
+	ErrAgentProfilePlatformRequired
 
 	clientPollingIntervalMs = 1000
 
