@@ -28,6 +28,7 @@ func (o DeployMode) String() string {
 var (
 	DeployModeDeploy   = DeployMode{Value: "deploy"}
 	DeployModeDrain    = DeployMode{Value: "drain"}
+	DeployModeNone     = DeployMode{Value: ""}
 	DeployModeReady    = DeployMode{Value: "ready"}
 	DeployModeUndeploy = DeployMode{Value: "undeploy"}
 
