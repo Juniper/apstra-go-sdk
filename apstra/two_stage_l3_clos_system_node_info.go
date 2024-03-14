@@ -21,10 +21,6 @@ const (
 
 type DeployMode enum.Member[string]
 
-func (o DeployMode) String() string {
-	return o.Value
-}
-
 var (
 	DeployModeDeploy   = DeployMode{Value: "deploy"}
 	DeployModeDrain    = DeployMode{Value: "drain"}
