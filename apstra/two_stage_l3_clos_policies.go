@@ -3,43 +3,12 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/orsinium-labs/enum"
 	"net/http"
 )
 
 const (
 	apiUrlPolicies   = apiUrlBlueprintById + apiUrlPathDelim + "policies"
 	apiUrlPolicyById = apiUrlPolicies + apiUrlPathDelim + "%s"
-)
-
-type PolicyApplicationPointType enum.Member[string]
-
-func (o PolicyApplicationPointType) String() string {
-	return o.Value
-}
-
-func (o *PolicyApplicationPointType) FromString(s string) error {
-	t := PolicyApplicationPointTypes.Parse(s)
-	if t == nil {
-		return fmt.Errorf("failed to parse PolicyApplicationPointType %q", s)
-	}
-	o.Value = t.Value
-	return nil
-}
-
-var (
-	PolicyApplicationPointTypeGroup          = PolicyApplicationPointType{Value: "group"}
-	PolicyApplicationPointTypeInternal       = PolicyApplicationPointType{Value: "internal"}
-	PolicyApplicationPointTypeExternal       = PolicyApplicationPointType{Value: "external"}
-	PolicyApplicationPointTypeSecurityZone   = PolicyApplicationPointType{Value: "security_zone"}
-	PolicyApplicationPointTypeVirtualNetwork = PolicyApplicationPointType{Value: "virtual_network"}
-	PolicyApplicationPointTypes              = enum.New(
-		PolicyApplicationPointTypeGroup,
-		PolicyApplicationPointTypeInternal,
-		PolicyApplicationPointTypeExternal,
-		PolicyApplicationPointTypeSecurityZone,
-		PolicyApplicationPointTypeVirtualNetwork,
-	)
 )
 
 type Policy struct {

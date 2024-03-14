@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/orsinium-labs/enum"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	oenum "github.com/orsinium-labs/enum"
 )
 
 const (
@@ -228,12 +229,12 @@ func (o *TwoStageL3ClosClient) SetApplicationPointsConnectivityTemplates(ctx con
 	return nil
 }
 
-type appPointChildPolicyState enum.Member[string]
+type appPointChildPolicyState oenum.Member[string]
 
 var (
 	appPointChildPolicyStateUsedDirectly = appPointChildPolicyState{Value: "used-directly"}
 	appPointChildPolicyStateUnused       = appPointChildPolicyState{Value: "unused"}
-	appPointChildPolicyStateEnum         = enum.New(appPointChildPolicyStateUnused, appPointChildPolicyStateUsedDirectly)
+	appPointChildPolicyStateEnum         = oenum.New(appPointChildPolicyStateUnused, appPointChildPolicyStateUsedDirectly)
 )
 
 // These types are the building blocks for the application point policy tree returned by the API.

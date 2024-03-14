@@ -6,19 +6,19 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/go-version"
-	"github.com/orsinium-labs/enum"
+	oenum "github.com/orsinium-labs/enum"
 )
 
 const (
 	apiUrlBlueprintFabricSettings = apiUrlBlueprintById + apiUrlPathDelim + "fabric-settings"
 )
 
-type junosEvpnRoutingInstanceType enum.Member[string]
+type junosEvpnRoutingInstanceType oenum.Member[string]
 
 var (
 	junosEvpnRoutingInstanceTypeVlanAware = junosEvpnRoutingInstanceType{Value: "vlan_aware"}
 	junosEvpnRoutingInstanceTypeDefault   = junosEvpnRoutingInstanceType{Value: "default"}
-	junosEvpnRoutingInstanceTypes         = enum.New(junosEvpnRoutingInstanceTypeVlanAware, junosEvpnRoutingInstanceTypeDefault)
+	junosEvpnRoutingInstanceTypes         = oenum.New(junosEvpnRoutingInstanceTypeVlanAware, junosEvpnRoutingInstanceTypeDefault)
 )
 
 type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.1.0

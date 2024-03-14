@@ -3,7 +3,6 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/orsinium-labs/enum"
 	"math"
 	"sort"
 	"strconv"
@@ -15,82 +14,6 @@ const (
 	portAny       = "any"
 	portRangeSep  = "-"
 	portRangesSep = ","
-)
-
-type PolicyRuleAction enum.Member[string]
-
-func (o PolicyRuleAction) String() string {
-	return o.Value
-}
-
-func (o *PolicyRuleAction) FromString(s string) error {
-	t := PolicyRuleActions.Parse(s)
-	if t == nil {
-		return fmt.Errorf("failed to parse PolicyRuleAction %q", s)
-	}
-	o.Value = t.Value
-	return nil
-}
-
-var (
-	PolicyRuleActionDeny      = PolicyRuleAction{Value: "deny"}
-	PolicyRuleActionDenyLog   = PolicyRuleAction{Value: "deny_log"}
-	PolicyRuleActionPermit    = PolicyRuleAction{Value: "permit"}
-	PolicyRuleActionPermitLog = PolicyRuleAction{Value: "permit_log"}
-	PolicyRuleActions         = enum.New(
-		PolicyRuleActionDeny,
-		PolicyRuleActionDenyLog,
-		PolicyRuleActionPermit,
-		PolicyRuleActionPermitLog,
-	)
-)
-
-type PolicyRuleProtocol enum.Member[string]
-
-func (o PolicyRuleProtocol) String() string {
-	return o.Value
-}
-
-func (o *PolicyRuleProtocol) FromString(s string) error {
-	t := PolicyRuleProtocols.Parse(s)
-	if t == nil {
-		return fmt.Errorf("failed to parse PolicyRuleProtocol %q", s)
-	}
-	o.Value = t.Value
-	return nil
-}
-
-var (
-	PolicyRuleProtocolIcmp = PolicyRuleProtocol{Value: "ICMP"}
-	PolicyRuleProtocolIp   = PolicyRuleProtocol{Value: "IP"}
-	PolicyRuleProtocolTcp  = PolicyRuleProtocol{Value: "TCP"}
-	PolicyRuleProtocolUdp  = PolicyRuleProtocol{Value: "UDP"}
-	PolicyRuleProtocols    = enum.New(
-		PolicyRuleProtocolIcmp,
-		PolicyRuleProtocolIp,
-		PolicyRuleProtocolTcp,
-		PolicyRuleProtocolUdp,
-	)
-)
-
-type TcpStateQualifier enum.Member[string]
-
-func (o TcpStateQualifier) String() string {
-	return o.Value
-}
-
-func (o *TcpStateQualifier) FromString(s string) error {
-	t := TcpStateQualifiers.Parse(s)
-	if t == nil {
-		return fmt.Errorf("failed to parse TcpStateQualifier %q", s)
-	}
-	o.Value = t.Value
-	return nil
-}
-
-var (
-	TcpStateQualifierEstablished = TcpStateQualifier{Value: "established"}
-	TcpStateQualifiers           = enum.New(TcpStateQualifierEstablished)
 )
 
 type PortRange struct {

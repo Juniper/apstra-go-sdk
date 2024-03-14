@@ -3,7 +3,6 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/orsinium-labs/enum"
 	"net/http"
 	"time"
 )
@@ -12,27 +11,6 @@ const (
 	apiUrlIbaWidgets       = "/api/blueprints/%s/iba/widgets"
 	apiUrlIbaWidgetsPrefix = apiUrlIbaWidgets + apiUrlPathDelim
 	apiUrlIbaWidgetsById   = apiUrlIbaWidgetsPrefix + "%s"
-)
-
-type IbaWidgetType enum.Member[string]
-
-func (o IbaWidgetType) String() string {
-	return o.Value
-}
-
-func (o *IbaWidgetType) FromString(s string) error {
-	t := IbaWidgetTypes.Parse(s)
-	if t == nil {
-		return fmt.Errorf("failed to parse IbaWidgetTypes %q", s)
-	}
-	o.Value = t.Value
-	return nil
-}
-
-var (
-	IbaWidgetTypeStage          = IbaWidgetType{Value: "stage"}
-	IbaWidgetTypeAnomalyHeatmap = IbaWidgetType{Value: "anomaly_heatmap"}
-	IbaWidgetTypes              = enum.New(IbaWidgetTypeStage, IbaWidgetTypeAnomalyHeatmap)
 )
 
 type IbaWidget struct {
@@ -278,7 +256,6 @@ func (o *Client) updateIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId
 		apiInput:    &widget,
 		apiResponse: &response,
 	})
-
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
