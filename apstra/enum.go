@@ -110,7 +110,7 @@ var (
 
 type DeployMode oenum.Member[string]
 
-func (o *DeployMode) String() string {
+func (o DeployMode) String() string {
 	return o.Value
 }
 
