@@ -64,12 +64,12 @@ func (o *AgentProfileConfig) raw() *rawAgentProfileConfig {
 // rawAgentProfileConfig is the nasty type expected by the API. Element
 // Packages is really a map, but k,v are string-joined with "==" here.
 type rawAgentProfileConfig struct {
-	Label       string            `json:"label"`
+	Label       string            `json:"label,omitempty"`
 	Username    string            `json:"username,omitempty"`
 	Password    string            `json:"password,omitempty"`
-	Platform    string            `json:"platform"`
-	Packages    rawAgentPackages  `json:"packages"`
-	OpenOptions map[string]string `json:"open_options"`
+	Platform    string            `json:"platform,omitempty"`
+	Packages    rawAgentPackages  `json:"packages,omitempty"`
+	OpenOptions map[string]string `json:"open_options,omitempty"`
 }
 
 type getAgentProfilesResponse struct {
