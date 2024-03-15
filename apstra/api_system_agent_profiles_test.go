@@ -29,8 +29,8 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 			platform := p
 			cfgs = append(cfgs, &AgentProfileConfig{
 				Label:    randString(10, "hex"),
-				Username: randString(10, "hex"),
-				Password: randString(10, "hex"),
+				Username: toPtr(randString(10, "hex")),
+				Password: toPtr(randString(10, "hex")),
 				Platform: &platform,
 				Packages: map[string]string{
 					randString(10, "hex"): randString(10, "hex"),
@@ -99,7 +99,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 	}
 }
 
-func TestClient_UpdateAgentProfile_NoPlatform(t *testing.T) {
+func TestClient_UpdateAgentProfile_ClearStringFields(t *testing.T) {
 	ctx := context.Background()
 
 	clients, err := getTestClients(ctx, t)
@@ -111,16 +111,24 @@ func TestClient_UpdateAgentProfile_NoPlatform(t *testing.T) {
 		log.Printf("testing CreateAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		id, err := client.client.CreateAgentProfile(ctx, &AgentProfileConfig{
 			Label:    randString(5, "hex"),
+			Username: toPtr(randString(5, "hex")),
+			Password: toPtr(randString(5, "hex")),
 			Platform: toPtr("junos"),
 		})
 		require.NoError(t, err)
 
 		log.Printf("testing UpdateAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.UpdateAgentProfile(ctx, id, &AgentProfileConfig{Platform: toPtr("")})
+		err = client.client.UpdateAgentProfile(ctx, id, &AgentProfileConfig{
+			Username: toPtr(""),
+			Password: toPtr(""),
+			Platform: toPtr(""),
+		})
 		require.NoError(t, err)
 
 		ap, err := client.client.GetAgentProfile(ctx, id)
 		require.NoError(t, err)
+		require.Equal(t, false, ap.HasUsername)
+		require.Equal(t, false, ap.HasPassword)
 		require.Equal(t, "", ap.Platform)
 
 		log.Printf("testing DeleteAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())

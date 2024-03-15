@@ -38,8 +38,8 @@ type AssignAgentProfileRequest struct {
 // AgentProfileConfig is used when creating or updating an Agent Profile
 type AgentProfileConfig struct {
 	Label       string
-	Username    string
-	Password    string
+	Username    *string
+	Password    *string
 	Platform    *string
 	Packages    AgentPackages
 	OpenOptions map[string]string
@@ -65,8 +65,8 @@ func (o *AgentProfileConfig) raw() *rawAgentProfileConfig {
 // Packages is really a map, but k,v are string-joined with "==" here.
 type rawAgentProfileConfig struct {
 	Label       string            `json:"label,omitempty"`
-	Username    string            `json:"username,omitempty"`
-	Password    string            `json:"password,omitempty"`
+	Username    *string           `json:"username,omitempty"`
+	Password    *string           `json:"password,omitempty"`
 	Platform    *string           `json:"platform,omitempty"`
 	Packages    rawAgentPackages  `json:"packages,omitempty"`
 	OpenOptions map[string]string `json:"open_options,omitempty"`
