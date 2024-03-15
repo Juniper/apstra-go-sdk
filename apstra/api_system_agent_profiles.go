@@ -40,7 +40,7 @@ type AgentProfileConfig struct {
 	Label       string
 	Username    string
 	Password    string
-	Platform    string
+	Platform    *string
 	Packages    AgentPackages
 	OpenOptions map[string]string
 }
@@ -67,7 +67,7 @@ type rawAgentProfileConfig struct {
 	Label       string            `json:"label,omitempty"`
 	Username    string            `json:"username,omitempty"`
 	Password    string            `json:"password,omitempty"`
-	Platform    string            `json:"platform,omitempty"`
+	Platform    *string           `json:"platform,omitempty"`
 	Packages    rawAgentPackages  `json:"packages,omitempty"`
 	OpenOptions map[string]string `json:"open_options,omitempty"`
 }
