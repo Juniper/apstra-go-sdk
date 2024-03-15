@@ -309,10 +309,10 @@ func TestSetSystemPortChannelIdMinMax(t *testing.T) {
 			channelIdMinMap[id] = channelIdMin
 			channelIdMax := channelIdMin + channelIdIncrement
 			channelIdMaxMap[id] = channelIdMax
-			log.Printf("testing SetSystemPortChannelMinMax against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			log.Printf("testing SetSystemPortChannelMinMax for %s as %d, %d", id, channelIdMin, channelIdMax)
+			log.Printf("testing SetGenericSystemPortChannelMinMax against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			log.Printf("testing SetGenericSystemPortChannelMinMax for %s as %d, %d", id, channelIdMin, channelIdMax)
 
-			err = bpClient.SetSystemPortChannelMinMax(ctx, id, channelIdMin, channelIdMax)
+			err = bpClient.SetGenericSystemPortChannelMinMax(ctx, id, channelIdMin, channelIdMax)
 			if err != nil {
 				t.Fatal(err)
 			}
