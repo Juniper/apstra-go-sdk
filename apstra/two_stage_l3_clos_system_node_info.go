@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/orsinium-labs/enum"
 )
 
 const (
@@ -17,22 +15,6 @@ const (
 	apiUrlBlueprintSetNodeDomain           = apiUrlBlueprintByIdPrefix + "systems" + apiUrlPathDelim + "%s" + apiUrlPathDelim + "domain"
 	apiUrlBlueprintSetNodeLoopback         = apiUrlBlueprintByIdPrefix + "systems" + apiUrlPathDelim + "%s" + apiUrlPathDelim + "loopback" + apiUrlPathDelim + "%d"
 	apiUrlBlueprintSetPortChannelIdMinMax  = apiUrlBlueprintByIdPrefix + "port-channel-id"
-)
-
-type DeployMode enum.Member[string]
-
-var (
-	DeployModeDeploy   = DeployMode{Value: "deploy"}
-	DeployModeDrain    = DeployMode{Value: "drain"}
-	DeployModeReady    = DeployMode{Value: "ready"}
-	DeployModeUndeploy = DeployMode{Value: "undeploy"}
-
-	DeployModes = enum.New(
-		DeployModeDeploy,
-		DeployModeDrain,
-		DeployModeReady,
-		DeployModeUndeploy,
-	)
 )
 
 type rawSystemNodeInfoLoopback struct {
