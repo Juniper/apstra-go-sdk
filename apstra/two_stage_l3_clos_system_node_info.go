@@ -267,7 +267,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv6(ctx context.Context,
 	return convertTtaeToAceWherePossible(err)
 }
 
-func (o *TwoStageL3ClosClient) SetSystemPortChannelMinMax(ctx context.Context, id ObjectId, min, max int) error {
+func (o *TwoStageL3ClosClient) SetGenericSystemPortChannelMinMax(ctx context.Context, id ObjectId, min, max int) error {
 	type portChannelStruct struct {
 		SystemId         ObjectId `json:"system_id"`
 		PortChannelIdMin int      `json:"port_channel_id_min"`
