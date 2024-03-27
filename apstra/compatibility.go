@@ -13,7 +13,7 @@ const (
 	apstra420 = "4.2.0"
 	apstra421 = "4.2.1"
 
-	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2, 4.2.0"
+	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2, 4.2.0, 4.2.1"
 	apstraSupportedVersionSep  = ","
 
 	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1"
@@ -52,6 +52,7 @@ func SupportedApiVersions() []string {
 		apstra411,
 		apstra412,
 		apstra420,
+		apstra421,
 	}
 }
 
