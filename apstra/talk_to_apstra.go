@@ -59,6 +59,9 @@ func convertTtaeToAceWherePossible(err error) error {
 	if errors.As(err, &ttae) {
 		switch ttae.Response.StatusCode {
 		case http.StatusNotFound:
+			if ttae.Request.URL.RawPath == apiUrlBlueprints {
+				return ClientErr{errType: ErrNotfound, retryable: true, err: err}
+			}
 			return ClientErr{errType: ErrNotfound, err: err}
 		case http.StatusConflict:
 			return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}

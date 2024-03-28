@@ -48,9 +48,10 @@ type ErrCtAssignedToLinkDetail struct {
 }
 
 type ClientErr struct {
-	errType int
-	err     error
-	detail  interface{}
+	errType   int
+	err       error
+	detail    interface{}
+	retryable bool
 }
 
 func (o ClientErr) Error() string {
@@ -63,6 +64,10 @@ func (o ClientErr) Type() int {
 
 func (o ClientErr) Detail() interface{} {
 	return o.detail
+}
+
+func (o ClientErr) IsRetryable() bool {
+	return o.retryable
 }
 
 type apstraHttpClient interface {
