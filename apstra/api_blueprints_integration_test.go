@@ -67,7 +67,7 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 			fabricSettings = &FabricSettings{}
 
 			if !fabricL3MtuForbidden.Check(client.client.apiVersion) {
-				fabricL3Mtu := uint16(rand.Intn(550)*2 + 8000) // even number 8000 - 9100
+				fabricL3Mtu := uint16(rand.Intn(50)*2 + 9100) // even number 9100 - 9200
 				fabricSettings.FabricL3Mtu = &fabricL3Mtu
 				fabricSettings.SpineLeafLinks = toPtr(AddressingSchemeIp46)
 				fabricSettings.SpineSuperspineLinks = toPtr(AddressingSchemeIp46)
@@ -106,7 +106,7 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 		}
 
 		if req.FabricSettings != nil && req.FabricSettings.FabricL3Mtu != nil {
-			fap, err := bpClient.GetFabricAddressingPolicy(ctx)
+			fap, err := bpClient.GetFabricSettings(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}

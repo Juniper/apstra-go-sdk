@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/go-version"
 	"log"
 	"math/rand"
 	"strings"
@@ -1085,9 +1086,11 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 			return fmt.Errorf("dhcp service intend mismatch expected %t got %t", req.DhcpServiceIntent.Active, rbt.DhcpServiceIntent.Active)
 		}
 
-		err = compareAntiAffinityPolicy(*req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
-		if err != nil {
-			return err
+		if req.AntiAffinityPolicy != nil {
+			err = compareAntiAffinityPolicy(*req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
+			if err != nil {
+				return err
+			}
 		}
 
 		if req.AsnAllocationPolicy.SpineAsnScheme != rbt.AsnAllocationPolicy.SpineAsnScheme {
@@ -1109,7 +1112,8 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 	}
 
 	type testCase struct {
-		request CreateRackBasedTemplateRequest
+		request            CreateRackBasedTemplateRequest
+		versionConstraints version.Constraints
 	}
 
 	spines := []TemplateElementSpineRequest{
@@ -1145,6 +1149,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 				FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{},
 				VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
 			},
+			versionConstraints: leApstra420,
 		},
 		{
 			request: CreateRackBasedTemplateRequest{
@@ -1160,44 +1165,55 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 				},
 				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
+			versionConstraints: leApstra420,
+		},
+		{
+			request: CreateRackBasedTemplateRequest{
+				DisplayName:            randString(5, "hex"),
+				Spine:                  &spines[0],
+				RackInfos:              rackInfos[0],
+				DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
+				AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+				FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{},
+				VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
+			},
+			versionConstraints: geApstra421,
+		},
+		{
+			request: CreateRackBasedTemplateRequest{
+				DisplayName:         randString(5, "hex"),
+				Spine:               &spines[1],
+				RackInfos:           rackInfos[1],
+				DhcpServiceIntent:   &DhcpServiceIntent{Active: false},
+				AsnAllocationPolicy: &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+				FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{
+					SpineSuperspineLinks: AddressingSchemeIp46,
+					SpineLeafLinks:       AddressingSchemeIp46,
+				},
+				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
+			},
+			versionConstraints: geApstra421,
 		},
 	}
 
 	for clientName, client := range clients {
 		apiVersionString = client.client.apiVersion.String()
 		for i, tc := range testCases {
-			log.Printf("testing CreateRackBasedTemplate(testCase[%d]) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			id, err := client.client.CreateRackBasedTemplate(ctx, &tc.request)
-			if err != nil {
-				t.Fatal(err)
-			}
 
-			log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			rbt, err := client.client.GetRackBasedTemplate(ctx, id)
-			if err != nil {
-				t.Fatal(err)
-			}
+			t.Run(fmt.Sprintf("Test-%d", i), func(t *testing.T) {
 
-			if id != rbt.Id {
-				t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
-			}
+				if !tc.versionConstraints.Check(client.client.apiVersion) {
+					t.Skipf("skipping testcase %d because of versionConstraint %s, version %s", i, tc.versionConstraints, client.client.apiVersion)
+				}
 
-			err = compareRequestToTemplate(tc.request, *rbt.Data)
-			if err != nil {
-				t.Fatalf("test case %d template differed from request: %s", i, err.Error())
-			}
-
-			for j := i; j < i+len(testCases); j++ { // j counts up from i
-				k := j % len(testCases) // k counts up from i, but loops back to zero
-				req := testCases[k].request
-				log.Printf("testing UpdateRackBasedTemplate(testCase[%d]) against %s %s (%s)", k, client.clientType, clientName, client.client.ApiVersion())
-				err = client.client.UpdateRackBasedTemplate(ctx, id, &req)
+				log.Printf("testing CreateRackBasedTemplate(testCase[%d]) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+				id, err := client.client.CreateRackBasedTemplate(ctx, &tc.request)
 				if err != nil {
 					t.Fatal(err)
 				}
 
 				log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				rbt, err = client.client.GetRackBasedTemplate(ctx, id)
+				rbt, err := client.client.GetRackBasedTemplate(ctx, id)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -1206,17 +1222,47 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 					t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
 				}
 
-				err = compareRequestToTemplate(req, *rbt.Data)
+				err = compareRequestToTemplate(tc.request, *rbt.Data)
 				if err != nil {
 					t.Fatalf("test case %d template differed from request: %s", i, err.Error())
 				}
-			}
 
-			log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.DeleteTemplate(ctx, id)
-			if err != nil {
-				t.Fatal(err)
-			}
+				for j := i; j < i+len(testCases); j++ { // j counts up from i
+					k := j % len(testCases) // k counts up from i, but loops back to zero
+
+					if !testCases[k].versionConstraints.Check(client.client.apiVersion) {
+						continue
+					}
+
+					req := testCases[k].request
+					log.Printf("testing UpdateRackBasedTemplate(testCase[%d]) against %s %s (%s)", k, client.clientType, clientName, client.client.ApiVersion())
+					err = client.client.UpdateRackBasedTemplate(ctx, id, &req)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					rbt, err = client.client.GetRackBasedTemplate(ctx, id)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					if id != rbt.Id {
+						t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
+					}
+
+					err = compareRequestToTemplate(req, *rbt.Data)
+					if err != nil {
+						t.Fatalf("test case %d template differed from request: %s", i, err.Error())
+					}
+				}
+
+				log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = client.client.DeleteTemplate(ctx, id)
+				if err != nil {
+					t.Fatal(err)
+				}
+			})
 		}
 	}
 }
