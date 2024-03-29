@@ -406,14 +406,26 @@ func (o *Client) getBlueprintByName(ctx context.Context, name string) (*Blueprin
 }
 
 func (o *Client) getAllBlueprintStatus(ctx context.Context) ([]rawBlueprintStatus, error) {
-	response := &getBluePrintsResponse{}
+	var response getBluePrintsResponse
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlBlueprints,
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		err = convertTtaeToAceWherePossible(err)
+		var ace ClientErr
+		if errors.As(err, &ace) && ace.IsRetryable() {
+			// AOS-45313 issue.
+			err = o.talkToApstra(ctx, &talkToApstraIn{
+				method:      http.MethodGet,
+				urlStr:      apiUrlBlueprints,
+				apiResponse: &response,
+			})
+		}
+		if err != nil {
+			return nil, convertTtaeToAceWherePossible(err)
+		}
 	}
 
 	return response.Items, nil
