@@ -342,7 +342,7 @@ func TestCtLayout(t *testing.T) {
 		bpClient := testBlueprintA(ctx, t, client.client)
 
 		ipv6Enabled := true
-		err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: &ipv6Enabled})
+		err = bpClient.SetFabricSettings(ctx, &FabricSettings{Ipv6Enabled: &ipv6Enabled})
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -23,6 +23,10 @@ func TestGetSetGetFAP(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
+		if geApstra421.Check(client.client.apiVersion) {
+			continue
+		}
+
 		bpClient := testBlueprintA(ctx, t, client.client)
 
 		log.Printf("testing GetFabricAddressingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
