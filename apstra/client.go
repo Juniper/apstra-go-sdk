@@ -226,7 +226,10 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		msg := fmt.Sprintf("unsupported API version: '%s'", c.apiVersion)
 		c.logStr(0, msg)
 		if !c.cfg.Experimental {
-			return nil, errors.New(msg)
+			return nil, ClientErr{
+				errType: ErrCompatibility,
+				err:     errors.New(msg),
+			}
 		}
 	}
 
