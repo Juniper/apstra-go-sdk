@@ -886,20 +886,32 @@ func (o *TemplatePodBased) ID() ObjectId {
 }
 
 func (o *TemplatePodBased) OverlayControlProtocol() OverlayControlProtocol {
-	if o == nil || o.Data == nil || len(o.Data.RackBasedTemplates) == 0 || o.Data.RackBasedTemplates[0].Data == nil {
+	if o == nil || o.Data == nil || len(o.Data.PodInfo) == 0 {
 		return OverlayControlProtocolNone
 	}
-	return o.Data.RackBasedTemplates[0].Data.VirtualNetworkPolicy.OverlayControlProtocol
+
+	// return the first record
+	for _, v := range o.Data.PodInfo {
+		if v.TemplateRackBasedData != nil {
+			return v.TemplateRackBasedData.VirtualNetworkPolicy.OverlayControlProtocol
+		}
+	}
+
+	return OverlayControlProtocolNone
 }
 
 type TemplatePodBasedData struct {
-	DisplayName             string
-	AntiAffinityPolicy      *AntiAffinityPolicy
-	FabricAddressingPolicy  *TemplateFabricAddressingPolicy410Only // Apstra 4.1.0 only
-	Superspine              Superspine
-	Capability              TemplateCapability
-	RackBasedTemplates      []TemplateRackBased
-	RackBasedTemplateCounts []RackBasedTemplateCount
+	DisplayName            string
+	AntiAffinityPolicy     *AntiAffinityPolicy
+	FabricAddressingPolicy *TemplateFabricAddressingPolicy410Only // Apstra 4.1.0 only
+	Superspine             Superspine
+	Capability             TemplateCapability
+	PodInfo                map[ObjectId]TemplatePodBasedInfo
+}
+
+type TemplatePodBasedInfo struct {
+	Count                 int
+	TemplateRackBasedData *TemplateRackBasedData
 }
 
 type rawTemplatePodBased struct {
@@ -956,19 +968,43 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 			return nil, err
 		}
 	}
+
+	if len(o.RackBasedTemplates) != len(o.RackBasedTemplateCounts) {
+		return nil, fmt.Errorf("template '%s' has %d rack_based_templates and %d rack_based_template_counts - "+
+			"these should match", o.Id, len(o.RackBasedTemplates), len(o.RackBasedTemplateCounts))
+	}
+
+	podTypeInfos := make(map[ObjectId]TemplatePodBasedInfo, len(o.RackBasedTemplates))
+OUTER:
+	for _, rrbt := range o.RackBasedTemplates {
+		prbt, err := rrbt.polish()
+		if err != nil {
+			return nil, err
+		}
+		for _, rbtc := range o.RackBasedTemplateCounts { // loop over rack based template counts looking for matching ID
+			if prbt.Id == rbtc.RackBasedTemplateId {
+				podTypeInfos[rbtc.RackBasedTemplateId] = TemplatePodBasedInfo{
+					Count:                 rbtc.Count,
+					TemplateRackBasedData: prbt.Data,
+				}
+				continue OUTER
+			}
+		}
+		return nil, fmt.Errorf("template contains rack_based_template '%s' which does not appear among rack_based_tempalte_counts", rrbt.Id)
+	}
+
 	return &TemplatePodBased{
 		Id:             o.Id,
 		templateType:   TemplateType(tType),
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplatePodBasedData{
-			DisplayName:             o.DisplayName,
-			AntiAffinityPolicy:      aap,
-			FabricAddressingPolicy:  fap,
-			Superspine:              *superspine,
-			Capability:              TemplateCapability(capability),
-			RackBasedTemplates:      rbt,
-			RackBasedTemplateCounts: o.RackBasedTemplateCounts,
+			DisplayName:            o.DisplayName,
+			AntiAffinityPolicy:     aap,
+			FabricAddressingPolicy: fap,
+			Superspine:             *superspine,
+			Capability:             TemplateCapability(capability),
+			PodInfo:                podTypeInfos,
 		},
 	}, nil
 }
