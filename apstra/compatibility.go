@@ -7,18 +7,19 @@ import (
 )
 
 const (
-	apstra410 = "4.1.0"
-	apstra411 = "4.1.1"
-	apstra412 = "4.1.2"
-	apstra420 = "4.2.0"
-	apstra421 = "4.2.1"
+	apstra410  = "4.1.0"
+	apstra411  = "4.1.1"
+	apstra412  = "4.1.2"
+	apstra420  = "4.2.0"
+	apstra421  = "4.2.1"
+	apstra4211 = "4.2.1.1"
 
 	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2, 4.2.0, 4.2.1"
 	apstraSupportedVersionSep  = ","
 
-	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1"
+	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1"
 
-	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1"
+	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1"
 
 	fabricL3MtuForbiddenError = "fabric_l3_mtu permitted only with Apstra 4.2.0 and later"
 
