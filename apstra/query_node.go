@@ -6,6 +6,7 @@ const (
 	NodeTypeNone = NodeType(iota)
 	NodeTypeAntiAffinityPolicy
 	NodeTypeEpApplicationInstance
+	NodeTypeDeviceProfile
 	NodeTypeDomain
 	NodeTypeEpEndpointPolicy
 	NodeTypeEpGroup
@@ -34,6 +35,7 @@ const (
 	nodeTypeNone                   = nodeType("")
 	nodeTypeAntiAffinityPolicy     = nodeType("anti_affinity_policy")
 	nodeTypeEpApplicationInstance  = nodeType("ep_application_instance")
+	nodeTypeDeviceProfile          = nodeType("device_profile")
 	nodeTypeDomain                 = nodeType("domain")
 	nodeTypeEpEndpointPolicy       = nodeType("ep_endpoint_policy")
 	nodeTypeEpGroup                = nodeType("ep_group")
@@ -73,6 +75,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeAntiAffinityPolicy)
 	case NodeTypeEpApplicationInstance:
 		return string(nodeTypeEpApplicationInstance)
+	case NodeTypeDeviceProfile:
+		return string(nodeTypeDeviceProfile)
 	case NodeTypeDomain:
 		return string(nodeTypeDomain)
 	case NodeTypeEpEndpointPolicy:
