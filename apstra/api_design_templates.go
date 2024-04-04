@@ -886,20 +886,32 @@ func (o *TemplatePodBased) ID() ObjectId {
 }
 
 func (o *TemplatePodBased) OverlayControlProtocol() OverlayControlProtocol {
-	if o == nil || o.Data == nil || len(o.Data.RackBasedTemplates) == 0 || o.Data.RackBasedTemplates[0].Data == nil {
+	if o == nil || o.Data == nil || len(o.Data.PodInfo) == 0 {
 		return OverlayControlProtocolNone
 	}
-	return o.Data.RackBasedTemplates[0].Data.VirtualNetworkPolicy.OverlayControlProtocol
+
+	// return the first record
+	for _, v := range o.Data.PodInfo {
+		if v.TemplateRackBasedData != nil {
+			return v.TemplateRackBasedData.VirtualNetworkPolicy.OverlayControlProtocol
+		}
+	}
+
+	return OverlayControlProtocolNone
 }
 
 type TemplatePodBasedData struct {
-	DisplayName             string
-	AntiAffinityPolicy      *AntiAffinityPolicy
-	FabricAddressingPolicy  *TemplateFabricAddressingPolicy410Only // Apstra 4.1.0 only
-	Superspine              Superspine
-	Capability              TemplateCapability
-	RackBasedTemplates      []TemplateRackBased
-	RackBasedTemplateCounts []RackBasedTemplateCount
+	DisplayName            string
+	AntiAffinityPolicy     *AntiAffinityPolicy
+	FabricAddressingPolicy *TemplateFabricAddressingPolicy410Only // Apstra 4.1.0 only
+	Superspine             Superspine
+	Capability             TemplateCapability
+	PodInfo                map[ObjectId]TemplatePodBasedInfo
+}
+
+type TemplatePodBasedInfo struct {
+	Count                 int
+	TemplateRackBasedData *TemplateRackBasedData
 }
 
 type rawTemplatePodBased struct {
@@ -956,19 +968,43 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 			return nil, err
 		}
 	}
+
+	if len(o.RackBasedTemplates) != len(o.RackBasedTemplateCounts) {
+		return nil, fmt.Errorf("template '%s' has %d rack_based_templates and %d rack_based_template_counts - "+
+			"these should match", o.Id, len(o.RackBasedTemplates), len(o.RackBasedTemplateCounts))
+	}
+
+	podTypeInfos := make(map[ObjectId]TemplatePodBasedInfo, len(o.RackBasedTemplates))
+OUTER:
+	for _, rrbt := range o.RackBasedTemplates {
+		prbt, err := rrbt.polish()
+		if err != nil {
+			return nil, err
+		}
+		for _, rbtc := range o.RackBasedTemplateCounts { // loop over rack based template counts looking for matching ID
+			if prbt.Id == rbtc.RackBasedTemplateId {
+				podTypeInfos[rbtc.RackBasedTemplateId] = TemplatePodBasedInfo{
+					Count:                 rbtc.Count,
+					TemplateRackBasedData: prbt.Data,
+				}
+				continue OUTER
+			}
+		}
+		return nil, fmt.Errorf("template contains rack_based_template '%s' which does not appear among rack_based_tempalte_counts", rrbt.Id)
+	}
+
 	return &TemplatePodBased{
 		Id:             o.Id,
 		templateType:   TemplateType(tType),
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplatePodBasedData{
-			DisplayName:             o.DisplayName,
-			AntiAffinityPolicy:      aap,
-			FabricAddressingPolicy:  fap,
-			Superspine:              *superspine,
-			Capability:              TemplateCapability(capability),
-			RackBasedTemplates:      rbt,
-			RackBasedTemplateCounts: o.RackBasedTemplateCounts,
+			DisplayName:            o.DisplayName,
+			AntiAffinityPolicy:     aap,
+			FabricAddressingPolicy: fap,
+			Superspine:             *superspine,
+			Capability:             TemplateCapability(capability),
+			PodInfo:                podTypeInfos,
 		},
 	}, nil
 }
@@ -1350,6 +1386,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		if ri.RackTypeData != nil {
 			return nil, fmt.Errorf("the RackTypeData field must be nil when creating a rack-based template")
 		}
+
 		// grab the rack type from the API using the caller's map key (ObjectId) and stash it in rackTypes
 		rt, err := client.getRackType(ctx, k)
 		if err != nil {
@@ -1357,17 +1394,11 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		}
 		rackTypes[i] = *rt
 
-		// prep the rackTypeCount object using the caller's map key (ObjectId) as
-		// the link between the racktype data copy and the racktypecount
+		// prep the RackTypeCount object using the caller's map key (ObjectId) as
+		// the link between the rawRackType data copy and the RackTypeCount
 		rackTypeCounts[i].RackTypeId = k
 		rackTypeCounts[i].Count = ri.Count
 		i++
-	}
-
-	var err error
-	var dhcpServiceIntent DhcpServiceIntent
-	if o.DhcpServiceIntent != nil {
-		dhcpServiceIntent = *o.DhcpServiceIntent
 	}
 
 	switch {
@@ -1379,6 +1410,12 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		return nil, errors.New("asn allocation policy cannot be <nil> when creating a rack-based template")
 	case o.VirtualNetworkPolicy == nil:
 		return nil, errors.New("virtual network policy cannot be <nil> when creating a rack-based template")
+	}
+
+	var err error
+	var dhcpServiceIntent DhcpServiceIntent
+	if o.DhcpServiceIntent != nil {
+		dhcpServiceIntent = *o.DhcpServiceIntent
 	}
 
 	spine, err := o.Spine.raw(ctx, client)
@@ -1458,33 +1495,50 @@ func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *C
 }
 
 type CreatePodBasedTemplateRequest struct {
-	DisplayName             string
-	Superspine              *TemplateElementSuperspineRequest
-	RackBasedTemplateIds    []ObjectId
-	RackBasedTemplateCounts []RackBasedTemplateCount
-	AntiAffinityPolicy      *AntiAffinityPolicy
-	FabricAddressingPolicy  *TemplateFabricAddressingPolicy410Only // Apstra 4.1.0 only
+	DisplayName            string
+	Superspine             *TemplateElementSuperspineRequest
+	PodInfos               map[ObjectId]TemplatePodBasedInfo
+	AntiAffinityPolicy     *AntiAffinityPolicy
+	FabricAddressingPolicy *TemplateFabricAddressingPolicy410Only // Apstra 4.1.0 only
 }
 
 func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreatePodBasedTemplateRequest, error) {
-	var err error
+	templatesRackBased := make([]rawTemplateRackBased, len(o.PodInfos))
+	rackBasedTemplatesCounts := make([]RackBasedTemplateCount, len(o.PodInfos))
+	var i int
+	for k, pi := range o.PodInfos {
+		if pi.TemplateRackBasedData != nil {
+			return nil, fmt.Errorf("the TemplateRackBasedData (pod info) field must be nil when creating a pod-based template")
+		}
 
+		// grab the rack-based template (pod) from the API using the caller's map key (ObjectId) and stash it in templatesRackBased
+		rbt, err := client.getRackBasedTemplate(ctx, k)
+		if err != nil {
+			return nil, err
+		}
+		templatesRackBased[i] = *rbt
+
+		// prep the RackBasedTemplateCount object using the caller's map key (ObjectId) as
+		// the link between the rawTemplateRackBased data copy and the RackBasedTemplateCount
+		rackBasedTemplatesCounts[i].RackBasedTemplateId = k
+		rackBasedTemplatesCounts[i].Count = pi.Count
+		i++
+	}
+
+	switch {
+	case o.Superspine == nil:
+		return nil, errors.New("super spine cannot be <nil> when creating a pod-based template")
+	case o.AntiAffinityPolicy == nil && leApstra420.Check(client.apiVersion):
+		return nil, fmt.Errorf("anti-affinity policy cannot be <nil> when creating a pod-based template with Apstra %s", leApstra420)
+	}
+
+	var err error
 	var superspine *rawSuperspine
 	if o.Superspine != nil {
 		superspine, err = o.Superspine.raw(ctx, client)
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	rawRackBasedTemplates := make([]rawTemplateRackBased, len(o.RackBasedTemplateIds))
-	for i, id := range o.RackBasedTemplateIds {
-		rbt, err := client.getRackBasedTemplate(ctx, id)
-		rbt.Type = templateTypeRackBased
-		if err != nil {
-			return nil, err
-		}
-		rawRackBasedTemplates[i] = *rbt
 	}
 
 	var antiAffinityPolicy *rawAntiAffinityPolicy
@@ -1501,8 +1555,8 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		Type:                    templateTypePodBased,
 		DisplayName:             o.DisplayName,
 		Superspine:              *superspine,
-		RackBasedTemplates:      rawRackBasedTemplates,
-		RackBasedTemplateCounts: o.RackBasedTemplateCounts,
+		RackBasedTemplates:      templatesRackBased,
+		RackBasedTemplateCounts: rackBasedTemplatesCounts,
 		AntiAffinityPolicy:      antiAffinityPolicy,
 		FabricAddressingPolicy:  fabricAddressingPolicy,
 	}, nil

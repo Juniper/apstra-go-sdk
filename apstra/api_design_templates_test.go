@@ -7,11 +7,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"log"
 	"math/rand"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/go-version"
 )
 
 func TestUnmarshalTemplate(t *testing.T) {
@@ -299,7 +300,6 @@ func TestUnmarshalTemplate(t *testing.T) {
 	}
 
 	log.Println(tType)
-
 }
 
 func TestTemplateStrings(t *testing.T) {
@@ -611,11 +611,11 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 				SuperspinePerPlane: 4,
 				LogicalDeviceId:    "AOS-4x40_8x10-1",
 			},
-			RackBasedTemplateIds: []ObjectId{rbtid},
-			RackBasedTemplateCounts: []RackBasedTemplateCount{{
-				RackBasedTemplateId: rbtid,
-				Count:               1,
-			}},
+			PodInfos: map[ObjectId]TemplatePodBasedInfo{
+				rbtid: {
+					Count: 1,
+				},
+			},
 			AntiAffinityPolicy: &AntiAffinityPolicy{
 				Algorithm:                AlgorithmHeuristic,
 				MaxLinksPerPort:          1,
@@ -677,8 +677,6 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 			RackTypeId: "L3_collapsed_acs",
 			Count:      1,
 		}},
-		//DhcpServiceIntent:    DhcpServiceIntent{},
-		//AntiAffinityPolicy:   AntiAffinityPolicy{},
 		VirtualNetworkPolicy: VirtualNetworkPolicy{OverlayControlProtocol: OverlayControlProtocolEvpn},
 	}
 
@@ -1199,9 +1197,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 	for clientName, client := range clients {
 		apiVersionString = client.client.apiVersion.String()
 		for i, tc := range testCases {
-
 			t.Run(fmt.Sprintf("Test-%d", i), func(t *testing.T) {
-
 				if !tc.versionConstraints.Check(client.client.apiVersion) {
 					t.Skipf("skipping testcase %d because of versionConstraint %s, version %s", i, tc.versionConstraints, client.client.apiVersion)
 				}
