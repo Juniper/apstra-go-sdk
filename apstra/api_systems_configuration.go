@@ -77,6 +77,8 @@ func (o *SystemConfig) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
+// GetSystemConfig returns a SystemConfig for id (the device_key / serial number of
+// a managed device).
 func (o *Client) GetSystemConfig(ctx context.Context, id ObjectId) (SystemConfig, error) {
 	var response SystemConfig
 	err := o.talkToApstra(ctx, &talkToApstraIn{
