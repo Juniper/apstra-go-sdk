@@ -98,6 +98,7 @@ type ClientCfg struct {
 	Timeout      time.Duration // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
 	ErrChan      chan<- error  // async client errors (apstra task polling, etc) sent here
 	Experimental bool          // used to enable experimental features
+	UserAgent    string        // may used to set a custom user-agent
 }
 
 // TaskId represents outstanding tasks on an Apstra server
@@ -205,11 +206,16 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		httpClient = &http.Client{}
 	}
 
+	httpHeaders := map[string]string{"Accept": "application/json"}
+	if o.UserAgent != "" {
+		httpHeaders["User-Agent"] = o.UserAgent
+	}
+
 	c := &Client{
 		cfg:         o,
 		baseUrl:     baseUrl,
 		httpClient:  httpClient,
-		httpHeaders: map[string]string{"Accept": "application/json"},
+		httpHeaders: httpHeaders,
 		logger:      logger,
 		taskMonChan: make(chan *taskMonitorMonReq),
 		sync:        make(map[string]*sync.Mutex),
