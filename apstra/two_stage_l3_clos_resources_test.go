@@ -95,7 +95,7 @@ func TestSetGetResourceAllocation(t *testing.T) {
 
 func TestAllResourceGroupNames(t *testing.T) {
 	all := AllResourceGroupNames()
-	expected := 29
+	expected := 30
 	if len(all) != expected {
 		t.Fatalf("expected %d resource group names, got %d", expected, len(all))
 	}
@@ -139,6 +139,7 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "access_asns", intType: ResourceGroupNameAccessAsn, stringType: resourceGroupNameAccessAsn},
 		{stringVal: "generic_asns", intType: ResourceGroupNameGenericAsn, stringType: resourceGroupNameGenericAsn},
 		{stringVal: "superspine_loopback_ips", intType: ResourceGroupNameSuperspineIp4, stringType: resourceGroupNameSuperspineIp4},
+		{stringVal: "superspine_loopback_ips_ipv6", intType: ResourceGroupNameSuperspineIp6, stringType: resourceGroupNameSuperspineIp6},
 		{stringVal: "spine_loopback_ips", intType: ResourceGroupNameSpineIp4, stringType: resourceGroupNameSpineIp4},
 		{stringVal: "spine_loopback_ips_ipv6", intType: ResourceGroupNameSpineIp6, stringType: resourceGroupNameSpineIp6},
 		{stringVal: "leaf_loopback_ips", intType: ResourceGroupNameLeafIp4, stringType: resourceGroupNameLeafIp4},

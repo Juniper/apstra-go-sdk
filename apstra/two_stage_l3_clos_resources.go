@@ -42,6 +42,7 @@ const (
 	ResourceGroupNameAccessAsn
 	ResourceGroupNameGenericAsn
 	ResourceGroupNameSuperspineIp4
+	ResourceGroupNameSuperspineIp6
 	ResourceGroupNameSpineIp4
 	ResourceGroupNameSpineIp6
 	ResourceGroupNameLeafIp4
@@ -73,6 +74,7 @@ const (
 	resourceGroupNameAccessAsn             = resourceGroupName("access_asns")
 	resourceGroupNameGenericAsn            = resourceGroupName("generic_asns")
 	resourceGroupNameSuperspineIp4         = resourceGroupName("superspine_loopback_ips")
+	resourceGroupNameSuperspineIp6         = resourceGroupName("superspine_loopback_ips_ipv6")
 	resourceGroupNameSpineIp4              = resourceGroupName("spine_loopback_ips")
 	resourceGroupNameSpineIp6              = resourceGroupName("spine_loopback_ips_ipv6")
 	resourceGroupNameLeafIp4               = resourceGroupName("leaf_loopback_ips")
@@ -131,6 +133,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeAsnPool
 	case ResourceGroupNameSuperspineIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameSuperspineIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameSpineIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameSpineIp6:
@@ -211,6 +215,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameGenericAsn
 	case ResourceGroupNameSuperspineIp4:
 		return resourceGroupNameSuperspineIp4
+	case ResourceGroupNameSuperspineIp6:
+		return resourceGroupNameSuperspineIp6
 	case ResourceGroupNameSpineIp4:
 		return resourceGroupNameSpineIp4
 	case ResourceGroupNameSpineIp6:
@@ -278,6 +284,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameGenericAsn), nil
 	case resourceGroupNameSuperspineIp4:
 		return int(ResourceGroupNameSuperspineIp4), nil
+	case resourceGroupNameSuperspineIp6:
+		return int(ResourceGroupNameSuperspineIp6), nil
 	case resourceGroupNameSpineIp4:
 		return int(ResourceGroupNameSpineIp4), nil
 	case resourceGroupNameSpineIp6:
