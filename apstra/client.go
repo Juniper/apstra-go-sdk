@@ -34,6 +34,7 @@ const (
 	ErrWrongType
 	ErrReadOnly
 	ErrCtAssignedToLink
+	ErrLagHasAssignedStructrues
 	ErrTimeout
 	ErrAgentProfilePlatformRequired
 
@@ -45,6 +46,10 @@ const (
 
 type ErrCtAssignedToLinkDetail struct {
 	LinkIds []ObjectId
+}
+
+type ErrLagHasAssignedStructuresDetail struct {
+	GroupLabels []string
 }
 
 type ClientErr struct {

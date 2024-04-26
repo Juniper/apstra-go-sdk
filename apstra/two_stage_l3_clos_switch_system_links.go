@@ -235,7 +235,7 @@ func (o *TwoStageL3ClosClient) DeleteLinksFromSystem(ctx context.Context, ids []
 		apiInput: &apiInput,
 	})
 	if err == nil {
-		return nil
+		return nil // success!
 	}
 
 	// if we got here, then we have an error
