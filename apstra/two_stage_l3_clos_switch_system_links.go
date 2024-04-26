@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -251,23 +252,124 @@ func (o *TwoStageL3ClosClient) DeleteLinksFromSystem(ctx context.Context, ids []
 		return err // unmarshal fail - surface the original error
 	}
 
-	var linkErrs struct {
+	// unpack the error
+	var e struct {
 		LinkIds []string `json:"link_ids"`
 	}
-	if json.Unmarshal(ds.Errors, &linkErrs) != nil {
+	if json.Unmarshal(ds.Errors, &e) != nil {
 		return err // unmarshal fail - surface the original error
 	}
 
-	var aceDetail ErrCtAssignedToLinkDetail
-	for _, linkIdErr := range linkErrs.LinkIds {
-		matches := regexpLinkHasCtAssignedErr.FindStringSubmatch(linkIdErr)
-		if len(matches) == 2 {
-			aceDetail.LinkIds = append(aceDetail.LinkIds, ObjectId(matches[1]))
+	// we know about two categories of error - use regexes to filter 'em out - examples:
+	// 	 "Link with id l2_virtual_004_leaf1<->l2_virtual_004_sys003(link-000000002)[1] can not be deleted since some of its interfaces have connectivity templates assigned",
+	//   "Deleting all links forming a LAG is not allowed since the LAG has assigned structures: ['connectivity template', 'VN endpoint']. Link ids: ['l2_virtual_003_leaf1<->l2_virtual_003_sys003(b)[1]', 'l2_virtual_003_leaf1<->l2_virtual_003_sys003(b)[2]']",
+	var linkErrs []string
+	var lagErrs []string
+	for _, le := range e.LinkIds {
+		switch {
+		case regexpLinkHasCtAssignedErr.MatchString(le):
+			linkErrs = append(linkErrs, le)
+		case regexpLagHasCtAssignedErr.MatchString(le):
+			lagErrs = append(lagErrs, le)
+		case regexpLinkHasVnEndpoint.MatchString(le):
+			// do nothing - this condition should trigger the regexpLinkHasCtAssignedErr also
+		default: // cannot handle error - surface it to the user
+			return fmt.Errorf("cannot handle link error %q - %w", le, err)
 		}
 	}
 
-	ace.detail = aceDetail
+	// Collect the IDs of links with errors
+	linkErrCount := len(linkErrs)
+	lagErrCount := len(lagErrs)
+	linkIdsWithCts := make([]ObjectId, linkErrCount+lagErrCount)
+
+	// extract ids of naked links with errors
+	for i, s := range linkErrs {
+		m := regexpLinkHasCtAssignedErr.FindStringSubmatch(s)
+		if len(m) != 2 {
+			return fmt.Errorf("cannot handle link error %q - %w", s, err)
+		}
+
+		linkIdsWithCts[i] = ObjectId(m[1])
+	}
+
+	// determine ids of aggregate links with errors
+	for i, s := range lagErrs {
+		m := regexpLagHasCtAssignedErr.FindStringSubmatch(s)
+		if len(m) != 2 {
+			return fmt.Errorf("cannot handle lag link error %q - %w", s, err)
+		}
+
+		// each lag error enumerates all member links. Extract them
+		var lagMembers []ObjectId
+		for _, quotedId := range strings.Split(m[1], ",") {
+			lagMembers = append(lagMembers, ObjectId(strings.Trim(quotedId, "' ")))
+		}
+
+		// find the LAG ID common to these member IDs
+		lagId, err := o.lagIdFromMemberIds(ctx, lagMembers)
+		if err != nil {
+			return errors.Join(ace, err)
+		}
+
+		linkIdsWithCts[linkErrCount+i] = lagId
+	}
+
+	ace.detail = ErrCtAssignedToLinkDetail{LinkIds: linkIdsWithCts}
 	return ace
+}
+
+func (o *TwoStageL3ClosClient) lagIdFromMemberIds(ctx context.Context, members []ObjectId) (ObjectId, error) {
+	mq := new(MatchQuery).
+		SetBlueprintId(o.blueprintId).
+		SetClient(o.client)
+
+	for _, member := range members {
+		mq.Match(new(PathQuery).
+			Node([]QEEAttribute{
+				NodeTypeLink.QEEAttribute(),
+				{Key: "id", Value: QEStringVal(member.String())},
+			}).
+			In([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
+			Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
+			In([]QEEAttribute{RelationshipTypeComposedOf.QEEAttribute()}).
+			Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
+			Out([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
+			Node([]QEEAttribute{
+				NodeTypeLink.QEEAttribute(),
+				{Key: "link_type", Value: QEStringVal("aggregate_link")},
+				{Key: "name", Value: QEStringVal("n_link")},
+			}),
+		)
+	}
+
+	var result struct {
+		Items []struct {
+			Link struct {
+				Id ObjectId `json:"id"`
+			} `json:"n_link"`
+		} `json:"items"`
+	}
+
+	err := mq.Do(ctx, &result)
+	if err != nil {
+		return "", err
+	}
+
+	// turn result into a map keyed by link ID - we expect all results to use the same ID (one map entry)
+	ids := make(map[ObjectId]struct{})
+	for _, item := range result.Items {
+		ids[item.Link.Id] = struct{}{}
+	}
+
+	switch len(ids) {
+	case 0:
+		return "", fmt.Errorf("member-based LAG member query found no LAG ID - %s", mq.String())
+	case 1:
+		return result.Items[0].Link.Id, nil // we expect exactly one map entry (all lag members point at one parent)
+	default:
+		return "", fmt.Errorf("member-based LAG member query found more than one LAG ID - %s", mq.String())
+	}
 }
 
 func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id ObjectId) error {
