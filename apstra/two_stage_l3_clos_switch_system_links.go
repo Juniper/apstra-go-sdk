@@ -15,8 +15,10 @@ const (
 	apiUrlBlueprintExternalGenericSystem = apiUrlBlueprintByIdPrefix + "external-generic-systems" + apiUrlPathDelim + "%s"
 )
 
-type SystemType int
-type systemType string
+type (
+	SystemType int
+	systemType string
+)
 
 const (
 	SystemTypeExternal = SystemType(iota)
@@ -179,7 +181,7 @@ type SwitchLinkEndpoint struct {
 	TransformationId int
 	SystemId         ObjectId
 	IfName           string
-	//LagMode          RackLinkLagMode
+	// LagMode          RackLinkLagMode
 }
 
 func (o *SwitchLinkEndpoint) raw() rawSwitchLinkEndpoint {
@@ -387,17 +389,20 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 		SetBlueprintId(o.blueprintId).
 		SetBlueprintType(BlueprintTypeStaging).
 		SetClient(o.client).
-		Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(),
+		Node([]QEEAttribute{
+			NodeTypeSystem.QEEAttribute(),
 			{Key: "role", Value: QEStringVal("generic")},
 			{Key: "id", Value: QEStringVal(id)},
 			{Key: "name", Value: QEStringVal("n_system")},
 		}).
 		Out([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
-		Node([]QEEAttribute{NodeTypeInterface.QEEAttribute(),
+		Node([]QEEAttribute{
+			NodeTypeInterface.QEEAttribute(),
 			{Key: "if_type", Value: QEStringVal("ethernet")},
 		}).
 		Out([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
-		Node([]QEEAttribute{NodeTypeLink.QEEAttribute(),
+		Node([]QEEAttribute{
+			NodeTypeLink.QEEAttribute(),
 			{Key: "name", Value: QEStringVal("n_link")},
 		})
 
