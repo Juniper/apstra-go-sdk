@@ -26,26 +26,6 @@ const (
 	linkHasCtAssignedErrRegexString = "Link with id (.*) can not be deleted since some of its interfaces have connectivity templates assigned"
 	lagHasCtAssignedErrRegexString  = "Deleting all links forming a LAG is not allowed since the LAG has assigned structures: \\[.*'connectivity template'.*]. Link ids: \\[(.*)]"
 	linkHasVnEndpointErrRegexString = "Link with id (.*) can not be deleted since some of its interfaces have VN endpoints"
-
-	// delete interface errors (/api/blueprints/<id>/delete-switch-system-links):
-	//{
-	//  "error_code": 422,
-	//  "errors": {
-	//    "link_ids": [
-	//      "Deleting all links forming a LAG is not allowed since the LAG has assigned structures: ['connectivity template', 'VN endpoint']. Link ids: ['l2_virtual_004_leaf1<->l2_virtual_004_sys003(c)[1]']",
-	//      "Link with id l2_virtual_004_leaf1<->l2_virtual_004_sys003(link-000000002)[1] can not be deleted since some of its interfaces have connectivity templates assigned",
-	//      "Link with id l2_virtual_004_leaf1<->l2_virtual_004_sys003(link-000000002)[1] can not be deleted since some of its interfaces have VN endpoints"
-	//    ]
-	//  }
-	//}
-
-	// switch all link members to part of existing LAG (/api/blueprints/<id>/leaf-server-link-labels):
-	//{
-	//  "error_code": 422,
-	//  "errors": {
-	//    "links": "Operation is not permitted because link group e has assigned structures (VN endpoints, subinterfaces, endpoint templates etc.). Either at least one link from this group should preserve original group label, or all its links should change group label to the same new value, keeping aggregation (LAG / NO LAG) and without other link being added to it."
-	//  }
-	//}
 )
 
 var (

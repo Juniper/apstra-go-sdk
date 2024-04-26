@@ -474,9 +474,5 @@ func TestDeleteSwitchSystemLinks_WithCtAssigned(t *testing.T) {
 		require.IsType(t, ClientErr{}, err)
 		require.EqualValues(t, err.(ClientErr).Type(), ErrCtAssignedToLink)
 		require.EqualValues(t, 3, len(err.(ClientErr).Detail().(ErrCtAssignedToLinkDetail).LinkIds))
-
-		//for i, linkId := range testLinks {
-		//	bp.Connecti
-		//}
 	}
 }
