@@ -660,3 +660,50 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {
 
 	return id
 }
+
+func testSecurityZone(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClient) ObjectId {
+	t.Helper()
+
+	rs := randString(6, "hex")
+
+	id, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+		Label:            rs,
+		SzType:           SecurityZoneTypeEVPN,
+		VrfName:          rs,
+		RoutingPolicyId:  "",
+		RouteTarget:      nil,
+		RtPolicy:         nil,
+		VlanId:           nil,
+		VniId:            nil,
+		JunosEvpnIrbMode: nil,
+	})
+	require.NoError(t, err)
+
+	return id
+}
+
+func testVirtualNetwork(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClient, szId ObjectId) ObjectId {
+	t.Helper()
+
+	var vnBindings []VnBinding
+	nodeMap, err := bp.GetAllSystemNodeInfos(ctx)
+	require.NoError(t, err)
+
+	for _, node := range nodeMap {
+		if node.Role == SystemRoleLeaf {
+			vnBindings = append(vnBindings, VnBinding{SystemId: node.Id})
+		}
+	}
+
+	id, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+		Ipv4Enabled:               true,
+		Label:                     randString(6, "hex"),
+		SecurityZoneId:            szId,
+		VirtualGatewayIpv4Enabled: true,
+		VnBindings:                vnBindings,
+		VnType:                    VnTypeVxlan,
+	})
+	require.NoError(t, err)
+
+	return id
+}

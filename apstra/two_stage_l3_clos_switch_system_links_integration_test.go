@@ -10,6 +10,8 @@ import (
 	"math/rand"
 	"sort"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateDeleteGenericSystem(t *testing.T) {
@@ -299,5 +301,178 @@ func TestCreateDeleteExternalGenericSystem(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestDeleteSwitchSystemLinks_WithCtAssigned(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	for clientName, client := range clients {
+		// create a blueprint
+		log.Printf("creating test blueprint against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		bp, bpDelete := testBlueprintC(ctx, t, client.client)
+		t.Cleanup(func() { require.NoError(t, bpDelete(ctx)) })
+
+		// collect leaf switch IDs
+		log.Printf("determining leaf switch IDs in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
+		nodeMap, err := bp.GetAllSystemNodeInfos(ctx)
+		require.NoError(t, err)
+		var leafIds []ObjectId
+		for _, node := range nodeMap {
+			if node.Role == SystemRoleLeaf {
+				leafIds = append(leafIds, node.Id)
+			}
+		}
+
+		// assign leaf switch interface map
+		log.Printf("assigning leaf switch interface maps in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
+		assignments := make(SystemIdToInterfaceMapAssignment)
+		for _, leafId := range leafIds {
+			assignments[leafId.String()] = "Juniper_vQFX__AOS-7x10-Leaf"
+		}
+		require.NoError(t, bp.SetInterfaceMapAssignments(ctx, assignments))
+
+		// create security zone
+		szId := testSecurityZone(t, ctx, bp)
+
+		// create virtual networks
+		log.Printf("creating virtual networks in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
+		vnIds := make([]ObjectId, 3)
+		for i := range vnIds {
+			vnIds[i] = testVirtualNetwork(t, ctx, bp, szId)
+		}
+
+		// create connectivity templates
+		log.Printf("creating connectivity templates in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
+		ctIds := make([]ObjectId, len(vnIds))
+		for i, vnId := range vnIds {
+			ct := ConnectivityTemplate{
+				Id:    nil,
+				Label: randString(6, "hex"),
+				Subpolicies: []*ConnectivityTemplatePrimitive{
+					{
+						Label: "",
+						Attributes: &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
+							Tagged:   true,
+							VnNodeId: &vnId,
+						},
+					},
+				},
+			}
+			err = bp.CreateConnectivityTemplate(ctx, &ct)
+			require.NoError(t, err)
+
+			ctIds[i] = *ct.Id
+		}
+
+		// create generic system
+		log.Printf("creating generic system in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
+		linkIds, err := bp.CreateLinksWithNewSystem(ctx, &CreateLinksWithNewSystemRequest{
+			Links: []CreateLinkRequest{
+				{
+					SwitchEndpoint: SwitchLinkEndpoint{
+						TransformationId: 1,
+						SystemId:         leafIds[0],
+						IfName:           "xe-0/0/7",
+					},
+					GroupLabel: "",
+					LagMode:    0,
+				},
+				{
+					SwitchEndpoint: SwitchLinkEndpoint{
+						TransformationId: 1,
+						SystemId:         leafIds[0],
+						IfName:           "xe-0/0/8",
+					},
+					GroupLabel: "",
+					LagMode:    0,
+				},
+				{
+					SwitchEndpoint: SwitchLinkEndpoint{
+						TransformationId: 1,
+						SystemId:         leafIds[0],
+						IfName:           "xe-0/0/9",
+					},
+					GroupLabel: "a",
+					LagMode:    RackLinkLagModeActive,
+				},
+				{
+					SwitchEndpoint: SwitchLinkEndpoint{
+						TransformationId: 1,
+						SystemId:         leafIds[0],
+						IfName:           "xe-0/0/10",
+					},
+					GroupLabel: "a",
+					LagMode:    RackLinkLagModeActive,
+				},
+				{
+					SwitchEndpoint: SwitchLinkEndpoint{
+						TransformationId: 1,
+						SystemId:         leafIds[0],
+						IfName:           "xe-0/0/11",
+					},
+					GroupLabel: "b",
+					LagMode:    RackLinkLagModeActive,
+				},
+			},
+			System: CreateLinksWithNewSystemRequestSystem{
+				LogicalDeviceId: "AOS-1x10-1",
+				Type:            SystemTypeServer,
+			},
+		})
+		require.NoError(t, err)
+		require.EqualValuesf(t, 5, len(linkIds), "expected 1 generic system id, got %d", len(linkIds))
+
+		// collect links we'll fiddle with
+		log.Printf("determining GS LAG IDs in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
+		testLinks := []ObjectId{linkIds[1]}
+		lagIdA, err := bp.lagIdFromMemberIds(ctx, linkIds[2:4])
+		require.NoError(t, err)
+		lagIdB, err := bp.lagIdFromMemberIds(ctx, linkIds[4:5])
+		require.NoError(t, err)
+		testLinks = append(testLinks, lagIdA, lagIdB)
+
+		// determine the application points (switch ports) associated with the test link IDs
+		log.Printf("determining GS switch port IDs in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
+		applicationPoints := make([]ObjectId, len(testLinks))
+		for i, linkId := range testLinks {
+			q := new(PathQuery).SetBlueprintId(bp.Id()).SetClient(bp.Client()).
+				Node([]QEEAttribute{{Key: "id", Value: QEStringVal(linkId.String())}}).
+				In([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
+				Node([]QEEAttribute{
+					NodeTypeInterface.QEEAttribute(),
+					{Key: "name", Value: QEStringVal("n_interface")},
+				}).
+				In([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
+				Node([]QEEAttribute{{Key: "id", Value: QEStringVal(leafIds[0].String())}})
+
+			var result struct {
+				Items []struct {
+					Interface struct {
+						Id ObjectId `json:"id"`
+					} `json:"n_interface"`
+				} `json:"items"`
+			}
+
+			require.NoError(t, q.Do(ctx, &result))
+			require.EqualValuesf(t, 1, len(result.Items), "expected 1 result got %d", len(result.Items))
+
+			applicationPoints[i] = result.Items[0].Interface.Id
+		}
+
+		// assign CTs to application points
+		log.Printf("assigning connectivity templatee in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
+		for i, apId := range applicationPoints {
+			require.NoError(t, bp.SetApplicationPointConnectivityTemplates(ctx, apId, []ObjectId{ctIds[i%len(ctIds)]}))
+		}
+
+		err = bp.DeleteLinksFromSystem(ctx, linkIds[1:])
+		require.Error(t, err)
+		require.IsType(t, ClientErr{}, err)
+		require.EqualValues(t, err.(ClientErr).Type(), ErrCtAssignedToLink)
+		require.EqualValues(t, 3, len(err.(ClientErr).Detail().(ErrCtAssignedToLinkDetail).LinkIds))
 	}
 }
