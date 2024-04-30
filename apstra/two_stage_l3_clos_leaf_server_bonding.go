@@ -1,14 +1,17 @@
 package apstra
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"net/http"
 )
 
 const (
-	apiUrlLeafServerLinkLabels = apiUrlBlueprintById + apiUrlPathDelim + "leaf-server-link-labels"
+	apiUrlLeafServerLinkLabels = apiUrlBlueprintByIdPrefix + "leaf-server-link-labels"
 )
 
 type LinkLagParams struct {
@@ -65,9 +68,62 @@ func (o *TwoStageL3ClosClient) SetLinkLagParams(ctx context.Context, req *SetLin
 		urlStr:   fmt.Sprintf(apiUrlLeafServerLinkLabels, o.blueprintId),
 		apiInput: &apiInput,
 	})
-	if err != nil {
-		return convertTtaeToAceWherePossible(err)
+	if err == nil {
+		return nil // success!
 	}
 
-	return nil
+	// if we got here, then we have an error
+	err = convertTtaeToAceWherePossible(err)
+	var ace ClientErr
+	if !errors.As(err, &ace) {
+		return err // cannot handle
+	}
+
+	if ace.Type() != ErrLagHasAssignedStructrues {
+		return err // cannot handle
+	}
+
+	var ds detailedStatus
+	if json.Unmarshal([]byte(ace.Error()), &ds) != nil {
+		return err // unmarshal fail - surface the original error
+	}
+
+	// unpack the error
+	var e struct {
+		Raw json.RawMessage `json:"links"`
+	}
+	if json.Unmarshal(ds.Errors, &e) != nil {
+		return err // unmarshal fail - surface the original error
+	}
+
+	var errors []string
+	if bytes.HasPrefix(bytes.TrimSpace(e.Raw), []byte{'['}) {
+		// raw value is an array
+		if json.Unmarshal(e.Raw, &errors) != nil {
+			return err // unmarshal fail - surface the original error
+		}
+	} else {
+		// raw value is a singleton
+		var s string
+		if json.Unmarshal(e.Raw, &s) != nil {
+			return err // unmarshal fail - surface the original error
+		}
+		errors = []string{s}
+	}
+	if len(errors) == 0 {
+		return err // didn't find embedded errors - surface the original error
+	}
+
+	aceDetail := ErrLagHasAssignedStructuresDetail{GroupLabels: make([]string, len(errors))}
+	for i, s := range errors {
+		m := regexpLagHasAssignedStructures.FindStringSubmatch(s)
+		if len(m) != 2 {
+			return fmt.Errorf("cannot handle lag with assigned structures error %q - %w", s, err)
+		}
+
+		aceDetail.GroupLabels[i] = m[1]
+	}
+
+	ace.detail = aceDetail
+	return ace
 }
