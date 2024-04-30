@@ -275,6 +275,8 @@ func (o *TwoStageL3ClosClient) DeleteLinksFromSystem(ctx context.Context, ids []
 			lagErrs = append(lagErrs, le)
 		case regexpLinkHasVnEndpoint.MatchString(le):
 			// do nothing - this condition should trigger the regexpLinkHasCtAssignedErr also
+		case regexpLinkHasSubinterfaces.MatchString(le):
+			// do nothing - this condition should trigger the regexpLinkHasCtAssignedErr also
 		default: // cannot handle error - surface it to the user
 			return fmt.Errorf("cannot handle link error %q - %w", le, err)
 		}
