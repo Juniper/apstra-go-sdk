@@ -23,10 +23,10 @@ const (
 	errResponseStringLimit          = 1024
 	peekSizeForApstraTaskIdResponse = math.MaxUint8
 
-	linkHasCtAssignedErrRegexString = "Link with id (.*) can not be deleted since some of its interfaces have connectivity templates assigned"
-	lagHasCtAssignedErrRegexString  = "Deleting all links forming a LAG is not allowed since the LAG has assigned structures: \\[.*'connectivity template'.*]. Link ids: \\[(.*)]"
-	linkHasVnEndpointErrRegexString = "Link with id (.*) can not be deleted since some of its interfaces have VN endpoints"
-	//lagHasAssignedStructuresRegexString = "Operation is not permitted because link group (.*) has assigned structures (VN endpoints, subinterfaces, endpoint templates etc.). Either at least one link from this group should preserve original group label, or all its links should change group label to the same new value, keeping aggregation (LAG / NO LAG) and without other link being added to it."
+	linkHasCtAssignedErrRegexString     = "Link with id (.*) can not be deleted since some of its interfaces have connectivity templates assigned"
+	lagHasCtAssignedErrRegexString      = "Deleting all links forming a LAG is not allowed since the LAG has assigned structures: \\[.*'connectivity template'.*]. Link ids: \\[(.*)]"
+	linkHasVnEndpointErrRegexString     = "Link with id (.*) can not be deleted since some of its interfaces have VN endpoints"
+	linkHasSubinterfacesErrRegexString  = "Link with id (.*) can not be deleted since some of its interfaces have subinterfaces"
 	lagHasAssignedStructuresRegexString = "Operation is not permitted because link group (.*) has assigned structures"
 )
 
@@ -36,6 +36,7 @@ var (
 	regexpLinkHasCtAssignedErr          = regexp.MustCompile(linkHasCtAssignedErrRegexString)
 	regexpLagHasCtAssignedErr           = regexp.MustCompile(lagHasCtAssignedErrRegexString)
 	regexpLinkHasVnEndpoint             = regexp.MustCompile(linkHasVnEndpointErrRegexString)
+	regexpLinkHasSubinterfaces          = regexp.MustCompile(linkHasSubinterfacesErrRegexString)
 	regexpLagHasAssignedStructures      = regexp.MustCompile(lagHasAssignedStructuresRegexString)
 )
 
