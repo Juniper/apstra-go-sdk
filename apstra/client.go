@@ -40,6 +40,10 @@ const (
 
 	clientPollingIntervalMs = 1000
 
+	defaultTimerPollingIntervalMs = 1000
+	defaultTimerTimeoutSec        = 10
+	defaultMaxRetries             = 5
+
 	mutexKeySeparator   = ":"
 	mutexKeyHttpHeaders = "http headers"
 )
@@ -94,16 +98,17 @@ type apstraHttpClient interface {
 // ErrChan, when not nil, is used by async operations to deliver any errors to
 // the caller's code.
 type ClientCfg struct {
-	Url          string        // URL to access Apstra
-	User         string        // Apstra API/UI username
-	Pass         string        // Apstra API/UI password
-	LogLevel     int           // set < 0 for no logging
-	Logger       Logger        // optional caller-created logger sorted by increasing verbosity
-	HttpClient   *http.Client  // optional
-	Timeout      time.Duration // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
-	ErrChan      chan<- error  // async client errors (apstra task polling, etc) sent here
-	Experimental bool          // used to enable experimental features
-	UserAgent    string        // may used to set a custom user-agent
+	Url          string         // URL to access Apstra
+	User         string         // Apstra API/UI username
+	Pass         string         // Apstra API/UI password
+	LogLevel     int            // set < 0 for no logging
+	Logger       Logger         // optional caller-created logger sorted by increasing verbosity
+	HttpClient   *http.Client   // optional
+	Timeout      time.Duration  // <0 = infinite; 0 = DefaultTimeout; >0 = this value is used
+	ErrChan      chan<- error   // async client errors (apstra task polling, etc) sent here
+	Experimental bool           // used to enable experimental features
+	UserAgent    string         // may used to set a custom user-agent
+	tuningParams map[string]int // various tunable parameters keyed by name
 }
 
 // TaskId represents outstanding tasks on an Apstra server
@@ -139,6 +144,32 @@ type Client struct {
 	logger      Logger                  // logs sent here
 	sync        map[string]*sync.Mutex  // some client operations are not concurrency safe. Their locks live here.
 	syncLock    sync.Mutex              // control access to the 'sync' map
+}
+
+// GetTuningParam returns a named timer value from the client configuration if one has been configured.
+// For un-configured parameters containing "TimeoutSec", "PollingIntervalMs" or "MaxRetries" a default
+// value is returned. Other un-configured values return zero.
+func (o *Client) GetTuningParam(name string) int {
+	result, ok := o.cfg.tuningParams[name]
+	if ok {
+		return result
+	}
+
+	switch {
+	case strings.Contains(name, "TimeoutSec"):
+		return defaultTimerTimeoutSec
+	case strings.Contains(name, "PollingIntervalMs"):
+		return defaultTimerPollingIntervalMs
+	case strings.Contains(name, "MaxRetries"):
+		return defaultMaxRetries
+	}
+
+	return result
+}
+
+// SetTuningParam configures a value in the client configuration. It's a simple map, so any name may be used.
+func (o *Client) SetTuningParam(name string, val int) {
+	o.cfg.tuningParams[name] = val
 }
 
 // SetContext sets the internal context.Context used by background pollers. This
