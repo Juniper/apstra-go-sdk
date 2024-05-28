@@ -173,6 +173,22 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 	return result, nil
 }
 
+func (o *Client) NewFreeformClient(ctx context.Context, blueprintId ObjectId) (*FreeformClient, error) {
+	bp, err := o.getBlueprintStatus(ctx, blueprintId)
+	if err != nil {
+		return nil, err
+	}
+	if bp.Design != refDesignFreeform {
+		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
+			RefDesignFreeform, blueprintId, bp.Design)
+	}
+
+	return &FreeformClient{
+		client:      o,
+		blueprintId: blueprintId,
+	}, nil
+}
+
 func (o ClientCfg) validate() error {
 	switch {
 	case o.Url == "":
