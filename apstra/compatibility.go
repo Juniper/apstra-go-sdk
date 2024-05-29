@@ -13,13 +13,14 @@ const (
 	apstra420  = "4.2.0"
 	apstra421  = "4.2.1"
 	apstra4211 = "4.2.1.1"
+	apstra422  = "4.2.2"
 
-	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2, 4.2.0, 4.2.1"
+	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
 	apstraSupportedVersionSep  = ","
 
-	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1"
+	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
 
-	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1"
+	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
 
 	fabricL3MtuForbiddenError = "fabric_l3_mtu permitted only with Apstra 4.2.0 and later"
 
@@ -28,7 +29,7 @@ const (
 	policyRuleTcpStateQualifierForbidenVersions = "4.1.0, 4.1.1"
 	policyRuleTcpStateQualifierForbidenError    = "tcp_state_qualifier permitted only with Apstra 4.1.2 and later"
 
-	securityZoneJunosEvpnIrbModeRequiredVersions = "4.2.0"
+	securityZoneJunosEvpnIrbModeRequiredVersions = "4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
 	securityZoneJunosEvpnIrbModeRequiredError    = "junos_evpn_irb_mode is required by Apstra 4.2 and later"
 
 	vnL3MtuForbiddenVersions = "4.1.0, 4.1.1, 4.1.2"
@@ -54,6 +55,8 @@ func SupportedApiVersions() []string {
 		apstra412,
 		apstra420,
 		apstra421,
+		apstra4211,
+		apstra422,
 	}
 }
 
