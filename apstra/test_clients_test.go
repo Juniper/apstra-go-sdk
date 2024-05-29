@@ -110,6 +110,12 @@ func getTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 	}
 
 	// add future type clients (slicer?) to testClients slice here
-
+	slicerTestClientCfgs, err := getSlicerTestClientCfgs(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range slicerTestClientCfgs {
+		testClientCfgs[k] = v
+	}
 	return testClientCfgs, nil
 }

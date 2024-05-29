@@ -14,6 +14,7 @@ const testConfigFile = "../.testconfig.hcl"
 type TestConfig struct {
 	CloudlabsTopologyIds []string `hcl:"cloudlabs_topology_ids,optional"`
 	AwsTopologyIds       []string `hcl:"aws_topology_ids,optional"`
+	SlicerTopologyIds    []string `hcl:"slicer_topology_ids,optional"`
 }
 
 var testCfg *TestConfig
