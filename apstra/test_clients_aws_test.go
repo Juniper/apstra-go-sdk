@@ -93,7 +93,6 @@ func getAwsTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error)
 		topologyIds = make([]string, len(cfg.AwsTopologyIds))
 		for i, s := range cfg.AwsTopologyIds {
 			topologyIds[i] = s
-			i++
 		}
 	}
 

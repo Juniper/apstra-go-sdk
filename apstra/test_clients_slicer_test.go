@@ -23,11 +23,15 @@ const (
 )
 
 type slicerTopology struct {
-	AosIp string `json:"aos-vm1"`
+	DeployModel struct {
+		DutMgmtConnectivity struct {
+			AosIp string `json:"aos-vm1"`
+		} `json:"dutmgmt_connectivity"`
+	} `json:"deploy_model"`
 }
 
 func (o *slicerTopology) getGoapstraClientCfg() (*ClientCfg, error) {
-	tlsConfig := &tls.Config{}
+	tlsConfig := &tls.Config{InsecureSkipVerify: true}
 
 	klw, err := keyLogWriterFromEnv(envApstraApiKeyLogFile)
 	if err != nil {
@@ -40,14 +44,14 @@ func (o *slicerTopology) getGoapstraClientCfg() (*ClientCfg, error) {
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}
 
 	return &ClientCfg{
-		Url:        fmt.Sprintf(slicerURL, o.AosIp),
+		Url:        fmt.Sprintf(slicerURL, o.DeployModel.DutMgmtConnectivity.AosIp),
 		User:       slicerUserName,
 		Pass:       slicerPassword,
 		HttpClient: httpClient,
 	}, nil
 }
 
-func getSlicerTopology(ctx context.Context, id string) (*slicerTopology, error) {
+func getSlicerTopology(_ context.Context, id string) (*slicerTopology, error) {
 	requestURL := fmt.Sprintf(slicerTopologyUrlById, id)
 	response, err := http.Get(requestURL)
 	if err != nil {
@@ -89,7 +93,6 @@ func getSlicerTestClientCfgs(ctx context.Context) (map[string]testClientCfg, err
 		topologyIds = make([]string, len(cfg.SlicerTopologyIds))
 		for i, s := range cfg.SlicerTopologyIds {
 			topologyIds[i] = s
-			i++
 		}
 	}
 
