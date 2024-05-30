@@ -15,7 +15,7 @@ const (
 	apstra4211 = "4.2.1.1"
 	apstra422  = "4.2.2"
 
-	apstraSupportedApiVersions = "4.1.0, 4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
+	apstraSupportedApiVersions = "4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
 	apstraSupportedVersionSep  = ","
 
 	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
