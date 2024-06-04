@@ -100,3 +100,14 @@ func featureSwitchEnumFromStringPtr(in *string) *FeatureSwitchEnum {
 	}
 	return FeatureSwitchEnums.Parse(*in)
 }
+
+func isv4(ip net.IP) bool {
+	return 4 == len(ip.To4())
+}
+
+func isv6(ip net.IP) bool {
+	if ip.To4() != nil {
+		return false
+	}
+	return 16 == len(ip.To16())
+}
