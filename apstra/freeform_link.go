@@ -33,7 +33,7 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 				Label      string     `json:"label"`
 				SystemType systemType `json:"system_type"`
 			} `json:"system"`
-			Interface []FreeformInterface `json:"interface"`
+			Interface FreeformInterface `json:"interface"`
 		} `json:"endpoints"`
 		Tags []ObjectId `json:"tags"`
 	}
@@ -59,11 +59,11 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	o.Data.AggregateLinkId = raw.AggregateLinkId
 	o.Data.Endpoints[0] = FreeformEndpoint{
 		SystemId:  raw.Endpoints[0].System.Id,
-		Interface: raw.Endpoints[0].Interface[],
+		Interface: raw.Endpoints[0].Interface,
 	}
 	o.Data.Endpoints[1] = FreeformEndpoint{
 		SystemId:  raw.Endpoints[1].System.Id,
-		Interface: raw.Endpoints[1].Interface[],
+		Interface: raw.Endpoints[1].Interface,
 	}
 	o.Data.Tags = raw.Tags
 
