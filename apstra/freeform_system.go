@@ -108,6 +108,6 @@ func (o *FreeformClient) UpdateFreeformSystem(ctx context.Context, id ObjectId, 
 func (o *FreeformClient) DeleteFreeformSystem(ctx context.Context, id ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlConfigTemplateById, o.blueprintId, id),
+		urlStr: fmt.Sprintf(apiUrlFFGenericSystemsById, o.blueprintId, id),
 	})
 }
