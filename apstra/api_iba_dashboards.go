@@ -193,7 +193,7 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 		}
 
 		e = convertTtaeToAceWherePossible(e)
-		if !(errors.As(err, &ace) && ace.IsRetryable()) {
+		if !(errors.As(e, &ace) && ace.IsRetryable()) {
 			return "", e // return the fatal error
 		}
 

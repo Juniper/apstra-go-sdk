@@ -175,7 +175,7 @@ func (o *Client) createIbaProbeFromJson(ctx context.Context, bpId ObjectId, prob
 		}
 
 		e = convertTtaeToAceWherePossible(e)
-		if !(errors.As(err, &ace) && ace.IsRetryable()) {
+		if !(errors.As(e, &ace) && ace.IsRetryable()) {
 			return "", e // return the fatal error
 		}
 
