@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 )
 
 const (
-	apiUrlFFLinks     = apiUrlBlueprintById + apiUrlPathDelim + "links"
-	apiUrlFFLinksById = apiUrlFFLinks + apiUrlPathDelim + "%s"
+	apiUrlFFLinks    = apiUrlBlueprintById + apiUrlPathDelim + "links"
+	apiUrlFFLinkById = apiUrlFFLinks + apiUrlPathDelim + "%s"
 )
 
 var _ json.Unmarshaler = new(FreeformLink)
@@ -67,7 +68,7 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	}
 	o.Data.Tags = raw.Tags
 
-	return err
+	return nil
 }
 
 type FreeformLinkData struct {
@@ -95,58 +96,88 @@ func (o FreeformInterface) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		IfName           string     `json:"if_name"`
 		TransformationId int        `json:"transformation_id"`
-		Ipv4Addr         string     `json:"ipv4_addr"`
-		Ipv6Addr         string     `json:"ipv6_addr"`
+		Ipv4Addr         string     `json:"ipv4_addr,omitempty"`
+		Ipv6Addr         string     `json:"ipv6_addr,omitempty"`
 		Tags             []ObjectId `json:"tags"`
 	}
 	raw.IfName = o.IfName
 	raw.TransformationId = o.TransformationId
-	raw.Ipv4Addr = o.Ipv4Address.String()
-	raw.Ipv6Addr = o.Ipv6Address.String()
+	if o.Ipv4Address != nil {
+		raw.Ipv4Addr = o.Ipv4Address.String()
+		if strings.Contains(raw.Ipv4Addr, "<nil>") {
+			return nil, fmt.Errorf("cannot marshall ipv4 address - %s", raw.Ipv4Addr)
+		}
+	}
+	if o.Ipv6Address != nil {
+		raw.Ipv6Addr = o.Ipv6Address.String()
+		if strings.Contains(raw.Ipv6Addr, "<nil>") {
+			return nil, fmt.Errorf("cannot marshall ipv6 address - %s", raw.Ipv6Addr)
+		}
+	}
 	raw.Tags = o.Tags
 	return json.Marshal(&raw)
 }
 
-func (o FreeformInterface) UnmarshalJSON(bytes []byte) error {
+func (o *FreeformInterface) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		Id               ObjectId   `json:"id"`
 		IfName           string     `json:"if_name"`
 		TransformationId int        `json:"transformation_id"`
-		Ipv4Addr         string     `json:"ipv4_addr"`
-		Ipv6Addr         string     `json:"ipv6_addr"`
+		Ipv4Addr         *string    `json:"ipv4_addr"`
+		Ipv6Addr         *string    `json:"ipv6_addr"`
 		Tags             []ObjectId `json:"tags"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
+
 	o.Id = raw.Id
 	o.IfName = raw.IfName
 	o.TransformationId = raw.TransformationId
 
-	ip, net4, err := net.ParseCIDR(raw.Ipv4Addr)
-	if err != nil {
-		return fmt.Errorf("failed parsing IPv4 API response - %w", err)
+	if raw.Ipv4Addr != nil {
+		ip, net4, err := net.ParseCIDR(*raw.Ipv4Addr)
+		if err != nil {
+			return fmt.Errorf("failed parsing IPv4 API response - %w", err)
+		}
+		net4.IP = ip
+		o.Ipv4Address = net4
 	}
-	net4.IP = ip
-	o.Ipv4Address = net4
 
-	ip, net6, err := net.ParseCIDR(raw.Ipv6Addr)
-	if err != nil {
-		return fmt.Errorf("failed parsing IPv6 API response - %w", err)
+	if raw.Ipv6Addr != nil {
+		ip, net6, err := net.ParseCIDR(*raw.Ipv6Addr)
+		if err != nil {
+			return fmt.Errorf("failed parsing IPv6 API response - %w", err)
+		}
+		net6.IP = ip
+		o.Ipv6Address = net6
 	}
-	net6.IP = ip
-	o.Ipv6Address = net6
 
 	o.Tags = raw.Tags
 	return nil
 }
 
 var _ json.Marshaler = new(FreeformEndpoint)
+var _ json.Unmarshaler = new(FreeformEndpoint)
 
 type FreeformEndpoint struct {
 	SystemId  ObjectId
 	Interface FreeformInterface
+}
+
+func (o *FreeformEndpoint) UnmarshalJSON(bytes []byte) error {
+	var raw struct {
+		System struct {
+			Id ObjectId `json:"id"`
+		} `json:"system"`
+		Interface FreeformInterface `json:"interface"`
+	}
+
+	o.SystemId = raw.System.Id
+	o.Interface = raw.Interface
+
+	return nil
 }
 
 func (o FreeformEndpoint) MarshalJSON() ([]byte, error) {
@@ -161,17 +192,31 @@ func (o FreeformEndpoint) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&raw)
 }
 
+var _ json.Marshaler = new(FreeformLinkRequest)
+
 type FreeformLinkRequest struct {
 	Label     string              `json:"label"`
 	Tags      []ObjectId          `json:"tags"`
 	Endpoints [2]FreeformEndpoint `json:"endpoints"`
 }
 
+func (o FreeformLinkRequest) MarshalJSON() ([]byte, error) {
+	var raw struct {
+		Label     string     `json:"label"`
+		Tags      []ObjectId `json:"tags"`
+		Endpoints [2]FreeformEndpoint
+	}
+	raw.Label = o.Label
+	raw.Tags = o.Tags
+	raw.Endpoints = o.Endpoints
+	return json.Marshal(&raw)
+}
+
 func (o *FreeformClient) GetFreeformLink(ctx context.Context, id ObjectId) (*FreeformLink, error) {
 	response := new(FreeformLink)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlFFLinksById, o.blueprintId, id),
+		urlStr:      fmt.Sprintf(apiUrlFFLinkById, o.blueprintId, id),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -212,7 +257,7 @@ func (o *FreeformClient) CreateFreeformLink(ctx context.Context, in *FreeformLin
 func (o *FreeformClient) UpdateFreeformLink(ctx context.Context, id ObjectId, in *FreeformLinkData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlFFLinksById, o.blueprintId, id),
+		urlStr:   fmt.Sprintf(apiUrlFFLinkById, o.blueprintId, id),
 		apiInput: in,
 	})
 	if err != nil {
@@ -224,6 +269,6 @@ func (o *FreeformClient) UpdateFreeformLink(ctx context.Context, id ObjectId, in
 func (o *FreeformClient) DeleteFreeformLink(ctx context.Context, id ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlFFLinksById, o.blueprintId, id),
+		urlStr: fmt.Sprintf(apiUrlFFLinkById, o.blueprintId, id),
 	})
 }
