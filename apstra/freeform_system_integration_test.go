@@ -10,13 +10,13 @@ import (
 func TestGSa(t *testing.T) {
 	var x FreeformSystem
 	x.Id = "foo"
-	var devprofileid DeviceProfile
-	devprofileid.Id = "bUHYZeqRQXafDmuZeaw"
+	var devProfileId string
+	devProfileId = "bUHYZeqRQXafDmuZeaw"
 	x.Data = &FreeformSystemData{
 		Type:            SystemTypeInternal,
 		Label:           "test_generic_system",
 		Hostname:        "systemFoo",
-		DeviceProfileId: devprofileid,
+		DeviceProfileId: ObjectId(devProfileId),
 	}
 	rawjson, err := json.Marshal(&x)
 	require.NoError(t, err)

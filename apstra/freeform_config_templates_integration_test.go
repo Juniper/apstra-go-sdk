@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestX(t *testing.T) {
+func TestCtX(t *testing.T) {
 	var x ConfigTemplate
 	x.Id = "foo"
 	x.Data = &ConfigTemplateData{
@@ -18,7 +18,7 @@ func TestX(t *testing.T) {
 	require.NoError(t, err)
 	log.Println(string(rawjson))
 }
-func TestY(t *testing.T) {
+func TestCtY(t *testing.T) {
 	var y ConfigTemplate
 	rawjson := []byte(`{"id":"foo","label":"test_config_template","text":"jinja goes here"}`)
 	err := json.Unmarshal(rawjson, &y)

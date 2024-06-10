@@ -192,27 +192,27 @@ func (o FreeformEndpoint) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&raw)
 }
 
-var _ json.Marshaler = new(FreeformLinkRequest)
-
 type FreeformLinkRequest struct {
 	Label     string              `json:"label"`
 	Tags      []ObjectId          `json:"tags"`
 	Endpoints [2]FreeformEndpoint `json:"endpoints"`
 }
 
-func (o FreeformLinkRequest) MarshalJSON() ([]byte, error) {
-	var raw struct {
-		Label     string     `json:"label"`
-		Tags      []ObjectId `json:"tags"`
-		Endpoints [2]FreeformEndpoint
+func (o *FreeformClient) CreateLink(ctx context.Context, in *FreeformLinkRequest) (ObjectId, error) {
+	response := new(objectIdResponse)
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlFFLinks,
+		apiInput:    in,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
 	}
-	raw.Label = o.Label
-	raw.Tags = o.Tags
-	raw.Endpoints = o.Endpoints
-	return json.Marshal(&raw)
+	return response.Id, nil
 }
 
-func (o *FreeformClient) GetFreeformLink(ctx context.Context, id ObjectId) (*FreeformLink, error) {
+func (o *FreeformClient) GetLink(ctx context.Context, id ObjectId) (*FreeformLink, error) {
 	response := new(FreeformLink)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -225,7 +225,7 @@ func (o *FreeformClient) GetFreeformLink(ctx context.Context, id ObjectId) (*Fre
 	return response, nil
 }
 
-func (o *FreeformClient) GetAllFreeformLinks(ctx context.Context) ([]FreeformLink, error) {
+func (o *FreeformClient) GetAllLinks(ctx context.Context) ([]FreeformLink, error) {
 	var response struct {
 		Items []FreeformLink `json:"items"`
 	}
@@ -240,21 +240,7 @@ func (o *FreeformClient) GetAllFreeformLinks(ctx context.Context) ([]FreeformLin
 	return response.Items, nil
 }
 
-func (o *FreeformClient) CreateFreeformLink(ctx context.Context, in *FreeformLinkRequest) (ObjectId, error) {
-	response := new(objectIdResponse)
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      apiUrlFFLinks,
-		apiInput:    in,
-		apiResponse: response,
-	})
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
-	}
-	return response.Id, nil
-}
-
-func (o *FreeformClient) UpdateFreeformLink(ctx context.Context, id ObjectId, in *FreeformLinkData) error {
+func (o *FreeformClient) UpdateLink(ctx context.Context, id ObjectId, in *FreeformLinkData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFFLinkById, o.blueprintId, id),
@@ -266,7 +252,7 @@ func (o *FreeformClient) UpdateFreeformLink(ctx context.Context, id ObjectId, in
 	return nil
 }
 
-func (o *FreeformClient) DeleteFreeformLink(ctx context.Context, id ObjectId) error {
+func (o *FreeformClient) DeleteLink(ctx context.Context, id ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFLinkById, o.blueprintId, id),

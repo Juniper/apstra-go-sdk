@@ -69,7 +69,7 @@ func (o *FreeformPropertySet) UnmarshalJSON(bytes []byte) error {
 	return err
 }
 
-func (o *FreeformClient) GetFreeformPropertySet(ctx context.Context, id ObjectId) (*FreeformPropertySet, error) {
+func (o *FreeformClient) GetPropertySet(ctx context.Context, id ObjectId) (*FreeformPropertySet, error) {
 	response := new(FreeformPropertySet)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -82,7 +82,7 @@ func (o *FreeformClient) GetFreeformPropertySet(ctx context.Context, id ObjectId
 	return response, nil
 }
 
-func (o *FreeformClient) GetAllFreeformPropertySets(ctx context.Context, label string) ([]FreeformPropertySet, error) {
+func (o *FreeformClient) GetAllPropertySets(ctx context.Context, label string) ([]FreeformPropertySet, error) {
 	var response []FreeformPropertySet
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -96,7 +96,7 @@ func (o *FreeformClient) GetAllFreeformPropertySets(ctx context.Context, label s
 	return response, nil
 }
 
-func (o *FreeformClient) CreateFreeformPropertySet(ctx context.Context, in *FreeformPropertySet) (ObjectId, error) {
+func (o *FreeformClient) CreatePropertySet(ctx context.Context, in *FreeformPropertySet) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -110,7 +110,7 @@ func (o *FreeformClient) CreateFreeformPropertySet(ctx context.Context, in *Free
 	return response.Id, nil
 }
 
-func (o *FreeformClient) UpdateFreeformPropertySet(ctx context.Context, id ObjectId, in *FreeformPropertySet) error {
+func (o *FreeformClient) UpdatePropertySet(ctx context.Context, id ObjectId, in *FreeformPropertySet) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlFFPropertySets, id),
@@ -122,7 +122,7 @@ func (o *FreeformClient) UpdateFreeformPropertySet(ctx context.Context, id Objec
 	return nil
 }
 
-func (o *FreeformClient) DeleteFreeformPropertySet(ctx context.Context, id ObjectId) error {
+func (o *FreeformClient) DeletePropertySet(ctx context.Context, id ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFPropertySetById, o.blueprintId, id),

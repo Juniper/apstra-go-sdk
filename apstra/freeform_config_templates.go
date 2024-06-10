@@ -59,6 +59,20 @@ func (o *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 	return err
 }
 
+func (o *FreeformClient) CreateConfigTemplate(ctx context.Context, in *ConfigTemplate) (ObjectId, error) {
+	response := &objectIdResponse{}
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlConfigTemplates,
+		apiInput:    in,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
+}
+
 func (o *FreeformClient) GetConfigTemplate(ctx context.Context, id ObjectId) (*ConfigTemplate, error) {
 	response := new(ConfigTemplate)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -84,20 +98,6 @@ func (o *FreeformClient) GetAllConfigTemplates(ctx context.Context, label string
 	}
 
 	return response, nil
-}
-
-func (o *FreeformClient) CreateConfigTemplate(ctx context.Context, in *ConfigTemplate) (ObjectId, error) {
-	response := &objectIdResponse{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      apiUrlConfigTemplates,
-		apiInput:    in,
-		apiResponse: response,
-	})
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
-	}
-	return response.Id, nil
 }
 
 func (o *FreeformClient) UpdateConfigTemplate(ctx context.Context, id ObjectId, in *ConfigTemplate) error {

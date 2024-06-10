@@ -15,43 +15,49 @@ const (
 var _ json.Unmarshaler = new(FreeformRaGroupGenerator)
 
 type FreeformRaGroupGenerator struct {
-	Id       ObjectId
+	Id   ObjectId
+	Data *FreeformRaGroupGeneratorData
+}
+
+type FreeformRaGroupGeneratorData struct {
+	ParentId *ObjectId
+	Label    string
 	Scope    string
-	Label    ObjectId
-	ParentId ObjectId
 }
 
 func (o *FreeformRaGroupGenerator) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		ParentId ObjectId `json:"parent_id"`
-		Label    ObjectId `json:"label"`
-		Scope    string   `json:"scope"`
+		Id       ObjectId  `json:"id"`
+		ParentId *ObjectId `json:"parent_id"`
+		Label    string    `json:"label"`
+		Scope    string    `json:"scope"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
-	o.ParentId = raw.ParentId
-	o.Label = raw.Label
-	o.Scope = raw.Scope
+	o.Id = raw.Id
+	o.Data.ParentId = raw.ParentId
+	o.Data.Label = raw.Label
+	o.Data.Scope = raw.Scope
 	return err
 }
 
-var _ json.Marshaler = new(FreeformRaGroupGenerator)
-
-func (o FreeformRaGroupGenerator) MarshalJSON() ([]byte, error) {
-	var raw struct {
-		ParentID string `json:"parent_id"`
-		Label    string `json:"label"`
-		Scope    string `json:"scope"`
+func (o *FreeformClient) CreateRaGenerator(ctx context.Context, in *FreeformRaGroupGeneratorData) (ObjectId, error) {
+	var response objectIdResponse
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlFFRaGroupGenerators, o.blueprintId),
+		apiInput:    in,
+		apiResponse: &response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
 	}
-	raw.ParentID = o.ParentId.String()
-	raw.Label = o.Label.String()
-	raw.Scope = o.Scope
-	return json.Marshal(&raw)
+	return response.Id, nil
 }
 
-func (o *FreeformClient) GetAllFreeformGroupGenerators(ctx context.Context) ([]FreeformRaGroupGenerator, error) {
+func (o *FreeformClient) GetAllGroupGenerators(ctx context.Context) ([]FreeformRaGroupGenerator, error) {
 	var response struct {
 		Items []FreeformRaGroupGenerator `json:"items"`
 	}
@@ -66,7 +72,7 @@ func (o *FreeformClient) GetAllFreeformGroupGenerators(ctx context.Context) ([]F
 	return response.Items, nil
 }
 
-func (o *FreeformClient) GetFreeformRaGroupGenerator(ctx context.Context, id ObjectId) (*FreeformRaGroupGenerator, error) {
+func (o *FreeformClient) GetRaGroupGenerator(ctx context.Context, id ObjectId) (*FreeformRaGroupGenerator, error) {
 	response := new(FreeformRaGroupGenerator)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -79,7 +85,7 @@ func (o *FreeformClient) GetFreeformRaGroupGenerator(ctx context.Context, id Obj
 	return response, nil
 }
 
-func (o *FreeformClient) UpdateFreeformRaGroupGenerator(ctx context.Context, id ObjectId, in *FreeformRaGroupGenerator) error {
+func (o *FreeformClient) UpdateRaGroupGenerator(ctx context.Context, id ObjectId, in *FreeformRaGroupGenerator) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFFRaGroupGeneratorById, o.blueprintId, id),
@@ -91,7 +97,7 @@ func (o *FreeformClient) UpdateFreeformRaGroupGenerator(ctx context.Context, id 
 	return nil
 }
 
-func (o *FreeformClient) DeleteFreeformRaGroupGenerator(ctx context.Context, id ObjectId) error {
+func (o *FreeformClient) DeleteRaGroupGenerator(ctx context.Context, id ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFRaGroupGeneratorById, o.blueprintId, id),

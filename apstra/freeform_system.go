@@ -40,15 +40,37 @@ type FreeformSystemData struct {
 	Label           string
 	Hostname        string
 	Tags            []ObjectId
-	DeviceProfileId DeviceProfile
+	DeviceProfileId ObjectId
 }
 
 func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		SystemType string `json:"system_type"`
+		SystemType      string     `json:"system_type"`
+		Label           string     `json:"label"`
+		Hostname        string     `json:"hostname,omitempty"`
+		Tags            []ObjectId `json:"tags"`
+		DeviceProfileId ObjectId
 	}
 	raw.SystemType = o.Type.String()
+	raw.Label = o.Label
+	raw.Hostname = o.Hostname
+	raw.Tags = o.Tags
+	raw.DeviceProfileId = o.DeviceProfileId
 	return json.Marshal(&raw)
+}
+
+func (o *FreeformClient) CreateSystem(ctx context.Context, in *FreeformSystemData) (ObjectId, error) {
+	response := new(objectIdResponse)
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlFFGenericSystems,
+		apiInput:    in,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
 }
 
 func (o *FreeformClient) GetFreeformSystem(ctx context.Context, systemId ObjectId) (*FreeformSystem, error) {
@@ -77,20 +99,6 @@ func (o *FreeformClient) GetAllFreeformSystems(ctx context.Context) ([]FreeformS
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 	return response.Items, nil
-}
-
-func (o *FreeformClient) CreateFreeformSystem(ctx context.Context, in *FreeformSystemData) (ObjectId, error) {
-	response := new(objectIdResponse)
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      apiUrlFFGenericSystems,
-		apiInput:    in,
-		apiResponse: response,
-	})
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
-	}
-	return response.Id, nil
 }
 
 func (o *FreeformClient) UpdateFreeformSystem(ctx context.Context, id ObjectId, in *FreeformSystemData) error {

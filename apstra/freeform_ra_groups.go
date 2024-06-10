@@ -15,46 +15,55 @@ const (
 var _ json.Unmarshaler = new(FreeformRaGroup)
 
 type FreeformRaGroup struct {
-	Id       ObjectId
-	ParentId ObjectId
-	Label    ObjectId
-	Tags     []ObjectId
-	Data     FreeformRaGroupData
-	// todo add the data key value mapping
+	Id   ObjectId `json:"id,omitempty"`
+	Data *FreeformRaGroupData
+}
+
+type FreeformRaGroupData struct {
+	ParentId *ObjectId         `json:"parent_id"`
+	Label    string            `json:"label"`
+	Tags     []ObjectId        `json:"tags"`
+	Data     map[string]string `json:"data"`
 }
 
 func (o *FreeformRaGroup) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		ParentId ObjectId `json:"parent_id"`
-		Label    ObjectId `json:"label"`
+		Id       ObjectId          `json:"id"`
+		ParentId *ObjectId         `json:"parent_id"`
+		Label    string            `json:"label"`
+		Tags     []ObjectId        `json:"tags"`
+		Data     map[string]string `json:"data"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
-	o.ParentId = raw.ParentId
-	o.Label = raw.Label
+	if o.Data == nil {
+		o.Data = new(FreeformRaGroupData)
+	}
+	o.Id = raw.Id
+	o.Data.ParentId = raw.ParentId
+	o.Data.Label = raw.Label
+	o.Data.Tags = raw.Tags
+	o.Data.Data = raw.Data
 	return err
 }
 
-var _ json.Marshaler = new(FreeformRaGroup)
-
-type FreeformRaGroupData struct {
-	Key   string
-	Value string
-}
-
-func (o FreeformRaGroup) MarshalJSON() ([]byte, error) {
-	var raw struct {
-		ParentID string `json:"parent_id"`
-		Label    string `json:"label"`
+func (o *FreeformClient) CreateRaGroup(ctx context.Context, in *FreeformRaGroupData) (ObjectId, error) {
+	var response objectIdResponse
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlFFRaGroups, o.blueprintId),
+		apiInput:    in,
+		apiResponse: &response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
 	}
-	raw.ParentID = o.ParentId.String()
-	raw.Label = o.Label.String()
-	return json.Marshal(&raw)
+	return response.Id, nil
 }
 
-func (o *FreeformClient) GetAllFreeformGroups(ctx context.Context) ([]FreeformRaGroup, error) {
+func (o *FreeformClient) GetAllRaGroups(ctx context.Context) ([]FreeformRaGroup, error) {
 	var response struct {
 		Items []FreeformRaGroup `json:"items"`
 	}
@@ -69,7 +78,7 @@ func (o *FreeformClient) GetAllFreeformGroups(ctx context.Context) ([]FreeformRa
 	return response.Items, nil
 }
 
-func (o *FreeformClient) GetFreeformRaGroup(ctx context.Context, id ObjectId) (*FreeformRaGroup, error) {
+func (o *FreeformClient) GetRaGroup(ctx context.Context, id ObjectId) (*FreeformRaGroup, error) {
 	response := new(FreeformRaGroup)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -82,7 +91,7 @@ func (o *FreeformClient) GetFreeformRaGroup(ctx context.Context, id ObjectId) (*
 	return response, nil
 }
 
-func (o *FreeformClient) UpdateFreeformRaGroup(ctx context.Context, id ObjectId, in *FreeformRaGroup) error {
+func (o *FreeformClient) UpdateRaGroup(ctx context.Context, id ObjectId, in *FreeformRaGroupData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFFRaGroupById, o.blueprintId, id),
@@ -94,9 +103,13 @@ func (o *FreeformClient) UpdateFreeformRaGroup(ctx context.Context, id ObjectId,
 	return nil
 }
 
-func (o *FreeformClient) DeleteFreeformRaGroup(ctx context.Context, id ObjectId) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+func (o *FreeformClient) DeleteRaGroup(ctx context.Context, id ObjectId) error {
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFRaGroupById, o.blueprintId, id),
 	})
+	if err != nil {
+		return nil
+	}
+	return convertTtaeToAceWherePossible(err)
 }

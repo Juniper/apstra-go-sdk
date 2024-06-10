@@ -57,7 +57,7 @@ func (o FreeformRaLocalPoolGenerator) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&raw)
 }
 
-func (o *FreeformClient) GetAllFreeformLocalPoolGenerators(ctx context.Context) ([]FreeformRaLocalPoolGenerator, error) {
+func (o *FreeformClient) GetAllLocalPoolGenerators(ctx context.Context) ([]FreeformRaLocalPoolGenerator, error) {
 	var response struct {
 		Items []FreeformRaLocalPoolGenerator `json:"items"`
 	}
@@ -72,7 +72,7 @@ func (o *FreeformClient) GetAllFreeformLocalPoolGenerators(ctx context.Context) 
 	return response.Items, nil
 }
 
-func (o *FreeformClient) GetFreeformRaLocalPoolGenerator(ctx context.Context, id ObjectId) (*FreeformRaLocalPoolGenerator, error) {
+func (o *FreeformClient) GetRaLocalPoolGenerator(ctx context.Context, id ObjectId) (*FreeformRaLocalPoolGenerator, error) {
 	response := new(FreeformRaLocalPoolGenerator)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -85,7 +85,7 @@ func (o *FreeformClient) GetFreeformRaLocalPoolGenerator(ctx context.Context, id
 	return response, nil
 }
 
-func (o *FreeformClient) UpdateFreeformRaLocalPoolGenerator(ctx context.Context, id ObjectId, in *FreeformRaLocalPoolGenerator) error {
+func (o *FreeformClient) UpdateRaLocalPoolGenerator(ctx context.Context, id ObjectId, in *FreeformRaLocalPoolGenerator) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFFRaLocalPoolGeneratorById, o.blueprintId, id),
@@ -97,7 +97,7 @@ func (o *FreeformClient) UpdateFreeformRaLocalPoolGenerator(ctx context.Context,
 	return nil
 }
 
-func (o *FreeformClient) DeleteFreeformRaLocalPoolGenerator(ctx context.Context, id ObjectId) error {
+func (o *FreeformClient) DeleteRaLocalPoolGenerator(ctx context.Context, id ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFRaLocalPoolGeneratorById, o.blueprintId, id),
