@@ -37,6 +37,7 @@ const (
 	ErrLagHasAssignedStructrues
 	ErrTimeout
 	ErrAgentProfilePlatformRequired
+	ErrIbaCurrentMountConflictsWithExistingMount
 
 	clientPollingIntervalMs = 1000
 

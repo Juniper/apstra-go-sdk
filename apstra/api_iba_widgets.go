@@ -2,8 +2,11 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
+	"reflect"
 	"time"
 )
 
@@ -241,10 +244,38 @@ func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *raw
 		apiInput:    &widget,
 		apiResponse: &response,
 	})
-	if err != nil {
+	if err == nil {
+		return response.Id, nil
+	}
+	ce := convertTtaeToAceWherePossible(err)
+	if !(reflect.TypeOf(ce) == reflect.TypeOf(ClientErr{}) && ce.(ClientErr).IsRetryable()) {
 		return "", err
 	}
-	return response.Id, nil
+
+	for i := 0; i < dcClientMaxRetries; i++ {
+		// Make a random wait, in case multiple threads are running
+		if rand.Int()/2 == 0 {
+			time.Sleep(dcClientRetryBackoff)
+		}
+		time.Sleep(dcClientRetryBackoff * time.Duration(i))
+
+		e := o.talkToApstra(ctx, &talkToApstraIn{
+			method:      http.MethodPost,
+			urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bpId),
+			apiInput:    &widget,
+			apiResponse: &response,
+		})
+
+		if e == nil {
+			return response.Id, nil
+		}
+		ce := convertTtaeToAceWherePossible(e)
+		if !(reflect.TypeOf(ce) == reflect.TypeOf(ClientErr{}) && ce.(ClientErr).IsRetryable()) {
+			return "", err
+		}
+		err = errors.Join(err, e)
+	}
+	return "", err
 }
 
 func (o *Client) updateIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId, widget *rawIbaWidget) error {
