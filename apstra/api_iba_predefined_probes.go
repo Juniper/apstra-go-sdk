@@ -102,5 +102,4 @@ func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpId ObjectI
 		err = errors.Join(err, e)
 	}
 	return "", err
-	return response.Id, nil
 }
