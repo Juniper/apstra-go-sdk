@@ -42,6 +42,7 @@ const (
 	clientPollingIntervalMs = 1000
 
 	defaultTimerPollingIntervalMs = 1000
+	defaultTimerRetryIntervalMs   = 100
 	defaultTimerTimeoutSec        = 10
 	defaultMaxRetries             = 5
 
@@ -159,6 +160,8 @@ func (o *Client) GetTuningParam(name string) int {
 	switch {
 	case strings.Contains(name, "TimeoutSec"):
 		return defaultTimerTimeoutSec
+	case strings.Contains(name, "RetryIntervalMs"):
+		return defaultTimerRetryIntervalMs
 	case strings.Contains(name, "PollingIntervalMs"):
 		return defaultTimerPollingIntervalMs
 	case strings.Contains(name, "MaxRetries"):

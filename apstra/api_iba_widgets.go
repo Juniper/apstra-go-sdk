@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"reflect"
 	"time"
 )
 
@@ -236,8 +235,7 @@ func (o *Client) getIbaWidgetByLabel(ctx context.Context, bpId ObjectId, label s
 }
 
 func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *rawIbaWidget) (ObjectId, error) {
-	response := &objectIdResponse{}
-
+	var response objectIdResponse
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bpId),
@@ -247,17 +245,24 @@ func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *raw
 	if err == nil {
 		return response.Id, nil
 	}
-	ce := convertTtaeToAceWherePossible(err)
-	if !(reflect.TypeOf(ce) == reflect.TypeOf(ClientErr{}) && ce.(ClientErr).IsRetryable()) {
-		return "", err
+
+	err = convertTtaeToAceWherePossible(err)
+
+	var ace ClientErr
+	if !(errors.As(err, &ace) && ace.IsRetryable()) {
+		return "", err // fatal error
 	}
 
-	for i := 0; i < dcClientMaxRetries; i++ {
+	retryMax := o.GetTuningParam("createIbaWidgetMaxRetries")
+	retryInterval := time.Duration(o.GetTuningParam("createIbaWidgetRetryIntervalMs")) * time.Millisecond
+
+	for i := 0; i < retryMax; i++ {
 		// Make a random wait, in case multiple threads are running
-		if rand.Int()/2 == 0 {
-			time.Sleep(dcClientRetryBackoff)
+		if rand.Int()%2 == 0 {
+			time.Sleep(retryInterval)
 		}
-		time.Sleep(dcClientRetryBackoff * time.Duration(i))
+
+		time.Sleep(retryInterval * time.Duration(i))
 
 		e := o.talkToApstra(ctx, &talkToApstraIn{
 			method:      http.MethodPost,
@@ -265,17 +270,19 @@ func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *raw
 			apiInput:    &widget,
 			apiResponse: &response,
 		})
-
 		if e == nil {
-			return response.Id, nil
+			return response.Id, nil // success!
 		}
-		ce := convertTtaeToAceWherePossible(e)
-		if !(reflect.TypeOf(ce) == reflect.TypeOf(ClientErr{}) && ce.(ClientErr).IsRetryable()) {
-			return "", err
+
+		e = convertTtaeToAceWherePossible(e)
+		if !(errors.As(err, &ace) && ace.IsRetryable()) {
+			return "", e // return the fatal error
 		}
-		err = errors.Join(err, e)
+
+		err = errors.Join(err, e) // the error is retryable; stack it with the rest
 	}
-	return "", err
+
+	return "", errors.Join(err, fmt.Errorf("reached retry limit %d", retryMax))
 }
 
 func (o *Client) updateIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId, widget *rawIbaWidget) error {
