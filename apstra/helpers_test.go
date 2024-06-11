@@ -708,7 +708,7 @@ func testVirtualNetwork(t testing.TB, ctx context.Context, bp *TwoStageL3ClosCli
 	return id
 }
 
-func testFFBlueprintA(ctx context.Context, t testing.TB, client *Client) (*FreeformClient, []FreeformSystem) {
+func testFFBlueprintA(ctx context.Context, t testing.TB, client *Client) (*FreeformClient, []ObjectId) {
 	t.Helper()
 
 	id, err := client.CreateFreeformBlueprint(ctx, randString(6, "hex"))
@@ -722,15 +722,18 @@ func testFFBlueprintA(ctx context.Context, t testing.TB, client *Client) (*Freef
 	require.NoError(t, err)
 
 	dpId, err := c.ImportDeviceProfile(ctx, "Juniper_vEX")
+	require.NoError(t, err)
 
-	systemId, err := c.CreateSystem(ctx, &FreeformSystemData{
-		Type:            SystemTypeInternal,
-		Label:           randString(6, "hex"),
-		DeviceProfileId: dpId,
-	})
-	if err != nil {
-		return nil, nil
+	systemCount := 2
+	systemIds := make([]ObjectId, systemCount)
+	for i := range systemIds {
+		systemIds[i], err = c.CreateSystem(ctx, &FreeformSystemData{
+			Type:            SystemTypeInternal,
+			Label:           randString(6, "hex"),
+			DeviceProfileId: dpId,
+		})
+		require.NoError(t, err)
 	}
 
-	return c, nil
+	return c, systemIds
 }

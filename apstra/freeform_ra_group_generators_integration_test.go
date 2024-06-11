@@ -9,9 +9,10 @@ import (
 
 func TestRaGroupGenA(t *testing.T) {
 	var x FreeformRaGroupGenerator
+	x.Data = new(FreeformRaGroupGeneratorData)
 	x.Id = "foo"
-	x.Scope = "node('link', role='internal', name='target')"
-	x.Label = "GroupGenTest"
+	x.Data.Scope = "node('link', role='internal', name='target')"
+	x.Data.Label = "GroupGenTest"
 	rawjson, err := json.Marshal(&x)
 	require.NoError(t, err)
 	log.Println(string(rawjson))

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	apiUrlFFGenericSystems     = apiUrlBlueprintById + apiUrlPathDelim + "generic_systems"
+	apiUrlFFGenericSystems     = apiUrlBlueprintById + apiUrlPathDelim + "generic-systems"
 	apiUrlFFGenericSystemsById = apiUrlFFGenericSystems + apiUrlPathDelim + "%s"
 )
 
@@ -49,7 +49,7 @@ func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 		Label           string     `json:"label"`
 		Hostname        string     `json:"hostname,omitempty"`
 		Tags            []ObjectId `json:"tags"`
-		DeviceProfileId ObjectId
+		DeviceProfileId ObjectId   `json:"device_profile_id"`
 	}
 	raw.SystemType = o.Type.String()
 	raw.Label = o.Label
@@ -63,7 +63,7 @@ func (o *FreeformClient) CreateSystem(ctx context.Context, in *FreeformSystemDat
 	response := new(objectIdResponse)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      apiUrlFFGenericSystems,
+		urlStr:      fmt.Sprintf(apiUrlFFGenericSystems, o.blueprintId),
 		apiInput:    in,
 		apiResponse: response,
 	})

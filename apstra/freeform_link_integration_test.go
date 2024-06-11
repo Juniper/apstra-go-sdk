@@ -1,23 +1,49 @@
 package apstra
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/stretchr/testify/require"
-	"log"
 	"testing"
 )
 
 func TestFFLinkA(t *testing.T) {
-	var x FreeformLink
-	x.Id = "foo"
-	x.Data = &FreeformLinkData{
-		Type:  LinkTypeEthernet,
-		Label: "test_ff_link",
-		Speed: "10G",
-	}
-	rawjson, err := json.Marshal(&x)
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
-	log.Println(string(rawjson))
+	for clientName, client := range clients {
+		ffc, sysIds := testFFBlueprintA(ctx, t, client.client)
+		_ = clientName
+		linkId, err := ffc.CreateLink(ctx, &FreeformLinkRequest{
+			Label: randString(6, "hex"),
+			Tags:  []ObjectId{"a", "b"},
+			Endpoints: [2]FreeformEndpoint{
+				{
+					SystemId: sysIds[0],
+					Interface: FreeformInterfaceData{
+						IfName:           "ge-0/0/0",
+						TransformationId: 1,
+						Ipv4Address:      nil,
+						Ipv6Address:      nil,
+						Tags:             nil,
+					},
+				},
+				{
+					SystemId: sysIds[1],
+					Interface: FreeformInterfaceData{
+						IfName:           "ge-0/0/0",
+						TransformationId: 1,
+						Ipv4Address:      nil,
+						Ipv6Address:      nil,
+						Tags:             nil,
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+		t.Log(linkId)
+	}
+
 }
 func TestFFLinkB(t *testing.T) {
 	var y ConfigTemplate

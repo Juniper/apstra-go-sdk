@@ -9,10 +9,10 @@ import (
 
 func TestRaGroupA(t *testing.T) {
 	var x FreeformRaGroup
+	x.Data = new(FreeformRaGroupData)
 	x.Id = "foo"
-	x.Label = "RaGroupTest"
-	x.Data.Key = "key"
-	x.Data.Value = "value"
+	x.Data.Label = "RaGroupTest"
+	x.Data.Data = map[string]string{}
 	rawjson, err := json.Marshal(&x)
 	require.NoError(t, err)
 	log.Println(string(rawjson))
