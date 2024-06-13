@@ -61,7 +61,7 @@ type FFLocalIntPoolChunk struct {
 	End   int `json:"end"`
 }
 
-//todo is o below a pointer or just normal?
+// todo is o below a pointer or just normal?
 func (o *FreeformRaLocalIntPoolData) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		ResourceType FFResourceType `json:"resource_type"`
@@ -101,7 +101,21 @@ func (o FreeformRaLocalIntPoolData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&raw)
 }
 
-func (o *FreeformClient) GetAllLocalPools(ctx context.Context) ([]FreeformRaLocalIntPool, error) {
+func (o *FreeformClient) CreateLocalIntPool(ctx context.Context, in *FreeformRaLocalIntPool) (ObjectId, error) {
+	var response objectIdResponse
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlFFRaLocalPools, o.blueprintId),
+		apiInput:    in,
+		apiResponse: &response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
+}
+
+func (o *FreeformClient) GetAllLocalIntPools(ctx context.Context) ([]FreeformRaLocalIntPool, error) {
 	var response struct {
 		Items []FreeformRaLocalIntPool `json:"items"`
 	}
@@ -116,7 +130,7 @@ func (o *FreeformClient) GetAllLocalPools(ctx context.Context) ([]FreeformRaLoca
 	return response.Items, nil
 }
 
-func (o *FreeformClient) GetRaLocalPool(ctx context.Context, id ObjectId) (*FreeformRaLocalIntPool, error) {
+func (o *FreeformClient) GetRaLocalIntPool(ctx context.Context, id ObjectId) (*FreeformRaLocalIntPool, error) {
 	response := new(FreeformRaLocalIntPool)
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -129,7 +143,7 @@ func (o *FreeformClient) GetRaLocalPool(ctx context.Context, id ObjectId) (*Free
 	return response, nil
 }
 
-func (o *FreeformClient) UpdateRaLocalPool(ctx context.Context, id ObjectId, in *FreeformRaLocalIntPool) error {
+func (o *FreeformClient) UpdateRaLocalIntPool(ctx context.Context, id ObjectId, in *FreeformRaLocalIntPool) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFFRaLocalPoolById, o.blueprintId, id),
@@ -141,7 +155,7 @@ func (o *FreeformClient) UpdateRaLocalPool(ctx context.Context, id ObjectId, in 
 	return nil
 }
 
-func (o *FreeformClient) DeleteRaLocalPool(ctx context.Context, id ObjectId) error {
+func (o *FreeformClient) DeleteRaLocalIntPool(ctx context.Context, id ObjectId) error {
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFRaLocalPoolById, o.blueprintId, id),

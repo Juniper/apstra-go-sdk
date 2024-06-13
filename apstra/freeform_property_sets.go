@@ -13,49 +13,27 @@ const (
 )
 
 var _ json.Unmarshaler = new(FreeformPropertySet)
-var _ json.Marshaler = new(FreeformPropertySet)
 
 type FreeformPropertySet struct {
 	Id   ObjectId
-	Data *FFPropertySetData
+	Data *FreeformPropertySetData
 }
 
-type FFPropertySetData struct {
-	SystemId ObjectId
-	Label    string
-	//TemplateId string    //we think this is not useful. TBD.//
-	Values     string
-	ValuesYaml string
-}
-
-func (o FreeformPropertySet) MarshalJSON() ([]byte, error) {
-	var raw struct {
-		SystemId   ObjectId `json:"system_id"`
-		Id         ObjectId `json:"property_set_id"`
-		Label      string   `json:"label,omitempty"`
-		Values     string   `json:"values,omitempty"`
-		ValuesYaml string   `json:"values_yaml,omitempty"`
-	}
-	raw.Id = o.Id
-	if o.Data != nil {
-		raw.SystemId = o.Data.SystemId
-		raw.Label = o.Data.Label
-		raw.Values = o.Data.Values
-		raw.ValuesYaml = o.Data.ValuesYaml
-	}
-	return json.Marshal(&raw)
+type FreeformPropertySetData struct {
+	SystemId *ObjectId         `json:"system_id"`
+	Label    string            `json:"label"`
+	Values   map[string]string `json:"values,omitempty"`
 }
 
 func (o *FreeformPropertySet) UnmarshalJSON(bytes []byte) error {
 	if o.Data == nil {
-		o.Data = new(FFPropertySetData)
+		o.Data = new(FreeformPropertySetData)
 	}
 	var raw struct {
-		Id         ObjectId `json:"property_set_id"`
-		SystemId   ObjectId `json:"system_id"`
-		Label      string   `json:"label,omitempty"`
-		Values     string   `json:"values,omitempty"`
-		ValuesYaml string   `json:"value_yaml,omitempty"`
+		Id       ObjectId          `json:"property_set_id"`
+		SystemId *ObjectId         `json:"system_id"`
+		Label    string            `json:"label,omitempty"`
+		Values   map[string]string `json:"values,omitempty"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
@@ -65,8 +43,21 @@ func (o *FreeformPropertySet) UnmarshalJSON(bytes []byte) error {
 	o.Data.SystemId = raw.SystemId
 	o.Data.Label = raw.Label
 	o.Data.Values = raw.Values
-	o.Data.ValuesYaml = raw.ValuesYaml
 	return err
+}
+
+func (o *FreeformClient) CreatePropertySet(ctx context.Context, in *FreeformPropertySetData) (ObjectId, error) {
+	response := &objectIdResponse{}
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlFFPropertySets, o.blueprintId),
+		apiInput:    in,
+		apiResponse: response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
 }
 
 func (o *FreeformClient) GetPropertySet(ctx context.Context, id ObjectId) (*FreeformPropertySet, error) {
@@ -82,38 +73,26 @@ func (o *FreeformClient) GetPropertySet(ctx context.Context, id ObjectId) (*Free
 	return response, nil
 }
 
-func (o *FreeformClient) GetAllPropertySets(ctx context.Context, label string) ([]FreeformPropertySet, error) {
-	var response []FreeformPropertySet
+func (o *FreeformClient) GetAllPropertySets(ctx context.Context) ([]FreeformPropertySet, error) {
+	var response struct {
+		Items []FreeformPropertySet `json:"items"`
+	}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFFPropertySets, o.blueprintId),
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	return response, nil
+	return response.Items, nil
 }
 
-func (o *FreeformClient) CreatePropertySet(ctx context.Context, in *FreeformPropertySet) (ObjectId, error) {
-	response := &objectIdResponse{}
+func (o *FreeformClient) UpdatePropertySet(ctx context.Context, id ObjectId, in *FreeformPropertySetData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      apiUrlFFPropertySets,
-		apiInput:    in,
-		apiResponse: response,
-	})
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
-	}
-	return response.Id, nil
-}
-
-func (o *FreeformClient) UpdatePropertySet(ctx context.Context, id ObjectId, in *FreeformPropertySet) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlFFPropertySets, id),
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlFFPropertySetById, o.blueprintId, id),
 		apiInput: in,
 	})
 	if err != nil {

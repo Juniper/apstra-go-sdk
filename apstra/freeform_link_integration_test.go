@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestFFLinkA(t *testing.T) {
+func TestCreateDeleteFFLink(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
@@ -42,6 +42,8 @@ func TestFFLinkA(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Log(linkId)
+		err = ffc.DeleteLink(ctx, linkId)
+		require.NoError(t, err)
 	}
 
 }

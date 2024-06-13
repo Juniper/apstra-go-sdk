@@ -12,29 +12,37 @@ const (
 	apiUrlFFRaLocalPoolGeneratorById = apiUrlFFRaLocalPoolGenerators + apiUrlPathDelim + "%s"
 )
 
-var _ json.Unmarshaler = new(FreeformRaLocalPoolGenerator)
+var _ json.Unmarshaler = new(FreeformRaLocalPoolGeneratorData)
 
 type FreeformRaLocalPoolGenerator struct {
-	Id           ObjectId
+	Id   ObjectId
+	Data *FreeformRaLocalPoolGeneratorData
+}
+type FreeformRaLocalPoolGeneratorData struct {
+	PoolType     string
+	ResourceType FFResourceType
+	Label        string
 	Scope        string
-	PoolType     int // todo do i need an enum or something here?
-	ResourceType string
-	Label        ObjectId
-	// todo implement "one of the next values " chunks
+	Chunks       []FFLocalIntPoolChunk
+	version      int
 }
 
-func (o *FreeformRaLocalPoolGenerator) UnmarshalJSON(bytes []byte) error {
+func (o *FreeformRaLocalPoolGeneratorData) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Label        ObjectId `json:"label"`
-		Scope        string   `json:"scope"`
-		PoolType     int      `json:"pool_type"`
-		ResourceType string   `json:"resource_type"`
+		Label        ObjectId       `json:"label"`
+		Scope        string         `json:"scope"`
+		PoolType     string         `json:"pool_type"`
+		ResourceType FFResourceType `json:"resource_type"`
+		Definition   struct {
+			Chunks []FFLocalIntPoolChunk `json:"chunks"`
+		} `json:"definition"`
+		Version string `json:"version"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
-	o.Label = raw.Label
+	o.Label = string(raw.Label)
 	o.Scope = raw.Scope
 	o.PoolType = raw.PoolType
 	o.ResourceType = raw.ResourceType
@@ -45,16 +53,30 @@ var _ json.Marshaler = new(FreeformRaLocalPoolGenerator)
 
 func (o FreeformRaLocalPoolGenerator) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		Label        string `json:"label"`
-		Scope        string `json:"scope"`
-		PoolType     int    `json:"pool_type"`
-		ResourceType string `json:"resource_type"`
+		Label        string         `json:"label"`
+		Scope        string         `json:"scope"`
+		PoolType     string         `json:"pool_type"`
+		ResourceType FFResourceType `json:"resource_type"`
 	}
-	raw.Label = o.Label.String()
-	raw.Scope = o.Scope
-	raw.PoolType = o.PoolType
-	raw.ResourceType = o.ResourceType
+	raw.Label = o.Data.Label
+	raw.Scope = o.Data.Scope
+	raw.PoolType = o.Data.PoolType
+	raw.ResourceType = o.Data.ResourceType
 	return json.Marshal(&raw)
+}
+
+func (o *FreeformClient) CreateLocalPoolGenerator(ctx context.Context, in *FreeformRaLocalPoolGenerator) (ObjectId, error) {
+	var response objectIdResponse
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlFFRaLocalPoolGenerators, o.blueprintId),
+		apiInput:    in,
+		apiResponse: &response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+	return response.Id, nil
 }
 
 func (o *FreeformClient) GetAllLocalPoolGenerators(ctx context.Context) ([]FreeformRaLocalPoolGenerator, error) {

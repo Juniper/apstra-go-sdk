@@ -1,27 +1,75 @@
 package apstra
 
 import (
-	"encoding/json"
+	"context"
 	"github.com/stretchr/testify/require"
-	"log"
 	"testing"
 )
 
-func TestPropSetsX(t *testing.T) {
-	var x FreeformPropertySet
-	x.Id = "foo"
-	x.Data = &FFPropertySetData{
-		Label:  "test_prop_set",
-		Values: "{stuff goes here}",
+func TestCRUDPropSets(t *testing.T) {
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	compare := func(t *testing.T, a, b *FreeformPropertySetData) {
+		require.NotNil(t, a)
+		require.NotNil(t, b)
+		require.Equal(t, a.Label, b.Label)
+		require.Equal(t, a.Values, b.Values)
+		if a.SystemId != nil {
+			require.NotNil(t, b.SystemId)
+		}
+		if b.SystemId != nil {
+			require.NotNil(t, a.SystemId)
+			require.Equal(t, *a.SystemId, *b.SystemId)
+		}
 	}
-	rawjson, err := json.Marshal(&x)
-	require.NoError(t, err)
-	log.Println(string(rawjson))
-}
-func TestPropSetsY(t *testing.T) {
-	var y FreeformPropertySet
-	rawjson := []byte(`{"property_set_id":"foo","label":"test_prop_set","Values":"{stuff goes here}"}`)
-	err := json.Unmarshal(rawjson, &y)
-	require.NoError(t, err)
-	require.Equal(t, ObjectId("foo"), y.Id, "id mismatch")
+
+	for _, client := range clients {
+		ffc, systemIds := testFFBlueprintA(ctx, t, client.client)
+		require.Greater(t, len(systemIds), 0)
+		cfg := FreeformPropertySetData{
+			Label:  randString(6, "hex"),
+			Values: make(map[string]string),
+		}
+		for i := 0; i < 5; i++ {
+			cfg.Values["a"+randString(6, "hex")] = randString(6, "hex")
+		}
+		id, err := ffc.CreatePropertySet(ctx, &cfg)
+		require.NoError(t, err)
+
+		propertySet, err := ffc.GetPropertySet(ctx, id)
+		require.NoError(t, err)
+		compare(t, &cfg, propertySet.Data)
+
+		cfg.Label = randString(6, "hex")
+		cfg.SystemId = &systemIds[0]
+		cfg.Values = map[string]string{}
+		for i := 0; i < 5; i++ {
+			cfg.Values["a"+randString(6, "hex")] = randString(6, "hex")
+		}
+		err = ffc.UpdatePropertySet(ctx, id, &cfg)
+		require.NoError(t, err)
+
+		propertySet, err = ffc.GetPropertySet(ctx, id)
+		require.NoError(t, err)
+		compare(t, &cfg, propertySet.Data)
+
+		propertySets, err := ffc.GetAllPropertySets(ctx)
+		require.NoError(t, err)
+		ids := make([]ObjectId, len(propertySets))
+		for i, template := range propertySets {
+			ids[i] = template.Id
+		}
+		require.Contains(t, ids, id)
+
+		err = ffc.DeletePropertySet(ctx, id)
+		require.NoError(t, err)
+
+		_, err = ffc.GetPropertySet(ctx, id)
+		require.Error(t, err)
+		var ace ClientErr
+		require.ErrorAs(t, err, &ace)
+		require.Equal(t, ErrNotfound, ace.Type())
+	}
 }

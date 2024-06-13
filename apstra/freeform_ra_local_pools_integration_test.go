@@ -1,26 +1,30 @@
 package apstra
 
 import (
-	"encoding/json"
+	"context"
 	"github.com/stretchr/testify/require"
-	"log"
 	"testing"
 )
 
 func TestRaLpA(t *testing.T) {
-	var x FreeformRaLocalPools
-	x.Id = "foo"
-	x.PoolType = "integer"
-	x.Label = "foo"
-	x.ResourceType = "integer"
-	rawjson, err := json.Marshal(&x)
+	var x *FreeformRaLocalIntPool
+	ctx := context.Background()
+	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
-	log.Println(string(rawjson))
-}
-func TestRaLpB(t *testing.T) {
-	var y ConfigTemplate
-	rawjson := []byte(`{"id":"foo","pool_type":"integer","resource_type":"integer","label":"foo"}`)
-	err := json.Unmarshal(rawjson, &y)
-	require.NoError(t, err)
-	require.Equal(t, ObjectId("foo"), y.Id, "id mismatch")
+	for clientName, client := range clients {
+		ffc, sysIds := testFFBlueprintA(ctx, t, client.client)
+		_ = ffc
+		_ = sysIds
+		_ = clientName
+		x.Id = "foo"
+		x.Data.ResourceType = FFResourceTypeVlan
+		x.Data.Chunks[0].Start = 10
+		x.Data.Chunks[0].End = 20
+		_, err := ffc.CreateLocalIntPool(ctx, x)
+		if err != nil {
+			return
+		}
+		require.NoError(t, err)
+		t.Log(x.Id)
+	}
 }
