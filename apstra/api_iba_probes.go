@@ -3,8 +3,11 @@ package apstra
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 const (
@@ -131,17 +134,53 @@ func (o *Client) deleteIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId)
 	}))
 }
 
-func (o *Client) createIbaProbeFromJson(ctx context.Context, bpId ObjectId, probeJson json.RawMessage) (ObjectId,
-	error) {
-	response := objectIdResponse{}
+func (o *Client) createIbaProbeFromJson(ctx context.Context, bpId ObjectId, probeJson json.RawMessage) (ObjectId, error) {
+	var response objectIdResponse
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlIbaProbes, bpId),
 		apiInput:    probeJson,
 		apiResponse: &response,
 	})
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
+	if err == nil {
+		return response.Id, nil
 	}
-	return response.Id, nil
+
+	err = convertTtaeToAceWherePossible(err)
+
+	var ace ClientErr
+	if !(errors.As(err, &ace) && ace.IsRetryable()) {
+		return "", err // fatal error
+	}
+
+	retryMax := o.GetTuningParam("createProbeMaxRetries")
+	retryInterval := time.Duration(o.GetTuningParam("createProbeRetryIntervalMs")) * time.Millisecond
+
+	for i := 0; i < retryMax; i++ {
+		// Make a random wait, in case multiple threads are running
+		if rand.Int()%2 == 0 {
+			time.Sleep(retryInterval)
+		}
+
+		time.Sleep(retryInterval * time.Duration(i))
+
+		e := o.talkToApstra(ctx, &talkToApstraIn{
+			method:      http.MethodPost,
+			urlStr:      fmt.Sprintf(apiUrlIbaProbes, bpId),
+			apiInput:    probeJson,
+			apiResponse: &response,
+		})
+		if e == nil {
+			return response.Id, nil // success!
+		}
+
+		e = convertTtaeToAceWherePossible(e)
+		if !(errors.As(e, &ace) && ace.IsRetryable()) {
+			return "", e // return the fatal error
+		}
+
+		err = errors.Join(err, e) // the error is retryable; stack it with the rest
+	}
+
+	return "", errors.Join(err, fmt.Errorf("reached retry limit %d", retryMax))
 }
