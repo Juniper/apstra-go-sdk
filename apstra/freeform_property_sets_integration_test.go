@@ -26,7 +26,7 @@ func TestCRUDPropSets(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		ffc, systemIds := testFFBlueprintB(ctx, t, client.client, 2)
+		ffc, systemIds := testFFBlueprintB(ctx, t, client.client, 1)
 		require.Equal(t, len(systemIds), 1)
 
 		cfg := FreeformPropertySetData{
