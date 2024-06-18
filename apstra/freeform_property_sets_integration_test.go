@@ -26,8 +26,9 @@ func TestCRUDPropSets(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		ffc, systemIds := testFFBlueprintA(ctx, t, client.client)
-		require.Greater(t, len(systemIds), 0)
+		ffc, systemIds := testFFBlueprintB(ctx, t, client.client, 2)
+		require.Equal(t, len(systemIds), 1)
+
 		cfg := FreeformPropertySetData{
 			Label:  randString(6, "hex"),
 			Values: make(map[string]string),
@@ -35,6 +36,9 @@ func TestCRUDPropSets(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			cfg.Values["a"+randString(6, "hex")] = randString(6, "hex")
 		}
+
+		// todo: test CreatePropertySet with non-nil SystemId
+
 		id, err := ffc.CreatePropertySet(ctx, &cfg)
 		require.NoError(t, err)
 
@@ -48,6 +52,9 @@ func TestCRUDPropSets(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			cfg.Values["a"+randString(6, "hex")] = randString(6, "hex")
 		}
+
+		// todo: test CreatePropertySet with nil SystemId
+
 		err = ffc.UpdatePropertySet(ctx, id, &cfg)
 		require.NoError(t, err)
 
@@ -57,6 +64,7 @@ func TestCRUDPropSets(t *testing.T) {
 
 		propertySets, err := ffc.GetAllPropertySets(ctx)
 		require.NoError(t, err)
+
 		ids := make([]ObjectId, len(propertySets))
 		for i, template := range propertySets {
 			ids[i] = template.Id

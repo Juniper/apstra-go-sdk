@@ -19,7 +19,7 @@ func TestCRUD_CT(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		ffc, _ := testFFBlueprintA(ctx, t, client.client)
+		ffc := testFFBlueprintA(ctx, t, client.client)
 		cfg := ConfigTemplateData{
 			Label: randString(6, "hex") + ".jinja",
 			Text:  randString(30, "hex"),

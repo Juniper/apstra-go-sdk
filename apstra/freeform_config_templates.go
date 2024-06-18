@@ -14,7 +14,7 @@ const (
 
 var _ json.Unmarshaler = new(ConfigTemplate)
 
-//var _ json.Marshaler = new(ConfigTemplate)
+//var _ json.Marshaler = new(ConfigTemplate) // todo delete me?
 
 type ConfigTemplate struct {
 	Id   ObjectId
@@ -26,7 +26,7 @@ type ConfigTemplateData struct {
 	Text  string `json:"text"`
 }
 
-//func (o ConfigTemplate) MarshalJSON() ([]byte, error) {
+//func (o ConfigTemplate) MarshalJSON() ([]byte, error) { // todo delete me?
 //	var raw struct {
 //		Id    ObjectId `json:"id"`
 //		Label string   `json:"label,omitempty"`
@@ -41,55 +41,63 @@ type ConfigTemplateData struct {
 //}
 
 func (o *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
-	if o.Data == nil {
-		o.Data = new(ConfigTemplateData)
-	}
 	var raw struct {
 		Id    ObjectId `json:"id"`
 		Label string   `json:"label,omitempty"`
 		Text  string   `json:"text,omitempty"`
 	}
+
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
+
 	o.Id = raw.Id
+	if o.Data == nil {
+		o.Data = new(ConfigTemplateData)
+	}
 	o.Data.Label = raw.Label
 	o.Data.Text = raw.Text
+
 	return err
 }
 
 func (o *FreeformClient) CreateConfigTemplate(ctx context.Context, in *ConfigTemplateData) (ObjectId, error) {
-	response := &objectIdResponse{}
+	var response objectIdResponse
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlConfigTemplates, o.blueprintId),
 		apiInput:    in,
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Id, nil
 }
 
 func (o *FreeformClient) GetConfigTemplate(ctx context.Context, id ObjectId) (*ConfigTemplate, error) {
-	response := new(ConfigTemplate)
+	var response ConfigTemplate
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlConfigTemplateById, o.blueprintId, id),
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response, nil
+
+	return &response, nil
 }
 
 func (o *FreeformClient) GetAllConfigTemplates(ctx context.Context) ([]ConfigTemplate, error) {
 	var response struct {
 		Items []ConfigTemplate `json:"items"`
 	}
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlConfigTemplates, o.blueprintId),
@@ -111,12 +119,18 @@ func (o *FreeformClient) UpdateConfigTemplate(ctx context.Context, id ObjectId, 
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
+
 	return nil
 }
 
 func (o *FreeformClient) DeleteConfigTemplate(ctx context.Context, id ObjectId) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlConfigTemplateById, o.blueprintId, id),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
 }
