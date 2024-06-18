@@ -11,11 +11,8 @@ func TestRaLpA(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
-	for clientName, client := range clients {
-		ffc, sysIds := testFFBlueprintA(ctx, t, client.client)
-		_ = ffc
-		_ = sysIds
-		_ = clientName
+	for _, client := range clients {
+		ffc := testFFBlueprintA(ctx, t, client.client)
 		x.Id = "foo"
 		x.Data.ResourceType = FFResourceTypeVlan
 		x.Data.Chunks[0].Start = 10

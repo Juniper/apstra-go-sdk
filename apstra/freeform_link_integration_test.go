@@ -12,7 +12,7 @@ func TestCreateDeleteFFLink(t *testing.T) {
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
 	for clientName, client := range clients {
-		ffc, sysIds := testFFBlueprintA(ctx, t, client.client)
+		ffc, sysIds := testFFBlueprintB(ctx, t, client.client, 2)
 		_ = clientName
 		linkId, err := ffc.CreateLink(ctx, &FreeformLinkRequest{
 			Label: randString(6, "hex"),
