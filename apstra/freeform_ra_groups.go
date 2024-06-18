@@ -20,19 +20,19 @@ type FreeformRaGroup struct {
 }
 
 type FreeformRaGroupData struct {
-	ParentId *ObjectId         `json:"parent_id"`
-	Label    string            `json:"label"`
-	Tags     []ObjectId        `json:"tags"`
-	Data     map[string]string `json:"data"`
+	ParentId *ObjectId       `json:"parent_id"`
+	Label    string          `json:"label"`
+	Tags     []ObjectId      `json:"tags"`
+	Data     json.RawMessage `json:"data"`
 }
 
 func (o *FreeformRaGroup) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id       ObjectId          `json:"id"`
-		ParentId *ObjectId         `json:"parent_id"`
-		Label    string            `json:"label"`
-		Tags     []ObjectId        `json:"tags"`
-		Data     map[string]string `json:"data"`
+		Id       ObjectId        `json:"id"`
+		ParentId *ObjectId       `json:"parent_id"`
+		Label    string          `json:"label"`
+		Tags     []ObjectId      `json:"tags"`
+		Data     json.RawMessage `json:"data"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {

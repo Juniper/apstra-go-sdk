@@ -2,7 +2,9 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/stretchr/testify/require"
+	"math/rand"
 	"testing"
 )
 
@@ -15,7 +17,14 @@ func TestCRUDRaGroups(t *testing.T) {
 		require.NotNil(t, a)
 		require.NotNil(t, b)
 		require.Equal(t, a.Label, b.Label)
-		require.Equal(t, &a.ParentId, &b.ParentId)
+		if a.ParentId != nil && b.ParentId != nil {
+			require.Equal(t, *a.ParentId, *b.ParentId)
+		} else {
+			require.Nil(t, a.ParentId)
+			require.Nil(t, b.ParentId)
+		}
+		compareSlicesAsSets(t, a.Tags, b.Tags, "Tags comparison mismatch")
+		require.True(t, jsonEqual(t, a.Data, b.Data), "Data mismatch")
 	}
 
 	for _, client := range clients {
@@ -30,22 +39,33 @@ func TestCRUDRaGroups(t *testing.T) {
 
 		raGroup, err := ffc.GetRaGroup(ctx, id)
 		require.NoError(t, err)
-		compare(t, &cfg, raGroup.Data)
-
-		cfg = FreeformRaGroupData{
-			ParentId: nil,
-			Label:    randString(6, "hex"),
-			Tags:     []ObjectId{"tagA", "tagB"},
-			Data:     nil,
+		if len(cfg.Data) == 0 {
+			cfg.Data = json.RawMessage{'{', '}'}
 		}
-
-		cfg.Label = randString(6, "hex")
+		compare(t, &cfg, raGroup.Data)
+		data, err := json.Marshal(struct {
+			Foo string `json:"foo"`
+			Bar int    `json:"bar"`
+		}{
+			Foo: randString(6, "hex"),
+			Bar: rand.Intn(40),
+		})
+		require.NoError(t, err)
+		cfg = FreeformRaGroupData{
+			Label: randString(6, "hex"),
+			Tags:  []ObjectId{"tagA", "tagB"},
+			Data:  data,
+		}
 
 		err = ffc.UpdateRaGroup(ctx, id, &cfg)
 		require.NoError(t, err)
 
 		raGroup, err = ffc.GetRaGroup(ctx, id)
 		require.NoError(t, err)
+		require.Equal(t, id, raGroup.Id)
+		if len(cfg.Data) == 0 {
+			cfg.Data = json.RawMessage{'{', '}'}
+		}
 		compare(t, &cfg, raGroup.Data)
 
 		raGroups, err := ffc.GetAllRaGroups(ctx)
