@@ -21,21 +21,27 @@ type FreeformSystem struct {
 
 func (o *FreeformSystem) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		SystemId   ObjectId   `json:"system_id"`
-		SystemType SystemType `json:"system_type"`
+		Id ObjectId `json:"id"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
-	o.Id = raw.SystemId
-	o.Data.Type = raw.SystemType
-	return err
+
+	o.Id = raw.Id
+	o.Data = new(FreeformSystemData)
+	err = json.Unmarshal(bytes, o.Data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var _ json.Marshaler = new(FreeformSystemData)
+var _ json.Unmarshaler = new(FreeformSystemData)
 
 type FreeformSystemData struct {
+	SystemId        *ObjectId
 	Type            SystemType
 	Label           string
 	Hostname        string
@@ -45,11 +51,15 @@ type FreeformSystemData struct {
 
 func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 	var raw struct {
+		SystemId        ObjectId   `json:"system_id,omitempty"`
 		SystemType      string     `json:"system_type"`
 		Label           string     `json:"label"`
 		Hostname        string     `json:"hostname,omitempty"`
 		Tags            []ObjectId `json:"tags"`
 		DeviceProfileId ObjectId   `json:"device_profile_id"`
+	}
+	if o.SystemId != nil {
+		raw.SystemId = *o.SystemId
 	}
 	raw.SystemType = o.Type.String()
 	raw.Label = o.Label
@@ -57,6 +67,38 @@ func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 	raw.Tags = o.Tags
 	raw.DeviceProfileId = o.DeviceProfileId
 	return json.Marshal(&raw)
+}
+
+func (o *FreeformSystemData) UnmarshalJSON(bytes []byte) error {
+	var raw struct {
+		SystemId      *ObjectId  `json:"system_id"`
+		SystemType    systemType `json:"system_type"`
+		Label         string     `json:"label"`
+		Hostname      string     `json:"hostname,omitempty"`
+		Tags          []ObjectId `json:"tags"`
+		DeviceProfile struct {
+			Id ObjectId `json:"id"`
+		} `json:"device_profile"`
+	}
+
+	err := json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return err
+	}
+
+	st, err := raw.SystemType.parse()
+	if err != nil {
+		return err
+	}
+
+	o.SystemId = raw.SystemId
+	o.Type = SystemType(st)
+	o.Label = raw.Label
+	o.Hostname = raw.Hostname
+	o.Tags = raw.Tags
+	o.DeviceProfileId = raw.DeviceProfile.Id
+
+	return nil
 }
 
 func (o *FreeformClient) CreateSystem(ctx context.Context, in *FreeformSystemData) (ObjectId, error) {
