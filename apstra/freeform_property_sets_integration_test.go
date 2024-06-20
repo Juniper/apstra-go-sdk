@@ -79,5 +79,10 @@ func TestCRUDPropSets(t *testing.T) {
 		var ace ClientErr
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
+
+		err = ffc.DeletePropertySet(ctx, id)
+		require.Error(t, err)
+		require.ErrorAs(t, err, &ace)
+		require.Equal(t, ErrNotfound, ace.Type())
 	}
 }

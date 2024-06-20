@@ -156,8 +156,12 @@ func (o *FreeformClient) UpdateRaLocalIntPool(ctx context.Context, id ObjectId, 
 }
 
 func (o *FreeformClient) DeleteRaLocalIntPool(ctx context.Context, id ObjectId) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFRaLocalPoolById, o.blueprintId, id),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }

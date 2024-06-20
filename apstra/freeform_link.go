@@ -255,8 +255,12 @@ func (o *FreeformClient) UpdateLink(ctx context.Context, id ObjectId, in *Freefo
 }
 
 func (o *FreeformClient) DeleteLink(ctx context.Context, id ObjectId) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFLinkById, o.blueprintId, id),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }

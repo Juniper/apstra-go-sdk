@@ -106,11 +106,26 @@ var (
 	TcpStateQualifiers                = oenum.New(
 		TcpStateQualifierEstablished,
 	)
+	//integer | vlan | asn | host_ipv6 | vni | host_ip | ip | ipv6
+	_                      enum = new(FFResourceType)
+	FFResourceTypeAsn           = FFResourceType{Value: "asn"}
+	FFResourceTypeHostIpv4      = FFResourceType{Value: "host_ip"}
+	FFResourceTypeHostIpv6      = FFResourceType{Value: "host_ipv6"}
+	FFResourceTypeInt           = FFResourceType{Value: "integer"}
+	FFResourceTypeIpv4          = FFResourceType{Value: "ip"}
+	FFResourceTypeIpv6          = FFResourceType{Value: "ipv6"}
+	FFResourceTypeVlan          = FFResourceType{Value: "vlan"}
+	FFResourceTypeVni           = FFResourceType{Value: "vni"}
 
-	_                  enum = new(FFResourceType)
-	FFResourceTypeVlan      = FFResourceType{Value: "vlan"}
-	FFResourceTypes         = oenum.New(
+	FFResourceTypes = oenum.New(
+		FFResourceTypeAsn,
+		FFResourceTypeHostIpv4,
+		FFResourceTypeHostIpv6,
+		FFResourceTypeInt,
+		FFResourceTypeIpv4,
+		FFResourceTypeIpv6,
 		FFResourceTypeVlan,
+		FFResourceTypeVni,
 	)
 
 	//_                 enum = new(FFPoolType)

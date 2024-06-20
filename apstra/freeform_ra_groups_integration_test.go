@@ -84,5 +84,11 @@ func TestCRUDRaGroups(t *testing.T) {
 		var ace ClientErr
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
+
+		err = ffc.DeleteRaGroup(ctx, id)
+		require.Error(t, err)
+		require.ErrorAs(t, err, &ace)
+		require.Equal(t, ErrNotfound, ace.Type())
+
 	}
 }

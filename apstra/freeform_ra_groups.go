@@ -109,7 +109,7 @@ func (o *FreeformClient) DeleteRaGroup(ctx context.Context, id ObjectId) error {
 		urlStr: fmt.Sprintf(apiUrlFFRaGroupById, o.blueprintId, id),
 	})
 	if err != nil {
-		return nil
+		return convertTtaeToAceWherePossible(err)
 	}
-	return convertTtaeToAceWherePossible(err)
+	return nil
 }

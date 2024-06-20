@@ -102,8 +102,12 @@ func (o *FreeformClient) UpdatePropertySet(ctx context.Context, id ObjectId, in 
 }
 
 func (o *FreeformClient) DeletePropertySet(ctx context.Context, id ObjectId) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFPropertySetById, o.blueprintId, id),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }
