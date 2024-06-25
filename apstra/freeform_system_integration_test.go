@@ -3,9 +3,10 @@ package apstra
 import (
 	"context"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGSa(t *testing.T) {
@@ -23,6 +24,7 @@ func TestGSa(t *testing.T) {
 	require.NoError(t, err)
 	log.Println(string(rawjson))
 }
+
 func TestCRUDSystem(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)

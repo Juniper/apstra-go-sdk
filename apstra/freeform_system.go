@@ -37,8 +37,10 @@ func (o *FreeformSystem) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-var _ json.Marshaler = new(FreeformSystemData)
-var _ json.Unmarshaler = new(FreeformSystemData)
+var (
+	_ json.Marshaler   = new(FreeformSystemData)
+	_ json.Unmarshaler = new(FreeformSystemData)
+)
 
 type FreeformSystemData struct {
 	SystemId        *ObjectId

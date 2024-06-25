@@ -21,12 +21,12 @@ type FreeformRaLocalIntPool struct {
 
 func (o *FreeformRaLocalIntPool) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id           ObjectId       `json:"id"`
-		Label        string         `json:"label"`
-		PoolType     string         `json:"pool_type"`
-		ResourceType FFResourceType `json:"resource_type"`
-		OwnerId      ObjectId       `json:"owner_id"`
-		GeneratorId  *ObjectId      `json:"generator_id"`
+		Id           ObjectId  `json:"id"`
+		Label        string    `json:"label"`
+		PoolType     string    `json:"pool_type"`
+		ResourceType string    `json:"resource_type"`
+		OwnerId      ObjectId  `json:"owner_id"`
+		GeneratorId  *ObjectId `json:"generator_id"`
 		Definition   struct {
 			Chunks []FFLocalIntPoolChunk `json:"chunks"`
 		} `json:"definition"`
@@ -36,8 +36,12 @@ func (o *FreeformRaLocalIntPool) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 	o.Id = raw.Id
+	o.Data = new(FreeformRaLocalIntPoolData)
 	o.Data.Label = raw.Label
-	o.Data.ResourceType = raw.ResourceType
+	err = o.Data.ResourceType.FromString(raw.ResourceType)
+	if err != nil {
+		return err
+	}
 	o.Data.OwnerId = raw.OwnerId
 	o.Data.GeneratorId = raw.GeneratorId
 	o.Data.Chunks = raw.Definition.Chunks
@@ -46,7 +50,6 @@ func (o *FreeformRaLocalIntPool) UnmarshalJSON(bytes []byte) error {
 }
 
 var _ json.Marshaler = new(FreeformRaLocalIntPoolData)
-var _ json.Unmarshaler = new(FreeformRaLocalIntPoolData)
 
 type FreeformRaLocalIntPoolData struct {
 	ResourceType FFResourceType
@@ -61,47 +64,27 @@ type FFLocalIntPoolChunk struct {
 	End   int `json:"end"`
 }
 
-// todo is o below a pointer or just normal?
-func (o *FreeformRaLocalIntPoolData) UnmarshalJSON(bytes []byte) error {
+func (o FreeformRaLocalIntPoolData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		ResourceType FFResourceType `json:"resource_type"`
-		Label        string         `json:"label"`
-		OwnerId      ObjectId       `json:"owner_id"`
-		GeneratorId  *ObjectId      `json:"generator_id"`
+		Label        string    `json:"label"`
+		PoolType     string    `json:"pool_type"`
+		OwnerId      ObjectId  `json:"owner_id"`
+		GeneratorId  *ObjectId `json:"generator_id"`
+		ResourceType string    `json:"resource_type"`
 		Definition   struct {
 			Chunks []FFLocalIntPoolChunk `json:"chunks"`
 		} `json:"definition"`
 	}
-	err := json.Unmarshal(bytes, &raw)
-	if err != nil {
-		return err
-	}
-	o.Label = raw.Label
-	o.ResourceType = raw.ResourceType
-	o.OwnerId = raw.OwnerId
-	o.GeneratorId = raw.GeneratorId
-	o.Chunks = raw.Definition.Chunks
-
-	return err
-}
-
-func (o FreeformRaLocalIntPoolData) MarshalJSON() ([]byte, error) {
-	var raw struct {
-		Label        string                `json:"label"`
-		OwnerId      string                `json:"owner_id"`
-		GeneratorId  *ObjectId             `json:"generator_id"`
-		ResourceType FFResourceType        `json:"resource_type"`
-		Chunks       []FFLocalIntPoolChunk `json:"chunks"`
-	}
 	raw.Label = o.Label
-	raw.OwnerId = string(o.OwnerId)
+	raw.OwnerId = o.OwnerId
+	raw.PoolType = "integer"
 	raw.GeneratorId = o.GeneratorId
-	raw.ResourceType = o.ResourceType
-	raw.Chunks = o.Chunks
+	raw.ResourceType = o.ResourceType.String()
+	raw.Definition.Chunks = o.Chunks
 	return json.Marshal(&raw)
 }
 
-func (o *FreeformClient) CreateLocalIntPool(ctx context.Context, in *FreeformRaLocalIntPool) (ObjectId, error) {
+func (o *FreeformClient) CreateRaLocalIntPool(ctx context.Context, in *FreeformRaLocalIntPoolData) (ObjectId, error) {
 	var response objectIdResponse
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -115,7 +98,7 @@ func (o *FreeformClient) CreateLocalIntPool(ctx context.Context, in *FreeformRaL
 	return response.Id, nil
 }
 
-func (o *FreeformClient) GetAllLocalIntPools(ctx context.Context) ([]FreeformRaLocalIntPool, error) {
+func (o *FreeformClient) GetAllRaLocalIntPools(ctx context.Context) ([]FreeformRaLocalIntPool, error) {
 	var response struct {
 		Items []FreeformRaLocalIntPool `json:"items"`
 	}
@@ -143,7 +126,7 @@ func (o *FreeformClient) GetRaLocalIntPool(ctx context.Context, id ObjectId) (*F
 	return response, nil
 }
 
-func (o *FreeformClient) UpdateRaLocalIntPool(ctx context.Context, id ObjectId, in *FreeformRaLocalIntPool) error {
+func (o *FreeformClient) UpdateRaLocalIntPool(ctx context.Context, id ObjectId, in *FreeformRaLocalIntPoolData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFFRaLocalPoolById, o.blueprintId, id),

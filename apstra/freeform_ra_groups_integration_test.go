@@ -3,9 +3,10 @@ package apstra
 import (
 	"context"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"math/rand"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCRUDRaGroups(t *testing.T) {

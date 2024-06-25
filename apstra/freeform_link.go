@@ -123,7 +123,7 @@ type FreeformInterface struct {
 	Data *FreeformInterfaceData
 }
 
-func (o FreeformInterface) UnmarshalJSON(bytes []byte) error {
+func (o *FreeformInterface) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		Id               ObjectId   `json:"id"`
 		IfName           string     `json:"if_name"`
@@ -155,13 +155,16 @@ func (o FreeformInterface) UnmarshalJSON(bytes []byte) error {
 		net6.IP = ip
 		o.Data.Ipv6Address = net6
 	}
-
+	o.Data.IfName = raw.IfName
+	o.Data.TransformationId = raw.TransformationId
 	o.Data.Tags = raw.Tags
 	return nil
 }
 
-var _ json.Marshaler = new(FreeformEndpoint)
-var _ json.Unmarshaler = new(FreeformEndpoint)
+var (
+	_ json.Marshaler   = new(FreeformEndpoint)
+	_ json.Unmarshaler = new(FreeformEndpoint)
+)
 
 type FreeformEndpoint struct {
 	SystemId  ObjectId

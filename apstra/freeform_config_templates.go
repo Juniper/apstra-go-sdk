@@ -14,8 +14,7 @@ const (
 
 var _ json.Unmarshaler = new(ConfigTemplate)
 
-//var _ json.Marshaler = new(ConfigTemplate) // todo delete me?
-
+// var _ json.Marshaler = new(ConfigTemplate) // todo delete me?
 type ConfigTemplate struct {
 	Id   ObjectId
 	Data *ConfigTemplateData
