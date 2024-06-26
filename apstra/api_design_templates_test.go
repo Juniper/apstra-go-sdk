@@ -566,7 +566,9 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 }
 
 func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -597,7 +599,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 
 	for clientName, client := range clients {
 		log.Printf("testing CreateRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		rbtid, err := client.client.CreateRackBasedTemplate(context.TODO(), &rbtr)
+		rbtid, err := client.client.CreateRackBasedTemplate(ctx, &rbtr)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -630,14 +632,14 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			},
 		}
 
-		log.Printf("testing createPodBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pbtid, err := client.client.CreatePodBasedTemplate(context.TODO(), &pbtr)
+		log.Printf("testing CreatePodBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		pbtid, err := client.client.CreatePodBasedTemplate(ctx, &pbtr)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing GetPodBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pbt, err := client.client.GetPodBasedTemplate(context.TODO(), pbtid)
+		pbt, err := client.client.GetPodBasedTemplate(ctx, pbtid)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -646,14 +648,14 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, pbt.Data.DisplayName)
 		}
 
-		log.Printf("testing deleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteTemplate(context.TODO(), pbtid)
+		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.DeleteTemplate(ctx, pbtid)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing deleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteTemplate(context.TODO(), rbtid)
+		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.DeleteTemplate(ctx, rbtid)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -661,7 +663,9 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 }
 
 func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -682,13 +686,13 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 
 	for clientName, client := range clients {
 		log.Printf("testing CreateL3CollapsedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateL3CollapsedTemplate(context.TODO(), req)
+		id, err := client.client.CreateL3CollapsedTemplate(ctx, req)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteTemplate(context.TODO(), id)
+		err = client.client.DeleteTemplate(ctx, id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -696,7 +700,9 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 }
 
 func TestGetL3CollapsedTemplateByName(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -704,7 +710,7 @@ func TestGetL3CollapsedTemplateByName(t *testing.T) {
 	name := "Collapsed Fabric ESI"
 
 	for _, client := range clients {
-		l3ct, err := client.client.GetL3CollapsedTemplateByName(context.Background(), name)
+		l3ct, err := client.client.GetL3CollapsedTemplateByName(ctx, name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -718,7 +724,9 @@ func TestGetL3CollapsedTemplateByName(t *testing.T) {
 }
 
 func TestGetRackBasedTemplateByName(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -726,7 +734,7 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 	name := "L2 Pod"
 
 	for _, client := range clients {
-		rbt, err := client.client.GetRackBasedTemplateByName(context.Background(), name)
+		rbt, err := client.client.GetRackBasedTemplateByName(ctx, name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -740,7 +748,9 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 }
 
 func TestGetPodBasedTemplateByName(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -748,7 +758,7 @@ func TestGetPodBasedTemplateByName(t *testing.T) {
 	name := "L2 superspine single plane"
 
 	for _, client := range clients {
-		pbt, err := client.client.GetPodBasedTemplateByName(context.Background(), name)
+		pbt, err := client.client.GetPodBasedTemplateByName(ctx, name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -762,7 +772,9 @@ func TestGetPodBasedTemplateByName(t *testing.T) {
 }
 
 func TestGetTemplateType(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -781,7 +793,7 @@ func TestGetTemplateType(t *testing.T) {
 	for clientName, client := range clients {
 		for _, d := range data {
 			log.Printf("testing getTemplateType(%s) against %s %s (%s)", d.templateType, client.clientType, clientName, client.client.ApiVersion())
-			ttype, err := client.client.getTemplateType(context.Background(), d.templateId)
+			ttype, err := client.client.getTemplateType(ctx, d.templateId)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -793,7 +805,9 @@ func TestGetTemplateType(t *testing.T) {
 }
 
 func TestGetTemplateIdsTypesByName(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -801,14 +815,14 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 	templateName := randString(10, "hex")
 	for clientName, client := range clients {
 		// fetch all template IDs
-		templateIds, err := client.client.listAllTemplateIds(context.Background())
+		templateIds, err := client.client.listAllTemplateIds(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		// choose a random template for cloning
 		cloneMeId := templateIds[rand.Intn(len(templateIds))]
-		cloneMeType, err := client.client.getTemplateType(context.Background(), cloneMeId)
+		cloneMeType, err := client.client.getTemplateType(ctx, cloneMeId)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -820,11 +834,11 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 		for i := 0; i < cloneCount; i++ {
 			switch cloneMeType {
 			case templateTypeRackBased:
-				cloneMe, err := client.client.getRackBasedTemplate(context.Background(), cloneMeId)
+				cloneMe, err := client.client.getRackBasedTemplate(ctx, cloneMeId)
 				if err != nil {
 					t.Fatal(err)
 				}
-				id, err := client.client.createRackBasedTemplate(context.Background(), &rawCreateRackBasedTemplateRequest{
+				id, err := client.client.createRackBasedTemplate(ctx, &rawCreateRackBasedTemplateRequest{
 					Type:                   cloneMe.Type,
 					DisplayName:            fmt.Sprintf("%s-%d", templateName, i),
 					Spine:                  cloneMe.Spine,
@@ -841,11 +855,11 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				}
 				cloneIds[i] = id
 			case templateTypePodBased:
-				cloneMe, err := client.client.getPodBasedTemplate(context.Background(), cloneMeId)
+				cloneMe, err := client.client.getPodBasedTemplate(ctx, cloneMeId)
 				if err != nil {
 					t.Fatal(err)
 				}
-				id, err := client.client.createPodBasedTemplate(context.Background(), &rawCreatePodBasedTemplateRequest{
+				id, err := client.client.createPodBasedTemplate(ctx, &rawCreatePodBasedTemplateRequest{
 					Type:                    cloneMe.Type,
 					DisplayName:             fmt.Sprintf("%s-%d", templateName, i),
 					Superspine:              cloneMe.Superspine,
@@ -859,11 +873,11 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				}
 				cloneIds[i] = id
 			case templateTypeL3Collapsed:
-				cloneMe, err := client.client.getL3CollapsedTemplate(context.Background(), cloneMeId)
+				cloneMe, err := client.client.getL3CollapsedTemplate(ctx, cloneMeId)
 				if err != nil {
 					t.Fatal(err)
 				}
-				id, err := client.client.createL3CollapsedTemplate(context.Background(), &rawCreateL3CollapsedTemplateRequest{
+				id, err := client.client.createL3CollapsedTemplate(ctx, &rawCreateL3CollapsedTemplateRequest{
 					Type:                 cloneMe.Type,
 					DisplayName:          fmt.Sprintf("%s-%d", templateName, i),
 					MeshLinkCount:        cloneMe.MeshLinkCount,
@@ -889,7 +903,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 		templateIdsToType := make(map[ObjectId]TemplateType)
 		for i := 0; i < cloneCount; i++ {
 			log.Printf("testing getTemplateIdsTypesByName(%s) against %s %s (%s)", templateName, client.clientType, clientName, client.client.ApiVersion())
-			temp, err := client.client.getTemplateIdsTypesByName(context.Background(), fmt.Sprintf("%s-%d", templateName, i))
+			temp, err := client.client.getTemplateIdsTypesByName(ctx, fmt.Sprintf("%s-%d", templateName, i))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -915,7 +929,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 			name := fmt.Sprintf("%s-%d", templateName, i)
 			if i+1 == len(cloneIds) { // last one before they're all deleted
 				log.Printf("testing getTemplateIdTypeByName(%s) against %s %s (%s)", name, client.clientType, clientName, client.client.ApiVersion())
-				tId, tType, err := client.client.getTemplateIdTypeByName(context.Background(), name)
+				tId, tType, err := client.client.getTemplateIdTypeByName(ctx, name)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -928,7 +942,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 
 			}
 			log.Printf("deleting clone '%s'", cloneId)
-			err = client.client.deleteTemplate(context.Background(), cloneId)
+			err = client.client.deleteTemplate(ctx, cloneId)
 			if err != nil {
 				t.Fatal(err)
 			}
