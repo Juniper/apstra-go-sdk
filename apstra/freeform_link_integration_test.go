@@ -1,8 +1,10 @@
+//go:build integration
+// +build integration
+
 package apstra
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -96,12 +98,4 @@ func TestCRUDFFLink(t *testing.T) {
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
 	}
-}
-
-func TestFFLinkB(t *testing.T) {
-	var y ConfigTemplate
-	rawjson := []byte(`{"id":"foo","link_type":"1","label":"test_ff_link","speed","10G"}`)
-	err := json.Unmarshal(rawjson, &y)
-	require.NoError(t, err)
-	require.Equal(t, ObjectId("foo"), y.Id, "id mismatch")
 }
