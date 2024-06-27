@@ -16,7 +16,6 @@ var _ json.Marshaler = (*TwoStageL3ClosSubinterface)(nil)
 var _ json.Unmarshaler = (*TwoStageL3ClosSubinterface)(nil)
 
 type TwoStageL3ClosSubinterface struct {
-	Id           ObjectId
 	Ipv4AddrType *InterfaceNumberingIpv4Type
 	Ipv6AddrType *InterfaceNumberingIpv6Type
 	Ipv4Addr     *net.IPNet
@@ -25,14 +24,11 @@ type TwoStageL3ClosSubinterface struct {
 
 func (o TwoStageL3ClosSubinterface) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		Id           ObjectId `json:"id"`
-		Ipv4AddrType string   `json:"ipv4_addr_type,omitempty"`
-		Ipv6AddrType string   `json:"ipv6_addr_type,omitempty"`
-		Ipv4Addr     *string  `json:"ipv4_addr,omitempty"`
-		Ipv6Addr     *string  `json:"ipv6_addr,omitempty"`
+		Ipv4AddrType string  `json:"ipv4_addr_type,omitempty"`
+		Ipv6AddrType string  `json:"ipv6_addr_type,omitempty"`
+		Ipv4Addr     *string `json:"ipv4_addr,omitempty"`
+		Ipv6Addr     *string `json:"ipv6_addr,omitempty"`
 	}
-
-	raw.Id = o.Id
 
 	if o.Ipv4AddrType != nil {
 		raw.Ipv4AddrType = o.Ipv4AddrType.String()
@@ -63,19 +59,16 @@ func (o TwoStageL3ClosSubinterface) MarshalJSON() ([]byte, error) {
 
 func (o *TwoStageL3ClosSubinterface) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id           ObjectId `json:"id"`
-		Ipv4AddrType string   `json:"ipv4_addr_type,omitempty"`
-		Ipv6AddrType string   `json:"ipv6_addr_type,omitempty"`
-		Ipv4Addr     *string  `json:"ipv4_addr,omitempty"`
-		Ipv6Addr     *string  `json:"ipv6_addr,omitempty"`
+		Ipv4AddrType string  `json:"ipv4_addr_type,omitempty"`
+		Ipv6AddrType string  `json:"ipv6_addr_type,omitempty"`
+		Ipv4Addr     *string `json:"ipv4_addr,omitempty"`
+		Ipv6Addr     *string `json:"ipv6_addr,omitempty"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
-
-	o.Id = raw.Id
 
 	o.Ipv4AddrType = new(InterfaceNumberingIpv4Type)
 	err = o.Ipv4AddrType.FromString(raw.Ipv4AddrType)
@@ -110,20 +103,15 @@ func (o *TwoStageL3ClosSubinterface) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) UpdateSubinterfaces(ctx context.Context, in []TwoStageL3ClosSubinterface) error {
-	var input struct {
-		Subinterfaces map[ObjectId]TwoStageL3ClosSubinterface `json:"subinterfaces"`
-	}
-
-	input.Subinterfaces = make(map[ObjectId]TwoStageL3ClosSubinterface, len(in))
-	for _, si := range in {
-		input.Subinterfaces[si.Id] = si
-	}
-
+func (o *TwoStageL3ClosClient) UpdateSubinterfaces(ctx context.Context, in map[ObjectId]TwoStageL3ClosSubinterface) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlSubinterfaces, o.Id()),
-		apiInput: &input,
+		method: http.MethodPatch,
+		urlStr: fmt.Sprintf(apiUrlSubinterfaces, o.Id()),
+		apiInput: &struct {
+			Subinterfaces map[ObjectId]TwoStageL3ClosSubinterface `json:"subinterfaces"`
+		}{
+			Subinterfaces: in,
+		},
 	})
 
 	if err != nil {

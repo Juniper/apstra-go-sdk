@@ -19,8 +19,9 @@ type TwoStageL3ClosSubinterfaceLinkEndpoint struct {
 		Label string
 		Role  SystemRole
 	}
-	InterfaceId  ObjectId
-	Subinterface TwoStageL3ClosSubinterface
+	InterfaceId    ObjectId
+	SubinterfaceId ObjectId
+	Subinterface   TwoStageL3ClosSubinterface
 }
 
 type TwoStageL3ClosSubinterfaceLink struct {
@@ -44,7 +45,7 @@ func (o *TwoStageL3ClosSubinterfaceLink) UnmarshalJSON(bytes []byte) error {
 			Interface struct {
 				Id ObjectId `json:"id"`
 			} `json:"interface"`
-			Subinterface TwoStageL3ClosSubinterface `json:"subinterface"`
+			Subinterface json.RawMessage `json:"subinterface"`
 		} `json:"endpoints"`
 		SzId    ObjectId `json:"sz_id"`
 		SzLabel string   `json:"sz_label"`
@@ -61,6 +62,22 @@ func (o *TwoStageL3ClosSubinterfaceLink) UnmarshalJSON(bytes []byte) error {
 	o.SzLabel = raw.SzLabel
 	o.Endpoints = make([]TwoStageL3ClosSubinterfaceLinkEndpoint, len(raw.Endpoints))
 	for i, rep := range raw.Endpoints {
+		var rawSubinterface struct {
+			Id ObjectId `json:"id"`
+		}
+
+		err = json.Unmarshal(rep.Subinterface, &rawSubinterface)
+		if err != nil {
+			return err
+		}
+		subinterfaceId := rawSubinterface.Id
+
+		var subinterface TwoStageL3ClosSubinterface
+		err = json.Unmarshal(rep.Subinterface, &subinterface)
+		if err != nil {
+			return err
+		}
+
 		//o.Endpoints[i].Subinterface.Ipv4AddrType = new(I)
 		sysRole, err := rep.System.Role.parse()
 		if err != nil {
@@ -77,8 +94,9 @@ func (o *TwoStageL3ClosSubinterfaceLink) UnmarshalJSON(bytes []byte) error {
 				Label: rep.System.Label,
 				Role:  SystemRole(sysRole),
 			},
-			InterfaceId:  rep.Interface.Id,
-			Subinterface: rep.Subinterface,
+			InterfaceId:    rep.Interface.Id,
+			Subinterface:   subinterface,
+			SubinterfaceId: subinterfaceId,
 		}
 	}
 

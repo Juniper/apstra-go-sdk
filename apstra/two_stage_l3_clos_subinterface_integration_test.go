@@ -116,8 +116,7 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 		require.NoError(t, err)
 
 		// prep new addresses for those links (two endpoints per link)
-		var subinterfaceApiPayload []TwoStageL3ClosSubinterface                              // slice for use as Update() payload -- do not attempt to size!
-		expectedSubinterfaces := make(map[ObjectId]TwoStageL3ClosSubinterface, len(links)*2) // map for easy lookup later
+		subinterfaceConfigs := make(map[ObjectId]TwoStageL3ClosSubinterface, len(links)*2)
 		for _, link := range links {
 			require.EqualValuesf(t, len(link.Endpoints), 2, "link should have two endpoints, got %d", len(link.Endpoints))
 
@@ -139,19 +138,17 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 
 			// prep an API payload for each end of the link
 			for i, endpoint := range link.Endpoints {
-				expectedSubinterfaces[endpoint.Subinterface.Id] = TwoStageL3ClosSubinterface{
-					Id:           endpoint.Subinterface.Id,
+				subinterfaceConfigs[endpoint.SubinterfaceId] = TwoStageL3ClosSubinterface{
 					Ipv4AddrType: toPtr(InterfaceNumberingIpv4TypeNumbered),
 					Ipv6AddrType: toPtr(InterfaceNumberingIpv6TypeNumbered),
 					Ipv4Addr:     &v4prefixes[i],
 					Ipv6Addr:     &v6prefixes[i],
 				}
-				subinterfaceApiPayload = append(subinterfaceApiPayload, expectedSubinterfaces[endpoint.Subinterface.Id])
 			}
 		}
 
 		// update the link endpoints
-		require.NoError(t, bp.UpdateSubinterfaces(ctx, subinterfaceApiPayload))
+		require.NoError(t, bp.UpdateSubinterfaces(ctx, subinterfaceConfigs))
 
 		// fetch the result
 		links, err = bp.GetAllSubinterfaceLinks(ctx)
@@ -163,9 +160,9 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 			for _, ep := range link.Endpoints {
 				totalEndpoints++
 
-				expectedSubinterface, ok := expectedSubinterfaces[ep.Subinterface.Id]
+				expectedSubinterface, ok := subinterfaceConfigs[ep.SubinterfaceId]
 				if !ok {
-					t.Fatalf("endpoint with subinterface ID %q was not expected", ep.Subinterface.Id)
+					t.Fatalf("endpoint with subinterface ID %q was not expected", ep.SubinterfaceId)
 				}
 
 				require.EqualValues(t, *expectedSubinterface.Ipv4AddrType, *ep.Subinterface.Ipv4AddrType)
@@ -176,6 +173,6 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 		}
 
 		// make sure we didn't miss anything or get any extras
-		require.EqualValues(t, len(subinterfaceApiPayload), totalEndpoints)
+		require.EqualValues(t, len(subinterfaceConfigs), totalEndpoints)
 	}
 }
