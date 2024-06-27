@@ -20,9 +20,9 @@ type FreeformPropertySet struct {
 }
 
 type FreeformPropertySetData struct {
-	SystemId *ObjectId         `json:"system_id"`
-	Label    string            `json:"label"`
-	Values   map[string]string `json:"values,omitempty"`
+	SystemId *ObjectId       `json:"system_id"`
+	Label    string          `json:"label"`
+	Values   json.RawMessage `json:"values,omitempty"`
 }
 
 func (o *FreeformPropertySet) UnmarshalJSON(bytes []byte) error {
@@ -30,10 +30,10 @@ func (o *FreeformPropertySet) UnmarshalJSON(bytes []byte) error {
 		o.Data = new(FreeformPropertySetData)
 	}
 	var raw struct {
-		Id       ObjectId          `json:"property_set_id"`
-		SystemId *ObjectId         `json:"system_id"`
-		Label    string            `json:"label,omitempty"`
-		Values   map[string]string `json:"values,omitempty"`
+		Id       ObjectId        `json:"property_set_id"`
+		SystemId *ObjectId       `json:"system_id"`
+		Label    string          `json:"label,omitempty"`
+		Values   json.RawMessage `json:"values,omitempty"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {

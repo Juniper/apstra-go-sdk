@@ -5,6 +5,8 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,7 +21,6 @@ func TestCRUDPropSets(t *testing.T) {
 		require.NotNil(t, a)
 		require.NotNil(t, b)
 		require.Equal(t, a.Label, b.Label)
-		require.Equal(t, a.Values, b.Values)
 		if a.SystemId != nil {
 			require.NotNil(t, b.SystemId)
 		}
@@ -27,19 +28,25 @@ func TestCRUDPropSets(t *testing.T) {
 			require.NotNil(t, a.SystemId)
 			require.Equal(t, *a.SystemId, *b.SystemId)
 		}
+		require.JSONEq(t, string(a.Values), string(b.Values))
 	}
 
 	for _, client := range clients {
 		ffc, systemIds := testFFBlueprintB(ctx, t, client.client, 1)
 		require.Equal(t, len(systemIds), 1)
 
-		cfg := FreeformPropertySetData{
-			Label:  randString(6, "hex"),
-			Values: make(map[string]string),
-		}
+		values := make(map[string]any)
 		for i := 0; i < 5; i++ {
-			cfg.Values["a"+randString(6, "hex")] = randString(6, "hex")
+			values["s_"+randString(6, "hex")] = randString(6, "hex")
+			values["n_"+randString(6, "hex")] = rand.Int()
+			values["b_"+randString(6, "hex")] = rand.Int()%2 == 0
 		}
+
+		cfg := FreeformPropertySetData{
+			Label: randString(6, "hex"),
+		}
+		cfg.Values, err = json.Marshal(values)
+		require.NoError(t, err)
 
 		// todo: test CreatePropertySet with non-nil SystemId
 
@@ -52,9 +59,11 @@ func TestCRUDPropSets(t *testing.T) {
 
 		cfg.Label = randString(6, "hex")
 		cfg.SystemId = &systemIds[0]
-		cfg.Values = map[string]string{}
+		values = make(map[string]any)
 		for i := 0; i < 5; i++ {
-			cfg.Values["a"+randString(6, "hex")] = randString(6, "hex")
+			values["s_"+randString(6, "hex")] = randString(6, "hex")
+			values["n_"+randString(6, "hex")] = rand.Int()
+			values["b_"+randString(6, "hex")] = rand.Int()%2 == 0
 		}
 
 		// todo: test CreatePropertySet with nil SystemId
@@ -64,6 +73,7 @@ func TestCRUDPropSets(t *testing.T) {
 
 		propertySet, err = ffc.GetPropertySet(ctx, id)
 		require.NoError(t, err)
+		require.Equal(t, id, propertySet.Id)
 		compare(t, &cfg, propertySet.Data)
 
 		propertySets, err := ffc.GetAllPropertySets(ctx)
