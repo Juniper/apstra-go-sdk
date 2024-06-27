@@ -192,13 +192,8 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 	vrfName := "test-" + randStr
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintC(ctx, t, client.client)
+
 		bpClient.SetType(BlueprintTypeStaging)
 
 		log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())

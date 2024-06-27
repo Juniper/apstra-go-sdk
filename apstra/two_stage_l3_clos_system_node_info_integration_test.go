@@ -157,6 +157,24 @@ func randomIpv6() net.IP {
 	}
 }
 
+func randomSlash31(t testing.TB) net.IPNet {
+	t.Helper()
+
+	ip := randomIpv4()
+	_, ipNet, err := net.ParseCIDR(ip.String() + "/31")
+	require.NoError(t, err)
+	return *ipNet
+}
+
+func randomSlash127(t testing.TB) net.IPNet {
+	t.Helper()
+
+	ip := randomIpv6()
+	_, ipNet, err := net.ParseCIDR(ip.String() + "/127")
+	require.NoError(t, err)
+	return *ipNet
+}
+
 func TestSetSystemLoopbackIpv4v6(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)

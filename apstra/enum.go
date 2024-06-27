@@ -106,6 +106,44 @@ var (
 	TcpStateQualifiers                = oenum.New(
 		TcpStateQualifierEstablished,
 	)
+
+	_                      enum = new(FFResourceType)
+	FFResourceTypeAsn           = FFResourceType{Value: "asn"}
+	FFResourceTypeHostIpv4      = FFResourceType{Value: "host_ip"}
+	FFResourceTypeHostIpv6      = FFResourceType{Value: "host_ipv6"}
+	FFResourceTypeInt           = FFResourceType{Value: "integer"}
+	FFResourceTypeIpv4          = FFResourceType{Value: "ip"}
+	FFResourceTypeIpv6          = FFResourceType{Value: "ipv6"}
+	FFResourceTypeVlan          = FFResourceType{Value: "vlan"}
+	FFResourceTypeVni           = FFResourceType{Value: "vni"}
+	FFResourceTypes             = oenum.New(
+		FFResourceTypeAsn,
+		FFResourceTypeHostIpv4,
+		FFResourceTypeHostIpv6,
+		FFResourceTypeInt,
+		FFResourceTypeIpv4,
+		FFResourceTypeIpv6,
+		FFResourceTypeVlan,
+		FFResourceTypeVni,
+	)
+
+	_                                  enum = new(InterfaceNumberingIpv4Type)
+	InterfaceNumberingIpv4TypeNone          = InterfaceNumberingIpv4Type{Value: ""}
+	InterfaceNumberingIpv4TypeNumbered      = InterfaceNumberingIpv4Type{Value: "numbered"}
+	InterfaceNumberingIpv4Types             = oenum.New(
+		InterfaceNumberingIpv4TypeNone,
+		InterfaceNumberingIpv4TypeNumbered,
+	)
+
+	_                                   enum = new(InterfaceNumberingIpv6Type)
+	InterfaceNumberingIpv6TypeNone           = InterfaceNumberingIpv6Type{Value: ""}
+	InterfaceNumberingIpv6TypeNumbered       = InterfaceNumberingIpv6Type{Value: "numbered"}
+	InterfaceNumberingIpv6TypeLinkLocal      = InterfaceNumberingIpv6Type{Value: "link_local"}
+	InterfaceNumberingIpv6Types              = oenum.New(
+		InterfaceNumberingIpv6TypeNone,
+		InterfaceNumberingIpv6TypeNumbered,
+		InterfaceNumberingIpv6TypeLinkLocal,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -253,6 +291,51 @@ func (o *TcpStateQualifier) FromString(s string) error {
 	t := TcpStateQualifiers.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse TcpStateQualifier %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type FFResourceType oenum.Member[string]
+
+func (o FFResourceType) String() string {
+	return o.Value
+}
+
+func (o *FFResourceType) FromString(s string) error {
+	t := FFResourceTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse FFResourceType %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type InterfaceNumberingIpv4Type oenum.Member[string]
+
+func (o InterfaceNumberingIpv4Type) String() string {
+	return o.Value
+}
+
+func (o *InterfaceNumberingIpv4Type) FromString(s string) error {
+	t := InterfaceNumberingIpv4Types.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse InterfaceNumberingIpv4Type %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type InterfaceNumberingIpv6Type oenum.Member[string]
+
+func (o InterfaceNumberingIpv6Type) String() string {
+	return o.Value
+}
+
+func (o *InterfaceNumberingIpv6Type) FromString(s string) error {
+	t := InterfaceNumberingIpv6Types.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse InterfaceNumberingIpv6Type %q", s)
 	}
 	o.Value = t.Value
 	return nil
