@@ -149,26 +149,26 @@ var (
 	StorageSchemaPathENVIRONMENT             = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.environment"}
 	StorageSchemaPathLLDP                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.lldp"}
 	StorageSchemaPaths                       = oenum.New(StorageSchemaPathXCVR,
-    StorageSchemaPathGRAPH,
-    StorageSchemaPathROUTE,
-    StorageSchemaPathMAC,
-    StorageSchemaPathOPTICAL_XCVR,
-    StorageSchemaPathHOSTNAME,
-    StorageSchemaPathGENERIC,
-    StorageSchemaPathLAG,
-    StorageSchemaPathBGP,
-    StorageSchemaPathINTERFACE,
-    StorageSchemaPathMLAG,
-    StorageSchemaPathIBA_STRING_DATA,
-    StorageSchemaPathIBA_INTEGER_DATA,
-    StorageSchemaPathROUTE_LOOKUP,
-    StorageSchemaPathINTERFACE_COUNTERS,
-    StorageSchemaPathARP,
-    StorageSchemaPathCPP_GRAPH,
-    StorageSchemaPathNSXT,
-    StorageSchemaPathENVIRONMENT,
-    StorageSchemaPathLLDP,
-  )
+		StorageSchemaPathGRAPH,
+		StorageSchemaPathROUTE,
+		StorageSchemaPathMAC,
+		StorageSchemaPathOPTICAL_XCVR,
+		StorageSchemaPathHOSTNAME,
+		StorageSchemaPathGENERIC,
+		StorageSchemaPathLAG,
+		StorageSchemaPathBGP,
+		StorageSchemaPathINTERFACE,
+		StorageSchemaPathMLAG,
+		StorageSchemaPathIBA_STRING_DATA,
+		StorageSchemaPathIBA_INTEGER_DATA,
+		StorageSchemaPathROUTE_LOOKUP,
+		StorageSchemaPathINTERFACE_COUNTERS,
+		StorageSchemaPathARP,
+		StorageSchemaPathCPP_GRAPH,
+		StorageSchemaPathNSXT,
+		StorageSchemaPathENVIRONMENT,
+		StorageSchemaPathLLDP,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -331,11 +331,11 @@ func (o *FFResourceType) FromString(s string) error {
 	t := FFResourceTypes.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse FFResourceType %q", s)
-        }
-        o.Value = t.Value
-        return nil
+	}
+	o.Value = t.Value
+	return nil
 }
-	
+
 type StorageSchemaPath oenum.Member[string]
 
 func (o StorageSchemaPath) String() string {
