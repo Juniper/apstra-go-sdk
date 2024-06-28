@@ -89,6 +89,7 @@ func (o *FreeformClient) GetPropertySetByName(ctx context.Context, name string) 
 
 	var result *FreeformPropertySet
 	for _, ps := range all {
+		ps := ps
 		if ps.Data.Label == name {
 			if result != nil {
 				return nil, ClientErr{
