@@ -48,6 +48,8 @@ const (
 	ResourceGroupNameLeafIp4
 	ResourceGroupNameLeafIp6
 	ResourceGroupNameAccessIp4
+	ResourceGroupNameGenericIp4
+	ResourceGroupNameGenericIp6
 	ResourceGroupNameSuperspineSpineIp4
 	ResourceGroupNameSuperspineSpineIp6
 	ResourceGroupNameSpineLeafIp4
@@ -80,6 +82,8 @@ const (
 	resourceGroupNameLeafIp4               = resourceGroupName("leaf_loopback_ips")
 	resourceGroupNameLeafIp6               = resourceGroupName("leaf_loopback_ips_ipv6")
 	resourceGroupNameAccessIp4             = resourceGroupName("access_loopback_ips")
+	resourceGroupNameGenericIp4            = resourceGroupName("generic_loopback_ips")
+	resourceGroupNameGenericIp6            = resourceGroupName("generic_loopback_ips_ipv6")
 	resourceGroupNameSuperspineSpineIp4    = resourceGroupName("spine_superspine_link_ips")
 	resourceGroupNameSuperspineSpineIp6    = resourceGroupName("ipv6_spine_superspine_link_ips")
 	resourceGroupNameSpineLeafIp4          = resourceGroupName("spine_leaf_link_ips")
@@ -145,6 +149,10 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameAccessIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameGenericIp4:
+		return ResourceTypeIp4Pool
+	case ResourceGroupNameGenericIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameSuperspineSpineIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameSuperspineSpineIp6:
@@ -227,6 +235,10 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameLeafIp6
 	case ResourceGroupNameAccessIp4:
 		return resourceGroupNameAccessIp4
+	case ResourceGroupNameGenericIp4:
+		return resourceGroupNameGenericIp4
+	case ResourceGroupNameGenericIp6:
+		return resourceGroupNameGenericIp6
 	case ResourceGroupNameSuperspineSpineIp4:
 		return resourceGroupNameSuperspineSpineIp4
 	case ResourceGroupNameSuperspineSpineIp6:
@@ -296,6 +308,10 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameLeafIp6), nil
 	case resourceGroupNameAccessIp4:
 		return int(ResourceGroupNameAccessIp4), nil
+	case resourceGroupNameGenericIp4:
+		return int(ResourceGroupNameGenericIp4), nil
+	case resourceGroupNameGenericIp6:
+		return int(ResourceGroupNameGenericIp6), nil
 	case resourceGroupNameSuperspineSpineIp4:
 		return int(ResourceGroupNameSuperspineSpineIp4), nil
 	case resourceGroupNameSuperspineSpineIp6:
