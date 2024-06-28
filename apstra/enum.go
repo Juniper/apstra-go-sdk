@@ -286,6 +286,7 @@ type StorageSchemaPath oenum.Member[string]
 func (o StorageSchemaPath) String() string {
 	return o.Value
 }
+
 func (o *StorageSchemaPath) FromString(s string) error {
 	t := StorageSchemaPaths.Parse(s)
 	if t == nil {
