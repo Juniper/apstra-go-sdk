@@ -157,6 +157,6 @@ func (o *FreeformClient) DeleteRaLocalIntPool(ctx context.Context, id ObjectId) 
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
-	
+
 	return nil
 }
