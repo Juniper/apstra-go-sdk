@@ -331,7 +331,8 @@ func (o *FFResourceType) FromString(s string) error {
 	t := FFResourceTypes.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse FFResourceType %q", s)
-
+}
+	
 type StorageSchemaPath oenum.Member[string]
 
 func (o StorageSchemaPath) String() string {
