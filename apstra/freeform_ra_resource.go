@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	apiUrlFFRaResources    = apiUrlBlueprintById + apiUrlPathDelim + "ra-resources"
-	apiUrlFFRaResourceById = apiUrlFFRaResources + apiUrlPathDelim + "%s"
+	apiUrlFfRaResources    = apiUrlBlueprintById + apiUrlPathDelim + "ra-resources"
+	apiUrlFfRaResourceById = apiUrlFfRaResources + apiUrlPathDelim + "%s"
 )
 
 var _ json.Unmarshaler = new(FreeformRaResource)
@@ -33,22 +33,25 @@ func (o *FreeformRaResource) UnmarshalJSON(bytes []byte) error {
 		SubnetPrefixLen *int      `json:"subnet_prefix_len"`
 		GeneratorId     *ObjectId `json:"generator_id"`
 	}
+
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
-	o.Data = new(FreeformRaResourceData)
+
 	o.Id = raw.Id
-	err = o.Data.ResourceType.FromString(raw.ResourceType)
-	if err != nil {
-		return err
-	}
+	o.Data = new(FreeformRaResourceData)
 	o.Data.Label = raw.Label
 	o.Data.Value = raw.Value
 	o.Data.AllocatedFrom = raw.AllocatedFrom
 	o.Data.GroupId = raw.GroupId
 	o.Data.SubnetPrefixLen = raw.SubnetPrefixLen
 	o.Data.GeneratorId = raw.GeneratorId
+	err = o.Data.ResourceType.FromString(raw.ResourceType)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -74,6 +77,7 @@ func (o FreeformRaResourceData) MarshalJSON() ([]byte, error) {
 		SubnetPrefixLen *int      `json:"subnet_prefix_len"`
 		GeneratorId     *ObjectId `json:"generator_id"`
 	}
+
 	raw.ResourceType = o.ResourceType.String()
 	raw.Label = o.Label
 	raw.Value = o.Value
@@ -81,6 +85,7 @@ func (o FreeformRaResourceData) MarshalJSON() ([]byte, error) {
 	raw.GroupId = o.GroupId
 	raw.SubnetPrefixLen = o.SubnetPrefixLen
 	raw.GeneratorId = o.GeneratorId
+
 	return json.Marshal(&raw)
 }
 
@@ -181,15 +186,17 @@ func (o *FreeformClient) CreateRaResource(ctx context.Context, in *FreeformRaRes
 	}
 
 	var response objectIdResponse
+
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlFFRaResources, o.blueprintId),
+		urlStr:      fmt.Sprintf(apiUrlFfRaResources, o.blueprintId),
 		apiInput:    in,
 		apiResponse: &response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Id, nil
 }
 
@@ -197,28 +204,32 @@ func (o *FreeformClient) GetAllRaResources(ctx context.Context) ([]FreeformRaRes
 	var response struct {
 		Items []FreeformRaResource `json:"items"`
 	}
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlFFRaResources, o.blueprintId),
+		urlStr:      fmt.Sprintf(apiUrlFfRaResources, o.blueprintId),
 		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Items, nil
 }
 
 func (o *FreeformClient) GetRaResource(ctx context.Context, id ObjectId) (*FreeformRaResource, error) {
-	response := new(FreeformRaResource)
+	var response FreeformRaResource
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlFFRaResourceById, o.blueprintId, id),
-		apiResponse: response,
+		urlStr:      fmt.Sprintf(apiUrlFfRaResourceById, o.blueprintId, id),
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response, nil
+
+	return &response, nil
 }
 
 func (o *FreeformClient) UpdateRaResource(ctx context.Context, id ObjectId, in *FreeformRaResourceData) error {
@@ -229,22 +240,24 @@ func (o *FreeformClient) UpdateRaResource(ctx context.Context, id ObjectId, in *
 
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlFFRaResourceById, o.blueprintId, id),
+		urlStr:   fmt.Sprintf(apiUrlFfRaResourceById, o.blueprintId, id),
 		apiInput: in,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
+
 	return nil
 }
 
 func (o *FreeformClient) DeleteRaResource(ctx context.Context, id ObjectId) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlFFRaResourceById, o.blueprintId, id),
+		urlStr: fmt.Sprintf(apiUrlFfRaResourceById, o.blueprintId, id),
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
+
 	return nil
 }

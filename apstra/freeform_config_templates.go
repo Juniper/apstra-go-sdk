@@ -14,30 +14,10 @@ const (
 
 var _ json.Unmarshaler = new(ConfigTemplate)
 
-// var _ json.Marshaler = new(ConfigTemplate) // todo delete me?
 type ConfigTemplate struct {
 	Id   ObjectId
 	Data *ConfigTemplateData
 }
-
-type ConfigTemplateData struct {
-	Label string `json:"label"`
-	Text  string `json:"text"`
-}
-
-//func (o ConfigTemplate) MarshalJSON() ([]byte, error) { // todo delete me?
-//	var raw struct {
-//		Id    ObjectId `json:"id"`
-//		Label string   `json:"label,omitempty"`
-//		Text  string   `json:"text,omitempty"`
-//	}
-//	raw.Id = o.Id
-//	if o.Data != nil {
-//		raw.Label = o.Data.Label
-//		raw.Text = o.Data.Text
-//	}
-//	return json.Marshal(&raw)
-//}
 
 func (o *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
@@ -59,6 +39,11 @@ func (o *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 	o.Data.Text = raw.Text
 
 	return err
+}
+
+type ConfigTemplateData struct {
+	Label string `json:"label"`
+	Text  string `json:"text"`
 }
 
 func (o *FreeformClient) CreateConfigTemplate(ctx context.Context, in *ConfigTemplateData) (ObjectId, error) {

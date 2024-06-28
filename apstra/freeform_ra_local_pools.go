@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	apiUrlFFRaLocalPools    = apiUrlBlueprintById + apiUrlPathDelim + "ra-local-pools"
-	apiUrlFFRaLocalPoolById = apiUrlFFRaLocalPools + apiUrlPathDelim + "%s"
+	apiUrlFfRaLocalPools    = apiUrlBlueprintById + apiUrlPathDelim + "ra-local-pools"
+	apiUrlFfRaLocalPoolById = apiUrlFfRaLocalPools + apiUrlPathDelim + "%s"
 )
 
 var _ json.Unmarshaler = new(FreeformRaLocalIntPool)
@@ -31,10 +31,12 @@ func (o *FreeformRaLocalIntPool) UnmarshalJSON(bytes []byte) error {
 			Chunks []FFLocalIntPoolChunk `json:"chunks"`
 		} `json:"definition"`
 	}
+
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return err
 	}
+
 	o.Id = raw.Id
 	o.Data = new(FreeformRaLocalIntPoolData)
 	o.Data.Label = raw.Label
@@ -59,11 +61,6 @@ type FreeformRaLocalIntPoolData struct {
 	Chunks       []FFLocalIntPoolChunk
 }
 
-type FFLocalIntPoolChunk struct {
-	Start int `json:"start"`
-	End   int `json:"end"`
-}
-
 func (o FreeformRaLocalIntPoolData) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		Label        string    `json:"label"`
@@ -75,26 +72,35 @@ func (o FreeformRaLocalIntPoolData) MarshalJSON() ([]byte, error) {
 			Chunks []FFLocalIntPoolChunk `json:"chunks"`
 		} `json:"definition"`
 	}
+
 	raw.Label = o.Label
 	raw.OwnerId = o.OwnerId
 	raw.PoolType = "integer"
 	raw.GeneratorId = o.GeneratorId
 	raw.ResourceType = o.ResourceType.String()
 	raw.Definition.Chunks = o.Chunks
+
 	return json.Marshal(&raw)
+}
+
+type FFLocalIntPoolChunk struct {
+	Start int `json:"start"`
+	End   int `json:"end"`
 }
 
 func (o *FreeformClient) CreateRaLocalIntPool(ctx context.Context, in *FreeformRaLocalIntPoolData) (ObjectId, error) {
 	var response objectIdResponse
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlFFRaLocalPools, o.blueprintId),
+		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPools, o.blueprintId),
 		apiInput:    in,
 		apiResponse: &response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Id, nil
 }
 
@@ -102,49 +108,55 @@ func (o *FreeformClient) GetAllRaLocalIntPools(ctx context.Context) ([]FreeformR
 	var response struct {
 		Items []FreeformRaLocalIntPool `json:"items"`
 	}
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlFFRaLocalPools, o.blueprintId),
+		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPools, o.blueprintId),
 		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Items, nil
 }
 
 func (o *FreeformClient) GetRaLocalIntPool(ctx context.Context, id ObjectId) (*FreeformRaLocalIntPool, error) {
-	response := new(FreeformRaLocalIntPool)
+	var response FreeformRaLocalIntPool
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlFFRaLocalPoolById, o.blueprintId, id),
-		apiResponse: response,
+		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPoolById, o.blueprintId, id),
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response, nil
+
+	return &response, nil
 }
 
 func (o *FreeformClient) UpdateRaLocalIntPool(ctx context.Context, id ObjectId, in *FreeformRaLocalIntPoolData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlFFRaLocalPoolById, o.blueprintId, id),
+		urlStr:   fmt.Sprintf(apiUrlFfRaLocalPoolById, o.blueprintId, id),
 		apiInput: in,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
+
 	return nil
 }
 
 func (o *FreeformClient) DeleteRaLocalIntPool(ctx context.Context, id ObjectId) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlFFRaLocalPoolById, o.blueprintId, id),
+		urlStr: fmt.Sprintf(apiUrlFfRaLocalPoolById, o.blueprintId, id),
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
+
 	return nil
 }

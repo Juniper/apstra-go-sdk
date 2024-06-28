@@ -5,23 +5,10 @@ package apstra
 
 import (
 	"context"
-	"encoding/json"
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
-
-func TestRaGroupGenA(t *testing.T) {
-	var x FreeformRaGroupGenerator
-	x.Data = new(FreeformRaGroupGeneratorData)
-	x.Id = "foo"
-	x.Data.Scope = "node('link', role='internal', name='target')"
-	x.Data.Label = "GroupGenTest"
-	rawjson, err := json.Marshal(&x)
-	require.NoError(t, err)
-	log.Println(string(rawjson))
-}
 
 func TestCRUDRaGroupGenerators(t *testing.T) {
 	ctx := context.Background()
@@ -29,16 +16,18 @@ func TestCRUDRaGroupGenerators(t *testing.T) {
 	require.NoError(t, err)
 
 	compare := func(t *testing.T, a, b *FreeformRaGroupGeneratorData) {
+		t.Helper()
+
 		require.NotNil(t, a)
 		require.NotNil(t, b)
-		require.Equal(t, a.Label, b.Label)
 		if a.ParentId != nil && b.ParentId != nil {
 			require.Equal(t, *a.ParentId, *b.ParentId)
 		} else {
 			require.Nil(t, a.ParentId)
 			require.Nil(t, b.ParentId)
 		}
-		require.Equal(t, a.Scope, b.Scope, "Scope comparison mismatch")
+		require.Equal(t, a.Label, b.Label)
+		require.Equal(t, a.Scope, b.Scope)
 	}
 
 	for _, client := range clients {
@@ -54,10 +43,9 @@ func TestCRUDRaGroupGenerators(t *testing.T) {
 
 		raGroup, err := ffc.GetRaGroupGenerator(ctx, id)
 		require.NoError(t, err)
-
+		require.Equal(t, id, raGroup.Id)
 		compare(t, &cfg, raGroup.Data)
 
-		require.NoError(t, err)
 		cfg = FreeformRaGroupGeneratorData{
 			Label: randString(6, "hex"),
 			Scope: "node('link', role='internal', name='target')",
@@ -82,9 +70,10 @@ func TestCRUDRaGroupGenerators(t *testing.T) {
 		err = ffc.DeleteRaGroupGenerator(ctx, id)
 		require.NoError(t, err)
 
+		var ace ClientErr
+
 		_, err = ffc.GetRaGroupGenerator(ctx, id)
 		require.Error(t, err)
-		var ace ClientErr
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
 
@@ -92,6 +81,5 @@ func TestCRUDRaGroupGenerators(t *testing.T) {
 		require.Error(t, err)
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
-
 	}
 }

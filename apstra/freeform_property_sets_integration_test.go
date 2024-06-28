@@ -18,6 +18,8 @@ func TestCRUDPropSets(t *testing.T) {
 	require.NoError(t, err)
 
 	compare := func(t *testing.T, a, b *FreeformPropertySetData) {
+		t.Helper()
+
 		require.NotNil(t, a)
 		require.NotNil(t, b)
 		require.Equal(t, a.Label, b.Label)
@@ -55,6 +57,7 @@ func TestCRUDPropSets(t *testing.T) {
 
 		propertySet, err := ffc.GetPropertySet(ctx, id)
 		require.NoError(t, err)
+		require.Equal(t, id, propertySet.Id)
 		compare(t, &cfg, propertySet.Data)
 
 		cfg.Label = randString(6, "hex")
@@ -66,7 +69,7 @@ func TestCRUDPropSets(t *testing.T) {
 			values["b_"+randString(6, "hex")] = rand.Int()%2 == 0
 		}
 
-		// todo: test CreatePropertySet with nil SystemId
+		// todo: test UpdatePropertySet with nil SystemId
 
 		err = ffc.UpdatePropertySet(ctx, id, &cfg)
 		require.NoError(t, err)
@@ -78,7 +81,6 @@ func TestCRUDPropSets(t *testing.T) {
 
 		propertySets, err := ffc.GetAllPropertySets(ctx)
 		require.NoError(t, err)
-
 		ids := make([]ObjectId, len(propertySets))
 		for i, template := range propertySets {
 			ids[i] = template.Id
@@ -88,9 +90,10 @@ func TestCRUDPropSets(t *testing.T) {
 		err = ffc.DeletePropertySet(ctx, id)
 		require.NoError(t, err)
 
+		var ace ClientErr
+
 		_, err = ffc.GetPropertySet(ctx, id)
 		require.Error(t, err)
-		var ace ClientErr
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
 

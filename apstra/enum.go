@@ -106,7 +106,7 @@ var (
 	TcpStateQualifiers                = oenum.New(
 		TcpStateQualifierEstablished,
 	)
-	//integer | vlan | asn | host_ipv6 | vni | host_ip | ip | ipv6
+
 	_                      enum = new(FFResourceType)
 	FFResourceTypeAsn           = FFResourceType{Value: "asn"}
 	FFResourceTypeHostIpv4      = FFResourceType{Value: "host_ip"}
@@ -116,8 +116,7 @@ var (
 	FFResourceTypeIpv6          = FFResourceType{Value: "ipv6"}
 	FFResourceTypeVlan          = FFResourceType{Value: "vlan"}
 	FFResourceTypeVni           = FFResourceType{Value: "vni"}
-
-	FFResourceTypes = oenum.New(
+	FFResourceTypes             = oenum.New(
 		FFResourceTypeAsn,
 		FFResourceTypeHostIpv4,
 		FFResourceTypeHostIpv6,
@@ -127,12 +126,6 @@ var (
 		FFResourceTypeVlan,
 		FFResourceTypeVni,
 	)
-
-	//_                 enum = new(FFPoolType)
-	//FFPoolTypeInteger      = FFPoolType{Value: "Integer"}
-	//FFPoolTypes            = oenum.New(
-	//	FFPoolTypeInteger,
-	//)
 )
 
 type DeployMode oenum.Member[string]
@@ -299,18 +292,3 @@ func (o *FFResourceType) FromString(s string) error {
 	o.Value = t.Value
 	return nil
 }
-
-//type FFPoolType oenum.Member[string]
-//
-//func (o FFPoolType) String() string {
-//	return o.Value
-//}
-//
-//func (o *FFPoolType) FromString(s string) error {
-//	t := FFPoolTypes.Parse(s)
-//	if t == nil {
-//		return fmt.Errorf("failed to parse FFPoolType %q", s)
-//	}
-//	o.Value = t.Value
-//	return nil
-//}

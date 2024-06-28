@@ -16,6 +16,8 @@ func TestCRUD_CT(t *testing.T) {
 	require.NoError(t, err)
 
 	compare := func(t *testing.T, a, b *ConfigTemplateData) {
+		t.Helper()
+
 		require.NotNil(t, a)
 		require.NotNil(t, b)
 		require.Equal(t, a.Label, b.Label)
@@ -56,10 +58,10 @@ func TestCRUD_CT(t *testing.T) {
 		err = ffc.DeleteConfigTemplate(ctx, id)
 		require.NoError(t, err)
 
+		var ace ClientErr
+
 		_, err = ffc.GetConfigTemplate(ctx, id)
 		require.Error(t, err)
-
-		var ace ClientErr
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
 
