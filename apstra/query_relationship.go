@@ -10,6 +10,7 @@ const (
 	RelationshipTypeEpAffectedBy
 	RelationshipTypeEpMemberOf
 	RelationshipTypeEpNested
+	RelationshipTypeEpSubpolicy
 	RelationshipTypeEpTopLevel
 	RelationshipTypeHostedInterfaces
 	RelationshipTypeHostedVnInstances
@@ -35,6 +36,7 @@ const (
 	relationshipTypeEpAffectedBy      = relationshipType("ep_affected_by")
 	relationshipTypeEpMemberOf        = relationshipType("ep_member_of")
 	relationshipTypeEpNested          = relationshipType("ep_nested")
+	relationshipTypeEpSubpolicy       = relationshipType("ep_subpolicy")
 	relationshipTypeEpTopLevel        = relationshipType("ep_top_level")
 	relationshipTypeHostedInterfaces  = relationshipType("hosted_interfaces")
 	relationshipTypeHostedVnInstances = relationshipType("hosted_vn_instances")
@@ -73,6 +75,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeEpMemberOf)
 	case RelationshipTypeEpNested:
 		return string(relationshipTypeEpNested)
+	case RelationshipTypeEpSubpolicy:
+		return string(relationshipTypeEpSubpolicy)
 	case RelationshipTypeEpTopLevel:
 		return string(relationshipTypeEpTopLevel)
 	case RelationshipTypeHostedInterfaces:
