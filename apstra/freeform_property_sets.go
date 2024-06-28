@@ -81,6 +81,36 @@ func (o *FreeformClient) GetPropertySet(ctx context.Context, id ObjectId) (*Free
 	return &response, nil
 }
 
+func (o *FreeformClient) GetPropertySetByName(ctx context.Context, name string) (*FreeformPropertySet, error) {
+	all, err := o.GetAllPropertySets(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *FreeformPropertySet
+	for _, ps := range all {
+		if ps.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple property sets in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ps
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no property set in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
+}
+
 func (o *FreeformClient) GetAllPropertySets(ctx context.Context) ([]FreeformPropertySet, error) {
 	var response struct {
 		Items []FreeformPropertySet `json:"items"`

@@ -87,6 +87,11 @@ func TestCRUDPropSets(t *testing.T) {
 		}
 		require.Contains(t, ids, id)
 
+		propertySet, err = ffc.GetPropertySetByName(ctx, cfg.Label)
+		require.NoError(t, err)
+		require.Equal(t, id, propertySet.Id)
+		compare(t, &cfg, propertySet.Data)
+
 		err = ffc.DeletePropertySet(ctx, id)
 		require.NoError(t, err)
 
