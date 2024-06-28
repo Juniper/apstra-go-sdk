@@ -8,6 +8,7 @@ const (
 	RelationshipTypeComposedOfSystems
 	RelationshipTypeDeviceProfile
 	RelationshipTypeEpAffectedBy
+	RelationshipTypeEpFirstSubpolicy
 	RelationshipTypeEpMemberOf
 	RelationshipTypeEpNested
 	RelationshipTypeEpSubpolicy
@@ -34,6 +35,7 @@ const (
 	relationshipTypeComposedOfSystems = relationshipType("composed_of_systems")
 	relationshipTypeDeviceProfile     = relationshipType("device_profile")
 	relationshipTypeEpAffectedBy      = relationshipType("ep_affected_by")
+	relationshipTypeEpFirstSubpolicy  = relationshipType("ep_first_subpolicy")
 	relationshipTypeEpMemberOf        = relationshipType("ep_member_of")
 	relationshipTypeEpNested          = relationshipType("ep_nested")
 	relationshipTypeEpSubpolicy       = relationshipType("ep_subpolicy")
@@ -71,6 +73,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeDeviceProfile)
 	case RelationshipTypeEpAffectedBy:
 		return string(relationshipTypeEpAffectedBy)
+	case RelationshipTypeEpFirstSubpolicy:
+		return string(relationshipTypeEpFirstSubpolicy)
 	case RelationshipTypeEpMemberOf:
 		return string(relationshipTypeEpMemberOf)
 	case RelationshipTypeEpNested:
