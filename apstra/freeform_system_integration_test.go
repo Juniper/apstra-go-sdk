@@ -5,28 +5,10 @@ package apstra
 
 import (
 	"context"
-	"encoding/json"
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
-
-func TestGSa(t *testing.T) {
-	var x FreeformSystem
-	x.Id = "foo"
-	var devProfileId string
-	devProfileId = "bUHYZeqRQXafDmuZeaw"
-	x.Data = &FreeformSystemData{
-		Type:            SystemTypeInternal,
-		Label:           "test_generic_system",
-		Hostname:        "systemFoo",
-		DeviceProfileId: ObjectId(devProfileId),
-	}
-	rawjson, err := json.Marshal(&x)
-	require.NoError(t, err)
-	log.Println(string(rawjson))
-}
 
 func TestCRUDSystem(t *testing.T) {
 	ctx := context.Background()
@@ -34,10 +16,18 @@ func TestCRUDSystem(t *testing.T) {
 	require.NoError(t, err)
 
 	compare := func(t *testing.T, a, b *FreeformSystemData) {
+		t.Helper()
+
 		require.NotNil(t, a)
 		require.NotNil(t, b)
 		require.Equal(t, a.Type, b.Type)
 		require.Equal(t, a.Label, b.Label)
+		if a.SystemId != nil && b.SystemId != nil {
+			require.Equal(t, *a.SystemId, *b.SystemId)
+		} else {
+			require.Nil(t, a.SystemId)
+			require.Nil(t, b.SystemId)
+		}
 		if a.Hostname != "" {
 			require.Equal(t, a.Hostname, b.Hostname)
 		} else {
@@ -61,6 +51,7 @@ func TestCRUDSystem(t *testing.T) {
 			DeviceProfileId: dpIdA,
 			Type:            SystemTypeInternal,
 		}
+
 		id, err := ffc.CreateSystem(ctx, &cfg)
 		require.NoError(t, err)
 
@@ -82,6 +73,7 @@ func TestCRUDSystem(t *testing.T) {
 
 		ffSystem, err = ffc.GetFreeformSystem(ctx, id)
 		require.NoError(t, err)
+		require.Equal(t, id, ffSystem.Id)
 		compare(t, &cfg, ffSystem.Data)
 
 		cfg = FreeformSystemData{
@@ -95,12 +87,12 @@ func TestCRUDSystem(t *testing.T) {
 
 		ffSystem, err = ffc.GetFreeformSystem(ctx, id)
 		require.NoError(t, err)
+		require.Equal(t, id, ffSystem.Id)
 		cfg.Hostname = ffSystem.Data.Hostname // compare cannot anticipate this value.
 		compare(t, &cfg, ffSystem.Data)
 
 		ffSystems, err := ffc.GetAllFreeformSystems(ctx)
 		require.NoError(t, err)
-
 		ids := make([]ObjectId, len(ffSystems))
 		for i, template := range ffSystems {
 			ids[i] = template.Id
@@ -110,9 +102,10 @@ func TestCRUDSystem(t *testing.T) {
 		err = ffc.DeleteFreeformSystem(ctx, id)
 		require.NoError(t, err)
 
+		var ace ClientErr
+
 		_, err = ffc.GetFreeformSystem(ctx, id)
 		require.Error(t, err)
-		var ace ClientErr
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
 

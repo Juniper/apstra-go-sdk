@@ -18,6 +18,8 @@ func TestCRUDRaGroups(t *testing.T) {
 	require.NoError(t, err)
 
 	compare := func(t *testing.T, a, b *FreeformRaGroupData) {
+		t.Helper()
+
 		require.NotNil(t, a)
 		require.NotNil(t, b)
 		require.Equal(t, a.Label, b.Label)
@@ -28,7 +30,7 @@ func TestCRUDRaGroups(t *testing.T) {
 			require.Nil(t, b.ParentId)
 		}
 		compareSlicesAsSets(t, a.Tags, b.Tags, "Tags comparison mismatch")
-		require.True(t, jsonEqual(t, a.Data, b.Data), "Data mismatch")
+		require.JSONEq(t, string(a.Data), string(b.Data))
 	}
 
 	for _, client := range clients {
@@ -43,10 +45,12 @@ func TestCRUDRaGroups(t *testing.T) {
 
 		raGroup, err := ffc.GetRaGroup(ctx, id)
 		require.NoError(t, err)
+		require.Equal(t, id, raGroup.Id)
 		if len(cfg.Data) == 0 {
 			cfg.Data = json.RawMessage{'{', '}'}
 		}
 		compare(t, &cfg, raGroup.Data)
+
 		data, err := json.Marshal(struct {
 			Foo string `json:"foo"`
 			Bar int    `json:"bar"`
@@ -83,9 +87,10 @@ func TestCRUDRaGroups(t *testing.T) {
 		err = ffc.DeleteRaGroup(ctx, id)
 		require.NoError(t, err)
 
+		var ace ClientErr
+
 		_, err = ffc.GetRaGroup(ctx, id)
 		require.Error(t, err)
-		var ace ClientErr
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
 
@@ -93,6 +98,5 @@ func TestCRUDRaGroups(t *testing.T) {
 		require.Error(t, err)
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
-
 	}
 }

@@ -16,6 +16,8 @@ func TestCRUDFFLink(t *testing.T) {
 	require.NoError(t, err)
 
 	compareEndPoint := func(t testing.TB, a, b *FreeformEndpoint) {
+		t.Helper()
+
 		require.Equal(t, a.SystemId, b.SystemId)
 		require.Equal(t, a.Interface.IfName, b.Interface.IfName)
 		require.Equal(t, a.Interface.TransformationId, b.Interface.TransformationId)
@@ -35,6 +37,8 @@ func TestCRUDFFLink(t *testing.T) {
 	}
 
 	compare := func(t testing.TB, req *FreeformLinkRequest, resp *FreeformLinkData) {
+		t.Helper()
+
 		require.NotNil(t, req)
 		require.NotNil(t, resp)
 		require.Equal(t, req.Label, resp.Label)
@@ -45,10 +49,12 @@ func TestCRUDFFLink(t *testing.T) {
 			compareEndPoint(t, &req.Endpoints[0], &resp.Endpoints[1])
 			compareEndPoint(t, &req.Endpoints[1], &resp.Endpoints[0])
 		}
+		compareSlicesAsSets(t, req.Tags, resp.Tags, "tag mismatch")
 	}
-	for clientName, client := range clients {
+
+	for _, client := range clients {
 		ffc, sysIds := testFFBlueprintB(ctx, t, client.client, 2)
-		_ = clientName
+
 		req := FreeformLinkRequest{
 			Label: randString(6, "hex"),
 			Tags:  []ObjectId{"a", "b"},
@@ -75,24 +81,30 @@ func TestCRUDFFLink(t *testing.T) {
 				},
 			},
 		}
+
+		// create the link
 		id, err := ffc.CreateLink(ctx, &req)
 		require.NoError(t, err)
-		// now lets read the link
 
+		// now lets read the link
 		readLink, err := ffc.GetLink(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, readLink.Id)
 		compare(t, &req, readLink.Data)
 
+		// delete the link
 		err = ffc.DeleteLink(ctx, id)
 		require.NoError(t, err)
 
+		var ace ClientErr
+
+		// fetching a previously deleted link should fail
 		_, err = ffc.GetLink(ctx, id)
 		require.Error(t, err)
-		var ace ClientErr
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
 
+		// deleting a previously deleted link should fail
 		err = ffc.DeleteLink(ctx, id)
 		require.Error(t, err)
 		require.ErrorAs(t, err, &ace)
