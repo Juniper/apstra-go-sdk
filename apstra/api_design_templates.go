@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -1524,6 +1525,10 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		rackBasedTemplatesCounts[i].Count = pi.Count
 		i++
 	}
+
+	sort.Slice(templatesRackBased, func(i, j int) bool {
+		return templatesRackBased[i].DisplayName < templatesRackBased[j].DisplayName
+	})
 
 	switch {
 	case o.Superspine == nil:

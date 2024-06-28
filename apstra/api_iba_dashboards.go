@@ -2,7 +2,9 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 )
@@ -151,17 +153,54 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 }
 
 func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *rawIbaDashboard) (ObjectId, error) {
-	response := &objectIdResponse{}
-
+	var response objectIdResponse
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodPost, urlStr: fmt.Sprintf(apiUrlIbaDashboards, blueprintId),
-		apiInput: in, apiResponse: response,
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlIbaDashboards, blueprintId),
+		apiInput:    in,
+		apiResponse: &response,
 	})
-	if err != nil {
-		return "", convertTtaeToAceWherePossible(err)
+	if err == nil {
+		return response.Id, nil
 	}
 
-	return response.Id, nil
+	err = convertTtaeToAceWherePossible(err)
+
+	var ace ClientErr
+	if !(errors.As(err, &ace) && ace.IsRetryable()) {
+		return "", err // fatal error
+	}
+
+	retryMax := o.GetTuningParam("ibaDashboardMaxRetries")
+	retryInterval := time.Duration(o.GetTuningParam("ibaDashboardRetryIntervalMs")) * time.Millisecond
+
+	for i := 0; i < retryMax; i++ {
+		// Make a random wait, in case multiple threads are running
+		if rand.Int()%2 == 0 {
+			time.Sleep(retryInterval)
+		}
+
+		time.Sleep(retryInterval * time.Duration(i))
+
+		e := o.talkToApstra(ctx, &talkToApstraIn{
+			method:      http.MethodPost,
+			urlStr:      fmt.Sprintf(apiUrlIbaDashboards, blueprintId),
+			apiInput:    in,
+			apiResponse: &response,
+		})
+		if e == nil {
+			return response.Id, nil // success!
+		}
+
+		e = convertTtaeToAceWherePossible(e)
+		if !(errors.As(e, &ace) && ace.IsRetryable()) {
+			return "", e // return the fatal error
+		}
+
+		err = errors.Join(err, e) // the error is retryable; stack it with the rest
+	}
+
+	return "", errors.Join(err, fmt.Errorf("reached retry limit %d", retryMax))
 }
 
 func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *rawIbaDashboard) error {

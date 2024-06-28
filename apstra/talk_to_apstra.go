@@ -105,6 +105,8 @@ func convertTtaeToAceWherePossible(err error) error {
 			case strings.Contains(ttae.Msg, "Error executing facade API GET /obj-policy-export") &&
 				strings.Contains(ttae.Msg, "'NoneType' object has no attribute 'id'"):
 				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+			case strings.Contains(ttae.Msg, "The current mount is conflicting with an existing mount"):
+				return ClientErr{errType: ErrIbaCurrentMountConflictsWithExistingMount, retryable: true, err: errors.New(ttae.Msg)}
 			}
 		}
 	}

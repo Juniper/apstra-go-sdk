@@ -2,7 +2,9 @@ package apstra
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 )
@@ -233,18 +235,54 @@ func (o *Client) getIbaWidgetByLabel(ctx context.Context, bpId ObjectId, label s
 }
 
 func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *rawIbaWidget) (ObjectId, error) {
-	response := &objectIdResponse{}
-
+	var response objectIdResponse
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bpId),
 		apiInput:    &widget,
 		apiResponse: &response,
 	})
-	if err != nil {
-		return "", err
+	if err == nil {
+		return response.Id, nil
 	}
-	return response.Id, nil
+
+	err = convertTtaeToAceWherePossible(err)
+
+	var ace ClientErr
+	if !(errors.As(err, &ace) && ace.IsRetryable()) {
+		return "", err // fatal error
+	}
+
+	retryMax := o.GetTuningParam("createIbaWidgetMaxRetries")
+	retryInterval := time.Duration(o.GetTuningParam("createIbaWidgetRetryIntervalMs")) * time.Millisecond
+
+	for i := 0; i < retryMax; i++ {
+		// Make a random wait, in case multiple threads are running
+		if rand.Int()%2 == 0 {
+			time.Sleep(retryInterval)
+		}
+
+		time.Sleep(retryInterval * time.Duration(i))
+
+		e := o.talkToApstra(ctx, &talkToApstraIn{
+			method:      http.MethodPost,
+			urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bpId),
+			apiInput:    &widget,
+			apiResponse: &response,
+		})
+		if e == nil {
+			return response.Id, nil // success!
+		}
+
+		e = convertTtaeToAceWherePossible(e)
+		if !(errors.As(e, &ace) && ace.IsRetryable()) {
+			return "", e // return the fatal error
+		}
+
+		err = errors.Join(err, e) // the error is retryable; stack it with the rest
+	}
+
+	return "", errors.Join(err, fmt.Errorf("reached retry limit %d", retryMax))
 }
 
 func (o *Client) updateIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId, widget *rawIbaWidget) error {
