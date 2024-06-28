@@ -5,28 +5,27 @@ package apstra
 
 import (
 	"context"
+	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
 )
 
 func TestTelemetryServiceRegistry(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
 	for clientName, client := range clients {
-		log.Printf("Testing Telemetry Service Registry against %s %s (%s)", client.clientType, clientName,
-			client.client.ApiVersion())
+		log.Printf("Testing Telemetry Service Registry against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 		log.Println("Test Get All Telemetry Service Registry Entries")
 		entries, err := client.client.GetAllTelemetryServiceRegistryEntries(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+
 		for _, e := range entries {
 			log.Print(e.ServiceName)
 		}
+
 		log.Println("Test Create Telemetry Service Registry Entries")
 		name := randString(10, "hex")
 		schema := `{
@@ -79,6 +78,7 @@ func TestTelemetryServiceRegistry(t *testing.T) {
           }
 		}
 	}`
+
 		entry := TelemetryServiceRegistryEntry{
 			ServiceName:       name,
 			StorageSchemaPath: StorageSchemaPathIBA_INTEGER_DATA,
@@ -86,22 +86,19 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 			Builtin:           false,
 			Description:       "Test Service",
 		}
+
 		ServiceName, err := client.client.CreateTelemetryServiceRegistryEntry(ctx, entry)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+
 		log.Println(ServiceName)
-		if ServiceName != name {
-			t.Fatalf("Expected Service Name %s, Got %s", name, ServiceName)
-		}
+		require.Equal(t, name, ServiceName)
+
 		pentry, err := client.client.GetTelemetryServiceRegistryEntry(ctx, name)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+
 		log.Println(pentry)
-		if !jsonEqual(t, pentry.ApplicationSchema, entry.ApplicationSchema) {
-			t.Fatal("Application Schema mismatch")
-		}
+		require.JSONEq(t, string(pentry.ApplicationSchema), string(entry.ApplicationSchema))
+
 		schema = `{
         "required": ["key","value"],
         "type": "object",
@@ -158,28 +155,26 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 		log.Println("Test Update Telemetry Service Registry Entry")
 
 		err = client.client.UpdateTelemetryServiceRegistryEntry(ctx, ServiceName, &entry)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 
 		pentry, err = client.client.GetTelemetryServiceRegistryEntry(ctx, name)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !jsonEqual(t, pentry.ApplicationSchema, entry.ApplicationSchema) {
-			t.Fatal("Application Schema mismatch")
-		}
+		require.NoError(t, err)
+		require.JSONEq(t, string(pentry.ApplicationSchema), string(entry.ApplicationSchema))
 
 		log.Println("Test Delete Telemetry Service Registry Entry")
 		err = client.client.DeleteTelemetryServiceRegistryEntry(ctx, pentry.ServiceName)
-		if err != nil {
-			t.Fatal(err)
-		}
-		pentry, err = client.client.GetTelemetryServiceRegistryEntry(ctx, name)
-		if err != nil {
-			t.Log("Telemetry Service Successfully Removed. ", err)
-		} else {
-			t.Fatal("Delete has not succeeded. returned ", pentry)
-		}
+		require.NoError(t, err)
+
+		var ace ClientErr
+
+		_, err = client.client.GetTelemetryServiceRegistryEntry(ctx, name)
+		require.Error(t, err)
+		require.ErrorAs(t, err, &ace)
+		require.Equal(t, ErrNotfound, ace.Type())
+
+		err = client.client.DeleteTelemetryServiceRegistryEntry(ctx, name)
+		require.Error(t, err)
+		require.ErrorAs(t, err, &ace)
+		require.Equal(t, ErrNotfound, ace.Type())
 	}
 }
