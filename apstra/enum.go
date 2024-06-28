@@ -107,6 +107,26 @@ var (
 		TcpStateQualifierEstablished,
 	)
 
+	_                      enum = new(FFResourceType)
+	FFResourceTypeAsn           = FFResourceType{Value: "asn"}
+	FFResourceTypeHostIpv4      = FFResourceType{Value: "host_ip"}
+	FFResourceTypeHostIpv6      = FFResourceType{Value: "host_ipv6"}
+	FFResourceTypeInt           = FFResourceType{Value: "integer"}
+	FFResourceTypeIpv4          = FFResourceType{Value: "ip"}
+	FFResourceTypeIpv6          = FFResourceType{Value: "ipv6"}
+	FFResourceTypeVlan          = FFResourceType{Value: "vlan"}
+	FFResourceTypeVni           = FFResourceType{Value: "vni"}
+	FFResourceTypes             = oenum.New(
+		FFResourceTypeAsn,
+		FFResourceTypeHostIpv4,
+		FFResourceTypeHostIpv6,
+		FFResourceTypeInt,
+		FFResourceTypeIpv4,
+		FFResourceTypeIpv6,
+		FFResourceTypeVlan,
+		FFResourceTypeVni,
+	)
+
 	_                                   enum = new(StorageSchemaPath)
 	StorageSchemaPathXCVR                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.xcvr"}
 	StorageSchemaPathGRAPH                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.graph"}
@@ -128,7 +148,27 @@ var (
 	StorageSchemaPathNSXT                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.nsxt"}
 	StorageSchemaPathENVIRONMENT             = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.environment"}
 	StorageSchemaPathLLDP                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.lldp"}
-	StorageSchemaPaths                       = oenum.New(StorageSchemaPathXCVR, StorageSchemaPathGRAPH, StorageSchemaPathROUTE, StorageSchemaPathMAC, StorageSchemaPathOPTICAL_XCVR, StorageSchemaPathHOSTNAME, StorageSchemaPathGENERIC, StorageSchemaPathLAG, StorageSchemaPathBGP, StorageSchemaPathINTERFACE, StorageSchemaPathMLAG, StorageSchemaPathIBA_STRING_DATA, StorageSchemaPathIBA_INTEGER_DATA, StorageSchemaPathROUTE_LOOKUP, StorageSchemaPathINTERFACE_COUNTERS, StorageSchemaPathARP, StorageSchemaPathCPP_GRAPH, StorageSchemaPathNSXT, StorageSchemaPathENVIRONMENT, StorageSchemaPathLLDP)
+	StorageSchemaPaths                       = oenum.New(StorageSchemaPathXCVR,
+		StorageSchemaPathGRAPH,
+		StorageSchemaPathROUTE,
+		StorageSchemaPathMAC,
+		StorageSchemaPathOPTICAL_XCVR,
+		StorageSchemaPathHOSTNAME,
+		StorageSchemaPathGENERIC,
+		StorageSchemaPathLAG,
+		StorageSchemaPathBGP,
+		StorageSchemaPathINTERFACE,
+		StorageSchemaPathMLAG,
+		StorageSchemaPathIBA_STRING_DATA,
+		StorageSchemaPathIBA_INTEGER_DATA,
+		StorageSchemaPathROUTE_LOOKUP,
+		StorageSchemaPathINTERFACE_COUNTERS,
+		StorageSchemaPathARP,
+		StorageSchemaPathCPP_GRAPH,
+		StorageSchemaPathNSXT,
+		StorageSchemaPathENVIRONMENT,
+		StorageSchemaPathLLDP,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -276,6 +316,21 @@ func (o *TcpStateQualifier) FromString(s string) error {
 	t := TcpStateQualifiers.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse TcpStateQualifier %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type FFResourceType oenum.Member[string]
+
+func (o FFResourceType) String() string {
+	return o.Value
+}
+
+func (o *FFResourceType) FromString(s string) error {
+	t := FFResourceTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse FFResourceType %q", s)
 	}
 	o.Value = t.Value
 	return nil

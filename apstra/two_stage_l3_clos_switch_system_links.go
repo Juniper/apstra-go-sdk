@@ -22,11 +22,13 @@ type (
 
 const (
 	SystemTypeExternal = SystemType(iota)
+	SystemTypeInternal
 	SystemTypeSwitch
 	SystemTypeServer
 	SystemTypeUnknown = "unknown system type '%s'"
 
 	systemTypeExternal = systemType("external")
+	systemTypeInternal = systemType("internal")
 	systemTypeSwitch   = systemType("switch")
 	systemTypeServer   = systemType("server")
 	systemTypeUnknown  = "unknown system type %d"
@@ -40,6 +42,8 @@ func (o SystemType) String() string {
 	switch o {
 	case SystemTypeExternal:
 		return string(systemTypeExternal)
+	case SystemTypeInternal:
+		return string(systemTypeInternal)
 	case SystemTypeSwitch:
 		return string(systemTypeSwitch)
 	case SystemTypeServer:
@@ -61,6 +65,8 @@ func (o systemType) parse() (int, error) {
 	switch o {
 	case systemTypeExternal:
 		return int(SystemTypeExternal), nil
+	case systemTypeInternal:
+		return int(SystemTypeInternal), nil
 	case systemTypeSwitch:
 		return int(SystemTypeSwitch), nil
 	case systemTypeServer:
