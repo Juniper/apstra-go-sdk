@@ -20,7 +20,7 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 		log.Printf("Testing Telemetry Service Registry against %s %s (%s)", client.clientType, clientName,
 			client.client.ApiVersion())
 		log.Println("Test Get All Telemetry Service Registry Entries")
-		entries, err := client.client.getAllTelemetryServiceRegistryEntries(ctx)
+		entries, err := client.client.GetAllTelemetryServiceRegistryEntries(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
