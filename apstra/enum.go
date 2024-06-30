@@ -168,7 +168,7 @@ var (
 		StorageSchemaPathNSXT,
 		StorageSchemaPathENVIRONMENT,
 		StorageSchemaPathLLDP,
-)
+	)
 
 	_                                  enum = new(InterfaceNumberingIpv4Type)
 	InterfaceNumberingIpv4TypeNone          = InterfaceNumberingIpv4Type{Value: ""}
@@ -364,7 +364,7 @@ func (o *StorageSchemaPath) FromString(s string) error {
 	t := StorageSchemaPaths.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse StorageSchemaPath %q", s)
-  }
+	}
 	o.Value = t.Value
 	return nil
 }
