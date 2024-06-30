@@ -21,13 +21,8 @@ func TestImportGetUpdateGetDeletePropertySet(t *testing.T) {
 	for clientName, client := range clients {
 
 		// Create Blueprint
-		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintC(ctx, t, client.client)
+
 		// Create Property Set
 		samples := rand.Intn(10) + 4
 		ps := &PropertySetData{

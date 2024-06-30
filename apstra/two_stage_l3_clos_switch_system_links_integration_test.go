@@ -313,8 +313,7 @@ func TestDeleteSwitchSystemLinks_WithCtAssigned(t *testing.T) {
 	for clientName, client := range clients {
 		// create a blueprint
 		log.Printf("creating test blueprint against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bp, bpDelete := testBlueprintC(ctx, t, client.client)
-		t.Cleanup(func() { require.NoError(t, bpDelete(ctx)) })
+		bp := testBlueprintC(ctx, t, client.client)
 
 		// collect leaf switch IDs
 		log.Printf("determining leaf switch IDs in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
