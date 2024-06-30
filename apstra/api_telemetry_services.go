@@ -2,9 +2,7 @@ package apstra
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"net/url"
 )
 
 const (
@@ -23,14 +21,16 @@ type GetTelemetryServiceMappingResult struct {
 }
 
 func (o *Client) GetTelemetryServicesDeviceMapping(ctx context.Context) (*GetTelemetryServiceMappingResult, error) {
-	apstraUrl, err := url.Parse(apiUrlTelemetryServices)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlTelemetryServices, err)
-	}
-	result := &GetTelemetryServiceMappingResult{}
-	return result, o.talkToApstra(ctx, &talkToApstraIn{
+	var result GetTelemetryServiceMappingResult
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		url:         apstraUrl,
-		apiResponse: result,
+		urlStr:      apiUrlTelemetryServices,
+		apiResponse: &result,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return &result, nil
 }

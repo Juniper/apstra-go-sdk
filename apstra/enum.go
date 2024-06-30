@@ -127,6 +127,49 @@ var (
 		FFResourceTypeVni,
 	)
 
+	_                                   enum = new(StorageSchemaPath)
+	StorageSchemaPathXCVR                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.xcvr"}
+	StorageSchemaPathGRAPH                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.graph"}
+	StorageSchemaPathROUTE                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.route"}
+	StorageSchemaPathMAC                     = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.mac"}
+	StorageSchemaPathOPTICAL_XCVR            = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.optical_xcvr"}
+	StorageSchemaPathHOSTNAME                = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.hostname"}
+	StorageSchemaPathGENERIC                 = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.generic"}
+	StorageSchemaPathLAG                     = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.lag"}
+	StorageSchemaPathBGP                     = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.bgp"}
+	StorageSchemaPathINTERFACE               = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.interface"}
+	StorageSchemaPathMLAG                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.mlag"}
+	StorageSchemaPathIBA_STRING_DATA         = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.iba_string_data"}
+	StorageSchemaPathIBA_INTEGER_DATA        = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.iba_integer_data"}
+	StorageSchemaPathROUTE_LOOKUP            = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.route_lookup"}
+	StorageSchemaPathINTERFACE_COUNTERS      = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.interface_counters"}
+	StorageSchemaPathARP                     = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.arp"}
+	StorageSchemaPathCPP_GRAPH               = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.cpp_graph"}
+	StorageSchemaPathNSXT                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.nsxt"}
+	StorageSchemaPathENVIRONMENT             = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.environment"}
+	StorageSchemaPathLLDP                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.lldp"}
+	StorageSchemaPaths                       = oenum.New(StorageSchemaPathXCVR,
+		StorageSchemaPathGRAPH,
+		StorageSchemaPathROUTE,
+		StorageSchemaPathMAC,
+		StorageSchemaPathOPTICAL_XCVR,
+		StorageSchemaPathHOSTNAME,
+		StorageSchemaPathGENERIC,
+		StorageSchemaPathLAG,
+		StorageSchemaPathBGP,
+		StorageSchemaPathINTERFACE,
+		StorageSchemaPathMLAG,
+		StorageSchemaPathIBA_STRING_DATA,
+		StorageSchemaPathIBA_INTEGER_DATA,
+		StorageSchemaPathROUTE_LOOKUP,
+		StorageSchemaPathINTERFACE_COUNTERS,
+		StorageSchemaPathARP,
+		StorageSchemaPathCPP_GRAPH,
+		StorageSchemaPathNSXT,
+		StorageSchemaPathENVIRONMENT,
+		StorageSchemaPathLLDP,
+	)
+
 	_                                  enum = new(InterfaceNumberingIpv4Type)
 	InterfaceNumberingIpv4TypeNone          = InterfaceNumberingIpv4Type{Value: ""}
 	InterfaceNumberingIpv4TypeNumbered      = InterfaceNumberingIpv4Type{Value: "numbered"}
@@ -306,6 +349,21 @@ func (o *FFResourceType) FromString(s string) error {
 	t := FFResourceTypes.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse FFResourceType %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type StorageSchemaPath oenum.Member[string]
+
+func (o StorageSchemaPath) String() string {
+	return o.Value
+}
+
+func (o *StorageSchemaPath) FromString(s string) error {
+	t := StorageSchemaPaths.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse StorageSchemaPath %q", s)
 	}
 	o.Value = t.Value
 	return nil

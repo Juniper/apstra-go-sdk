@@ -20,6 +20,7 @@ func TestSystemTypeStrings(t *testing.T) {
 	}
 	testData := []stringTestData{
 		{stringVal: "external", intType: SystemTypeExternal, stringType: systemTypeExternal},
+		{stringVal: "internal", intType: SystemTypeInternal, stringType: systemTypeInternal},
 		{stringVal: "server", intType: SystemTypeServer, stringType: systemTypeServer},
 		{stringVal: "switch", intType: SystemTypeSwitch, stringType: systemTypeSwitch},
 	}

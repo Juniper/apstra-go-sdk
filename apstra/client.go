@@ -208,6 +208,48 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 	return result, nil
 }
 
+// CreateFreeformBlueprint returns the ID of the new freeform blueprint
+func (o *Client) CreateFreeformBlueprint(ctx context.Context, label string) (ObjectId, error) {
+	var request struct {
+		Design string `json:"design"`
+		Label  string `json:"label"`
+	}
+
+	request.Design = RefDesignFreeform.String()
+	request.Label = label
+
+	var response postBlueprintsResponse
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      apiUrlBlueprints,
+		apiInput:    &request,
+		apiResponse: &response,
+	})
+
+	if err != nil {
+		return response.Id, convertTtaeToAceWherePossible(err)
+	}
+
+	return response.Id, nil
+}
+
+func (o *Client) NewFreeformClient(ctx context.Context, blueprintId ObjectId) (*FreeformClient, error) {
+	bp, err := o.getBlueprintStatus(ctx, blueprintId)
+	if err != nil {
+		return nil, err
+	}
+	if bp.Design != refDesignFreeform {
+		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
+			RefDesignFreeform, blueprintId, bp.Design)
+	}
+
+	return &FreeformClient{
+		client:      o,
+		blueprintId: blueprintId,
+	}, nil
+}
+
 func (o ClientCfg) validate() error {
 	switch {
 	case o.Url == "":
