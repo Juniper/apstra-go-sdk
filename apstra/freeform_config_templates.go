@@ -82,6 +82,37 @@ func (o *FreeformClient) GetConfigTemplate(ctx context.Context, id ObjectId) (*C
 	return &response, nil
 }
 
+func (o *FreeformClient) GetConfigTemplateByName(ctx context.Context, name string) (*ConfigTemplate, error) {
+	all, err := o.GetAllConfigTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *ConfigTemplate
+	for _, ps := range all {
+		ps := ps
+		if ps.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple Config Templates in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ps
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no config template in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
+}
+
 func (o *FreeformClient) GetAllConfigTemplates(ctx context.Context) ([]ConfigTemplate, error) {
 	var response struct {
 		Items []ConfigTemplate `json:"items"`
