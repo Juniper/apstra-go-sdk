@@ -21,11 +21,11 @@ type ConfigTemplate struct {
 
 func (o *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id         ObjectId   `json:"id"`
-		Label      string     `json:"label,omitempty"`
-		Text       string     `json:"text,omitempty"`
-		TemplateId ObjectId   `json:"template_id,omitempty"`
-		Tags       []ObjectId `json:"tags"`
+		Id         ObjectId `json:"id"`
+		Label      string   `json:"label,omitempty"`
+		Text       string   `json:"text,omitempty"`
+		TemplateId ObjectId `json:"template_id,omitempty"`
+		Tags       []string `json:"tags"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
