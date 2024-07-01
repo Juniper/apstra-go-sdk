@@ -45,10 +45,10 @@ func (o *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 }
 
 type ConfigTemplateData struct {
-	Label      string     `json:"label"`
-	Text       string     `json:"text"`
-	Tags       []ObjectId `json:"tags"`
-	TemplateId ObjectId   `json:"template_id"`
+	Label      string   `json:"label"`
+	Text       string   `json:"text"`
+	Tags       []string `json:"tags"`
+	TemplateId ObjectId `json:"template_id"`
 }
 
 func (o *FreeformClient) CreateConfigTemplate(ctx context.Context, in *ConfigTemplateData) (ObjectId, error) {
