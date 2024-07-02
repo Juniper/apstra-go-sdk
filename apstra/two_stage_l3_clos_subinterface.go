@@ -24,18 +24,18 @@ type TwoStageL3ClosSubinterface struct {
 
 func (o TwoStageL3ClosSubinterface) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		Ipv4AddrType string  `json:"ipv4_addr_type,omitempty"`
-		Ipv6AddrType string  `json:"ipv6_addr_type,omitempty"`
+		Ipv4AddrType *string `json:"ipv4_addr_type,omitempty"`
+		Ipv6AddrType *string `json:"ipv6_addr_type,omitempty"`
 		Ipv4Addr     *string `json:"ipv4_addr,omitempty"`
 		Ipv6Addr     *string `json:"ipv6_addr,omitempty"`
 	}
 
 	if o.Ipv4AddrType != nil {
-		raw.Ipv4AddrType = o.Ipv4AddrType.String()
+		raw.Ipv4AddrType = toPtr(o.Ipv4AddrType.String())
 	}
 
 	if o.Ipv6AddrType != nil {
-		raw.Ipv6AddrType = o.Ipv6AddrType.String()
+		raw.Ipv6AddrType = toPtr(o.Ipv6AddrType.String())
 	}
 
 	if o.Ipv4Addr != nil {
