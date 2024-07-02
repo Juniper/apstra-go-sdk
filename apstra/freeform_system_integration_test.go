@@ -55,7 +55,7 @@ func TestCRUDSystem(t *testing.T) {
 		id, err := ffc.CreateSystem(ctx, &cfg)
 		require.NoError(t, err)
 
-		ffSystem, err := ffc.GetFreeformSystem(ctx, id)
+		ffSystem, err := ffc.GetSystem(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, ffSystem.Id)
 		compare(t, &cfg, ffSystem.Data)
@@ -68,10 +68,10 @@ func TestCRUDSystem(t *testing.T) {
 			DeviceProfileId: dpIdB,
 		}
 
-		err = ffc.UpdateFreeformSystem(ctx, id, &cfg)
+		err = ffc.UpdateSystem(ctx, id, &cfg)
 		require.NoError(t, err)
 
-		ffSystem, err = ffc.GetFreeformSystem(ctx, id)
+		ffSystem, err = ffc.GetSystem(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, ffSystem.Id)
 		compare(t, &cfg, ffSystem.Data)
@@ -82,16 +82,16 @@ func TestCRUDSystem(t *testing.T) {
 			DeviceProfileId: dpIdA,
 		}
 
-		err = ffc.UpdateFreeformSystem(ctx, id, &cfg)
+		err = ffc.UpdateSystem(ctx, id, &cfg)
 		require.NoError(t, err)
 
-		ffSystem, err = ffc.GetFreeformSystem(ctx, id)
+		ffSystem, err = ffc.GetSystem(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, ffSystem.Id)
 		cfg.Hostname = ffSystem.Data.Hostname // compare cannot anticipate this value.
 		compare(t, &cfg, ffSystem.Data)
 
-		ffSystems, err := ffc.GetAllFreeformSystems(ctx)
+		ffSystems, err := ffc.GetAllSystems(ctx)
 		require.NoError(t, err)
 		ids := make([]ObjectId, len(ffSystems))
 		for i, template := range ffSystems {
@@ -99,17 +99,17 @@ func TestCRUDSystem(t *testing.T) {
 		}
 		require.Contains(t, ids, id)
 
-		err = ffc.DeleteFreeformSystem(ctx, id)
+		err = ffc.DeleteSystem(ctx, id)
 		require.NoError(t, err)
 
 		var ace ClientErr
 
-		_, err = ffc.GetFreeformSystem(ctx, id)
+		_, err = ffc.GetSystem(ctx, id)
 		require.Error(t, err)
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())
 
-		err = ffc.DeleteFreeformSystem(ctx, id)
+		err = ffc.DeleteSystem(ctx, id)
 		require.Error(t, err)
 		require.ErrorAs(t, err, &ace)
 		require.Equal(t, ErrNotfound, ace.Type())

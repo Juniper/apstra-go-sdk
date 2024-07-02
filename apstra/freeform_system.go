@@ -123,7 +123,7 @@ func (o *FreeformClient) CreateSystem(ctx context.Context, in *FreeformSystemDat
 	return response.Id, nil
 }
 
-func (o *FreeformClient) GetFreeformSystem(ctx context.Context, systemId ObjectId) (*FreeformSystem, error) {
+func (o *FreeformClient) GetSystem(ctx context.Context, systemId ObjectId) (*FreeformSystem, error) {
 	var response FreeformSystem
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -137,8 +137,8 @@ func (o *FreeformClient) GetFreeformSystem(ctx context.Context, systemId ObjectI
 
 	return &response, nil
 }
-func (o *FreeformClient) GetFreeformSystemByName(ctx context.Context, name string) (*FreeformSystem, error) {
-	all, err := o.GetAllFreeformSystems(ctx)
+func (o *FreeformClient) GetSystemByName(ctx context.Context, name string) (*FreeformSystem, error) {
+	all, err := o.GetAllSystems(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func (o *FreeformClient) GetFreeformSystemByName(ctx context.Context, name strin
 	return result, nil
 }
 
-func (o *FreeformClient) GetAllFreeformSystems(ctx context.Context) ([]FreeformSystem, error) {
+func (o *FreeformClient) GetAllSystems(ctx context.Context) ([]FreeformSystem, error) {
 	var response struct {
 		Items []FreeformSystem `json:"items"`
 	}
@@ -185,7 +185,7 @@ func (o *FreeformClient) GetAllFreeformSystems(ctx context.Context) ([]FreeformS
 	return response.Items, nil
 }
 
-func (o *FreeformClient) UpdateFreeformSystem(ctx context.Context, id ObjectId, in *FreeformSystemData) error {
+func (o *FreeformClient) UpdateSystem(ctx context.Context, id ObjectId, in *FreeformSystemData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfGenericSystemsById, o.blueprintId, id),
@@ -198,7 +198,7 @@ func (o *FreeformClient) UpdateFreeformSystem(ctx context.Context, id ObjectId, 
 	return nil
 }
 
-func (o *FreeformClient) DeleteFreeformSystem(ctx context.Context, id ObjectId) error {
+func (o *FreeformClient) DeleteSystem(ctx context.Context, id ObjectId) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfGenericSystemsById, o.blueprintId, id),
