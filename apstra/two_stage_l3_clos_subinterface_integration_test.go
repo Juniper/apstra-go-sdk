@@ -139,8 +139,8 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 			// prep an API payload for each end of the link
 			for i, endpoint := range link.Endpoints {
 				subinterfaceConfigs[endpoint.SubinterfaceId] = TwoStageL3ClosSubinterface{
-					Ipv4AddrType: toPtr(InterfaceNumberingIpv4TypeNumbered),
-					Ipv6AddrType: toPtr(InterfaceNumberingIpv6TypeNumbered),
+					Ipv4AddrType: InterfaceNumberingIpv4TypeNumbered,
+					Ipv6AddrType: InterfaceNumberingIpv6TypeNumbered,
 					Ipv4Addr:     &v4prefixes[i],
 					Ipv6Addr:     &v6prefixes[i],
 				}
@@ -165,10 +165,65 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 					t.Fatalf("endpoint with subinterface ID %q was not expected", ep.SubinterfaceId)
 				}
 
-				require.EqualValues(t, *expectedSubinterface.Ipv4AddrType, *ep.Subinterface.Ipv4AddrType)
-				require.EqualValues(t, *expectedSubinterface.Ipv6AddrType, *ep.Subinterface.Ipv6AddrType)
+				require.EqualValues(t, expectedSubinterface.Ipv4AddrType, ep.Subinterface.Ipv4AddrType)
+				require.EqualValues(t, expectedSubinterface.Ipv6AddrType, ep.Subinterface.Ipv6AddrType)
 				require.EqualValues(t, expectedSubinterface.Ipv4Addr.String(), ep.Subinterface.Ipv4Addr.String())
 				require.EqualValues(t, expectedSubinterface.Ipv6Addr.String(), ep.Subinterface.Ipv6Addr.String())
+
+				si, err := bp.GetSubinterface(ctx, ep.SubinterfaceId)
+				require.NoError(t, err)
+
+				require.EqualValues(t, ep.Subinterface.Ipv4AddrType, si.Ipv4AddrType)
+				require.EqualValues(t, ep.Subinterface.Ipv4Addr, si.Ipv4Addr)
+				require.EqualValues(t, ep.Subinterface.Ipv6AddrType, si.Ipv6AddrType)
+				require.EqualValues(t, ep.Subinterface.Ipv6Addr, si.Ipv6Addr)
+			}
+		}
+
+		// make sure we didn't miss anything or get any extras
+		require.EqualValues(t, len(subinterfaceConfigs), totalEndpoints)
+
+		// clear the addresses for those links (two endpoints per link)
+		for _, link := range links {
+			// prep an API payload for each end of the link
+			for _, endpoint := range link.Endpoints {
+				subinterfaceConfigs[endpoint.SubinterfaceId] = TwoStageL3ClosSubinterface{
+					Ipv4AddrType: InterfaceNumberingIpv4TypeNone,
+					Ipv6AddrType: InterfaceNumberingIpv6TypeNone,
+				}
+			}
+		}
+
+		// update the link endpoints
+		require.NoError(t, bp.UpdateSubinterfaces(ctx, subinterfaceConfigs))
+
+		// fetch the result
+		links, err = bp.GetAllSubinterfaceLinks(ctx)
+		require.NoError(t, err)
+
+		// validate tha the fetched result matches the values we sent
+		totalEndpoints = 0
+		for _, link := range links {
+			for _, ep := range link.Endpoints {
+				totalEndpoints++
+
+				expectedSubinterface, ok := subinterfaceConfigs[ep.SubinterfaceId]
+				if !ok {
+					t.Fatalf("endpoint with subinterface ID %q was not expected", ep.SubinterfaceId)
+				}
+
+				require.EqualValues(t, expectedSubinterface.Ipv4AddrType, ep.Subinterface.Ipv4AddrType)
+				require.EqualValues(t, expectedSubinterface.Ipv6AddrType, ep.Subinterface.Ipv6AddrType)
+				require.EqualValues(t, expectedSubinterface.Ipv4Addr.String(), ep.Subinterface.Ipv4Addr.String())
+				require.EqualValues(t, expectedSubinterface.Ipv6Addr.String(), ep.Subinterface.Ipv6Addr.String())
+
+				si, err := bp.GetSubinterface(ctx, ep.SubinterfaceId)
+				require.NoError(t, err)
+
+				require.EqualValues(t, ep.Subinterface.Ipv4AddrType, si.Ipv4AddrType)
+				require.EqualValues(t, ep.Subinterface.Ipv4Addr, si.Ipv4Addr)
+				require.EqualValues(t, ep.Subinterface.Ipv6AddrType, si.Ipv6AddrType)
+				require.EqualValues(t, ep.Subinterface.Ipv6Addr, si.Ipv6Addr)
 			}
 		}
 
