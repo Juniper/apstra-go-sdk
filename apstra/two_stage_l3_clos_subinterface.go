@@ -12,8 +12,10 @@ const (
 	apiUrlSubinterfaces = apiUrlBlueprintByIdPrefix + "subinterfaces"
 )
 
-var _ json.Marshaler = (*TwoStageL3ClosSubinterface)(nil)
-var _ json.Unmarshaler = (*TwoStageL3ClosSubinterface)(nil)
+var (
+	_ json.Marshaler   = (*TwoStageL3ClosSubinterface)(nil)
+	_ json.Unmarshaler = (*TwoStageL3ClosSubinterface)(nil)
+)
 
 type TwoStageL3ClosSubinterface struct {
 	Ipv4AddrType InterfaceNumberingIpv4Type
@@ -166,7 +168,6 @@ func (o *TwoStageL3ClosClient) UpdateSubinterfaces(ctx context.Context, in map[O
 			Subinterfaces: in,
 		},
 	})
-
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}

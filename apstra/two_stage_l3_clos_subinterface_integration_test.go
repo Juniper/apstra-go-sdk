@@ -5,10 +5,11 @@ package apstra
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"math/rand"
 	"net"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {

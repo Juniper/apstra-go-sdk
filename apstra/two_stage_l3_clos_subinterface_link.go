@@ -78,7 +78,7 @@ func (o *TwoStageL3ClosSubinterfaceLink) UnmarshalJSON(bytes []byte) error {
 			return err
 		}
 
-		//o.Endpoints[i].Subinterface.Ipv4AddrType = new(I)
+		// o.Endpoints[i].Subinterface.Ipv4AddrType = new(I)
 		sysRole, err := rep.System.Role.parse()
 		if err != nil {
 			return fmt.Errorf("failed to parse system role %q while unmarshaling TwoStageL3ClosSubinterfaceLink - %w", rep.System.Role, err)
