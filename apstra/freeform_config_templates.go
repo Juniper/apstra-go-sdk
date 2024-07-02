@@ -21,9 +21,11 @@ type ConfigTemplate struct {
 
 func (o *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id    ObjectId `json:"id"`
-		Label string   `json:"label,omitempty"`
-		Text  string   `json:"text,omitempty"`
+		Id         ObjectId `json:"id"`
+		Label      string   `json:"label,omitempty"`
+		Text       string   `json:"text,omitempty"`
+		TemplateId ObjectId `json:"template_id,omitempty"`
+		Tags       []string `json:"tags"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
@@ -37,13 +39,16 @@ func (o *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 	}
 	o.Data.Label = raw.Label
 	o.Data.Text = raw.Text
-
+	o.Data.TemplateId = raw.TemplateId
+	o.Data.Tags = raw.Tags
 	return err
 }
 
 type ConfigTemplateData struct {
-	Label string `json:"label"`
-	Text  string `json:"text"`
+	Label      string   `json:"label"`
+	Text       string   `json:"text"`
+	Tags       []string `json:"tags"`
+	TemplateId ObjectId `json:"template_id"`
 }
 
 func (o *FreeformClient) CreateConfigTemplate(ctx context.Context, in *ConfigTemplateData) (ObjectId, error) {
@@ -75,6 +80,37 @@ func (o *FreeformClient) GetConfigTemplate(ctx context.Context, id ObjectId) (*C
 	}
 
 	return &response, nil
+}
+
+func (o *FreeformClient) GetConfigTemplateByName(ctx context.Context, name string) (*ConfigTemplate, error) {
+	all, err := o.GetAllConfigTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *ConfigTemplate
+	for _, ps := range all {
+		ps := ps
+		if ps.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple Config Templates in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ps
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no config template in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
 }
 
 func (o *FreeformClient) GetAllConfigTemplates(ctx context.Context) ([]ConfigTemplate, error) {
