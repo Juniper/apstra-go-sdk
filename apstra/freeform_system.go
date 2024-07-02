@@ -49,18 +49,18 @@ type FreeformSystemData struct {
 	Type            SystemType
 	Label           string
 	Hostname        string
-	Tags            []ObjectId
+	Tags            []string
 	DeviceProfileId ObjectId
 }
 
 func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		SystemId        ObjectId   `json:"system_id,omitempty"`
-		SystemType      string     `json:"system_type"`
-		Label           string     `json:"label"`
-		Hostname        string     `json:"hostname,omitempty"`
-		Tags            []ObjectId `json:"tags"`
-		DeviceProfileId ObjectId   `json:"device_profile_id"`
+		SystemId        ObjectId `json:"system_id,omitempty"`
+		SystemType      string   `json:"system_type"`
+		Label           string   `json:"label"`
+		Hostname        string   `json:"hostname,omitempty"`
+		Tags            []string `json:"tags"`
+		DeviceProfileId ObjectId `json:"device_profile_id"`
 	}
 
 	if o.SystemId != nil {
@@ -81,7 +81,7 @@ func (o *FreeformSystemData) UnmarshalJSON(bytes []byte) error {
 		SystemType    systemType `json:"system_type"`
 		Label         string     `json:"label"`
 		Hostname      string     `json:"hostname,omitempty"`
-		Tags          []ObjectId `json:"tags"`
+		Tags          []string   `json:"tags"`
 		DeviceProfile struct {
 			Id ObjectId `json:"id"`
 		} `json:"device_profile"`
@@ -136,6 +136,36 @@ func (o *FreeformClient) GetFreeformSystem(ctx context.Context, systemId ObjectI
 	}
 
 	return &response, nil
+}
+func (o *FreeformClient) GetFreeformSystemByName(ctx context.Context, name string) (*FreeformSystem, error) {
+	all, err := o.GetAllFreeformSystems(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *FreeformSystem
+	for _, ffs := range all {
+		ffs := ffs
+		if ffs.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple systems in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ffs
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no freeform system in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
 }
 
 func (o *FreeformClient) GetAllFreeformSystems(ctx context.Context) ([]FreeformSystem, error) {
