@@ -103,6 +103,24 @@ func (o *TwoStageL3ClosSubinterfaceLink) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
+func (o *TwoStageL3ClosClient) GetSubinterfaceLink(ctx context.Context, id ObjectId) (*TwoStageL3ClosSubinterfaceLink, error) {
+	all, err := o.GetAllSubinterfaceLinks(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, link := range all {
+		if link.Id == id {
+			return &link, nil
+		}
+	}
+
+	return nil, ClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("link %q not found", id),
+	}
+}
+
 func (o *TwoStageL3ClosClient) GetAllSubinterfaceLinks(ctx context.Context) ([]TwoStageL3ClosSubinterfaceLink, error) {
 	var response struct {
 		Links []TwoStageL3ClosSubinterfaceLink `json:"subinterfaces"`

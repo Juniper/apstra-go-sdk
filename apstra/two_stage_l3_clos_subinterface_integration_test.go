@@ -18,6 +18,55 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
 
+	compareSubinterfaces := func(t testing.TB, a, b TwoStageL3ClosSubinterface) {
+		t.Helper()
+		require.Equal(t, a.Ipv4AddrType, b.Ipv4AddrType)
+		require.Equal(t, a.Ipv6AddrType, b.Ipv6AddrType)
+		require.Equal(t, a.Ipv4Addr.String(), b.Ipv4Addr.String())
+		require.Equal(t, a.Ipv6Addr.String(), b.Ipv6Addr.String())
+	}
+
+	compareEndpoints := func(t testing.TB, a, b TwoStageL3ClosSubinterfaceLinkEndpoint) {
+		t.Helper()
+		require.Equal(t, a.InterfaceId, b.InterfaceId)
+		require.Equal(t, a.SubinterfaceId, b.SubinterfaceId)
+		require.Equal(t, a.System.Id, b.System.Id)
+		require.Equal(t, a.System.Label, b.System.Label)
+		require.Equal(t, a.System.Role, b.System.Role)
+		compareSubinterfaces(t, a.Subinterface, b.Subinterface)
+	}
+
+	compareLinks := func(t testing.TB, a, b *TwoStageL3ClosSubinterfaceLink) {
+		t.Helper()
+		require.NotNil(t, a)
+		require.NotNil(t, b)
+		require.EqualValues(t, len(a.Endpoints), 2)
+		require.EqualValues(t, len(b.Endpoints), 2)
+		require.EqualValues(t, a.Id, b.Id)
+		require.EqualValues(t, a.SzId, b.SzId)
+		require.EqualValues(t, a.SzLabel, b.SzLabel)
+
+		if a.VlanId == nil {
+			require.Nil(t, b.VlanId)
+		} else {
+			require.NotNil(t, b.VlanId)
+			require.EqualValues(t, *a.VlanId, *b.VlanId)
+		}
+
+		require.Contains(t, []ObjectId{a.Endpoints[0].SubinterfaceId, a.Endpoints[1].SubinterfaceId}, b.Endpoints[0].SubinterfaceId)
+		require.Contains(t, []ObjectId{a.Endpoints[0].SubinterfaceId, a.Endpoints[1].SubinterfaceId}, b.Endpoints[1].SubinterfaceId)
+		require.Contains(t, []ObjectId{b.Endpoints[0].SubinterfaceId, b.Endpoints[1].SubinterfaceId}, a.Endpoints[0].SubinterfaceId)
+		require.Contains(t, []ObjectId{b.Endpoints[0].SubinterfaceId, b.Endpoints[1].SubinterfaceId}, a.Endpoints[1].SubinterfaceId)
+
+		if a.Endpoints[0].SubinterfaceId == b.Endpoints[0].SubinterfaceId {
+			compareEndpoints(t, a.Endpoints[0], b.Endpoints[0])
+			compareEndpoints(t, a.Endpoints[1], b.Endpoints[1])
+		} else {
+			compareEndpoints(t, a.Endpoints[0], b.Endpoints[1])
+			compareEndpoints(t, a.Endpoints[1], b.Endpoints[0])
+		}
+	}
+
 	for _, client := range clients {
 		// create a blueprint and enable IPv6
 		bp := testBlueprintC(ctx, t, client.client)
@@ -230,5 +279,15 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 
 		// make sure we didn't miss anything or get any extras
 		require.EqualValues(t, len(subinterfaceConfigs), totalEndpoints)
+
+		// test getting links by ID
+		links, err = bp.GetAllSubinterfaceLinks(ctx)
+		require.NoError(t, err)
+
+		for _, link := range links {
+			l, err := bp.GetSubinterfaceLink(ctx, link.Id)
+			require.NoError(t, err)
+			compareLinks(t, &link, l)
+		}
 	}
 }
