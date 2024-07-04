@@ -183,7 +183,7 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	return bpClient
 }
 
-func testBlueprintC(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+func testBlueprintC(ctx context.Context, t testing.TB, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
