@@ -109,7 +109,7 @@ func (o *Client) GetTelemetryServiceRegistryEntry(ctx context.Context, name stri
 }
 
 // CreateTelemetryServiceRegistryEntry creates a telemetry service registry entry
-func (o *Client) CreateTelemetryServiceRegistryEntry(ctx context.Context, in TelemetryServiceRegistryEntry) (string, error) {
+func (o *Client) CreateTelemetryServiceRegistryEntry(ctx context.Context, in *TelemetryServiceRegistryEntry) (string, error) {
 	var response struct {
 		Name string `json:"service_name"`
 	}
@@ -117,7 +117,7 @@ func (o *Client) CreateTelemetryServiceRegistryEntry(ctx context.Context, in Tel
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlTelemetryServiceRegistry),
-		apiInput:    &in,
+		apiInput:    in,
 		apiResponse: &response,
 	})
 	if err != nil {

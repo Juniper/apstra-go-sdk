@@ -87,7 +87,7 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 			Description:       "Test Service",
 		}
 
-		ServiceName, err := client.client.CreateTelemetryServiceRegistryEntry(ctx, entry)
+		ServiceName, err := client.client.CreateTelemetryServiceRegistryEntry(ctx, &entry)
 		require.NoError(t, err)
 
 		log.Println(ServiceName)
