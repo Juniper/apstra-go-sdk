@@ -169,6 +169,24 @@ var (
 		StorageSchemaPathENVIRONMENT,
 		StorageSchemaPathLLDP,
 	)
+
+	_                                  enum = new(InterfaceNumberingIpv4Type)
+	InterfaceNumberingIpv4TypeNone          = InterfaceNumberingIpv4Type{Value: ""}
+	InterfaceNumberingIpv4TypeNumbered      = InterfaceNumberingIpv4Type{Value: "numbered"}
+	InterfaceNumberingIpv4Types             = oenum.New(
+		InterfaceNumberingIpv4TypeNone,
+		InterfaceNumberingIpv4TypeNumbered,
+	)
+
+	_                                   enum = new(InterfaceNumberingIpv6Type)
+	InterfaceNumberingIpv6TypeNone           = InterfaceNumberingIpv6Type{Value: ""}
+	InterfaceNumberingIpv6TypeNumbered       = InterfaceNumberingIpv6Type{Value: "numbered"}
+	InterfaceNumberingIpv6TypeLinkLocal      = InterfaceNumberingIpv6Type{Value: "link_local"}
+	InterfaceNumberingIpv6Types              = oenum.New(
+		InterfaceNumberingIpv6TypeNone,
+		InterfaceNumberingIpv6TypeNumbered,
+		InterfaceNumberingIpv6TypeLinkLocal,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -346,6 +364,36 @@ func (o *StorageSchemaPath) FromString(s string) error {
 	t := StorageSchemaPaths.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse StorageSchemaPath %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type InterfaceNumberingIpv4Type oenum.Member[string]
+
+func (o InterfaceNumberingIpv4Type) String() string {
+	return o.Value
+}
+
+func (o *InterfaceNumberingIpv4Type) FromString(s string) error {
+	t := InterfaceNumberingIpv4Types.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse InterfaceNumberingIpv4Type %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type InterfaceNumberingIpv6Type oenum.Member[string]
+
+func (o InterfaceNumberingIpv6Type) String() string {
+	return o.Value
+}
+
+func (o *InterfaceNumberingIpv6Type) FromString(s string) error {
+	t := InterfaceNumberingIpv6Types.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse InterfaceNumberingIpv6Type %q", s)
 	}
 	o.Value = t.Value
 	return nil
