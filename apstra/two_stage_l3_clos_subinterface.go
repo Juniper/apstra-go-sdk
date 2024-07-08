@@ -111,11 +111,11 @@ func (o *TwoStageL3ClosClient) GetSubinterface(ctx context.Context, id ObjectId)
 	}
 
 	if node.Type != nodeTypeInterface {
-		return nil, fmt.Errorf("node %q exists but has type %q - expected %q", id, nodeTypeInterface, node.Type)
+		return nil, fmt.Errorf("node %q exists but has type %q - expected %q", id, node.Type, nodeTypeInterface)
 	}
 
 	if node.IfType != "subinterface" {
-		return nil, fmt.Errorf("interface node %q has enexpected if_type %q", id, node.IfType)
+		return nil, fmt.Errorf("interface node %q has if_type %q - expected \"subinterface\"", id, node.IfType)
 	}
 
 	result := TwoStageL3ClosSubinterface{
