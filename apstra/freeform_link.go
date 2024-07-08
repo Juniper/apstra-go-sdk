@@ -238,6 +238,37 @@ func (o *FreeformClient) GetLink(ctx context.Context, id ObjectId) (*FreeformLin
 	return &response, nil
 }
 
+func (o *FreeformClient) GetLinkByName(ctx context.Context, name string) (*FreeformLink, error) {
+	all, err := o.GetAllLinks(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *FreeformLink
+	for _, link := range all {
+		link := link
+		if link.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple links in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &link
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no link in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
+}
+
 func (o *FreeformClient) GetAllLinks(ctx context.Context) ([]FreeformLink, error) {
 	var response struct {
 		Items []FreeformLink `json:"items"`
