@@ -9,3 +9,8 @@ type FreeformClient struct {
 func (o *FreeformClient) Id() ObjectId {
 	return o.blueprintId
 }
+
+// Client returns the Client within this freeform client.
+func (o *FreeformClient) Client() *Client {
+	return o.client
+}
