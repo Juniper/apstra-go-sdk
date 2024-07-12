@@ -336,7 +336,7 @@ func (o *FreeformClient) GetAllLinks(ctx context.Context) ([]FreeformLink, error
 	return response.Items, nil
 }
 
-func (o *FreeformClient) UpdateLink(ctx context.Context, id ObjectId, in *FreeformLinkData) error {
+func (o *FreeformClient) UpdateLink(ctx context.Context, id ObjectId, in *FreeformLinkRequest) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfLinkById, o.blueprintId, id),
