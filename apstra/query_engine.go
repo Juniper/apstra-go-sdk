@@ -50,17 +50,17 @@ func (o QEEAttribute) String() string {
 	return fmt.Sprintf("%s=%s", o.Key, o.Value.String())
 }
 
-type QEElement struct {
+type PathQueryElement struct {
 	qeeType    string
 	attributes []QEEAttribute
-	next       *QEElement
+	next       *PathQueryElement
 }
 
-func (o *QEElement) getNext() *QEElement {
+func (o *PathQueryElement) getNext() *PathQueryElement {
 	return o.next
 }
 
-func (o *QEElement) getLast() *QEElement {
+func (o *PathQueryElement) getLast() *PathQueryElement {
 	last := o
 	next := last.getNext()
 	for next != nil {
@@ -70,7 +70,7 @@ func (o *QEElement) getLast() *QEElement {
 	return last
 }
 
-func (o *QEElement) String() string {
+func (o *PathQueryElement) String() string {
 	attrsSB := strings.Builder{}
 
 	if len(o.attributes) > 0 {
@@ -160,7 +160,7 @@ func (o QENone) String() string {
 }
 
 type PathQuery struct {
-	firstElement  *QEElement
+	firstElement  *PathQueryElement
 	client        *Client
 	context       context.Context
 	blueprintId   ObjectId
@@ -211,7 +211,7 @@ func (o *PathQuery) SetClient(client *Client) *PathQuery {
 func (o *PathQuery) String() string {
 	sb := strings.Builder{}
 
-	var next *QEElement
+	var next *PathQueryElement
 	if o.firstElement != nil {
 		sb.WriteString(o.firstElement.String())
 		next = o.firstElement.getNext()
@@ -238,7 +238,7 @@ func (o *PathQuery) Where(where string) *PathQuery {
 }
 
 func (o *PathQuery) addElement(elementType string, attributes []QEEAttribute) *PathQuery {
-	newElement := QEElement{
+	newElement := PathQueryElement{
 		qeeType:    elementType,
 		attributes: attributes,
 	}
