@@ -19,21 +19,21 @@ func TestCRUDFFLink(t *testing.T) {
 		t.Helper()
 
 		require.Equal(t, a.SystemId, b.SystemId)
-		require.Equal(t, a.Interface.IfName, b.Interface.IfName)
-		require.Equal(t, a.Interface.TransformationId, b.Interface.TransformationId)
-		if a.Interface.Ipv4Address != nil && b.Interface.Ipv4Address != nil {
-			require.Equal(t, a.Interface.Ipv4Address.String(), b.Interface.Ipv4Address.String())
+		require.Equal(t, a.Interface.Data.IfName, b.Interface.Data.IfName)
+		require.Equal(t, a.Interface.Data.TransformationId, b.Interface.Data.TransformationId)
+		if a.Interface.Data.Ipv4Address != nil && b.Interface.Data.Ipv4Address != nil {
+			require.Equal(t, a.Interface.Data.Ipv4Address.String(), b.Interface.Data.Ipv4Address.String())
 		} else {
-			require.Nil(t, a.Interface.Ipv4Address)
-			require.Nil(t, b.Interface.Ipv4Address)
+			require.Nil(t, a.Interface.Data.Ipv4Address)
+			require.Nil(t, b.Interface.Data.Ipv4Address)
 		}
-		if a.Interface.Ipv6Address != nil && b.Interface.Ipv6Address != nil {
-			require.Equal(t, a.Interface.Ipv6Address.String(), b.Interface.Ipv6Address.String())
+		if a.Interface.Data.Ipv6Address != nil && b.Interface.Data.Ipv6Address != nil {
+			require.Equal(t, a.Interface.Data.Ipv6Address.String(), b.Interface.Data.Ipv6Address.String())
 		} else {
-			require.Nil(t, a.Interface.Ipv6Address)
-			require.Nil(t, b.Interface.Ipv6Address)
+			require.Nil(t, a.Interface.Data.Ipv6Address)
+			require.Nil(t, b.Interface.Data.Ipv6Address)
 		}
-		compareSlicesAsSets(t, a.Interface.Tags, b.Interface.Tags, "tag mismatch")
+		compareSlicesAsSets(t, a.Interface.Data.Tags, b.Interface.Data.Tags, "tag mismatch")
 	}
 
 	compare := func(t testing.TB, req *FreeformLinkRequest, resp *FreeformLinkData) {
@@ -57,26 +57,32 @@ func TestCRUDFFLink(t *testing.T) {
 
 		req := FreeformLinkRequest{
 			Label: randString(6, "hex"),
-			Tags:  []ObjectId{"a", "b"},
+			Tags:  []string{"a", "b"},
 			Endpoints: [2]FreeformEndpoint{
 				{
 					SystemId: sysIds[0],
-					Interface: FreeformInterfaceData{
-						IfName:           "ge-0/0/0",
-						TransformationId: 1,
-						Ipv4Address:      nil,
-						Ipv6Address:      nil,
-						Tags:             nil,
+					Interface: FreeformInterface{
+						Id: nil,
+						Data: &FreeformInterfaceData{
+							IfName:           "ge-0/0/0",
+							TransformationId: 1,
+							Ipv4Address:      nil,
+							Ipv6Address:      nil,
+							Tags:             nil,
+						},
 					},
 				},
 				{
 					SystemId: sysIds[1],
-					Interface: FreeformInterfaceData{
-						IfName:           "ge-0/0/0",
-						TransformationId: 1,
-						Ipv4Address:      nil,
-						Ipv6Address:      nil,
-						Tags:             nil,
+					Interface: FreeformInterface{
+						Id: nil,
+						Data: &FreeformInterfaceData{
+							IfName:           "ge-0/0/0",
+							TransformationId: 1,
+							Ipv4Address:      nil,
+							Ipv6Address:      nil,
+							Tags:             nil,
+						},
 					},
 				},
 			},
@@ -88,6 +94,22 @@ func TestCRUDFFLink(t *testing.T) {
 
 		// now lets read the link
 		readLink, err := ffc.GetLink(ctx, id)
+		require.NoError(t, err)
+		require.Equal(t, id, readLink.Id)
+		compare(t, &req, readLink.Data)
+
+		// lets see if we can update the link
+		// first put the read link endpoint interface ID's into the req data structure.
+		req.Endpoints[0].Interface.Id = readLink.Data.Endpoints[0].Interface.Id
+		req.Endpoints[1].Interface.Id = readLink.Data.Endpoints[1].Interface.Id
+		// Now change the Label and the tags.
+		req.Label = randString(7, "hex")
+		req.Tags = []string{"a", "b", "c"}
+		// update the link.
+		err = ffc.UpdateLink(ctx, id, &req)
+		require.NoError(t, err)
+		// read the link back.
+		readLink, err = ffc.GetLink(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, readLink.Id)
 		compare(t, &req, readLink.Data)
