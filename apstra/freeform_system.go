@@ -49,18 +49,18 @@ type FreeformSystemData struct {
 	Type            SystemType
 	Label           string
 	Hostname        string
-	Tags            []ObjectId
+	Tags            []string
 	DeviceProfileId ObjectId
 }
 
 func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		SystemId        ObjectId   `json:"system_id,omitempty"`
-		SystemType      string     `json:"system_type"`
-		Label           string     `json:"label"`
-		Hostname        string     `json:"hostname,omitempty"`
-		Tags            []ObjectId `json:"tags"`
-		DeviceProfileId ObjectId   `json:"device_profile_id"`
+		SystemId        ObjectId `json:"system_id,omitempty"`
+		SystemType      string   `json:"system_type"`
+		Label           string   `json:"label"`
+		Hostname        string   `json:"hostname,omitempty"`
+		Tags            []string `json:"tags"`
+		DeviceProfileId ObjectId `json:"device_profile_id"`
 	}
 
 	if o.SystemId != nil {
@@ -81,7 +81,7 @@ func (o *FreeformSystemData) UnmarshalJSON(bytes []byte) error {
 		SystemType    systemType `json:"system_type"`
 		Label         string     `json:"label"`
 		Hostname      string     `json:"hostname,omitempty"`
-		Tags          []ObjectId `json:"tags"`
+		Tags          []string   `json:"tags"`
 		DeviceProfile struct {
 			Id ObjectId `json:"id"`
 		} `json:"device_profile"`
