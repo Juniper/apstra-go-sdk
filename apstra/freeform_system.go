@@ -138,6 +138,37 @@ func (o *FreeformClient) GetSystem(ctx context.Context, systemId ObjectId) (*Fre
 	return &response, nil
 }
 
+func (o *FreeformClient) GetSystemByName(ctx context.Context, name string) (*FreeformSystem, error) {
+	all, err := o.GetAllSystems(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *FreeformSystem
+	for _, ffs := range all {
+		ffs := ffs
+		if ffs.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple systems in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ffs
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no freeform system in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
+}
+
 func (o *FreeformClient) GetAllSystems(ctx context.Context) ([]FreeformSystem, error) {
 	var response struct {
 		Items []FreeformSystem `json:"items"`
