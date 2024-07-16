@@ -176,8 +176,8 @@ var (
 	FFLinkTypes              = oenum.New(
 		FFLinkTypeEthernet,
 		FFLinkTypeAggregate,
-  )
-  
+	)
+
 	_                                  enum = new(InterfaceNumberingIpv4Type)
 	InterfaceNumberingIpv4TypeNone          = InterfaceNumberingIpv4Type{Value: ""}
 	InterfaceNumberingIpv4TypeNumbered      = InterfaceNumberingIpv4Type{Value: "numbered"}
@@ -387,11 +387,11 @@ func (o *FFLinkType) FromString(s string) error {
 	t := FFLinkTypes.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse FFLinkType %q", s)
-  }
+	}
 	o.Value = t.Value
 	return nil
 }
-    
+
 type InterfaceNumberingIpv4Type oenum.Member[string]
 
 func (o InterfaceNumberingIpv4Type) String() string {
