@@ -61,14 +61,14 @@ func (o *TelemetryServiceRegistryEntry) MarshalJSON() ([]byte, error) {
 		StorageSchemaPath string          `json:"storage_schema_path"`
 		Builtin           bool            `json:"builtin"`
 		Description       string          `json:"description"`
-		Version           string          `json:"version"`
+		//		Version           string          `json:"version"` Does not look like the GUI sends this
 	}
 
 	raw.ServiceName = o.ServiceName
 	raw.StorageSchemaPath = o.StorageSchemaPath.String()
 	raw.Builtin = o.Builtin
 	raw.Description = o.Description
-	raw.Version = o.Version
+	//	raw.Version = o.Version Does not look like the GUI sends this
 	raw.ApplicationSchema = o.ApplicationSchema
 
 	return json.Marshal(raw)
@@ -109,7 +109,7 @@ func (o *Client) GetTelemetryServiceRegistryEntry(ctx context.Context, name stri
 }
 
 // CreateTelemetryServiceRegistryEntry creates a telemetry service registry entry
-func (o *Client) CreateTelemetryServiceRegistryEntry(ctx context.Context, in TelemetryServiceRegistryEntry) (string, error) {
+func (o *Client) CreateTelemetryServiceRegistryEntry(ctx context.Context, in *TelemetryServiceRegistryEntry) (string, error) {
 	var response struct {
 		Name string `json:"service_name"`
 	}
@@ -117,7 +117,7 @@ func (o *Client) CreateTelemetryServiceRegistryEntry(ctx context.Context, in Tel
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlTelemetryServiceRegistry),
-		apiInput:    &in,
+		apiInput:    in,
 		apiResponse: &response,
 	})
 	if err != nil {

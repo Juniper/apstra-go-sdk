@@ -191,26 +191,21 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	return bpClient
 }
 
-func testBlueprintC(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+func testBlueprintC(ctx context.Context, t testing.TB, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
-
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
 func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {

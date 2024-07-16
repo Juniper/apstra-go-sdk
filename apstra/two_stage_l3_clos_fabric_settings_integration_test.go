@@ -246,13 +246,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 
 	for clientName, client := range clients {
 		client := client
-		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintC(ctx, t, client.client)
 
 		for tName, tCase := range testCases {
 			tName, tCase := tName, tCase
@@ -324,13 +318,7 @@ func TestFabricSettingsRoutesMaxDefaultVsZero(t *testing.T) {
 
 	for clientName, client := range clients {
 		client := client
-		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintC(ctx, t, client.client)
 
 		for _, tCase := range testCases {
 			tCase := tCase
@@ -367,13 +355,7 @@ func TestSetGetFabricSettingsV6(t *testing.T) {
 	for clientName, client := range clients {
 		client := client
 
-		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
-		defer func() {
-			err = bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintC(ctx, t, client.client)
 
 		t.Run("enable_and_check_ipv6", func(t *testing.T) {
 			fsSet := &FabricSettings{

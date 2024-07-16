@@ -56,16 +56,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 	vnCount := 2
 
 	for clientName, client := range clients {
-		bpClient, bpDel := testBlueprintC(ctx, t, client.client)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer func() {
-			err := bpDel(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintC(ctx, t, client.client)
 
 		leafIds, err := getSystemIdsByRole(ctx, bpClient, "leaf")
 		if err != nil {
