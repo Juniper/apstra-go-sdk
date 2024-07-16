@@ -42,6 +42,14 @@ func randString(n int, style string) string {
 	return string(b)
 }
 
+func randStrings(count, strLen int) []string {
+	result := make([]string, count)
+	for i := range result {
+		result[i] = randString(strLen, "hex")
+	}
+	return result
+}
+
 func randJwt() string {
 	return randString(36, "b64") + "." +
 		randString(178, "b64") + "." +
