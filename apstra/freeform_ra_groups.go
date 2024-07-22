@@ -25,7 +25,7 @@ func (o *FreeformRaGroup) UnmarshalJSON(bytes []byte) error {
 		ParentId *ObjectId       `json:"parent_id"`
 		Label    string          `json:"label"`
 		Tags     []string        `json:"tags"`
-		Data     json.RawMessage `json:"data"`
+		Data     json.RawMessage `json:"data,omitempty"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
