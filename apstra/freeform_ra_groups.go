@@ -100,6 +100,37 @@ func (o *FreeformClient) GetRaGroup(ctx context.Context, id ObjectId) (*Freeform
 	return &response, nil
 }
 
+func (o *FreeformClient) GetRaGroupByName(ctx context.Context, name string) (*FreeformRaGroup, error) {
+	all, err := o.GetAllRaGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *FreeformRaGroup
+	for _, ffrag := range all {
+		ffrag := ffrag
+		if ffrag.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple resource allocation groups in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ffrag
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no freeform resource allocation group  in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
+}
+
 func (o *FreeformClient) UpdateRaGroup(ctx context.Context, id ObjectId, in *FreeformRaGroupData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
