@@ -24,7 +24,7 @@ func (o *FreeformRaGroup) UnmarshalJSON(bytes []byte) error {
 		Id       ObjectId        `json:"id"`
 		ParentId *ObjectId       `json:"parent_id"`
 		Label    string          `json:"label"`
-		Tags     []ObjectId      `json:"tags"`
+		Tags     []string        `json:"tags"`
 		Data     json.RawMessage `json:"data"`
 	}
 	err := json.Unmarshal(bytes, &raw)
@@ -48,7 +48,7 @@ func (o *FreeformRaGroup) UnmarshalJSON(bytes []byte) error {
 type FreeformRaGroupData struct {
 	ParentId *ObjectId       `json:"parent_id"`
 	Label    string          `json:"label"`
-	Tags     []ObjectId      `json:"tags"`
+	Tags     []string        `json:"tags"`
 	Data     json.RawMessage `json:"data"`
 }
 
