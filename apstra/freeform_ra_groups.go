@@ -21,11 +21,12 @@ type FreeformRaGroup struct {
 
 func (o *FreeformRaGroup) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id       ObjectId        `json:"id"`
-		ParentId *ObjectId       `json:"parent_id"`
-		Label    string          `json:"label"`
-		Tags     []string        `json:"tags"`
-		Data     json.RawMessage `json:"data,omitempty"`
+		Id          ObjectId        `json:"id"`
+		ParentId    *ObjectId       `json:"parent_id"`
+		Label       string          `json:"label"`
+		Tags        []string        `json:"tags"`
+		Data        json.RawMessage `json:"data"`
+		GeneratorId *ObjectId       `json:"generator_id"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
@@ -41,15 +42,17 @@ func (o *FreeformRaGroup) UnmarshalJSON(bytes []byte) error {
 	o.Data.Label = raw.Label
 	o.Data.Tags = raw.Tags
 	o.Data.Data = raw.Data
+	o.Data.GeneratorId = raw.GeneratorId
 
 	return err
 }
 
 type FreeformRaGroupData struct {
-	ParentId *ObjectId       `json:"parent_id"`
-	Label    string          `json:"label"`
-	Tags     []string        `json:"tags"`
-	Data     json.RawMessage `json:"data"`
+	ParentId    *ObjectId       `json:"parent_id"`
+	Label       string          `json:"label"`
+	Tags        []string        `json:"tags"`
+	Data        json.RawMessage `json:"data"`
+	GeneratorId *ObjectId       `json:"generator_id"`
 }
 
 func (o *FreeformClient) CreateRaGroup(ctx context.Context, in *FreeformRaGroupData) (ObjectId, error) {
