@@ -72,10 +72,10 @@ func (o FreeformRaResourceData) MarshalJSON() ([]byte, error) {
 		ResourceType    string    `json:"resource_type"`
 		Label           string    `json:"label"`
 		Value           *string   `json:"value"`
-		AllocatedFrom   *ObjectId `json:"allocated_from"`
+		AllocatedFrom   *ObjectId `json:"allocated_from,omitempty"`
 		GroupId         ObjectId  `json:"group_id"`
 		SubnetPrefixLen *int      `json:"subnet_prefix_len"`
-		GeneratorId     *ObjectId `json:"generator_id"`
+		GeneratorId     *ObjectId `json:"generator_id,omitempty"`
 	}
 
 	raw.ResourceType = o.ResourceType.String()
