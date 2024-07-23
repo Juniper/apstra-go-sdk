@@ -27,11 +27,11 @@ func (o *FreeformRaResource) UnmarshalJSON(bytes []byte) error {
 		Id              ObjectId  `json:"id"`
 		ResourceType    string    `json:"resource_type"`
 		Label           string    `json:"label"`
-		Value           *string   `json:"value"`
-		AllocatedFrom   *ObjectId `json:"allocated_from"`
+		Value           *string   `json:"value,omitempty"`
+		AllocatedFrom   *ObjectId `json:"allocated_from,omitempty"`
 		GroupId         ObjectId  `json:"group_id"`
-		SubnetPrefixLen *int      `json:"subnet_prefix_len"`
-		GeneratorId     *ObjectId `json:"generator_id"`
+		SubnetPrefixLen *int      `json:"subnet_prefix_len,omitempty"`
+		GeneratorId     *ObjectId `json:"generator_id,omitempty"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
