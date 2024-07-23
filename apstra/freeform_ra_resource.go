@@ -231,6 +231,36 @@ func (o *FreeformClient) GetRaResource(ctx context.Context, id ObjectId) (*Freef
 
 	return &response, nil
 }
+func (o *FreeformClient) GetRaResourceByName(ctx context.Context, name string) (*FreeformRaResource, error) {
+	all, err := o.GetAllRaResources(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *FreeformRaResource
+	for _, ffresource := range all {
+		ffresource := ffresource
+		if ffresource.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple resource allocation groups in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ffresource
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no freeform resource allocation group  in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
+}
 
 func (o *FreeformClient) UpdateRaResource(ctx context.Context, id ObjectId, in *FreeformRaResourceData) error {
 	err := in.validate()
