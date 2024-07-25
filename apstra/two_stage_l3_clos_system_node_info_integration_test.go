@@ -135,46 +135,6 @@ func TestSetSystemAsn(t *testing.T) {
 	}
 }
 
-func randomIpv4() net.IP {
-	return []byte{
-		byte(rand.Intn(222) + 1),
-		byte(rand.Intn(256)),
-		byte(rand.Intn(256)),
-		byte(rand.Intn(256)),
-	}
-}
-
-func randomIpv6() net.IP {
-	return []byte{
-		0x20, 0x01,
-		0x0d, 0xb8,
-		byte(rand.Intn(256)), byte(rand.Intn(256)),
-		byte(rand.Intn(256)), byte(rand.Intn(256)),
-		byte(rand.Intn(256)), byte(rand.Intn(256)),
-		byte(rand.Intn(256)), byte(rand.Intn(256)),
-		byte(rand.Intn(256)), byte(rand.Intn(256)),
-		byte(rand.Intn(256)), byte(rand.Intn(256)),
-	}
-}
-
-func randomSlash31(t testing.TB) net.IPNet {
-	t.Helper()
-
-	ip := randomIpv4()
-	_, ipNet, err := net.ParseCIDR(ip.String() + "/31")
-	require.NoError(t, err)
-	return *ipNet
-}
-
-func randomSlash127(t testing.TB) net.IPNet {
-	t.Helper()
-
-	ip := randomIpv6()
-	_, ipNet, err := net.ParseCIDR(ip.String() + "/127")
-	require.NoError(t, err)
-	return *ipNet
-}
-
 func TestSetSystemLoopbackIpv4v6(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
