@@ -803,39 +803,37 @@ func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, systemC
 func testAsnPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 	t.Helper()
 
-	asnRangeCount := rand.Intn(5) + 2 // random number of ASN ranges to add to new pool
-	asnBeginEnds, err := getRandInts(1, 100000000, asnRangeCount*2)
-	if err != nil {
-		t.Fatal(err)
-	}
+	asnBeginEnds, err := getRandInts(1, 100000000, (rand.Intn(5)+2)*2)
+	require.NoError(t, err)
 	sort.Ints(asnBeginEnds) // sort so that the ASN ranges will be ([0]...[1], [2]...[3], etc.)
-	asnRanges := make([]IntfIntRange, asnRangeCount)
-	for i := 0; i < asnRangeCount; i++ {
+
+	asnRanges := make([]IntfIntRange, len(asnBeginEnds)/2)
+	for i := range asnRanges {
 		asnRanges[i] = IntRangeRequest{
 			uint32(asnBeginEnds[2*i]),
 			uint32(asnBeginEnds[(2*i)+1]),
 		}
 	}
+
 	id, err := client.createAsnPool(ctx, &AsnPoolRequest{
 		DisplayName: "test-" + randString(6, "hex"),
 		Ranges:      asnRanges,
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, client.DeleteAsnPool(ctx, id)) })
+
 	return id
 }
 
 func testIntPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 	t.Helper()
 
-	intRangeCount := rand.Intn(5) + 2 // random number of Int ranges to add to new pool
-	intBeginEnds, err := getRandInts(1, 100000000, intRangeCount*2)
-	if err != nil {
-		t.Fatal(err)
-	}
+	intBeginEnds, err := getRandInts(1, 100000000, (rand.Intn(5)+2)*2)
+	require.NoError(t, err)
 	sort.Ints(intBeginEnds) // sort so that the Int ranges will be ([0]...[1], [2]...[3], etc.)
-	intRanges := make([]IntfIntRange, intRangeCount)
-	for i := 0; i < intRangeCount; i++ {
+
+	intRanges := make([]IntfIntRange, len(intBeginEnds)/2)
+	for i := range intRanges {
 		intRanges[i] = IntRangeRequest{
 			uint32(intBeginEnds[2*i]),
 			uint32(intBeginEnds[(2*i)+1]),
@@ -847,31 +845,32 @@ func testIntPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, client.DeleteIntegerPool(ctx, id)) })
+
 	return id
 }
 
 func testVniPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 	t.Helper()
 
-	vniRangeCount := rand.Intn(5) + 2 // random number of Int ranges to add to new pool
-	vniBeginEnds, err := getRandInts(1, 400000, vniRangeCount*2)
-	if err != nil {
-		t.Fatal(err)
-	}
+	vniBeginEnds, err := getRandInts(1, 400000, (rand.Intn(5)+2)*2)
+	require.NoError(t, err)
 	sort.Ints(vniBeginEnds) // sort so that the Int ranges will be ([0]...[1], [2]...[3], etc.)
-	vniRanges := make([]IntfIntRange, vniRangeCount)
-	for i := 0; i < vniRangeCount; i++ {
+
+	vniRanges := make([]IntfIntRange, len(vniBeginEnds)/2)
+	for i := range vniRanges {
 		vniRanges[i] = IntRangeRequest{
 			uint32(vniBeginEnds[2*i]),
 			uint32(vniBeginEnds[(2*i)+1]),
 		}
 	}
+
 	id, err := client.CreateVniPool(ctx, &VniPoolRequest{
 		DisplayName: "test-" + randString(6, "hex"),
 		Ranges:      vniRanges,
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, client.DeleteVniPool(ctx, id)) })
+
 	return id
 }
 
@@ -883,12 +882,14 @@ func testIpv4Pool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 		randNet := randomSlash31(t)
 		subnets[i] = NewIpSubnet{Network: randNet.String()}
 	}
+
 	id, err := client.CreateIp4Pool(ctx, &NewIpPoolRequest{
 		DisplayName: "test-" + randString(6, "hex"),
 		Subnets:     subnets,
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, client.DeleteIp4Pool(ctx, id)) })
+
 	return id
 }
 
@@ -900,11 +901,13 @@ func testIpv6Pool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 		randNet := randomSlash127(t)
 		subnets[i] = NewIpSubnet{Network: randNet.String()}
 	}
+
 	id, err := client.CreateIp6Pool(ctx, &NewIpPoolRequest{
 		DisplayName: "test-" + randString(6, "hex"),
 		Subnets:     subnets,
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, client.DeleteIp6Pool(ctx, id)) })
+
 	return id
 }

@@ -55,7 +55,6 @@ func (o *FreeformClient) CreateAllocGroup(ctx context.Context, in *FreeformAlloc
 }
 
 func (o *FreeformClient) createAllocGroup(ctx context.Context, in *FreeformAllocGroupData, groupType ResourcePoolType) (ObjectId, error) {
-
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   fmt.Sprintf(apiUrlFfAllocGroupByType, o.blueprintId, groupType),
