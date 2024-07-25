@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -54,6 +55,46 @@ func randJwt() string {
 	return randString(36, "b64") + "." +
 		randString(178, "b64") + "." +
 		randString(86, "b64")
+}
+
+func randomIpv4() net.IP {
+	return []byte{
+		byte(rand.Intn(222) + 1),
+		byte(rand.Intn(256)),
+		byte(rand.Intn(256)),
+		byte(rand.Intn(256)),
+	}
+}
+
+func randomIpv6() net.IP {
+	return []byte{
+		0x20, 0x01,
+		0x0d, 0xb8,
+		byte(rand.Intn(256)), byte(rand.Intn(256)),
+		byte(rand.Intn(256)), byte(rand.Intn(256)),
+		byte(rand.Intn(256)), byte(rand.Intn(256)),
+		byte(rand.Intn(256)), byte(rand.Intn(256)),
+		byte(rand.Intn(256)), byte(rand.Intn(256)),
+		byte(rand.Intn(256)), byte(rand.Intn(256)),
+	}
+}
+
+func randomSlash31(t testing.TB) net.IPNet {
+	t.Helper()
+
+	ip := randomIpv4()
+	_, ipNet, err := net.ParseCIDR(ip.String() + "/31")
+	require.NoError(t, err)
+	return *ipNet
+}
+
+func randomSlash127(t testing.TB) net.IPNet {
+	t.Helper()
+
+	ip := randomIpv6()
+	_, ipNet, err := net.ParseCIDR(ip.String() + "/127")
+	require.NoError(t, err)
+	return *ipNet
 }
 
 func TestOurIpForPeer(t *testing.T) {
@@ -757,4 +798,116 @@ func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, systemC
 	}
 
 	return c, systemIds
+}
+
+func testAsnPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
+	t.Helper()
+
+	asnBeginEnds, err := getRandInts(1, 100000000, (rand.Intn(5)+2)*2)
+	require.NoError(t, err)
+	sort.Ints(asnBeginEnds) // sort so that the ASN ranges will be ([0]...[1], [2]...[3], etc.)
+
+	asnRanges := make([]IntfIntRange, len(asnBeginEnds)/2)
+	for i := range asnRanges {
+		asnRanges[i] = IntRangeRequest{
+			uint32(asnBeginEnds[2*i]),
+			uint32(asnBeginEnds[(2*i)+1]),
+		}
+	}
+
+	id, err := client.createAsnPool(ctx, &AsnPoolRequest{
+		DisplayName: "test-" + randString(6, "hex"),
+		Ranges:      asnRanges,
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteAsnPool(ctx, id)) })
+
+	return id
+}
+
+func testIntPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
+	t.Helper()
+
+	intBeginEnds, err := getRandInts(1, 100000000, (rand.Intn(5)+2)*2)
+	require.NoError(t, err)
+	sort.Ints(intBeginEnds) // sort so that the Int ranges will be ([0]...[1], [2]...[3], etc.)
+
+	intRanges := make([]IntfIntRange, len(intBeginEnds)/2)
+	for i := range intRanges {
+		intRanges[i] = IntRangeRequest{
+			uint32(intBeginEnds[2*i]),
+			uint32(intBeginEnds[(2*i)+1]),
+		}
+	}
+	id, err := client.CreateIntegerPool(ctx, &IntPoolRequest{
+		DisplayName: "test-" + randString(6, "hex"),
+		Ranges:      intRanges,
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteIntegerPool(ctx, id)) })
+
+	return id
+}
+
+func testVniPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
+	t.Helper()
+
+	vniBeginEnds, err := getRandInts(1, 400000, (rand.Intn(5)+2)*2)
+	require.NoError(t, err)
+	sort.Ints(vniBeginEnds) // sort so that the Int ranges will be ([0]...[1], [2]...[3], etc.)
+
+	vniRanges := make([]IntfIntRange, len(vniBeginEnds)/2)
+	for i := range vniRanges {
+		vniRanges[i] = IntRangeRequest{
+			uint32(vniBeginEnds[2*i]),
+			uint32(vniBeginEnds[(2*i)+1]),
+		}
+	}
+
+	id, err := client.CreateVniPool(ctx, &VniPoolRequest{
+		DisplayName: "test-" + randString(6, "hex"),
+		Ranges:      vniRanges,
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteVniPool(ctx, id)) })
+
+	return id
+}
+
+func testIpv4Pool(ctx context.Context, t testing.TB, client *Client) ObjectId {
+	t.Helper()
+
+	subnets := make([]NewIpSubnet, rand.Intn(5)+2)
+	for i := range subnets {
+		randNet := randomSlash31(t)
+		subnets[i] = NewIpSubnet{Network: randNet.String()}
+	}
+
+	id, err := client.CreateIp4Pool(ctx, &NewIpPoolRequest{
+		DisplayName: "test-" + randString(6, "hex"),
+		Subnets:     subnets,
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteIp4Pool(ctx, id)) })
+
+	return id
+}
+
+func testIpv6Pool(ctx context.Context, t testing.TB, client *Client) ObjectId {
+	t.Helper()
+
+	subnets := make([]NewIpSubnet, rand.Intn(5)+2)
+	for i := range subnets {
+		randNet := randomSlash127(t)
+		subnets[i] = NewIpSubnet{Network: randNet.String()}
+	}
+
+	id, err := client.CreateIp6Pool(ctx, &NewIpPoolRequest{
+		DisplayName: "test-" + randString(6, "hex"),
+		Subnets:     subnets,
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteIp6Pool(ctx, id)) })
+
+	return id
 }

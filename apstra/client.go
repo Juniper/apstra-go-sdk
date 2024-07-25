@@ -38,6 +38,7 @@ const (
 	ErrTimeout
 	ErrAgentProfilePlatformRequired
 	ErrIbaCurrentMountConflictsWithExistingMount
+	ErrInvalidId
 
 	clientPollingIntervalMs = 1000
 
@@ -226,7 +227,6 @@ func (o *Client) CreateFreeformBlueprint(ctx context.Context, label string) (Obj
 		apiInput:    &request,
 		apiResponse: &response,
 	})
-
 	if err != nil {
 		return response.Id, convertTtaeToAceWherePossible(err)
 	}

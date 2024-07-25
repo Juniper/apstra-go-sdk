@@ -195,6 +195,22 @@ var (
 		InterfaceNumberingIpv6TypeNumbered,
 		InterfaceNumberingIpv6TypeLinkLocal,
 	)
+
+	_                    enum = new(ResourcePoolType)
+	ResourcePoolTypeAsn       = ResourcePoolType{Value: "asn"}
+	ResourcePoolTypeInt       = ResourcePoolType{Value: "integer"}
+	ResourcePoolTypeIpv4      = ResourcePoolType{Value: "ip"}
+	ResourcePoolTypeIpv6      = ResourcePoolType{Value: "ipv6"}
+	ResourcePoolTypeVlan      = ResourcePoolType{Value: "vlan"}
+	ResourcePoolTypeVni       = ResourcePoolType{Value: "vni"}
+	ResourcePoolTypes         = oenum.New(
+		ResourcePoolTypeAsn,
+		ResourcePoolTypeInt,
+		ResourcePoolTypeIpv4,
+		ResourcePoolTypeIpv6,
+		ResourcePoolTypeVlan,
+		ResourcePoolTypeVni,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -417,6 +433,21 @@ func (o *InterfaceNumberingIpv6Type) FromString(s string) error {
 	t := InterfaceNumberingIpv6Types.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse InterfaceNumberingIpv6Type %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type ResourcePoolType oenum.Member[string]
+
+func (o ResourcePoolType) String() string {
+	return o.Value
+}
+
+func (o *ResourcePoolType) FromString(s string) error {
+	t := ResourcePoolTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse ResourcePoolType %q", s)
 	}
 	o.Value = t.Value
 	return nil
