@@ -6,6 +6,7 @@ package apstra
 import (
 	"context"
 	"net"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -68,7 +69,8 @@ func TestCRUDRaResource(t *testing.T) {
 		cfg := FreeformRaResourceData{
 			Label:        randString(6, "hex"),
 			GroupId:      groupId,
-			ResourceType: FFResourceTypeInt,
+			ResourceType: FFResourceTypeAsn,
+			Value:        toPtr(strconv.Itoa(65535)),
 		}
 
 		id, err := ffc.CreateRaResource(ctx, &cfg)

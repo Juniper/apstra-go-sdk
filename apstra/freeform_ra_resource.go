@@ -72,10 +72,10 @@ func (o FreeformRaResourceData) MarshalJSON() ([]byte, error) {
 		ResourceType    string    `json:"resource_type"`
 		Label           string    `json:"label"`
 		Value           *string   `json:"value"`
-		AllocatedFrom   *ObjectId `json:"allocated_from"`
+		AllocatedFrom   *ObjectId `json:"allocated_from,omitempty"`
 		GroupId         ObjectId  `json:"group_id"`
 		SubnetPrefixLen *int      `json:"subnet_prefix_len"`
-		GeneratorId     *ObjectId `json:"generator_id"`
+		GeneratorId     *ObjectId `json:"generator_id,omitempty"`
 	}
 
 	raw.ResourceType = o.ResourceType.String()
@@ -230,6 +230,36 @@ func (o *FreeformClient) GetRaResource(ctx context.Context, id ObjectId) (*Freef
 	}
 
 	return &response, nil
+}
+func (o *FreeformClient) GetRaResourceByName(ctx context.Context, name string) (*FreeformRaResource, error) {
+	all, err := o.GetAllRaResources(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *FreeformRaResource
+	for _, ffresource := range all {
+		ffresource := ffresource
+		if ffresource.Data.Label == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple resource allocation groups in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ffresource
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no freeform resource allocation group  in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
 }
 
 func (o *FreeformClient) UpdateRaResource(ctx context.Context, id ObjectId, in *FreeformRaResourceData) error {

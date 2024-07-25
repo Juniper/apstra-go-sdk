@@ -61,7 +61,7 @@ func TestCRUDRaGroups(t *testing.T) {
 		require.NoError(t, err)
 		cfg = FreeformRaGroupData{
 			Label: randString(6, "hex"),
-			Tags:  []ObjectId{"tagA", "tagB"},
+			Tags:  []string{"tagA", "tagB"},
 			Data:  data,
 		}
 
