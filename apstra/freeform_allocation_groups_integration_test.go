@@ -10,25 +10,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func compareFfAllocGroupData(t *testing.T, a, b *FreeformAllocGroupData) {
+	t.Helper()
+
+	require.NotNil(t, a)
+	require.NotNil(t, b)
+	require.Equal(t, a.Name, b.Name)
+	require.Equal(t, a.Type, b.Type)
+	if a.PoolIds != nil && b.PoolIds != nil {
+		compareSlicesAsSets(t, a.PoolIds, b.PoolIds, "pool IDs don't match")
+	} else {
+		require.Nil(t, a.PoolIds)
+		require.Nil(t, b.PoolIds)
+	}
+}
+
 func TestCRUDAsnAllocGroup(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
-
-	compare := func(t *testing.T, a, b *FreeformAllocGroupData) {
-		t.Helper()
-
-		require.NotNil(t, a)
-		require.NotNil(t, b)
-		require.Equal(t, a.Name, b.Name)
-		require.Equal(t, a.Type, b.Type)
-		if a.PoolIds != nil && b.PoolIds != nil {
-			compareSlicesAsSets(t, a.PoolIds, b.PoolIds, "pool Ids dont match")
-		} else {
-			require.Nil(t, a.PoolIds)
-			require.Nil(t, b.PoolIds)
-		}
-	}
 
 	for _, client := range clients {
 		ffc := testFFBlueprintA(ctx, t, client.client)
@@ -47,9 +47,8 @@ func TestCRUDAsnAllocGroup(t *testing.T) {
 		allocGroup, err := ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
-		// dont change the name, as API issues make this impossible... lets just clear the poolIds and see
 		cfg.PoolIds = []ObjectId{
 			testAsnPool(ctx, t, ffc.client),
 			testAsnPool(ctx, t, ffc.client),
@@ -61,7 +60,7 @@ func TestCRUDAsnAllocGroup(t *testing.T) {
 		allocGroup, err = ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
 		err = ffc.DeleteAllocGroup(ctx, id)
 		require.NoError(t, err)
@@ -79,25 +78,11 @@ func TestCRUDAsnAllocGroup(t *testing.T) {
 		require.Equal(t, ErrNotfound, ace.Type())
 	}
 }
+
 func TestCRUDIntAllocGroup(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
-
-	compare := func(t *testing.T, a, b *FreeformAllocGroupData) {
-		t.Helper()
-
-		require.NotNil(t, a)
-		require.NotNil(t, b)
-		require.Equal(t, a.Name, b.Name)
-		require.Equal(t, a.Type, b.Type)
-		if a.PoolIds != nil && b.PoolIds != nil {
-			compareSlicesAsSets(t, a.PoolIds, b.PoolIds, "pool Ids dont match")
-		} else {
-			require.Nil(t, a.PoolIds)
-			require.Nil(t, b.PoolIds)
-		}
-	}
 
 	for _, client := range clients {
 		ffc := testFFBlueprintA(ctx, t, client.client)
@@ -116,9 +101,8 @@ func TestCRUDIntAllocGroup(t *testing.T) {
 		allocGroup, err := ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
-		// dont change the name, as API issues make this impossible... lets just clear the poolIds and see
 		cfg.PoolIds = []ObjectId{
 			testIntPool(ctx, t, ffc.client),
 			testIntPool(ctx, t, ffc.client),
@@ -130,7 +114,7 @@ func TestCRUDIntAllocGroup(t *testing.T) {
 		allocGroup, err = ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
 		err = ffc.DeleteAllocGroup(ctx, id)
 		require.NoError(t, err)
@@ -148,25 +132,11 @@ func TestCRUDIntAllocGroup(t *testing.T) {
 		require.Equal(t, ErrNotfound, ace.Type())
 	}
 }
+
 func TestCRUDVniAllocGroup(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
-
-	compare := func(t *testing.T, a, b *FreeformAllocGroupData) {
-		t.Helper()
-
-		require.NotNil(t, a)
-		require.NotNil(t, b)
-		require.Equal(t, a.Name, b.Name)
-		require.Equal(t, a.Type, b.Type)
-		if a.PoolIds != nil && b.PoolIds != nil {
-			compareSlicesAsSets(t, a.PoolIds, b.PoolIds, "pool Ids dont match")
-		} else {
-			require.Nil(t, a.PoolIds)
-			require.Nil(t, b.PoolIds)
-		}
-	}
 
 	for _, client := range clients {
 		ffc := testFFBlueprintA(ctx, t, client.client)
@@ -185,9 +155,8 @@ func TestCRUDVniAllocGroup(t *testing.T) {
 		allocGroup, err := ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
-		// dont change the name, as API issues make this impossible... lets just clear the poolIds and see
 		cfg.PoolIds = []ObjectId{
 			testVniPool(ctx, t, ffc.client),
 			testVniPool(ctx, t, ffc.client),
@@ -199,7 +168,7 @@ func TestCRUDVniAllocGroup(t *testing.T) {
 		allocGroup, err = ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
 		err = ffc.DeleteAllocGroup(ctx, id)
 		require.NoError(t, err)
@@ -217,25 +186,11 @@ func TestCRUDVniAllocGroup(t *testing.T) {
 		require.Equal(t, ErrNotfound, ace.Type())
 	}
 }
+
 func TestCRUDIpv4AllocGroup(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
-
-	compare := func(t *testing.T, a, b *FreeformAllocGroupData) {
-		t.Helper()
-
-		require.NotNil(t, a)
-		require.NotNil(t, b)
-		require.Equal(t, a.Name, b.Name)
-		require.Equal(t, a.Type, b.Type)
-		if a.PoolIds != nil && b.PoolIds != nil {
-			compareSlicesAsSets(t, a.PoolIds, b.PoolIds, "pool Ids dont match")
-		} else {
-			require.Nil(t, a.PoolIds)
-			require.Nil(t, b.PoolIds)
-		}
-	}
 
 	for _, client := range clients {
 		ffc := testFFBlueprintA(ctx, t, client.client)
@@ -254,9 +209,8 @@ func TestCRUDIpv4AllocGroup(t *testing.T) {
 		allocGroup, err := ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
-		// dont change the name, as API issues make this impossible... lets just clear the poolIds and see
 		cfg.PoolIds = []ObjectId{
 			testIpv4Pool(ctx, t, ffc.client),
 			testIpv4Pool(ctx, t, ffc.client),
@@ -268,7 +222,7 @@ func TestCRUDIpv4AllocGroup(t *testing.T) {
 		allocGroup, err = ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
 		err = ffc.DeleteAllocGroup(ctx, id)
 		require.NoError(t, err)
@@ -286,25 +240,11 @@ func TestCRUDIpv4AllocGroup(t *testing.T) {
 		require.Equal(t, ErrNotfound, ace.Type())
 	}
 }
+
 func TestCRUDIpv6AllocGroup(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
-
-	compare := func(t *testing.T, a, b *FreeformAllocGroupData) {
-		t.Helper()
-
-		require.NotNil(t, a)
-		require.NotNil(t, b)
-		require.Equal(t, a.Name, b.Name)
-		require.Equal(t, a.Type, b.Type)
-		if a.PoolIds != nil && b.PoolIds != nil {
-			compareSlicesAsSets(t, a.PoolIds, b.PoolIds, "pool Ids dont match")
-		} else {
-			require.Nil(t, a.PoolIds)
-			require.Nil(t, b.PoolIds)
-		}
-	}
 
 	for _, client := range clients {
 		ffc := testFFBlueprintA(ctx, t, client.client)
@@ -323,9 +263,8 @@ func TestCRUDIpv6AllocGroup(t *testing.T) {
 		allocGroup, err := ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
-		// dont change the name, as API issues make this impossible... lets just clear the poolIds and see
 		cfg.PoolIds = []ObjectId{
 			testIpv6Pool(ctx, t, ffc.client),
 			testIpv6Pool(ctx, t, ffc.client),
@@ -337,7 +276,7 @@ func TestCRUDIpv6AllocGroup(t *testing.T) {
 		allocGroup, err = ffc.GetAllocGroup(ctx, id)
 		require.NoError(t, err)
 		require.Equal(t, id, allocGroup.Id)
-		compare(t, &cfg, allocGroup.Data)
+		compareFfAllocGroupData(t, &cfg, allocGroup.Data)
 
 		err = ffc.DeleteAllocGroup(ctx, id)
 		require.NoError(t, err)
