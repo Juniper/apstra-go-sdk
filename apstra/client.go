@@ -38,6 +38,7 @@ const (
 	ErrTimeout
 	ErrAgentProfilePlatformRequired
 	ErrIbaCurrentMountConflictsWithExistingMount
+	ErrInvalidId
 
 	clientPollingIntervalMs = 1000
 
