@@ -112,7 +112,7 @@ var (
 	FFResourceTypeHostIpv4      = FFResourceType{Value: "host_ip"}
 	FFResourceTypeHostIpv6      = FFResourceType{Value: "host_ipv6"}
 	FFResourceTypeInt           = FFResourceType{Value: "integer"}
-	FFResourceTypeIpv4          = FFResourceType{Value: "ip"}
+	FFResourceTypeIpv4          = FFResourceType{Value: "ipv4q"}
 	FFResourceTypeIpv6          = FFResourceType{Value: "ipv6"}
 	FFResourceTypeVlan          = FFResourceType{Value: "vlan"}
 	FFResourceTypeVni           = FFResourceType{Value: "vni"}
