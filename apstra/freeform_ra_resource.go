@@ -72,10 +72,9 @@ func (o FreeformRaResourceData) MarshalJSON() ([]byte, error) {
 		ResourceType    string    `json:"resource_type"`
 		Label           string    `json:"label"`
 		Value           *string   `json:"value"`
-		AllocatedFrom   *ObjectId `json:"allocated_from,omitempty"`
+		AllocatedFrom   *ObjectId `json:"allocated_from"`
 		GroupId         ObjectId  `json:"group_id"`
 		SubnetPrefixLen *int      `json:"subnet_prefix_len"`
-		GeneratorId     *ObjectId `json:"generator_id,omitempty"`
 	}
 
 	raw.ResourceType = o.ResourceType.String()
@@ -84,7 +83,6 @@ func (o FreeformRaResourceData) MarshalJSON() ([]byte, error) {
 	raw.AllocatedFrom = o.AllocatedFrom
 	raw.GroupId = o.GroupId
 	raw.SubnetPrefixLen = o.SubnetPrefixLen
-	raw.GeneratorId = o.GeneratorId
 
 	return json.Marshal(&raw)
 }
