@@ -211,6 +211,42 @@ var (
 		ResourcePoolTypeVlan,
 		ResourcePoolTypeVni,
 	)
+	_                       enum = new(CollectorOSType)
+	CollectorOSTypeJunos         = CollectorOSType{Value: "junos"}
+	CollectorOSTypeJunosEvo      = CollectorOSType{Value: "junos_evo"}
+	CollectorOSTypes             = oenum.New(
+		CollectorOSTypeJunos,
+		CollectorOSTypeJunosEvo,
+	)
+	_                              enum = new(CollectorOSVariant)
+	CollectorOSVariantACX               = CollectorOSVariant{Value: "acx"}
+	CollectorOSVariantACX_F             = CollectorOSVariant{Value: "acx-f"}
+	CollectorOSVariantACX_QFX_7K        = CollectorOSVariant{Value: "acx-qfx-7k"}
+	CollectorOSVariantPTX               = CollectorOSVariant{Value: "ptx"}
+	CollectorOSVariantPTX1K             = CollectorOSVariant{Value: "ptx1k"}
+	CollectorOSVariantQFX_MS_FIXED      = CollectorOSVariant{Value: "qfx-ms-fixed"}
+	CollectorOSVariantJunos             = CollectorOSVariant{Value: "junos"}
+	CollectorOSVariantJunos_EX          = CollectorOSVariant{Value: "junos-ex"}
+	CollectorOSVariantJunos_QFX         = CollectorOSVariant{Value: "junos-qfx"}
+
+	CollectorOSVariants = oenum.New(
+		CollectorOSVariantACX,
+		CollectorOSVariantACX_F,
+		CollectorOSVariantACX_QFX_7K,
+		CollectorOSVariantPTX,
+		CollectorOSVariantPTX1K,
+		CollectorOSVariantQFX_MS_FIXED,
+		CollectorOSVariantJunos,
+		CollectorOSVariantJunos_EX,
+		CollectorOSVariantJunos_QFX,
+	)
+
+	CollectorOSVersion22_2r2 = CollectorOSVersion{Value: "22.2r2"}
+	CollectorOSVersion23_2r1 = CollectorOSVersion{Value: "23.2r1"}
+	CollectorOSVersions      = oenum.New(
+		CollectorOSVersion22_2r2,
+		CollectorOSVersion23_2r1,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -448,6 +484,45 @@ func (o *ResourcePoolType) FromString(s string) error {
 	t := ResourcePoolTypes.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse ResourcePoolType %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type CollectorOSType oenum.Member[string]
+
+func (o CollectorOSType) String() string { return o.Value }
+
+func (o *CollectorOSType) FromString(s string) error {
+	t := CollectorOSTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse CollectorOSType %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type CollectorOSVersion oenum.Member[string]
+
+func (o CollectorOSVersion) String() string { return o.Value }
+
+func (o *CollectorOSVersion) FromString(s string) error {
+	t := CollectorOSVersions.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse CollectorOSVersion %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type CollectorOSVariant oenum.Member[string]
+
+func (o CollectorOSVariant) String() string { return o.Value }
+
+func (o *CollectorOSVariant) FromString(s string) error {
+	t := CollectorOSVariants.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse CollectorOSVariant %q", s)
 	}
 	o.Value = t.Value
 	return nil
