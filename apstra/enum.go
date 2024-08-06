@@ -211,6 +211,16 @@ var (
 		ResourcePoolTypeVlan,
 		ResourcePoolTypeVni,
 	)
+
+	_                              enum = new(RoutingZoneConstraintMode)
+	RoutingZoneConstraintModeNone       = RoutingZoneConstraintMode{Value: "none"}
+	RoutingZoneConstraintModeAllow      = RoutingZoneConstraintMode{Value: "allow"}
+	RoutingZoneConstraintModeDeny       = RoutingZoneConstraintMode{Value: "deny"}
+	RoutingZoneConstraintModes          = oenum.New(
+		RoutingZoneConstraintModeNone,
+		RoutingZoneConstraintModeAllow,
+		RoutingZoneConstraintModeDeny,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -448,6 +458,21 @@ func (o *ResourcePoolType) FromString(s string) error {
 	t := ResourcePoolTypes.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse ResourcePoolType %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type RoutingZoneConstraintMode oenum.Member[string]
+
+func (o RoutingZoneConstraintMode) String() string {
+	return o.Value
+}
+
+func (o *RoutingZoneConstraintMode) FromString(s string) error {
+	t := RoutingZoneConstraintModes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse RoutingZoneConstraintMode %q", s)
 	}
 	o.Value = t.Value
 	return nil
