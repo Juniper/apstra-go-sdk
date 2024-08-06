@@ -911,3 +911,77 @@ func testIpv6Pool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 
 	return id
 }
+
+func testResourceGroup(ctx context.Context, t testing.TB, client *FreeformClient) (groupId ObjectId) {
+	//create a group
+	groupCfg := FreeformRaGroupData{
+		Label: randString(6, "hex"),
+	}
+	groupId, err := client.CreateRaGroup(ctx, &groupCfg)
+	require.NoError(t, err)
+	return groupId
+}
+
+func testResourceGroupAsnData(ctx context.Context, t testing.TB, client *FreeformClient) (allocGroup ObjectId) {
+
+	// create a pool
+	poolAsnId := testAsnPool(ctx, t, client.client)
+
+	// create an allocation group
+	allocGroupReq := FreeformAllocGroupData{
+		Name:    randString(6, "hex"),
+		Type:    ResourcePoolTypeAsn,
+		PoolIds: []ObjectId{poolAsnId},
+	}
+	allocGroup, err := client.CreateAllocGroup(ctx, toPtr(allocGroupReq))
+	require.NoError(t, err)
+	return allocGroup
+}
+
+func testResourceGroupIntData(ctx context.Context, t testing.TB, client *FreeformClient) (allocGroup ObjectId) {
+
+	// create a pool
+	poolIntId := testIntPool(ctx, t, client.client)
+
+	// create an allocation group
+	allocGroupReq := FreeformAllocGroupData{
+		Name:    randString(6, "hex"),
+		Type:    ResourcePoolTypeInt,
+		PoolIds: []ObjectId{poolIntId},
+	}
+	allocGroup, err := client.CreateAllocGroup(ctx, toPtr(allocGroupReq))
+	require.NoError(t, err)
+	return allocGroup
+}
+
+func testResourceGroupIpv4Data(ctx context.Context, t testing.TB, client *FreeformClient) (allocGroup ObjectId) {
+
+	// create a pool
+	poolIpv4Id := testIpv4Pool(ctx, t, client.client)
+
+	// create an allocation group
+	allocGroupReq := FreeformAllocGroupData{
+		Name:    randString(6, "hex"),
+		Type:    ResourcePoolTypeIpv4,
+		PoolIds: []ObjectId{poolIpv4Id},
+	}
+	allocGroup, err := client.CreateAllocGroup(ctx, toPtr(allocGroupReq))
+	require.NoError(t, err)
+	return allocGroup
+}
+
+func testResourceGroupIpv6Data(ctx context.Context, t testing.TB, client *FreeformClient) (allocGroup ObjectId) {
+
+	// create a pool
+	poolIpv6Id := testIpv6Pool(ctx, t, client.client)
+
+	// create an allocation group
+	allocGroupReq := FreeformAllocGroupData{
+		Name:    randString(6, "hex"),
+		Type:    ResourcePoolTypeIpv6,
+		PoolIds: []ObjectId{poolIpv6Id},
+	}
+	allocGroup, err := client.CreateAllocGroup(ctx, toPtr(allocGroupReq))
+	require.NoError(t, err)
+	return allocGroup
+}
