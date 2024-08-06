@@ -17,6 +17,9 @@ jobs:
       - name: go fmt
         run: make fmt-check
 
+      - name: gofumpt
+        run: make fumpt-check
+
       - name: go vet
         run: make vet
 
