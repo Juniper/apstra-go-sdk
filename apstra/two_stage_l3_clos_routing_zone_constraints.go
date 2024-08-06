@@ -32,10 +32,11 @@ func (o RoutingZoneConstraintData) MarshalJSON() ([]byte, error) {
 	raw.Label = o.Label
 	raw.RoutingZonesListConstraint = o.Mode.String()
 	raw.MaxCountConstraint = o.MaxRoutingZones
-	if o.RoutingZoneIds != nil {
-		raw.Constraints = o.RoutingZoneIds
-	} else {
+	if o.RoutingZoneIds == nil {
+		// the API doesn't accept `null` nor omitted constraints. we must send an empty set: []
 		raw.Constraints = []ObjectId{}
+	} else {
+		raw.Constraints = o.RoutingZoneIds
 	}
 
 	return json.Marshal(raw)
