@@ -21,9 +21,9 @@ type FreeformRaLocalIntPool struct {
 
 func (o *FreeformRaLocalIntPool) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id           ObjectId  `json:"id"`
-		Label        string    `json:"label"`
-		PoolType     string    `json:"pool_type"`
+		Id    ObjectId `json:"id"`
+		Label string   `json:"label"`
+		// PoolType     string    `json:"pool_type"` // not used because always (?) "integer"
 		ResourceType string    `json:"resource_type"`
 		OwnerId      ObjectId  `json:"owner_id"`
 		GeneratorId  *ObjectId `json:"generator_id"`

@@ -2,9 +2,11 @@ package apstra
 
 import (
 	"context"
+	crand "crypto/rand"
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"net"
 	"net/http"
@@ -77,6 +79,46 @@ func randomIpv6() net.IP {
 		byte(rand.Intn(256)), byte(rand.Intn(256)),
 		byte(rand.Intn(256)), byte(rand.Intn(256)),
 	}
+}
+
+func randomPrefix(t testing.TB, cidrBlock string, bits int) net.IPNet {
+	t.Helper()
+
+	ip, block, err := net.ParseCIDR(cidrBlock)
+	if err != nil {
+		t.Fatalf("randomPrefix cannot parse cidrBlock - %s", err)
+	}
+	if block.IP.String() != ip.String() {
+		t.Fatal("invocation of randomPrefix doesn't use a base block address")
+	}
+
+	mOnes, mBits := block.Mask.Size()
+	if mOnes >= bits {
+		t.Fatalf("cannot select a random /%d from within %s", bits, cidrBlock)
+	}
+
+	// generate a completely random address
+	randomIP := make(net.IP, mBits/8)
+	_, err = crand.Read(randomIP)
+	if err != nil {
+		t.Fatalf("rand read failed")
+	}
+
+	// mask off the "network" bits
+	for i, b := range randomIP {
+		mBitsThisByte := min(mOnes, 8)
+		mOnes -= mBitsThisByte
+		block.IP[i] = block.IP[i] | (b & byte(math.MaxUint8>>mBitsThisByte))
+	}
+
+	block.Mask = net.CIDRMask(bits, mBits)
+
+	_, result, err := net.ParseCIDR(block.String())
+	if err != nil {
+		t.Fatal("failed to parse own CIDR block")
+	}
+
+	return *result
 }
 
 func randomSlash31(t testing.TB) net.IPNet {
@@ -913,75 +955,52 @@ func testIpv6Pool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 }
 
 func testResourceGroup(ctx context.Context, t testing.TB, client *FreeformClient) (groupId ObjectId) {
-	//create a group
-	groupCfg := FreeformRaGroupData{
-		Label: randString(6, "hex"),
-	}
-	groupId, err := client.CreateRaGroup(ctx, &groupCfg)
+	id, err := client.CreateRaGroup(ctx, &FreeformRaGroupData{Label: randString(6, "hex")})
 	require.NoError(t, err)
-	return groupId
+
+	return id
 }
 
-func testResourceGroupAsnData(ctx context.Context, t testing.TB, client *FreeformClient) (allocGroup ObjectId) {
-
-	// create a pool
-	poolAsnId := testAsnPool(ctx, t, client.client)
-
-	// create an allocation group
-	allocGroupReq := FreeformAllocGroupData{
+func testResourceGroupAsn(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
+	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
 		Type:    ResourcePoolTypeAsn,
-		PoolIds: []ObjectId{poolAsnId},
-	}
-	allocGroup, err := client.CreateAllocGroup(ctx, toPtr(allocGroupReq))
+		PoolIds: []ObjectId{testAsnPool(ctx, t, client.client)},
+	})
 	require.NoError(t, err)
-	return allocGroup
+
+	return id
 }
 
-func testResourceGroupIntData(ctx context.Context, t testing.TB, client *FreeformClient) (allocGroup ObjectId) {
-
-	// create a pool
-	poolIntId := testIntPool(ctx, t, client.client)
-
-	// create an allocation group
-	allocGroupReq := FreeformAllocGroupData{
+func testResourceGroupInt(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
+	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
 		Type:    ResourcePoolTypeInt,
-		PoolIds: []ObjectId{poolIntId},
-	}
-	allocGroup, err := client.CreateAllocGroup(ctx, toPtr(allocGroupReq))
+		PoolIds: []ObjectId{testIntPool(ctx, t, client.client)},
+	})
 	require.NoError(t, err)
-	return allocGroup
+
+	return id
 }
 
-func testResourceGroupIpv4Data(ctx context.Context, t testing.TB, client *FreeformClient) (allocGroup ObjectId) {
-
-	// create a pool
-	poolIpv4Id := testIpv4Pool(ctx, t, client.client)
-
-	// create an allocation group
-	allocGroupReq := FreeformAllocGroupData{
+func testResourceGroupIpv4(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
+	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
 		Type:    ResourcePoolTypeIpv4,
-		PoolIds: []ObjectId{poolIpv4Id},
-	}
-	allocGroup, err := client.CreateAllocGroup(ctx, toPtr(allocGroupReq))
+		PoolIds: []ObjectId{testIpv4Pool(ctx, t, client.client)},
+	})
 	require.NoError(t, err)
-	return allocGroup
+
+	return id
 }
 
-func testResourceGroupIpv6Data(ctx context.Context, t testing.TB, client *FreeformClient) (allocGroup ObjectId) {
-
-	// create a pool
-	poolIpv6Id := testIpv6Pool(ctx, t, client.client)
-
-	// create an allocation group
-	allocGroupReq := FreeformAllocGroupData{
+func testResourceGroupIpv6(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
+	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
 		Type:    ResourcePoolTypeIpv6,
-		PoolIds: []ObjectId{poolIpv6Id},
-	}
-	allocGroup, err := client.CreateAllocGroup(ctx, toPtr(allocGroupReq))
+		PoolIds: []ObjectId{testIpv6Pool(ctx, t, client.client)},
+	})
 	require.NoError(t, err)
-	return allocGroup
+
+	return id
 }
