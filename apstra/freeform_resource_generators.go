@@ -49,7 +49,7 @@ func (o *FreeformResourceGenerator) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 var _ json.Marshaler = new(FreeformResourceGeneratorData)
@@ -133,6 +133,7 @@ func (o *FreeformClient) GetResourceGenerator(ctx context.Context, id ObjectId) 
 
 	return &response, nil
 }
+
 func (o *FreeformClient) GetResourceGeneratorByName(ctx context.Context, name string) (*FreeformResourceGenerator, error) {
 	all, err := o.GetAllResourceGenerators(ctx)
 	if err != nil {
@@ -141,7 +142,7 @@ func (o *FreeformClient) GetResourceGeneratorByName(ctx context.Context, name st
 
 	var result *FreeformResourceGenerator
 	for _, ffResGen := range all {
-		ffrag := ffResGen
+		ffResGen := ffResGen
 		if ffResGen.Data.Label == name {
 			if result != nil {
 				return nil, ClientErr{
@@ -150,7 +151,7 @@ func (o *FreeformClient) GetResourceGeneratorByName(ctx context.Context, name st
 				}
 			}
 
-			result = &ffrag
+			result = &ffResGen
 		}
 	}
 
@@ -165,7 +166,6 @@ func (o *FreeformClient) GetResourceGeneratorByName(ctx context.Context, name st
 }
 
 func (o *FreeformClient) UpdateResourceGenerator(ctx context.Context, id ObjectId, in *FreeformResourceGeneratorData) error {
-
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfResourceGeneratorById, o.blueprintId, id),
