@@ -4,10 +4,6 @@ set -euo pipefail
 # init array of files which need updating by gofumpt
 needs_update=()
 
-echo "git branch"
-git branch
-echo "git branch"
-
 # loop over files changed relative to "main" branch
 for file in $(git diff --name-only origin/main)
 do

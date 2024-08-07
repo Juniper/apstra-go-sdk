@@ -6,6 +6,6 @@ import (
 	// license compliance
 	_ "github.com/chrismarget-j/go-licenses"
 
-	//opinionated code formatting
+	// opinionated code formatting
 	_ "mvdan.cc/gofumpt"
 )
