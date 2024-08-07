@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -123,7 +122,7 @@ func (o *Client) GetAllCollectors(ctx context.Context) ([]Collector, error) {
 	for k := range response.Items {
 		cs, err := o.GetCollectorsByServiceName(ctx, k)
 		if err != nil {
-			return nil, err
+			return nil, convertTtaeToAceWherePossible(err)
 		}
 		for _, v := range cs {
 			v.ServiceName = k
@@ -186,12 +185,11 @@ func (o *Client) CreateCollector(ctx context.Context, in *Collector) error {
 	}
 
 	// There are other collectors, so this is a patch
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlCollectorsByServiceName, in.ServiceName),
 		apiInput: &Request,
-	})
-	return err
+	}))
 }
 
 // UpdateCollector Updates a collector
@@ -200,22 +198,19 @@ func (o *Client) UpdateCollector(ctx context.Context, in *Collector) error {
 		Collectors []Collector `json:"collectors"`
 	}
 	Request.Collectors = append(Request.Collectors, *in)
-	r, e := json.Marshal(Request)
-	log.Println(e)
-	log.Println(string(r[:]))
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlCollectorsByServiceName, in.ServiceName),
 		apiInput: &Request,
-	})
+	}))
 }
 
 // DeleteAllCollectorsInService deletes all the collectors under a service
 func (o *Client) DeleteAllCollectorsInService(ctx context.Context, name string) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlCollectorsByServiceName, name),
-	})
+	}))
 }
 
 func (p1 *CollectorPlatform) Equals(p2 *CollectorPlatform) bool {
@@ -254,7 +249,7 @@ func (o *Client) DeleteCollector(ctx context.Context, in *Collector) error {
 
 	cs, err := o.GetCollectorsByServiceName(ctx, in.ServiceName)
 	if err != nil {
-		return err
+		return convertTtaeToAceWherePossible(err)
 	}
 
 	// There are no collectors
@@ -264,13 +259,13 @@ func (o *Client) DeleteCollector(ctx context.Context, in *Collector) error {
 
 	// If there is only one collector, we need to call DELETE
 	if len(cs) == 1 {
-		return o.talkToApstra(ctx, &talkToApstraIn{
+		return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 			method: http.MethodDelete,
 			urlStr: fmt.Sprintf(apiUrlCollectorsByServiceName, in.ServiceName),
-		})
+		}))
 	}
 
-	// There is more than one collector, so we need to drop this collector from the list and PUT it back
+	// There is more than one collector, so we need to drop this collector from the list and PUT it backsxxa
 	Request.ServiceName = in.ServiceName
 	for _, c := range cs {
 		if !c.Platform.Equals(&in.Platform) {
@@ -278,9 +273,9 @@ func (o *Client) DeleteCollector(ctx context.Context, in *Collector) error {
 		}
 	}
 
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlCollectorsByServiceName, in.ServiceName),
 		apiInput: &Request,
-	})
+	}))
 }
