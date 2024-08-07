@@ -218,27 +218,27 @@ var (
 		CollectorOSTypeJunos,
 		CollectorOSTypeJunosEvo,
 	)
-	_                              enum = new(CollectorOSVariant)
-	CollectorOSVariantACX               = CollectorOSVariant{Value: "acx"}
-	CollectorOSVariantACX_F             = CollectorOSVariant{Value: "acx-f"}
-	CollectorOSVariantACX_QFX_7K        = CollectorOSVariant{Value: "acx-qfx-7k"}
-	CollectorOSVariantPTX               = CollectorOSVariant{Value: "ptx"}
-	CollectorOSVariantPTX1K             = CollectorOSVariant{Value: "ptx1k"}
-	CollectorOSVariantQFX_MS_FIXED      = CollectorOSVariant{Value: "qfx-ms-fixed"}
-	CollectorOSVariantJunos             = CollectorOSVariant{Value: "junos"}
-	CollectorOSVariantJunos_EX          = CollectorOSVariant{Value: "junos-ex"}
-	CollectorOSVariantJunos_QFX         = CollectorOSVariant{Value: "junos-qfx"}
+	_                             enum = new(CollectorOSFamily)
+	CollectorOSFamilyACX               = CollectorOSFamily{Value: "acx"}
+	CollectorOSFamilyACX_F             = CollectorOSFamily{Value: "acx-f"}
+	CollectorOSFamilyACX_QFX_7K        = CollectorOSFamily{Value: "acx-qfx-7k"}
+	CollectorOSFamilyPTX               = CollectorOSFamily{Value: "ptx"}
+	CollectorOSFamilyPTX1K             = CollectorOSFamily{Value: "ptx1k"}
+	CollectorOSFamilyQFX_MS_FIXED      = CollectorOSFamily{Value: "qfx-ms-fixed"}
+	CollectorOSFamilyJunos             = CollectorOSFamily{Value: "junos"}
+	CollectorOSFamilyJunos_EX          = CollectorOSFamily{Value: "junos-ex"}
+	CollectorOSFamilyJunos_QFX         = CollectorOSFamily{Value: "junos-qfx"}
 
-	CollectorOSVariants = oenum.New(
-		CollectorOSVariantACX,
-		CollectorOSVariantACX_F,
-		CollectorOSVariantACX_QFX_7K,
-		CollectorOSVariantPTX,
-		CollectorOSVariantPTX1K,
-		CollectorOSVariantQFX_MS_FIXED,
-		CollectorOSVariantJunos,
-		CollectorOSVariantJunos_EX,
-		CollectorOSVariantJunos_QFX,
+	CollectorOSFamilies = oenum.New(
+		CollectorOSFamilyACX,
+		CollectorOSFamilyACX_F,
+		CollectorOSFamilyACX_QFX_7K,
+		CollectorOSFamilyPTX,
+		CollectorOSFamilyPTX1K,
+		CollectorOSFamilyQFX_MS_FIXED,
+		CollectorOSFamilyJunos,
+		CollectorOSFamilyJunos_EX,
+		CollectorOSFamilyJunos_QFX,
 	)
 
 	CollectorOSVersion22_2r2 = CollectorOSVersion{Value: "22.2r2"}
@@ -246,6 +246,10 @@ var (
 	CollectorOSVersions      = oenum.New(
 		CollectorOSVersion22_2r2,
 		CollectorOSVersion23_2r1,
+	)
+	CollectorSourceTypeCLI = CollectorSourceType{Value: "cli"}
+	CollectorSourceTypes   = oenum.New(
+		CollectorSourceTypeCLI,
 	)
 )
 
@@ -515,14 +519,27 @@ func (o *CollectorOSVersion) FromString(s string) error {
 	return nil
 }
 
-type CollectorOSVariant oenum.Member[string]
+type CollectorOSFamily oenum.Member[string]
 
-func (o CollectorOSVariant) String() string { return o.Value }
+func (o CollectorOSFamily) String() string { return o.Value }
 
-func (o *CollectorOSVariant) FromString(s string) error {
-	t := CollectorOSVariants.Parse(s)
+func (o *CollectorOSFamily) FromString(s string) error {
+	t := CollectorOSFamilies.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse CollectorOSVariant %q", s)
+		return fmt.Errorf("failed to parse CollectorOSFamily %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type CollectorSourceType oenum.Member[string]
+
+func (o CollectorSourceType) String() string { return o.Value }
+
+func (o *CollectorSourceType) FromString(s string) error {
+	t := CollectorSourceTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse CollectorOSFamily %q", s)
 	}
 	o.Value = t.Value
 	return nil

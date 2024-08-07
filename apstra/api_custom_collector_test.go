@@ -76,12 +76,12 @@ func TestCollector(t *testing.T) {
 			Platform: CollectorPlatform{
 				OsType:    CollectorOSTypeJunosEvo,
 				OsVersion: CollectorOSVersion22_2r2,
-				OsFamily:  []CollectorOSVariant{CollectorOSVariantACX},
+				OsFamily:  []CollectorOSFamily{CollectorOSFamilyACX},
 				Model:     "",
 			},
-			SourceType: "cli",
+			SourceType: CollectorSourceTypeCLI,
 			Cli:        "cli show interfaces extensive",
-			Query: Query{
+			Query: CollectorQuery{
 				Accessors: map[string]string{"telemetrykey1": "/interface-information/docsis-information/docsis-media-properties/downstream-buffers-free"},
 				Keys:      map[string]string{"schemakey1": "telemetrykey1"},
 				Value:     "telemetrykey1",
@@ -89,7 +89,8 @@ func TestCollector(t *testing.T) {
 			},
 			RelaxedSchemaValidation: true,
 		}
-
+		c2 := c1
+		log.Println("Creating First Collector")
 		err = client.client.CreateCollector(ctx, &c1)
 		require.NoError(t, err)
 
@@ -98,8 +99,9 @@ func TestCollector(t *testing.T) {
 		if len(cs) != 1 {
 			log.Printf("There should be one collector, got %d", len(cs))
 		}
+		log.Println("Creating Second Collector")
 
-		c1.Platform.OsFamily = []CollectorOSVariant{CollectorOSVariantACX_F, CollectorOSVariantJunos}
+		c1.Platform.OsFamily = []CollectorOSFamily{CollectorOSFamilyACX_F, CollectorOSFamilyJunos}
 		err = client.client.CreateCollector(ctx, &c1)
 		require.NoError(t, err)
 		cs, err = client.client.GetCollectorsByServiceName(ctx, name)
@@ -108,6 +110,7 @@ func TestCollector(t *testing.T) {
 			log.Printf("There should be two collectors, got %d", len(cs))
 		}
 
+		log.Println("Updating Collector")
 		c1.Query.Accessors["telemetrykey1"] = "/interface-information/docsis-information/docsis-media-properties/downstream-buffers-used"
 		err = client.client.UpdateCollector(ctx, &c1)
 		require.NoError(t, err)
@@ -125,17 +128,15 @@ func TestCollector(t *testing.T) {
 			log.Printf("There should be one collector, got %d", len(cs))
 		}
 
-		err = client.client.DeleteAllCollectorsInService(ctx, name)
+		err = client.client.DeleteCollector(ctx, &c2)
 		require.NoError(t, err)
-
 		cs, err = client.client.GetCollectorsByServiceName(ctx, name)
 		require.NoError(t, err)
 		if len(cs) != 0 {
-			log.Println("There should be no collectors, this is a new service")
+			log.Printf("There should be no collectors, got %d", len(cs))
 		}
 
-		err = client.client.DeleteTelemetryServiceRegistryEntry(ctx, name)
+		err = client.client.DeleteTelemetryServiceRegistryEntry(ctx, ServiceName)
 		require.NoError(t, err)
-
 	}
 }
