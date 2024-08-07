@@ -21,7 +21,10 @@ integration-tests:
 verify: lint-revive lint-staticcheck fmt-check vet
 
 fmt-check:
-	@sh -c "$(CURDIR)/.ci/scripts/gofmtcheck.sh"
+	@sh -c "$(CURDIR)/.ci/scripts/gofmt_check.sh"
+
+fumpt-check:
+	@sh -c "$(CURDIR)/.ci/scripts/gofumpt_check.sh"
 
 lint-revive:
 	revive -set_exit_status -config revive.toml .

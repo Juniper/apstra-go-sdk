@@ -17,6 +17,11 @@ jobs:
       - name: go fmt
         run: make fmt-check
 
+      - name: gofumpt
+        run: |
+          git fetch origin main --depth 1
+          make fumpt-check
+
       - name: go vet
         run: make vet
 
