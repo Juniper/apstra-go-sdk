@@ -9,7 +9,7 @@ git branch
 echo "git branch"
 
 # loop over files changed relative to "main" branch
-for file in $(git diff --name-only main)
+for file in $(git diff --name-only origin/main)
 do
   OUT="" # init variable because of `set -u`
 
