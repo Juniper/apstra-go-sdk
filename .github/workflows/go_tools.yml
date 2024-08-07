@@ -19,8 +19,8 @@ jobs:
 
       - name: gofumpt
         run: |
-          make fumpt-check
           git fetch origin main --depth 1
+          make fumpt-check
 
       - name: go vet
         run: make vet
