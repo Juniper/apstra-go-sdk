@@ -12,6 +12,7 @@ import (
 const (
 	apiUrlCollectors              = "/api/telemetry/collectors"
 	apiUrlCollectorsByServiceName = apiUrlCollectors + apiUrlPathDelim + "%s"
+	CollectorLock                 = "collector_lock_%s"
 )
 
 type CollectorPlatform struct {
@@ -167,6 +168,11 @@ func (o *Client) CreateCollector(ctx context.Context, in *Collector) error {
 	}
 	Request.ServiceName = in.ServiceName
 	Request.Items = append(Request.Items, *in)
+
+	lockId := fmt.Sprintf(CollectorLock, in.ServiceName)
+	o.lock(lockId)
+	defer o.unlock(lockId)
+
 	// This is the first collector for this service name
 	// So we POST
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -242,6 +248,10 @@ func (o *Client) DeleteCollector(ctx context.Context, in *Collector) error {
 		ServiceName string      `json:"service_name"`
 		Items       []Collector `json:"collectors"`
 	}
+
+	lockId := fmt.Sprintf(CollectorLock, in.ServiceName)
+	o.lock(lockId)
+	defer o.unlock(lockId)
 
 	cs, err := o.GetCollectorsByServiceName(ctx, in.ServiceName)
 	if err != nil {
