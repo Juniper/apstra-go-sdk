@@ -219,7 +219,7 @@ var (
 		CollectorOSTypeJunosEvo,
 	)
 
-  _                             enum = new(CollectorOSFamily)
+	_                             enum = new(CollectorOSFamily)
 	CollectorOSFamilyACX               = CollectorOSFamily{Value: "acx"}
 	CollectorOSFamilyACX_F             = CollectorOSFamily{Value: "acx-f"}
 	CollectorOSFamilyACX_QFX_7K        = CollectorOSFamily{Value: "acx-qfx-7k"}
@@ -229,7 +229,7 @@ var (
 	CollectorOSFamilyJunos             = CollectorOSFamily{Value: "junos"}
 	CollectorOSFamilyJunos_EX          = CollectorOSFamily{Value: "junos-ex"}
 	CollectorOSFamilyJunos_QFX         = CollectorOSFamily{Value: "junos-qfx"}
-	CollectorOSFamilies = oenum.New(
+	CollectorOSFamilies                = oenum.New(
 		CollectorOSFamilyACX,
 		CollectorOSFamilyACX_F,
 		CollectorOSFamilyACX_QFX_7K,
@@ -245,7 +245,8 @@ var (
 	CollectorSourceTypes   = oenum.New(
 		CollectorSourceTypeCLI,
 	)
-  	_                              enum = new(RoutingZoneConstraintMode)
+
+	_                              enum = new(RoutingZoneConstraintMode)
 	RoutingZoneConstraintModeNone       = RoutingZoneConstraintMode{Value: "none"}
 	RoutingZoneConstraintModeAllow      = RoutingZoneConstraintMode{Value: "allow"}
 	RoutingZoneConstraintModeDeny       = RoutingZoneConstraintMode{Value: "deny"}
@@ -253,6 +254,7 @@ var (
 		RoutingZoneConstraintModeNone,
 		RoutingZoneConstraintModeAllow,
 		RoutingZoneConstraintModeDeny,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -533,6 +535,7 @@ func (o *CollectorSourceType) FromString(s string) error {
 	o.Value = t.Value
 	return nil
 }
+
 type RoutingZoneConstraintMode oenum.Member[string]
 
 func (o RoutingZoneConstraintMode) String() string {
@@ -543,3 +546,6 @@ func (o *RoutingZoneConstraintMode) FromString(s string) error {
 	t := RoutingZoneConstraintModes.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse RoutingZoneConstraintMode %q", s)
+	}
+	return nil
+}
