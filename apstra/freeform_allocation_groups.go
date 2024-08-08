@@ -85,7 +85,7 @@ func (o *FreeformClient) GetAllAllocGroups(ctx context.Context) ([]FreeformAlloc
 }
 
 func (o *FreeformClient) GetAllocGroup(ctx context.Context, id ObjectId) (*FreeformAllocGroup, error) {
-	parts := strings.Split(id.String(), "_")
+	parts := strings.SplitN(id.String(), "_", 3)
 	if parts[0] != "rag" || len(parts) != 3 {
 		return nil, ClientErr{
 			errType: ErrInvalidId,
@@ -106,8 +106,39 @@ func (o *FreeformClient) GetAllocGroup(ctx context.Context, id ObjectId) (*Freef
 	return &response, nil
 }
 
+func (o *FreeformClient) GetAllocGroupByName(ctx context.Context, name string) (*FreeformAllocGroup, error) {
+	all, err := o.GetAllAllocGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *FreeformAllocGroup
+	for _, ffrag := range all {
+		ffrag := ffrag
+		if ffrag.Data.Name == name {
+			if result != nil {
+				return nil, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("multiple freeform allocation groups in blueprint %q have name %q", o.client.id, name),
+				}
+			}
+
+			result = &ffrag
+		}
+	}
+
+	if result == nil {
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no freeform allocation group  in blueprint %q has name %q", o.client.id, name),
+		}
+	}
+
+	return result, nil
+}
+
 func (o *FreeformClient) UpdateAllocGroup(ctx context.Context, id ObjectId, in *FreeformAllocGroupData) error {
-	parts := strings.Split(id.String(), "_")
+	parts := strings.SplitN(id.String(), "_", 3)
 	if parts[0] != "rag" || len(parts) != 3 {
 		return ClientErr{
 			errType: ErrInvalidId,
@@ -154,7 +185,7 @@ func (o *FreeformClient) UpdateAllocGroup(ctx context.Context, id ObjectId, in *
 //}
 
 func (o *FreeformClient) DeleteAllocGroup(ctx context.Context, id ObjectId) error {
-	parts := strings.Split(id.String(), "_")
+	parts := strings.SplitN(id.String(), "_", 3)
 	if parts[0] != "rag" || len(parts) != 3 {
 		return ClientErr{
 			errType: ErrInvalidId,
