@@ -75,7 +75,7 @@ func TestCollector(t *testing.T) {
 			ServiceName: name,
 			Platform: CollectorPlatform{
 				OsType:    CollectorOSTypeJunosEvo,
-				OsVersion: CollectorOSVersion22_2r2,
+				OsVersion: "22.2r2",
 				OsFamily:  []CollectorOSFamily{CollectorOSFamilyACX},
 				Model:     "",
 			},

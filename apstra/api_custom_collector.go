@@ -16,7 +16,7 @@ const (
 
 type CollectorPlatform struct {
 	OsType    CollectorOSType
-	OsVersion CollectorOSVersion
+	OsVersion string
 	OsFamily  []CollectorOSFamily
 	Model     string
 }
@@ -39,11 +39,7 @@ func (o *CollectorPlatform) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	err = o.OsVersion.FromString(raw.OsVersion)
-	if err != nil {
-		return err
-	}
-
+	o.OsVersion = raw.OsVersion
 	o.Model = raw.Model
 
 	for _, v := range strings.Split(raw.OsFamily, ",") {
@@ -66,7 +62,7 @@ func (o *CollectorPlatform) MarshalJSON() ([]byte, error) {
 		Model     string `json:"model"`
 	}
 	raw.OsType = o.OsType.String()
-	raw.OsVersion = o.OsVersion.String()
+	raw.OsVersion = o.OsVersion
 	raw.Model = o.Model
 	raw.OsFamily = o.OsFamily[0].String()
 	for _, v := range o.OsFamily[1:] {

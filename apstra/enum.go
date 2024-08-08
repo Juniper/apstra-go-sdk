@@ -241,12 +241,6 @@ var (
 		CollectorOSFamilyJunos_QFX,
 	)
 
-	CollectorOSVersion22_2r2 = CollectorOSVersion{Value: "22.2r2"}
-	CollectorOSVersion23_2r1 = CollectorOSVersion{Value: "23.2r1"}
-	CollectorOSVersions      = oenum.New(
-		CollectorOSVersion22_2r2,
-		CollectorOSVersion23_2r1,
-	)
 	CollectorSourceTypeCLI = CollectorSourceType{Value: "cli"}
 	CollectorSourceTypes   = oenum.New(
 		CollectorSourceTypeCLI,
@@ -501,19 +495,6 @@ func (o *CollectorOSType) FromString(s string) error {
 	t := CollectorOSTypes.Parse(s)
 	if t == nil {
 		return fmt.Errorf("failed to parse CollectorOSType %q", s)
-	}
-	o.Value = t.Value
-	return nil
-}
-
-type CollectorOSVersion oenum.Member[string]
-
-func (o CollectorOSVersion) String() string { return o.Value }
-
-func (o *CollectorOSVersion) FromString(s string) error {
-	t := CollectorOSVersions.Parse(s)
-	if t == nil {
-		return fmt.Errorf("failed to parse CollectorOSVersion %q", s)
 	}
 	o.Value = t.Value
 	return nil
