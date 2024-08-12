@@ -140,7 +140,6 @@ func (o *Client) GetCollectorsByServiceName(ctx context.Context, name string) ([
 		urlStr:      fmt.Sprintf(apiUrlCollectorsByServiceName, name),
 		apiResponse: &Response,
 	})
-
 	if err != nil {
 		err = convertTtaeToAceWherePossible(err)
 		if errors.As(err, &ace) && ace.Type() == ErrNotfound {

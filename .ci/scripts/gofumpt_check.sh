@@ -26,7 +26,7 @@ then
 
   for f in "${needs_update[@]}"
   do
-     echo "  go run mvdan.cc/gofumpt -w '$file'"
+     echo "  go run mvdan.cc/gofumpt -w '$f'"
   done
 
   echo ""

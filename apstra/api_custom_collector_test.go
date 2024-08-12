@@ -5,9 +5,10 @@ package apstra
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCollector(t *testing.T) {
