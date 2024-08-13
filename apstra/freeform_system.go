@@ -60,7 +60,7 @@ func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 		Label           string   `json:"label"`
 		Hostname        string   `json:"hostname,omitempty"`
 		Tags            []string `json:"tags"`
-		DeviceProfileId ObjectId `json:"device_profile_id"`
+		DeviceProfileId ObjectId `json:"device_profile_id,omitempty"`
 	}
 
 	if o.SystemId != nil {
