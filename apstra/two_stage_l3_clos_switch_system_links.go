@@ -262,10 +262,26 @@ func (o *TwoStageL3ClosClient) DeleteLinksFromSystem(ctx context.Context, ids []
 
 	// unpack the error
 	var e struct {
-		LinkIds []string `json:"link_ids"`
+		LinkIds interface{} `json:"link_ids"` // this might be a string or a []string (sigh)
 	}
 	if json.Unmarshal(ds.Errors, &e) != nil {
 		return err // unmarshal fail - surface the original error
+	}
+
+	// unpack e.LinkIds into a []string, whether it's returned as a string or a []string
+	var linkIds []string
+	switch t := e.LinkIds.(type) {
+	case string:
+		linkIds = []string{t}
+	case []interface{}:
+		linkIds = make([]string, len(t))
+		for i := range t {
+			if s, ok := t[i].(string); ok {
+				linkIds[i] = s
+			} else {
+				return err // cannot handle non-string - surface the original error
+			}
+		}
 	}
 
 	// we know about two categories of error - use regexes to filter 'em out - examples:
@@ -273,7 +289,7 @@ func (o *TwoStageL3ClosClient) DeleteLinksFromSystem(ctx context.Context, ids []
 	//   "Deleting all links forming a LAG is not allowed since the LAG has assigned structures: ['connectivity template', 'VN endpoint']. Link ids: ['l2_virtual_003_leaf1<->l2_virtual_003_sys003(b)[1]', 'l2_virtual_003_leaf1<->l2_virtual_003_sys003(b)[2]']",
 	var linkErrs []string
 	var lagErrs []string
-	for _, le := range e.LinkIds {
+	for _, le := range linkIds {
 		switch {
 		case regexpLinkHasCtAssignedErr.MatchString(le):
 			linkErrs = append(linkErrs, le)
