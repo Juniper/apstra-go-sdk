@@ -174,8 +174,10 @@ func (o FreeformInterfaceData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&raw)
 }
 
-var _ json.Unmarshaler = new(FreeformInterface)
-var _ json.Marshaler = new(FreeformInterface)
+var (
+	_ json.Unmarshaler = new(FreeformInterface)
+	_ json.Marshaler   = new(FreeformInterface)
+)
 
 type FreeformInterface struct {
 	Id   *ObjectId
