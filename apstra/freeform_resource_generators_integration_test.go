@@ -59,7 +59,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 
 			// create a blueprint with 4 systems
 			systemCount := 4
-			ffc, systemIds := testFFBlueprintB(ctx, t, client.client, systemCount)
+			ffc, systemIds, _ := testFFBlueprintB(ctx, t, client.client, systemCount, 0)
 			require.Equal(t, systemCount, len(systemIds))
 
 			// attach a VLAN pool to each system

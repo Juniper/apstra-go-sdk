@@ -811,9 +811,9 @@ func testFFBlueprintA(ctx context.Context, t testing.TB, client *Client) *Freefo
 	return c
 }
 
-// testFFBlueprintB creates a freeform blueprint with systemCount generic systems.
-// The returned []ObjectId represent the requested generic systems.
-func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, systemCount int) (*FreeformClient, []ObjectId) {
+// testFFBlueprintB creates a freeform blueprint with predefined internal and external generic systems.
+// The returned []ObjectIds represent the requested internal and external generic systems.
+func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, intSystemCount, extSystemCount int) (*FreeformClient, []ObjectId, []ObjectId) {
 	t.Helper()
 
 	id, err := client.CreateFreeformBlueprint(ctx, randString(6, "hex"))
@@ -826,12 +826,12 @@ func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, systemC
 	c, err := client.NewFreeformClient(ctx, id)
 	require.NoError(t, err)
 
-	dpId, err := c.ImportDeviceProfile(ctx, "Juniper_vEX")
+	dpId, err := c.ImportDeviceProfile(ctx, "Juniper_EX4400-48T")
 	require.NoError(t, err)
 
-	systemIds := make([]ObjectId, systemCount)
-	for i := range systemIds {
-		systemIds[i], err = c.CreateSystem(ctx, &FreeformSystemData{
+	intSystemIds := make([]ObjectId, intSystemCount)
+	for i := range intSystemIds {
+		intSystemIds[i], err = c.CreateSystem(ctx, &FreeformSystemData{
 			Type:            SystemTypeInternal,
 			Label:           randString(6, "hex"),
 			DeviceProfileId: dpId,
@@ -839,7 +839,16 @@ func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, systemC
 		require.NoError(t, err)
 	}
 
-	return c, systemIds
+	extSystemIds := make([]ObjectId, extSystemCount)
+	for i := range extSystemIds {
+		extSystemIds[i], err = c.CreateSystem(ctx, &FreeformSystemData{
+			Type:  SystemTypeExternal,
+			Label: randString(6, "hex"),
+		})
+		require.NoError(t, err)
+	}
+
+	return c, intSystemIds, extSystemIds
 }
 
 func testAsnPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
