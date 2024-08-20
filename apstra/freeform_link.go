@@ -88,8 +88,8 @@ type FreeformLinkData struct {
 
 func (o FreeformLinkData) MarshalJSON() ([]byte, error) {
 	type rawEndpointInterface struct {
-		IfName           string   `json:"if_name"`
-		TransformationId int      `json:"transformation_id"`
+		IfName           *string  `json:"if_name,omitempty"`
+		TransformationId *int     `json:"transformation_id"`
 		Ipv4Addr         *string  `json:"ipv4_addr"`
 		Ipv6Addr         *string  `json:"ipv6_addr"`
 		Tags             []string `json:"tags"`
@@ -139,8 +139,8 @@ func (o FreeformLinkData) MarshalJSON() ([]byte, error) {
 var _ json.Marshaler = new(FreeformInterfaceData)
 
 type FreeformInterfaceData struct {
-	IfName           string
-	TransformationId int
+	IfName           *string
+	TransformationId *int
 	Ipv4Address      *net.IPNet
 	Ipv6Address      *net.IPNet
 	Tags             []string
@@ -148,8 +148,8 @@ type FreeformInterfaceData struct {
 
 func (o FreeformInterfaceData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		IfName           string   `json:"if_name"`
-		TransformationId int      `json:"transformation_id"`
+		IfName           *string  `json:"if_name,omitempty"`
+		TransformationId *int     `json:"transformation_id"`
 		Ipv4Addr         string   `json:"ipv4_addr,omitempty"`
 		Ipv6Addr         string   `json:"ipv6_addr,omitempty"`
 		Tags             []string `json:"tags"`
@@ -185,8 +185,8 @@ type FreeformInterface struct {
 func (o *FreeformInterface) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		Id               *ObjectId `json:"id"`
-		IfName           string    `json:"if_name"`
-		TransformationId int       `json:"transformation_id"`
+		IfName           *string   `json:"if_name,omitempty"`
+		TransformationId *int      `json:"transformation_id"`
 		Ipv4Addr         *string   `json:"ipv4_addr"`
 		Ipv6Addr         *string   `json:"ipv6_addr"`
 		Tags             []string  `json:"tags"`
@@ -207,8 +207,8 @@ func (o *FreeformInterface) MarshalJSON() ([]byte, error) {
 func (o *FreeformInterface) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		Id               *ObjectId `json:"id"`
-		IfName           string    `json:"if_name"`
-		TransformationId int       `json:"transformation_id"`
+		IfName           *string   `json:"if_name"`
+		TransformationId *int      `json:"transformation_id"`
 		Ipv4Addr         *string   `json:"ipv4_addr"`
 		Ipv6Addr         *string   `json:"ipv6_addr"`
 		Tags             []string  `json:"tags"`
@@ -275,8 +275,8 @@ func (o FreeformEndpoint) MarshalJSON() ([]byte, error) {
 		} `json:"system,omitempty"`
 		Interface struct {
 			Id          *ObjectId `json:"id,omitempty"`
-			IfName      string    `json:"if_name"`
-			TransformId int       `json:"transformation_id"`
+			IfName      *string   `json:"if_name,omitempty"`
+			TransformId *int      `json:"transformation_id"`
 			Ipv4Addr    *string   `json:"ipv4_addr"`
 			Ipv6Addr    *string   `json:"ipv6_addr"`
 			Tags        []string  `json:"tags"`

@@ -44,7 +44,7 @@ func TestCRUDRaLocalPools(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		ffc, systemIds := testFFBlueprintB(ctx, t, client.client, 1)
+		ffc, systemIds, _ := testFFBlueprintB(ctx, t, client.client, 1, 0)
 		require.Equal(t, len(systemIds), 1)
 
 		cfg := FreeformRaLocalIntPoolData{
