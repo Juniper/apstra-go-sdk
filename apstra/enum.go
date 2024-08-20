@@ -211,6 +211,40 @@ var (
 		ResourcePoolTypeVlan,
 		ResourcePoolTypeVni,
 	)
+	_                       enum = new(CollectorOSType)
+	CollectorOSTypeJunos         = CollectorOSType{Value: "junos"}
+	CollectorOSTypeJunosEvo      = CollectorOSType{Value: "junos_evo"}
+	CollectorOSTypes             = oenum.New(
+		CollectorOSTypeJunos,
+		CollectorOSTypeJunosEvo,
+	)
+
+	_                             enum = new(CollectorOSFamily)
+	CollectorOSFamilyACX               = CollectorOSFamily{Value: "acx"}
+	CollectorOSFamilyACX_F             = CollectorOSFamily{Value: "acx-f"}
+	CollectorOSFamilyACX_QFX_7K        = CollectorOSFamily{Value: "acx-qfx-7k"}
+	CollectorOSFamilyPTX               = CollectorOSFamily{Value: "ptx"}
+	CollectorOSFamilyPTX1K             = CollectorOSFamily{Value: "ptx1k"}
+	CollectorOSFamilyQFX_MS_FIXED      = CollectorOSFamily{Value: "qfx-ms-fixed"}
+	CollectorOSFamilyJunos             = CollectorOSFamily{Value: "junos"}
+	CollectorOSFamilyJunos_EX          = CollectorOSFamily{Value: "junos-ex"}
+	CollectorOSFamilyJunos_QFX         = CollectorOSFamily{Value: "junos-qfx"}
+	CollectorOSFamilies                = oenum.New(
+		CollectorOSFamilyACX,
+		CollectorOSFamilyACX_F,
+		CollectorOSFamilyACX_QFX_7K,
+		CollectorOSFamilyPTX,
+		CollectorOSFamilyPTX1K,
+		CollectorOSFamilyQFX_MS_FIXED,
+		CollectorOSFamilyJunos,
+		CollectorOSFamilyJunos_EX,
+		CollectorOSFamilyJunos_QFX,
+	)
+
+	CollectorSourceTypeCLI = CollectorSourceType{Value: "cli"}
+	CollectorSourceTypes   = oenum.New(
+		CollectorSourceTypeCLI,
+	)
 
 	_                              enum = new(RoutingZoneConstraintMode)
 	RoutingZoneConstraintModeNone       = RoutingZoneConstraintMode{Value: "none"}
@@ -463,6 +497,45 @@ func (o *ResourcePoolType) FromString(s string) error {
 	return nil
 }
 
+type CollectorOSType oenum.Member[string]
+
+func (o CollectorOSType) String() string { return o.Value }
+
+func (o *CollectorOSType) FromString(s string) error {
+	t := CollectorOSTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse CollectorOSType %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type CollectorOSFamily oenum.Member[string]
+
+func (o CollectorOSFamily) String() string { return o.Value }
+
+func (o *CollectorOSFamily) FromString(s string) error {
+	t := CollectorOSFamilies.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse CollectorOSFamily %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type CollectorSourceType oenum.Member[string]
+
+func (o CollectorSourceType) String() string { return o.Value }
+
+func (o *CollectorSourceType) FromString(s string) error {
+	t := CollectorSourceTypes.Parse(s)
+	if t == nil {
+		return fmt.Errorf("failed to parse CollectorOSFamily %q", s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
 type RoutingZoneConstraintMode oenum.Member[string]
 
 func (o RoutingZoneConstraintMode) String() string {
@@ -474,6 +547,5 @@ func (o *RoutingZoneConstraintMode) FromString(s string) error {
 	if t == nil {
 		return fmt.Errorf("failed to parse RoutingZoneConstraintMode %q", s)
 	}
-	o.Value = t.Value
 	return nil
 }
