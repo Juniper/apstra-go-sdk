@@ -320,6 +320,13 @@ func TestCRUDFFLink(t *testing.T) {
 					},
 					{
 						Label: randString(6, "hex"),
+						Endpoints: [2]FreeformEndpoint{
+							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
+							{SystemId: extSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
+						},
+					},
+					{
+						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
 						Endpoints: [2]FreeformEndpoint{
 							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
