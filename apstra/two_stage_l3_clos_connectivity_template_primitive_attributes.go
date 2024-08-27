@@ -93,6 +93,11 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) raw() (json.
 		TaggedVnNodeIds:  o.TaggedVnNodeIds,
 	}
 
+	// don't send `null` to the API. Send an empty array instead.
+	if raw.TaggedVnNodeIds == nil {
+		raw.TaggedVnNodeIds = []ObjectId{}
+	}
+
 	return json.Marshal(&raw)
 }
 
