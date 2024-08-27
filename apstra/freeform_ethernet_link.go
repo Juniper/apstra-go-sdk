@@ -14,14 +14,14 @@ const (
 	apiUrlFfLinkById = apiUrlFfLinks + apiUrlPathDelim + "%s"
 )
 
-var _ json.Unmarshaler = new(FreeformLink)
+var _ json.Unmarshaler = new(FreeformEthernetLink)
 
-type FreeformLink struct {
+type FreeformEthernetLink struct {
 	Id   ObjectId
-	Data *FreeformLinkData
+	Data *FreeformEthernetLinkData
 }
 
-func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
+func (o *FreeformEthernetLink) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		Id              ObjectId               `json:"id"`
 		Speed           LogicalDevicePortSpeed `json:"speed"`
@@ -34,7 +34,7 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 				Label      string     `json:"label"`
 				SystemType systemType `json:"system_type"`
 			} `json:"system"`
-			Interface FreeformInterface `json:"interface"`
+			Interface FreeformEthernetInterface `json:"interface"`
 		} `json:"endpoints"`
 		Tags []string `json:"tags"`
 	}
@@ -48,7 +48,7 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	}
 
 	o.Id = raw.Id
-	o.Data = new(FreeformLinkData)
+	o.Data = new(FreeformEthernetLinkData)
 	o.Data.Speed = raw.Speed
 	o.Data.Label = raw.Label
 	err = o.Data.Type.FromString(raw.LinkType)
@@ -56,16 +56,16 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 	o.Data.AggregateLinkId = raw.AggregateLinkId
-	o.Data.Endpoints[0] = FreeformEndpoint{
+	o.Data.Endpoints[0] = FreeformEthernetEndpoint{
 		SystemId: raw.Endpoints[0].System.Id,
-		Interface: FreeformInterface{
+		Interface: FreeformEthernetInterface{
 			Id:   raw.Endpoints[0].Interface.Id,
 			Data: raw.Endpoints[0].Interface.Data,
 		},
 	}
-	o.Data.Endpoints[1] = FreeformEndpoint{
+	o.Data.Endpoints[1] = FreeformEthernetEndpoint{
 		SystemId: raw.Endpoints[1].System.Id,
-		Interface: FreeformInterface{
+		Interface: FreeformEthernetInterface{
 			Id:   raw.Endpoints[1].Interface.Id,
 			Data: raw.Endpoints[1].Interface.Data,
 		},
@@ -75,18 +75,18 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-var _ json.Marshaler = new(FreeformLinkData)
+var _ json.Marshaler = new(FreeformEthernetLinkData)
 
-type FreeformLinkData struct {
+type FreeformEthernetLinkData struct {
 	Type            FFLinkType
 	AggregateLinkId *ObjectId
 	Label           string
 	Speed           LogicalDevicePortSpeed
 	Tags            []string
-	Endpoints       [2]FreeformEndpoint
+	Endpoints       [2]FreeformEthernetEndpoint
 }
 
-func (o FreeformLinkData) MarshalJSON() ([]byte, error) {
+func (o FreeformEthernetLinkData) MarshalJSON() ([]byte, error) {
 	type rawEndpointInterface struct {
 		IfName           *string  `json:"if_name,omitempty"`
 		TransformationId *int     `json:"transformation_id"`
@@ -136,9 +136,9 @@ func (o FreeformLinkData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 
-var _ json.Marshaler = new(FreeformInterfaceData)
+var _ json.Marshaler = new(FreeformEthernetInterfaceData)
 
-type FreeformInterfaceData struct {
+type FreeformEthernetInterfaceData struct {
 	IfName           *string
 	TransformationId *int
 	Ipv4Address      *net.IPNet
@@ -146,7 +146,7 @@ type FreeformInterfaceData struct {
 	Tags             []string
 }
 
-func (o FreeformInterfaceData) MarshalJSON() ([]byte, error) {
+func (o FreeformEthernetInterfaceData) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		IfName           *string  `json:"if_name,omitempty"`
 		TransformationId *int     `json:"transformation_id"`
@@ -175,16 +175,16 @@ func (o FreeformInterfaceData) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	_ json.Unmarshaler = new(FreeformInterface)
-	_ json.Marshaler   = new(FreeformInterface)
+	_ json.Unmarshaler = new(FreeformEthernetInterface)
+	_ json.Marshaler   = new(FreeformEthernetInterface)
 )
 
-type FreeformInterface struct {
+type FreeformEthernetInterface struct {
 	Id   *ObjectId
-	Data *FreeformInterfaceData
+	Data *FreeformEthernetInterfaceData
 }
 
-func (o *FreeformInterface) MarshalJSON() ([]byte, error) {
+func (o *FreeformEthernetInterface) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		Id               *ObjectId `json:"id"`
 		IfName           *string   `json:"if_name,omitempty"`
@@ -206,7 +206,7 @@ func (o *FreeformInterface) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 
-func (o *FreeformInterface) UnmarshalJSON(bytes []byte) error {
+func (o *FreeformEthernetInterface) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		Id               *ObjectId `json:"id"`
 		IfName           *string   `json:"if_name"`
@@ -221,7 +221,7 @@ func (o *FreeformInterface) UnmarshalJSON(bytes []byte) error {
 	}
 
 	o.Id = raw.Id
-	o.Data = new(FreeformInterfaceData)
+	o.Data = new(FreeformEthernetInterfaceData)
 	if raw.Ipv4Addr != nil {
 		ip, net4, err := net.ParseCIDR(*raw.Ipv4Addr)
 		if err != nil {
@@ -247,21 +247,21 @@ func (o *FreeformInterface) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
-	_ json.Marshaler   = new(FreeformEndpoint)
-	_ json.Unmarshaler = new(FreeformEndpoint)
+	_ json.Marshaler   = new(FreeformEthernetEndpoint)
+	_ json.Unmarshaler = new(FreeformEthernetEndpoint)
 )
 
-type FreeformEndpoint struct {
+type FreeformEthernetEndpoint struct {
 	SystemId  ObjectId
-	Interface FreeformInterface
+	Interface FreeformEthernetInterface
 }
 
-func (o *FreeformEndpoint) UnmarshalJSON(bytes []byte) error {
+func (o *FreeformEthernetEndpoint) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		System struct {
 			Id ObjectId `json:"id"`
 		} `json:"system"`
-		Interface *FreeformInterfaceData `json:"interface"`
+		Interface *FreeformEthernetInterfaceData `json:"interface"`
 	}
 
 	o.SystemId = raw.System.Id
@@ -270,7 +270,7 @@ func (o *FreeformEndpoint) UnmarshalJSON(bytes []byte) error {
 	return json.Unmarshal(bytes, &raw)
 }
 
-func (o FreeformEndpoint) MarshalJSON() ([]byte, error) {
+func (o FreeformEthernetEndpoint) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		System *struct {
 			Id ObjectId `json:"id"`
@@ -304,13 +304,13 @@ func (o FreeformEndpoint) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 
-type FreeformLinkRequest struct {
-	Label     string              `json:"label"`
-	Tags      []string            `json:"tags"`
-	Endpoints [2]FreeformEndpoint `json:"endpoints"`
+type FreeformEthernetLinkRequest struct {
+	Label     string                      `json:"label"`
+	Tags      []string                    `json:"tags"`
+	Endpoints [2]FreeformEthernetEndpoint `json:"endpoints"`
 }
 
-func (o *FreeformClient) CreateLink(ctx context.Context, in *FreeformLinkRequest) (ObjectId, error) {
+func (o *FreeformClient) CreateEthernetLink(ctx context.Context, in *FreeformEthernetLinkRequest) (ObjectId, error) {
 	var response objectIdResponse
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -326,8 +326,8 @@ func (o *FreeformClient) CreateLink(ctx context.Context, in *FreeformLinkRequest
 	return response.Id, nil
 }
 
-func (o *FreeformClient) GetLink(ctx context.Context, id ObjectId) (*FreeformLink, error) {
-	var response FreeformLink
+func (o *FreeformClient) GetLink(ctx context.Context, id ObjectId) (*FreeformEthernetLink, error) {
+	var response FreeformEthernetLink
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -341,13 +341,13 @@ func (o *FreeformClient) GetLink(ctx context.Context, id ObjectId) (*FreeformLin
 	return &response, nil
 }
 
-func (o *FreeformClient) GetLinkByName(ctx context.Context, name string) (*FreeformLink, error) {
+func (o *FreeformClient) GetLinkByName(ctx context.Context, name string) (*FreeformEthernetLink, error) {
 	all, err := o.GetAllLinks(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var result *FreeformLink
+	var result *FreeformEthernetLink
 	for _, link := range all {
 		link := link
 		if link.Data.Label == name {
@@ -372,9 +372,9 @@ func (o *FreeformClient) GetLinkByName(ctx context.Context, name string) (*Freef
 	return result, nil
 }
 
-func (o *FreeformClient) GetAllLinks(ctx context.Context) ([]FreeformLink, error) {
+func (o *FreeformClient) GetAllLinks(ctx context.Context) ([]FreeformEthernetLink, error) {
 	var response struct {
-		Items []FreeformLink `json:"items"`
+		Items []FreeformEthernetLink `json:"items"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -389,7 +389,7 @@ func (o *FreeformClient) GetAllLinks(ctx context.Context) ([]FreeformLink, error
 	return response.Items, nil
 }
 
-func (o *FreeformClient) UpdateLink(ctx context.Context, id ObjectId, in *FreeformLinkRequest) error {
+func (o *FreeformClient) UpdateLink(ctx context.Context, id ObjectId, in *FreeformEthernetLinkRequest) error {
 	// make a copy to be certain to clear the systemId without damaging the caller's struct.
 	copy := *in
 	copy.Endpoints[0].SystemId = ""

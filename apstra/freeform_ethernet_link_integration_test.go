@@ -13,12 +13,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCRUDFFLink(t *testing.T) {
+func TestCRUDFfEthernetLink(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
 
-	compareEndPoint := func(t testing.TB, req, resp *FreeformEndpoint) {
+	compareEndPoint := func(t testing.TB, req, resp *FreeformEthernetEndpoint) {
 		t.Helper()
 
 		require.Equal(t, req.SystemId, resp.SystemId, "system id ")
@@ -43,7 +43,7 @@ func TestCRUDFFLink(t *testing.T) {
 		compareSlicesAsSets(t, req.Interface.Data.Tags, resp.Interface.Data.Tags, "tag mismatch")
 	}
 
-	compare := func(t testing.TB, req *FreeformLinkRequest, resp *FreeformLinkData) {
+	compare := func(t testing.TB, req *FreeformEthernetLinkRequest, resp *FreeformEthernetLinkData) {
 		t.Helper()
 
 		require.NotNil(t, req)
@@ -60,7 +60,7 @@ func TestCRUDFFLink(t *testing.T) {
 	}
 
 	type testCase struct {
-		steps []FreeformLinkRequest
+		steps []FreeformEthernetLinkRequest
 	}
 
 	for _, client := range clients {
@@ -68,15 +68,15 @@ func TestCRUDFFLink(t *testing.T) {
 
 		testCases := map[string]testCase{
 			"int_int_start_with_minimal_config": {
-				steps: []FreeformLinkRequest{
+				steps: []FreeformEthernetLinkRequest{
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/0"),
 								TransformationId: toPtr(1),
 							}}},
-							{SystemId: intSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: intSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/0"),
 								TransformationId: toPtr(1),
 							}}},
@@ -85,15 +85,15 @@ func TestCRUDFFLink(t *testing.T) {
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/1"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.0.0.3"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address:      &net.IPNet{IP: net.ParseIP("2001:db8::3"), Mask: net.CIDRMask(64, 128)},
 								Tags:             randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: intSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: intSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/1"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.0.0.4"), Mask: net.CIDRMask(24, 32)},
@@ -104,12 +104,12 @@ func TestCRUDFFLink(t *testing.T) {
 					},
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/2"),
 								TransformationId: toPtr(1),
 							}}},
-							{SystemId: intSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: intSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/2"),
 								TransformationId: toPtr(1),
 							}}},
@@ -118,19 +118,19 @@ func TestCRUDFFLink(t *testing.T) {
 				},
 			},
 			"int_int_start_with_maximal_config": {
-				steps: []FreeformLinkRequest{
+				steps: []FreeformEthernetLinkRequest{
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/3"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.1.0.1"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address:      &net.IPNet{IP: net.ParseIP("2001:db8:1::1"), Mask: net.CIDRMask(64, 128)},
 								Tags:             randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: intSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: intSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/3"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.1.0.2"), Mask: net.CIDRMask(24, 32)},
@@ -141,12 +141,12 @@ func TestCRUDFFLink(t *testing.T) {
 					},
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/4"),
 								TransformationId: toPtr(1),
 							}}},
-							{SystemId: intSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: intSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/4"),
 								TransformationId: toPtr(1),
 							}}},
@@ -155,15 +155,15 @@ func TestCRUDFFLink(t *testing.T) {
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/5"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.1.0.2"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address:      &net.IPNet{IP: net.ParseIP("2001:db8:1::2"), Mask: net.CIDRMask(64, 128)},
 								Tags:             randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: intSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: intSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/5"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.1.0.3"), Mask: net.CIDRMask(24, 32)},
@@ -175,29 +175,29 @@ func TestCRUDFFLink(t *testing.T) {
 				},
 			},
 			"int_ext_start_with_minimal_config": {
-				steps: []FreeformLinkRequest{
+				steps: []FreeformEthernetLinkRequest{
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/6"),
 								TransformationId: toPtr(1),
 							}}},
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
 						},
 					},
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/7"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.0.0.3"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address:      &net.IPNet{IP: net.ParseIP("2001:db8::3"), Mask: net.CIDRMask(64, 128)},
 								Tags:             randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.0.0.4"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8::4"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
@@ -206,30 +206,30 @@ func TestCRUDFFLink(t *testing.T) {
 					},
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/8"),
 								TransformationId: toPtr(1),
 							}}},
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
 						},
 					},
 				},
 			},
 			"int_ext_start_with_maximal_config": {
-				steps: []FreeformLinkRequest{
+				steps: []FreeformEthernetLinkRequest{
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/9"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.1.0.1"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address:      &net.IPNet{IP: net.ParseIP("2001:db8:1::1"), Mask: net.CIDRMask(64, 128)},
 								Tags:             randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.1.0.2"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8:1::2"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
@@ -238,26 +238,26 @@ func TestCRUDFFLink(t *testing.T) {
 					},
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/10"),
 								TransformationId: toPtr(1),
 							}}},
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
 						},
 					},
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: intSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								IfName:           toPtr("ge-0/0/11"),
 								TransformationId: toPtr(2),
 								Ipv4Address:      &net.IPNet{IP: net.ParseIP("10.1.0.2"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address:      &net.IPNet{IP: net.ParseIP("2001:db8:1::2"), Mask: net.CIDRMask(64, 128)},
 								Tags:             randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.1.0.3"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8:1::3"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
@@ -267,24 +267,24 @@ func TestCRUDFFLink(t *testing.T) {
 				},
 			},
 			"ext_ext_start_with_minimal_config": {
-				steps: []FreeformLinkRequest{
+				steps: []FreeformEthernetLinkRequest{
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
-							{SystemId: extSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
+							{SystemId: extSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
 						},
 					},
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.0.0.3"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8::3"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: extSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: extSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.0.0.4"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8::4"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
@@ -293,25 +293,25 @@ func TestCRUDFFLink(t *testing.T) {
 					},
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
-							{SystemId: extSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
+							{SystemId: extSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
 						},
 					},
 				},
 			},
 			"ext_ext_start_with_maximal_config": {
-				steps: []FreeformLinkRequest{
+				steps: []FreeformEthernetLinkRequest{
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.1.0.1"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8:1::1"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: extSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: extSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.1.0.2"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8:1::2"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
@@ -320,21 +320,21 @@ func TestCRUDFFLink(t *testing.T) {
 					},
 					{
 						Label: randString(6, "hex"),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
-							{SystemId: extSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{}}},
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
+							{SystemId: extSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{}}},
 						},
 					},
 					{
 						Label: randString(6, "hex"),
 						Tags:  randStrings(rand.Intn(3)+2, 6),
-						Endpoints: [2]FreeformEndpoint{
-							{SystemId: extSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						Endpoints: [2]FreeformEthernetEndpoint{
+							{SystemId: extSysIds[0], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.1.0.2"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8:1::2"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
 							}}},
-							{SystemId: extSysIds[1], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+							{SystemId: extSysIds[1], Interface: FreeformEthernetInterface{Data: &FreeformEthernetInterfaceData{
 								Ipv4Address: &net.IPNet{IP: net.ParseIP("10.1.0.3"), Mask: net.CIDRMask(24, 32)},
 								Ipv6Address: &net.IPNet{IP: net.ParseIP("2001:db8:1::3"), Mask: net.CIDRMask(64, 128)},
 								Tags:        randStrings(rand.Intn(3)+2, 6),
@@ -352,7 +352,7 @@ func TestCRUDFFLink(t *testing.T) {
 				t.Parallel()
 
 				// create the link
-				id, err := ffc.CreateLink(ctx, &tCase.steps[0])
+				id, err := ffc.CreateEthernetLink(ctx, &tCase.steps[0])
 				require.NoError(t, err)
 
 				// read the link
