@@ -51,8 +51,8 @@ type FreeformGroupGeneratorData struct {
 
 func (o FreeformGroupGeneratorData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		Label string `json:"label,omitempty"`
-		Scope string `json:"scope,omitempty"`
+		Label string `json:"label"`
+		Scope string `json:"scope"`
 	}
 
 	raw.Label = o.Label
