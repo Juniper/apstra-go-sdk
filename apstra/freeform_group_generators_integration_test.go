@@ -3,8 +3,9 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestFfGroupGeneratorsCrud(t *testing.T) {
