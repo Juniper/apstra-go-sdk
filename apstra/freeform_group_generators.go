@@ -21,9 +21,10 @@ type FreeformGroupGenerator struct {
 
 func (o *FreeformGroupGenerator) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id    ObjectId `json:"id"`
-		Label string   `json:"label"`
-		Scope string   `json:"scope"`
+		Id       ObjectId  `json:"id"`
+		ParentId *ObjectId `json:"parent_id"`
+		Label    string    `json:"label"`
+		Scope    string    `json:"scope"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
@@ -33,11 +34,9 @@ func (o *FreeformGroupGenerator) UnmarshalJSON(bytes []byte) error {
 
 	o.Id = raw.Id
 	o.Data = new(FreeformGroupGeneratorData)
+	o.Data.ParentId = raw.ParentId
 	o.Data.Label = raw.Label
 	o.Data.Scope = raw.Scope
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -45,16 +44,19 @@ func (o *FreeformGroupGenerator) UnmarshalJSON(bytes []byte) error {
 var _ json.Marshaler = new(FreeformGroupGeneratorData)
 
 type FreeformGroupGeneratorData struct {
-	Label string
-	Scope string
+	ParentId *ObjectId
+	Label    string
+	Scope    string
 }
 
 func (o FreeformGroupGeneratorData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		Label string `json:"label"`
-		Scope string `json:"scope"`
+		ParentId *ObjectId `json:"parent_id"`
+		Label    string    `json:"label"`
+		Scope    string    `json:"scope"`
 	}
 
+	raw.ParentId = o.ParentId
 	raw.Label = o.Label
 	raw.Scope = o.Scope
 
