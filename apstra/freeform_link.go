@@ -25,7 +25,6 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		Id              ObjectId               `json:"id"`
 		Speed           LogicalDevicePortSpeed `json:"speed"`
-		LinkType        string                 `json:"link_type"`
 		Label           string                 `json:"label"`
 		AggregateLinkId *ObjectId              `json:"aggregate_link_id"`
 		Endpoints       []struct {
@@ -51,10 +50,6 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	o.Data = new(FreeformLinkData)
 	o.Data.Speed = raw.Speed
 	o.Data.Label = raw.Label
-	err = o.Data.Type.FromString(raw.LinkType)
-	if err != nil {
-		return err
-	}
 	o.Data.AggregateLinkId = raw.AggregateLinkId
 	o.Data.Endpoints[0] = FreeformEndpoint{
 		SystemId: raw.Endpoints[0].System.Id,
@@ -75,65 +70,12 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-var _ json.Marshaler = new(FreeformLinkData)
-
 type FreeformLinkData struct {
-	Type            FFLinkType
 	AggregateLinkId *ObjectId
 	Label           string
 	Speed           LogicalDevicePortSpeed
 	Tags            []string
 	Endpoints       [2]FreeformEndpoint
-}
-
-func (o FreeformLinkData) MarshalJSON() ([]byte, error) {
-	type rawEndpointInterface struct {
-		IfName           *string  `json:"if_name,omitempty"`
-		TransformationId *int     `json:"transformation_id"`
-		Ipv4Addr         *string  `json:"ipv4_addr"`
-		Ipv6Addr         *string  `json:"ipv6_addr"`
-		Tags             []string `json:"tags"`
-	}
-	type rawEndpoint struct {
-		Interface rawEndpointInterface `json:"interface"`
-	}
-	var raw struct {
-		Label     string         `json:"label"`
-		Tags      []string       `json:"tags"`
-		Endpoints [2]rawEndpoint `json:"endpoints"`
-	}
-
-	raw.Label = o.Label
-	raw.Tags = o.Tags
-	raw.Endpoints[0] = rawEndpoint{
-		Interface: rawEndpointInterface{
-			IfName:           o.Endpoints[0].Interface.Data.IfName,
-			TransformationId: o.Endpoints[0].Interface.Data.TransformationId,
-			Tags:             o.Endpoints[0].Interface.Data.Tags,
-		},
-	}
-	if o.Endpoints[0].Interface.Data.Ipv4Address != nil {
-		raw.Endpoints[0].Interface.Ipv4Addr = toPtr(o.Endpoints[0].Interface.Data.Ipv4Address.String())
-	}
-	if o.Endpoints[0].Interface.Data.Ipv6Address != nil {
-		raw.Endpoints[0].Interface.Ipv6Addr = toPtr(o.Endpoints[0].Interface.Data.Ipv6Address.String())
-	}
-
-	raw.Endpoints[1] = rawEndpoint{
-		Interface: rawEndpointInterface{
-			IfName:           o.Endpoints[1].Interface.Data.IfName,
-			TransformationId: o.Endpoints[1].Interface.Data.TransformationId,
-			Tags:             o.Endpoints[1].Interface.Data.Tags,
-		},
-	}
-	if o.Endpoints[1].Interface.Data.Ipv4Address != nil {
-		raw.Endpoints[1].Interface.Ipv4Addr = toPtr(o.Endpoints[1].Interface.Data.Ipv4Address.String())
-	}
-	if o.Endpoints[1].Interface.Data.Ipv6Address != nil {
-		raw.Endpoints[1].Interface.Ipv6Addr = toPtr(o.Endpoints[1].Interface.Data.Ipv6Address.String())
-	}
-
-	return json.Marshal(raw)
 }
 
 var _ json.Marshaler = new(FreeformInterfaceData)
