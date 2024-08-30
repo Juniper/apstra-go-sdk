@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -43,7 +42,7 @@ func Test_ConfigTemplate_Assignment(t *testing.T) {
 			}
 
 			testCases := map[string]testCase{
-				"single_sysID": testCase{
+				"single_sysID": {
 					steps: []testStep{
 						{
 							ctId:   ctIds[0],
@@ -63,7 +62,7 @@ func Test_ConfigTemplate_Assignment(t *testing.T) {
 						},
 					},
 				},
-				"set_clear_set_single_sysID": testCase{
+				"set_clear_set_single_sysID": {
 					steps: []testStep{
 						{
 							ctId:   ctIds[1],
@@ -79,7 +78,7 @@ func Test_ConfigTemplate_Assignment(t *testing.T) {
 						},
 					},
 				},
-				"clear_set_clear_single_sysID": testCase{
+				"clear_set_clear_single_sysID": {
 					steps: []testStep{
 						{
 							ctId:   ctIds[2],
@@ -95,7 +94,7 @@ func Test_ConfigTemplate_Assignment(t *testing.T) {
 						},
 					},
 				},
-				"exercise_multiple_systems": testCase{
+				"exercise_multiple_systems": {
 					steps: []testStep{
 						{
 							ctId:   ctIds[3],
