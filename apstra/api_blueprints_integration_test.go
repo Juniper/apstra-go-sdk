@@ -62,8 +62,8 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 
 	for clientName, client := range clients {
 		var fabricSettings *FabricSettings
-		if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.client.apiVersion.String()) {
-			// forbidden in the template means we can use this feature in the blueprint
+		if templateHasAddressingPolicy.Check(client.client.apiVersion) {
+			// not in the template means we can use this feature in the blueprint
 			fabricSettings = &FabricSettings{}
 
 			if !fabricL3MtuForbidden.Check(client.client.apiVersion) {

@@ -18,10 +18,6 @@ const (
 	apstraSupportedApiVersions = "4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
 	apstraSupportedVersionSep  = ","
 
-	podBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
-
-	rackBasedTemplateFabricAddressingPolicyForbiddenVersions = "4.1.1, 4.1.2, 4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
-
 	fabricL3MtuForbiddenError = "fabric_l3_mtu permitted only with Apstra 4.2.0 and later"
 
 	integerPoolForbiddenVersions = "4.1.0, 4.1.1"
@@ -45,6 +41,8 @@ var (
 
 	fabricSettingsApiOk  = geApstra421
 	fabricL3MtuForbidden = leApstra412
+
+	templateHasAddressingPolicy = version.MustConstraints(version.NewConstraint("<" + apstra411))
 )
 
 // SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"
@@ -90,14 +88,6 @@ func (o StringSliceWithIncludes) Includes(s string) bool {
 
 func apstraSupportedApi() StringSliceWithIncludes {
 	return parseVersionList(apstraSupportedApiVersions)
-}
-
-func rackBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
-	return parseVersionList(rackBasedTemplateFabricAddressingPolicyForbiddenVersions)
-}
-
-func podBasedTemplateFabricAddressingPolicyForbidden() StringSliceWithIncludes {
-	return parseVersionList(podBasedTemplateFabricAddressingPolicyForbiddenVersions)
 }
 
 func integerPoolForbidden() StringSliceWithIncludes {
