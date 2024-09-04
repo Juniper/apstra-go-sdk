@@ -62,8 +62,8 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 
 	for clientName, client := range clients {
 		var fabricSettings *FabricSettings
-		if templateHasAddressingPolicy.Check(client.client.apiVersion) {
-			// not in the template means we can use this feature in the blueprint
+		if !legacyTemplateWithAddressingPolicy.Check(client.client.apiVersion) {
+			// current apstra releases put this feature in the blueprint, rather than the template
 			fabricSettings = &FabricSettings{}
 
 			if !fabricL3MtuForbidden.Check(client.client.apiVersion) {

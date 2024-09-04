@@ -1109,7 +1109,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 			return fmt.Errorf("asn allocation policy spine asn scheme mismatch expected %q got %q", req.AsnAllocationPolicy.SpineAsnScheme, rbt.AsnAllocationPolicy.SpineAsnScheme)
 		}
 
-		if templateHasAddressingPolicy.Check(version.Must(version.NewVersion(apiVersionString))) {
+		if legacyTemplateWithAddressingPolicy.Check(version.Must(version.NewVersion(apiVersionString))) {
 			err = compareFabricAddressingPolicy(*req.FabricAddressingPolicy, *rbt.FabricAddressingPolicy)
 			if err != nil {
 				return err

@@ -42,7 +42,7 @@ var (
 	fabricSettingsApiOk  = geApstra421
 	fabricL3MtuForbidden = leApstra412
 
-	templateHasAddressingPolicy = version.MustConstraints(version.NewConstraint("<" + apstra411))
+	legacyTemplateWithAddressingPolicy = version.MustConstraints(version.NewConstraint("<" + apstra411))
 )
 
 // SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"
