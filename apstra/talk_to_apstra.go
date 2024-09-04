@@ -305,7 +305,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	// we got a task ID, instead of the expected response object. tasks are
 	// per-blueprint, so we need to figure out the blueprint ID for task
-	//progress query reasons.
+	// progress query reasons.
 	var bpId ObjectId
 
 	// maybe the blueprintId is in the URL?
