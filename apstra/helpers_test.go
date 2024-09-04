@@ -437,7 +437,7 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		TemplateId: "L2_Virtual_EVPN",
 	}
 
-	if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion.String()) {
+	if !legacyTemplateWithAddressingPolicy.Check(client.apiVersion) {
 		bpRequest.FabricSettings = &FabricSettings{
 			SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
 			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
@@ -459,7 +459,7 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	}
 
 	// set fabric addressing to enable IPv6
-	if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion.String()) {
+	if !legacyTemplateWithAddressingPolicy.Check(client.apiVersion) {
 		if client.apiVersion.String() == "4.2.1" {
 			// todo - this is temporary
 			err = client.talkToApstra(ctx, &talkToApstraIn{

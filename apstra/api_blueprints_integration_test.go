@@ -62,8 +62,8 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 
 	for clientName, client := range clients {
 		var fabricSettings *FabricSettings
-		if rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.client.apiVersion.String()) {
-			// forbidden in the template means we can use this feature in the blueprint
+		if !legacyTemplateWithAddressingPolicy.Check(client.client.apiVersion) {
+			// current apstra releases put this feature in the blueprint, rather than the template
 			fabricSettings = &FabricSettings{}
 
 			if !fabricL3MtuForbidden.Check(client.client.apiVersion) {
@@ -726,7 +726,7 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 
 	type testCase struct {
 		name string
-		//versionConstraints   version.Constraints
+		// versionConstraints   version.Constraints
 		fabricSettings FabricSettings
 	}
 
@@ -766,7 +766,6 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 				tCase := tCase
 
 				t.Run(tCase.name, func(t *testing.T) {
-
 					bpr := blueprintRequest
 					bpr.FabricSettings = &tCase.fabricSettings
 					t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())

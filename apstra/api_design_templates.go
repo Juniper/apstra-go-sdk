@@ -1432,7 +1432,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 	asnAllocationPolicy := o.AsnAllocationPolicy.raw()
 
 	var fabricAddressingPolicy *rawTemplateFabricAddressingPolicy410Only
-	if o.FabricAddressingPolicy != nil && !rackBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion.String()) {
+	if o.FabricAddressingPolicy != nil && legacyTemplateWithAddressingPolicy.Check(client.apiVersion) {
 		fabricAddressingPolicy = o.FabricAddressingPolicy.raw()
 	}
 
@@ -1552,7 +1552,7 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 	}
 
 	var fabricAddressingPolicy *rawTemplateFabricAddressingPolicy410Only
-	if o.FabricAddressingPolicy != nil && !podBasedTemplateFabricAddressingPolicyForbidden().Includes(client.apiVersion.String()) {
+	if o.FabricAddressingPolicy != nil && legacyTemplateWithAddressingPolicy.Check(client.apiVersion) {
 		fabricAddressingPolicy = o.FabricAddressingPolicy.raw()
 	}
 
