@@ -172,9 +172,10 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 			req := metadataNode{Label: newName}
 			resp := &metadataNode{}
 			log.Printf("testing patchNode(%s) against %s %s (%s)", bpClient.Id(), client.clientType, clientName, client.client.ApiVersion())
-			err := bpClient.PatchNode(ctx, nodeA.Id, req, resp)
-			if err != nil {
-				t.Fatal(err)
+			if patchNodeSupportsUnsafeArg.Check(client.client.apiVersion) {
+				require.NoError(t, bpClient.PatchNodeUnsafe(ctx, nodeA.Id, req, resp))
+			} else {
+				require.NoError(t, bpClient.PatchNode(ctx, nodeA.Id, req, resp))
 			}
 			if resp.Label != newName {
 				t.Fatalf("expected new blueprint name %q, got %q", newName, resp.Label)
