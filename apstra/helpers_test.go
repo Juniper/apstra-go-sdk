@@ -662,6 +662,7 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStage
 // testWidgetsAB instantiates two predefined probes and creates widgets from them,
 // returning the widget Object Id and the IbaWidgetData object used for creation
 func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (ObjectId, IbaWidgetData, ObjectId, IbaWidgetData) {
+	t.Helper()
 	probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "bgp_session",
 		Data: []byte(`{
@@ -670,9 +671,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 			"Threshold": 40
 		}`),
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	probeBId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "drain_node_traffic_anomaly",
@@ -681,9 +680,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 			"Threshold": 100000
 		}`),
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	widgetA := IbaWidgetData{
 		Type:      enum.IbaWidgetTypeStage,
@@ -692,9 +689,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 		StageName: "BGP Session",
 	}
 	widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	widgetB := IbaWidgetData{
 		Type:      enum.IbaWidgetTypeStage,
@@ -703,9 +698,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 		StageName: "excess_range",
 	}
 	widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	return widgetAId, widgetA, widgetBId, widgetB
 }

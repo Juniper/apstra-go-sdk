@@ -831,6 +831,10 @@ func (o *TwoStageL3ClosClient) CreateIbaProbeFromJson(ctx context.Context, probe
 
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDashboard, error) {
+	if geApstra500.Check(o.client.apiVersion) {
+		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	}
+
 	rawDashes, err := o.client.getAllIbaDashboards(ctx, o.blueprintId)
 	if err != nil {
 		return nil, err
@@ -850,6 +854,10 @@ func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDa
 
 // GetIbaDashboard returns the IBA Dashboard that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaDashboard(ctx context.Context, id ObjectId) (*IbaDashboard, error) {
+	if geApstra500.Check(o.client.apiVersion) {
+		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	}
+
 	rawIbaDb, err := o.client.getIbaDashboard(ctx, o.blueprintId, id)
 	if err != nil {
 		return nil, err
@@ -861,6 +869,10 @@ func (o *TwoStageL3ClosClient) GetIbaDashboard(ctx context.Context, id ObjectId)
 // GetIbaDashboardByLabel returns the IBA Dashboard that matches the label.
 // It will return an error if more than one IBA dashboard matches the label.
 func (o *TwoStageL3ClosClient) GetIbaDashboardByLabel(ctx context.Context, label string) (*IbaDashboard, error) {
+	if geApstra500.Check(o.client.apiVersion) {
+		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	}
+
 	rawIbaDb, err := o.client.getIbaDashboardByLabel(ctx, o.blueprintId, label)
 	if err != nil {
 		return nil, err
@@ -872,6 +884,10 @@ func (o *TwoStageL3ClosClient) GetIbaDashboardByLabel(ctx context.Context, label
 // CreateIbaDashboard creates an IBA Dashboard and returns the id of the created dashboard on success,
 // or a blank and error on failure
 func (o *TwoStageL3ClosClient) CreateIbaDashboard(ctx context.Context, data *IbaDashboardData) (ObjectId, error) {
+	if geApstra500.Check(o.client.apiVersion) {
+		return "", fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	}
+
 	id, err := o.client.createIbaDashboard(ctx, o.blueprintId, data.raw())
 	if err != nil {
 		return "", err
@@ -882,11 +898,19 @@ func (o *TwoStageL3ClosClient) CreateIbaDashboard(ctx context.Context, data *Iba
 
 // UpdateIbaDashboard updates an IBA Dashboard and returns an error on failure
 func (o *TwoStageL3ClosClient) UpdateIbaDashboard(ctx context.Context, id ObjectId, data *IbaDashboardData) error {
+	if geApstra500.Check(o.client.apiVersion) {
+		return fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	}
+
 	return o.client.updateIbaDashboard(ctx, o.blueprintId, id, data.raw())
 }
 
 // DeleteIbaDashboard deletes an IBA Dashboard and returns an error on failure
 func (o *TwoStageL3ClosClient) DeleteIbaDashboard(ctx context.Context, id ObjectId) error {
+	if geApstra500.Check(o.client.apiVersion) {
+		return fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	}
+
 	return o.client.deleteIbaDashboard(ctx, o.blueprintId, id)
 }
 
