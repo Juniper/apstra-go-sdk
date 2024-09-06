@@ -3,10 +3,11 @@ package apstra
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/hcl/v2/hclsimple"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/hashicorp/hcl/v2/hclsimple"
 )
 
 const testConfigFile = "../.testconfig.hcl"
@@ -14,14 +15,17 @@ const testConfigFile = "../.testconfig.hcl"
 type TestConfig struct {
 	CloudlabsTopologyIds []string `hcl:"cloudlabs_topology_ids,optional"`
 	AwsTopologyIds       []string `hcl:"aws_topology_ids,optional"`
+	SlicerTopologyIds    []string `hcl:"slicer_topology_ids,optional"`
 }
 
-var testCfg *TestConfig
-var testCfgMutext sync.Mutex
+var (
+	testCfg      *TestConfig
+	testCfgMutex sync.Mutex
+)
 
 func GetTestConfig() (TestConfig, error) {
-	testCfgMutext.Lock()
-	defer testCfgMutext.Unlock()
+	testCfgMutex.Lock()
+	defer testCfgMutex.Unlock()
 
 	if testCfg != nil {
 		return *testCfg, nil

@@ -67,10 +67,10 @@ func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, e
 		}
 	}
 
-	//set logfile
+	// set logfile
 	fileName := fmt.Sprintf("test_%s.log", time.Now().Format("20060102-15:04:05"))
 	fileFlag := os.O_APPEND | os.O_CREATE | os.O_WRONLY
-	f, err := os.OpenFile(fileName, fileFlag, 0644)
+	f, err := os.OpenFile(fileName, fileFlag, 0o644)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,11 @@ func getTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 		testClientCfgs[k] = v
 	}
 
-	// add future type clients (slicer?) to testClients slice here
+	// add slicer to testClients slice here
+	slicerTestClientCfgs, err := getSlicerTestClientCfgs(ctx)
+	for k, v := range slicerTestClientCfgs {
+		testClientCfgs[k] = v
+	}
 
 	return testClientCfgs, nil
 }
