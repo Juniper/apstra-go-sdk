@@ -47,7 +47,7 @@ var (
 
 	legacyTemplateWithAddressingPolicy = version.MustConstraints(version.NewConstraint("<" + apstra411))
 
-	patchNodeSupportsUnsafeArg = version.MustConstraints(version.NewConstraint(">=" + apstra500))
+	patchNodeSupportsUnsafeArg = geApstra500
 )
 
 // SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"

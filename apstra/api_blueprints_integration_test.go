@@ -171,7 +171,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 				req := metadataNode{Label: newName}
 				resp := &metadataNode{}
 				log.Printf("testing patchNode(%s) against %s %s (%s)", bpClient.Id(), client.clientType, clientName, client.client.ApiVersion())
-				if patchNodeSupportsUnsafeArg.Check(client.client.apiVersion) {
+				if patchNodeSupportsUnsafeArg.Check(client.client.apiVersion.Core()) {
 					var ace ClientErr
 					err = bpClient.PatchNode(ctx, nodeA.Id, req, resp)
 					require.Error(t, err)
