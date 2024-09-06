@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -93,12 +95,12 @@ type SecurityZoneData struct {
 	SzType  SecurityZoneType
 	VrfName string
 
-	RoutingPolicyId  ObjectId          // automatically assigned
-	RouteTarget      *string           // can be null
-	RtPolicy         *RtPolicy         // can be null
-	VlanId           *Vlan             // can be null
-	VniId            *int              // can be null
-	JunosEvpnIrbMode *JunosEvpnIrbMode // Apstra 4.2+ only
+	RoutingPolicyId  ObjectId               // automatically assigned
+	RouteTarget      *string                // can be null
+	RtPolicy         *RtPolicy              // can be null
+	VlanId           *Vlan                  // can be null
+	VniId            *int                   // can be null
+	JunosEvpnIrbMode *enum.JunosEvpnIrbMode // Apstra 4.2+ only
 }
 
 func (o SecurityZoneData) raw() *rawSecurityZone {
@@ -161,7 +163,7 @@ func (o rawSecurityZone) polish() (*SecurityZone, error) {
 			RtPolicy:         o.RtPolicy,
 			VlanId:           o.VlanId,
 			VniId:            o.VniId,
-			JunosEvpnIrbMode: JunosEvpnIrbModes.Parse(o.JunosEvpnIrbMode),
+			JunosEvpnIrbMode: enum.JunosEvpnIrbModes.Parse(o.JunosEvpnIrbMode),
 		},
 	}, nil
 }

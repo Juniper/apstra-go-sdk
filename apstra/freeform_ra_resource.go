@@ -8,6 +8,8 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -58,7 +60,7 @@ func (o *FreeformRaResource) UnmarshalJSON(bytes []byte) error {
 var _ json.Marshaler = new(FreeformRaResourceData)
 
 type FreeformRaResourceData struct {
-	ResourceType    FFResourceType
+	ResourceType    enum.FFResourceType
 	Label           string
 	Value           *string
 	AllocatedFrom   *ObjectId
@@ -89,7 +91,7 @@ func (o FreeformRaResourceData) MarshalJSON() ([]byte, error) {
 
 func (o FreeformRaResourceData) validate() error {
 	switch o.ResourceType.String() {
-	case FFResourceTypeAsn.String(), FFResourceTypeInt.String(), FFResourceTypeVni.String(), FFResourceTypeVlan.String():
+	case enum.FFResourceTypeAsn.String(), enum.FFResourceTypeInt.String(), enum.FFResourceTypeVni.String(), enum.FFResourceTypeVlan.String():
 		if o.Value != nil {
 			_, err := strconv.Atoi(*o.Value)
 			if err != nil {
@@ -99,7 +101,7 @@ func (o FreeformRaResourceData) validate() error {
 		if o.SubnetPrefixLen != nil {
 			return fmt.Errorf("subnet prefix len must not be specified when resource type is %q", o.ResourceType)
 		}
-	case FFResourceTypeHostIpv4.String():
+	case enum.FFResourceTypeHostIpv4.String():
 		if o.Value != nil {
 			ip, _, err := net.ParseCIDR(*o.Value)
 			if err != nil {
@@ -113,7 +115,7 @@ func (o FreeformRaResourceData) validate() error {
 		if o.SubnetPrefixLen != nil {
 			return fmt.Errorf("subnet prefix len must not be specified when resource type is %q", o.ResourceType)
 		}
-	case FFResourceTypeHostIpv6.String():
+	case enum.FFResourceTypeHostIpv6.String():
 		if o.Value != nil {
 			ip, _, err := net.ParseCIDR(*o.Value)
 			if err != nil {
@@ -127,7 +129,7 @@ func (o FreeformRaResourceData) validate() error {
 		if o.SubnetPrefixLen != nil {
 			return fmt.Errorf("subnet prefix len must not be specified when resource type is %q", o.ResourceType)
 		}
-	case FFResourceTypeIpv4.String():
+	case enum.FFResourceTypeIpv4.String():
 		var ip net.IP
 		var ipNet *net.IPNet
 		var err error
@@ -150,7 +152,7 @@ func (o FreeformRaResourceData) validate() error {
 				}
 			}
 		}
-	case FFResourceTypeIpv6.String():
+	case enum.FFResourceTypeIpv6.String():
 		var ip net.IP
 		var ipNet *net.IPNet
 		var err error
@@ -229,6 +231,7 @@ func (o *FreeformClient) GetRaResource(ctx context.Context, id ObjectId) (*Freef
 
 	return &response, nil
 }
+
 func (o *FreeformClient) GetRaResourceByName(ctx context.Context, name string) (*FreeformRaResource, error) {
 	all, err := o.GetAllRaResources(ctx)
 	if err != nil {

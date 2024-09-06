@@ -8,6 +8,8 @@ import (
 	"log"
 	"net"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
@@ -30,7 +32,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			SzType:           SecurityZoneTypeEVPN,
 			VrfName:          vrfName,
 			Label:            label,
-			JunosEvpnIrbMode: &JunosEvpnIrbModeSymmetric,
+			JunosEvpnIrbMode: &enum.JunosEvpnIrbModeSymmetric,
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -58,7 +60,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			t.Fatalf("created vs. fetched zone IDs don't match: '%s' and '%s'", zone.Id, zoneId)
 		}
 		if securityZoneJunosEvpnIrbModeRequired().Includes(client.client.apiVersion.String()) {
-			if zone.Data.JunosEvpnIrbMode.Value != JunosEvpnIrbModeSymmetric.Value {
+			if zone.Data.JunosEvpnIrbMode.Value != enum.JunosEvpnIrbModeSymmetric.Value {
 				t.Fatal()
 			}
 		}
@@ -71,7 +73,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			SzType:           SecurityZoneTypeEVPN,
 			VrfName:          vrfName2,
 			Label:            label2,
-			JunosEvpnIrbMode: &JunosEvpnIrbModeAsymmetric,
+			JunosEvpnIrbMode: &enum.JunosEvpnIrbModeAsymmetric,
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -89,7 +91,7 @@ func TestCreateUpdateDeleteRoutingZone(t *testing.T) {
 			t.Fatal()
 		}
 		if securityZoneJunosEvpnIrbModeRequired().Includes(client.client.apiVersion.String()) &&
-			zone.Data.JunosEvpnIrbMode.Value != JunosEvpnIrbModeAsymmetric.Value {
+			zone.Data.JunosEvpnIrbMode.Value != enum.JunosEvpnIrbModeAsymmetric.Value {
 			t.Fatal()
 		}
 

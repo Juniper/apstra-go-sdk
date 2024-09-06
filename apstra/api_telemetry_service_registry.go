@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -20,7 +22,7 @@ var (
 type TelemetryServiceRegistryEntry struct {
 	ServiceName       string
 	ApplicationSchema json.RawMessage
-	StorageSchemaPath StorageSchemaPath
+	StorageSchemaPath enum.StorageSchemaPath
 	Builtin           bool
 	Description       string
 	Version           string

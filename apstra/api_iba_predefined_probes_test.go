@@ -6,9 +6,11 @@ package apstra //
 import (
 	"context"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIbaPredefinedProbes(t *testing.T) {
@@ -70,7 +72,7 @@ func TestIbaPredefinedProbes(t *testing.T) {
 			t.Logf("Got back Probe Id %s \n Now Make a Widget with it.", probeId)
 
 			widgetId, err := bpClient.CreateIbaWidget(ctx, &IbaWidgetData{
-				Type:      IbaWidgetTypeStage,
+				Type:      enum.IbaWidgetTypeStage,
 				ProbeId:   probeId,
 				Label:     p.Name,
 				StageName: p.Name,

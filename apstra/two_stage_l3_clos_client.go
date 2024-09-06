@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
 )
 
@@ -171,7 +172,7 @@ func (o *TwoStageL3ClosClient) SetInterfaceMapAssignments(ctx context.Context, a
 func (o *TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg *SecurityZoneData) (ObjectId, error) {
 	raw := cfg.raw()
 	if raw.JunosEvpnIrbMode == "" && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion.String()) {
-		raw.JunosEvpnIrbMode = JunosEvpnIrbModeAsymmetric.Value
+		raw.JunosEvpnIrbMode = enum.JunosEvpnIrbModeAsymmetric.Value
 	}
 
 	response, err := o.createSecurityZone(ctx, raw)

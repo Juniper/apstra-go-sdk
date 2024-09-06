@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,19 +52,19 @@ func TestRoutingZoneConstraints(t *testing.T) {
 					steps: []RoutingZoneConstraintData{
 						{
 							Label: randString(8, "hex"),
-							Mode:  RoutingZoneConstraintModeAllow,
+							Mode:  enum.RoutingZoneConstraintModeAllow,
 						},
 						{
 							Label: randString(8, "hex"),
-							Mode:  RoutingZoneConstraintModeDeny,
+							Mode:  enum.RoutingZoneConstraintModeDeny,
 						},
 						{
 							Label: randString(8, "hex"),
-							Mode:  RoutingZoneConstraintModeNone,
+							Mode:  enum.RoutingZoneConstraintModeNone,
 						},
 						{
 							Label: randString(8, "hex"),
-							Mode:  RoutingZoneConstraintModeAllow,
+							Mode:  enum.RoutingZoneConstraintModeAllow,
 						},
 					},
 				},
@@ -71,19 +72,19 @@ func TestRoutingZoneConstraints(t *testing.T) {
 					steps: []RoutingZoneConstraintData{
 						{
 							Label: "change_mode_only",
-							Mode:  RoutingZoneConstraintModeAllow,
+							Mode:  enum.RoutingZoneConstraintModeAllow,
 						},
 						{
 							Label: "change_mode_only",
-							Mode:  RoutingZoneConstraintModeDeny,
+							Mode:  enum.RoutingZoneConstraintModeDeny,
 						},
 						{
 							Label: "change_mode_only",
-							Mode:  RoutingZoneConstraintModeNone,
+							Mode:  enum.RoutingZoneConstraintModeNone,
 						},
 						{
 							Label: "change_mode_only",
-							Mode:  RoutingZoneConstraintModeAllow,
+							Mode:  enum.RoutingZoneConstraintModeAllow,
 						},
 					},
 				},
@@ -91,27 +92,27 @@ func TestRoutingZoneConstraints(t *testing.T) {
 					steps: []RoutingZoneConstraintData{
 						{
 							Label:           "change_max_only",
-							Mode:            RoutingZoneConstraintModeAllow,
+							Mode:            enum.RoutingZoneConstraintModeAllow,
 							MaxRoutingZones: nil,
 						},
 						{
 							Label:           "change_max_only",
-							Mode:            RoutingZoneConstraintModeAllow,
+							Mode:            enum.RoutingZoneConstraintModeAllow,
 							MaxRoutingZones: toPtr(0),
 						},
 						{
 							Label:           "change_max_only",
-							Mode:            RoutingZoneConstraintModeAllow,
+							Mode:            enum.RoutingZoneConstraintModeAllow,
 							MaxRoutingZones: nil,
 						},
 						{
 							Label:           "change_max_only",
-							Mode:            RoutingZoneConstraintModeAllow,
+							Mode:            enum.RoutingZoneConstraintModeAllow,
 							MaxRoutingZones: toPtr(1),
 						},
 						{
 							Label:           "change_max_only",
-							Mode:            RoutingZoneConstraintModeAllow,
+							Mode:            enum.RoutingZoneConstraintModeAllow,
 							MaxRoutingZones: toPtr(2),
 						},
 					},
@@ -120,27 +121,27 @@ func TestRoutingZoneConstraints(t *testing.T) {
 					steps: []RoutingZoneConstraintData{
 						{
 							Label:          "change_rz_ids_only",
-							Mode:           RoutingZoneConstraintModeAllow,
+							Mode:           enum.RoutingZoneConstraintModeAllow,
 							RoutingZoneIds: nil,
 						},
 						{
 							Label:          "change_rz_ids_only",
-							Mode:           RoutingZoneConstraintModeAllow,
+							Mode:           enum.RoutingZoneConstraintModeAllow,
 							RoutingZoneIds: []ObjectId{testSecurityZone(t, ctx, bpClient)},
 						},
 						{
 							Label:          "change_rz_ids_only",
-							Mode:           RoutingZoneConstraintModeAllow,
+							Mode:           enum.RoutingZoneConstraintModeAllow,
 							RoutingZoneIds: []ObjectId{},
 						},
 						{
 							Label:          "change_rz_ids_only",
-							Mode:           RoutingZoneConstraintModeAllow,
+							Mode:           enum.RoutingZoneConstraintModeAllow,
 							RoutingZoneIds: []ObjectId{testSecurityZone(t, ctx, bpClient), testSecurityZone(t, ctx, bpClient)},
 						},
 						{
 							Label:          "change_rz_ids_only",
-							Mode:           RoutingZoneConstraintModeAllow,
+							Mode:           enum.RoutingZoneConstraintModeAllow,
 							RoutingZoneIds: nil,
 						},
 					},

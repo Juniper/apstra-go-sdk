@@ -10,6 +10,8 @@ import (
 	"math/rand"
 	"strconv"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestPortRangeString(t *testing.T) {
@@ -137,14 +139,13 @@ func comparePolicyRules(aName string, a PolicyRule, bName string, b PolicyRule, 
 	aData := a.Data != nil
 	bData := b.Data != nil
 
-	if (aData || bData) && !(aData && bData) { //xor
+	if (aData || bData) && !(aData && bData) { // xor
 		t.Fatalf("Policy Rule data presence mismatch -- a: %t vs. b: %t", aData, bData)
 	}
 
 	if aData && bData {
 		comparePolicyRuleData(aName, a.Data, bName, b.Data, t)
 	}
-
 }
 
 func comparePolicyRuleData(aName string, a *PolicyRuleData, bName string, b *PolicyRuleData, t *testing.T) {
@@ -182,7 +183,7 @@ func comparePolicyRuleData(aName string, a *PolicyRuleData, bName string, b *Pol
 
 	aTcpStateQualifier := a.TcpStateQualifier != nil
 	bTcpStateQualifier := b.TcpStateQualifier != nil
-	if (aTcpStateQualifier || bTcpStateQualifier) && !(aTcpStateQualifier && bTcpStateQualifier) { //xor
+	if (aTcpStateQualifier || bTcpStateQualifier) && !(aTcpStateQualifier && bTcpStateQualifier) { // xor
 		t.Fatalf("TCP state qualifier presence mismatch -- a: %t vs. b: %t", aTcpStateQualifier, bTcpStateQualifier)
 	}
 
@@ -416,11 +417,11 @@ func TestAddDeletePolicyRule(t *testing.T) {
 		newRule := &PolicyRuleData{
 			Label:             randString(5, "hex"),
 			Description:       randString(5, "hex"),
-			Protocol:          PolicyRuleProtocolTcp,
-			Action:            PolicyRuleActionDenyLog,
+			Protocol:          enum.PolicyRuleProtocolTcp,
+			Action:            enum.PolicyRuleActionDenyLog,
 			SrcPort:           PortRanges{{5, 6}},
 			DstPort:           PortRanges{{7, 8}, {9, 10}},
-			TcpStateQualifier: &TcpStateQualifierEstablished,
+			TcpStateQualifier: &enum.TcpStateQualifierEstablished,
 		}
 
 		p, err := bp.getPolicy(ctx, policyId)

@@ -10,6 +10,8 @@ import (
 	"net"
 	"sort"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func ensureRemoteGatewayDataEqual(t *testing.T, a, b *RemoteGatewayData, skipNilValues bool) {
@@ -95,7 +97,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 	}
 
 	var remoteGwCfgs []RemoteGatewayData
-	for _, routeType := range RemoteGatewayRouteTypesEnum.Members() {
+	for _, routeType := range enum.RemoteGatewayRouteTypesEnum.Members() {
 		remoteGwCfgs = append(remoteGwCfgs, RemoteGatewayData{
 			RouteTypes:     routeType,
 			LocalGwNodes:   nil, // blueprint-specific details set in client loop below
@@ -110,7 +112,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 	}
 
 	randomGwCfgWithNil := RemoteGatewayData{
-		RouteTypes:   RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(RemoteGatewayRouteTypesEnum.Members()))],
+		RouteTypes:   enum.RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(enum.RemoteGatewayRouteTypesEnum.Members()))],
 		LocalGwNodes: nil,
 		GwAsn:        rand.Uint32(),
 	}
@@ -120,7 +122,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 	randHoldtimeTimer := uint16(rand.Int())
 	randomPassword := randString(5, "hex")
 	randomGwCfg := RemoteGatewayData{
-		RouteTypes:     RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(RemoteGatewayRouteTypesEnum.Members()))],
+		RouteTypes:     enum.RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(enum.RemoteGatewayRouteTypesEnum.Members()))],
 		LocalGwNodes:   nil,
 		GwAsn:          rand.Uint32(),
 		Ttl:            &randTtl,

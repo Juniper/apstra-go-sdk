@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -55,7 +57,7 @@ func (o *FreeformResourceGenerator) UnmarshalJSON(bytes []byte) error {
 var _ json.Marshaler = new(FreeformResourceGeneratorData)
 
 type FreeformResourceGeneratorData struct {
-	ResourceType       FFResourceType
+	ResourceType       enum.FFResourceType
 	Label              string
 	Scope              string
 	AllocatedFrom      *ObjectId

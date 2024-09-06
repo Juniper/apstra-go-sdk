@@ -5,9 +5,11 @@ package apstra
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTelemetryServiceRegistry(t *testing.T) {
@@ -81,7 +83,7 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 
 		entry := TelemetryServiceRegistryEntry{
 			ServiceName:       name,
-			StorageSchemaPath: StorageSchemaPathIBA_INTEGER_DATA,
+			StorageSchemaPath: enum.StorageSchemaPathIBA_INTEGER_DATA,
 			ApplicationSchema: []byte(schema),
 			Builtin:           false,
 			Description:       "Test Service",
@@ -147,7 +149,7 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 	}`
 		entry = TelemetryServiceRegistryEntry{
 			ServiceName:       name,
-			StorageSchemaPath: StorageSchemaPathIBA_INTEGER_DATA,
+			StorageSchemaPath: enum.StorageSchemaPathIBA_INTEGER_DATA,
 			ApplicationSchema: []byte(schema),
 			Builtin:           false,
 			Description:       "Test Service",
