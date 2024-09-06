@@ -39,6 +39,7 @@ const (
 	ErrAgentProfilePlatformRequired
 	ErrIbaCurrentMountConflictsWithExistingMount
 	ErrInvalidId
+	ErrUnsafePatchProhibited
 
 	clientPollingIntervalMs = 1000
 
@@ -1488,10 +1489,18 @@ func (o *Client) GetNodes(ctx context.Context, blueprint ObjectId, nodeType Node
 }
 
 // PatchNode patches (only submitted fields are changed) the specified node
-// using the contents of 'request', the server's response (whole node info
+// using the contents of 'request'. The server's response (whole node info
 // without map wrapper?) is returned in 'response'
 func (o *Client) PatchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
-	return o.patchNode(ctx, blueprint, node, request, response)
+	return o.patchNode(ctx, blueprint, node, request, response, false)
+}
+
+// PatchNodeUnsafe patches (only submitted fields are changed) the specified node
+// using the contents of 'request', and the "allow_unsafe=true" request parameter
+// required by Apstra 5.0.0. The server's response (whole node info
+// without map wrapper?) is returned in 'response'
+func (o *Client) PatchNodeUnsafe(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
+	return o.patchNode(ctx, blueprint, node, request, response, true)
 }
 
 // PatchNodes patches (only submitted fields are changed) nodes described

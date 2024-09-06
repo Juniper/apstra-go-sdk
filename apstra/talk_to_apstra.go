@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -19,6 +20,7 @@ const (
 	apstraApiAsyncParamKey          = "async"
 	apstraApiAsyncParamValFull      = "full"
 	apstraApiAsyncParamValPartial   = "partial" // default?
+	apstraApiUnsafeParamKey         = "allow_unsafe"
 	errResponseBodyLimit            = 4096
 	errResponseStringLimit          = 1024
 	peekSizeForApstraTaskIdResponse = math.MaxUint8
@@ -50,6 +52,7 @@ type talkToApstraIn struct {
 	doNotLogin     bool        // when set, Client will not attempt login (we set for anti-recursion)
 	unsynchronized bool        // default behavior is to send apstraApiAsyncParamValFull, block until task completion
 	httpBodyWriter io.Writer   // when non-nil, http body will be written here instead of unpacked into apiResponse
+	unsafe         bool        // when true, set allow_unsafe=true HTTP query string parameter
 }
 
 type apstraErr struct {
@@ -76,6 +79,9 @@ func convertTtaeToAceWherePossible(err error) error {
 			return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
 		case http.StatusUnprocessableEntity:
 			switch {
+			case strings.Contains(ttae.Msg, "Direct graph modification operation is unsafe") &&
+				strings.Contains(ttae.Msg, "If you want to proceed with this PATCH API call"):
+				return ClientErr{errType: ErrUnsafePatchProhibited, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "No value in either user config or profile"):
 				return ClientErr{errType: ErrAgentProfilePlatformRequired, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "already exists"):
@@ -144,9 +150,21 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 
 	result.Path = o.baseUrl.Path + result.Path // path is cumulative, baseUrl can be empty
 
+	// set query string parameters
+	params := result.Query()
+	var paramsChanged bool
+
 	if !in.unsynchronized {
-		params := result.Query()
 		params.Set(apstraApiAsyncParamKey, apstraApiAsyncParamValFull)
+		paramsChanged = true
+	}
+
+	if in.unsafe {
+		params.Set(apstraApiUnsafeParamKey, strconv.FormatBool(in.unsafe))
+		paramsChanged = true
+	}
+
+	if paramsChanged {
 		result.RawQuery = params.Encode()
 	}
 
@@ -196,10 +214,11 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		return fmt.Errorf("error creating http Request for url '%s' - %w", apstraUrl.String(), err)
 	}
 
-	// set request httpHeaders
+	// set the Content-Type request header if we're sending any payload
 	if in.apiInput != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+
 	o.lock(mutexKeyHttpHeaders)
 	for k, v := range o.httpHeaders {
 		req.Header.Set(k, v)
@@ -289,7 +308,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	// we got a task ID, instead of the expected response object. tasks are
 	// per-blueprint, so we need to figure out the blueprint ID for task
-	//progress query reasons.
+	// progress query reasons.
 	var bpId ObjectId
 
 	// maybe the blueprintId is in the URL?

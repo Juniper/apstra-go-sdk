@@ -628,12 +628,13 @@ func (o *Client) getNode(ctx context.Context, blueprintId ObjectId, nodeId Objec
 	return convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}) error {
+func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}, unsafe bool) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPatch,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, blueprint, node),
 		apiInput:    request,
 		apiResponse: response,
+		unsafe:      unsafe,
 	})
 	return convertTtaeToAceWherePossible(err)
 }

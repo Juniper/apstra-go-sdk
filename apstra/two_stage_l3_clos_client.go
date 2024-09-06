@@ -461,10 +461,18 @@ func (o *TwoStageL3ClosClient) GetNodes(ctx context.Context, nodeType NodeType, 
 }
 
 // PatchNode patches (only submitted fields are changed) the specified node
-// using the contents of 'request', the server's response (whole node info
+// using the contents of 'request'. The server's response (whole node info
 // without map wrapper?) is returned in 'response'
 func (o *TwoStageL3ClosClient) PatchNode(ctx context.Context, node ObjectId, request interface{}, response interface{}) error {
 	return o.client.PatchNode(ctx, o.blueprintId, node, request, response)
+}
+
+// PatchNodeUnsafe patches (only submitted fields are changed) the specified node
+// using the contents of 'request', and the "allow_unsafe=true" request parameter
+// required by Apstra 5.0.0. The server's response (whole node info
+// without map wrapper?) is returned in 'response'
+func (o *TwoStageL3ClosClient) PatchNodeUnsafe(ctx context.Context, node ObjectId, request interface{}, response interface{}) error {
+	return o.client.PatchNodeUnsafe(ctx, o.blueprintId, node, request, response)
 }
 
 // Client returns the embedded *Client
