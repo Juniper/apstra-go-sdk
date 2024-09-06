@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/orsinium-labs/enum v1.3.0
 	github.com/stretchr/testify v1.8.1
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.33.0
 	mvdan.cc/gofumpt v0.6.0
 )
 
@@ -31,7 +31,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.9 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-logr/logr v1.2.0 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/licenseclassifier/v2 v2.0.0 // indirect
