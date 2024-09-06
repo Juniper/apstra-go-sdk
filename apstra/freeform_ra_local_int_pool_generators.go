@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -54,7 +56,7 @@ func (o *FreeformRaLocalIntPoolGenerator) UnmarshalJSON(bytes []byte) error {
 }
 
 type FreeformRaLocalIntPoolGeneratorData struct {
-	ResourceType FFResourceType
+	ResourceType enum.FFResourceType
 	Label        string
 	Scope        string
 	Chunks       []FFLocalIntPoolChunk

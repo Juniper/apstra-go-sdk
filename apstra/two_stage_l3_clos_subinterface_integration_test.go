@@ -9,6 +9,7 @@ import (
 	"net"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -189,8 +190,8 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 			// prep an API payload for each end of the link
 			for i, endpoint := range link.Endpoints {
 				subinterfaceConfigs[endpoint.SubinterfaceId] = TwoStageL3ClosSubinterface{
-					Ipv4AddrType: InterfaceNumberingIpv4TypeNumbered,
-					Ipv6AddrType: InterfaceNumberingIpv6TypeNumbered,
+					Ipv4AddrType: enum.InterfaceNumberingIpv4TypeNumbered,
+					Ipv6AddrType: enum.InterfaceNumberingIpv6TypeNumbered,
 					Ipv4Addr:     &v4prefixes[i],
 					Ipv6Addr:     &v6prefixes[i],
 				}
@@ -238,8 +239,8 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 			// prep an API payload for each end of the link
 			for _, endpoint := range link.Endpoints {
 				subinterfaceConfigs[endpoint.SubinterfaceId] = TwoStageL3ClosSubinterface{
-					Ipv4AddrType: InterfaceNumberingIpv4TypeNone,
-					Ipv6AddrType: InterfaceNumberingIpv6TypeNone,
+					Ipv4AddrType: enum.InterfaceNumberingIpv4TypeNone,
+					Ipv6AddrType: enum.InterfaceNumberingIpv6TypeNone,
 				}
 			}
 		}

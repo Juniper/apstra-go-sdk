@@ -7,6 +7,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,7 +36,7 @@ func TestCRUDAsnAllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: ResourcePoolTypeAsn,
+			Type: enum.ResourcePoolTypeAsn,
 			PoolIds: []ObjectId{
 				testAsnPool(ctx, t, ffc.client),
 			},
@@ -89,7 +90,7 @@ func TestCRUDIntAllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: ResourcePoolTypeInt,
+			Type: enum.ResourcePoolTypeInt,
 			PoolIds: []ObjectId{
 				testIntPool(ctx, t, ffc.client),
 			},
@@ -143,7 +144,7 @@ func TestCRUDVniAllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: ResourcePoolTypeVni,
+			Type: enum.ResourcePoolTypeVni,
 			PoolIds: []ObjectId{
 				testVniPool(ctx, t, ffc.client),
 			},
@@ -197,7 +198,7 @@ func TestCRUDIpv4AllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: ResourcePoolTypeIpv4,
+			Type: enum.ResourcePoolTypeIpv4,
 			PoolIds: []ObjectId{
 				testIpv4Pool(ctx, t, ffc.client),
 			},
@@ -251,7 +252,7 @@ func TestCRUDIpv6AllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: ResourcePoolTypeIpv6,
+			Type: enum.ResourcePoolTypeIpv6,
 			PoolIds: []ObjectId{
 				testIpv6Pool(ctx, t, ffc.client),
 			},

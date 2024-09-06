@@ -8,6 +8,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
 )
 
@@ -155,7 +156,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 					Mode:                     AntiAffinityModeEnabledStrict,
 				},
 				EsiMacMsb:                   toPtr(uint8(4)),
-				EvpnGenerateType5HostRoutes: &FeatureSwitchEnumEnabled,
+				EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnumEnabled,
 				ExternalRouterMtu:           toPtr(uint16(9002)),
 				Ipv6Enabled:                 toPtr(false), // do not enable because it's a one-way trip
 				MaxEvpnRoutes:               toPtr(uint32(10000)),
@@ -175,7 +176,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 					Mode:                     AntiAffinityModeEnabledLoose,
 				},
 				EsiMacMsb:                   toPtr(uint8(6)),
-				EvpnGenerateType5HostRoutes: &FeatureSwitchEnumDisabled,
+				EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnumDisabled,
 				ExternalRouterMtu:           toPtr(uint16(9004)),
 				Ipv6Enabled:                 toPtr(false), // do not enable because it's a one-way trip
 				MaxEvpnRoutes:               toPtr(uint32(20000)),
@@ -190,15 +191,15 @@ func TestSetGetFabricSettings(t *testing.T) {
 				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),
 				MaxExternalRoutes:                     toPtr(uint32(239832)),
 				EsiMacMsb:                             toPtr(uint8(32)),
-				JunosGracefulRestart:                  &FeatureSwitchEnumDisabled,
-				OptimiseSzFootprint:                   &FeatureSwitchEnumEnabled,
-				JunosEvpnRoutingInstanceVlanAware:     &FeatureSwitchEnumEnabled,
-				EvpnGenerateType5HostRoutes:           &FeatureSwitchEnumEnabled,
+				JunosGracefulRestart:                  &enum.FeatureSwitchEnumDisabled,
+				OptimiseSzFootprint:                   &enum.FeatureSwitchEnumEnabled,
+				JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchEnumEnabled,
+				EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchEnumEnabled,
 				MaxFabricRoutes:                       toPtr(uint32(84231)),
 				MaxMlagRoutes:                         toPtr(uint32(76112)),
-				JunosExOverlayEcmp:                    &FeatureSwitchEnumDisabled,
+				JunosExOverlayEcmp:                    &enum.FeatureSwitchEnumDisabled,
 				DefaultSviL3Mtu:                       toPtr(uint16(9100)),
-				JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumDisabled,
+				JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchEnumDisabled,
 				FabricL3Mtu:                           toPtr(uint16(9178)),
 				Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
 				ExternalRouterMtu:                     toPtr(uint16(9100)),
@@ -219,15 +220,15 @@ func TestSetGetFabricSettings(t *testing.T) {
 				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(15)),
 				MaxExternalRoutes:                     toPtr(uint32(239732)),
 				EsiMacMsb:                             toPtr(uint8(30)),
-				JunosGracefulRestart:                  &FeatureSwitchEnumEnabled,
-				OptimiseSzFootprint:                   &FeatureSwitchEnumDisabled,
-				JunosEvpnRoutingInstanceVlanAware:     &FeatureSwitchEnumDisabled,
-				EvpnGenerateType5HostRoutes:           &FeatureSwitchEnumEnabled,
+				JunosGracefulRestart:                  &enum.FeatureSwitchEnumEnabled,
+				OptimiseSzFootprint:                   &enum.FeatureSwitchEnumDisabled,
+				JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchEnumDisabled,
+				EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchEnumEnabled,
 				MaxFabricRoutes:                       toPtr(uint32(84230)),
 				MaxMlagRoutes:                         toPtr(uint32(76110)),
-				JunosExOverlayEcmp:                    &FeatureSwitchEnumEnabled,
+				JunosExOverlayEcmp:                    &enum.FeatureSwitchEnumEnabled,
 				DefaultSviL3Mtu:                       toPtr(uint16(9050)),
-				JunosEvpnMaxNexthopAndInterfaceNumber: &FeatureSwitchEnumEnabled,
+				JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchEnumEnabled,
 				FabricL3Mtu:                           toPtr(uint16(9176)),
 				Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
 				ExternalRouterMtu:                     toPtr(uint16(9050)),
@@ -368,7 +369,7 @@ func TestSetGetFabricSettingsV6(t *testing.T) {
 					Mode:                     AntiAffinityModeEnabledStrict,
 				},
 				EsiMacMsb:                   toPtr(uint8(4)),
-				EvpnGenerateType5HostRoutes: &FeatureSwitchEnumEnabled,
+				EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnumEnabled,
 				ExternalRouterMtu:           toPtr(uint16(9002)),
 				Ipv6Enabled:                 toPtr(true),
 				MaxEvpnRoutes:               toPtr(uint32(10000)),

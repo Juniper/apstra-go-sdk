@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -69,7 +70,7 @@ func TestCRUDRaResource(t *testing.T) {
 		cfg := FreeformRaResourceData{
 			Label:        randString(6, "hex"),
 			GroupId:      groupId,
-			ResourceType: FFResourceTypeAsn,
+			ResourceType: enum.FFResourceTypeAsn,
 			Value:        toPtr(strconv.Itoa(65535)),
 		}
 
@@ -87,7 +88,7 @@ func TestCRUDRaResource(t *testing.T) {
 		cfg = FreeformRaResourceData{
 			Label:           randString(6, "hex"),
 			GroupId:         groupId,
-			ResourceType:    FFResourceTypeIpv4,
+			ResourceType:    enum.FFResourceTypeIpv4,
 			Value:           toPtr(prefix.String()),
 			SubnetPrefixLen: toPtr(24),
 		}

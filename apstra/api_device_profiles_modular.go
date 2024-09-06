@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 type rawModularDeviceSlotConfiguration struct {
@@ -23,7 +25,7 @@ type ModularDeviceProfile struct {
 
 func (o *ModularDeviceProfile) raw() *rawModularDeviceProfile {
 	result := &rawModularDeviceProfile{
-		DeviceProfileType:  DeviceProfileTypeModular.Value,
+		DeviceProfileType:  enum.DeviceProfileTypeModular.Value,
 		Label:              o.Label,
 		ChassisProfileId:   o.ChassisProfileId,
 		SlotConfigurations: make([]rawModularDeviceSlotConfiguration, len(o.SlotConfigurations)),

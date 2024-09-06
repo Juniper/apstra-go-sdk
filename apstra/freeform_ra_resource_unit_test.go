@@ -6,6 +6,8 @@ package apstra
 import (
 	"fmt"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestRaResourceValidate(t *testing.T) {
@@ -16,7 +18,7 @@ func TestRaResourceValidate(t *testing.T) {
 	testCases := []testCase{
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeInt,
+				ResourceType:    enum.FFResourceTypeInt,
 				Label:           randString(6, "hex"),
 				Value:           nil,
 				AllocatedFrom:   nil,
@@ -28,7 +30,7 @@ func TestRaResourceValidate(t *testing.T) {
 		},
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeInt,
+				ResourceType:    enum.FFResourceTypeInt,
 				Label:           randString(6, "hex"),
 				Value:           toPtr("1"),
 				AllocatedFrom:   nil,
@@ -40,7 +42,7 @@ func TestRaResourceValidate(t *testing.T) {
 		},
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeInt,
+				ResourceType:    enum.FFResourceTypeInt,
 				Label:           randString(6, "hex"),
 				Value:           toPtr("foo"),
 				AllocatedFrom:   nil,
@@ -52,7 +54,7 @@ func TestRaResourceValidate(t *testing.T) {
 		},
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeHostIpv4,
+				ResourceType:    enum.FFResourceTypeHostIpv4,
 				Label:           randString(6, "hex"),
 				Value:           toPtr("192.168.2.1/24"),
 				AllocatedFrom:   nil,
@@ -64,7 +66,7 @@ func TestRaResourceValidate(t *testing.T) {
 		},
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeIpv4,
+				ResourceType:    enum.FFResourceTypeIpv4,
 				Label:           randString(6, "hex"),
 				Value:           toPtr("192.168.2.0/24"),
 				AllocatedFrom:   nil,
@@ -76,7 +78,7 @@ func TestRaResourceValidate(t *testing.T) {
 		},
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeIpv4,
+				ResourceType:    enum.FFResourceTypeIpv4,
 				Label:           randString(6, "hex"),
 				Value:           toPtr("192.168.2.1/24"),
 				AllocatedFrom:   nil,
@@ -88,7 +90,7 @@ func TestRaResourceValidate(t *testing.T) {
 		},
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeIpv4,
+				ResourceType:    enum.FFResourceTypeIpv4,
 				Label:           randString(6, "hex"),
 				Value:           toPtr("2001:db8:3333:4444:5555:6666:7777:8888/64"),
 				AllocatedFrom:   nil,
@@ -100,7 +102,7 @@ func TestRaResourceValidate(t *testing.T) {
 		},
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeIpv6,
+				ResourceType:    enum.FFResourceTypeIpv6,
 				Label:           randString(6, "hex"),
 				Value:           toPtr("2001:db8:abcd:0012::0/64"),
 				AllocatedFrom:   nil,
@@ -112,7 +114,7 @@ func TestRaResourceValidate(t *testing.T) {
 		},
 		{
 			data: FreeformRaResourceData{
-				ResourceType:    FFResourceTypeVlan,
+				ResourceType:    enum.FFResourceTypeVlan,
 				Label:           randString(6, "hex"),
 				Value:           toPtr("blue"),
 				AllocatedFrom:   nil,
