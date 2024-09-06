@@ -10,6 +10,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -36,14 +38,14 @@ type testClient struct {
 var testClients map[string]testClient
 
 func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, error) {
+	t.Helper()
+
 	if testClients != nil {
 		return testClients, nil
 	}
 
 	clientCfgs, err := getTestClientCfgs(ctx)
-	if err != nil {
-		return nil, err
-	}
+	require.NoError(t, err)
 
 	if _, ok := os.LookupEnv(envApstraExperimental); ok {
 		for k := range clientCfgs {
@@ -58,9 +60,8 @@ func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, e
 	testClients = make(map[string]testClient, len(clientCfgs))
 	for k, cfg := range clientCfgs {
 		client, err := cfg.cfg.NewClient(ctx)
-		if err != nil {
-			return nil, err
-		}
+		require.NoError(t, err)
+
 		testClients[k] = testClient{
 			clientType: cfg.cfgType,
 			client:     client,
@@ -71,13 +72,13 @@ func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, e
 	fileName := fmt.Sprintf("test_%s.log", time.Now().Format("20060102-15:04:05"))
 	fileFlag := os.O_APPEND | os.O_CREATE | os.O_WRONLY
 	f, err := os.OpenFile(fileName, fileFlag, 0o644)
-	if err != nil {
-		return nil, err
-	}
+	require.NoError(t, err)
+
 	// There are no test clients. Might be worth logging
 	if len(testClients) == 0 {
-		t.Fatal("Error : There seem to be no clients. Check the environment variables.")
+		t.Fatal("Error : There seem to be no clients. Check the environment variables and/or config file.")
 	}
+
 	for k := range testClients {
 		testClients[k].client.logger = log.New(f, "", log.LstdFlags)
 		testClients[k].client.cfg.LogLevel = 1

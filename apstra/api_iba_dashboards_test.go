@@ -1,138 +1,120 @@
 //go:build integration
-// +build integration
 
 package apstra
 
 import (
 	"context"
 	"fmt"
-	"log"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 	ctx := context.Background()
+
 	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	for clientName, client := range clients {
-		t.Run(fmt.Sprintf("%s_%s", clientName, client.client.apiVersion), func(*testing.T) {
+		clientName, client := clientName, client
+
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+
 			if geApstra500.Check(client.client.apiVersion) {
 				t.Skipf("skipping test due to unsupported API changes in %s", client.client.apiVersion)
 			}
 
-			log.Printf("testing IBA Dashboard code against %s %s (%s)", client.clientType, clientName,
-				client.client.ApiVersion())
-
 			bpClient := testBlueprintA(ctx, t, client.client)
-
 			widgetAId, _, widgetBId, _ := testWidgetsAB(ctx, t, bpClient)
 
-			data := IbaDashboardData{
+			ds, err := bpClient.GetAllIbaDashboards(ctx)
+			require.NoError(t, err)
+			require.Equalf(t, 0, len(ds), "Expected no dashboards, got %d.", len(ds))
+
+			req1 := IbaDashboardData{
 				Description:   "Test Dashboard",
 				Default:       false,
 				Label:         "Test Dash",
 				IbaWidgetGrid: [][]ObjectId{{widgetAId, widgetBId}, {widgetAId, widgetBId}},
 			}
+			id, err := bpClient.CreateIbaDashboard(ctx, &req1)
+			require.NoError(t, err)
 
-			ds, err := bpClient.GetAllIbaDashboards(ctx)
-			l := len(ds)
-			if l != 0 {
-				t.Fatalf("Expected no dashboards. got %d", l)
-			}
-
-			t.Logf("Test Create Dashboard")
-			id, err := bpClient.CreateIbaDashboard(ctx, &data)
-			if err != nil {
-				t.Log(data)
-				t.Fatal(err)
-			}
-
-			data2 := IbaDashboardData{
+			req2 := IbaDashboardData{
 				Description:   "Test Dashboard Backup",
 				Default:       false,
 				Label:         "Test Dash B",
 				IbaWidgetGrid: [][]ObjectId{{widgetAId, widgetBId}, {widgetAId, widgetBId}},
 			}
-
-			t.Logf("Test Create Second Dashboard")
-			_, err = bpClient.CreateIbaDashboard(ctx, &data2)
-			if err != nil {
-				t.Log(data)
-				t.Fatal(err)
-			}
+			_, err = bpClient.CreateIbaDashboard(ctx, &req2)
+			require.NoError(t, err)
 
 			ds, err = bpClient.GetAllIbaDashboards(ctx)
-			l = len(ds)
-			t.Logf("Found %d dashboards", l)
-			if l != 2 {
-				t.Fatalf("Expected 2 dashboards. got %d", l)
-			}
+			require.NoError(t, err)
+
+			require.Equalf(t, 2, len(ds), "expected %d dashboards, got %d", 2, len(ds))
 
 			checkDashes := func() {
-				t.Log("Test GetIbaDashboard")
 				d1, err := bpClient.GetIbaDashboard(ctx, id)
-				if err != nil {
-					t.Log(id)
-					t.Fatal(err)
+				require.NoError(t, err)
+
+				d2, err := bpClient.GetIbaDashboardByLabel(ctx, d1.Data.Label)
+				require.NoError(t, err)
+
+				priorValue := req1.UpdatedBy
+				req1.UpdatedBy = d1.Data.UpdatedBy // this wasn't part of the request
+				if !reflect.DeepEqual(req1, *d1.Data) {
+					t.Fatal("Dashboard request doesn't match GetIbaDashboard.Data")
 				}
-				t.Log("Test GetIbaDashboardByLabel")
-				d2, err := bpClient.GetIbaDashboardByLabel(ctx, data.Label)
-				if err != nil {
-					t.Log(data.Label)
-					t.Fatal(err)
-				}
-				t.Log("Dashboard Data")
-				t.Log(data)
-				t.Log("IBA Probe by Id")
-				t.Log(d1)
-				t.Log("IBA Dashboard by Name")
-				t.Log(d2)
+				req1.UpdatedBy = priorValue // restore prior value
 
 				if !reflect.DeepEqual(d1, d2) {
 					t.Fatal("GetIbaDashboardByLabel gets different object than GetIbaDashboard")
 				}
-				t.Log("Ensure Data matches")
-				t.Log(d1.Data)
-
-				if d1.Data.Label != data.Label {
-					t.Fatal("IBA Dashboard Label mismatch")
-				}
-				if d1.Data.Default != data.Default {
-					t.Fatal("IBA Dasboard Default mismatch")
-				}
-				if d1.Data.Description != data.Description {
-					t.Fatal("IBA Dashboard Description mismatch")
-				}
-				if !reflect.DeepEqual(d1.Data.IbaWidgetGrid, data.IbaWidgetGrid) {
-					t.Fatal("Widget Grid mismatch")
-				}
 			}
 			checkDashes()
 
-			t.Log("Test Update Dashboard")
-			data.Label = "Test Dash 2"
-			data.IbaWidgetGrid = append(data.IbaWidgetGrid, []ObjectId{widgetAId, widgetBId})
-			data.Description = "Test Dashboard 2"
-			err = bpClient.UpdateIbaDashboard(ctx, id, &data)
-			if err != nil {
-				t.Log(data)
-				t.Fatal(err)
-			}
+			req1.Label = "Test Dash 2"
+			req1.IbaWidgetGrid = append(req1.IbaWidgetGrid, []ObjectId{widgetAId, widgetBId})
+			req1.Description = "Test Dashboard 2"
+			err = bpClient.UpdateIbaDashboard(ctx, id, &req1)
+			require.NoError(t, err)
 			checkDashes()
 
-			t.Log("Test Delete Dashboard")
 			err = bpClient.DeleteIbaDashboard(ctx, id)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
+
+			var ace ClientErr
+
+			// attempt to fetch the deleted dashboard
 			_, err = bpClient.GetIbaDashboard(ctx, id)
-			if err == nil {
-				t.Fatalf("Deleted but id %s is still available", id)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, ace.Type(), ErrNotfound)
+
+			// attempt to fetch the deleted dashboard by name
+			_, err = bpClient.GetIbaDashboardByLabel(ctx, req1.Label)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, ace.Type(), ErrNotfound)
+
+			// attempt to delete the deleted dashboard
+			err = bpClient.DeleteIbaDashboard(ctx, id)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, ace.Type(), ErrNotfound)
+
+			// ensure the deleted dashboard isn't among "all"
+			ds, err = bpClient.GetAllIbaDashboards(ctx)
+			require.NoError(t, err)
+			ids := make([]ObjectId, len(ds))
+			for i, d := range ds {
+				ids[i] = d.Id
 			}
+			require.NotContains(t, ids, id)
 		})
 	}
 }
