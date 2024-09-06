@@ -434,8 +434,8 @@ SOFTWARE.
 ## google.golang.org/protobuf
 
 * Name: google.golang.org/protobuf
-* Version: v1.30.0
-* License: [BSD-3-Clause](https://github.com/protocolbuffers/protobuf-go/blob/v1.30.0/LICENSE)
+* Version: v1.33.0
+* License: [BSD-3-Clause](https://github.com/protocolbuffers/protobuf-go/blob/v1.33.0/LICENSE)
 
 ```
 Copyright (c) 2018 The Go Authors. All rights reserved.

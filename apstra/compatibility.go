@@ -14,6 +14,8 @@ const (
 	apstra421  = "4.2.1"
 	apstra4211 = "4.2.1.1"
 	apstra422  = "4.2.2"
+	apstra500  = "5.0.0"
+	apstra510  = "5.1.0"
 
 	apstraSupportedApiVersions = "4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
 	apstraSupportedVersionSep  = ","
@@ -36,6 +38,7 @@ var (
 	geApstra411 = version.MustConstraints(version.NewConstraint(">=" + apstra411))
 	geApstra420 = version.MustConstraints(version.NewConstraint(">=" + apstra420))
 	geApstra421 = version.MustConstraints(version.NewConstraint(">=" + apstra421))
+	geApstra500 = version.MustConstraints(version.NewConstraint(">=" + apstra500))
 	leApstra412 = version.MustConstraints(version.NewConstraint("<=" + apstra412))
 	leApstra420 = version.MustConstraints(version.NewConstraint("<=" + apstra420))
 
@@ -43,6 +46,8 @@ var (
 	fabricL3MtuForbidden = leApstra412
 
 	legacyTemplateWithAddressingPolicy = version.MustConstraints(version.NewConstraint("<" + apstra411))
+
+	patchNodeSupportsUnsafeArg = version.MustConstraints(version.NewConstraint(">=" + apstra500))
 )
 
 // SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"
