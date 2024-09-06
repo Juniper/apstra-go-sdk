@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
 )
 
@@ -135,18 +136,19 @@ func (o ObjectId) String() string {
 
 // Client interacts with an AOS API server
 type Client struct {
-	apiVersion  *version.Version        // as reported by apstra API
-	baseUrl     *url.URL                // everything up to the file path, generated based on env and cfg
-	cfg         ClientCfg               // passed by the caller when creating Client
-	id          ObjectId                // Apstra user ID
-	httpClient  apstraHttpClient        // used when talking to apstra
-	httpHeaders map[string]string       // default set of http headers
-	tmQuit      chan struct{}           // task monitor exit trigger
-	taskMonChan chan *taskMonitorMonReq // send tasks for monitoring here
-	ctx         context.Context         // copied from ClientCfg, for async operations
-	logger      Logger                  // logs sent here
-	sync        map[string]*sync.Mutex  // some client operations are not concurrency safe. Their locks live here.
-	syncLock    sync.Mutex              // control access to the 'sync' map
+	apiVersion  *version.Version         // as reported by apstra API
+	baseUrl     *url.URL                 // everything up to the file path, generated based on env and cfg
+	cfg         ClientCfg                // passed by the caller when creating Client
+	id          ObjectId                 // Apstra user ID
+	httpClient  apstraHttpClient         // used when talking to apstra
+	httpHeaders map[string]string        // default set of http headers
+	tmQuit      chan struct{}            // task monitor exit trigger
+	taskMonChan chan *taskMonitorMonReq  // send tasks for monitoring here
+	ctx         context.Context          // copied from ClientCfg, for async operations
+	logger      Logger                   // logs sent here
+	sync        map[string]*sync.Mutex   // some client operations are not concurrency safe. Their locks live here.
+	syncLock    sync.Mutex               // control access to the 'sync' map
+	features    map[enum.ApiFeature]bool // true/false indicate feature enabled/disabled status
 }
 
 // GetTuningParam returns a named timer value from the client configuration if one has been configured.
