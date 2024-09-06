@@ -39,6 +39,7 @@ const (
 	ErrAgentProfilePlatformRequired
 	ErrIbaCurrentMountConflictsWithExistingMount
 	ErrInvalidId
+	ErrUnsafePatchProhibited
 
 	clientPollingIntervalMs = 1000
 

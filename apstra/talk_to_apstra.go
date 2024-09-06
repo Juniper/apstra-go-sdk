@@ -79,6 +79,9 @@ func convertTtaeToAceWherePossible(err error) error {
 			return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
 		case http.StatusUnprocessableEntity:
 			switch {
+			case strings.Contains(ttae.Msg, "Direct graph modification operation is unsafe") &&
+				strings.Contains(ttae.Msg, "If you want to proceed with this PATCH API call"):
+				return ClientErr{errType: ErrUnsafePatchProhibited, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "No value in either user config or profile"):
 				return ClientErr{errType: ErrAgentProfilePlatformRequired, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "already exists"):

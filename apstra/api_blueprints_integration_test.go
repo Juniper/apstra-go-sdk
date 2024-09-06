@@ -6,6 +6,7 @@ package apstra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"testing"
@@ -128,74 +129,75 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 func TestGetPatchGetPatchNode(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	for clientName, client := range clients {
-		bpClient := testBlueprintA(ctx, t, client.client)
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
 
-		type metadataNode struct {
-			Tags         interface{} `json:"tags,omitempty"`
-			PropertySet  interface{} `json:"property_set,omitempty"`
-			Label        string      `json:"label,omitempty"`
-			UserIp       interface{} `json:"user_ip,omitempty"`
-			TemplateJson interface{} `json:"template_json,omitempty"`
-			Design       string      `json:"design,omitempty"`
-			User         interface{} `json:"user,omitempty"`
-			Type         string      `json:"type,omitempty"`
-			Id           ObjectId    `json:"id,omitempty"`
-		}
+			bpClient := testBlueprintA(ctx, t, client.client)
 
-		type nodes struct {
-			Nodes map[string]metadataNode `json:"nodes"`
-		}
-		var nodesA, nodesB nodes
-
-		// fetch all metadata nodes into nodesA
-		log.Printf("testing getNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.GetNodes(ctx, NodeTypeMetadata, &nodesA)
-		if err != nil {
-			t.Fatal()
-		}
-
-		// sanity check
-		if len(nodesA.Nodes) != 1 {
-			t.Fatalf("not expecting %d '%s' nodes", len(nodesA.Nodes), NodeTypeMetadata)
-		}
-
-		newName := randString(10, "hex")
-		// loop should run just once (len check above)
-		for idA, nodeA := range nodesA.Nodes {
-			log.Printf("node id: %s ; label: %s\n", idA, nodeA.Label)
-
-			// change name to newName
-			req := metadataNode{Label: newName}
-			resp := &metadataNode{}
-			log.Printf("testing patchNode(%s) against %s %s (%s)", bpClient.Id(), client.clientType, clientName, client.client.ApiVersion())
-			if patchNodeSupportsUnsafeArg.Check(client.client.apiVersion) {
-				require.NoError(t, bpClient.PatchNodeUnsafe(ctx, nodeA.Id, req, resp))
-			} else {
-				require.NoError(t, bpClient.PatchNode(ctx, nodeA.Id, req, resp))
+			type metadataNode struct {
+				Tags         interface{} `json:"tags,omitempty"`
+				PropertySet  interface{} `json:"property_set,omitempty"`
+				Label        string      `json:"label,omitempty"`
+				UserIp       interface{} `json:"user_ip,omitempty"`
+				TemplateJson interface{} `json:"template_json,omitempty"`
+				Design       string      `json:"design,omitempty"`
+				User         interface{} `json:"user,omitempty"`
+				Type         string      `json:"type,omitempty"`
+				Id           ObjectId    `json:"id,omitempty"`
 			}
-			if resp.Label != newName {
-				t.Fatalf("expected new blueprint name %q, got %q", newName, resp.Label)
-			}
-			log.Printf("response indicates name changed '%s' -> '%s'", nodeA.Label, resp.Label)
 
-			// fetch changed node(s) (still expecting one) into nodesB
-			log.Printf("testing getNodes(%s) against %s %s (%s)", bpClient.Id(), client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.GetNodes(ctx, NodeTypeMetadata, &nodesB)
-			if err != nil {
-				t.Fatal()
+			type nodes struct {
+				Nodes map[string]metadataNode `json:"nodes"`
 			}
-			for idB, nodeB := range nodesB.Nodes {
-				log.Printf("node id: %s ; label: %s\n", idB, nodeB.Label)
-				if nodeB.Label != newName {
-					t.Fatalf("expected new blueprint name %q, got %q", newName, nodeB.Label)
+			var nodesA, nodesB nodes
+
+			// fetch all metadata nodes into nodesA
+			log.Printf("testing getNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			require.NoError(t, bpClient.GetNodes(ctx, NodeTypeMetadata, &nodesA))
+
+			// sanity check
+			require.Equal(t, 1, len(nodesA.Nodes))
+
+			newName := randString(10, "hex")
+			// loop should run just once (len check above)
+			for idA, nodeA := range nodesA.Nodes {
+				log.Printf("node id: %s ; label: %s\n", idA, nodeA.Label)
+
+				// change name to newName
+				req := metadataNode{Label: newName}
+				resp := &metadataNode{}
+				log.Printf("testing patchNode(%s) against %s %s (%s)", bpClient.Id(), client.clientType, clientName, client.client.ApiVersion())
+				if patchNodeSupportsUnsafeArg.Check(client.client.apiVersion) {
+					var ace ClientErr
+					err = bpClient.PatchNode(ctx, nodeA.Id, req, resp)
+					require.Error(t, err)
+					require.ErrorAs(t, err, &ace)
+					require.Equal(t, ace.Type(), ErrUnsafePatchProhibited)
+
+					log.Printf("Apstra %s complained that this patch attempt is unsafe. Good!", client.client.apiVersion)
+
+					require.NoError(t, bpClient.PatchNodeUnsafe(ctx, nodeA.Id, req, resp))
+				} else {
+					require.NoError(t, bpClient.PatchNode(ctx, nodeA.Id, req, resp))
+				}
+				if resp.Label != newName {
+					t.Fatalf("expected new blueprint name %q, got %q", newName, resp.Label)
+				}
+				log.Printf("response indicates name changed '%s' -> '%s'", nodeA.Label, resp.Label)
+
+				// fetch changed node(s) (still expecting one) into nodesB
+				log.Printf("testing getNodes(%s) against %s %s (%s)", bpClient.Id(), client.clientType, clientName, client.client.ApiVersion())
+				require.NoError(t, bpClient.GetNodes(ctx, NodeTypeMetadata, &nodesB))
+				for idB, nodeB := range nodesB.Nodes {
+					log.Printf("node id: %s ; label: %s\n", idB, nodeB.Label)
+					require.Equalf(t, nodeB.Label, newName, "expected new blueprint name %q, got %q", newName, nodeB.Label)
 				}
 			}
-		}
+		})
 	}
 }
 
