@@ -25,21 +25,6 @@ const (
 
 type slicerDeviceType string
 
-func (o slicerDeviceType) platform() AgentPlatform {
-	switch o {
-	case vSwitchTypeArista:
-		return AgentPlatformEOS
-	case vSwitchTypeNexus:
-		return AgentPlatformNXOS
-	case vSwitchTypeQfx:
-		return AgentPlatformJunos
-	case vSwitchTypeVmx:
-		return AgentPlatformJunos
-	default:
-		return AgentPlatformNull
-	}
-}
-
 type slicerAccess struct {
 	Host     string `json:"host"`
 	Password string `json:"password"`
@@ -125,7 +110,7 @@ func (o *slicerTopology) getClientCfg(ctx context.Context) (*ClientCfg, error) {
 	}, nil
 }
 
-func (o *slicerTopology) getGoapstraClient(ctx context.Context) (*Client, error) {
+func (o *slicerTopology) getClient(ctx context.Context) (*Client, error) {
 	cfg, err := o.getClientCfg(ctx)
 	if err != nil {
 		return nil, err
@@ -163,21 +148,6 @@ func slicerTopologyIdsFromEnv() []string {
 		return nil
 	}
 	return strings.Split(ids, envCloudlabsTopologyIdSep)
-}
-
-type slicerSwitchInfo struct {
-	name       string
-	role       string
-	state      string
-	deviceType slicerDeviceType
-	sshIp      string
-	sshUser    string
-	sshPass    string
-}
-
-func (o *slicerTopology) getSwitchInfo() ([]slicerSwitchInfo, error) {
-	// todo get the switch info from slicer somehow
-	return nil, nil
 }
 
 // getSlicerTestClientCfgs returns map[string]testClientCfg keyed by
@@ -252,19 +222,9 @@ func TestGetSlicerClients(t *testing.T) {
 	}
 
 	for _, topology := range topologies {
-		client, err := topology.getGoapstraClient(ctx)
+		_, err := topology.getClient(ctx)
 		if err != nil {
 			t.Fatal(err)
-		}
-
-		switchInfo, err := topology.getSwitchInfo()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("Apstra at '%s' has the following switches:\n", client.cfg.Url)
-		for _, si := range switchInfo {
-			log.Printf("  %s  \t%s\t %s:%s\t offbox platform: '%s'", si.name, si.sshIp, si.sshUser, si.sshPass, si.deviceType.platform())
 		}
 	}
 }
