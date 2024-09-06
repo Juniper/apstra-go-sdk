@@ -1,8 +1,6 @@
-package apstra
+package enum
 
 import (
-	"fmt"
-
 	oenum "github.com/orsinium-labs/enum"
 )
 
@@ -213,6 +211,22 @@ var (
 		RoutingZoneConstraintModeAllow,
 		RoutingZoneConstraintModeDeny,
 	)
+
+	_                    enum = new(ApiFeature)
+	ApiFeatureAiFabric        = ApiFeature{Value: "ai_fabric"}
+	ApiFeatureCentral         = ApiFeature{Value: "central"}
+	ApiFeatureEnterprise      = ApiFeature{Value: "enterprise"}
+	ApiFeatureFreeform        = ApiFeature{Value: "freeform"}
+	ApiFeatureFullAccess      = ApiFeature{Value: "full_access"}
+	ApiFeatureTaskApi         = ApiFeature{Value: "task_api"}
+	ApiFeatures               = oenum.New(
+		ApiFeatureAiFabric,
+		ApiFeatureCentral,
+		ApiFeatureEnterprise,
+		ApiFeatureFreeform,
+		ApiFeatureFullAccess,
+		ApiFeatureTaskApi,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -223,9 +237,8 @@ func (o DeployMode) String() string {
 
 func (o *DeployMode) FromString(s string) error {
 	if DeployModes.Parse(s) == nil {
-		return fmt.Errorf("failed to parse DeployMode value %q", s)
+		return newEnumParseError(o, s)
 	}
-
 	o.Value = s
 	return nil
 }
@@ -239,7 +252,7 @@ func (o DeviceProfileType) String() string {
 func (o *DeviceProfileType) FromString(s string) error {
 	t := DeviceProfileTypes.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse DeviceProfileType %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -254,7 +267,7 @@ func (o FeatureSwitchEnum) String() string {
 func (o *FeatureSwitchEnum) FromString(s string) error {
 	t := FeatureSwitchEnums.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse FeatureSwitchEnum %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -269,7 +282,7 @@ func (o IbaWidgetType) String() string {
 func (o *IbaWidgetType) FromString(s string) error {
 	t := IbaWidgetTypes.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse IbaWidgetTypes %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -284,7 +297,7 @@ func (o JunosEvpnIrbMode) String() string {
 func (o *JunosEvpnIrbMode) FromString(s string) error {
 	t := JunosEvpnIrbModes.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse JunosEvpnIrbMode %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -299,7 +312,7 @@ func (o PolicyApplicationPointType) String() string {
 func (o *PolicyApplicationPointType) FromString(s string) error {
 	t := PolicyApplicationPointTypes.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse PolicyApplicationPointType %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -314,7 +327,7 @@ func (o PolicyRuleAction) String() string {
 func (o *PolicyRuleAction) FromString(s string) error {
 	t := PolicyRuleActions.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse PolicyRuleAction %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -329,7 +342,7 @@ func (o PolicyRuleProtocol) String() string {
 func (o *PolicyRuleProtocol) FromString(s string) error {
 	t := PolicyRuleProtocols.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse PolicyRuleProtocol %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -344,7 +357,7 @@ func (o RemoteGatewayRouteTypes) String() string {
 func (o *RemoteGatewayRouteTypes) FromString(s string) error {
 	t := RemoteGatewayRouteTypesEnum.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse RemoteGatewayRouteTypes %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -359,7 +372,7 @@ func (o TcpStateQualifier) String() string {
 func (o *TcpStateQualifier) FromString(s string) error {
 	t := TcpStateQualifiers.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse TcpStateQualifier %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -374,7 +387,7 @@ func (o FFResourceType) String() string {
 func (o *FFResourceType) FromString(s string) error {
 	t := FFResourceTypes.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse FFResourceType %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -389,7 +402,7 @@ func (o StorageSchemaPath) String() string {
 func (o *StorageSchemaPath) FromString(s string) error {
 	t := StorageSchemaPaths.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse StorageSchemaPath %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -404,7 +417,7 @@ func (o InterfaceNumberingIpv4Type) String() string {
 func (o *InterfaceNumberingIpv4Type) FromString(s string) error {
 	t := InterfaceNumberingIpv4Types.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse InterfaceNumberingIpv4Type %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -419,7 +432,7 @@ func (o InterfaceNumberingIpv6Type) String() string {
 func (o *InterfaceNumberingIpv6Type) FromString(s string) error {
 	t := InterfaceNumberingIpv6Types.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse InterfaceNumberingIpv6Type %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -434,7 +447,7 @@ func (o ResourcePoolType) String() string {
 func (o *ResourcePoolType) FromString(s string) error {
 	t := ResourcePoolTypes.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse ResourcePoolType %q", s)
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil
@@ -449,7 +462,22 @@ func (o RoutingZoneConstraintMode) String() string {
 func (o *RoutingZoneConstraintMode) FromString(s string) error {
 	t := RoutingZoneConstraintModes.Parse(s)
 	if t == nil {
-		return fmt.Errorf("failed to parse RoutingZoneConstraintMode %q", s)
+		return newEnumParseError(o, s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type ApiFeature oenum.Member[string]
+
+func (o ApiFeature) String() string {
+	return o.Value
+}
+
+func (o *ApiFeature) FromString(s string) error {
+	t := ApiFeatures.Parse(s)
+	if t == nil {
+		return newEnumParseError(o, s)
 	}
 	o.Value = t.Value
 	return nil

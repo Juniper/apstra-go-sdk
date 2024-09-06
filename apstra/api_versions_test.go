@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestGetVersionsServer(t *testing.T) {
+func TestGetVersionsAll(t *testing.T) {
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)

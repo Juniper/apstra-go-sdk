@@ -7,6 +7,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -41,7 +42,7 @@ func TestCRUDRaLocalGroupGenerators(t *testing.T) {
 		ffc := testFFBlueprintA(ctx, t, client.client)
 
 		cfg := FreeformRaLocalIntPoolGeneratorData{
-			ResourceType: FFResourceTypeVlan,
+			ResourceType: enum.FFResourceTypeVlan,
 			Label:        randString(6, "hex"),
 			Scope:        "node('link', role='internal', name='target')",
 			Chunks: []FFLocalIntPoolChunk{

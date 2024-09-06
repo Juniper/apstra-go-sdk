@@ -15,6 +15,7 @@ const (
 	apstra4211 = "4.2.1.1"
 	apstra422  = "4.2.2"
 	apstra500  = "5.0.0"
+	apstra510  = "5.1.0"
 
 	apstraSupportedApiVersions = "4.2.0, 4.2.1, 4.2.1.1, 4.2.2"
 	apstraSupportedVersionSep  = ","

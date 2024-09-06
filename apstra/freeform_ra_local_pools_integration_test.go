@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,7 +49,7 @@ func TestCRUDRaLocalPools(t *testing.T) {
 		require.Equal(t, len(systemIds), 1)
 
 		cfg := FreeformRaLocalIntPoolData{
-			ResourceType: FFResourceTypeVlan,
+			ResourceType: enum.FFResourceTypeVlan,
 			Label:        randString(6, "hex"),
 			OwnerId:      systemIds[0],
 			Chunks:       []FFLocalIntPoolChunk{{Start: 10, End: 20}},

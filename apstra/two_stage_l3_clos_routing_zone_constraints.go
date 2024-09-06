@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -16,7 +18,7 @@ var _ json.Marshaler = (*RoutingZoneConstraintData)(nil)
 
 type RoutingZoneConstraintData struct {
 	Label           string
-	Mode            RoutingZoneConstraintMode
+	Mode            enum.RoutingZoneConstraintMode
 	MaxRoutingZones *int
 	RoutingZoneIds  []ObjectId
 }

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -18,8 +20,8 @@ var (
 )
 
 type TwoStageL3ClosSubinterface struct {
-	Ipv4AddrType InterfaceNumberingIpv4Type
-	Ipv6AddrType InterfaceNumberingIpv6Type
+	Ipv4AddrType enum.InterfaceNumberingIpv4Type
+	Ipv6AddrType enum.InterfaceNumberingIpv6Type
 	Ipv4Addr     *net.IPNet
 	Ipv6Addr     *net.IPNet
 }
@@ -32,11 +34,11 @@ func (o TwoStageL3ClosSubinterface) MarshalJSON() ([]byte, error) {
 		Ipv6Addr     *string `json:"ipv6_addr"`
 	}
 
-	if o.Ipv4AddrType != InterfaceNumberingIpv4TypeNone {
+	if o.Ipv4AddrType != enum.InterfaceNumberingIpv4TypeNone {
 		raw.Ipv4AddrType = toPtr(o.Ipv4AddrType.String())
 	}
 
-	if o.Ipv6AddrType != InterfaceNumberingIpv6TypeNone {
+	if o.Ipv6AddrType != enum.InterfaceNumberingIpv6TypeNone {
 		raw.Ipv6AddrType = toPtr(o.Ipv6AddrType.String())
 	}
 
@@ -119,8 +121,8 @@ func (o *TwoStageL3ClosClient) GetSubinterface(ctx context.Context, id ObjectId)
 	}
 
 	result := TwoStageL3ClosSubinterface{
-		Ipv4AddrType: InterfaceNumberingIpv4TypeNone,
-		Ipv6AddrType: InterfaceNumberingIpv6TypeNone,
+		Ipv4AddrType: enum.InterfaceNumberingIpv4TypeNone,
+		Ipv6AddrType: enum.InterfaceNumberingIpv6TypeNone,
 	}
 
 	if node.Ipv4Type != nil {

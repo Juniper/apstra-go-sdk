@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -105,11 +107,11 @@ type PolicyRule struct {
 type PolicyRuleData struct {
 	Label             string
 	Description       string
-	Protocol          PolicyRuleProtocol
-	Action            PolicyRuleAction
+	Protocol          enum.PolicyRuleProtocol
+	Action            enum.PolicyRuleAction
 	SrcPort           PortRanges
 	DstPort           PortRanges
-	TcpStateQualifier *TcpStateQualifier
+	TcpStateQualifier *enum.TcpStateQualifier
 }
 
 func (o PolicyRuleData) raw() *rawPolicyRule {
@@ -142,19 +144,19 @@ type rawPolicyRule struct {
 }
 
 func (o rawPolicyRule) polish() (*PolicyRule, error) {
-	action := PolicyRuleActions.Parse(o.Action)
+	action := enum.PolicyRuleActions.Parse(o.Action)
 	if action == nil {
 		return nil, fmt.Errorf("policy rule %q has unknown action %q", o.Id, o.Action)
 	}
 
-	protocol := PolicyRuleProtocols.Parse(o.Protocol)
+	protocol := enum.PolicyRuleProtocols.Parse(o.Protocol)
 	if protocol == nil {
 		return nil, fmt.Errorf("policy rule %q has unknown protocol %q", o.Id, o.Protocol)
 	}
 
-	var tcpStateQualifier *TcpStateQualifier
+	var tcpStateQualifier *enum.TcpStateQualifier
 	if o.TcpStateQualifier != nil {
-		tcpStateQualifier = TcpStateQualifiers.Parse(*o.TcpStateQualifier)
+		tcpStateQualifier = enum.TcpStateQualifiers.Parse(*o.TcpStateQualifier)
 		if tcpStateQualifier == nil {
 			return nil, fmt.Errorf("cannot parse policy rule %q tcp state qualifier: %q", o.Id, *o.TcpStateQualifier)
 		}

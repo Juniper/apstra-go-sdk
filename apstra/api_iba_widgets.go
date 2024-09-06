@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -38,7 +40,7 @@ type IbaWidgetData struct {
 	MaxItems           *int
 	CombineGraphs      string
 	VisibleColumns     []string
-	Type               IbaWidgetType
+	Type               enum.IbaWidgetType
 	UpdatedBy          string
 }
 
@@ -84,7 +86,7 @@ func (o *rawIbaWidget) polish() (*IbaWidget, error) {
 		created = t
 	}
 
-	widgetType := IbaWidgetTypes.Parse(o.Type)
+	widgetType := enum.IbaWidgetTypes.Parse(o.Type)
 	if widgetType == nil {
 		return nil, fmt.Errorf("failure to parse returned Iba Widget type %s", o.Type)
 	}

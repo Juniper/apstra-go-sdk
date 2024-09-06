@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -66,9 +68,9 @@ func (o rawSystemNodeInfo) polish() (*SystemNodeInfo, error) {
 		asn = &i32
 	}
 
-	var deployMode *DeployMode
+	var deployMode *enum.DeployMode
 	if o.DeployMode != nil {
-		deployMode = DeployModes.Parse(*o.DeployMode)
+		deployMode = enum.DeployModes.Parse(*o.DeployMode)
 		if deployMode == nil {
 			return nil, fmt.Errorf("failed to parse deploy mode %q", deployMode)
 		}
@@ -133,7 +135,7 @@ func (o rawSystemNodeInfo) polish() (*SystemNodeInfo, error) {
 
 type SystemNodeInfo struct {
 	Asn               *uint32
-	DeployMode        *DeployMode
+	DeployMode        *enum.DeployMode
 	DeviceProfileId   *ObjectId
 	External          bool
 	GroupLabel        *string

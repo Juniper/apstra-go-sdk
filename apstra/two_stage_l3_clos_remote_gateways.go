@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -40,7 +42,7 @@ type rawRemoteGatewayResponse struct {
 }
 
 func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
-	routeTypes := RemoteGatewayRouteTypesEnum.Parse(o.RouteTypes)
+	routeTypes := enum.RemoteGatewayRouteTypesEnum.Parse(o.RouteTypes)
 	if routeTypes == nil {
 		return nil, fmt.Errorf("failed parsing remote gateway route types: %q", o.RouteTypes)
 	}
@@ -71,7 +73,7 @@ func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
 }
 
 type RemoteGatewayData struct {
-	RouteTypes     RemoteGatewayRouteTypes
+	RouteTypes     enum.RemoteGatewayRouteTypes
 	LocalGwNodes   []ObjectId
 	GwAsn          uint32
 	GwIp           net.IP

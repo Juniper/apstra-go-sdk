@@ -8,6 +8,7 @@ import (
 	"math/rand/v2"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -82,7 +83,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 				"asn": {
 					steps: []FreeformResourceGeneratorData{
 						{
-							ResourceType:  FFResourceTypeAsn,
+							ResourceType:  enum.FFResourceTypeAsn,
 							ContainerId:   testResourceGroup(ctx, t, ffc),
 							AllocatedFrom: toPtr(testResourceGroupAsn(ctx, t, ffc)),
 							Label:         randString(6, "hex"),
@@ -98,7 +99,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 				"int": {
 					steps: []FreeformResourceGeneratorData{
 						{
-							ResourceType:  FFResourceTypeInt,
+							ResourceType:  enum.FFResourceTypeInt,
 							ContainerId:   testResourceGroup(ctx, t, ffc),
 							AllocatedFrom: toPtr(testResourceGroupInt(ctx, t, ffc)),
 							Label:         randString(6, "hex"),
@@ -114,7 +115,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 				"ipv4": {
 					steps: []FreeformResourceGeneratorData{
 						{
-							ResourceType:    FFResourceTypeIpv4,
+							ResourceType:    enum.FFResourceTypeIpv4,
 							ContainerId:     testResourceGroup(ctx, t, ffc),
 							AllocatedFrom:   toPtr(testResourceGroupIpv4(ctx, t, ffc)),
 							Label:           randString(6, "hex"),
@@ -132,7 +133,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 				"ipv6": {
 					steps: []FreeformResourceGeneratorData{
 						{
-							ResourceType:    FFResourceTypeIpv6,
+							ResourceType:    enum.FFResourceTypeIpv6,
 							ContainerId:     testResourceGroup(ctx, t, ffc),
 							AllocatedFrom:   toPtr(testResourceGroupIpv6(ctx, t, ffc)),
 							Label:           randString(6, "hex"),
@@ -150,7 +151,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 				"vlan": {
 					steps: []FreeformResourceGeneratorData{
 						{
-							ResourceType:       FFResourceTypeVlan,
+							ResourceType:       enum.FFResourceTypeVlan,
 							ContainerId:        testResourceGroup(ctx, t, ffc),
 							ScopeNodePoolLabel: toPtr(systemsAndVlanPools[0].poolLabel),
 							Label:              randString(6, "hex"),
@@ -166,7 +167,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 				"ipv4_host": {
 					steps: []FreeformResourceGeneratorData{
 						{
-							ResourceType:  FFResourceTypeHostIpv4,
+							ResourceType:  enum.FFResourceTypeHostIpv4,
 							Label:         randString(6, "hex"),
 							Scope:         "node('system', name='target')",
 							AllocatedFrom: toPtr(testRaResourceIpv4(ctx, t, "10.1.0.0/16", 24, ffc)),
@@ -182,7 +183,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 				"ipv6_host": {
 					steps: []FreeformResourceGeneratorData{
 						{
-							ResourceType:  FFResourceTypeHostIpv6,
+							ResourceType:  enum.FFResourceTypeHostIpv6,
 							Label:         randString(6, "hex"),
 							Scope:         "node('system', name='target')",
 							AllocatedFrom: toPtr(testRaResourceIpv6(ctx, t, "3fff:0:0::/48", 64, ffc)),

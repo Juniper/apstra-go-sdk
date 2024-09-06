@@ -6,6 +6,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,7 +32,7 @@ func TestNextInterface(t *testing.T) {
 func testRaResourceIpv4(ctx context.Context, t testing.TB, cidrBlock string, bits int, client *FreeformClient) ObjectId {
 	prefix := randomPrefix(t, cidrBlock, bits)
 	id, err := client.CreateRaResource(ctx, &FreeformRaResourceData{
-		ResourceType: FFResourceTypeIpv4,
+		ResourceType: enum.FFResourceTypeIpv4,
 		Label:        randString(6, "hex"),
 		Value:        toPtr(prefix.String()),
 		GroupId:      testResourceGroup(ctx, t, client),
@@ -44,7 +45,7 @@ func testRaResourceIpv4(ctx context.Context, t testing.TB, cidrBlock string, bit
 func testRaResourceIpv6(ctx context.Context, t testing.TB, cidrBlock string, bits int, client *FreeformClient) ObjectId {
 	prefix := randomPrefix(t, cidrBlock, bits)
 	id, err := client.CreateRaResource(ctx, &FreeformRaResourceData{
-		ResourceType: FFResourceTypeIpv6,
+		ResourceType: enum.FFResourceTypeIpv6,
 		Label:        randString(6, "hex"),
 		Value:        toPtr(prefix.String()),
 		GroupId:      testResourceGroup(ctx, t, client),
@@ -69,7 +70,7 @@ func testRaLocalVlanPool(ctx context.Context, t testing.TB, client *FreeformClie
 	}
 
 	id, err := client.CreateRaLocalIntPool(ctx, &FreeformRaLocalIntPoolData{
-		ResourceType: FFResourceTypeVlan,
+		ResourceType: enum.FFResourceTypeVlan,
 		Label:        label,
 		OwnerId:      ownerSystemId,
 		Chunks:       chunks,

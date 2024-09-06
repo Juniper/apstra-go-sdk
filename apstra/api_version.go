@@ -23,6 +23,7 @@ func (o *Client) getVersion(ctx context.Context) (*VersionResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
 	}
+
 	response := &VersionResponse{}
 	return response, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,

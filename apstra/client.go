@@ -336,11 +336,38 @@ func (o *Client) getApiVersion(ctx context.Context) (*version.Version, error) {
 		return nil, err
 	}
 
-	o.apiVersion, err = version.NewVersion(apiResponse.Version)
+	apiVersion, err := version.NewVersion(apiResponse.Version)
 	if err != nil {
 		return nil, fmt.Errorf("failed parsing API version string %q - %w", apiResponse.Version, err)
 	}
 
+	// ToDo - This can be removed once the results from /versions/api and /versions/build reconverge.
+	//  Expected late 2024.
+	if apiVersion.Equal(version.Must(version.NewVersion(apstra510))) {
+		// This *might* be an AI-enabled 5.0.0 pre-release, which merely *claims* to be 5.1.0.
+
+		// Fetch the Build Version to find out if we're talking to an AI-enabled pre-release.
+		buildVerResp, err := o.getVersionsBuild(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed fetching AI prerelease workaround version - %w", err)
+		}
+
+		// Parse the Build Version.
+		buildVersion, err := version.NewVersion(buildVerResp.Version)
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing AI prerelease workaround version - %w", err)
+		}
+
+		if buildVersion.LessThan(apiVersion) && strings.HasPrefix(buildVersion.Prerelease(), "a") {
+			// We're going to trust the "Build" version string rather than the "API" version string
+			apiVersion = buildVersion
+		}
+	}
+
+	// set the embedded API version
+	o.apiVersion = apiVersion
+
+	// return the result
 	return o.apiVersion, nil
 }
 

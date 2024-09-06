@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -685,7 +686,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	}
 
 	widgetA := IbaWidgetData{
-		Type:      IbaWidgetTypeStage,
+		Type:      enum.IbaWidgetTypeStage,
 		Label:     "BGP Session Flapping",
 		ProbeId:   probeAId,
 		StageName: "BGP Session",
@@ -696,7 +697,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	}
 
 	widgetB := IbaWidgetData{
-		Type:      IbaWidgetTypeStage,
+		Type:      enum.IbaWidgetTypeStage,
 		Label:     "Drain Traffic Anomaly",
 		ProbeId:   probeBId,
 		StageName: "excess_range",
@@ -973,7 +974,7 @@ func testResourceGroup(ctx context.Context, t testing.TB, client *FreeformClient
 func testResourceGroupAsn(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
 	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
-		Type:    ResourcePoolTypeAsn,
+		Type:    enum.ResourcePoolTypeAsn,
 		PoolIds: []ObjectId{testAsnPool(ctx, t, client.client)},
 	})
 	require.NoError(t, err)
@@ -984,7 +985,7 @@ func testResourceGroupAsn(ctx context.Context, t testing.TB, client *FreeformCli
 func testResourceGroupInt(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
 	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
-		Type:    ResourcePoolTypeInt,
+		Type:    enum.ResourcePoolTypeInt,
 		PoolIds: []ObjectId{testIntPool(ctx, t, client.client)},
 	})
 	require.NoError(t, err)
@@ -995,7 +996,7 @@ func testResourceGroupInt(ctx context.Context, t testing.TB, client *FreeformCli
 func testResourceGroupIpv4(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
 	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
-		Type:    ResourcePoolTypeIpv4,
+		Type:    enum.ResourcePoolTypeIpv4,
 		PoolIds: []ObjectId{testIpv4Pool(ctx, t, client.client)},
 	})
 	require.NoError(t, err)
@@ -1006,7 +1007,7 @@ func testResourceGroupIpv4(ctx context.Context, t testing.TB, client *FreeformCl
 func testResourceGroupIpv6(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
 	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
-		Type:    ResourcePoolTypeIpv6,
+		Type:    enum.ResourcePoolTypeIpv6,
 		PoolIds: []ObjectId{testIpv6Pool(ctx, t, client.client)},
 	})
 	require.NoError(t, err)
