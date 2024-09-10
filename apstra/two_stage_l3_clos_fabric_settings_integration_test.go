@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -10,6 +9,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
+	"github.com/stretchr/testify/require"
 )
 
 func compareAntiAffinityPolicy(t testing.TB, set, get AntiAffinityPolicy) {
@@ -44,79 +44,83 @@ func compareFabricSettings(t testing.TB, set, get FabricSettings) {
 	t.Helper()
 
 	if set.AntiAffinityPolicy != nil {
+		require.NotNil(t, get.AntiAffinityPolicy)
 		compareAntiAffinityPolicy(t, *get.AntiAffinityPolicy, *set.AntiAffinityPolicy)
 	}
 
-	if set.DefaultSviL3Mtu != nil && *set.DefaultSviL3Mtu != *get.DefaultSviL3Mtu {
-		t.Errorf("set DefaultSviL3Mtu  %d got %d", *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu)
+	if set.DefaultSviL3Mtu != nil {
+		require.NotNil(t, get.DefaultSviL3Mtu)
+		require.Equalf(t, *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu, "DefaultSviL3Mtu: set %d get %d", *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu)
 	}
 
-	if set.EsiMacMsb != nil && *set.EsiMacMsb != *get.EsiMacMsb {
-		t.Errorf("set EsiMacMsb %d got %d", *set.EsiMacMsb, *get.EsiMacMsb)
+	if set.EsiMacMsb != nil {
+		require.NotNil(t, get.EsiMacMsb)
+		require.Equalf(t, *set.EsiMacMsb, *get.EsiMacMsb, "EsiMacMsb: set %d get %d", *set.EsiMacMsb, *get.EsiMacMsb)
 	}
 
 	if set.EvpnGenerateType5HostRoutes != nil && *set.EvpnGenerateType5HostRoutes != *get.EvpnGenerateType5HostRoutes {
-		t.Errorf("set EvpnGenerateType5HostRoutes %s got %s", *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes)
+		require.NotNil(t, get.EvpnGenerateType5HostRoutes)
+		require.Equalf(t, *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes, "EvpnGenerateType5HostRoutes: set %d get %d", *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes)
 	}
 
-	if set.ExternalRouterMtu != nil && *set.ExternalRouterMtu != *get.ExternalRouterMtu {
-		t.Errorf("set ExternalRouterMtu %d got %d", *set.ExternalRouterMtu, *get.ExternalRouterMtu)
+	if set.ExternalRouterMtu != nil {
+		require.NotNil(t, get.ExternalRouterMtu)
+		require.Equalf(t, *set.ExternalRouterMtu, *get.ExternalRouterMtu, "ExternalRouterMtu: set %d get %d", *set.ExternalRouterMtu, *get.ExternalRouterMtu)
 	}
 
 	if set.FabricL3Mtu != nil && *set.FabricL3Mtu != *get.FabricL3Mtu {
-		t.Errorf("set FabricL3Mtu  %d got %d", *set.FabricL3Mtu, *get.FabricL3Mtu)
+		require.NotNil(t, get.FabricL3Mtu)
+		require.Equalf(t, *set.FabricL3Mtu, *get.FabricL3Mtu, "FabricL3Mtu: set %d get %d", *set.FabricL3Mtu, *get.FabricL3Mtu)
 	}
 
-	if set.Ipv6Enabled != nil && *set.Ipv6Enabled != *get.Ipv6Enabled {
-		t.Errorf("set Ipv6Enabled %t got %t", *set.Ipv6Enabled, *get.Ipv6Enabled)
+	if set.Ipv6Enabled != nil {
+		require.NotNil(t, get.Ipv6Enabled)
+		require.Equalf(t, *set.Ipv6Enabled, *get.Ipv6Enabled, "Ipv6Enabled: set %d get %d", *set.Ipv6Enabled, *get.Ipv6Enabled)
 	}
 
-	if set.JunosEvpnDuplicateMacRecoveryTime != nil && *set.JunosEvpnDuplicateMacRecoveryTime != *get.JunosEvpnDuplicateMacRecoveryTime {
-		t.Errorf("set junosEvpnDuplicateMacRecoveryTime %d got %d", *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime)
+	if set.JunosEvpnDuplicateMacRecoveryTime != nil {
+		require.NotNil(t, get.JunosEvpnDuplicateMacRecoveryTime)
+		require.Equalf(t, *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime, "JunosEvpnDuplicateMacRecoveryTime: set %d get %d", *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime)
 	}
 
-	if set.JunosEvpnRoutingInstanceVlanAware != nil && *set.JunosEvpnRoutingInstanceVlanAware != *get.JunosEvpnRoutingInstanceVlanAware {
-		t.Errorf("set JunosEvpnRoutingInstanceVlanAware %s got %s", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
+	if set.JunosEvpnRoutingInstanceVlanAware != nil {
+		require.NotNil(t, get.JunosEvpnRoutingInstanceVlanAware)
+		require.Equalf(t, *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware, "JunosEvpnRoutingInstanceVlanAware: set %d get %d", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
 	}
 
-	if set.JunosEvpnMaxNexthopAndInterfaceNumber != nil && *set.JunosEvpnMaxNexthopAndInterfaceNumber != *get.JunosEvpnMaxNexthopAndInterfaceNumber {
-		t.Errorf("set JunosEvpnMaxNexthopAndInterfaceNumber %s got %s", *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber)
+	if set.JunosEvpnMaxNexthopAndInterfaceNumber != nil {
+		require.NotNil(t, get.JunosEvpnMaxNexthopAndInterfaceNumber)
+		require.Equalf(t, *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber, "JunosEvpnMaxNexthopAndInterfaceNumber: set %d get %d", *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber)
 	}
 
-	if set.JunosExOverlayEcmp != nil && *set.JunosExOverlayEcmp != *get.JunosExOverlayEcmp {
-		t.Errorf("set JunosExOverlayEcmp %s got %s", *set.JunosExOverlayEcmp, *get.JunosExOverlayEcmp)
+	if set.JunosExOverlayEcmp != nil {
+		require.NotNil(t, get.JunosExOverlayEcmp)
+		require.Equalf(t, *set.JunosExOverlayEcmp, *get.JunosExOverlayEcmp, "JunosExOverlayEcmp: set %d get %d", *set.JunosExOverlayEcmp, *get.JunosExOverlayEcmp)
 	}
 
-	if set.JunosGracefulRestart != nil && *set.JunosGracefulRestart != *get.JunosGracefulRestart {
-		t.Errorf("set JunosGracefulRestart %s got %s", *set.JunosGracefulRestart, *get.JunosGracefulRestart)
+	if set.JunosGracefulRestart != nil {
+		require.NotNil(t, get.JunosGracefulRestart)
+		require.Equalf(t, *set.JunosGracefulRestart, *get.JunosGracefulRestart, "JunosGracefulRestart: set %d get %d", *set.JunosGracefulRestart, *get.JunosGracefulRestart)
 	}
 
-	if (set.MaxEvpnRoutes == nil) != (get.MaxEvpnRoutes == nil) {
-		t.Errorf("set MaxEvpnRoutes - set nil: %t got nil: %t", set.MaxEvpnRoutes == nil, get.MaxEvpnRoutes == nil)
-	}
-	if set.MaxEvpnRoutes != nil && *set.MaxEvpnRoutes != *get.MaxEvpnRoutes {
-		t.Errorf("set MaxEvpnRoutes %d got %d", *set.MaxEvpnRoutes, *get.MaxEvpnRoutes)
+	if set.MaxEvpnRoutes != nil {
+		require.NotNil(t, get.MaxEvpnRoutes)
+		require.Equalf(t, *set.MaxEvpnRoutes, *get.MaxEvpnRoutes, "MaxEvpnRoutes: set %d get %d", *set.MaxEvpnRoutes, *get.MaxEvpnRoutes)
 	}
 
-	if (set.MaxExternalRoutes == nil) != (get.MaxExternalRoutes == nil) {
-		t.Errorf("set MaxExternalRoutes - set nil: %t got nil: %t", set.MaxExternalRoutes == nil, get.MaxExternalRoutes == nil)
-	}
-	if set.MaxExternalRoutes != nil && *set.MaxExternalRoutes != *get.MaxExternalRoutes {
-		t.Errorf("set MaxExternalRoutes %d got %d", *set.MaxExternalRoutes, *get.MaxExternalRoutes)
+	if set.MaxExternalRoutes != nil {
+		require.NotNil(t, get.MaxExternalRoutes)
+		require.Equalf(t, *set.MaxExternalRoutes, *get.MaxExternalRoutes, "MaxExternalRoutes: set %d get %d", *set.MaxExternalRoutes, *get.MaxExternalRoutes)
 	}
 
-	if (set.MaxFabricRoutes == nil) != (get.MaxFabricRoutes == nil) {
-		t.Errorf("set MaxFabricRoutes - set nil: %t got nil: %t", set.MaxFabricRoutes == nil, get.MaxFabricRoutes == nil)
-	}
-	if set.MaxFabricRoutes != nil && *set.MaxFabricRoutes != *get.MaxFabricRoutes {
-		t.Errorf("set MaxFabricRoutes %d got %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
+	if set.MaxFabricRoutes != nil {
+		require.NotNil(t, get.MaxFabricRoutes)
+		require.Equalf(t, *set.MaxFabricRoutes, *get.MaxFabricRoutes, "MaxFabricRoutes: set %d get %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
 	}
 
-	if (set.MaxMlagRoutes == nil) != (get.MaxMlagRoutes == nil) {
-		t.Errorf("set MaxMlagRoutes - set nil: %t got nil: %t", set.MaxMlagRoutes == nil, get.MaxMlagRoutes == nil)
-	}
-	if set.MaxMlagRoutes != nil && *set.MaxMlagRoutes != *get.MaxMlagRoutes {
-		t.Errorf("set MaxMlagRoutes %d got %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
+	if set.MaxMlagRoutes != nil {
+		require.NotNil(t, get.MaxMlagRoutes)
+		require.Equalf(t, *set.MaxMlagRoutes, *get.MaxMlagRoutes, "MaxMlagRoutes: set %d get %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
 	}
 
 	if set.OptimiseSzFootprint != nil && *set.OptimiseSzFootprint != *get.OptimiseSzFootprint {
@@ -145,48 +149,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 		"no_fabric_settings": {
 			fabricSettings: FabricSettings{},
 		},
-		"41x_compatible_1": {
-			fabricSettings: FabricSettings{
-				AntiAffinityPolicy: &AntiAffinityPolicy{
-					Algorithm:                AlgorithmHeuristic,
-					MaxLinksPerPort:          2,
-					MaxLinksPerSlot:          2,
-					MaxPerSystemLinksPerPort: 2,
-					MaxPerSystemLinksPerSlot: 2,
-					Mode:                     AntiAffinityModeEnabledStrict,
-				},
-				EsiMacMsb:                   toPtr(uint8(4)),
-				EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnumEnabled,
-				ExternalRouterMtu:           toPtr(uint16(9002)),
-				Ipv6Enabled:                 toPtr(false), // do not enable because it's a one-way trip
-				MaxEvpnRoutes:               toPtr(uint32(10000)),
-				MaxExternalRoutes:           toPtr(uint32(11000)),
-				MaxFabricRoutes:             toPtr(uint32(12000)),
-				MaxMlagRoutes:               toPtr(uint32(13000)),
-			},
-		},
-		"412_compatible_2": {
-			fabricSettings: FabricSettings{
-				AntiAffinityPolicy: &AntiAffinityPolicy{
-					Algorithm:                AlgorithmHeuristic,
-					MaxLinksPerPort:          3,
-					MaxLinksPerSlot:          3,
-					MaxPerSystemLinksPerPort: 3,
-					MaxPerSystemLinksPerSlot: 3,
-					Mode:                     AntiAffinityModeEnabledLoose,
-				},
-				EsiMacMsb:                   toPtr(uint8(6)),
-				EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnumDisabled,
-				ExternalRouterMtu:           toPtr(uint16(9004)),
-				Ipv6Enabled:                 toPtr(false), // do not enable because it's a one-way trip
-				MaxEvpnRoutes:               toPtr(uint32(20000)),
-				MaxExternalRoutes:           toPtr(uint32(21000)),
-				MaxFabricRoutes:             toPtr(uint32(22000)),
-				MaxMlagRoutes:               toPtr(uint32(23000)),
-			},
-		},
 		"lots_of_values": {
-			versionConstraint: version.MustConstraints(version.NewConstraint(">" + apstra412)),
 			fabricSettings: FabricSettings{
 				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),
 				MaxExternalRoutes:                     toPtr(uint32(239832)),
@@ -215,7 +178,6 @@ func TestSetGetFabricSettings(t *testing.T) {
 			},
 		},
 		"different_values": {
-			versionConstraint: version.MustConstraints(version.NewConstraint(">" + apstra412)),
 			fabricSettings: FabricSettings{
 				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(15)),
 				MaxExternalRoutes:                     toPtr(uint32(239732)),
@@ -246,31 +208,33 @@ func TestSetGetFabricSettings(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		client := client
-		bpClient := testBlueprintC(ctx, t, client.client)
+		clientName, client := clientName, client
+		t.Run(clientName, func(t *testing.T) {
+			bpClient := testBlueprintC(ctx, t, client.client)
 
-		for tName, tCase := range testCases {
-			tName, tCase := tName, tCase
-			t.Run(tName, func(t *testing.T) {
-				if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(bpClient.client.apiVersion) {
-					t.Skipf("skipping test %q due to version constraints: %q. API version %q",
-						tName, tCase.versionConstraint, bpClient.client.apiVersion)
-				}
+			for tName, tCase := range testCases {
+				tName, tCase := tName, tCase
+				t.Run(tName, func(t *testing.T) {
+					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(bpClient.client.apiVersion) {
+						t.Skipf("skipping test %q due to version constraints: %q. API version %q",
+							tName, tCase.versionConstraint, bpClient.client.apiVersion)
+					}
 
-				log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-				err = bpClient.SetFabricSettings(ctx, &tCase.fabricSettings)
-				if err != nil {
-					t.Fatal(err)
-				}
+					log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
+					err = bpClient.SetFabricSettings(ctx, &tCase.fabricSettings)
+					if err != nil {
+						t.Fatal(err)
+					}
 
-				log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-				fs, err := bpClient.GetFabricSettings(ctx)
-				if err != nil {
-					t.Fatal(err)
-				}
-				compareFabricSettings(t, tCase.fabricSettings, *fs)
-			})
-		}
+					log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
+					fs, err := bpClient.GetFabricSettings(ctx)
+					if err != nil {
+						t.Fatal(err)
+					}
+					compareFabricSettings(t, tCase.fabricSettings, *fs)
+				})
+			}
+		})
 	}
 }
 
@@ -354,41 +318,43 @@ func TestSetGetFabricSettingsV6(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		client := client
+		clientName, client := clientName, client
 
-		bpClient := testBlueprintC(ctx, t, client.client)
+		t.Run(clientName, func(t *testing.T) {
+			bpClient := testBlueprintC(ctx, t, client.client)
 
-		t.Run("enable_and_check_ipv6", func(t *testing.T) {
-			fsSet := &FabricSettings{
-				AntiAffinityPolicy: &AntiAffinityPolicy{
-					Algorithm:                AlgorithmHeuristic,
-					MaxLinksPerPort:          2,
-					MaxLinksPerSlot:          2,
-					MaxPerSystemLinksPerPort: 2,
-					MaxPerSystemLinksPerSlot: 2,
-					Mode:                     AntiAffinityModeEnabledStrict,
-				},
-				EsiMacMsb:                   toPtr(uint8(4)),
-				EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnumEnabled,
-				ExternalRouterMtu:           toPtr(uint16(9002)),
-				Ipv6Enabled:                 toPtr(true),
-				MaxEvpnRoutes:               toPtr(uint32(10000)),
-				MaxExternalRoutes:           toPtr(uint32(11000)),
-				MaxFabricRoutes:             toPtr(uint32(12000)),
-				MaxMlagRoutes:               toPtr(uint32(13000)),
-			}
-			log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-			err = bpClient.SetFabricSettings(ctx, fsSet)
-			if err != nil {
-				t.Fatal(err)
-			}
-			log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-			fsGet, err := bpClient.GetFabricSettings(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
+			t.Run("enable_and_check_ipv6", func(t *testing.T) {
+				fsSet := &FabricSettings{
+					AntiAffinityPolicy: &AntiAffinityPolicy{
+						Algorithm:                AlgorithmHeuristic,
+						MaxLinksPerPort:          2,
+						MaxLinksPerSlot:          2,
+						MaxPerSystemLinksPerPort: 2,
+						MaxPerSystemLinksPerSlot: 2,
+						Mode:                     AntiAffinityModeEnabledStrict,
+					},
+					EsiMacMsb:                   toPtr(uint8(4)),
+					EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnumEnabled,
+					ExternalRouterMtu:           toPtr(uint16(9002)),
+					Ipv6Enabled:                 toPtr(true),
+					MaxEvpnRoutes:               toPtr(uint32(10000)),
+					MaxExternalRoutes:           toPtr(uint32(11000)),
+					MaxFabricRoutes:             toPtr(uint32(12000)),
+					MaxMlagRoutes:               toPtr(uint32(13000)),
+				}
+				log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
+				err = bpClient.SetFabricSettings(ctx, fsSet)
+				if err != nil {
+					t.Fatal(err)
+				}
+				log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
+				fsGet, err := bpClient.GetFabricSettings(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			compareFabricSettings(t, *fsSet, *fsGet)
+				compareFabricSettings(t, *fsSet, *fsGet)
+			})
 		})
 	}
 }

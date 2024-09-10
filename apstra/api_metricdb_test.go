@@ -59,14 +59,16 @@ func TestUseAggregation(t *testing.T) {
 }
 
 func TestQueryMetricdb(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for clientName, client := range clients {
 		log.Printf("testing getMetricdbMetrics() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		metrics, err := client.client.getMetricdbMetrics(context.TODO())
+		metrics, err := client.client.getMetricdbMetrics(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -74,7 +76,7 @@ func TestQueryMetricdb(t *testing.T) {
 		var result *MetricDbQueryResponse
 		if len(metrics.Items) > 0 { // do not call rand.Intn() with '0'
 			i := rand.Intn(len(metrics.Items))
-			log.Printf("randomly requesting metric %d of %d available", i, len(metrics.Items))
+			log.Printf("randomly requesting metric %q (%d) of %d available", metrics.Items[i], i, len(metrics.Items))
 			q := MetricDbQueryRequest{
 				metric: metrics.Items[i],
 				begin:  time.Now().Add(-time.Hour),
@@ -82,7 +84,7 @@ func TestQueryMetricdb(t *testing.T) {
 			}
 
 			log.Printf("testing QueryMetricdb() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			result, err = client.client.QueryMetricdb(context.TODO(), &q)
+			result, err = client.client.QueryMetricdb(ctx, &q)
 			if err != nil {
 				t.Fatal(err)
 			}

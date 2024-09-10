@@ -7,29 +7,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"math/rand"
 	"net"
 	"testing"
+
+	"github.com/hashicorp/go-version"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenericSystemLoopbacks(t *testing.T) {
 	ctx := context.Background()
 
 	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	for clientName, client := range clients {
 		t.Logf("creating test blueprint in %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpClient, bpDelete := testBlueprintH(ctx, t, client.client)
-		defer func() {
-			err := bpDelete(context.Background())
-			if err != nil {
-				t.Fatal(err)
-			}
-		}()
+		bpClient := testBlueprintH(ctx, t, client.client)
 
 		t.Logf("determining generic system node IDs in %s %s (%s)", client.clientType, clientName, client.client.apiVersion)
 		systemIds, err := getSystemIdsByRole(ctx, bpClient, "generic")
@@ -84,31 +78,27 @@ func TestGenericSystemLoopbacks(t *testing.T) {
 				},
 			},
 			{
-				name:           "v6_only_1",
-				apiConstraints: version.MustConstraints(version.NewConstraint("!=" + apstra410)),
+				name: "v6_only_1",
 				loopback: GenericSystemLoopback{
 					Ipv6Addr: &net.IPNet{IP: randomIpv6(), Mask: v6HostMask},
 				},
 			},
 			{
-				name:           "v6_only_2",
-				apiConstraints: version.MustConstraints(version.NewConstraint("!=" + apstra410)),
+				name: "v6_only_2",
 				loopback: GenericSystemLoopback{
 					Ipv6Addr: &net.IPNet{IP: randomIpv6(), Mask: v6HostMask},
 				},
 			},
 			{name: "none_1"},
 			{
-				name:           "v4_and_v6_1",
-				apiConstraints: version.MustConstraints(version.NewConstraint("!=" + apstra410)),
+				name: "v4_and_v6_1",
 				loopback: GenericSystemLoopback{
 					Ipv4Addr: &net.IPNet{IP: randomIpv4(), Mask: v4HostMask},
 					Ipv6Addr: &net.IPNet{IP: randomIpv6(), Mask: v6HostMask},
 				},
 			},
 			{
-				name:           "v4_and_v6_2",
-				apiConstraints: version.MustConstraints(version.NewConstraint("!=" + apstra410)),
+				name: "v4_and_v6_2",
 				loopback: GenericSystemLoopback{
 					Ipv4Addr: &net.IPNet{IP: randomIpv4(), Mask: v4HostMask},
 					Ipv6Addr: &net.IPNet{IP: randomIpv6(), Mask: v6HostMask},

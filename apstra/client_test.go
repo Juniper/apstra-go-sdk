@@ -132,13 +132,6 @@ func TestCRUDIntegerPools(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// remove clients which do not support integer pools
-	for clientName, client := range clients {
-		if integerPoolForbidden().Includes(client.client.apiVersion.String()) {
-			delete(clients, clientName)
-		}
-	}
-
 	validate := func(req *IntPoolRequest, resp *IntPool) {
 		if req.DisplayName != resp.DisplayName {
 			t.Fatalf("integer pool name mismatch - Requested: %q Actual %q", req.DisplayName, resp.DisplayName)
@@ -212,7 +205,7 @@ func TestCRUDIntegerPools(t *testing.T) {
 		beforePoolCount := len(pools)
 		request := IntPoolRequest{
 			DisplayName: randString(5, "hex"),
-			Ranges:      randomRanges(2, 5, 1, math.MaxUint32),
+			Ranges:      randomRanges(2, 5, 10000, 10999),
 			Tags:        randomTags(2, 5),
 		}
 

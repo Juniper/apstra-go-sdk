@@ -269,38 +269,6 @@ func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*rawFa
 	}, nil
 }
 
-// getFabricSettings41x does the same job as setFabricSettings, but for Apstra 4.1.x, which collects
-// the parameters in rawFabricSettings from 3 different places
-func (o *TwoStageL3ClosClient) getFabricSettings41x(ctx context.Context) (*rawFabricSettings, error) {
-	fabricAddressingPolicy, err := o.GetFabricAddressingPolicy(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	virtualNetworkPolicy, err := o.getVirtualNetworkPolicy41x(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	antiAffinityPolicy, err := o.getAntiAffinityPolicy(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &rawFabricSettings{
-		AntiAffinity:                antiAffinityPolicy,
-		EsiMacMsb:                   fabricAddressingPolicy.EsiMacMsb,
-		EvpnGenerateType5HostRoutes: virtualNetworkPolicy.EvpnGenerateType5HostRoutes,
-		ExternalRouterMtu:           virtualNetworkPolicy.ExternalRouterMtu,
-		Ipv6Enabled:                 fabricAddressingPolicy.Ipv6Enabled,
-		MaxEvpnRoutes:               virtualNetworkPolicy.MaxEvpnRoutes,
-		MaxExternalRoutes:           virtualNetworkPolicy.MaxExternalRoutes,
-		MaxFabricRoutes:             virtualNetworkPolicy.MaxFabricRoutes,
-		MaxMlagRoutes:               virtualNetworkPolicy.MaxMlagRoutes,
-		OverlayControlProtocol:      virtualNetworkPolicy.OverlayControlProtocol,
-	}, nil
-}
-
 func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFabricSettings) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
@@ -332,30 +300,6 @@ func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *raw
 	}
 
 	err = o.setSzFootprintOptimization420(ctx, in.OptimiseSzFootprint)
-	if err != nil {
-		return err
-	}
-
-	err = o.setAntiAffinityPolicy(ctx, in.AntiAffinity)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// setFabricSettings41x does the same job as setFabricSettings, but for Apstra 4.1.x, which controls
-// the parameters in rawFabricSettings in 3 different places
-func (o *TwoStageL3ClosClient) setFabricSettings41x(ctx context.Context, in *rawFabricSettings) error {
-	err := o.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{
-		Ipv6Enabled: in.Ipv6Enabled,
-		EsiMacMsb:   in.EsiMacMsb,
-	})
-	if err != nil {
-		return err
-	}
-
-	err = o.setVirtualNetworkPolicy41x(ctx, in)
 	if err != nil {
 		return err
 	}

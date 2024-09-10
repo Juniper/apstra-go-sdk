@@ -3,8 +3,9 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"net/http"
+
+	"github.com/hashicorp/go-version"
 )
 
 const (
@@ -73,61 +74,6 @@ func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, i
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
-	}
-
-	return nil
-}
-
-type rawVirtualNetworkPolicy41x struct {
-	EvpnGenerateType5HostRoutes *string `json:"evpn_generate_type5_host_routes,omitempty"`
-	ExternalRouterMtu           *uint16 `json:"external_router_mtu,omitempty"`
-	MaxFabricRoutes             *uint32 `json:"max_fabric_routes"`
-	MaxMlagRoutes               *uint32 `json:"max_mlag_routes"`
-	MaxEvpnRoutes               *uint32 `json:"max_evpn_routes"`
-	MaxExternalRoutes           *uint32 `json:"max_external_routes"`
-	OverlayControlProtocol      *string `json:"overlay_control_protocol,omitempty"`
-}
-
-func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy41x(ctx context.Context) (*rawVirtualNetworkPolicy41x, error) {
-	vnpNodeIds, err := o.NodeIdsByType(ctx, NodeTypeVirtualNetworkPolicy)
-	if err != nil {
-		return nil, err
-	}
-	if len(vnpNodeIds) != 1 {
-		return nil, fmt.Errorf("expected 1 %s node, got %d", NodeTypeVirtualNetworkPolicy.String(), len(vnpNodeIds))
-	}
-
-	var result rawVirtualNetworkPolicy41x
-
-	err = o.client.GetNode(ctx, o.blueprintId, vnpNodeIds[0], &result)
-	if err != nil {
-		return nil, err
-	}
-
-	return &result, nil
-}
-
-func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy41x(ctx context.Context, in *rawFabricSettings) error {
-	patch := rawVirtualNetworkPolicy41x{
-		EvpnGenerateType5HostRoutes: in.EvpnGenerateType5HostRoutes,
-		ExternalRouterMtu:           in.ExternalRouterMtu,
-		MaxEvpnRoutes:               in.MaxEvpnRoutes,
-		MaxExternalRoutes:           in.MaxExternalRoutes,
-		MaxFabricRoutes:             in.MaxFabricRoutes,
-		MaxMlagRoutes:               in.MaxMlagRoutes,
-	}
-
-	fabricNodeIds, err := o.NodeIdsByType(ctx, NodeTypeVirtualNetworkPolicy)
-	if err != nil {
-		return err
-	}
-	if len(fabricNodeIds) != 1 {
-		return fmt.Errorf("expected 1 %s node ID, got %d", NodeTypeFabricAddressingPolicy, len(fabricNodeIds))
-	}
-
-	err = o.PatchNode(ctx, fabricNodeIds[0], &patch, nil)
-	if err != nil {
-		return fmt.Errorf("failed patching %s node %q - %w", NodeTypeFabricAddressingPolicy, fabricNodeIds[0], err)
 	}
 
 	return nil

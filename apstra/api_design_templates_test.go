@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -13,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-version"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnmarshalTemplate(t *testing.T) {
@@ -534,11 +534,10 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 				Count: 1,
 			},
 		},
-		DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
-		AntiAffinityPolicy:     &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-		AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-		FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{},
-		VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
+		DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
+		AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
+		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+		VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 	}
 
 	for clientName, client := range clients {
@@ -590,11 +589,10 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 				Count: 1,
 			},
 		},
-		DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
-		AntiAffinityPolicy:     &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-		AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-		FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{},
-		VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
+		DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
+		AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
+		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+		VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 	}
 
 	for clientName, client := range clients {
@@ -625,10 +623,6 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 				MaxPerSystemLinksPerPort: 1,
 				MaxPerSystemLinksPerSlot: 1,
 				Mode:                     AntiAffinityModeDisabled,
-			},
-			FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{
-				SpineSuperspineLinks: AddressingSchemeIp4,
-				SpineLeafLinks:       AddressingSchemeIp4,
 			},
 		}
 
@@ -839,16 +833,15 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 					t.Fatal(err)
 				}
 				id, err := client.client.createRackBasedTemplate(ctx, &rawCreateRackBasedTemplateRequest{
-					Type:                   cloneMe.Type,
-					DisplayName:            fmt.Sprintf("%s-%d", templateName, i),
-					Spine:                  cloneMe.Spine,
-					RackTypes:              cloneMe.RackTypes,
-					RackTypeCounts:         cloneMe.RackTypeCounts,
-					DhcpServiceIntent:      cloneMe.DhcpServiceIntent,
-					AntiAffinityPolicy:     cloneMe.AntiAffinityPolicy,
-					AsnAllocationPolicy:    cloneMe.AsnAllocationPolicy,
-					FabricAddressingPolicy: cloneMe.FabricAddressingPolicy,
-					VirtualNetworkPolicy:   cloneMe.VirtualNetworkPolicy,
+					Type:                 cloneMe.Type,
+					DisplayName:          fmt.Sprintf("%s-%d", templateName, i),
+					Spine:                cloneMe.Spine,
+					RackTypes:            cloneMe.RackTypes,
+					RackTypeCounts:       cloneMe.RackTypeCounts,
+					DhcpServiceIntent:    cloneMe.DhcpServiceIntent,
+					AntiAffinityPolicy:   cloneMe.AntiAffinityPolicy,
+					AsnAllocationPolicy:  cloneMe.AsnAllocationPolicy,
+					VirtualNetworkPolicy: cloneMe.VirtualNetworkPolicy,
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -866,7 +859,6 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 					RackBasedTemplates:      cloneMe.RackBasedTemplates,
 					RackBasedTemplateCounts: cloneMe.RackBasedTemplateCounts,
 					AntiAffinityPolicy:      cloneMe.AntiAffinityPolicy,
-					FabricAddressingPolicy:  cloneMe.FabricAddressingPolicy,
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -969,7 +961,6 @@ func TestAllOverlayControlProtocols(t *testing.T) {
 
 func TestRackBasedTemplateMethods(t *testing.T) {
 	ctx := context.Background()
-	var apiVersionString string
 
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
@@ -1039,47 +1030,9 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 		return nil
 	}
 
-	compareAntiAffinityPolicy := func(req, rbt AntiAffinityPolicy) error {
-		if req.Algorithm != rbt.Algorithm {
-			return fmt.Errorf("antiaffinity policy algorithm mismatch expected %q got %q", req.Algorithm, rbt.Algorithm)
-		}
+	compareRequestToTemplate := func(t testing.TB, req CreateRackBasedTemplateRequest, rbt TemplateRackBasedData) error {
+		t.Helper()
 
-		if req.MaxLinksPerPort != rbt.MaxLinksPerPort {
-			return fmt.Errorf("antiaffinity policy max links per port mismatch expected %d got %d", req.MaxLinksPerPort, rbt.MaxLinksPerPort)
-		}
-
-		if req.MaxLinksPerSlot != rbt.MaxLinksPerSlot {
-			return fmt.Errorf("antiaffinity policy max links per slot mismatch expected %d got %d", req.MaxLinksPerSlot, rbt.MaxLinksPerSlot)
-		}
-
-		if req.MaxPerSystemLinksPerPort != rbt.MaxPerSystemLinksPerPort {
-			return fmt.Errorf("antiaffinity policy max per system links per port mismatch expected %d got %d", req.MaxPerSystemLinksPerPort, rbt.MaxPerSystemLinksPerPort)
-		}
-
-		if req.MaxPerSystemLinksPerSlot != rbt.MaxPerSystemLinksPerSlot {
-			return fmt.Errorf("antiaffinity policy max per system links per slot mismatch expected %d got %d", req.MaxPerSystemLinksPerSlot, rbt.MaxPerSystemLinksPerSlot)
-		}
-
-		if req.Mode != rbt.Mode {
-			return fmt.Errorf("antiaffinity policy mode mismatch expected %q got %q", req.Mode, rbt.Mode)
-		}
-
-		return nil
-	}
-
-	compareFabricAddressingPolicy := func(req, rbt TemplateFabricAddressingPolicy410Only) error {
-		if req.SpineSuperspineLinks != rbt.SpineSuperspineLinks {
-			return fmt.Errorf("spine/superspine mismatch expected %q, got %q", req.SpineSuperspineLinks, rbt.SpineSuperspineLinks)
-		}
-
-		if req.SpineLeafLinks != rbt.SpineLeafLinks {
-			return fmt.Errorf("spine/leaf mismatch expected %q, got %q", req.SpineLeafLinks, rbt.SpineLeafLinks)
-		}
-
-		return nil
-	}
-
-	compareRequestToTemplate := func(req CreateRackBasedTemplateRequest, rbt TemplateRackBasedData) error {
 		if req.DisplayName != rbt.DisplayName {
 			return fmt.Errorf("displayname mismatch expected %q got %q", req.DisplayName, rbt.DisplayName)
 		}
@@ -1095,25 +1048,16 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 		}
 
 		if req.DhcpServiceIntent.Active != rbt.DhcpServiceIntent.Active {
-			return fmt.Errorf("dhcp service intend mismatch expected %t got %t", req.DhcpServiceIntent.Active, rbt.DhcpServiceIntent.Active)
+			return fmt.Errorf("dhcp service intent mismatch expected %t got %t", req.DhcpServiceIntent.Active, rbt.DhcpServiceIntent.Active)
 		}
 
 		if req.AntiAffinityPolicy != nil {
-			err = compareAntiAffinityPolicy(*req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
-			if err != nil {
-				return err
-			}
+			require.NotNilf(t, rbt.AntiAffinityPolicy, "rbt.AntiAffinityPolicy is nil")
+			compareAntiAffinityPolicy(t, *req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
 		}
 
 		if req.AsnAllocationPolicy.SpineAsnScheme != rbt.AsnAllocationPolicy.SpineAsnScheme {
 			return fmt.Errorf("asn allocation policy spine asn scheme mismatch expected %q got %q", req.AsnAllocationPolicy.SpineAsnScheme, rbt.AsnAllocationPolicy.SpineAsnScheme)
-		}
-
-		if legacyTemplateWithAddressingPolicy.Check(version.Must(version.NewVersion(apiVersionString))) {
-			err = compareFabricAddressingPolicy(*req.FabricAddressingPolicy, *rbt.FabricAddressingPolicy)
-			if err != nil {
-				return err
-			}
 		}
 
 		if req.VirtualNetworkPolicy.OverlayControlProtocol != rbt.VirtualNetworkPolicy.OverlayControlProtocol {
@@ -1151,108 +1095,73 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 
 	testCases := []testCase{
 		{
+			versionConstraints: eqApstra420,
 			request: CreateRackBasedTemplateRequest{
-				DisplayName:            randString(5, "hex"),
-				Spine:                  &spines[0],
-				RackInfos:              rackInfos[0],
-				DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
-				AntiAffinityPolicy:     &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-				AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-				FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{},
-				VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
-			},
-			versionConstraints: leApstra420,
-		},
-		{
-			request: CreateRackBasedTemplateRequest{
-				DisplayName:         randString(5, "hex"),
-				Spine:               &spines[1],
-				RackInfos:           rackInfos[1],
-				DhcpServiceIntent:   &DhcpServiceIntent{Active: false},
-				AntiAffinityPolicy:  &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-				AsnAllocationPolicy: &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-				FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{
-					SpineSuperspineLinks: AddressingSchemeIp46,
-					SpineLeafLinks:       AddressingSchemeIp46,
-				},
+				DisplayName:          randString(5, "hex"),
+				Spine:                &spines[0],
+				RackInfos:            rackInfos[0],
+				DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
+				AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic}, // 4.2.0 only?
+				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
 				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
-			versionConstraints: leApstra420,
 		},
 		{
+			versionConstraints: eqApstra420,
 			request: CreateRackBasedTemplateRequest{
-				DisplayName:            randString(5, "hex"),
-				Spine:                  &spines[0],
-				RackInfos:              rackInfos[0],
-				DhcpServiceIntent:      &DhcpServiceIntent{Active: true},
-				AsnAllocationPolicy:    &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-				FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{},
-				VirtualNetworkPolicy:   &VirtualNetworkPolicy{},
+				DisplayName:          randString(5, "hex"),
+				Spine:                &spines[1],
+				RackInfos:            rackInfos[1],
+				DhcpServiceIntent:    &DhcpServiceIntent{Active: false},
+				AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
+				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
+		},
+		{
 			versionConstraints: geApstra421,
+			request: CreateRackBasedTemplateRequest{
+				DisplayName:          randString(5, "hex"),
+				Spine:                &spines[0],
+				RackInfos:            rackInfos[0],
+				DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
+				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
+			},
 		},
 		{
 			request: CreateRackBasedTemplateRequest{
-				DisplayName:         randString(5, "hex"),
-				Spine:               &spines[1],
-				RackInfos:           rackInfos[1],
-				DhcpServiceIntent:   &DhcpServiceIntent{Active: false},
-				AsnAllocationPolicy: &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-				FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{
-					SpineSuperspineLinks: AddressingSchemeIp46,
-					SpineLeafLinks:       AddressingSchemeIp46,
-				},
+				DisplayName:          randString(5, "hex"),
+				Spine:                &spines[1],
+				RackInfos:            rackInfos[1],
+				DhcpServiceIntent:    &DhcpServiceIntent{Active: false},
+				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
 				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
 			versionConstraints: geApstra421,
 		},
 	}
 
-	for clientName, client := range clients {
-		apiVersionString = client.client.apiVersion.String()
-		for i, tc := range testCases {
-			t.Run(fmt.Sprintf("Test-%d", i), func(t *testing.T) {
-				if !tc.versionConstraints.Check(client.client.apiVersion) {
-					t.Skipf("skipping testcase %d because of versionConstraint %s, version %s", i, tc.versionConstraints, client.client.apiVersion)
-				}
+	for i, tc := range testCases {
+		i, tc := i, tc
 
-				log.Printf("testing CreateRackBasedTemplate(testCase[%d]) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-				id, err := client.client.CreateRackBasedTemplate(ctx, &tc.request)
-				if err != nil {
-					t.Fatal(err)
-				}
+		t.Run(fmt.Sprintf("Test-%d", i), func(t *testing.T) {
+			for clientName, client := range clients {
+				clientName, client := clientName, client
 
-				log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				rbt, err := client.client.GetRackBasedTemplate(ctx, id)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				if id != rbt.Id {
-					t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
-				}
-
-				err = compareRequestToTemplate(tc.request, *rbt.Data)
-				if err != nil {
-					t.Fatalf("test case %d template differed from request: %s", i, err.Error())
-				}
-
-				for j := i; j < i+len(testCases); j++ { // j counts up from i
-					k := j % len(testCases) // k counts up from i, but loops back to zero
-
-					if !testCases[k].versionConstraints.Check(client.client.apiVersion) {
-						continue
+				t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+					if !tc.versionConstraints.Check(client.client.apiVersion) {
+						t.Skipf("skipping testcase %d because of versionConstraint %s, version %s", i, tc.versionConstraints, client.client.apiVersion)
 					}
 
-					req := testCases[k].request
-					log.Printf("testing UpdateRackBasedTemplate(testCase[%d]) against %s %s (%s)", k, client.clientType, clientName, client.client.ApiVersion())
-					err = client.client.UpdateRackBasedTemplate(ctx, id, &req)
+					log.Printf("testing CreateRackBasedTemplate(testCase[%d]) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+					id, err := client.client.CreateRackBasedTemplate(ctx, &tc.request)
 					if err != nil {
 						t.Fatal(err)
 					}
 
 					log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					rbt, err = client.client.GetRackBasedTemplate(ctx, id)
+					rbt, err := client.client.GetRackBasedTemplate(ctx, id)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -1261,18 +1170,48 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 						t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
 					}
 
-					err = compareRequestToTemplate(req, *rbt.Data)
+					err = compareRequestToTemplate(t, tc.request, *rbt.Data)
 					if err != nil {
 						t.Fatalf("test case %d template differed from request: %s", i, err.Error())
 					}
-				}
 
-				log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = client.client.DeleteTemplate(ctx, id)
-				if err != nil {
-					t.Fatal(err)
-				}
-			})
-		}
+					for j := i; j < i+len(testCases); j++ { // j counts up from i
+						k := j % len(testCases) // k counts up from i, but loops back to zero
+
+						if !testCases[k].versionConstraints.Check(client.client.apiVersion) {
+							continue
+						}
+
+						req := testCases[k].request
+						log.Printf("testing UpdateRackBasedTemplate(testCase[%d]) against %s %s (%s)", k, client.clientType, clientName, client.client.ApiVersion())
+						err = client.client.UpdateRackBasedTemplate(ctx, id, &req)
+						if err != nil {
+							t.Fatal(err)
+						}
+
+						log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+						rbt, err = client.client.GetRackBasedTemplate(ctx, id)
+						if err != nil {
+							t.Fatal(err)
+						}
+
+						if id != rbt.Id {
+							t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
+						}
+
+						err = compareRequestToTemplate(t, req, *rbt.Data)
+						if err != nil {
+							t.Fatalf("test case %d template differed from request: %s", i, err.Error())
+						}
+					}
+
+					log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					err = client.client.DeleteTemplate(ctx, id)
+					if err != nil {
+						t.Fatal(err)
+					}
+				})
+			}
+		})
 	}
 }

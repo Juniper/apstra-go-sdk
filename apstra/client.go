@@ -265,6 +265,10 @@ func (o ClientCfg) validate() error {
 
 // NewClient creates a Client object
 func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
+	if o.tuningParams == nil {
+		o.tuningParams = make(map[string]int)
+	}
+
 	err := o.validate()
 	if err != nil {
 		return nil, err
@@ -549,10 +553,6 @@ func (o *Client) UpdateAsnPool(ctx context.Context, id ObjectId, cfg *AsnPoolReq
 
 // GetIntegerPools returns Integer Pools configured on Apstra
 func (o *Client) GetIntegerPools(ctx context.Context) ([]IntPool, error) {
-	if integerPoolForbidden().Includes(o.apiVersion.String()) {
-		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
-	}
-
 	rawPools, err := o.getIntPools(ctx, apiUrlResourcesIntegerPools)
 	if err != nil {
 		return nil, err
@@ -572,10 +572,6 @@ func (o *Client) GetIntegerPools(ctx context.Context) ([]IntPool, error) {
 
 // GetIntegerPoolByName returns Integer Pools configured on Apstra
 func (o *Client) GetIntegerPoolByName(ctx context.Context, desired string) (*IntPool, error) {
-	if integerPoolForbidden().Includes(o.apiVersion.String()) {
-		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
-	}
-
 	raw, err := o.getIntPoolByName(ctx, desired)
 	if err != nil {
 		return nil, err
@@ -585,19 +581,11 @@ func (o *Client) GetIntegerPoolByName(ctx context.Context, desired string) (*Int
 
 // ListIntegerPoolIds returns Integer Pools configured on Apstra
 func (o *Client) ListIntegerPoolIds(ctx context.Context) ([]ObjectId, error) {
-	if integerPoolForbidden().Includes(o.apiVersion.String()) {
-		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
-	}
-
 	return o.listIntPoolIds(ctx, apiUrlResourcesIntegerPools)
 }
 
 // CreateIntegerPool adds an Integer Pool to Apstra
 func (o *Client) CreateIntegerPool(ctx context.Context, in *IntPoolRequest) (ObjectId, error) {
-	if integerPoolForbidden().Includes(o.apiVersion.String()) {
-		return "", fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
-	}
-
 	response, err := o.createIntPool(ctx, in, apiUrlResourcesIntegerPools)
 	if err != nil {
 		return "", fmt.Errorf("error creating Integer Pool - %w", err)
@@ -607,10 +595,6 @@ func (o *Client) CreateIntegerPool(ctx context.Context, in *IntPoolRequest) (Obj
 
 // GetIntegerPool returns, by ObjectId, a specific Integer Pool
 func (o *Client) GetIntegerPool(ctx context.Context, in ObjectId) (*IntPool, error) {
-	if integerPoolForbidden().Includes(o.apiVersion.String()) {
-		return nil, fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
-	}
-
 	rawPool, err := o.getIntPool(ctx, apiUrlResourcesIntegerPoolById, in)
 	if err != nil {
 		return nil, err
@@ -620,19 +604,11 @@ func (o *Client) GetIntegerPool(ctx context.Context, in ObjectId) (*IntPool, err
 
 // DeleteIntegerPool deletes an Integer Pool, by ObjectId from Apstra
 func (o *Client) DeleteIntegerPool(ctx context.Context, in ObjectId) error {
-	if integerPoolForbidden().Includes(o.apiVersion.String()) {
-		return fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
-	}
-
 	return o.deleteIntPool(ctx, apiUrlResourcesIntegerPoolById, in)
 }
 
 // UpdateIntegerPool updates an Integer Pool by ObjectId with new Integer Pool config
 func (o *Client) UpdateIntegerPool(ctx context.Context, id ObjectId, cfg *IntPoolRequest) error {
-	if integerPoolForbidden().Includes(o.apiVersion.String()) {
-		return fmt.Errorf("integer pool operations not compatible with Apstra API %s", o.apiVersion)
-	}
-
 	return o.updateIntPool(ctx, apiUrlResourcesIntegerPoolById, id, cfg)
 }
 
@@ -872,12 +848,6 @@ func (o *Client) GetAllBlueprintStatus(ctx context.Context) ([]BlueprintStatus, 
 
 // CreateBlueprintFromTemplate creates a blueprint using the supplied reference design and template
 func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlueprintFromTemplateRequest) (ObjectId, error) {
-	if req.FabricSettings != nil &&
-		req.FabricSettings.FabricL3Mtu != nil &&
-		fabricL3MtuForbidden.Check(o.apiVersion) {
-		return "", errors.New(fabricL3MtuForbiddenError)
-	}
-
 	if req.FabricSettings != nil && req.FabricSettings.Ipv6Enabled != nil && *req.FabricSettings.Ipv6Enabled {
 		return "", errors.New("IPv6 cannot be enabled during blueprint creation")
 	}
@@ -885,13 +855,16 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlu
 	var id ObjectId
 	var err error
 	switch {
-	case geApstra421.Check(o.apiVersion):
-		id, err = o.createBlueprintFromTemplate(ctx, req.raw())
-	default:
+	case eqApstra420.Check(o.apiVersion):
 		id, err = o.createBlueprintFromTemplate420(ctx, req.raw420())
-	}
-	if err != nil {
-		return id, err
+		if err != nil {
+			return id, fmt.Errorf("failed while creating new blueprint - %w", err)
+		}
+	default:
+		id, err = o.createBlueprintFromTemplate(ctx, req.raw())
+		if err != nil {
+			return id, err
+		}
 	}
 
 	if req.SkipCablingReadinessCheck {

@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -63,24 +62,15 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		var fabricSettings *FabricSettings
-		if !legacyTemplateWithAddressingPolicy.Check(client.client.apiVersion) {
-			// current apstra releases put this feature in the blueprint, rather than the template
-			fabricSettings = &FabricSettings{}
-
-			if !fabricL3MtuForbidden.Check(client.client.apiVersion) {
-				fabricL3Mtu := uint16(rand.Intn(50)*2 + 9100) // even number 9100 - 9200
-				fabricSettings.FabricL3Mtu = &fabricL3Mtu
-				fabricSettings.SpineLeafLinks = toPtr(AddressingSchemeIp46)
-				fabricSettings.SpineSuperspineLinks = toPtr(AddressingSchemeIp46)
-			}
-		}
-
 		req := CreateBlueprintFromTemplateRequest{
-			RefDesign:      RefDesignTwoStageL3Clos,
-			Label:          randString(10, "hex"),
-			TemplateId:     "L2_Virtual_EVPN",
-			FabricSettings: fabricSettings,
+			RefDesign:  RefDesignTwoStageL3Clos,
+			Label:      randString(10, "hex"),
+			TemplateId: "L2_Virtual_EVPN",
+			FabricSettings: &FabricSettings{
+				FabricL3Mtu:          toPtr(uint16(rand.Intn(50)*2 + 9100)),
+				SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+				SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+			},
 		}
 
 		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -320,7 +310,6 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 			},
 		},
 		"4.1.1_and_later": {
-			versionConstraints: geApstra411,
 			req: CreateBlueprintFromTemplateRequest{
 				RefDesign:  RefDesignTwoStageL3Clos,
 				Label:      randString(5, "hex"),
@@ -332,7 +321,6 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 			},
 		},
 		"4.2.0_specific_test": {
-			versionConstraints: geApstra420,
 			req: CreateBlueprintFromTemplateRequest{
 				RefDesign:  RefDesignTwoStageL3Clos,
 				Label:      randString(5, "hex"),
@@ -345,7 +333,6 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 			},
 		},
 		"lots_of_values": {
-			versionConstraints: geApstra420,
 			req: CreateBlueprintFromTemplateRequest{
 				RefDesign:  RefDesignTwoStageL3Clos,
 				Label:      randString(5, "hex"),
@@ -381,7 +368,6 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 			},
 		},
 		"different_values": {
-			versionConstraints: geApstra420,
 			req: CreateBlueprintFromTemplateRequest{
 				RefDesign:  RefDesignTwoStageL3Clos,
 				Label:      randString(5, "hex"),
@@ -467,42 +453,52 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 			t.Parallel()
 
 			for clientName, client := range clients {
-				if tCase.versionConstraints != nil && !tCase.versionConstraints.Check(client.client.apiVersion) {
-					t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.versionConstraints)
-				}
+				clientName, client := clientName, client
+				t.Run(clientName, func(t *testing.T) {
+					if tCase.versionConstraints != nil && !tCase.versionConstraints.Check(client.client.apiVersion) {
+						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.versionConstraints)
+					}
 
-				t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				id, err := client.client.CreateBlueprintFromTemplate(ctx, &tCase.req)
-				require.NoError(t, err)
-
-				t.Logf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
-				require.NoError(t, err)
-
-				if tCase.req.FabricSettings != nil {
-					t.Logf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					fabricSettings, err := bpClient.GetFabricSettings(ctx)
+					t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					id, err := client.client.CreateBlueprintFromTemplate(ctx, &tCase.req)
 					require.NoError(t, err)
 
-					t.Logf("comparing create-time vs. fetched blueprint fabric settings against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					compareFabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
+					if eqApstra420.Check(client.client.apiVersion) && tCase.req.FabricSettings != nil { // 4.2.0 cannot set fabric settings when creating blueprint
+						bp, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+						require.NoError(t, err)
 
-					if tCase.req.FabricSettings.SpineLeafLinks != nil || tCase.req.FabricSettings.SpineSuperspineLinks != nil {
-						spineLeaf, spineSuperspine := fetchFabricAddressingScheme(t, bpClient)
+						require.NoError(t, bp.setFabricSettings420(ctx, tCase.req.FabricSettings.raw()))
+					}
 
-						if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
-							t.Fatalf("expected spine leaf addressing: %q, got %q", *tCase.req.FabricSettings.SpineLeafLinks, spineLeaf)
-						}
+					t.Logf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+					require.NoError(t, err)
 
-						if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
-							t.Fatalf("expected spine superspine addressing: %q, got %q", *tCase.req.FabricSettings.SpineSuperspineLinks, spineSuperspine)
+					if tCase.req.FabricSettings != nil {
+						t.Logf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+						fabricSettings, err := bpClient.GetFabricSettings(ctx)
+						require.NoError(t, err)
+
+						t.Logf("comparing create-time vs. fetched blueprint fabric settings against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+						compareFabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
+
+						if tCase.req.FabricSettings.SpineLeafLinks != nil || tCase.req.FabricSettings.SpineSuperspineLinks != nil {
+							spineLeaf, spineSuperspine := fetchFabricAddressingScheme(t, bpClient)
+
+							if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
+								t.Fatalf("expected spine leaf addressing: %q, got %q", *tCase.req.FabricSettings.SpineLeafLinks, spineLeaf)
+							}
+
+							if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
+								t.Fatalf("expected spine superspine addressing: %q, got %q", *tCase.req.FabricSettings.SpineSuperspineLinks, spineSuperspine)
+							}
 						}
 					}
-				}
 
-				t.Logf("testing DeleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = client.client.DeleteBlueprint(ctx, id)
-				require.NoError(t, err)
+					t.Logf("testing DeleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					err = client.client.DeleteBlueprint(ctx, id)
+					require.NoError(t, err)
+				})
 			}
 		})
 	}
@@ -528,7 +524,6 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 			},
 		},
 		"4.1.1_and_later": {
-			versionConstraints: geApstra411,
 			req: CreateBlueprintFromTemplateRequest{
 				RefDesign:  RefDesignTwoStageL3Clos,
 				Label:      randString(5, "hex"),
@@ -540,7 +535,6 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 			},
 		},
 		"4.2.0_specific_test": {
-			versionConstraints: geApstra420,
 			req: CreateBlueprintFromTemplateRequest{
 				RefDesign:  RefDesignTwoStageL3Clos,
 				Label:      randString(5, "hex"),
@@ -553,7 +547,6 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 			},
 		},
 		"lots_of_values": {
-			versionConstraints: geApstra420,
 			req: CreateBlueprintFromTemplateRequest{
 				RefDesign:  RefDesignTwoStageL3Clos,
 				Label:      randString(5, "hex"),
@@ -589,7 +582,6 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 			},
 		},
 		"different_values": {
-			versionConstraints: geApstra420,
 			req: CreateBlueprintFromTemplateRequest{
 				RefDesign:  RefDesignTwoStageL3Clos,
 				Label:      randString(5, "hex"),
@@ -632,7 +624,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		query := new(PathQuery).
 			SetClient(client.client).
 			SetBlueprintId(client.blueprintId)
-		if version.MustConstraints(version.NewConstraint(">=" + apstra421)).Check(client.client.apiVersion) {
+		if geApstra421.Check(client.client.apiVersion) {
 			query.Node([]QEEAttribute{
 				NodeTypeFabricPolicy.QEEAttribute(),
 				{Key: "name", Value: QEStringVal("node")},
@@ -675,42 +667,52 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 			t.Parallel()
 
 			for clientName, client := range clients {
-				if tCase.versionConstraints != nil && !tCase.versionConstraints.Check(client.client.apiVersion) {
-					t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.versionConstraints)
-				}
+				clientName, client := clientName, client
+				t.Run(clientName, func(t *testing.T) {
+					if tCase.versionConstraints != nil && !tCase.versionConstraints.Check(client.client.apiVersion) {
+						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.versionConstraints)
+					}
 
-				t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				id, err := client.client.CreateBlueprintFromTemplate(ctx, &tCase.req)
-				require.NoError(t, err)
-
-				t.Logf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
-				require.NoError(t, err)
-
-				if tCase.req.FabricSettings != nil {
-					t.Logf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					fabricSettings, err := bpClient.GetFabricSettings(ctx)
+					t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					id, err := client.client.CreateBlueprintFromTemplate(ctx, &tCase.req)
 					require.NoError(t, err)
 
-					t.Logf("comparing create-time vs. fetched blueprint fabric settings against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					compareFabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
+					if eqApstra420.Check(client.client.apiVersion) && tCase.req.FabricSettings != nil { // 4.2.0 cannot set fabric settings when creating blueprint
+						bp, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+						require.NoError(t, err)
 
-					if tCase.req.FabricSettings.SpineLeafLinks != nil || tCase.req.FabricSettings.SpineSuperspineLinks != nil {
-						spineLeaf, spineSuperspine := fetchFabricAddressingScheme(t, bpClient)
+						require.NoError(t, bp.setFabricSettings420(ctx, tCase.req.FabricSettings.raw()))
+					}
 
-						if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
-							t.Fatalf("expected spine leaf addressing: %q, got %q", *tCase.req.FabricSettings.SpineLeafLinks, spineLeaf)
-						}
+					t.Logf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+					require.NoError(t, err)
 
-						if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
-							t.Fatalf("expected spine superspine addressing: %q, got %q", *tCase.req.FabricSettings.SpineSuperspineLinks, spineSuperspine)
+					if tCase.req.FabricSettings != nil {
+						t.Logf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+						fabricSettings, err := bpClient.GetFabricSettings(ctx)
+						require.NoError(t, err)
+
+						t.Logf("comparing create-time vs. fetched blueprint fabric settings against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+						compareFabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
+
+						if tCase.req.FabricSettings.SpineLeafLinks != nil || tCase.req.FabricSettings.SpineSuperspineLinks != nil {
+							spineLeaf, spineSuperspine := fetchFabricAddressingScheme(t, bpClient)
+
+							if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
+								t.Fatalf("expected spine leaf addressing: %q, got %q", *tCase.req.FabricSettings.SpineLeafLinks, spineLeaf)
+							}
+
+							if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
+								t.Fatalf("expected spine superspine addressing: %q, got %q", *tCase.req.FabricSettings.SpineSuperspineLinks, spineSuperspine)
+							}
 						}
 					}
-				}
 
-				t.Logf("testing DeleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = client.client.DeleteBlueprint(ctx, id)
-				require.NoError(t, err)
+					t.Logf("testing DeleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					err = client.client.DeleteBlueprint(ctx, id)
+					require.NoError(t, err)
+				})
 			}
 		})
 	}
@@ -795,3 +797,25 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 		})
 	}
 }
+
+//// quick-n-dirty delete all blueprints - not a regular test!
+//func TestDeleteAllBlueprints(t *testing.T) {
+//	ctx := context.Background()
+//
+//	clients, err := getTestClients(ctx, t)
+//	require.NoError(t, err)
+//
+//	for clientName, client := range clients {
+//		clientName, client := clientName, client
+//		t.Run(clientName, func(t *testing.T) {
+//			t.Parallel()
+//
+//			ids, err := client.client.ListAllBlueprintIds(ctx)
+//			require.NoError(t, err)
+//
+//			for _, id := range ids {
+//				require.NoError(t, client.client.DeleteBlueprint(ctx, id))
+//			}
+//		})
+//	}
+//}

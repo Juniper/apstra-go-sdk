@@ -407,28 +407,33 @@ func (o *Client) getBlueprintByName(ctx context.Context, name string) (*Blueprin
 
 func (o *Client) getAllBlueprintStatus(ctx context.Context) ([]rawBlueprintStatus, error) {
 	var response getBluePrintsResponse
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      apiUrlBlueprints,
-		apiResponse: &response,
-	})
-	if err != nil {
+	var errs []error
+
+	for i := range o.GetTuningParam("BlueprintStatusMaxRetries") {
+		err := o.talkToApstra(ctx, &talkToApstraIn{
+			method:      http.MethodGet,
+			urlStr:      apiUrlBlueprints,
+			apiResponse: &response,
+		})
+		if err == nil { // success!
+			return response.Items, nil
+		}
+
+		// we got an error
 		err = convertTtaeToAceWherePossible(err)
 		var ace ClientErr
 		if errors.As(err, &ace) && ace.IsRetryable() {
-			// AOS-45313 issue.
-			err = o.talkToApstra(ctx, &talkToApstraIn{
-				method:      http.MethodGet,
-				urlStr:      apiUrlBlueprints,
-				apiResponse: &response,
-			})
-		}
-		if err != nil {
-			return nil, convertTtaeToAceWherePossible(err)
+			// AOS-45313 issue?
+			errs = append(errs, fmt.Errorf("retryable error at attempt %d while fetching blueprint status - %w", i, err))
+			time.Sleep(time.Duration(o.GetTuningParam("BlueprintStatusRetryIntervalMs")) * time.Millisecond)
+			continue
+		} else {
+			errs = append(errs, fmt.Errorf("non-retryable error at attempt %d while fetching blueprint status - %w", i, err))
+			break
 		}
 	}
 
-	return response.Items, nil
+	return nil, errors.Join(errs...)
 }
 
 func (o *Client) getBlueprintStatus(ctx context.Context, id ObjectId) (*rawBlueprintStatus, error) {

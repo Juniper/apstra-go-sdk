@@ -12,7 +12,7 @@ import (
 )
 
 func compareRtPolicy(t *testing.T, a, b *RtPolicy) {
-	if (a != nil) != (b != nil) { //XOR
+	if (a != nil) != (b != nil) { // XOR
 		t.Fatalf("RtPolicy exists mismatch: %t vs %t", a != nil, b != nil)
 	}
 
@@ -111,7 +111,7 @@ func compareVirtualNetworkData(t *testing.T, a, b *VirtualNetworkData, strict bo
 
 	aL3Mtu := a.L3Mtu != nil
 	bL3Mtu := b.L3Mtu != nil
-	if (aL3Mtu || bL3Mtu) && !(aL3Mtu && bL3Mtu) { //xor
+	if (aL3Mtu || bL3Mtu) && !(aL3Mtu && bL3Mtu) { // xor
 		t.Fatalf("L3 MTU setting mismatch: set %t vs. set %t", aL3Mtu, bL3Mtu)
 	}
 
@@ -243,11 +243,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			}
 		}
 
-		var l3Mtu *int
-		if !vnL3MtuForbidden().Includes(client.client.apiVersion.String()) {
-			x := 1280 + (2 * rand.Intn(3969)) // 1280 - 9216 even numbers only
-			l3Mtu = &x
-		}
+		l3Mtu := toPtr(1280 + (2 * rand.Intn(3969))) // 1280 - 9216 even numbers only
 
 		createData := VirtualNetworkData{
 			Ipv4Enabled:               true,
@@ -299,10 +295,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 		newVlan := Vlan(100)
 		createData.ReservedVlanId = &newVlan
 		createData.Label = randString(10, "hex")
-		if !vnL3MtuForbidden().Includes(client.client.apiVersion.String()) {
-			x := 1280 + (2 * rand.Intn(3969)) // 1280 - 9216 even numbers only
-			createData.L3Mtu = &x
-		}
+		createData.L3Mtu = toPtr(1280 + (2 * rand.Intn(3969))) // 1280 - 9216 even numbers only
 
 		for i := range createData.VnBindings {
 			createData.VnBindings[i].VlanId = &newVlan
