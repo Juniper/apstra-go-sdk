@@ -17,6 +17,14 @@ var (
 	eqApstra420 = version.MustConstraints(version.NewConstraint(apstra420))
 	geApstra421 = version.MustConstraints(version.NewConstraint(">=" + apstra421))
 	geApstra500 = version.MustConstraints(version.NewConstraint(">=" + apstra500))
+	leApstra412 = version.MustConstraints(version.NewConstraint("<=" + apstra412))
+	leApstra420 = version.MustConstraints(version.NewConstraint("<=" + apstra420))
+	leApstra500 = version.MustConstraints(version.NewConstraint("<=" + apstra500))
+
+	fabricSettingsApiOk  = geApstra421
+	fabricL3MtuForbidden = leApstra412
+
+	legacyTemplateWithAddressingPolicy = version.MustConstraints(version.NewConstraint("<" + apstra411))
 
 	fabricSettingsApiOk                       = geApstra421
 	patchNodeSupportsUnsafeArg                = geApstra500
