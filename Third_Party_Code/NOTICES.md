@@ -39,10 +39,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/hashicorp/go-version
 
 * Name: github.com/hashicorp/go-version
-* Version: v1.6.0
-* License: [MPL-2.0](https://github.com/hashicorp/go-version/blob/v1.6.0/LICENSE)
+* Version: v1.7.0
+* License: [MPL-2.0](https://github.com/hashicorp/go-version/blob/v1.7.0/LICENSE)
 
 ```
+Copyright (c) 2014 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
