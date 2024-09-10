@@ -10,7 +10,10 @@ do
   OUT="" # init variable because of `set -u`
 
   # skip over non-Go files
-  [[ $file = *.go ]] && OUT=$(go run mvdan.cc/gofumpt -l "$file")
+  [[ "$file" = *.go ]] && OUT=$(go run mvdan.cc/gofumpt -l "$file")
+
+  # skip over files which don't exist in this branch
+  [ ! -e "$file" ] && continue
 
   if [ -n "$OUT" ]
   then
