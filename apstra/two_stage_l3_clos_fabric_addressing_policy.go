@@ -2,7 +2,6 @@ package apstra
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 )
@@ -36,13 +35,6 @@ func (o *TwoStageL3ClosClient) SetFabricAddressingPolicy(ctx context.Context, in
 		in.EsiMacMsb == nil &&
 		in.FabricL3Mtu == nil {
 		return nil // nothing to do if all relevant input fields are nil
-	}
-
-	if in.FabricL3Mtu != nil && fabricL3MtuForbidden.Check(o.client.apiVersion) {
-		return ClientErr{
-			errType: ErrCompatibility,
-			err:     errors.New(fabricL3MtuForbiddenError),
-		}
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{

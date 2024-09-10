@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
-	"github.com/hashicorp/go-version"
 )
 
 const (
@@ -171,7 +170,7 @@ func (o *TwoStageL3ClosClient) SetInterfaceMapAssignments(ctx context.Context, a
 // request sent to the API.
 func (o *TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg *SecurityZoneData) (ObjectId, error) {
 	raw := cfg.raw()
-	if raw.JunosEvpnIrbMode == "" && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion.String()) {
+	if raw.JunosEvpnIrbMode == "" {
 		raw.JunosEvpnIrbMode = enum.JunosEvpnIrbModeAsymmetric.Value
 	}
 
@@ -264,8 +263,8 @@ func (o *TwoStageL3ClosClient) GetAllSecurityZones(ctx context.Context) ([]Secur
 
 // UpdateSecurityZone replaces the configuration of zone zoneId with the supplied CreateSecurityZoneCfg
 func (o *TwoStageL3ClosClient) UpdateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *SecurityZoneData) error {
-	if cfg.JunosEvpnIrbMode == nil && securityZoneJunosEvpnIrbModeRequired().Includes(o.client.apiVersion.String()) {
-		return errors.New(securityZoneJunosEvpnIrbModeRequiredError)
+	if cfg.JunosEvpnIrbMode == nil {
+		return errors.New("junos_evpn_irb_mode cannot be nil")
 	}
 
 	return o.updateSecurityZone(ctx, zoneId, cfg.raw())
@@ -311,21 +310,6 @@ func (o *TwoStageL3ClosClient) GetPolicyByLabel(ctx context.Context, label strin
 
 // CreatePolicy creates a policy within the DC blueprint, returns its ID
 func (o *TwoStageL3ClosClient) CreatePolicy(ctx context.Context, data *PolicyData) (ObjectId, error) {
-	var tcpStateQualifier bool
-	for _, rule := range data.Rules {
-		if rule.Data.TcpStateQualifier != nil {
-			tcpStateQualifier = true
-			break
-		}
-	}
-
-	if tcpStateQualifier && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion.String()) {
-		return "", ClientErr{
-			errType: ErrCompatibility,
-			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
-		}
-	}
-
 	return o.createPolicy(ctx, data.request())
 }
 
@@ -336,21 +320,6 @@ func (o *TwoStageL3ClosClient) DeletePolicy(ctx context.Context, id ObjectId) er
 
 // UpdatePolicy calls PUT to replace the configuration of policy 'id' within the DC blueprint
 func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, data *PolicyData) error {
-	var tcpStateQualifier bool
-	for _, rule := range data.Rules {
-		if rule.Data.TcpStateQualifier != nil {
-			tcpStateQualifier = true
-			break
-		}
-	}
-
-	if tcpStateQualifier && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion.String()) {
-		return ClientErr{
-			errType: ErrCompatibility,
-			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
-		}
-	}
-
 	return o.updatePolicy(ctx, id, data.request())
 }
 
@@ -359,13 +328,6 @@ func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, da
 // on the list, etc... Use -1 for last on the list. The returned ObjectId
 // represents the new rule
 func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRuleData, position int, policyId ObjectId) (ObjectId, error) {
-	if rule.TcpStateQualifier != nil && policyRuleTcpStateQualifierForbidden().Includes(o.client.apiVersion.String()) {
-		return "", ClientErr{
-			errType: ErrCompatibility,
-			err:     errors.New(policyRuleTcpStateQualifierForbidenError),
-		}
-	}
-
 	return o.addPolicyRule(ctx, rule.raw(), position, policyId)
 }
 
@@ -377,10 +339,6 @@ func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyI
 
 // CreateVirtualNetwork creates a new virtual network according to the supplied VirtualNetworkData
 func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, in *VirtualNetworkData) (ObjectId, error) {
-	if in.L3Mtu != nil && vnL3MtuForbidden().Includes(o.client.apiVersion.String()) {
-		return "", errors.New(vnL3MtuForbiddenError)
-	}
-
 	return o.createVirtualNetwork(ctx, in.raw())
 }
 
@@ -432,10 +390,6 @@ func (o *TwoStageL3ClosClient) GetAllVirtualNetworks(ctx context.Context) (map[O
 // UpdateVirtualNetwork updates the virtual network specified by ID using the
 // VirtualNetworkData and HTTP method PUT.
 func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, in *VirtualNetworkData) error {
-	if in.L3Mtu != nil && vnL3MtuForbidden().Includes(o.client.apiVersion.String()) {
-		return errors.New(vnL3MtuForbiddenError)
-	}
-
 	return o.updateVirtualNetwork(ctx, id, in.raw())
 }
 
@@ -1036,10 +990,8 @@ func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSe
 	switch {
 	case fabricSettingsApiOk.Check(o.client.apiVersion):
 		raw, err = o.getFabricSettings(ctx)
-	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
+	case eqApstra420.Check(o.client.apiVersion):
 		raw, err = o.getFabricSettings420(ctx)
-	case version.MustConstraints(version.NewConstraint(">=" + apstra410 + ",<" + apstra420)).Check(o.client.apiVersion):
-		raw, err = o.getFabricSettings41x(ctx)
 	default:
 		return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 	}
@@ -1059,10 +1011,8 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 	switch {
 	case fabricSettingsApiOk.Check(o.client.apiVersion):
 		return o.setFabricSettings(ctx, in.raw())
-	case version.MustConstraints(version.NewConstraint(apstra420)).Check(o.client.apiVersion):
+	case eqApstra420.Check(o.client.apiVersion):
 		return o.setFabricSettings420(ctx, in.raw())
-	case version.MustConstraints(version.NewConstraint(">=" + apstra410 + ",<" + apstra420)).Check(o.client.apiVersion):
-		return o.setFabricSettings41x(ctx, in.raw())
 	}
 
 	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)

@@ -429,62 +429,48 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 }
 
 // testBlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient and a cleanup function
-// which deletes the test blueprint. If the client is newer that Apstra 4.1.0, the blueprint will use a dual-stack
-// fabric and have ipv6 enabled.
-func testBlueprintH(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+// which deletes the test blueprint. The blueprint will use a dual-stack fabric and have ipv6 enabled.
+func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
 	bpRequest := CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
-	}
-
-	if !legacyTemplateWithAddressingPolicy.Check(client.apiVersion) {
-		bpRequest.FabricSettings = &FabricSettings{
+		FabricSettings: &FabricSettings{
 			SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
 			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-		}
+		},
 	}
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &bpRequest)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, client.DeleteBlueprint(ctx, bpId))
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
-
 	// set fabric addressing to enable IPv6
-	if !legacyTemplateWithAddressingPolicy.Check(client.apiVersion) {
-		if client.apiVersion.String() == "4.2.1" {
-			// todo - this is temporary
-			err = client.talkToApstra(ctx, &talkToApstraIn{
-				method: http.MethodPatch,
-				urlStr: fmt.Sprintf("/api/blueprints/%s/fabric-settings", bpId),
-				apiInput: struct {
-					Ipv6Enabled bool `json:"ipv6_enabled"`
-				}{
-					Ipv6Enabled: true,
-				},
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			err = bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: toPtr(true)})
-			if err != nil {
-				defer bpDeleteFunc(ctx)
-				t.Fatal(err)
-			}
-		}
+	if eqApstra420.Check(client.apiVersion) {
+		// todo - this is temporary
+		require.NoError(t, bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: toPtr(true)}))
+	} else {
+		require.NoError(t, client.talkToApstra(ctx, &talkToApstraIn{
+			method: http.MethodPatch,
+			urlStr: fmt.Sprintf("/api/blueprints/%s/fabric-settings", bpId),
+			apiInput: struct {
+				Ipv6Enabled bool `json:"ipv6_enabled"`
+			}{
+				Ipv6Enabled: true,
+			},
+		}))
 	}
 
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
 func TestItemInSlice(t *testing.T) {
@@ -578,10 +564,6 @@ func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 		},
 		RackInfos: map[ObjectId]TemplateRackBasedRackInfo{
 			rackId: {Count: 1},
-		},
-		FabricAddressingPolicy: &TemplateFabricAddressingPolicy410Only{
-			SpineSuperspineLinks: AddressingSchemeIp4,
-			SpineLeafLinks:       AddressingSchemeIp4,
 		},
 		AntiAffinityPolicy: &AntiAffinityPolicy{
 			Algorithm:                AlgorithmHeuristic,
@@ -710,10 +692,6 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {
 	require.NoError(t, err)
 
 	rbt.Data.DisplayName = randString(5, "hex")
-	rbt.Data.FabricAddressingPolicy = &TemplateFabricAddressingPolicy410Only{
-		SpineSuperspineLinks: AddressingSchemeIp46,
-		SpineLeafLinks:       AddressingSchemeIp46,
-	}
 	for k, v := range rbt.Data.RackInfo {
 		v.RackTypeData = nil
 		rbt.Data.RackInfo[k] = v
@@ -727,12 +705,11 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {
 			LogicalDevice:          "AOS-7x10-Spine",
 			LinkPerSuperspineCount: rbt.Data.Spine.LinkPerSuperspineCount,
 		},
-		RackInfos:              rbt.Data.RackInfo,
-		DhcpServiceIntent:      &rbt.Data.DhcpServiceIntent,
-		AntiAffinityPolicy:     rbt.Data.AntiAffinityPolicy,
-		AsnAllocationPolicy:    &rbt.Data.AsnAllocationPolicy,
-		FabricAddressingPolicy: rbt.Data.FabricAddressingPolicy,
-		VirtualNetworkPolicy:   &rbt.Data.VirtualNetworkPolicy,
+		RackInfos:            rbt.Data.RackInfo,
+		DhcpServiceIntent:    &rbt.Data.DhcpServiceIntent,
+		AntiAffinityPolicy:   rbt.Data.AntiAffinityPolicy,
+		AsnAllocationPolicy:  &rbt.Data.AsnAllocationPolicy,
+		VirtualNetworkPolicy: &rbt.Data.VirtualNetworkPolicy,
 	})
 	require.NoError(t, err)
 
@@ -897,7 +874,7 @@ func testIntPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 func testVniPool(ctx context.Context, t testing.TB, client *Client) ObjectId {
 	t.Helper()
 
-	vniBeginEnds, err := getRandInts(1, 400000, (rand.Intn(5)+2)*2)
+	vniBeginEnds, err := getRandInts(5000, 5999, (rand.Intn(5)+2)*2)
 	require.NoError(t, err)
 	sort.Ints(vniBeginEnds) // sort so that the Int ranges will be ([0]...[1], [2]...[3], etc.)
 

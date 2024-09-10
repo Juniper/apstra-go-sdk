@@ -1,19 +1,22 @@
 //go:build integration
-// +build integration
 
 package apstra
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math/rand"
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestSetGetResourceAllocation(t *testing.T) {
 	ctx := context.Background()
+
 	clients, err := getTestClients(context.Background(), t)
 	if err != nil {
 		t.Fatal(err)
@@ -24,72 +27,57 @@ func TestSetGetResourceAllocation(t *testing.T) {
 	label := "test-" + randStr
 
 	for clientName, client := range clients {
-		client := client // local copy of iterator variable safe for use in deferred function
-		asnPoolWait := sync.WaitGroup{}
-		bpWait := sync.WaitGroup{}
-		bpWait.Add(1)
-		bpClient := testBlueprintB(ctx, t, client.client)
-		defer func() {
-			bpWait.Done()      // resource pool deletion is waiting for this
-			asnPoolWait.Wait() // wait for resource pool deletion to complete
-		}()
-		poolIds := make([]ObjectId, poolCount)
-		for i := range poolIds {
-			asnPoolWait.Add(1)
-			poolId, err := client.client.CreateAsnPool(ctx, &AsnPoolRequest{
-				DisplayName: label + "-" + strconv.Itoa(i),
-				Ranges: []IntfIntRange{IntRange{
-					First: uint32(1000 + (i * 1000)),
-					Last:  uint32(1999 + (i * 1000)),
-				}},
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-			poolIds[i] = poolId
-			defer func() {
-				go func() {
-					log.Printf("waiting before deleting pool %q", poolId)
-					bpWait.Wait()
-					log.Printf("deleting pool %q now", poolId)
-					err := client.client.DeleteAsnPool(ctx, poolId)
-					if err != nil {
-						t.Error(err)
-					}
-					asnPoolWait.Done()
-				}()
-			}()
-		}
+		clientName, client := clientName, client // local copy of iterator variables safe for use in deferred function
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
 
-		log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-			PoolIds: poolIds,
-			ResourceGroup: ResourceGroup{
+			bpWait := sync.WaitGroup{}
+			bpWait.Add(1)
+			bpClient := testBlueprintB(ctx, t, client.client)
+			defer func() {
+				require.NoError(t, client.client.DeleteBlueprint(ctx, bpClient.Id()))
+				bpWait.Done() // signal that blueprint is deleted so that ASN pools can be removed
+			}()
+
+			poolIds := make([]ObjectId, poolCount)
+			for i := range poolIds {
+				poolId, err := client.client.CreateAsnPool(ctx, &AsnPoolRequest{
+					DisplayName: label + "-" + strconv.Itoa(i),
+					Ranges: []IntfIntRange{IntRange{
+						First: uint32(1000 + (i * 1000)),
+						Last:  uint32(1999 + (i * 1000)),
+					}},
+				})
+				require.NoError(t, err)
+
+				poolIds[i] = poolId
+				defer func() {
+					go func() {
+						bpWait.Wait()
+						require.NoError(t, client.client.DeleteAsnPool(ctx, poolId))
+					}()
+				}()
+			}
+
+			log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			require.NoError(t, bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
+				PoolIds: poolIds,
+				ResourceGroup: ResourceGroup{
+					Type: ResourceTypeAsnPool,
+					Name: ResourceGroupNameSpineAsn,
+				},
+			}))
+
+			log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			rga, err := bpClient.GetResourceAllocation(ctx, &ResourceGroup{
 				Type: ResourceTypeAsnPool,
 				Name: ResourceGroupNameSpineAsn,
-			},
+			})
+			require.NoError(t, err)
+
+			require.Nilf(t, rga.ResourceGroup.SecurityZoneId, "resource group security zone ID must be nil")
+			require.Equalf(t, len(poolIds), len(rga.PoolIds), "expected pool ID count (%d) must equal actual pool ID count (%d)", len(poolIds), len(rga.PoolIds))
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		rga, err := bpClient.GetResourceAllocation(ctx, &ResourceGroup{
-			Type: ResourceTypeAsnPool,
-			Name: ResourceGroupNameSpineAsn,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if rga.ResourceGroup.SecurityZoneId != nil {
-			t.Fatal("resource group security zone ID is not nil")
-		}
-
-		if len(poolIds) != len(rga.PoolIds) {
-			t.Fatalf("expected %d pool IDs, got %d pool IDs", len(poolIds), len(rga.PoolIds))
-		}
-		log.Println(rga.PoolIds)
 	}
 }
 
