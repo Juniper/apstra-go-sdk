@@ -52,14 +52,14 @@ func TestGetFeatures(t *testing.T) {
 		},
 	}
 
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
+		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
-			for tName, tCase := range testCases {
-				tName, tCase := tName, tCase
-				t.Run(tName, func(t *testing.T) {
+
+			for clientName, client := range clients {
+				clientName, client := clientName, client
+				t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
 					t.Parallel()
 
 					// true with no constraints present; defaults false when constraints exist
@@ -78,7 +78,6 @@ func TestGetFeatures(t *testing.T) {
 
 					// test cached values
 					require.Equalf(t, tCase.expEnabled, client.client.FeatureEnabled(tCase.feature), "feature enabled")
-					require.Equalf(t, tCase.expNotEnabled, client.client.FeatureNotEnabled(tCase.feature), "feature not enabled")
 					require.Equalf(t, tCase.expExists, client.client.FeatureExists(tCase.feature), "feature exists")
 
 					// refresh feature cache
@@ -86,12 +85,9 @@ func TestGetFeatures(t *testing.T) {
 
 					// test refreshed values
 					require.Equalf(t, tCase.expEnabled, client.client.FeatureEnabled(tCase.feature), "feature enabled")
-					require.Equalf(t, tCase.expNotEnabled, client.client.FeatureNotEnabled(tCase.feature), "feature not enabled")
 					require.Equalf(t, tCase.expExists, client.client.FeatureExists(tCase.feature), "feature exists")
 				})
 			}
-
-			require.NoError(t, client.client.getFeatures(ctx))
 		})
 	}
 }

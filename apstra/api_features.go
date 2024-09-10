@@ -27,6 +27,7 @@ func (o *Client) getFeatures(ctx context.Context) error {
 
 	o.lock(apiUrlFeatures)
 	defer o.unlock(apiUrlFeatures)
+
 	o.features = make(map[enum.ApiFeature]bool, len(response))
 	for f, s := range response {
 		// Parse the map key (feature name)
@@ -68,20 +69,6 @@ func (o *Client) FeatureEnabled(f enum.ApiFeature) bool {
 	defer o.unlock(apiUrlFeatures)
 
 	return o.features[f]
-}
-
-func (o *Client) FeatureNotEnabled(f enum.ApiFeature) bool {
-	o.lock(apiUrlFeatures)
-	defer o.unlock(apiUrlFeatures)
-
-	enabled, ok := o.features[f]
-	if !ok {
-		// missing feature is, by definition, is NOT enabled
-		return true
-	}
-
-	// feature exists.
-	return !enabled
 }
 
 func (o *Client) FeatureExists(f enum.ApiFeature) bool {

@@ -307,10 +307,15 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		ctx:         context.Background(),
 	}
 
+	err = c.getFeatures(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting features from new client - %w", err)
+	}
+
 	// must call getApiVersion() before apiVersionSupported()
 	_, err = c.getApiVersion(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed getting API version from new client - %w", err)
 	}
 
 	if !c.apiVersionSupported() {
