@@ -5,8 +5,11 @@ package apstra
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetAnomalies(t *testing.T) {
@@ -30,20 +33,21 @@ func TestGetBlueprintAnomalies(t *testing.T) {
 	ctx := context.Background()
 
 	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	for clientName, client := range clients {
-		bpClient := testBlueprintB(ctx, t, client.client)
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
 
-		log.Printf("testing GetBlueprintAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		anomalies, err := client.client.GetBlueprintAnomalies(ctx, bpClient.Id())
-		if err != nil {
-			t.Fatal(err)
-		}
+			bpClient := testBlueprintB(ctx, t, client.client)
 
-		log.Printf("%d blueprint anomalies retrieved", len(anomalies))
+			log.Printf("testing GetBlueprintAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			anomalies, err := client.client.GetBlueprintAnomalies(ctx, bpClient.Id())
+			require.NoError(t, err)
+
+			log.Printf("%d blueprint anomalies retrieved", len(anomalies))
+		})
 	}
 }
 

@@ -22,6 +22,9 @@ func intsFromZero(length int) []int {
 	return result
 }
 
+// samples is intended to be used to select some sample items from a slice.
+// Pass it the size of the slice, and it returns a []int representing indexes (samples)
+// to be taken from the slice.
 func samples(length int) []int {
 	var sampleSizeStr string
 	var sampleSizeInt int
