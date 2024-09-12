@@ -9,14 +9,29 @@ import (
 type Constraint struct {
 	constraints             version.Constraints
 	considerPreReleaseLabel bool
+	permitAny               bool
 }
 
 func (o Constraint) Check(v *version.Version) bool {
-	if o.considerPreReleaseLabel {
+	if !o.considerPreReleaseLabel {
+		// drop the pre-release label
+		v = v.Core()
+	}
+
+	if !o.permitAny {
+		// v must satisfy all constraints
 		return o.constraints.Check(v)
 	}
 
-	return o.constraints.Check(v.Core())
+	// v can satisfy any constraint
+	for _, constraint := range o.constraints {
+		if constraint.Check(v) {
+			return true
+		}
+	}
+
+	// v does not satisfy any constraint
+	return false
 }
 
 func (o Constraint) String() string {
@@ -27,19 +42,3 @@ func (o Constraint) String() string {
 
 	return strings.Join(result, ",")
 }
-
-var (
-	FabricSettingsApiOk = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
-	}
-	PatchNodeSupportsUnsafeArg = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
-	}
-	TemplateRequestRequiresAntiAffinityPolicy = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
-	}
-	ServerVersionSupported = Constraint{
-		constraints:             version.MustConstraints(version.NewConstraint(strings.Join(SupportedApiVersions(), ","))),
-		considerPreReleaseLabel: true,
-	}
-)

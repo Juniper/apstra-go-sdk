@@ -11,7 +11,7 @@ import (
 func TestGetBlueprintAnomalies(t *testing.T) {
 	ctx := context.Background()
 
-	clients, err := getTestClients(context.Background(), t)
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
