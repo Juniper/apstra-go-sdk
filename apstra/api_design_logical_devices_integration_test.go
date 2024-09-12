@@ -5,9 +5,10 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
@@ -118,7 +119,6 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 					t.Parallel()
 					require.NoError(t, client.client.deleteLogicalDevice(ctx, id))
 				})
-
 			}
 		})
 	}
