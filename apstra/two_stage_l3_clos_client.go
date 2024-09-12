@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
@@ -785,7 +786,7 @@ func (o *TwoStageL3ClosClient) CreateIbaProbeFromJson(ctx context.Context, probe
 
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDashboard, error) {
-	if geApstra500.Check(o.client.apiVersion) {
+	if compatibility.GeApstra500.Check(o.client.apiVersion) {
 		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
 	}
 
@@ -808,7 +809,7 @@ func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDa
 
 // GetIbaDashboard returns the IBA Dashboard that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaDashboard(ctx context.Context, id ObjectId) (*IbaDashboard, error) {
-	if geApstra500.Check(o.client.apiVersion) {
+	if compatibility.GeApstra500.Check(o.client.apiVersion) {
 		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
 	}
 
@@ -823,7 +824,7 @@ func (o *TwoStageL3ClosClient) GetIbaDashboard(ctx context.Context, id ObjectId)
 // GetIbaDashboardByLabel returns the IBA Dashboard that matches the label.
 // It will return an error if more than one IBA dashboard matches the label.
 func (o *TwoStageL3ClosClient) GetIbaDashboardByLabel(ctx context.Context, label string) (*IbaDashboard, error) {
-	if geApstra500.Check(o.client.apiVersion) {
+	if compatibility.GeApstra500.Check(o.client.apiVersion) {
 		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
 	}
 
@@ -838,7 +839,7 @@ func (o *TwoStageL3ClosClient) GetIbaDashboardByLabel(ctx context.Context, label
 // CreateIbaDashboard creates an IBA Dashboard and returns the id of the created dashboard on success,
 // or a blank and error on failure
 func (o *TwoStageL3ClosClient) CreateIbaDashboard(ctx context.Context, data *IbaDashboardData) (ObjectId, error) {
-	if geApstra500.Check(o.client.apiVersion) {
+	if compatibility.GeApstra500.Check(o.client.apiVersion) {
 		return "", fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
 	}
 
@@ -852,7 +853,7 @@ func (o *TwoStageL3ClosClient) CreateIbaDashboard(ctx context.Context, data *Iba
 
 // UpdateIbaDashboard updates an IBA Dashboard and returns an error on failure
 func (o *TwoStageL3ClosClient) UpdateIbaDashboard(ctx context.Context, id ObjectId, data *IbaDashboardData) error {
-	if geApstra500.Check(o.client.apiVersion) {
+	if compatibility.GeApstra500.Check(o.client.apiVersion) {
 		return fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
 	}
 
@@ -861,7 +862,7 @@ func (o *TwoStageL3ClosClient) UpdateIbaDashboard(ctx context.Context, id Object
 
 // DeleteIbaDashboard deletes an IBA Dashboard and returns an error on failure
 func (o *TwoStageL3ClosClient) DeleteIbaDashboard(ctx context.Context, id ObjectId) error {
-	if geApstra500.Check(o.client.apiVersion) {
+	if compatibility.GeApstra500.Check(o.client.apiVersion) {
 		return fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
 	}
 
@@ -988,9 +989,9 @@ func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSe
 	var err error
 
 	switch {
-	case fabricSettingsApiOk.Check(o.client.apiVersion):
+	case compatibility.FabricSettingsApiOk.Check(o.client.apiVersion):
 		raw, err = o.getFabricSettings(ctx)
-	case eqApstra420.Check(o.client.apiVersion):
+	case compatibility.EqApstra420.Check(o.client.apiVersion):
 		raw, err = o.getFabricSettings420(ctx)
 	default:
 		return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
@@ -1009,9 +1010,9 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 	}
 
 	switch {
-	case fabricSettingsApiOk.Check(o.client.apiVersion):
+	case compatibility.FabricSettingsApiOk.Check(o.client.apiVersion):
 		return o.setFabricSettings(ctx, in.raw())
-	case eqApstra420.Check(o.client.apiVersion):
+	case compatibility.EqApstra420.Check(o.client.apiVersion):
 		return o.setFabricSettings420(ctx, in.raw())
 	}
 

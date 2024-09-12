@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/go-version"
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 )
 
 const (
@@ -48,7 +48,7 @@ func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy420(ctx context.Context) (
 }
 
 func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, in *rawFabricSettings) error {
-	if !o.client.apiVersion.Equal(version.Must(version.NewVersion(apstra420))) {
+	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
 		return fmt.Errorf("setRawVirtualNetworkPolicy420() must not be invoked with apstra %s", o.client.apiVersion)
 	}
 

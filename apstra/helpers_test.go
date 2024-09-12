@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
@@ -455,7 +456,7 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	}
 
 	// set fabric addressing to enable IPv6
-	if eqApstra420.Check(client.apiVersion) {
+	if compatibility.EqApstra420.Check(client.apiVersion) {
 		// todo - this is temporary
 		require.NoError(t, bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: toPtr(true)}))
 	} else {

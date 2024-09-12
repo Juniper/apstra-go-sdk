@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
-	"github.com/hashicorp/go-version"
 	oenum "github.com/orsinium-labs/enum"
 )
 
@@ -313,7 +313,7 @@ func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *raw
 }
 
 func (o *TwoStageL3ClosClient) getSzFootprintOptimization420(ctx context.Context) (string, error) {
-	if !o.client.apiVersion.Equal(version.Must(version.NewVersion(apstra420))) {
+	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
 		return "", fmt.Errorf("getSzFootprintOptimization420() must not be invoked with apstra %s", o.client.apiVersion)
 	}
 
@@ -342,7 +342,7 @@ func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context
 		return nil
 	}
 
-	if !o.client.apiVersion.Equal(version.Must(version.NewVersion(apstra420))) {
+	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
 		return fmt.Errorf("setSzFootprintOptimization420() must not be invoked with apstra %s", o.client.apiVersion)
 	}
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
@@ -44,7 +45,7 @@ func TestGetFeatures(t *testing.T) {
 			expNotEnabled: false,
 		},
 		"ai_fabric_not_exists": {
-			allowedVersions: []version.Constraints{leApstra500},
+			allowedVersions: []version.Constraints{compatibility.LeApstra500},
 			feature:         enum.ApiFeatureAiFabric,
 			expExists:       false,
 			expEnabled:      false,
