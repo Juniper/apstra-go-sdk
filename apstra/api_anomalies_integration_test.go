@@ -11,25 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetAnomalies(t *testing.T) {
-	ctx := context.Background()
-
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
-
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
-			t.Parallel()
-
-			log.Printf("testing getAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			anomalies, err := client.client.GetAnomalies(ctx)
-			require.NoError(t, err)
-			log.Printf("%d anomalies retrieved", len(anomalies))
-		})
-	}
-}
-
 func TestGetBlueprintAnomalies(t *testing.T) {
 	ctx := context.Background()
 

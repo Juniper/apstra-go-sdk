@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	apiUrlAnomalies                   = "/api/anomalies"
 	apiUrlBlueprintAnomalies          = apiUrlBlueprintById + apiUrlPathDelim + "anomalies"
 	apiUrlBlueprintAnomaliesByNode    = apiUrlBlueprintById + apiUrlPathDelim + "anomalies_nodes_count"
 	apiUrlBlueprintAnomaliesByService = apiUrlBlueprintById + apiUrlPathDelim + "anomalies_services_count"
@@ -127,52 +126,6 @@ func (o rawAnomalous) Parse() (*Anomalous, error) {
 	}, nil
 }
 
-// unpackAnomaly is clunky. It extracts instances of Anomaly as returned by
-// apiUrlAnomalies, and attempts to gracefully handle the unpredictable
-// Anomaly.Identity.Properties list as returned by Apstra. Sometimes it
-// sends strings, sometimes it sends integers.
-func unpackAnomaly(in []byte) (*Anomaly, error) {
-	rawAnomaly := &rawAnomaly{}
-	err := json.Unmarshal(in, rawAnomaly)
-	if err != nil {
-		return nil, err
-	}
-
-	actual, err := rawAnomaly.Actual.Parse()
-	if err != nil {
-		return nil, fmt.Errorf("error unpacking raw anomaly 'actual' - %w", err)
-	}
-
-	anomalous, err := rawAnomaly.Anomalous.Parse()
-	if err != nil {
-		return nil, fmt.Errorf("error unpacking raw anomaly 'anomalous' - %w", err)
-	}
-
-	anomaly := &Anomaly{}
-
-	anomaly.Actual = *actual
-	anomaly.Anomalous = *anomalous
-	anomaly.AnomalyType = rawAnomaly.AnomalyType
-	anomaly.Id = rawAnomaly.Id
-	anomaly.LastModifiedAt = rawAnomaly.LastModifiedAt
-	anomaly.Severity = rawAnomaly.Severity
-	anomaly.Identity.AnomalyType = rawAnomaly.Identity.AnomalyType
-	anomaly.Identity.ItemId = rawAnomaly.Identity.ItemId
-	anomaly.Identity.ProbeId = rawAnomaly.Identity.ProbeId
-	anomaly.Identity.ProbeLabel = rawAnomaly.Identity.ProbeLabel
-	anomaly.Identity.StageName = rawAnomaly.Identity.StageName
-
-	for _, raw := range rawAnomaly.Identity.Properties {
-		property, err := raw.Parse()
-		if err != nil {
-			return nil, fmt.Errorf("error parsing rawAnomalyProperty - %w", err)
-		}
-		anomaly.Identity.Properties = append(anomaly.Identity.Properties, *property)
-	}
-
-	return anomaly, nil
-}
-
 func (o rawAnomalyProperty) Parse() (*AnomalyProperty, error) {
 	val, err := unpackIntOrStringAsString(o.Value)
 	if err != nil {
@@ -202,30 +155,6 @@ func unpackIntOrStringAsString(raw json.RawMessage) (string, error) {
 	default:
 		return "", fmt.Errorf("unhandled error in unmarshaling anomaly payload - %w", err)
 	}
-}
-
-func (o *Client) getAnomalies(ctx context.Context) ([]Anomaly, error) {
-	response := &struct {
-		Items []json.RawMessage `json:"items"`
-	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:         http.MethodGet,
-		urlStr:         apiUrlAnomalies,
-		apiResponse:    response,
-		unsynchronized: true,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-	var result []Anomaly
-	for _, ra := range response.Items {
-		a, err := unpackAnomaly(ra)
-		if err != nil {
-			return nil, fmt.Errorf("error unpacking anomaly - %w", err)
-		}
-		result = append(result, *a)
-	}
-	return result, nil
 }
 
 // also available in scotch/schemas/alerts.py:
