@@ -66,7 +66,6 @@ func TestGetDeviceProfile(t *testing.T) {
 			t.Fatalf("expected '%s', got '%s'", desiredLabel, dp.Data.Label)
 		}
 	}
-
 }
 
 func TestGetDeviceProfileByName(t *testing.T) {
