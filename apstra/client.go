@@ -488,15 +488,6 @@ func (o *Client) QueryMetricdb(ctx context.Context, q *MetricDbQueryRequest) (*M
 	return o.queryMetricdb(ctx, q.begin, q.end, q.metric)
 }
 
-// GetAnomalies is limited to 10k response items // todo: pagination?
-func (o *Client) GetAnomalies(ctx context.Context) ([]Anomaly, error) {
-	result, err := o.getAnomalies(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 // GetBlueprintAnomalies returns []BlueprintAnomaly representing all anomalies in
 // the blueprint.
 func (o *Client) GetBlueprintAnomalies(ctx context.Context, blueprintId ObjectId) ([]BlueprintAnomaly, error) {
