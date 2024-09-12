@@ -6,94 +6,17 @@ package apstra //
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIbaProbes(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
 	ctx := context.Background()
-	for clientName, client := range clients {
-		log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName,
-			client.client.ApiVersion())
 
-		bpClient := testBlueprintA(ctx, t, client.client)
-		pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		expectedToFail := map[string]bool{
-			"external_ecmp_imbalance":            true,
-			"evpn_vxlan_type5":                   true,
-			"eastwest_traffic":                   true,
-			"vxlan_floodlist":                    true,
-			"fabric_hotcold_ifcounter":           true,
-			"specific_interface_flapping":        true,
-			"evpn_vxlan_type3":                   true,
-			"specific_hotcold_ifcounter":         true,
-			"spine_superspine_hotcold_ifcounter": true,
-		}
-
-		for _, p := range pdps {
-			t.Logf("Get Predefined Probe By Name %s", p.Name)
-			_, err := bpClient.GetIbaPredefinedProbeByName(ctx, p.Name)
-			if err != nil {
-				t.Fatal(err)
-			}
-			t.Log(p.Description)
-			t.Log(p.Schema)
-
-			t.Logf("Instantiating Probe %s", p.Name)
-
-			probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
-				Name: p.Name,
-				Data: json.RawMessage([]byte(`{"label":"` + p.Name + `"}`)),
-			})
-			if err != nil {
-				if !expectedToFail[p.Name] {
-					t.Fatal(err)
-				} else {
-					t.Logf("%s was expected to fail", p.Name)
-					continue
-				}
-			}
-
-			t.Logf("Got back Probe Id %s \n Now GET it.", probeId)
-
-			p, err := bpClient.GetIbaProbe(ctx, probeId)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			t.Logf("Label %s", p.Label)
-			t.Logf("Description %s", p.Description)
-			t.Log(p)
-			t.Log("Get IBA probe state")
-			ps, err := bpClient.GetIbaProbeState(ctx, probeId)
-			if err != nil {
-				t.Fatal(err)
-			}
-			log.Printf("Probe state is %s", ps.State)
-			for _, i := range p.Stages {
-				t.Logf("Stage name %s", i["name"])
-			}
-			t.Logf("Delete probe")
-			err = bpClient.DeleteIbaProbe(ctx, probeId)
-			if err != nil {
-				t.Fatal(err)
-			}
-			t.Logf("Delete Probe again, this should fail")
-			err = bpClient.DeleteIbaProbe(ctx, probeId)
-			if err == nil {
-				t.Fatal("Probe Deletion should have failed")
-			} else {
-				t.Log(err)
-			}
-		}
-		probeStr := `{
+	probeStr := `{
   "label": "Test Probe",
   "description": "The probe calculates interfaces bandwidth",
   "processors": [
@@ -421,28 +344,87 @@ func TestIbaProbes(t *testing.T) {
     }
   ]
 }`
-		t.Log("Create Probe With Json")
-		id, err := bpClient.CreateIbaProbeFromJson(ctx, json.RawMessage(probeStr))
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Log("Test Get Probe")
-		p, err := bpClient.GetIbaProbe(ctx, id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if p.Label != "Test Probe" {
-			t.Fatalf("Error : Expected Test Probe, got %s", p.Label)
-		}
-		ps, err := bpClient.GetIbaProbeState(ctx, id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Logf("Probe state is %s", ps.State)
-		t.Log("Delete the probe")
-		err = bpClient.DeleteIbaProbe(ctx, id)
-		if err != nil {
-			t.Fatal(err)
-		}
+
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	for clientName, client := range clients {
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+
+			log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+
+			bpClient := testBlueprintA(ctx, t, client.client)
+			predefinedProbes, err := bpClient.GetAllIbaPredefinedProbes(ctx)
+			require.NoError(t, err)
+
+			expectedToFail := map[string]bool{
+				"external_ecmp_imbalance":            true,
+				"evpn_vxlan_type5":                   true,
+				"eastwest_traffic":                   true,
+				"vxlan_floodlist":                    true,
+				"fabric_hotcold_ifcounter":           true,
+				"specific_interface_flapping":        true,
+				"evpn_vxlan_type3":                   true,
+				"specific_hotcold_ifcounter":         true,
+				"spine_superspine_hotcold_ifcounter": true,
+			}
+
+			for _, predefinedProbe := range predefinedProbes {
+				predefinedProbe := predefinedProbe
+
+				t.Run(predefinedProbe.Name, func(t *testing.T) {
+					t.Parallel()
+
+					t.Logf("Get Predefined Probe By Name %s", predefinedProbe.Name)
+					_, err := bpClient.GetIbaPredefinedProbeByName(ctx, predefinedProbe.Name)
+					require.NoError(t, err)
+
+					t.Logf("Instantiating Probe %s", predefinedProbe.Name)
+
+					probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
+						Name: predefinedProbe.Name,
+						Data: []byte(`{"label":"` + predefinedProbe.Name + `"}`),
+					})
+					if expectedToFail[predefinedProbe.Name] {
+						require.Error(t, err)
+						return
+					} else {
+						require.NoError(t, err)
+					}
+
+					_, err = bpClient.GetIbaProbe(ctx, probeId)
+					require.NoError(t, err)
+
+					t.Log("Get IBA probe state")
+					_, err = bpClient.GetIbaProbeState(ctx, probeId)
+					require.NoError(t, err)
+
+					t.Logf("Delete probe")
+					require.NoError(t, bpClient.DeleteIbaProbe(ctx, probeId))
+
+					var ace ClientErr
+					t.Logf("Delete Probe again, this should fail")
+					err = bpClient.DeleteIbaProbe(ctx, probeId)
+					require.Error(t, err)
+					require.ErrorAs(t, err, &ace)
+					require.Equal(t, ErrNotfound, ace.Type())
+				})
+			}
+			t.Log("Create Probe With Json")
+			id, err := bpClient.CreateIbaProbeFromJson(ctx, json.RawMessage(probeStr))
+			require.NoError(t, err)
+
+			t.Log("Test Get Probe")
+			p, err := bpClient.GetIbaProbe(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, "Test Probe", p.Label, "expected label %q got %q", "Test Probe", p.Label)
+
+			_, err = bpClient.GetIbaProbeState(ctx, id)
+			require.NoError(t, err)
+
+			require.NoError(t, bpClient.DeleteIbaProbe(ctx, id))
+		})
 	}
 }
