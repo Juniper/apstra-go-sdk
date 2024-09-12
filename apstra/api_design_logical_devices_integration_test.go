@@ -149,9 +149,14 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 					t.Parallel()
 
 					logicalDevice, err := client.client.GetLogicalDeviceByName(context.TODO(), test.Data.DisplayName)
-					require.NoError(t, err)
-					require.Equal(t, test.Id, logicalDevice.Id)
-					require.Equal(t, test.Data.DisplayName, logicalDevice.Data.DisplayName)
+					if err != nil {
+						var ace ClientErr
+						require.ErrorAs(t, err, ace)
+						require.Equal(t, ErrMultipleMatch, ace.Type())
+					} else {
+						require.Equal(t, test.Id, logicalDevice.Id)
+						require.Equal(t, test.Data.DisplayName, logicalDevice.Data.DisplayName)
+					}
 				})
 			}
 		})
