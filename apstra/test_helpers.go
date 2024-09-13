@@ -51,6 +51,10 @@ func samples(t testing.TB, length int, count ...int) []int {
 		}
 	}
 
+	if sampleSize == 0 {
+		return intsFromZero(length)
+	}
+
 	if sampleSize > length {
 		return intsFromZero(length)
 	}

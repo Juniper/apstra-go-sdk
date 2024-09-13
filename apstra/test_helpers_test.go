@@ -97,47 +97,68 @@ func TestSamples(t *testing.T) {
 
 	testCases := map[string]testCase{
 		"simple": {
-			length:   5,
-			expected: 5,
+			length:   50,
+			expected: 50,
 		},
 		"env_valid": {
-			length:   5,
-			expected: 2,
-			env:      toPtr("2"),
+			length:   50,
+			expected: 12,
+			env:      toPtr("12"),
 		},
 		"count_wins": {
-			length:   5,
-			expected: 2,
-			env:      toPtr("1"),
-			count:    toPtr(2),
+			length:   50,
+			expected: 13,
+			env:      toPtr("11"),
+			count:    toPtr(13),
 		},
 		"env_over": {
-			length:   5,
-			expected: 5,
-			env:      toPtr("10"),
+			length:   50,
+			expected: 50,
+			env:      toPtr("100"),
 		},
 		"count_wins_over": {
-			length:   5,
-			expected: 5,
+			length:   50,
+			expected: 50,
 			env:      toPtr("1"),
-			count:    toPtr(10),
+			count:    toPtr(100),
 		},
-		"count_wins_both_over": {
-			length:   5,
-			expected: 5,
-			env:      toPtr("9"),
-			count:    toPtr(10),
+		"both_over": {
+			length:   50,
+			expected: 50,
+			env:      toPtr("101"),
+			count:    toPtr(102),
+		},
+		"count_zero": {
+			length:   50,
+			expected: 50,
+			count:    toPtr(0),
+		},
+		"env_zero": {
+			length:   50,
+			expected: 50,
+			env:      toPtr("0"),
+		},
+		"both_zero": {
+			length:   50,
+			expected: 50,
+			count:    toPtr(0),
+			env:      toPtr("0"),
+		},
+		"count_wins_zero": {
+			length:   50,
+			expected: 50,
+			count:    toPtr(0),
+			env:      toPtr("23"),
 		},
 	}
 
 	var wg sync.WaitGroup
 	wg.Add(len(testCases))
 	for tName, tCase := range testCases {
+		tName, tCase := tName, tCase
 		t.Run(tName, func(t *testing.T) {
-			// don't use t.Parallel due to risk of screwing up the environment
-
 			if tCase.env != nil {
-				require.NoError(t, os.Setenv(envSampleSize, *tCase.env))
+				t.Setenv(envSampleSize, *tCase.env)
 			}
 
 			var count []int
@@ -156,9 +177,11 @@ func TestSamples(t *testing.T) {
 		})
 	}
 
+	// reset the environment after tests complete
 	wg.Wait()
 	if ok {
-		// reset the environment
 		require.NoError(t, os.Setenv(envSampleSize, initialEnvVal))
+	} else {
+		require.NoError(t, os.Unsetenv(envSampleSize))
 	}
 }
