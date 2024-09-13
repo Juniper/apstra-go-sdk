@@ -3,7 +3,9 @@ package apstra
 import (
 	"context"
 	"math/rand"
+	"os"
 	"sort"
+	"sync"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
@@ -78,4 +80,86 @@ func testRaLocalVlanPool(ctx context.Context, t testing.TB, client *FreeformClie
 	require.NoError(t, err)
 
 	return id
+}
+
+func TestSamples(t *testing.T) {
+	type testCase struct {
+		env      *string
+		count    *int
+		length   int
+		expected int
+	}
+
+	initialEnvVal, ok := os.LookupEnv(envSampleSize)
+	if ok {
+		require.NoError(t, os.Unsetenv(envSampleSize))
+	}
+
+	testCases := map[string]testCase{
+		"simple": {
+			length:   5,
+			expected: 5,
+		},
+		"env_valid": {
+			length:   5,
+			expected: 2,
+			env:      toPtr("2"),
+		},
+		"count_wins": {
+			length:   5,
+			expected: 2,
+			env:      toPtr("1"),
+			count:    toPtr(2),
+		},
+		"env_over": {
+			length:   5,
+			expected: 5,
+			env:      toPtr("10"),
+		},
+		"count_wins_over": {
+			length:   5,
+			expected: 5,
+			env:      toPtr("1"),
+			count:    toPtr(10),
+		},
+		"count_wins_both_over": {
+			length:   5,
+			expected: 5,
+			env:      toPtr("9"),
+			count:    toPtr(10),
+		},
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(testCases))
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			// don't use t.Parallel due to risk of screwing up the environment
+
+			if tCase.env != nil {
+				require.NoError(t, os.Setenv(envSampleSize, *tCase.env))
+			}
+
+			var count []int
+			if tCase.count != nil {
+				count = []int{*tCase.count}
+			}
+
+			result := samples(t, tCase.length, count...)
+			wg.Done()
+
+			require.Equalf(t, tCase.expected, len(result), "expected %d samples, got %d", tCase.expected, len(result))
+			for _, sample := range result {
+				require.GreaterOrEqual(t, sample, 0)
+				require.LessOrEqual(t, sample, tCase.length)
+			}
+
+		})
+	}
+
+	wg.Wait()
+	if ok {
+		// reset the environment
+		require.NoError(t, os.Setenv(envSampleSize, initialEnvVal))
+	}
 }
