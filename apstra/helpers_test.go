@@ -293,24 +293,21 @@ func testBlueprintC(ctx context.Context, t testing.TB, client *Client) *TwoStage
 	return bpClient
 }
 
-func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+func testBlueprintD(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_ESI_2x_Links",
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, client.DeleteBlueprint(ctx, bpId))
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
+	require.NoError(t, err)
 
 	query := new(PathQuery).
 		SetBlueprintId(bpId).
@@ -329,22 +326,16 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 			} `json:"n_leaf"`
 		} `json:"items"`
 	}
-	err = query.Do(ctx, &response)
-	if err != nil {
-		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
-	}
+	require.NoError(t, query.Do(ctx, &response))
 
 	assignments := make(SystemIdToInterfaceMapAssignment)
 	for _, item := range response.Items {
 		assignments[item.Leaf.ID] = "Juniper_vQFX__AOS-7x10-Leaf"
 	}
 
-	err = bpClient.SetInterfaceMapAssignments(ctx, assignments)
-	if err != nil {
-		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
-	}
+	require.NoError(t, bpClient.SetInterfaceMapAssignments(ctx, assignments))
 
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
 func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
