@@ -153,7 +153,6 @@ func TestSamples(t *testing.T) {
 				require.GreaterOrEqual(t, sample, 0)
 				require.LessOrEqual(t, sample, tCase.length)
 			}
-
 		})
 	}
 

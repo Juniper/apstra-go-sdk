@@ -49,7 +49,7 @@ func TestListAndGetSampleDeviceProfiles(t *testing.T) {
 			for _, i := range samples(t, len(profiles), 5) {
 				label := profiles[i].Data.Label
 				t.Run(fmt.Sprintf("GET_DeviceProfile_Label_%s", label), func(t *testing.T) {
-					//t.Parallel() // this seems to make things worse
+					// t.Parallel() // this seems to make things worse
 
 					dp, err := client.client.GetDeviceProfileByName(ctx, label)
 					require.NoError(t, err)
