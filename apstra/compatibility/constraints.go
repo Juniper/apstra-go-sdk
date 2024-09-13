@@ -7,6 +7,9 @@ import (
 )
 
 var (
+	BpHasFabricAddressingPolicyNode = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
+	}
 	FabricSettingsApiOk = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
 	}

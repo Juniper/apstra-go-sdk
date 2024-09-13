@@ -12,7 +12,6 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
-	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
@@ -298,8 +297,8 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 	require.NoError(t, err)
 
 	type testCase struct {
-		req                CreateBlueprintFromTemplateRequest
-		versionConstraints version.Constraints
+		req        CreateBlueprintFromTemplateRequest
+		constraint *compatibility.Constraint
 	}
 
 	testCases := map[string]testCase{
@@ -411,14 +410,14 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 		query := new(PathQuery).
 			SetClient(client.client).
 			SetBlueprintId(client.blueprintId)
-		if compatibility.GeApstra421.Check(client.client.apiVersion) {
+		if compatibility.BpHasFabricAddressingPolicyNode.Check(client.client.apiVersion) {
 			query.Node([]QEEAttribute{
-				NodeTypeFabricPolicy.QEEAttribute(),
+				NodeTypeFabricAddressingPolicy.QEEAttribute(),
 				{Key: "name", Value: QEStringVal("node")},
 			})
 		} else {
 			query.Node([]QEEAttribute{
-				NodeTypeFabricAddressingPolicy.QEEAttribute(),
+				NodeTypeFabricPolicy.QEEAttribute(),
 				{Key: "name", Value: QEStringVal("node")},
 			})
 		}
@@ -456,8 +455,8 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 			for clientName, client := range clients {
 				clientName, client := clientName, client
 				t.Run(clientName, func(t *testing.T) {
-					if tCase.versionConstraints != nil && !tCase.versionConstraints.Check(client.client.apiVersion) {
-						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.versionConstraints)
+					if tCase.constraint != nil && !tCase.constraint.Check(client.client.apiVersion) {
+						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.constraint)
 					}
 
 					t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -512,8 +511,8 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 	require.NoError(t, err)
 
 	type testCase struct {
-		req                CreateBlueprintFromTemplateRequest
-		versionConstraints version.Constraints
+		req           CreateBlueprintFromTemplateRequest
+		compatibility *compatibility.Constraint
 	}
 
 	testCases := map[string]testCase{
@@ -625,14 +624,14 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		query := new(PathQuery).
 			SetClient(client.client).
 			SetBlueprintId(client.blueprintId)
-		if compatibility.GeApstra421.Check(client.client.apiVersion) {
+		if compatibility.BpHasFabricAddressingPolicyNode.Check(client.client.apiVersion) {
 			query.Node([]QEEAttribute{
-				NodeTypeFabricPolicy.QEEAttribute(),
+				NodeTypeFabricAddressingPolicy.QEEAttribute(),
 				{Key: "name", Value: QEStringVal("node")},
 			})
 		} else {
 			query.Node([]QEEAttribute{
-				NodeTypeFabricAddressingPolicy.QEEAttribute(),
+				NodeTypeFabricPolicy.QEEAttribute(),
 				{Key: "name", Value: QEStringVal("node")},
 			})
 		}
@@ -670,8 +669,8 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 			for clientName, client := range clients {
 				clientName, client := clientName, client
 				t.Run(clientName, func(t *testing.T) {
-					if tCase.versionConstraints != nil && !tCase.versionConstraints.Check(client.client.apiVersion) {
-						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.versionConstraints)
+					if tCase.compatibility != nil && !tCase.compatibility.Check(client.client.apiVersion) {
+						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.client.apiVersion, tCase.compatibility)
 					}
 
 					t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -733,7 +732,7 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 
 	type testCase struct {
 		name string
-		// versionConstraints   version.Constraints
+		// compatibility   version.Constraints
 		fabricSettings FabricSettings
 	}
 
