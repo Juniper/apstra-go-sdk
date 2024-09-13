@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
@@ -161,7 +162,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 				req := metadataNode{Label: newName}
 				resp := &metadataNode{}
 				log.Printf("testing patchNode(%s) against %s %s (%s)", bpClient.Id(), client.clientType, clientName, client.client.ApiVersion())
-				if patchNodeSupportsUnsafeArg.Check(client.client.apiVersion.Core()) {
+				if compatibility.PatchNodeSupportsUnsafeArg.Check(client.client.apiVersion) {
 					var ace ClientErr
 					err = bpClient.PatchNode(ctx, nodeA.Id, req, resp)
 					require.Error(t, err)
@@ -410,7 +411,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 		query := new(PathQuery).
 			SetClient(client.client).
 			SetBlueprintId(client.blueprintId)
-		if version.MustConstraints(version.NewConstraint(">=" + apstra421)).Check(client.client.apiVersion) {
+		if compatibility.GeApstra421.Check(client.client.apiVersion) {
 			query.Node([]QEEAttribute{
 				NodeTypeFabricPolicy.QEEAttribute(),
 				{Key: "name", Value: QEStringVal("node")},
@@ -463,7 +464,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 					id, err := client.client.CreateBlueprintFromTemplate(ctx, &tCase.req)
 					require.NoError(t, err)
 
-					if eqApstra420.Check(client.client.apiVersion) && tCase.req.FabricSettings != nil { // 4.2.0 cannot set fabric settings when creating blueprint
+					if compatibility.EqApstra420.Check(client.client.apiVersion) && tCase.req.FabricSettings != nil { // 4.2.0 cannot set fabric settings when creating blueprint
 						bp, err := client.client.NewTwoStageL3ClosClient(ctx, id)
 						require.NoError(t, err)
 
@@ -624,7 +625,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		query := new(PathQuery).
 			SetClient(client.client).
 			SetBlueprintId(client.blueprintId)
-		if geApstra421.Check(client.client.apiVersion) {
+		if compatibility.GeApstra421.Check(client.client.apiVersion) {
 			query.Node([]QEEAttribute{
 				NodeTypeFabricPolicy.QEEAttribute(),
 				{Key: "name", Value: QEStringVal("node")},
@@ -677,7 +678,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 					id, err := client.client.CreateBlueprintFromTemplate(ctx, &tCase.req)
 					require.NoError(t, err)
 
-					if eqApstra420.Check(client.client.apiVersion) && tCase.req.FabricSettings != nil { // 4.2.0 cannot set fabric settings when creating blueprint
+					if compatibility.EqApstra420.Check(client.client.apiVersion) && tCase.req.FabricSettings != nil { // 4.2.0 cannot set fabric settings when creating blueprint
 						bp, err := client.client.NewTwoStageL3ClosClient(ctx, id)
 						require.NoError(t, err)
 
@@ -763,7 +764,7 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 
 	for clientName, client := range clients {
 		t.Run(client.client.apiVersion.String(), func(t *testing.T) {
-			if !geApstra421.Check(client.client.apiVersion) {
+			if !compatibility.GeApstra421.Check(client.client.apiVersion) {
 				t.Skipf("skipping Apstra %s client due to version constraint", client.client.apiVersion)
 			}
 

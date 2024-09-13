@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -9,6 +8,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +25,7 @@ func TestGetSetGetFAP(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		if geApstra421.Check(client.client.apiVersion) {
+		if compatibility.GeApstra421.Check(client.client.apiVersion) {
 			continue
 		}
 

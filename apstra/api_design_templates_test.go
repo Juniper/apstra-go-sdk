@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
@@ -1095,7 +1096,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			versionConstraints: eqApstra420,
+			versionConstraints: compatibility.EqApstra420,
 			request: CreateRackBasedTemplateRequest{
 				DisplayName:          randString(5, "hex"),
 				Spine:                &spines[0],
@@ -1107,7 +1108,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 			},
 		},
 		{
-			versionConstraints: eqApstra420,
+			versionConstraints: compatibility.EqApstra420,
 			request: CreateRackBasedTemplateRequest{
 				DisplayName:          randString(5, "hex"),
 				Spine:                &spines[1],
@@ -1119,7 +1120,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 			},
 		},
 		{
-			versionConstraints: geApstra421,
+			versionConstraints: compatibility.GeApstra421,
 			request: CreateRackBasedTemplateRequest{
 				DisplayName:          randString(5, "hex"),
 				Spine:                &spines[0],
@@ -1138,7 +1139,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
 				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
-			versionConstraints: geApstra421,
+			versionConstraints: compatibility.GeApstra421,
 		},
 	}
 

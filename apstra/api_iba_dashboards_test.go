@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +24,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
 			t.Parallel()
 
-			if geApstra500.Check(client.client.apiVersion) {
+			if compatibility.GeApstra500.Check(client.client.apiVersion) {
 				t.Skipf("skipping test due to unsupported API changes in %s", client.client.apiVersion)
 			}
 

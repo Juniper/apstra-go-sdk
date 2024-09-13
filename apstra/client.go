@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
 )
@@ -355,7 +356,7 @@ func (o *Client) getApiVersion(ctx context.Context) (*version.Version, error) {
 
 	// ToDo - This can be removed once the results from /versions/api and /versions/build reconverge.
 	//  Expected late 2024.
-	if apiVersion.Equal(version.Must(version.NewVersion(apstra510))) {
+	if apiVersion.Equal(version.Must(version.NewVersion("5.1.0"))) {
 		// This *might* be an AI-enabled 5.0.0 pre-release, which merely *claims* to be 5.1.0.
 
 		// Fetch the Build Version to find out if we're talking to an AI-enabled pre-release.
@@ -387,13 +388,8 @@ func (o *Client) apiVersionSupported() bool {
 	if o.apiVersion == nil {
 		panic("apiVersionSupported() invoked before o.apiVersion got populated")
 	}
-	for _, constraint := range supportedApiVersionsAsConstraints() {
-		if constraint.Check(o.apiVersion) {
-			return true
-		}
-	}
 
-	return false
+	return compatibility.ServerVersionSupported.Check(o.apiVersion)
 }
 
 // lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
@@ -853,7 +849,7 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlu
 	var id ObjectId
 	var err error
 	switch {
-	case eqApstra420.Check(o.apiVersion):
+	case compatibility.EqApstra420.Check(o.apiVersion):
 		id, err = o.createBlueprintFromTemplate420(ctx, req.raw420())
 		if err != nil {
 			return id, fmt.Errorf("failed while creating new blueprint - %w", err)
@@ -1853,7 +1849,7 @@ func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*Blu
 func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectId) (OverlayControlProtocol, error) {
 	nodeAttributes := []QEEAttribute{{"name", QEStringVal("node")}}
 	switch {
-	case geApstra421.Check(o.apiVersion):
+	case compatibility.GeApstra421.Check(o.apiVersion):
 		nodeAttributes = append(nodeAttributes, NodeTypeFabricPolicy.QEEAttribute())
 	default:
 		nodeAttributes = append(nodeAttributes, NodeTypeVirtualNetworkPolicy.QEEAttribute())

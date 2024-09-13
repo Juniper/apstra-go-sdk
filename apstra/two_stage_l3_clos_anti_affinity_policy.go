@@ -3,8 +3,9 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 )
 
 const (
@@ -13,7 +14,7 @@ const (
 
 // getAntiAffinityPolicy is for Apstra 4.2.0 and earlier (not available in 4.2.1)
 func (o *TwoStageL3ClosClient) getAntiAffinityPolicy(ctx context.Context) (*rawAntiAffinityPolicy, error) {
-	if !version.MustConstraints(version.NewConstraint("<=" + apstra420)).Check(o.client.apiVersion) {
+	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
 		return nil, fmt.Errorf("apstra %s does not support %q", o.client.apiVersion, apiUrlBlueprintAntiAffinityPolicy)
 	}
 
@@ -36,7 +37,7 @@ func (o *TwoStageL3ClosClient) setAntiAffinityPolicy(ctx context.Context, in *ra
 		return nil
 	}
 
-	if !version.MustConstraints(version.NewConstraint("<=" + apstra420)).Check(o.client.apiVersion) {
+	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
 		return fmt.Errorf("apstra %s does not support %q", o.client.apiVersion, apiUrlBlueprintAntiAffinityPolicy)
 	}
 
