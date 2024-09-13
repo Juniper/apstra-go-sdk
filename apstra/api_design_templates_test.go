@@ -372,7 +372,7 @@ func TestGetTemplate(t *testing.T) {
 		}
 		log.Printf("fetching %d templateIds...", len(templateIds))
 
-		for _, i := range samples(len(templateIds)) {
+		for _, i := range samples(t, len(templateIds)) {
 			templateId := templateIds[i]
 			log.Printf("testing getTemplate(%s) against %s %s (%s)", templateId, client.clientType, clientName, client.client.ApiVersion())
 			x, err := client.client.getTemplate(context.TODO(), templateId)

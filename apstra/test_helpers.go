@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-const envSampleSize = "GOAPSTRA_TEST_SAMPLE_MAX"
+const envSampleSize = "APSTRA_TEST_SAMPLE_MAX"
 
 func intsFromZero(length int) []int {
 	result := make([]int, length)
@@ -24,28 +24,51 @@ func intsFromZero(length int) []int {
 
 // samples is intended to be used to select some sample items from a slice.
 // Pass it the size of the slice, and it returns a []int representing indexes (samples)
-// to be taken from the slice.
-func samples(length int) []int {
-	var sampleSizeStr string
-	var sampleSizeInt int
-	var found bool
-	if sampleSizeStr, found = os.LookupEnv(envSampleSize); !found {
-		return intsFromZero(length)
+// to be taken from the slice. The number of elements returned is controlled by an
+// environment variable or by the optional "count" argument. If the sample count
+// is not supplied by either environment nor count, then all indexes starting with
+// zero are returned. When sample count is specified both ways, count wins.
+func samples(t testing.TB, length int, count ...int) []int {
+	t.Helper()
+
+	if len(count) > 1 {
+		panic("count must only have a element")
 	}
-	sampleSizeInt, _ = strconv.Atoi(sampleSizeStr)
-	if sampleSizeInt == 0 {
-		return intsFromZero(length)
-	}
-	if sampleSizeInt > length {
+
+	sampleSizeStr, envFound := os.LookupEnv(envSampleSize)
+	if !envFound && len(count) == 0 {
 		return intsFromZero(length)
 	}
 
-	sampleMap := make(map[int]struct{})
-	for len(sampleMap) < sampleSizeInt {
+	var sampleSize int
+	if len(count) > 0 {
+		sampleSize = count[0]
+	} else {
+		var err error
+		sampleSize, err = strconv.Atoi(sampleSizeStr)
+		if err != nil {
+			panic(fmt.Sprintf("env var %q (%s) failed to parse as int - %s", envSampleSize, sampleSizeStr, err))
+		}
+	}
+
+	if sampleSize == 0 {
+		return intsFromZero(length)
+	}
+
+	if sampleSize > length {
+		return intsFromZero(length)
+	}
+
+	if float64(sampleSize) > (float64(length) * .75) {
+		return intsFromZero(sampleSize)
+	}
+
+	sampleMap := make(map[int]struct{}, sampleSize)
+	for len(sampleMap) < sampleSize {
 		sampleMap[rand.Intn(length)] = struct{}{}
 	}
 
-	result := make([]int, len(sampleMap))
+	result := make([]int, sampleSize)
 	i := 0
 	for k := range sampleMap {
 		result[i] = k

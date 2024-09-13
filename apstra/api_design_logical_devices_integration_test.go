@@ -25,7 +25,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 			require.NoError(t, err)
 			require.NotEqual(t, len(ids), 0)
 
-			for _, i := range samples(len(ids)) {
+			for _, i := range samples(t, len(ids)) {
 				id := ids[i]
 				t.Run(fmt.Sprintf("GET_%s", id), func(t *testing.T) {
 					t.Parallel()
@@ -143,7 +143,7 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			for _, i := range samples(len(logicalDevices)) {
+			for _, i := range samples(t, len(logicalDevices)) {
 				test := logicalDevices[i]
 				t.Run(fmt.Sprintf("GET_LD_%s", test.Data.DisplayName), func(t *testing.T) {
 					t.Parallel()
