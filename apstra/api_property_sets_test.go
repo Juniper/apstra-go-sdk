@@ -7,10 +7,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"log"
 	"math/rand"
 	"testing"
+
+	"github.com/hashicorp/go-version"
 )
 
 func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
