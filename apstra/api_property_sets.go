@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -38,11 +39,17 @@ type rawPropertySet struct {
 }
 
 func (o *rawPropertySet) polish() (*PropertySet, error) {
-	created, err := time.Parse("2006-01-02T15:04:05.000000+0000", o.CreatedAt)
+	var layout string
+	if strings.Contains(o.CreatedAt, "Z") {
+		layout = "2006-01-02T15:04:05.000000Z"
+	} else {
+		layout = "2006-01-02T15:04:05.000000+0000"
+	}
+	created, err := time.Parse(layout, o.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing create time %s - %w", o.CreatedAt, err)
 	}
-	updated, err := time.Parse("2006-01-02T15:04:05.000000+0000", o.UpdatedAt)
+	updated, err := time.Parse(layout, o.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing update time %s - %w", o.UpdatedAt, err)
 	}
