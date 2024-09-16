@@ -6,10 +6,11 @@ package apstra
 import (
 	"context"
 	"encoding/json"
-	"github.com/hashicorp/go-version"
 	"log"
 	"math/rand"
 	"testing"
+
+	"github.com/hashicorp/go-version"
 )
 
 func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
