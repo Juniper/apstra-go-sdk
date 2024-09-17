@@ -662,6 +662,13 @@ func (o *TwoStageL3ClosClient) GetSystemNodeInfo(ctx context.Context, nodeId Obj
 
 // GetAllIbaWidgets returns a list of IBA Widgets in the blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaWidgets(ctx context.Context) ([]IbaWidget, error) {
+	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
+		return nil, ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
+		}
+	}
+
 	rawWidgets, err := o.client.getAllIbaWidgets(ctx, o.blueprintId)
 	if err != nil {
 		return nil, err
@@ -682,6 +689,13 @@ func (o *TwoStageL3ClosClient) GetAllIbaWidgets(ctx context.Context) ([]IbaWidge
 // GetIbaWidgetByLabel returns the IBA Widgets in the blueprint which matches the specified
 // label, or an error in the case of no matches, or multiple matches
 func (o *TwoStageL3ClosClient) GetIbaWidgetByLabel(ctx context.Context, label string) (*IbaWidget, error) {
+	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
+		return nil, ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
+		}
+	}
+
 	rawWidget, err := o.client.getIbaWidgetByLabel(ctx, o.blueprintId, label)
 	if err != nil {
 		return nil, err
@@ -692,6 +706,13 @@ func (o *TwoStageL3ClosClient) GetIbaWidgetByLabel(ctx context.Context, label st
 
 // GetIbaWidgetsByLabel returns a list of IBA Widgets in the blueprint that match the label
 func (o *TwoStageL3ClosClient) GetIbaWidgetsByLabel(ctx context.Context, label string) ([]IbaWidget, error) {
+	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
+		return nil, ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
+		}
+	}
+
 	rawWidgets, err := o.client.getIbaWidgetsByLabel(ctx, o.blueprintId, label)
 	if err != nil {
 		return nil, err
@@ -711,6 +732,13 @@ func (o *TwoStageL3ClosClient) GetIbaWidgetsByLabel(ctx context.Context, label s
 
 // GetIbaWidget returns the IBA Widget that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaWidget(ctx context.Context, id ObjectId) (*IbaWidget, error) {
+	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
+		return nil, ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
+		}
+	}
+
 	rawWidget, err := o.client.getIbaWidget(ctx, o.blueprintId, id)
 	if err != nil {
 		return nil, err
@@ -722,6 +750,13 @@ func (o *TwoStageL3ClosClient) GetIbaWidget(ctx context.Context, id ObjectId) (*
 // CreateIbaWidget creates an IBA Widget and returns the id of the created dashboard on success,
 // or a blank and error on failure
 func (o *TwoStageL3ClosClient) CreateIbaWidget(ctx context.Context, data *IbaWidgetData) (ObjectId, error) {
+	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
+		return "", ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
+		}
+	}
+
 	id, err := o.client.createIbaWidget(ctx, o.blueprintId, data.raw())
 	if err != nil {
 		return "", err
@@ -732,11 +767,25 @@ func (o *TwoStageL3ClosClient) CreateIbaWidget(ctx context.Context, data *IbaWid
 
 // UpdateIbaWidget updates an IBA Widget.
 func (o *TwoStageL3ClosClient) UpdateIbaWidget(ctx context.Context, id ObjectId, c *IbaWidgetData) error {
+	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
+		return ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
+		}
+	}
+
 	return o.client.updateIbaWidget(ctx, o.blueprintId, id, c.raw())
 }
 
 // DeleteIbaWidget deletes an IBA Widget
 func (o *TwoStageL3ClosClient) DeleteIbaWidget(ctx context.Context, id ObjectId) error {
+	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
+		return ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
+		}
+	}
+
 	return o.client.deleteIbaWidget(ctx, o.blueprintId, id)
 }
 
