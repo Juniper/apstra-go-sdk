@@ -1849,10 +1849,10 @@ func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*Blu
 func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectId) (OverlayControlProtocol, error) {
 	nodeAttributes := []QEEAttribute{{"name", QEStringVal("node")}}
 	switch {
-	case compatibility.GeApstra421.Check(o.apiVersion):
-		nodeAttributes = append(nodeAttributes, NodeTypeFabricPolicy.QEEAttribute())
-	default:
+	case compatibility.BpHasVirtualNetworkPolicyNode.Check(o.apiVersion):
 		nodeAttributes = append(nodeAttributes, NodeTypeVirtualNetworkPolicy.QEEAttribute())
+	default:
+		nodeAttributes = append(nodeAttributes, NodeTypeFabricPolicy.QEEAttribute())
 	}
 
 	query := new(PathQuery).

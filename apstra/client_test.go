@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -108,18 +107,28 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		for i := range testCases {
-			bpClient := testCases[i].bpFunc(ctx, t, client.client)
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
 
-			log.Printf("testing BlueprintOverlayControlProtocol() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			ocp, err := bpClient.client.BlueprintOverlayControlProtocol(ctx, bpClient.blueprintId)
-			require.NoError(t, err)
+			for i := range testCases {
+				i := i
+				t.Run(fmt.Sprintf("test_case_%d", i), func(t *testing.T) {
+					t.Parallel()
 
-			if ocp != testCases[i].expectedOcp {
-				t.Fatalf("expected overlay control protocol %q, got %q", testCases[i].expectedOcp.String(), ocp.String())
+					bpClient := testCases[i].bpFunc(ctx, t, client.client)
+
+					log.Printf("testing BlueprintOverlayControlProtocol() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					ocp, err := bpClient.client.BlueprintOverlayControlProtocol(ctx, bpClient.blueprintId)
+					require.NoError(t, err)
+
+					if ocp != testCases[i].expectedOcp {
+						t.Fatalf("expected overlay control protocol %q, got %q", testCases[i].expectedOcp.String(), ocp.String())
+					}
+					log.Printf("blueprint %q has overlay control protocol %q", bpClient.blueprintId, ocp.String())
+				})
 			}
-			log.Printf("blueprint %q has overlay control protocol %q", bpClient.blueprintId, ocp.String())
-		}
+		})
 	}
 }
 
