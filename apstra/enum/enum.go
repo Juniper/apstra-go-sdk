@@ -29,12 +29,12 @@ var (
 	DeviceProfileTypeMonolithic      = DeviceProfileType{Value: "monolithic"}
 	DeviceProfileTypes               = oenum.New(DeviceProfileTypeModular, DeviceProfileTypeMonolithic)
 
-	_                         enum = new(FeatureSwitchEnum)
-	FeatureSwitchEnumEnabled       = FeatureSwitchEnum{Value: "enabled"}
-	FeatureSwitchEnumDisabled      = FeatureSwitchEnum{Value: "disabled"}
-	FeatureSwitchEnums             = oenum.New(
-		FeatureSwitchEnumEnabled,
-		FeatureSwitchEnumDisabled,
+	_                     enum = new(FeatureSwitch)
+	FeatureSwitchEnabled       = FeatureSwitch{Value: "enabled"}
+	FeatureSwitchDisabled      = FeatureSwitch{Value: "disabled"}
+	FeatureSwitches            = oenum.New(
+		FeatureSwitchEnabled,
+		FeatureSwitchDisabled,
 	)
 
 	_                           enum = new(IbaWidgetType)
@@ -258,14 +258,14 @@ func (o *DeviceProfileType) FromString(s string) error {
 	return nil
 }
 
-type FeatureSwitchEnum oenum.Member[string]
+type FeatureSwitch oenum.Member[string]
 
-func (o FeatureSwitchEnum) String() string {
+func (o FeatureSwitch) String() string {
 	return o.Value
 }
 
-func (o *FeatureSwitchEnum) FromString(s string) error {
-	t := FeatureSwitchEnums.Parse(s)
+func (o *FeatureSwitch) FromString(s string) error {
+	t := FeatureSwitches.Parse(s)
 	if t == nil {
 		return newEnumParseError(o, s)
 	}
