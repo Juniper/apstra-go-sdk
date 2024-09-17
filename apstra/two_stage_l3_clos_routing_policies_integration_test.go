@@ -7,11 +7,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
-	"github.com/stretchr/testify/require"
 	"log"
 	"net"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/stretchr/testify/require"
 )
 
 func compareDcRoutingExportPolicies(t *testing.T, a, b DcRoutingExportPolicy) {
