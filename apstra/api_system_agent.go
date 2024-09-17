@@ -10,6 +10,7 @@ const apiUrlSystemAgentManagerConfig = "/api/system-agent/manager-config"
 type SystemAgentManagerConfig struct {
 	SkipRevertToPristineOnUninstall bool `json:"skip_revert_to_pristine_on_uninstall"`
 	SkipPristineValidation          bool `json:"skip_pristine_validation"`
+	SkipInterfaceShutdownOnUpgrade  bool `json:"skip_interface_shutdown_on_upgrade"`
 }
 
 func (o *Client) getSystemAgentManagerConfig(ctx context.Context) (*SystemAgentManagerConfig, error) {
