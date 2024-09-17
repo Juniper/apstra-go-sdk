@@ -14,8 +14,8 @@ import (
 	"testing"
 )
 
-const envSkipSwitchAgentTest = "GOAPSTRA_SPEEDY_SKIP_SWITCH_AGENT_TEST"
-const fileSkipSwitchAgentTest = "/tmp/GOAPSTRA_SPEEDY_SKIP_SWITCH_AGENT_TEST"
+const envSkipSwitchAgentTest = "SPEEDY_SKIP_SWITCH_AGENT_TEST"
+const fileSkipSwitchAgentTest = "/tmp/SPEEDY_SKIP_SWITCH_AGENT_TEST"
 
 func TestGetSystemAgent(t *testing.T) {
 	clients, err := getTestClients(context.Background(), t)

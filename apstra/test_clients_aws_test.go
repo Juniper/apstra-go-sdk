@@ -28,7 +28,7 @@ type awsTopology struct {
 	Password string `json:"password"`
 }
 
-func (o *awsTopology) getGoapstraClientCfg() (*ClientCfg, error) {
+func (o *awsTopology) getClientCfg() (*ClientCfg, error) {
 	tlsConfig := &tls.Config{}
 
 	klw, err := keyLogWriterFromEnv(envApstraApiKeyLogFile)
@@ -107,7 +107,7 @@ func getAwsTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error)
 		if err != nil {
 			return nil, err
 		}
-		cfg, err := topology.getGoapstraClientCfg()
+		cfg, err := topology.getClientCfg()
 		if err != nil {
 			return nil, err
 		}
