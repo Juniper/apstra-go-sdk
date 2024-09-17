@@ -22,6 +22,9 @@ var (
 	TemplateRequestRequiresAntiAffinityPolicy = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
 	}
+	RoutingPolicyExportHasL3EdgeLinks = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
+	}
 	ServerVersionSupported = Constraint{
 		constraints:             version.MustConstraints(version.NewConstraint(strings.Join(SupportedApiVersions(), ","))),
 		considerPreReleaseLabel: true,
