@@ -6,12 +6,17 @@ package apstra
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/stretchr/testify/require"
 	"log"
 	"net"
 	"testing"
 )
 
 func compareDcRoutingExportPolicies(t *testing.T, a, b DcRoutingExportPolicy) {
+	t.Helper()
+
 	if a.StaticRoutes != b.StaticRoutes {
 		t.Fatal()
 	}
@@ -33,6 +38,8 @@ func compareDcRoutingExportPolicies(t *testing.T, a, b DcRoutingExportPolicy) {
 }
 
 func comparePrefixSlices(t *testing.T, a, b []net.IPNet) {
+	t.Helper()
+
 	if len(a) != len(b) {
 		t.Fatal()
 	}
@@ -44,6 +51,8 @@ func comparePrefixSlices(t *testing.T, a, b []net.IPNet) {
 }
 
 func comparePrefixFilters(t *testing.T, a, b PrefixFilter) {
+	t.Helper()
+
 	if a.Action != b.Action {
 		t.Fatal()
 	}
@@ -69,6 +78,8 @@ func comparePrefixFilters(t *testing.T, a, b PrefixFilter) {
 }
 
 func comparePrefixFilterSlices(t *testing.T, a, b []PrefixFilter) {
+	t.Helper()
+
 	if len(a) != len(b) {
 		t.Fatal()
 	}
@@ -79,25 +90,17 @@ func comparePrefixFilterSlices(t *testing.T, a, b []PrefixFilter) {
 }
 
 func compareDcRoutingPolicyData(t *testing.T, a, b *DcRoutingPolicyData) {
-	if a.Label != b.Label {
-		t.Fatal()
-	}
-	if a.Description != b.Description {
-		t.Fatal()
-	}
-	if a.PolicyType != b.PolicyType {
-		t.Fatal()
-	}
-	if a.ImportPolicy != b.ImportPolicy {
-		t.Fatal()
-	}
+	t.Helper()
+
+	require.Equalf(t, a.Label, b.Label, "Label: Expected %q, got %q", a.Label, b.Label)
+	require.Equalf(t, a.Description, b.Description, "Description: Expected %q, got %q", a.Description, b.Description)
+	require.Equalf(t, a.PolicyType, b.PolicyType, "PolicyType: Expected %q, got %q", a.PolicyType, b.PolicyType)
+	require.Equalf(t, a.ImportPolicy, b.ImportPolicy, "ImportPolicy: Expected %q, got %q", a.ImportPolicy, b.ImportPolicy)
+
 	compareDcRoutingExportPolicies(t, a.ExportPolicy, b.ExportPolicy)
-	if a.ExpectDefaultIpv4Route != b.ExpectDefaultIpv4Route {
-		t.Fatal()
-	}
-	if a.ExpectDefaultIpv6Route != b.ExpectDefaultIpv6Route {
-		t.Fatal()
-	}
+	require.Equalf(t, a.ExpectDefaultIpv4Route, b.ExpectDefaultIpv4Route, "ExpectDefaultIpv4Route: Expected %t, got %t", a.ExpectDefaultIpv4Route, b.ExpectDefaultIpv4Route)
+	require.Equalf(t, a.ExpectDefaultIpv6Route, b.ExpectDefaultIpv6Route, "ExpectDefaultIpv6Route: Expected %t, got %t", a.ExpectDefaultIpv6Route, b.ExpectDefaultIpv6Route)
+
 	comparePrefixSlices(t, a.AggregatePrefixes, b.AggregatePrefixes)
 	comparePrefixFilterSlices(t, a.ExtraImportRoutes, b.ExtraImportRoutes)
 	comparePrefixFilterSlices(t, a.ExtraExportRoutes, b.ExtraExportRoutes)
@@ -112,293 +115,252 @@ func TestRoutingPolicies(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient := testBlueprintA(ctx, t, client.client)
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.ApiVersion(), clientName), func(t *testing.T) {
+			t.Parallel()
+			bpClient := testBlueprintA(ctx, t, client.client)
 
-		log.Printf("testing GetDefaultRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		defaultPolicy, err := bpClient.GetDefaultRoutingPolicy(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if defaultPolicy.Data.PolicyType != DcRoutingPolicyTypeDefault {
-			t.Fatalf("default policy type is %q", defaultPolicy.Data.PolicyType.String())
-		}
+			log.Printf("testing GetDefaultRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			defaultPolicy, err := bpClient.GetDefaultRoutingPolicy(ctx)
+			require.NoError(t, err)
+			require.Equal(t, defaultPolicy.Data.PolicyType, DcRoutingPolicyTypeDefault)
 
-		var aggregatePrefixes []net.IPNet
-		for _, s := range []string{"1.0.0.0/8", "2.0.0.0/7"} {
-			_, ipNet, err := net.ParseCIDR(s)
-			if err != nil {
-				t.Fatal(err)
+			var aggregatePrefixes []net.IPNet
+			for _, s := range []string{"1.0.0.0/8", "2.0.0.0/7"} {
+				_, ipNet, err := net.ParseCIDR(s)
+				require.NoError(t, err)
+				aggregatePrefixes = append(aggregatePrefixes, *ipNet)
 			}
-			aggregatePrefixes = append(aggregatePrefixes, *ipNet)
-		}
 
-		var f PrefixFilter
-		var ipNet *net.IPNet
+			var f PrefixFilter
+			var ipNet *net.IPNet
 
-		eleven := 11
-		twelve := 12
-		thirteen := 13
-		fourteen := 14
+			eleven := 11
+			twelve := 12
+			thirteen := 13
+			fourteen := 14
 
-		var importFilters []PrefixFilter
+			var importFilters []PrefixFilter
 
-		_, ipNet, err = net.ParseCIDR("100.0.0.0/10")
-		if err != nil {
-			t.Fatal()
-		}
-		f = PrefixFilter{
-			Action: PrefixFilterActionPermit,
-			Prefix: *ipNet,
-			GeMask: &eleven,
-			LeMask: &thirteen,
-		}
-		importFilters = append(importFilters, f)
+			_, ipNet, err = net.ParseCIDR("100.0.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionPermit,
+				Prefix: *ipNet,
+				GeMask: &eleven,
+				LeMask: &thirteen,
+			}
+			importFilters = append(importFilters, f)
 
-		_, ipNet, err = net.ParseCIDR("100.64.0.0/10")
-		if err != nil {
-			t.Fatal()
-		}
-		f = PrefixFilter{
-			Action: PrefixFilterActionDeny,
-			Prefix: *ipNet,
-			GeMask: &twelve,
-			LeMask: &fourteen,
-		}
-		importFilters = append(importFilters, f)
+			_, ipNet, err = net.ParseCIDR("100.64.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionDeny,
+				Prefix: *ipNet,
+				GeMask: &twelve,
+				LeMask: &fourteen,
+			}
+			importFilters = append(importFilters, f)
 
-		_, ipNet, err = net.ParseCIDR("100.128.0.0/10")
-		if err != nil {
-			t.Fatal()
-		}
-		f = PrefixFilter{
-			Action: PrefixFilterActionDeny,
-			Prefix: *ipNet,
-			GeMask: &eleven,
-		}
-		importFilters = append(importFilters, f)
+			_, ipNet, err = net.ParseCIDR("100.128.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionDeny,
+				Prefix: *ipNet,
+				GeMask: &eleven,
+			}
+			importFilters = append(importFilters, f)
 
-		_, ipNet, err = net.ParseCIDR("100.192.0.0/10")
-		if err != nil {
-			t.Fatal()
-		}
-		f = PrefixFilter{
-			Action: PrefixFilterActionDeny,
-			Prefix: *ipNet,
-			LeMask: &eleven,
-		}
-		importFilters = append(importFilters, f)
+			_, ipNet, err = net.ParseCIDR("100.192.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionDeny,
+				Prefix: *ipNet,
+				LeMask: &eleven,
+			}
+			importFilters = append(importFilters, f)
 
-		var exportFilters []PrefixFilter
-		_, ipNet, err = net.ParseCIDR("200.0.0.0/10")
-		if err != nil {
-			t.Fatal()
-		}
-		f = PrefixFilter{
-			Action: PrefixFilterActionPermit,
-			Prefix: *ipNet,
-			GeMask: &eleven,
-			LeMask: &thirteen,
-		}
-		exportFilters = append(exportFilters, f)
-		_, ipNet, err = net.ParseCIDR("200.64.0.0/10")
-		if err != nil {
-			t.Fatal()
-		}
-		f = PrefixFilter{
-			Action: PrefixFilterActionDeny,
-			Prefix: *ipNet,
-			GeMask: &twelve,
-			LeMask: &fourteen,
-		}
-		exportFilters = append(exportFilters, f)
-		_, ipNet, err = net.ParseCIDR("200.128.0.0/10")
-		if err != nil {
-			t.Fatal()
-		}
-		f = PrefixFilter{
-			Action: PrefixFilterActionDeny,
-			Prefix: *ipNet,
-			GeMask: &twelve,
-		}
-		exportFilters = append(exportFilters, f)
-		_, ipNet, err = net.ParseCIDR("200.192.0.0/10")
-		if err != nil {
-			t.Fatal()
-		}
-		f = PrefixFilter{
-			Action: PrefixFilterActionDeny,
-			Prefix: *ipNet,
-			LeMask: &fourteen,
-		}
-		exportFilters = append(exportFilters, f)
+			var exportFilters []PrefixFilter
+			_, ipNet, err = net.ParseCIDR("200.0.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionPermit,
+				Prefix: *ipNet,
+				GeMask: &eleven,
+				LeMask: &thirteen,
+			}
+			exportFilters = append(exportFilters, f)
+			_, ipNet, err = net.ParseCIDR("200.64.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionDeny,
+				Prefix: *ipNet,
+				GeMask: &twelve,
+				LeMask: &fourteen,
+			}
+			exportFilters = append(exportFilters, f)
+			_, ipNet, err = net.ParseCIDR("200.128.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionDeny,
+				Prefix: *ipNet,
+				GeMask: &twelve,
+			}
+			exportFilters = append(exportFilters, f)
+			_, ipNet, err = net.ParseCIDR("200.192.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionDeny,
+				Prefix: *ipNet,
+				LeMask: &fourteen,
+			}
+			exportFilters = append(exportFilters, f)
 
-		randStr := randString(5, "hex")
-		policyData := &DcRoutingPolicyData{
-			Label:        "test-label-" + randStr,
-			Description:  "test-description-" + randStr,
-			PolicyType:   DcRoutingPolicyTypeUser,
-			ImportPolicy: DcRoutingPolicyImportPolicyAll,
-			ExportPolicy: DcRoutingExportPolicy{
-				StaticRoutes:         false,
-				Loopbacks:            false,
-				SpineSuperspineLinks: false,
-				L3EdgeServerLinks:    false,
-				SpineLeafLinks:       false,
-				L2EdgeSubnets:        false,
-			},
-			ExpectDefaultIpv4Route: false,
-			ExpectDefaultIpv6Route: false,
-			AggregatePrefixes:      aggregatePrefixes,
-			ExtraImportRoutes:      importFilters,
-			ExtraExportRoutes:      exportFilters,
-		}
+			randStr := randString(5, "hex")
+			policyData := &DcRoutingPolicyData{
+				Label:        "test-label-" + randStr,
+				Description:  "test-description-" + randStr,
+				PolicyType:   DcRoutingPolicyTypeUser,
+				ImportPolicy: DcRoutingPolicyImportPolicyAll,
+				ExportPolicy: DcRoutingExportPolicy{
+					StaticRoutes:         false,
+					Loopbacks:            false,
+					SpineSuperspineLinks: false,
+					L3EdgeServerLinks:    false,
+					SpineLeafLinks:       false,
+					L2EdgeSubnets:        false,
+				},
+				ExpectDefaultIpv4Route: false,
+				ExpectDefaultIpv6Route: false,
+				AggregatePrefixes:      aggregatePrefixes,
+				ExtraImportRoutes:      importFilters,
+				ExtraExportRoutes:      exportFilters,
+			}
 
-		log.Printf("testing CreateRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policyId, err := bpClient.CreateRoutingPolicy(ctx, policyData)
-		if err != nil {
-			t.Fatal(err)
-		}
+			log.Printf("testing CreateRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			policyId, err := bpClient.CreateRoutingPolicy(ctx, policyData)
+			require.NoError(t, err)
+			log.Printf("testing GetRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			policy, err := bpClient.GetRoutingPolicy(ctx, policyId)
+			require.NoError(t, err)
+			if policy.Id != policyId {
+				t.Fatalf("policy IDs don't match %q vs. %q", policy.Id, policyId)
+			}
+			compareDcRoutingPolicyData(t, policyData, policy.Data)
 
-		log.Printf("testing GetRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policy, err := bpClient.GetRoutingPolicy(ctx, policyId)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if policy.Id != policyId {
-			t.Fatalf("policy IDs don't match %q vs. %q", policy.Id, policyId)
-		}
-		compareDcRoutingPolicyData(t, policyData, policy.Data)
+			log.Printf("testing GetRoutingPolicyByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			policy, err = bpClient.GetRoutingPolicyByName(ctx, policy.Data.Label)
+			require.NoError(t, err)
+			if policy.Id != policyId {
+				t.Fatalf("policy IDs don't match %q vs. %q", policy.Id, policyId)
+			}
+			compareDcRoutingPolicyData(t, policyData, policy.Data)
 
-		log.Printf("testing GetRoutingPolicyByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policy, err = bpClient.GetRoutingPolicyByName(ctx, policy.Data.Label)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if policy.Id != policyId {
-			t.Fatalf("policy IDs don't match %q vs. %q", policy.Id, policyId)
-		}
-		compareDcRoutingPolicyData(t, policyData, policy.Data)
+			log.Printf("testing GetAllRoutingPolicies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			policies, err := bpClient.GetAllRoutingPolicies(ctx)
+			require.NoError(t, err)
+			if len(policies) != 2 {
+				t.Fatalf("expected 2 policies, got %d", len(policies))
+			}
 
-		log.Printf("testing GetAllRoutingPolicies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policies, err := bpClient.GetAllRoutingPolicies(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(policies) != 2 {
-			t.Fatalf("expected 2 policies, got %d", len(policies))
-		}
+			if policies[0].Data.PolicyType != DcRoutingPolicyTypeDefault && policies[1].Data.PolicyType != DcRoutingPolicyTypeDefault {
+				t.Fatalf("neither policy has type %q, got %q and %q",
+					DcRoutingPolicyTypeDefault, policies[0].Data.PolicyType.String(), policies[1].Data.PolicyType.String())
+			}
 
-		if policies[0].Data.PolicyType != DcRoutingPolicyTypeDefault && policies[1].Data.PolicyType != DcRoutingPolicyTypeDefault {
-			t.Fatalf("neither policy has type %q, got %q and %q",
-				DcRoutingPolicyTypeDefault, policies[0].Data.PolicyType.String(), policies[1].Data.PolicyType.String())
-		}
+			if policies[0].Data.PolicyType != DcRoutingPolicyTypeUser && policies[1].Data.PolicyType != DcRoutingPolicyTypeUser {
+				t.Fatalf("neither policy has type %q, got %q and %q",
+					DcRoutingPolicyTypeUser, policies[0].Data.PolicyType.String(), policies[1].Data.PolicyType.String())
+			}
 
-		if policies[0].Data.PolicyType != DcRoutingPolicyTypeUser && policies[1].Data.PolicyType != DcRoutingPolicyTypeUser {
-			t.Fatalf("neither policy has type %q, got %q and %q",
-				DcRoutingPolicyTypeUser, policies[0].Data.PolicyType.String(), policies[1].Data.PolicyType.String())
-		}
+			if policies[0].Id != defaultPolicy.Id && policies[1].Id != defaultPolicy.Id {
+				t.Fatalf("neither policy has ID %q, got %q and %q",
+					defaultPolicy.Id, policies[0].Id.String(), policies[1].Id.String())
+			}
 
-		if policies[0].Id != defaultPolicy.Id && policies[1].Id != defaultPolicy.Id {
-			t.Fatalf("neither policy has ID %q, got %q and %q",
-				defaultPolicy.Id, policies[0].Id.String(), policies[1].Id.String())
-		}
+			if policies[0].Id != policy.Id && policies[1].Id != policy.Id {
+				t.Fatalf("neither policy has ID %q, got %q and %q",
+					policy.Id, policies[0].Id.String(), policies[1].Id.String())
+			}
 
-		if policies[0].Id != policy.Id && policies[1].Id != policy.Id {
-			t.Fatalf("neither policy has ID %q, got %q and %q",
-				policy.Id, policies[0].Id.String(), policies[1].Id.String())
-		}
+			_, ipNet, err = net.ParseCIDR("110.0.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionPermit,
+				Prefix: *ipNet,
+				GeMask: &eleven,
+				LeMask: &thirteen,
+			}
 
-		_, ipNet, err = net.ParseCIDR("110.0.0.0/10")
-		f = PrefixFilter{
-			Action: PrefixFilterActionPermit,
-			Prefix: *ipNet,
-			GeMask: &eleven,
-			LeMask: &thirteen,
-		}
-		if err != nil {
-			t.Fatal()
-		}
-		importFilters = append(importFilters, f)
-		_, ipNet, err = net.ParseCIDR("110.32.0.0/10")
-		f = PrefixFilter{
-			Action: PrefixFilterActionDeny,
-			Prefix: *ipNet,
-			GeMask: &twelve,
-			LeMask: &fourteen,
-		}
-		if err != nil {
-			t.Fatal()
-		}
-		importFilters = append(importFilters, f)
+			importFilters = append(importFilters, f)
+			_, ipNet, err = net.ParseCIDR("110.32.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionDeny,
+				Prefix: *ipNet,
+				GeMask: &twelve,
+				LeMask: &fourteen,
+			}
 
-		_, ipNet, err = net.ParseCIDR("210.0.0.0/10")
-		f = PrefixFilter{
-			Action: PrefixFilterActionPermit,
-			Prefix: *ipNet,
-			GeMask: &eleven,
-			LeMask: &thirteen,
-		}
-		if err != nil {
-			t.Fatal()
-		}
-		exportFilters = append(exportFilters, f)
-		_, ipNet, err = net.ParseCIDR("210.32.0.0/10")
-		f = PrefixFilter{
-			Action: PrefixFilterActionDeny,
-			Prefix: *ipNet,
-			GeMask: &twelve,
-			LeMask: &fourteen,
-		}
-		if err != nil {
-			t.Fatal()
-		}
-		exportFilters = append(exportFilters, f)
+			importFilters = append(importFilters, f)
+			_, ipNet, err = net.ParseCIDR("210.0.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionPermit,
+				Prefix: *ipNet,
+				GeMask: &eleven,
+				LeMask: &thirteen,
+			}
 
-		randStr = randString(5, "hex")
-		policyData.Label = "test-label-" + randStr
-		policyData.Description = "test-description-" + randStr
-		policyData.ExpectDefaultIpv4Route = true
-		policyData.ExpectDefaultIpv6Route = true
-		policyData.ExtraImportRoutes = importFilters
-		policyData.ExtraExportRoutes = exportFilters
-		policyData.ImportPolicy = DcRoutingPolicyImportPolicyDefaultOnly
-		policyData.ExportPolicy = DcRoutingExportPolicy{
-			StaticRoutes:         true,
-			Loopbacks:            true,
-			SpineSuperspineLinks: true,
-			L3EdgeServerLinks:    true,
-			SpineLeafLinks:       true,
-			L2EdgeSubnets:        true,
-		}
+			exportFilters = append(exportFilters, f)
+			_, ipNet, err = net.ParseCIDR("210.32.0.0/10")
+			require.NoError(t, err)
+			f = PrefixFilter{
+				Action: PrefixFilterActionDeny,
+				Prefix: *ipNet,
+				GeMask: &twelve,
+				LeMask: &fourteen,
+			}
+			exportFilters = append(exportFilters, f)
 
-		log.Printf("testing UpdateRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.UpdateRoutingPolicy(ctx, policy.Id, policyData)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing GetRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		updatedPolicy, err := bpClient.GetRoutingPolicy(ctx, policy.Id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		compareDcRoutingPolicyData(t, policyData, updatedPolicy.Data)
+			randStr = randString(5, "hex")
+			policyData.Label = "test-label-" + randStr
+			policyData.Description = "test-description-" + randStr
+			policyData.ExpectDefaultIpv4Route = true
+			policyData.ExpectDefaultIpv6Route = true
+			policyData.ExtraImportRoutes = importFilters
+			policyData.ExtraExportRoutes = exportFilters
+			policyData.ImportPolicy = DcRoutingPolicyImportPolicyDefaultOnly
+			policyData.ExportPolicy = DcRoutingExportPolicy{
+				StaticRoutes:         true,
+				Loopbacks:            true,
+				SpineSuperspineLinks: true,
+				L3EdgeServerLinks:    compatibility.RoutingPolicyExportHasL3EdgeLinks.Check(bpClient.client.apiVersion),
+				SpineLeafLinks:       true,
+				L2EdgeSubnets:        true,
+			}
 
-		log.Printf("testing DeleteRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.DeleteRoutingPolicy(ctx, policy.Id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing GetAllRoutingPolicies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		policies, err = bpClient.GetAllRoutingPolicies(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(policies) != 1 {
-			t.Fatalf("expected 1 policies, got %d", len(policies))
-		}
-		if policies[0].Id != defaultPolicy.Id {
-			t.Fatalf("surviving policy ID %q does not match previously noted default policy ID %q", policies[0].Id, defaultPolicy.Id)
-		}
+			log.Printf("testing UpdateRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			require.NoError(t, bpClient.UpdateRoutingPolicy(ctx, policy.Id, policyData))
+
+			log.Printf("testing GetRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			updatedPolicy, err := bpClient.GetRoutingPolicy(ctx, policy.Id)
+			require.NoError(t, err)
+			compareDcRoutingPolicyData(t, policyData, updatedPolicy.Data)
+
+			log.Printf("testing DeleteRoutingPolicy() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.DeleteRoutingPolicy(ctx, policy.Id)
+			require.NoError(t, err)
+			log.Printf("testing GetAllRoutingPolicies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			policies, err = bpClient.GetAllRoutingPolicies(ctx)
+			require.NoError(t, err)
+			if len(policies) != 1 {
+				t.Fatalf("expected 1 policies, got %d", len(policies))
+			}
+			if policies[0].Id != defaultPolicy.Id {
+				t.Fatalf("surviving policy ID %q does not match previously noted default policy ID %q", policies[0].Id, defaultPolicy.Id)
+			}
+		})
 	}
 }
 
