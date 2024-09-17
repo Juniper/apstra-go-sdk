@@ -68,17 +68,25 @@ func TestQueryMetricdb(t *testing.T) {
 
 	for clientName, client := range clients {
 		log.Printf("testing getMetricdbMetrics() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		metrics, err := client.client.getMetricdbMetrics(ctx)
+		metrics, err := client.client.GetMetricdbMetrics(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
 
+		for i := len(metrics) - 1; i >= 0; i-- {
+			if metrics[i].Application == "audit" {
+				// we cannot use these for some reason...
+				metrics[i] = metrics[len(metrics)-1]
+				metrics = metrics[:len(metrics)-1]
+			}
+		}
+
 		var result *MetricDbQueryResponse
-		if len(metrics.Items) > 0 { // do not call rand.Intn() with '0'
-			i := rand.Intn(len(metrics.Items))
-			log.Printf("randomly requesting metric %q (%d) of %d available", metrics.Items[i], i, len(metrics.Items))
+		if len(metrics) > 0 { // do not call rand.Intn() with '0'
+			i := rand.Intn(len(metrics))
+			log.Printf("randomly requesting metric %q (%d) of %d available", metrics[i], i, len(metrics))
 			q := MetricDbQueryRequest{
-				metric: metrics.Items[i],
+				metric: metrics[i],
 				begin:  time.Now().Add(-time.Hour),
 				end:    time.Now(),
 			}
