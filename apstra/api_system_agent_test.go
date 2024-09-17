@@ -7,6 +7,9 @@ import (
 	"context"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
@@ -21,8 +24,8 @@ func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
 			t.Fatal(err)
 		}
 		// initial fetch
-		log.Printf("testing getSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		mgrCfg, err := client.client.getSystemAgentManagerConfig(context.Background())
+		log.Printf("testing GetSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		mgrCfg, err := client.client.GetSystemAgentManagerConfig(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -31,35 +34,36 @@ func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
 		testCfg := &SystemAgentManagerConfig{
 			SkipRevertToPristineOnUninstall: !mgrCfg.SkipRevertToPristineOnUninstall,
 			SkipPristineValidation:          !mgrCfg.SkipPristineValidation,
+			SkipInterfaceShutdownOnUpgrade:  !mgrCfg.SkipInterfaceShutdownOnUpgrade,
 		}
 
 		// set new config
-		log.Printf("testing setSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.setSystemAgentManagerConfig(context.Background(), testCfg)
-		if err != nil {
-			t.Fatal(err)
+		log.Printf("testing SetSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.SetSystemAgentManagerConfig(context.Background(), testCfg)
+		if !compatibility.SystemManagerHasSkipInterfaceShutdownOnUpgrade.Check(client.client.apiVersion) {
+			require.Error(t, err)
+			log.Printf("apstra %s refused to run with SkipInterfaceShutdownOnUpgrade set to %t", client.client.apiVersion, testCfg.SkipInterfaceShutdownOnUpgrade)
+
+			testCfg.SkipInterfaceShutdownOnUpgrade = false
+			err = client.client.SetSystemAgentManagerConfig(context.Background(), testCfg)
 		}
+		require.NoError(t, err)
 
 		// fetch new config
-		log.Printf("testing getSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		testCfgRetrieved, err := client.client.getSystemAgentManagerConfig(context.Background())
+		log.Printf("testing GetSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		testCfgRetrieved, err := client.client.GetSystemAgentManagerConfig(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		// validate field as expected
-		if testCfgRetrieved.SkipPristineValidation != testCfg.SkipPristineValidation {
-			t.Fatalf("error setting skip pristine validation")
-		}
-
-		// validate field as expected
-		if testCfgRetrieved.SkipRevertToPristineOnUninstall != testCfg.SkipRevertToPristineOnUninstall {
-			t.Fatalf("error setting skip revert to pristine on uninstall")
-		}
+		require.Equal(t, testCfg.SkipPristineValidation, testCfgRetrieved.SkipPristineValidation)
+		require.Equal(t, testCfg.SkipInterfaceShutdownOnUpgrade, testCfgRetrieved.SkipInterfaceShutdownOnUpgrade)
+		require.Equal(t, testCfg.SkipRevertToPristineOnUninstall, testCfgRetrieved.SkipRevertToPristineOnUninstall)
 
 		// reset to original configuration
-		log.Printf("testing setSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.setSystemAgentManagerConfig(context.Background(), mgrCfg)
+		log.Printf("testing SetSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+		err = client.client.SetSystemAgentManagerConfig(context.Background(), mgrCfg)
 		if err != nil {
 			t.Fatal(err)
 		}
