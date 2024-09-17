@@ -27,4 +27,7 @@ var (
 		considerPreReleaseLabel: true,
 		permitAny:               true,
 	}
+	SystemManagerHasSkipInterfaceShutdownOnUpgrade = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	}
 )
