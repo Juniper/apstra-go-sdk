@@ -5,9 +5,10 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 )
 
 func TestIbaWidgets(t *testing.T) {
