@@ -25,7 +25,7 @@ func TestGetSetGetFAP(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		if compatibility.GeApstra421.Check(client.client.apiVersion) {
+		if compatibility.FabricSettingsApiOk.Check(client.client.apiVersion) {
 			continue
 		}
 
