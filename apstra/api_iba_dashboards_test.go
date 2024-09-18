@@ -24,7 +24,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
 			t.Parallel()
 
-			if compatibility.GeApstra500.Check(client.client.apiVersion) {
+			if !compatibility.IbaDashboardSupported.Check(client.client.apiVersion) {
 				t.Skipf("skipping test due to unsupported API changes in %s", client.client.apiVersion)
 			}
 
