@@ -7,9 +7,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 
 	"github.com/stretchr/testify/require"
 )
