@@ -16,6 +16,9 @@ var (
 	FabricSettingsApiOk = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
 	}
+	IbaProbeSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
+	}
 	IbaWidgetSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
 	}

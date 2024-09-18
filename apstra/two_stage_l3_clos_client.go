@@ -792,44 +792,95 @@ func (o *TwoStageL3ClosClient) DeleteIbaWidget(ctx context.Context, id ObjectId)
 // InstantiateIbaPredefinedProbe instantiates a predefined probe using the name and properties specified in data
 // and returns the id of the created probe on success, or a blank and error on failure.
 func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedProbe(ctx context.Context, data *IbaPredefinedProbeRequest) (ObjectId, error) {
+	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
+		return "", ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
+		}
+	}
+
 	return o.client.instantiatePredefinedIbaProbe(ctx, o.blueprintId, data)
 }
 
 // GetAllIbaPredefinedProbes lists all the Predefined IBA probes available to a blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaPredefinedProbes(ctx context.Context) ([]IbaPredefinedProbe, error) {
+	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
+		return nil, ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
+		}
+	}
+
 	return o.client.getAllIbaPredefinedProbes(ctx, o.blueprintId)
 }
 
 // GetIbaPredefinedProbeByName locates a predefined probe by name
 func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe, error) {
+	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
+		return nil, ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
+		}
+	}
+
 	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
 }
 
 // GetIbaProbe returns the IBA Probe that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaProbe(ctx context.Context, id ObjectId) (*IbaProbe, error) {
+	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
+		return nil, ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
+		}
+	}
+
 	probe, err := o.client.getIbaProbe(ctx, o.blueprintId, id)
 	if err != nil {
 		return nil, err
 	}
+
 	return probe, err
 }
 
 // GetIbaProbeState returns the State of the IBA Probe that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaProbeState(ctx context.Context, id ObjectId) (*IbaProbeState, error) {
+	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
+		return nil, ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
+		}
+	}
+
 	probe, err := o.client.getIbaProbeState(ctx, o.blueprintId, id)
 	if err != nil {
 		return nil, err
 	}
+
 	return probe, err
 }
 
 // DeleteIbaProbe deletes an IBA Probe
 func (o *TwoStageL3ClosClient) DeleteIbaProbe(ctx context.Context, id ObjectId) error {
+	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
+		return ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
+		}
+	}
+
 	return o.client.deleteIbaProbe(ctx, o.blueprintId, id)
 }
 
 // CreateIbaProbeFromJson creates an IBA Probe
 func (o *TwoStageL3ClosClient) CreateIbaProbeFromJson(ctx context.Context, probeJson json.RawMessage) (ObjectId, error) {
+	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
+		return "", ClientErr{
+			errType: ErrCompatibility,
+			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
+		}
+	}
+
 	return o.client.createIbaProbeFromJson(ctx, o.blueprintId, probeJson)
 }
 

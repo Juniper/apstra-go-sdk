@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"log"
 	"testing"
 
@@ -352,6 +353,11 @@ func TestIbaProbes(t *testing.T) {
 		clientName, client := clientName, client
 		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
 			t.Parallel()
+
+			if !compatibility.IbaProbeSupported.Check(client.client.apiVersion) ||
+				!compatibility.IbaWidgetSupported.Check(client.client.apiVersion) {
+				t.Skip()
+			}
 
 			log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 

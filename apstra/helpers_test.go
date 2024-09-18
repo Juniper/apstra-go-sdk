@@ -270,6 +270,8 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	})
 	require.NoError(t, err)
 
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
 
