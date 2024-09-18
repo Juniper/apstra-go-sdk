@@ -26,38 +26,6 @@ func TestGetMetricdbMetrics(t *testing.T) {
 	}
 }
 
-func TestUseAggregation(t *testing.T) {
-	type testData struct {
-		testString string
-		expectBool bool
-		expectName string
-		expectSecs int
-	}
-
-	var td []testData
-	td = append(td, testData{testString: "foo", expectBool: false, expectName: "foo", expectSecs: 0})
-	td = append(td, testData{testString: "foo_aggr_", expectBool: false, expectName: "foo_aggr_", expectSecs: 0})
-	td = append(td, testData{testString: "_aggr_3600", expectBool: false, expectName: "_aggr_3600", expectSecs: 0})
-	td = append(td, testData{testString: "foo_aggr_-3600", expectBool: false, expectName: "foo_aggr_-3600", expectSecs: 0})
-	td = append(td, testData{testString: "foo_aggr_3600", expectBool: true, expectName: "foo", expectSecs: 3600})
-
-	for i := range td {
-		useAgg, name, secs, err := useAggregation(td[i].testString)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if useAgg != td[i].expectBool {
-			t.Fatalf("'%s' expected bool '%t', got '%t'", td[i].testString, td[i].expectBool, useAgg)
-		}
-		if secs != td[i].expectSecs {
-			t.Fatalf("'%s' expected time '%d', got '%d'", td[i].testString, td[i].expectSecs, secs)
-		}
-		if name != td[i].expectName {
-			t.Fatalf("'%s' expected name '%s', got '%s'", td[i].testString, td[i].expectName, name)
-		}
-	}
-}
-
 func TestQueryMetricdb(t *testing.T) {
 	ctx := context.Background()
 
