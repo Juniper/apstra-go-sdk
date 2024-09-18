@@ -191,7 +191,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 	}
 }
 
-func TestGetNodes(t *testing.T) {
+func TestGetDcNodes(t *testing.T) {
 	ctx := context.Background()
 	clients, err := getTestClients(ctx, t)
 	if err != nil {
