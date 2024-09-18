@@ -125,7 +125,7 @@ func (o *cloudlabsTopology) selfUpdate(ctx context.Context) error {
 	return nil
 }
 
-func (o *cloudlabsTopology) getGoapstraClientCfg(ctx context.Context) (*ClientCfg, error) {
+func (o *cloudlabsTopology) getClientCfg(ctx context.Context) (*ClientCfg, error) {
 	if o.State != "up" {
 		err := o.selfUpdate(ctx)
 		if err != nil {
@@ -161,8 +161,8 @@ func (o *cloudlabsTopology) getGoapstraClientCfg(ctx context.Context) (*ClientCf
 	}, nil
 }
 
-func (o *cloudlabsTopology) getGoapstraClient(ctx context.Context) (*Client, error) {
-	cfg, err := o.getGoapstraClientCfg(ctx)
+func (o *cloudlabsTopology) getClient(ctx context.Context) (*Client, error) {
+	cfg, err := o.getClientCfg(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +266,7 @@ func getCloudlabsTestClientCfgs(ctx context.Context) (map[string]testClientCfg, 
 		if err != nil {
 			return nil, err
 		}
-		cfg, err := topology.getGoapstraClientCfg(ctx)
+		cfg, err := topology.getClientCfg(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -312,7 +312,7 @@ func TestGetCloudlabsClients(t *testing.T) {
 	}
 
 	for _, topology := range topologies {
-		client, err := topology.getGoapstraClient(ctx)
+		client, err := topology.getClient(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}

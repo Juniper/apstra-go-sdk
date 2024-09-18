@@ -26,20 +26,20 @@ type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.
 	AntiAffinityPolicy                    *AntiAffinityPolicy     // /anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy
 	DefaultSviL3Mtu                       *uint16                 // virtual_network_policy node	not supported					not supported					not supported.
 	EsiMacMsb                             *uint8                  // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
-	EvpnGenerateType5HostRoutes           *enum.FeatureSwitchEnum // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	EvpnGenerateType5HostRoutes           *enum.FeatureSwitch     // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
 	ExternalRouterMtu                     *uint16                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
 	FabricL3Mtu                           *uint16                 // /fabric-addressing-policy		not supported					not supported					not supported
 	Ipv6Enabled                           *bool                   // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
 	JunosEvpnDuplicateMacRecoveryTime     *uint16                 // virtual_network_policy node	not supported					not supported					not supported
-	JunosEvpnMaxNexthopAndInterfaceNumber *enum.FeatureSwitchEnum // virtual_network_policy node	not supported					not supported					not supported
-	JunosEvpnRoutingInstanceVlanAware     *enum.FeatureSwitchEnum // virtual_network_policy node	not supported					not supported					not supported
-	JunosExOverlayEcmp                    *enum.FeatureSwitchEnum // virtual_network_policy node	not supported					not supported					not supported
-	JunosGracefulRestart                  *enum.FeatureSwitchEnum // virtual_network_policy node	not supported					not supported					not supported
+	JunosEvpnMaxNexthopAndInterfaceNumber *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
+	JunosEvpnRoutingInstanceVlanAware     *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
+	JunosExOverlayEcmp                    *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
+	JunosGracefulRestart                  *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
 	MaxEvpnRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
 	MaxExternalRoutes                     *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
 	MaxFabricRoutes                       *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
 	MaxMlagRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	OptimiseSzFootprint                   *enum.FeatureSwitchEnum // security_zone_policy node		not supported					not supported					not supported
+	OptimiseSzFootprint                   *enum.FeatureSwitch     // security_zone_policy node		not supported					not supported					not supported
 	OverlayControlProtocol                *OverlayControlProtocol // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
 	SpineLeafLinks                        *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
 	SpineSuperspineLinks                  *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
@@ -53,7 +53,7 @@ func (o FabricSettings) raw() *rawFabricSettings {
 
 	var jeriType *string
 	if o.JunosEvpnRoutingInstanceVlanAware != nil {
-		if o.JunosEvpnRoutingInstanceVlanAware.String() == enum.FeatureSwitchEnumEnabled.String() {
+		if o.JunosEvpnRoutingInstanceVlanAware.String() == enum.FeatureSwitchEnabled.String() {
 			jeriType = toPtr(junosEvpnRoutingInstanceTypeVlanAware.Value)
 		} else {
 			jeriType = toPtr(junosEvpnRoutingInstanceTypeDefault.Value)
@@ -150,16 +150,16 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 		}
 	}
 
-	var junosEvpnRoutingInstanceVlanAware *enum.FeatureSwitchEnum
+	var junosEvpnRoutingInstanceVlanAware *enum.FeatureSwitch
 	if o.JunosEvpnRoutingInstanceType != nil {
 		x := junosEvpnRoutingInstanceTypes.Parse(*o.JunosEvpnRoutingInstanceType)
 		if x == nil {
 			return nil, fmt.Errorf("failed to parse junos_evpn_routing_instance_type value %q", *o.JunosEvpnRoutingInstanceType)
 		}
 		if *x == junosEvpnRoutingInstanceTypeDefault {
-			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchEnumDisabled
+			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchDisabled
 		} else {
-			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchEnumEnabled
+			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchEnabled
 		}
 	}
 

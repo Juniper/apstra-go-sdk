@@ -44,7 +44,7 @@ func (o *Client) getFeatures(ctx context.Context) error {
 		}
 
 		// Parse the map value (feature status). This should always be "enabled" or "disabled".
-		var status enum.FeatureSwitchEnum
+		var status enum.FeatureSwitch
 		err = status.FromString(s.Status)
 		if err != nil {
 			return err
@@ -52,9 +52,9 @@ func (o *Client) getFeatures(ctx context.Context) error {
 
 		// Add the feature status to the o.features map
 		switch status {
-		case enum.FeatureSwitchEnumEnabled:
+		case enum.FeatureSwitchEnabled:
 			o.features[feature] = true
-		case enum.FeatureSwitchEnumDisabled:
+		case enum.FeatureSwitchDisabled:
 			o.features[feature] = false
 		default:
 			return fmt.Errorf("status for feature %q has unknown value %q", feature, status)

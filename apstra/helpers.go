@@ -95,11 +95,11 @@ func stringerPtrToStringPtr(in fmt.Stringer) *string {
 	return toPtr(in.String())
 }
 
-func featureSwitchEnumFromStringPtr(in *string) *enum.FeatureSwitchEnum {
+func featureSwitchEnumFromStringPtr(in *string) *enum.FeatureSwitch {
 	if in == nil {
 		return nil
 	}
-	return enum.FeatureSwitchEnums.Parse(*in)
+	return enum.FeatureSwitches.Parse(*in)
 }
 
 func isv4(ip net.IP) bool {

@@ -3,9 +3,7 @@ package apstra
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -74,35 +72,38 @@ type MetricDbQueryResponse struct {
 }
 
 func (o *Client) getMetricdbMetrics(ctx context.Context) (*metricdbMetricResponse, error) {
-	apstraUrl, err := url.Parse(apiUrlMetricdbMetric)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
-	}
-	response := &metricdbMetricResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	var response metricdbMetricResponse
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		url:         apstraUrl,
-		apiResponse: response,
+		urlStr:      apiUrlMetricdbMetric,
+		apiResponse: &response,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return &response, nil
 }
 
 func (o *Client) queryMetricdb(ctx context.Context, begin, end time.Time, metric MetricdbMetric) (*MetricDbQueryResponse, error) {
-	apstraUrl, err := url.Parse(apiUrlMetricdbQuery)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersion, err)
-	}
-	response := &MetricDbQueryResponse{}
-	q := metricdbQuery{
-		Application: metric.Application,
-		Namespace:   metric.Namespace,
-		Name:        metric.Name,
-		BeginTime:   begin,
-		EndTime:     end,
-	}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		url:         apstraUrl,
-		apiInput:    q,
-		apiResponse: response,
+	var response MetricDbQueryResponse
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodPost,
+		urlStr: apiUrlMetricdbQuery,
+		apiInput: metricdbQuery{
+			Application: metric.Application,
+			Namespace:   metric.Namespace,
+			Name:        metric.Name,
+			BeginTime:   begin,
+			EndTime:     end,
+		},
+		apiResponse: &response,
 	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	return &response, nil
 }
