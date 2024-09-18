@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -109,22 +106,4 @@ func (o *Client) queryMetricdb(ctx context.Context, begin, end time.Time, metric
 	}
 
 	return &response, nil
-}
-
-func useAggregation(in string) (bool, string, int, error) {
-	aggrWriter, err := regexp.MatchString(aggrWriterRegex, in)
-	if err != nil {
-		return false, "", 0, err
-	}
-	if !aggrWriter {
-		return false, in, 0, nil
-	}
-
-	split := strings.Split(in, aggrWriterSplit)
-	seconds, err := strconv.Atoi(split[1])
-	if err != nil {
-		return false, "", 0, err
-	}
-
-	return true, split[0], seconds, nil
 }
