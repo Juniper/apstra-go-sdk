@@ -40,12 +40,12 @@ func TestTelemetryServiceRegistry(t *testing.T) {
           	},
 			"key": {
             "required": [
-              "interface",
-              "supplicant_mac",
               "authenticated_vlan",
               "authorization_status",
+              "fallback_vlan_active",
+              "interface",
               "port_status",
-              "fallback_vlan_active"
+              "supplicant_mac"
             ],
             "type": "object",
             "properties": {
@@ -99,7 +99,7 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 		require.NoError(t, err)
 
 		log.Println(pentry)
-		require.JSONEq(t, string(pentry.ApplicationSchema), string(entry.ApplicationSchema))
+		require.JSONEqf(t, string(pentry.ApplicationSchema), string(entry.ApplicationSchema), "expected: %s\nactual: %s", string(pentry.ApplicationSchema), string(entry.ApplicationSchema))
 
 		schema = `{
         "required": ["key","value"],

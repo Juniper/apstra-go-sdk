@@ -34,10 +34,6 @@ func TestSetGetResourceAllocation(t *testing.T) {
 			bpWait := sync.WaitGroup{}
 			bpWait.Add(1)
 			bpClient := testBlueprintB(ctx, t, client.client)
-			defer func() {
-				require.NoError(t, client.client.DeleteBlueprint(ctx, bpClient.Id()))
-				bpWait.Done() // signal that blueprint is deleted so that ASN pools can be removed
-			}()
 
 			poolIds := make([]ObjectId, poolCount)
 			for i := range poolIds {
