@@ -1,144 +1,94 @@
 //go:build integration
-// +build integration
 
 package apstra
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log"
-	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 // TestLockUnlockBlueprintMutex is a simple test of Lock() followed by Unlock()
 func TestLockUnlockBlueprintMutex(t *testing.T) {
+	ctx := context.Background()
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
 
-	bpName := randString(5, "hex")
 	for clientName, client := range clients {
-		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      bpName,
-			TemplateId: "L3_Collapsed_ESI",
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+
+			bp := testBlueprintA(ctx, t, client.client)
+
+			err = bp.Mutex.SetMessage("locked by apstra test")
+			require.NoError(t, err)
+
+			log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bp.Mutex.Lock(ctx)
+			require.NoError(t, err)
+
+			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bp.Mutex.Unlock(ctx)
+			require.NoError(t, err)
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bp, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = bp.Mutex.SetMessage("locked by apstra test")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bp.Mutex.Lock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bp.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
 
 // TestLockLockUnlockBlueprintMutex tests locking an already-locked Mutex,
 // verifies that we hit context expiration
 func TestLockLockUnlockBlueprintMutex(t *testing.T) {
+	ctx := context.Background()
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	bpName := randString(5, "hex")
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
 	for clientName, client := range clients {
-		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      bpName,
-			TemplateId: "L3_Collapsed_ESI",
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+
+			bpA := testBlueprintA(ctx, t, client.client)
+
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			bpB, err := client.client.NewTwoStageL3ClosClient(ctx, bpA.Id())
+			require.NoError(t, err)
+
+			err = bpA.Mutex.SetMessage("locked by test client A")
+			require.NoError(t, err)
+
+			err = bpB.Mutex.SetMessage("locked by test client B")
+			require.NoError(t, err)
+
+			log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Lock(ctx)
+			require.NoError(t, err)
+
+			start := time.Now()
+			timeout := 2 * time.Second
+			timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
+			defer cancel()
+
+			log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpB.Mutex.Lock(timeoutCtx)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "context deadline exceeded")
+
+			elapsed := time.Since(start)
+			require.Greaterf(t, elapsed, timeout, "we should have waited %s for lock, but only %s has elapsed", timeout, elapsed)
+
+			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Unlock(ctx)
+			require.NoError(t, err)
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = bpA.Mutex.SetMessage("locked by test client A")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = bpB.Mutex.SetMessage("locked by test client B")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Lock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		start := time.Now()
-		timeout := 2 * time.Second
-		timeoutCtx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.Lock(timeoutCtx)
-		if err != nil && !strings.Contains(err.Error(), "context deadline exceeded") {
-			t.Fatal(err)
-		}
-
-		elapsed := time.Since(start)
-		if elapsed < timeout {
-			t.Fatalf("we should have waited %s for lock, but only %s has elapsed", timeout.String(), elapsed.String())
-		}
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
 
@@ -146,337 +96,204 @@ func TestLockLockUnlockBlueprintMutex(t *testing.T) {
 // blueprint, then clearing the lock to un-block the 2nd lock attempt. It checks
 // to ensure that timing is works out as expected.
 func TestLockBlockUnlockLockUnlockBlueprintMutex(t *testing.T) {
+	ctx := context.Background()
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	bpName := randString(5, "hex")
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
 	for clientName, client := range clients {
-		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      bpName,
-			TemplateId: "L3_Collapsed_ESI",
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+
+			bpA := testBlueprintA(ctx, t, client.client)
+
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			bpB, err := client.client.NewTwoStageL3ClosClient(ctx, bpA.Id())
+			require.NoError(t, err)
+
+			err = bpA.Mutex.SetMessage("locked by client A")
+			require.NoError(t, err)
+
+			err = bpB.Mutex.SetMessage("locked by client B")
+			require.NoError(t, err)
+
+			log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Lock(ctx)
+			require.NoError(t, err)
+
+			timeout := 10 * time.Second
+			timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
+			defer cancel()
+
+			go func() {
+				delay := 2 * time.Second
+				log.Printf("Unlock scheduled for %s", time.Now().Add(delay))
+				time.Sleep(delay)
+				err = bpA.Mutex.Unlock(ctx)
+				require.NoError(t, err, "error unlocking blueprint")
+			}()
+
+			start := time.Now()
+			log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpB.Mutex.Lock(timeoutCtx)
+			require.NoError(t, err)
+
+			blocked := time.Since(start)
+			require.Greater(t, timeout, blocked, "unlock took longer than expected")
+			log.Printf("Blocked for %s waiting for lock to clear", blocked)
+
+			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpB.Mutex.Unlock(ctx)
+			require.NoError(t, err)
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = bpA.Mutex.SetMessage("locked by client A")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = bpB.Mutex.SetMessage("locked by client B")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Lock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		timeout := 10 * time.Second
-		timeoutCtx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		go func() {
-			delay := 2 * time.Second
-			log.Printf("Unlock scheduled for %s", time.Now().Add(delay))
-			time.Sleep(delay)
-			err = bpA.Mutex.Unlock(context.Background())
-			if err != nil {
-				t.Error("error unlocking blueprint")
-			}
-		}()
-
-		start := time.Now()
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.Lock(timeoutCtx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		blocked := time.Since(start)
-		if blocked > timeout {
-			t.Fatal("unlock took longer than expected")
-		}
-		log.Printf("Blocked for %s waiting for lock to clear", blocked)
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
 
 // TestLockTryLockBlueprintMutex verifies expected outcome when TryLock() is
 // attempted against a previously Lock()ed blueprint.
 func TestLockTryLockBlueprintMutex(t *testing.T) {
+	ctx := context.Background()
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	bpName := randString(5, "hex")
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
 	for clientName, client := range clients {
-		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      bpName,
-			TemplateId: "L3_Collapsed_ESI",
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+			bpA := testBlueprintA(ctx, t, client.client)
+
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			bpB, err := client.client.NewTwoStageL3ClosClient(ctx, bpA.Id())
+			require.NoError(t, err)
+
+			log.Print("testing SetMessage()")
+			err = bpA.Mutex.SetMessage("locked by client A")
+			require.NoError(t, err)
+
+			log.Print("testing SetMessage()")
+			err = bpB.Mutex.SetMessage("locked by client B")
+			require.NoError(t, err)
+
+			log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Lock(ctx)
+			require.NoError(t, err)
+
+			var mutexErr MutexErr
+			log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpB.Mutex.TryLock(ctx)
+			require.Error(t, err, "TryLock should have returned an error")
+			require.ErrorAs(t, err, &mutexErr, "TryLock should have returned a MutexErr")
+			require.Nil(t, mutexErr.LockInfo, "mutexErr's LockInfo should be nil")
+			require.NotNil(t, mutexErr.Mutex, "mutexErr's Mutex should not be nil")
+			require.Equal(t, mutexErr.Mutex.GetMessage(), bpA.Mutex.GetMessage(), "reason and original lock messages do not match")
+
+			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Unlock(ctx)
+			require.NoError(t, err)
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Print("testing SetMessage()")
-		err = bpA.Mutex.SetMessage("locked by client A")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Print("testing SetMessage()")
-		err = bpB.Mutex.SetMessage("locked by client B")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Lock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.TryLock(context.Background())
-		if err == nil {
-			t.Fatal("TryLock should have returned an error")
-		}
-		var mutexErr MutexErr
-		if !errors.As(err, &mutexErr) {
-			t.Fatal("TryLock should have returned a MutexErr")
-		} else {
-			log.Printf("got expected MutexErr: %s", mutexErr.Error())
-		}
-		if mutexErr.LockInfo != nil {
-			t.Fatal("mutexErr's LockInfo should be nil")
-		}
-		if mutexErr.Mutex == nil {
-			t.Fatal("mutexErr's Mutex should not be nil")
-		}
-		if mutexErr.Mutex.GetMessage() != bpA.Mutex.GetMessage() {
-			t.Fatal("reason and original lock messages do not match")
-		}
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
 
 // TestTryLockTryLockBlueprintMutex verifies expected outcome when TryLock() is
 // attempted against a previously TryLock()ed blueprint.
 func TestTryLockTryLockBlueprintMutex(t *testing.T) {
+	ctx := context.Background()
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	bpName := randString(5, "hex")
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
 	for clientName, client := range clients {
-		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      bpName,
-			TemplateId: "L3_Collapsed_ESI",
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+
+			bpA := testBlueprintA(ctx, t, client.client)
+
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			bpB, err := client.client.NewTwoStageL3ClosClient(ctx, bpA.Id())
+			require.NoError(t, err)
+
+			log.Print("testing SetMessage()")
+			err = bpA.Mutex.SetMessage("locked by client A")
+			require.NoError(t, err)
+
+			log.Print("testing SetMessage()")
+			err = bpB.Mutex.SetMessage("locked by client B")
+			require.NoError(t, err)
+
+			log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.TryLock(ctx)
+			require.NoError(t, err)
+
+			var mutexErr MutexErr
+			log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpB.Mutex.TryLock(ctx)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &mutexErr, "TryLock should have returned a MutexErr")
+			require.NotNil(t, mutexErr.Mutex, "TryLock returned a MutexErr with nil Mutex")
+			require.NotNil(t, mutexErr.LockInfo, "TryLock returned a MutexEerr with non-nil LockInfo")
+			require.Equal(t, mutexErr.Mutex.GetMessage(), bpA.Mutex.GetMessage(), "blocking mutex and original messages do not match")
+
+			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Unlock(ctx)
+			require.NotNil(t, err)
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Print("testing SetMessage()")
-		err = bpA.Mutex.SetMessage("locked by client A")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Print("testing SetMessage()")
-		err = bpB.Mutex.SetMessage("locked by client B")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.TryLock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.TryLock(context.Background())
-		if err == nil {
-			t.Fatal("TryLock should have returned an error")
-		}
-		var mutexErr MutexErr
-		if !errors.As(err, &mutexErr) {
-			t.Fatal("TryLock should have returned a MutexErr")
-		}
-		if mutexErr.Mutex == nil {
-			t.Fatal("TryLock returned a MutexErr with nil Mutex")
-		}
-		if mutexErr.LockInfo != nil {
-			t.Fatal("TryLock returned a MutexEerr with non-nil LockInfo")
-		}
-
-		if mutexErr.Mutex.GetMessage() != bpA.Mutex.GetMessage() {
-			t.Fatal("blocking mutex and original messages do not match")
-		}
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
 
 // TestLockBlockTrylockUnlLockTrylockBlueprintMutex ensures that TryLock() fails
 // against a locked blueprint, then succeeds after the lock is released.
 func TestLockUnlLockTrylockBlueprintMutex(t *testing.T) {
+	ctx := context.Background()
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	bpName := randString(5, "hex")
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
 	for clientName, client := range clients {
-		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      bpName,
-			TemplateId: "L3_Collapsed_ESI",
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+
+			bpA := testBlueprintA(ctx, t, client.client)
+
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			bpB, err := client.client.NewTwoStageL3ClosClient(ctx, bpA.Id())
+			require.NoError(t, err)
+
+			log.Print("testing SetMessage()")
+			err = bpA.Mutex.SetMessage("locked by client A")
+			require.NoError(t, err)
+
+			log.Print("testing SetMessage()")
+			err = bpB.Mutex.SetMessage("locked by client B")
+			require.NoError(t, err)
+
+			log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Lock(ctx)
+			require.NoError(t, err)
+
+			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Unlock(ctx)
+			require.NoError(t, err)
+
+			log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpB.Mutex.TryLock(ctx)
+			require.NoError(t, err)
+
+			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpB.Mutex.Unlock(ctx)
+			require.NoError(t, err)
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Print("testing SetMessage()")
-		err = bpA.Mutex.SetMessage("locked by client A")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Print("testing SetMessage()")
-		err = bpB.Mutex.SetMessage("locked by client B")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Lock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.TryLock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
 
@@ -484,115 +301,73 @@ func TestLockUnlLockTrylockBlueprintMutex(t *testing.T) {
 // TryLock() against a locked blueprint. It then calls various "write" methods
 // on that mutex to ensure they fail with the expected error type.
 func TestReadOnlyBlueprintMutex(t *testing.T) {
+	ctx := context.Background()
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	bpName := randString(5, "hex")
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
 	for clientName, client := range clients {
-		log.Printf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpId, err := client.client.CreateBlueprintFromTemplate(context.Background(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      bpName,
-			TemplateId: "L3_Collapsed_ESI",
+		clientName, client := clientName, client
+		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			t.Parallel()
+
+			bpA := testBlueprintA(ctx, t, client.client)
+
+			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			bpB, err := client.client.NewTwoStageL3ClosClient(ctx, bpA.Id())
+			require.NoError(t, err)
+
+			msgA := "locked by client A"
+			log.Print("testing SetMessage()")
+			err = bpA.Mutex.SetMessage(msgA)
+			require.NoError(t, err)
+			require.Equal(t, msgA, bpA.Mutex.GetMessage())
+
+			msgB := "locked by client B"
+			log.Print("testing SetMessage()")
+			err = bpB.Mutex.SetMessage(msgB)
+			require.NoError(t, err)
+			require.Equal(t, msgB, bpB.Mutex.GetMessage())
+
+			log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Lock(ctx)
+			require.NoError(t, err)
+
+			var mutexErr MutexErr
+
+			log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpB.Mutex.TryLock(ctx)
+			require.Error(t, err, "TryLock should have returned an error")
+			require.ErrorAs(t, err, &mutexErr)
+			require.NotNil(t, mutexErr.Mutex, "TryLock should have returned a *Mutex")
+
+			roMutex := mutexErr.Mutex
+
+			log.Printf("testing Lock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = roMutex.Lock(ctx)
+			require.Errorf(t, err, "locking a read-only Mutex should return an error")
+			require.Contains(t, err.Error(), "read", "locking a read-only Mutex complain about it being read-only")
+
+			log.Printf("testing TryLock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = roMutex.TryLock(ctx)
+			require.Errorf(t, err, "try-locking a read-only Mutex should return an error")
+			require.Contains(t, err.Error(), "read", "try-locking a read-only Mutex complain about it being read-only")
+
+			log.Printf("testing Unlock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = roMutex.Unlock(ctx)
+			require.Errorf(t, err, "unlocking a read-only Mutex should return an error")
+			require.Contains(t, err.Error(), "read", "unlocking a read-only Mutex complain about it being read-only")
+
+			log.Printf("testing SetMessage() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = roMutex.SetMessage("fail please")
+			require.Error(t, err, "setting message of a read-only Mutex should return an error")
+			require.Contains(t, err.Error(), "read", "setting message of a read-only Mutex complain about it being read-only")
+
+			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpA.Mutex.Unlock(ctx)
+			require.NoError(t, err)
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpA, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		bpB, err := client.client.NewTwoStageL3ClosClient(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Print("testing SetMessage()")
-		err = bpA.Mutex.SetMessage("locked by client A")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Print("testing SetMessage()")
-		err = bpB.Mutex.SetMessage("locked by client B")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing Lock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Lock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing TryLock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpB.Mutex.TryLock(context.Background())
-		if err == nil {
-			t.Fatal("TryLock should have returned an error")
-		}
-		var mutexErr MutexErr
-		if !errors.As(err, &mutexErr) {
-			t.Fatal("TryLock should have returned a MutexErr")
-		}
-		if mutexErr.Mutex == nil {
-			t.Fatal("TryLock should have returned a *Mutex")
-		}
-
-		roMutex := mutexErr.Mutex
-
-		log.Printf("testing Lock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = roMutex.Lock(context.Background())
-		if err == nil {
-			t.Fatal("locking a read-only Mutex should return an error")
-		}
-		if !strings.Contains(err.Error(), "read") {
-			t.Fatal("locking a read-only Mutex complain about it being read-only")
-		}
-
-		log.Printf("testing TryLock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = roMutex.TryLock(context.Background())
-		if err == nil {
-			t.Fatal("try-locking a read-only Mutex should return an error")
-		}
-		if !strings.Contains(err.Error(), "read") {
-			t.Fatal("try-locking a read-only Mutex complain about it being read-only")
-		}
-
-		log.Printf("testing Unlock() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = roMutex.Unlock(context.Background())
-		if err == nil {
-			t.Fatal("unlocking a read-only Mutex should return an error")
-		}
-		if !strings.Contains(err.Error(), "read") {
-			t.Fatal("unlocking a read-only Mutex complain about it being read-only")
-		}
-
-		log.Printf("testing SetMessage() against locked mutex %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = roMutex.SetMessage("fail please")
-		if err == nil {
-			t.Fatal("setting message of a read-only Mutex should return an error")
-		}
-		if !strings.Contains(err.Error(), "read") {
-			t.Fatal("setting message of a read-only Mutex complain about it being read-only")
-		}
-
-		log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpA.Mutex.Unlock(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.Background(), bpId)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
