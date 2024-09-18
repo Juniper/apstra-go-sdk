@@ -83,7 +83,7 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 
 		entry := TelemetryServiceRegistryEntry{
 			ServiceName:       name,
-			StorageSchemaPath: enum.StorageSchemaPathIBA_INTEGER_DATA,
+			StorageSchemaPath: enum.StorageSchemaPathIbaIntegerData,
 			ApplicationSchema: []byte(schema),
 			Builtin:           false,
 			Description:       "Test Service",
@@ -149,7 +149,7 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 	}`
 		entry = TelemetryServiceRegistryEntry{
 			ServiceName:       name,
-			StorageSchemaPath: enum.StorageSchemaPathIBA_INTEGER_DATA,
+			StorageSchemaPath: enum.StorageSchemaPathIbaIntegerData,
 			ApplicationSchema: []byte(schema),
 			Builtin:           false,
 			Description:       "Test Service",

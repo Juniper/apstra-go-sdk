@@ -125,47 +125,49 @@ var (
 		FFResourceTypeVni,
 	)
 
-	_                                   enum = new(StorageSchemaPath)
-	StorageSchemaPathXCVR                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.xcvr"}
-	StorageSchemaPathGRAPH                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.graph"}
-	StorageSchemaPathROUTE                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.route"}
-	StorageSchemaPathMAC                     = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.mac"}
-	StorageSchemaPathOPTICAL_XCVR            = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.optical_xcvr"}
-	StorageSchemaPathHOSTNAME                = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.hostname"}
-	StorageSchemaPathGENERIC                 = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.generic"}
-	StorageSchemaPathLAG                     = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.lag"}
-	StorageSchemaPathBGP                     = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.bgp"}
-	StorageSchemaPathINTERFACE               = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.interface"}
-	StorageSchemaPathMLAG                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.mlag"}
-	StorageSchemaPathIBA_STRING_DATA         = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.iba_string_data"}
-	StorageSchemaPathIBA_INTEGER_DATA        = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.iba_integer_data"}
-	StorageSchemaPathROUTE_LOOKUP            = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.route_lookup"}
-	StorageSchemaPathINTERFACE_COUNTERS      = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.interface_counters"}
-	StorageSchemaPathARP                     = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.arp"}
-	StorageSchemaPathCPP_GRAPH               = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.cpp_graph"}
-	StorageSchemaPathNSXT                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.nsxt"}
-	StorageSchemaPathENVIRONMENT             = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.environment"}
-	StorageSchemaPathLLDP                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.lldp"}
-	StorageSchemaPaths                       = oenum.New(StorageSchemaPathXCVR,
-		StorageSchemaPathGRAPH,
-		StorageSchemaPathROUTE,
-		StorageSchemaPathMAC,
-		StorageSchemaPathOPTICAL_XCVR,
-		StorageSchemaPathHOSTNAME,
-		StorageSchemaPathGENERIC,
-		StorageSchemaPathLAG,
-		StorageSchemaPathBGP,
-		StorageSchemaPathINTERFACE,
-		StorageSchemaPathMLAG,
-		StorageSchemaPathIBA_STRING_DATA,
-		StorageSchemaPathIBA_INTEGER_DATA,
-		StorageSchemaPathROUTE_LOOKUP,
-		StorageSchemaPathINTERFACE_COUNTERS,
+	_                                  enum = new(StorageSchemaPath)
+	StorageSchemaPathARP                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.arp"}
+	StorageSchemaPathBGP                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.bgp"}
+	StorageSchemaPathCppGraph               = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.cpp_graph"}
+	StorageSchemaPathEnvironment            = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.environment"}
+	StorageSchemaPathGeneric                = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.generic"}
+	StorageSchemaPathGraph                  = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.graph"}
+	StorageSchemaPathHostname               = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.hostname"}
+	StorageSchemaPathIbaData                = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.iba_data"}
+	StorageSchemaPathIbaIntegerData         = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.iba_integer_data"}
+	StorageSchemaPathIbaStringData          = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.iba_string_data"}
+	StorageSchemaPathInterface              = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.interface"}
+	StorageSchemaPathInterfaceCounters      = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.interface_counters"}
+	StorageSchemaPathLAG                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.lag"}
+	StorageSchemaPathLLDP                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.lldp"}
+	StorageSchemaPathMAC                    = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.mac"}
+	StorageSchemaPathMLAG                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.mlag"}
+	StorageSchemaPathNSXT                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.nsxt"}
+	StorageSchemaPathOpticalXcvr            = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.optical_xcvr"}
+	StorageSchemaPathRoute                  = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.route"}
+	StorageSchemaPathRouteLookup            = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.route_lookup"}
+	StorageSchemaPathXcvr                   = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.xcvr"}
+	StorageSchemaPaths                      = oenum.New(StorageSchemaPathXcvr,
 		StorageSchemaPathARP,
-		StorageSchemaPathCPP_GRAPH,
-		StorageSchemaPathNSXT,
-		StorageSchemaPathENVIRONMENT,
+		StorageSchemaPathBGP,
+		StorageSchemaPathCppGraph,
+		StorageSchemaPathEnvironment,
+		StorageSchemaPathGeneric,
+		StorageSchemaPathGraph,
+		StorageSchemaPathHostname,
+		StorageSchemaPathIbaData,
+		StorageSchemaPathIbaIntegerData,
+		StorageSchemaPathIbaStringData,
+		StorageSchemaPathInterface,
+		StorageSchemaPathInterfaceCounters,
+		StorageSchemaPathLAG,
 		StorageSchemaPathLLDP,
+		StorageSchemaPathMAC,
+		StorageSchemaPathMLAG,
+		StorageSchemaPathNSXT,
+		StorageSchemaPathOpticalXcvr,
+		StorageSchemaPathRoute,
+		StorageSchemaPathRouteLookup,
 	)
 
 	_                                  enum = new(InterfaceNumberingIpv4Type)
