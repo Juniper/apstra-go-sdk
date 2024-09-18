@@ -17,15 +17,15 @@ func TestEnumParsingError(t *testing.T) {
 
 	testCases := map[string]testCase{
 		"valid_FeatureSwitchEnum": {
-			enum:           new(FeatureSwitchEnum),
+			enum:           new(FeatureSwitch),
 			stringVal:      "enabled",
 			expErrorString: "",
 		},
 		"invalid_FeatureSwitchEnum": {
-			enum:             new(FeatureSwitchEnum),
+			enum:             new(FeatureSwitch),
 			stringVal:        "bogus_switch_status",
 			expEnumErr:       true,
-			expErrorString:   `failed to parse *enum.FeatureSwitchEnum "bogus_switch_status"`,
+			expErrorString:   `failed to parse *enum.FeatureSwitch "bogus_switch_status"`,
 			expEnumErrorType: ErrorTypeParsingFailed,
 		},
 		"valid_ApiFeature": {
