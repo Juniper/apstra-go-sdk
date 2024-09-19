@@ -28,7 +28,7 @@ func TestListAllBlueprintIds(t *testing.T) {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
 			ctx := wrapCtxWithTestId(t, ctx)
-			//ctx := context.WithValue(ctx, CtxKeyTestId, fmt.Sprintf("%s/%s", testId.String(), t.Name()))
+			// ctx := context.WithValue(ctx, CtxKeyTestId, fmt.Sprintf("%s/%s", testId.String(), t.Name()))
 
 			log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			blueprints, err := client.client.listAllBlueprintIds(ctx)
