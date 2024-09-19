@@ -239,12 +239,12 @@ func TestTryLockTryLockBlueprintMutex(t *testing.T) {
 			require.Error(t, err)
 			require.ErrorAs(t, err, &mutexErr, "TryLock should have returned a MutexErr")
 			require.NotNil(t, mutexErr.Mutex, "TryLock returned a MutexErr with nil Mutex")
-			require.NotNil(t, mutexErr.LockInfo, "TryLock returned a MutexEerr with non-nil LockInfo")
+			require.Nil(t, mutexErr.LockInfo, "TryLock returned a MutexEerr with non-nil LockInfo")
 			require.Equal(t, mutexErr.Mutex.GetMessage(), bpA.Mutex.GetMessage(), "blocking mutex and original messages do not match")
 
 			log.Printf("testing Unlock() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			err = bpA.Mutex.Unlock(ctx)
-			require.NotNil(t, err)
+			require.NoError(t, err)
 		})
 	}
 }
