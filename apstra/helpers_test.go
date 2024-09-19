@@ -988,6 +988,14 @@ func newUUID(t testing.TB) uuid.UUID {
 	return result
 }
 
+// wrapCtxWithTestId produces contexts with the following values:
+// - Test-UUID: a uuid.UUID representing this test and all sub-tests.
+// - Test-ID: a string of the form uuid/test/subtest/subsubtest...
+// the Test-UUID is generated only if not found.
+// HTTP transactions related to these tests can be picked out from wireshark
+// using filters like:
+// - http.request.line contains "843a754c-cc35-4383-807f-833ad991e554"
+// - http.request.line contains "843a754c-cc35-4383-807f-833ad991e554/test/subtest"
 func wrapCtxWithTestId(t testing.TB, ctx context.Context) context.Context {
 	var UUID *uuid.UUID
 
