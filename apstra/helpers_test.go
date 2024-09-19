@@ -19,6 +19,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -977,4 +978,27 @@ func testResourceGroupIpv6(ctx context.Context, t testing.TB, client *FreeformCl
 	require.NoError(t, err)
 
 	return id
+}
+
+func newUUID(t testing.TB) uuid.UUID {
+	t.Helper()
+
+	result, err := uuid.NewRandom()
+	require.NoError(t, err)
+	return result
+}
+
+func wrapCtxWithTestId(t testing.TB, ctx context.Context) context.Context {
+	var UUID *uuid.UUID
+
+	switch v := ctx.Value(CtxKeyTestUUID).(type) {
+	case uuid.UUID:
+		UUID = &v
+	default:
+		UUID = toPtr(newUUID(t))
+		ctx = context.WithValue(ctx, CtxKeyTestUUID, *UUID)
+		log.Println("Test UUID: ", UUID.String())
+	}
+
+	return context.WithValue(ctx, CtxKeyTestID, UUID.String()+"/"+t.Name())
 }

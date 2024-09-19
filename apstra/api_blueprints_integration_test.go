@@ -16,23 +16,29 @@ import (
 )
 
 func TestListAllBlueprintIds(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := context.Background()
 
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	ctx = wrapCtxWithTestId(t, ctx)
 	for clientName, client := range clients {
-		log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		blueprints, err := client.client.listAllBlueprintIds(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
+		clientName, client := clientName, client
 
-		result, err := json.Marshal(blueprints)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(string(result))
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := wrapCtxWithTestId(t, ctx)
+			//ctx := context.WithValue(ctx, CtxKeyTestId, fmt.Sprintf("%s/%s", testId.String(), t.Name()))
+
+			log.Printf("testing listAllBlueprintIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			blueprints, err := client.client.listAllBlueprintIds(ctx)
+			require.NoError(t, err)
+
+			result, err := json.Marshal(blueprints)
+			require.NoError(t, err)
+
+			log.Println(string(result))
+		})
 	}
 }
 

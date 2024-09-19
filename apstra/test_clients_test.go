@@ -33,6 +33,11 @@ type testClientCfg struct {
 type testClient struct {
 	clientType string
 	client     *Client
+	id         string
+}
+
+func (o testClient) name() string {
+	return fmt.Sprintf("%s/%s/%s", o.clientType, o.id, o.client.apiVersion)
 }
 
 var testClients map[string]testClient
@@ -65,6 +70,7 @@ func getTestClients(ctx context.Context, t *testing.T) (map[string]testClient, e
 		testClients[k] = testClient{
 			clientType: cfg.cfgType,
 			client:     client,
+			id:         k,
 		}
 	}
 

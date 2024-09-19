@@ -12,16 +12,20 @@ import (
 )
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
 
+	ctx = wrapCtxWithTestId(t, ctx)
 	for clientName, client := range clients {
 		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
+			ctx = wrapCtxWithTestId(t, ctx)
 
 			log.Printf("testing listLogicalDeviceIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			ids, err := client.client.listLogicalDeviceIds(context.TODO())
+			ids, err := client.client.listLogicalDeviceIds(ctx)
 			require.NoError(t, err)
 			require.NotEqual(t, len(ids), 0)
 
@@ -29,8 +33,9 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 				id := ids[i]
 				t.Run(fmt.Sprintf("GET_%s", id), func(t *testing.T) {
 					t.Parallel()
+					ctx = wrapCtxWithTestId(t, ctx)
 
-					ld, err := client.client.GetLogicalDevice(context.TODO(), id)
+					ld, err := client.client.GetLogicalDevice(ctx, id)
 					require.NoError(t, err)
 					require.Equal(t, id, ld.Id)
 				})
