@@ -17,6 +17,9 @@ import (
 )
 
 const (
+	CtxKeyTestID   = "Test-ID"   // context.Context key for a test ID string
+	CtxKeyTestUUID = "Test-UUID" // context.Context key for a uuid.UUID upon which the test ID string is based
+
 	apstraApiAsyncParamKey          = "async"
 	apstraApiAsyncParamValFull      = "full"
 	apstraApiAsyncParamValPartial   = "partial" // default?
@@ -217,6 +220,12 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// set the Content-Type request header if we're sending any payload
 	if in.apiInput != nil {
 		req.Header.Set("Content-Type", "application/json")
+	}
+
+	// set the Test-ID header if the context has one.
+	switch testId := ctx.Value(CtxKeyTestID).(type) {
+	case string:
+		req.Header.Set(CtxKeyTestID, testId)
 	}
 
 	o.lock(mutexKeyHttpHeaders)
