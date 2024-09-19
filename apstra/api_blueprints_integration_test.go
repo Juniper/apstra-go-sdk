@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
@@ -798,24 +799,35 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 	}
 }
 
-//// quick-n-dirty delete all blueprints - not a regular test!
-//func TestDeleteAllBlueprints(t *testing.T) {
-//	ctx := context.Background()
-//
-//	clients, err := getTestClients(ctx, t)
-//	require.NoError(t, err)
-//
-//	for clientName, client := range clients {
-//		clientName, client := clientName, client
-//		t.Run(clientName, func(t *testing.T) {
-//			t.Parallel()
-//
-//			ids, err := client.client.ListAllBlueprintIds(ctx)
-//			require.NoError(t, err)
-//
-//			for _, id := range ids {
-//				require.NoError(t, client.client.DeleteBlueprint(ctx, id))
-//			}
-//		})
-//	}
-//}
+// This test deletes all blueprints, so is likely disruptive to other tests
+// It can be run from the command line to quickly clean-up Apstra servers
+// with lots of left-behind blueprints:
+/*
+DELETE_ALL_BLUEPRINTS_WITH_A_TEST=1 go test -v -run=TestDeleteAllBlueprints -tags=integration $(git rev-parse --show-toplevel)/apstra
+*/
+func TestDeleteAllBlueprints(t *testing.T) {
+	if _, ok := os.LookupEnv("DELETE_ALL_BLUEPRINTS_WITH_A_TEST"); !ok {
+		t.Skip("refusing to run without DELETE_ALL_BLUEPRINTS_WITH_A_TEST in environment")
+	}
+	ctx := context.Background()
+
+	err := os.Setenv(envApstraExperimental, "1")
+	require.NoError(t, err)
+
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
+
+	for clientName, client := range clients {
+		clientName, client := clientName, client
+		t.Run(clientName, func(t *testing.T) {
+			t.Parallel()
+
+			ids, err := client.client.ListAllBlueprintIds(ctx)
+			require.NoError(t, err)
+
+			for _, id := range ids {
+				require.NoError(t, client.client.DeleteBlueprint(ctx, id))
+			}
+		})
+	}
+}
