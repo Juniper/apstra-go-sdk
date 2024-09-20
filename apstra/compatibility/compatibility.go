@@ -27,5 +27,6 @@ func SupportedApiVersions() []string {
 		apstra421,
 		apstra4211,
 		apstra422,
+		apstra500,
 	}
 }
