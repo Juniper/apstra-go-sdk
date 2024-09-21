@@ -1,0 +1,19 @@
+#  Copyright (c) Juniper Networks, Inc., 2024-2024.
+#  All rights reserved.
+#  SPDX-License-Identifier: Apache-2.0
+
+name: Go package
+
+on: [push]
+
+jobs:
+  license-header-check:
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: license header check
+        run: |
+          git fetch origin main --depth 1
+          make fumpt-check

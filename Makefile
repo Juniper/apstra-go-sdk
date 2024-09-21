@@ -1,4 +1,8 @@
-all: compliance-check verify unit-tests integration-tests
+# Copyright (c) Juniper Networks, Inc., 2022-2024.
+# All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+all: compliance-check license-header-check verify unit-tests integration-tests
 
 check-repo-clean:
 	git update-index --refresh && git diff-index --quiet HEAD --
@@ -9,6 +13,8 @@ compliance:
 
 compliance-check: compliance check-repo-clean
 
+license-header-check:
+	@sh -c "$(CURDIR)/.ci/scripts/license_header_check.sh"
 
 fast-check: verify unit-tests
 
@@ -35,4 +41,4 @@ lint-staticcheck:
 vet:
 	go vet -v ./apstra/...
 
-.PHONY: all fmt-check lint lint-revive lint-staticcheck unit-tests verify vet
+.PHONY: all fmt-check license-header-check lint lint-revive lint-staticcheck unit-tests verify vet
