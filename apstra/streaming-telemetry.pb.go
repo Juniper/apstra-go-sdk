@@ -7711,6 +7711,7 @@ var (
 		(*AosSequencedMessage)(nil),              // 75: aos.streaming.AosSequencedMessage
 	}
 )
+
 var file_apstra_streaming_telemetry_proto_depIdxs = []int32{
 	0,  // 0: aos.streaming.DeviceStateEvent.state:type_name -> aos.streaming.DeviceState
 	1,  // 1: aos.streaming.TrafficEvent.node_role:type_name -> aos.streaming.Feature
