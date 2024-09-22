@@ -23,9 +23,11 @@ type QEQuery interface {
 	setRawResult([]byte)
 }
 
-var _ QEQuery = &PathQuery{}
-var _ QEQuery = &MatchQuery{}
-var _ QEQuery = &RawQuery{}
+var (
+	_ QEQuery = &PathQuery{}
+	_ QEQuery = &MatchQuery{}
+	_ QEQuery = &RawQuery{}
+)
 
 type QEEType int
 
@@ -253,9 +255,11 @@ func (o *PathQuery) addElement(elementType string, attributes []QEEAttribute) *P
 func (o *PathQuery) Node(attributes []QEEAttribute) *PathQuery {
 	return o.addElement(qEETypeNode, attributes)
 }
+
 func (o *PathQuery) Out(attributes []QEEAttribute) *PathQuery {
 	return o.addElement(qEETypeOut, attributes)
 }
+
 func (o *PathQuery) In(attributes []QEEAttribute) *PathQuery {
 	return o.addElement(qEETypeIn, attributes)
 }
@@ -305,10 +309,9 @@ type MatchQuery struct {
 	rawResult     []byte
 }
 
-//func (o *MatchQuery) Having(v QEAttrVal) *MatchQuery          {} // todo
-//func (o *MatchQuery) Where(v QEAttrVal) *MatchQuery           {} // todo
-//func (o *MatchQuery) EnsureDifferent(v QEAttrVal) *MatchQuery {} // todo
-
+// func (o *MatchQuery) Having(v QEAttrVal) *MatchQuery          {} // todo
+// func (o *MatchQuery) Where(v QEAttrVal) *MatchQuery           {} // todo
+// func (o *MatchQuery) EnsureDifferent(v QEAttrVal) *MatchQuery {} // todo
 func (o *MatchQuery) Distinct(distinct MatchQueryDistinct) *MatchQuery {
 	o.addElement("distinct", distinct)
 	return o
@@ -325,7 +328,6 @@ func (o *MatchQuery) addElement(t string, v QEAttrVal) *MatchQuery {
 	}
 	o.firstElement.getLast().next = &newElement
 	return o
-
 }
 
 func (o *MatchQuery) getBlueprintType() BlueprintType {

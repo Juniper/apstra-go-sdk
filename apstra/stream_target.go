@@ -8,12 +8,13 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"google.golang.org/protobuf/proto"
 	"io"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
+
+	"google.golang.org/protobuf/proto"
 )
 
 const (

@@ -8,12 +8,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"log"
 	"math/rand"
 	"net"
 	"sort"
 	"testing"
+
+	"github.com/hashicorp/go-version"
 )
 
 func compareCts(t *testing.T, a, b *ConnectivityTemplate, info string) {
@@ -363,7 +364,7 @@ func TestCtLayout(t *testing.T) {
 			Subpolicies: []*ConnectivityTemplatePrimitive{
 				{
 					Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-						//SecurityZone:       &sz.Id,
+						// SecurityZone:       &sz.Id,
 						SecurityZone:       &sz.Id,
 						Tagged:             false,
 						Vlan:               &vlan,

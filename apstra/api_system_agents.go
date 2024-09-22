@@ -163,7 +163,6 @@ func (o rawAgentJobState) parse() int {
 	default:
 		return int(AgentJobStateUnknown)
 	}
-
 }
 
 type AgentJobType int
@@ -223,7 +222,6 @@ func (o rawAgentJobType) parse() int {
 	default:
 		return int(AgentJobTypeUnknown)
 	}
-
 }
 
 type AgentPlatform int
@@ -296,7 +294,6 @@ func (o AgentCxnState) String() string {
 	default:
 		return fmt.Sprintf(agentCxnStateUnknown, o)
 	}
-
 }
 
 type rawAgentCxnState string
@@ -328,7 +325,7 @@ type AgentPackages map[string]string
 
 func (o *AgentPackages) raw() rawAgentPackages {
 	// todo: one of these lines causes 'null' in JSON output, while the other causes '[]' ... which one is correct for the API?
-	//raw := rawAgentPackages{}
+	// raw := rawAgentPackages{}
 	var raw rawAgentPackages
 	for k, v := range *o {
 		raw = append(raw, k+apstraSystemAgentPlatformStringSep+v)
@@ -1031,7 +1028,7 @@ func (o *Client) systemAgentWaitForConnection(ctx context.Context, agentId Objec
 		}
 
 		switch agentInfo.Status.ConnectionState {
-		case AgentCxnStateNone: //onbox agents don't "connect"
+		case AgentCxnStateNone: // onbox agents don't "connect"
 			return nil
 		case AgentCxnStateConnected:
 			return nil

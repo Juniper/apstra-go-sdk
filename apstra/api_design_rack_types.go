@@ -13,8 +13,10 @@ const (
 	apiUrlDesignRackTypeById    = apiUrlDesignRackTypesPrefix + "%s"
 )
 
-type AccessRedundancyProtocol int
-type accessRedundancyProtocol string
+type (
+	AccessRedundancyProtocol int
+	accessRedundancyProtocol string
+)
 
 const (
 	AccessRedundancyProtocolNone = AccessRedundancyProtocol(iota)
@@ -26,8 +28,10 @@ const (
 	accessRedundancyProtocolUnknown = "unknown redundancy protocol '%d'"
 )
 
-type LeafRedundancyProtocol int
-type leafRedundancyProtocol string
+type (
+	LeafRedundancyProtocol int
+	leafRedundancyProtocol string
+)
 
 const (
 	LeafRedundancyProtocolNone = LeafRedundancyProtocol(iota)
@@ -41,8 +45,10 @@ const (
 	leafRedundancyProtocolUnknown = "unknown type %d"
 )
 
-type FabricConnectivityDesign int
-type fabricConnectivityDesign string
+type (
+	FabricConnectivityDesign int
+	fabricConnectivityDesign string
+)
 
 const (
 	FabricConnectivityDesignL3Clos = FabricConnectivityDesign(iota)
@@ -54,8 +60,10 @@ const (
 	fabricConnectivityDesignUnknown     = "unknown connectivity design '%d'"
 )
 
-type FeatureSwitch int
-type featureSwitch string
+type (
+	FeatureSwitch int
+	featureSwitch string
+)
 
 const (
 	FeatureSwitchDisabled = FeatureSwitch(iota)
@@ -67,8 +75,10 @@ const (
 	featureSwitchUnknown  = "unknown feature switch state '%d'"
 )
 
-type SystemManagementLevel int
-type systemManagementLevel string
+type (
+	SystemManagementLevel int
+	systemManagementLevel string
+)
 
 const (
 	SystemManagementLevelUnmanaged = SystemManagementLevel(iota)
@@ -84,8 +94,10 @@ const (
 	systemManagementLevelUnknown       = "unknown generic system management level '%d'"
 )
 
-type RackLinkAttachmentType int
-type rackLinkAttachmentType string
+type (
+	RackLinkAttachmentType int
+	rackLinkAttachmentType string
+)
 
 const (
 	RackLinkAttachmentTypeSingle = RackLinkAttachmentType(iota)
@@ -97,8 +109,10 @@ const (
 	rackLinkAttachmentTypeUnknown = "unknown link attachment scheme '%d'"
 )
 
-type RackLinkLagMode int
-type rackLinkLagMode string
+type (
+	RackLinkLagMode int
+	rackLinkLagMode string
+)
 
 const (
 	RackLinkLagModeNone = RackLinkLagMode(iota)
@@ -114,8 +128,10 @@ const (
 	rackLinkLagModeUnknown = "unknown lag mode '%d'"
 )
 
-type RackLinkSwitchPeer int
-type rackLinkSwitchPeer string
+type (
+	RackLinkSwitchPeer int
+	rackLinkSwitchPeer string
+)
 
 const (
 	RackLinkSwitchPeerNone = RackLinkSwitchPeer(iota)
@@ -314,6 +330,7 @@ func (o SystemManagementLevel) String() string {
 func (o systemManagementLevel) string() string {
 	return string(o)
 }
+
 func (o systemManagementLevel) parse() (int, error) {
 	switch o {
 	case systemManagementLevelUnmanaged:
@@ -347,6 +364,7 @@ func (o RackLinkAttachmentType) String() string {
 func (o rackLinkAttachmentType) string() string {
 	return string(o)
 }
+
 func (o rackLinkAttachmentType) parse() (int, error) {
 	switch o {
 	case rackLinkAttachmentTypeSingle:
@@ -384,12 +402,12 @@ func (o *RackLinkLagMode) FromString(in string) error {
 	}
 	*o = RackLinkLagMode(i)
 	return nil
-
 }
 
 func (o rackLinkLagMode) string() string {
 	return string(o)
 }
+
 func (o rackLinkLagMode) parse() (int, error) {
 	switch o {
 	case rackLinkLagModeNone:
@@ -434,6 +452,7 @@ func (o *RackLinkSwitchPeer) FromString(in string) error {
 func (o rackLinkSwitchPeer) string() string {
 	return string(o)
 }
+
 func (o rackLinkSwitchPeer) parse() (int, error) {
 	switch o {
 	case rackLinkSwitchPeerNone:

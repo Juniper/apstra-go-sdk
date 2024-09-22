@@ -60,7 +60,6 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 			RefArchs:    c.Data.RefArchs,
 			Generators:  c.Data.Generators,
 		})
-
 		if err != nil {
 			t.Fatal(err)
 		}

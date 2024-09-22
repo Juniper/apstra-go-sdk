@@ -15,8 +15,10 @@ const (
 	linksBySystemParam = "system_node_id"
 )
 
-type InterfaceType int
-type interfaceType string
+type (
+	InterfaceType int
+	interfaceType string
+)
 
 const (
 	InterfaceTypeEthernet = InterfaceType(iota)
@@ -110,8 +112,10 @@ func (o interfaceType) parse() (int, error) {
 	}
 }
 
-type InterfaceOperationState int
-type interfaceOperationState string
+type (
+	InterfaceOperationState int
+	interfaceOperationState string
+)
 
 const (
 	InterfaceOperationStateNone = InterfaceOperationState(iota)
@@ -169,8 +173,10 @@ func (o interfaceOperationState) parse() (int, error) {
 	}
 }
 
-type LinkRole int
-type linkRole string
+type (
+	LinkRole int
+	linkRole string
+)
 
 const (
 	LinkRoleAccessL3PeerLink = LinkRole(iota)
@@ -303,8 +309,10 @@ func (o linkRole) parse() (int, error) {
 	}
 }
 
-type SystemNodeRole int
-type systemNodeRole string
+type (
+	SystemNodeRole int
+	systemNodeRole string
+)
 
 const (
 	SystemNodeRoleNone = SystemNodeRole(iota)
@@ -390,8 +398,10 @@ func (o systemNodeRole) parse() (int, error) {
 	}
 }
 
-type LinkType int
-type linkType string
+type (
+	LinkType int
+	linkType string
+)
 
 const (
 	LinkTypeAggregateLink = LinkType(iota)

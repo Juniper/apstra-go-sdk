@@ -2,8 +2,10 @@ package apstra
 
 import "fmt"
 
-type CtPrimitivePolicyTypeName int
-type ctPrimitivePolicyTypeName string
+type (
+	CtPrimitivePolicyTypeName int
+	ctPrimitivePolicyTypeName string
+)
 
 const (
 	CtPrimitivePolicyTypeNameNone = CtPrimitivePolicyTypeName(iota)
@@ -116,8 +118,10 @@ func (o ctPrimitivePolicyTypeName) parse() (int, error) {
 	}
 }
 
-type CtPrimitiveBgpPeerTo int
-type ctPrimitiveBgpPeerTo string
+type (
+	CtPrimitiveBgpPeerTo int
+	ctPrimitiveBgpPeerTo string
+)
 
 const (
 	CtPrimitiveBgpPeerToLoopback = CtPrimitiveBgpPeerTo(iota)
@@ -170,8 +174,10 @@ func (o ctPrimitiveBgpPeerTo) parse() (int, error) {
 	}
 }
 
-type CtPrimitiveIPv4ProtocolSessionAddressing int
-type ctPrimitiveIPv4ProtocolSessionAddressing string
+type (
+	CtPrimitiveIPv4ProtocolSessionAddressing int
+	ctPrimitiveIPv4ProtocolSessionAddressing string
+)
 
 const (
 	CtPrimitiveIPv4ProtocolSessionAddressingNone = CtPrimitiveIPv4ProtocolSessionAddressing(iota)
@@ -218,8 +224,10 @@ func (o ctPrimitiveIPv4ProtocolSessionAddressing) parse() (int, error) {
 	}
 }
 
-type CtPrimitiveIPv6ProtocolSessionAddressing int
-type ctPrimitiveIPv6ProtocolSessionAddressing string
+type (
+	CtPrimitiveIPv6ProtocolSessionAddressing int
+	ctPrimitiveIPv6ProtocolSessionAddressing string
+)
 
 const (
 	CtPrimitiveIPv6ProtocolSessionAddressingNone = CtPrimitiveIPv6ProtocolSessionAddressing(iota)
@@ -272,8 +280,10 @@ func (o ctPrimitiveIPv6ProtocolSessionAddressing) parse() (int, error) {
 	}
 }
 
-type CtPrimitiveIPv4AddressingType int
-type ctPrimitiveIPv4AddressingType string
+type (
+	CtPrimitiveIPv4AddressingType int
+	ctPrimitiveIPv4AddressingType string
+)
 
 const (
 	CtPrimitiveIPv4AddressingTypeNone     = CtPrimitiveIPv4AddressingType(iota)
@@ -320,8 +330,10 @@ func (o ctPrimitiveIPv4AddressingType) parse() (int, error) {
 	}
 }
 
-type CtPrimitiveIPv6AddressingType int
-type ctPrimitiveIPv6AddressingType string
+type (
+	CtPrimitiveIPv6AddressingType int
+	ctPrimitiveIPv6AddressingType string
+)
 
 const (
 	CtPrimitiveIPv6AddressingTypeLinkLocal = CtPrimitiveIPv6AddressingType(iota)
@@ -374,8 +386,10 @@ func (o ctPrimitiveIPv6AddressingType) parse() (int, error) {
 	}
 }
 
-type CtPrimitiveStatus int
-type ctPrimitiveStatus string
+type (
+	CtPrimitiveStatus int
+	ctPrimitiveStatus string
+)
 
 const (
 	CtPrimitiveStatusAssigned = CtPrimitiveStatus(iota)

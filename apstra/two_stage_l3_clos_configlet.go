@@ -110,8 +110,7 @@ func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*
 	return response, nil
 }
 
-func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name string) (*rawTwoStageL3ClosConfiglet,
-	error) {
+func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name string) (*rawTwoStageL3ClosConfiglet, error) {
 	cgs, err := o.getAllConfiglets(ctx)
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -138,8 +137,7 @@ func (o *TwoStageL3ClosClient) getConfigletByName(ctx context.Context, name stri
 	}
 }
 
-func (o *TwoStageL3ClosClient) createConfiglet(ctx context.Context, in *rawTwoStageL3ClosConfigletData) (ObjectId,
-	error) {
+func (o *TwoStageL3ClosClient) createConfiglet(ctx context.Context, in *rawTwoStageL3ClosConfigletData) (ObjectId, error) {
 	response := &objectIdResponse{}
 	if len(in.Label) == 0 {
 		in.Label = in.Data.DisplayName
@@ -157,8 +155,7 @@ func (o *TwoStageL3ClosClient) createConfiglet(ctx context.Context, in *rawTwoSt
 	return response.Id, nil
 }
 
-func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, id ObjectId,
-	in *rawTwoStageL3ClosConfigletData) error {
+func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, id ObjectId, in *rawTwoStageL3ClosConfigletData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), id),

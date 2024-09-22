@@ -7,9 +7,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {

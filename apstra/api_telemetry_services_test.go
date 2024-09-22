@@ -6,9 +6,10 @@ package apstra
 import (
 	"bytes"
 	"context"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetTelemetryServicesDeviceMapping(t *testing.T) {

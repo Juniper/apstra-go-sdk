@@ -236,7 +236,7 @@ func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*Age
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	found := -1 //slice index where the matching System Agent Profile can be found
+	found := -1 // slice index where the matching System Agent Profile can be found
 	for i, sap := range response.Items {
 		if sap.Label == label {
 			if found >= 0 {

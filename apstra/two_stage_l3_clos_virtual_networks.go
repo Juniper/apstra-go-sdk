@@ -19,8 +19,10 @@ const (
 	dhcpServiceEnabled  = dhcpServiceMode("dhcpServiceEnabled")
 )
 
-type DhcpServiceEnabled bool
-type dhcpServiceMode string
+type (
+	DhcpServiceEnabled bool
+	dhcpServiceMode    string
+)
 
 func (o DhcpServiceEnabled) raw() dhcpServiceMode {
 	if o {
@@ -52,8 +54,10 @@ func (o dhcpServiceMode) polish() DhcpServiceEnabled {
 //	return o == l3ConnectivityEnabled
 //}
 
-type SviIpRequirement int
-type sviIpRequirement string
+type (
+	SviIpRequirement int
+	sviIpRequirement string
+)
 
 const (
 	SviIpRequirementNone = SviIpRequirement(iota)
@@ -74,9 +78,11 @@ const (
 func (o SviIpRequirement) String() string {
 	return string(o.raw())
 }
+
 func (o SviIpRequirement) int() int {
 	return int(o)
 }
+
 func (o SviIpRequirement) raw() sviIpRequirement {
 	switch o {
 	case SviIpRequirementNone:
@@ -115,8 +121,10 @@ func (o sviIpRequirement) parse() (int, error) {
 	}
 }
 
-type Ipv4Mode int
-type ipv4Mode string
+type (
+	Ipv4Mode int
+	ipv4Mode string
+)
 
 const (
 	Ipv4ModeNone = Ipv4Mode(iota)
@@ -174,8 +182,10 @@ func (o ipv4Mode) parse() (int, error) {
 	}
 }
 
-type Ipv6Mode int
-type ipv6Mode string
+type (
+	Ipv6Mode int
+	ipv6Mode string
+)
 
 const (
 	Ipv6ModeNone = Ipv6Mode(iota)
@@ -239,8 +249,10 @@ func (o ipv6Mode) parse() (int, error) {
 	}
 }
 
-type VnType int
-type vnType string
+type (
+	VnType int
+	vnType string
+)
 
 const (
 	VnTypeExternal = VnType(iota)
@@ -283,9 +295,11 @@ func (o VnType) raw() vnType {
 		return vnType(fmt.Sprintf(vnTypeUnknown, o))
 	}
 }
+
 func (o vnType) string() string {
 	return string(o)
 }
+
 func (o vnType) parse() (int, error) {
 	switch o {
 	case vnTypeExternal:
@@ -315,8 +329,10 @@ func AllVirtualNetworkTypes() []VnType {
 	}
 }
 
-type SystemRole int
-type systemRole string
+type (
+	SystemRole int
+	systemRole string
+)
 
 const (
 	SystemRoleNone = SystemRole(iota)
@@ -488,12 +504,12 @@ func (o *rawSviIp) parse() (*SviIp, error) {
 }
 
 type VnBinding struct {
-	//AccessSwitches []interface `json:"access_switches"`
+	// AccessSwitches []interface `json:"access_switches"`
 	AccessSwitchNodeIds []ObjectId `json:"access_switch_node_ids"`
-	//Role                string     `json:"role"`      // so far: "leaf", possibly graphdb "role" element
+	// Role                string     `json:"role"`      // so far: "leaf", possibly graphdb "role" element
 	SystemId ObjectId `json:"system_id"` // graphdb node id of a leaf (so far) switch
 	VlanId   *Vlan    `json:"vlan_id"`   // optional (auto-assign)
-	//Selected            bool       `json:"selected?"`
+	// Selected            bool       `json:"selected?"`
 	// Tags []interface `json:"tags"` //sent as empty string by 4.1.2 web UI, not seen in 4.1.0 or 4.1.1
 
 	//PodData struct {
@@ -619,15 +635,15 @@ type rawVirtualNetwork struct {
 	VnId                      string          `json:"vn_id,omitempty"` // VNI as a string, null when unset
 	VnType                    vnType          `json:"vn_type"`
 	VirtualMac                string          `json:"virtual_mac,omitempty"`
-	//CreatePolicyTagged      bool            `json:"create_policy_tagged"`
-	//CreatePolicyUntagged    bool            `json:"create_policy_untagged"`
-	//DefaultEndpointTagTypes interface{}     `json:"default_endpoint_tag_types"`    // what is this? not present in 4.1.1 api response
-	//Description             string          `json:"description"`                   // not used in the web UI
-	//FloatingIps             []interface{}   `json:"floating_ips"`                  // seen in 4.1.1 api response
-	//ForceMoveUntaggedEndpoints bool         `json:"force_move_untagged_endpoints"` // not used in post/get with web UI
-	//L3Connectivity          *l3ConnectivityMode `json:"l3_connectivity,omitempty"` // does not appear in 4.1.2 swagger
-	//VniIds                  []interface{}   `json:"vni_ids,omitempty"`             // unknown, sent by web UI as empty list
-	//Endpoints               []interface{}   `json:"endpoints"`                     // unknown, maybe relates to servers, etc?
+	// CreatePolicyTagged      bool            `json:"create_policy_tagged"`
+	// CreatePolicyUntagged    bool            `json:"create_policy_untagged"`
+	// DefaultEndpointTagTypes interface{}     `json:"default_endpoint_tag_types"`    // what is this? not present in 4.1.1 api response
+	// Description             string          `json:"description"`                   // not used in the web UI
+	// FloatingIps             []interface{}   `json:"floating_ips"`                  // seen in 4.1.1 api response
+	// ForceMoveUntaggedEndpoints bool         `json:"force_move_untagged_endpoints"` // not used in post/get with web UI
+	// L3Connectivity          *l3ConnectivityMode `json:"l3_connectivity,omitempty"` // does not appear in 4.1.2 swagger
+	// VniIds                  []interface{}   `json:"vni_ids,omitempty"`             // unknown, sent by web UI as empty list
+	// Endpoints               []interface{}   `json:"endpoints"`                     // unknown, maybe relates to servers, etc?
 }
 
 func (o rawVirtualNetwork) polish() (*VirtualNetwork, error) {
@@ -823,7 +839,6 @@ func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, cfg *ra
 		apiInput:    cfg,
 		apiResponse: response,
 	})
-
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
@@ -841,7 +856,6 @@ func (o *TwoStageL3ClosClient) updateVirtualNetwork(ctx context.Context, id Obje
 		urlStr:   fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, id),
 		apiInput: cfg,
 	})
-
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
@@ -854,7 +868,6 @@ func (o *TwoStageL3ClosClient) deleteVirtualNetwork(ctx context.Context, id Obje
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, id),
 	})
-
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}

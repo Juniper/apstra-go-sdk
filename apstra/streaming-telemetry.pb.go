@@ -10,10 +10,11 @@
 package apstra
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -7628,86 +7629,89 @@ func file_apstra_streaming_telemetry_proto_rawDescGZIP() []byte {
 	return file_apstra_streaming_telemetry_proto_rawDescData
 }
 
-var file_apstra_streaming_telemetry_proto_enumTypes = make([]protoimpl.EnumInfo, 22)
-var file_apstra_streaming_telemetry_proto_msgTypes = make([]protoimpl.MessageInfo, 54)
-var file_apstra_streaming_telemetry_proto_goTypes = []interface{}{
-	(DeviceState)(0),                         // 0: aos.streaming.DeviceState
-	(Feature)(0),                             // 1: aos.streaming.Feature
-	(StreamingType)(0),                       // 2: aos.streaming.StreamingType
-	(StreamingProtocol)(0),                   // 3: aos.streaming.StreamingProtocol
-	(StreamingStatus)(0),                     // 4: aos.streaming.StreamingStatus
-	(StreamingSequencingMode)(0),             // 5: aos.streaming.StreamingSequencingMode
-	(BgpSessionAddressFamily)(0),             // 6: aos.streaming.BgpSessionAddressFamily
-	(LinkStatus)(0),                          // 7: aos.streaming.LinkStatus
-	(MacState)(0),                            // 8: aos.streaming.MacState
-	(ArpState)(0),                            // 9: aos.streaming.ArpState
-	(MlagDomainState)(0),                     // 10: aos.streaming.MlagDomainState
-	(MlagIntfState)(0),                       // 11: aos.streaming.MlagIntfState
-	(RouteState)(0),                          // 12: aos.streaming.RouteState
-	(AlertSeverity)(0),                       // 13: aos.streaming.AlertSeverity
-	(RouteEntryStatus)(0),                    // 14: aos.streaming.RouteEntryStatus
-	(NextHopStatus)(0),                       // 15: aos.streaming.NextHopStatus
-	(RouteType)(0),                           // 16: aos.streaming.RouteType
-	(DeploymentStatus)(0),                    // 17: aos.streaming.DeploymentStatus
-	(StreamingAlertReason)(0),                // 18: aos.streaming.StreamingAlertReason
-	(BgpSessionState)(0),                     // 19: aos.streaming.BgpSessionState
-	(AggregationType)(0),                     // 20: aos.streaming.AggregationType
-	(HeadroomType)(0),                        // 21: aos.streaming.HeadroomType
-	(*DeviceStateEvent)(nil),                 // 22: aos.streaming.DeviceStateEvent
-	(*TrafficEvent)(nil),                     // 23: aos.streaming.TrafficEvent
-	(*StreamingEvent)(nil),                   // 24: aos.streaming.StreamingEvent
-	(*CablePeerEvent)(nil),                   // 25: aos.streaming.CablePeerEvent
-	(*BGPNeighborEvent)(nil),                 // 26: aos.streaming.BGPNeighborEvent
-	(*LinkStatusEvent)(nil),                  // 27: aos.streaming.LinkStatusEvent
-	(*MacEvent)(nil),                         // 28: aos.streaming.MacEvent
-	(*ArpEvent)(nil),                         // 29: aos.streaming.ArpEvent
-	(*LagEvent)(nil),                         // 30: aos.streaming.LagEvent
-	(*MlagEvent)(nil),                        // 31: aos.streaming.MlagEvent
-	(*ExtensibleServiceEvent)(nil),           // 32: aos.streaming.ExtensibleServiceEvent
-	(*RouteEvent)(nil),                       // 33: aos.streaming.RouteEvent
-	(*EvpnType3RouteEvent)(nil),              // 34: aos.streaming.EvpnType3RouteEvent
-	(*ActiveFloodlistEvent)(nil),             // 35: aos.streaming.ActiveFloodlistEvent
-	(*EvpnType5RouteEvent)(nil),              // 36: aos.streaming.EvpnType5RouteEvent
-	(*Event)(nil),                            // 37: aos.streaming.Event
-	(*HostnameAlert)(nil),                    // 38: aos.streaming.HostnameAlert
-	(*ConfigDeviationAlert)(nil),             // 39: aos.streaming.ConfigDeviationAlert
-	(*LivenessAlert)(nil),                    // 40: aos.streaming.LivenessAlert
-	(*ExtensibleAlert)(nil),                  // 41: aos.streaming.ExtensibleAlert
-	(*DeploymentAlert)(nil),                  // 42: aos.streaming.DeploymentAlert
-	(*BlueprintRenderingAlert)(nil),          // 43: aos.streaming.BlueprintRenderingAlert
-	(*RouteAlert)(nil),                       // 44: aos.streaming.RouteAlert
-	(*LagAlert)(nil),                         // 45: aos.streaming.LagAlert
-	(*StreamingAlert)(nil),                   // 46: aos.streaming.StreamingAlert
-	(*CablePeerMismatchAlert)(nil),           // 47: aos.streaming.CablePeerMismatchAlert
-	(*BGPNeighborMismatchAlert)(nil),         // 48: aos.streaming.BGPNeighborMismatchAlert
-	(*InterfaceLinkStatusMismatchAlert)(nil), // 49: aos.streaming.InterfaceLinkStatusMismatchAlert
-	(*CountersAlert)(nil),                    // 50: aos.streaming.CountersAlert
-	(*KeyValuePair)(nil),                     // 51: aos.streaming.KeyValuePair
-	(*ProbeAlert)(nil),                       // 52: aos.streaming.ProbeAlert
-	(*ConfigMismatchAlert)(nil),              // 53: aos.streaming.ConfigMismatchAlert
-	(*HeadroomAlert)(nil),                    // 54: aos.streaming.HeadroomAlert
-	(*MacAlert)(nil),                         // 55: aos.streaming.MacAlert
-	(*ArpAlert)(nil),                         // 56: aos.streaming.ArpAlert
-	(*MlagAlert)(nil),                        // 57: aos.streaming.MlagAlert
-	(*TestAlert)(nil),                        // 58: aos.streaming.TestAlert
-	(*InterfaceCounters)(nil),                // 59: aos.streaming.InterfaceCounters
-	(*SystemInfo)(nil),                       // 60: aos.streaming.SystemInfo
-	(*ProcessInfo)(nil),                      // 61: aos.streaming.ProcessInfo
-	(*FileInfo)(nil),                         // 62: aos.streaming.FileInfo
-	(*SysResourceCounters)(nil),              // 63: aos.streaming.SysResourceCounters
-	(*Tag)(nil),                              // 64: aos.streaming.Tag
-	(*Field)(nil),                            // 65: aos.streaming.Field
-	(*ProbeProperty)(nil),                    // 66: aos.streaming.ProbeProperty
-	(*InterfaceCountersUtilization)(nil),     // 67: aos.streaming.InterfaceCountersUtilization
-	(*SystemInterfaceUtilization)(nil),       // 68: aos.streaming.SystemInterfaceUtilization
-	(*ProbeMessage)(nil),                     // 69: aos.streaming.ProbeMessage
-	(*GenericPerfmonMessage)(nil),            // 70: aos.streaming.GenericPerfmonMessage
-	(*ProbeData)(nil),                        // 71: aos.streaming.ProbeData
-	(*PerfMon)(nil),                          // 72: aos.streaming.PerfMon
-	(*Alert)(nil),                            // 73: aos.streaming.Alert
-	(*AosMessage)(nil),                       // 74: aos.streaming.AosMessage
-	(*AosSequencedMessage)(nil),              // 75: aos.streaming.AosSequencedMessage
-}
+var (
+	file_apstra_streaming_telemetry_proto_enumTypes = make([]protoimpl.EnumInfo, 22)
+	file_apstra_streaming_telemetry_proto_msgTypes  = make([]protoimpl.MessageInfo, 54)
+	file_apstra_streaming_telemetry_proto_goTypes   = []interface{}{
+		(DeviceState)(0),                         // 0: aos.streaming.DeviceState
+		(Feature)(0),                             // 1: aos.streaming.Feature
+		(StreamingType)(0),                       // 2: aos.streaming.StreamingType
+		(StreamingProtocol)(0),                   // 3: aos.streaming.StreamingProtocol
+		(StreamingStatus)(0),                     // 4: aos.streaming.StreamingStatus
+		(StreamingSequencingMode)(0),             // 5: aos.streaming.StreamingSequencingMode
+		(BgpSessionAddressFamily)(0),             // 6: aos.streaming.BgpSessionAddressFamily
+		(LinkStatus)(0),                          // 7: aos.streaming.LinkStatus
+		(MacState)(0),                            // 8: aos.streaming.MacState
+		(ArpState)(0),                            // 9: aos.streaming.ArpState
+		(MlagDomainState)(0),                     // 10: aos.streaming.MlagDomainState
+		(MlagIntfState)(0),                       // 11: aos.streaming.MlagIntfState
+		(RouteState)(0),                          // 12: aos.streaming.RouteState
+		(AlertSeverity)(0),                       // 13: aos.streaming.AlertSeverity
+		(RouteEntryStatus)(0),                    // 14: aos.streaming.RouteEntryStatus
+		(NextHopStatus)(0),                       // 15: aos.streaming.NextHopStatus
+		(RouteType)(0),                           // 16: aos.streaming.RouteType
+		(DeploymentStatus)(0),                    // 17: aos.streaming.DeploymentStatus
+		(StreamingAlertReason)(0),                // 18: aos.streaming.StreamingAlertReason
+		(BgpSessionState)(0),                     // 19: aos.streaming.BgpSessionState
+		(AggregationType)(0),                     // 20: aos.streaming.AggregationType
+		(HeadroomType)(0),                        // 21: aos.streaming.HeadroomType
+		(*DeviceStateEvent)(nil),                 // 22: aos.streaming.DeviceStateEvent
+		(*TrafficEvent)(nil),                     // 23: aos.streaming.TrafficEvent
+		(*StreamingEvent)(nil),                   // 24: aos.streaming.StreamingEvent
+		(*CablePeerEvent)(nil),                   // 25: aos.streaming.CablePeerEvent
+		(*BGPNeighborEvent)(nil),                 // 26: aos.streaming.BGPNeighborEvent
+		(*LinkStatusEvent)(nil),                  // 27: aos.streaming.LinkStatusEvent
+		(*MacEvent)(nil),                         // 28: aos.streaming.MacEvent
+		(*ArpEvent)(nil),                         // 29: aos.streaming.ArpEvent
+		(*LagEvent)(nil),                         // 30: aos.streaming.LagEvent
+		(*MlagEvent)(nil),                        // 31: aos.streaming.MlagEvent
+		(*ExtensibleServiceEvent)(nil),           // 32: aos.streaming.ExtensibleServiceEvent
+		(*RouteEvent)(nil),                       // 33: aos.streaming.RouteEvent
+		(*EvpnType3RouteEvent)(nil),              // 34: aos.streaming.EvpnType3RouteEvent
+		(*ActiveFloodlistEvent)(nil),             // 35: aos.streaming.ActiveFloodlistEvent
+		(*EvpnType5RouteEvent)(nil),              // 36: aos.streaming.EvpnType5RouteEvent
+		(*Event)(nil),                            // 37: aos.streaming.Event
+		(*HostnameAlert)(nil),                    // 38: aos.streaming.HostnameAlert
+		(*ConfigDeviationAlert)(nil),             // 39: aos.streaming.ConfigDeviationAlert
+		(*LivenessAlert)(nil),                    // 40: aos.streaming.LivenessAlert
+		(*ExtensibleAlert)(nil),                  // 41: aos.streaming.ExtensibleAlert
+		(*DeploymentAlert)(nil),                  // 42: aos.streaming.DeploymentAlert
+		(*BlueprintRenderingAlert)(nil),          // 43: aos.streaming.BlueprintRenderingAlert
+		(*RouteAlert)(nil),                       // 44: aos.streaming.RouteAlert
+		(*LagAlert)(nil),                         // 45: aos.streaming.LagAlert
+		(*StreamingAlert)(nil),                   // 46: aos.streaming.StreamingAlert
+		(*CablePeerMismatchAlert)(nil),           // 47: aos.streaming.CablePeerMismatchAlert
+		(*BGPNeighborMismatchAlert)(nil),         // 48: aos.streaming.BGPNeighborMismatchAlert
+		(*InterfaceLinkStatusMismatchAlert)(nil), // 49: aos.streaming.InterfaceLinkStatusMismatchAlert
+		(*CountersAlert)(nil),                    // 50: aos.streaming.CountersAlert
+		(*KeyValuePair)(nil),                     // 51: aos.streaming.KeyValuePair
+		(*ProbeAlert)(nil),                       // 52: aos.streaming.ProbeAlert
+		(*ConfigMismatchAlert)(nil),              // 53: aos.streaming.ConfigMismatchAlert
+		(*HeadroomAlert)(nil),                    // 54: aos.streaming.HeadroomAlert
+		(*MacAlert)(nil),                         // 55: aos.streaming.MacAlert
+		(*ArpAlert)(nil),                         // 56: aos.streaming.ArpAlert
+		(*MlagAlert)(nil),                        // 57: aos.streaming.MlagAlert
+		(*TestAlert)(nil),                        // 58: aos.streaming.TestAlert
+		(*InterfaceCounters)(nil),                // 59: aos.streaming.InterfaceCounters
+		(*SystemInfo)(nil),                       // 60: aos.streaming.SystemInfo
+		(*ProcessInfo)(nil),                      // 61: aos.streaming.ProcessInfo
+		(*FileInfo)(nil),                         // 62: aos.streaming.FileInfo
+		(*SysResourceCounters)(nil),              // 63: aos.streaming.SysResourceCounters
+		(*Tag)(nil),                              // 64: aos.streaming.Tag
+		(*Field)(nil),                            // 65: aos.streaming.Field
+		(*ProbeProperty)(nil),                    // 66: aos.streaming.ProbeProperty
+		(*InterfaceCountersUtilization)(nil),     // 67: aos.streaming.InterfaceCountersUtilization
+		(*SystemInterfaceUtilization)(nil),       // 68: aos.streaming.SystemInterfaceUtilization
+		(*ProbeMessage)(nil),                     // 69: aos.streaming.ProbeMessage
+		(*GenericPerfmonMessage)(nil),            // 70: aos.streaming.GenericPerfmonMessage
+		(*ProbeData)(nil),                        // 71: aos.streaming.ProbeData
+		(*PerfMon)(nil),                          // 72: aos.streaming.PerfMon
+		(*Alert)(nil),                            // 73: aos.streaming.Alert
+		(*AosMessage)(nil),                       // 74: aos.streaming.AosMessage
+		(*AosSequencedMessage)(nil),              // 75: aos.streaming.AosSequencedMessage
+	}
+)
+
 var file_apstra_streaming_telemetry_proto_depIdxs = []int32{
 	0,  // 0: aos.streaming.DeviceStateEvent.state:type_name -> aos.streaming.DeviceState
 	1,  // 1: aos.streaming.TrafficEvent.node_role:type_name -> aos.streaming.Feature

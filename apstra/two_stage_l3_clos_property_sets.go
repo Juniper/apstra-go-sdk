@@ -31,7 +31,6 @@ type importPropertySetResponse struct {
 }
 
 func (o *TwoStageL3ClosClient) importPropertySet(ctx context.Context, psid ObjectId, keys ...string) (ObjectId, error) {
-
 	importPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySets, o.blueprintId.String()))
 	if err != nil {
 		return "", err
@@ -96,7 +95,6 @@ func (o *TwoStageL3ClosClient) getPropertySet(ctx context.Context, psid ObjectId
 }
 
 func (o *TwoStageL3ClosClient) updatePropertySet(ctx context.Context, psid ObjectId, keys ...string) error {
-
 	updateImportedPropertySetUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintPropertySet, o.blueprintId.String(), psid.String()))
 	if err != nil {
 		return err

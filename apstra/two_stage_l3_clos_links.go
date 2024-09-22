@@ -32,9 +32,7 @@ func (o *TwoStageL3ClosClient) systemNodesFromLinkIds(ctx context.Context, linkI
 	for _, linkId := range linkIds {
 		linkQuery.Match(
 			new(PathQuery).
-				Node([]QEEAttribute{NodeTypeLink.QEEAttribute(),
-					{"id", QEStringVal(linkId.String())},
-				}).
+				Node([]QEEAttribute{NodeTypeLink.QEEAttribute(), {"id", QEStringVal(linkId.String())}}).
 				In([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
 				Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
 				In([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).

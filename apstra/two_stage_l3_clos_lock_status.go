@@ -10,8 +10,10 @@ const (
 	apiUrlBlueprintLockStatus = apiUrlBlueprintById + apiUrlPathDelim + "lock-status"
 )
 
-type LockStatus int
-type lockStatus string
+type (
+	LockStatus int
+	lockStatus string
+)
 
 const (
 	LockStatusUnlocked = LockStatus(iota)

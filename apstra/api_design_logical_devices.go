@@ -20,8 +20,10 @@ const (
 	PortIndexingSchemaAbsolute  = "absolute"
 )
 
-type LogicalDevicePortRoleFlags uint16
-type logicalDevicePortRole string
+type (
+	LogicalDevicePortRoleFlags uint16
+	logicalDevicePortRole      string
+)
 
 // class PortGroupSchema (scotch/schemas/logical_device.py) specifies:
 // validate=validate.OneOf(
