@@ -15,7 +15,7 @@ skip_regexes+=("^Third_Party_Code/.*$")
 skip_regexes+=("^\.gitignore$")
 skip_regexes+=("^\.notices.tpl$")
 
-copyright_template="Copyright \(c\) Juniper Networks, Inc\., %s-%s\."
+copyright_template="Copyright \\(c\\) Juniper Networks, Inc\\., %s-%s\\."
 arr_line="All rights reserved\."
 spdx_line="SPDX-License-Identifier: Apache-2.0"
 leading_comment="[ #/]{0,3}"
