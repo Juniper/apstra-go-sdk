@@ -4,6 +4,10 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+git log --follow apstra/helpers.go
+echo
+echo
+
 set -euo pipefail
 
 # files we're not interested in
