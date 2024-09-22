@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# Copyright (c) Juniper Networks, Inc., 2024-2024.
+# All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 set -euo pipefail
 
 # init array of files which need updating by gofumpt

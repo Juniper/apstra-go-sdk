@@ -1,3 +1,7 @@
+// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 //go:build integration
 
 package apstra

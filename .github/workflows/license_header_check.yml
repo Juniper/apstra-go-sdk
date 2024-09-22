@@ -16,4 +16,4 @@ jobs:
       - name: license header check
         run: |
           git fetch origin main --depth 1
-          make fumpt-check
+          make license-header-check

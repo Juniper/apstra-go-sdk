@@ -52,10 +52,11 @@ do
     else
       first_year="$line"
     fi
-  done <<< "$(git log --follow --pretty=format:"%ad" --date=format:'%Y' "$file" | sed -n '1p;$p')"
+  done <<< "$((git log --follow --pretty=format:"%ad" --date=format:'%Y' "$file"; echo) | sed -n '1p;$p')"
 
   # assume current year for both values if git log didn't find anything (new file)
-  [ -z "$first_year" ] && [ -z "$recent_year" ] && first_year=$(date '+%Y') && recent_year=$(date '+%Y')
+  [ -z "$first_year" ] && first_year=$(date '+%Y')
+  [ -z "$recent_year" ] && recent_year=$(date '+%Y')
 
   # shellcheck disable=SC2059
   copyright_line=$(printf "${copyright_template}" "$first_year" "$recent_year")
