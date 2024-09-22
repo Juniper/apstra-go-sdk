@@ -15,8 +15,10 @@ const (
 	apiUrlBlueprintRevisions = apiUrlBlueprintById + apiUrlPathDelim + "revisions"
 )
 
-type DeployStatus int
-type deployStatus string
+type (
+	DeployStatus int
+	deployStatus string
+)
 
 const (
 	DeployStatusSuccess = DeployStatus(iota)

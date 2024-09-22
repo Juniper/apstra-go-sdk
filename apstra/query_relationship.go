@@ -58,8 +58,10 @@ const (
 	relationshipTypeUnknown           = "unknown node type %d"
 )
 
-type RelationshipType int
-type relationshipType string
+type (
+	RelationshipType int
+	relationshipType string
+)
 
 func (o RelationshipType) String() string {
 	switch o {

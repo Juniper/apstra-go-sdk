@@ -13,8 +13,10 @@ const (
 	apiUrlBlueprintRoutingPolicyById     = apiUrlBlueprintRoutingPoliciesPrefix + "%s"
 )
 
-type DcRoutingPolicyType int
-type dcRoutingPolicyType string
+type (
+	DcRoutingPolicyType int
+	dcRoutingPolicyType string
+)
 
 const (
 	DcRoutingPolicyTypeNone = DcRoutingPolicyType(iota)
@@ -75,8 +77,10 @@ func (o dcRoutingPolicyType) parse() (int, error) {
 	}
 }
 
-type PrefixFilterAction int
-type prefixFilterAction string
+type (
+	PrefixFilterAction int
+	prefixFilterAction string
+)
 
 const (
 	PrefixFilterActionNone = PrefixFilterAction(iota)
@@ -153,8 +157,10 @@ func AllPrefixFilterActions() []PrefixFilterAction {
 	}
 }
 
-type DcRoutingPolicyImportPolicy int
-type dcRoutingPolicyImportPolicy string
+type (
+	DcRoutingPolicyImportPolicy int
+	dcRoutingPolicyImportPolicy string
+)
 
 const (
 	DcRoutingPolicyImportPolicyNone = DcRoutingPolicyImportPolicy(iota)

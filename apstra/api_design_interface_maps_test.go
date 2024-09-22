@@ -192,5 +192,4 @@ func TestGetInterfaceMapByName(t *testing.T) {
 		}
 		log.Printf("%s <---> %s", interfaceMap.Data.LogicalDeviceId, interfaceMap.Data.DeviceProfileId)
 	}
-
 }

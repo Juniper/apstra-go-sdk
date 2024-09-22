@@ -13,8 +13,10 @@ import (
 //'sonic': ('system', 'file', 'frr', 'ospf'),
 //}
 
-type PlatformOS int
-type platformOS string
+type (
+	PlatformOS int
+	platformOS string
+)
 
 const (
 	PlatformOSCumulus = PlatformOS(iota)
@@ -146,8 +148,10 @@ func AllPlatformOSes() []PlatformOS {
 	}
 }
 
-type ConfigletSection int
-type configletSection string
+type (
+	ConfigletSection int
+	configletSection string
+)
 
 const (
 	ConfigletSectionSystem = ConfigletSection(iota)

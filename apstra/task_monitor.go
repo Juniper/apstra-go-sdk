@@ -413,7 +413,7 @@ func blueprintIdFromUrl(in *url.URL) ObjectId {
 // *getTaskResponse
 func waitForTaskCompletion(bId ObjectId, tId TaskId, mon chan *taskMonitorMonReq) (*getTaskResponse, error) {
 	// todo: restore log message below
-	//debugStr(1, fmt.Sprintf("awaiting completion of blueprint '%s' task '%s", bId, tId))
+	// debugStr(1, fmt.Sprintf("awaiting completion of blueprint '%s' task '%s", bId, tId))
 	// task status update channel (how we'll learn the task is complete
 	reply := make(chan *taskCompleteInfo, 1) // Task Complete Info Channel
 	defer close(reply)
@@ -427,5 +427,4 @@ func waitForTaskCompletion(bId ObjectId, tId TaskId, mon chan *taskMonitorMonReq
 
 	tci := <-reply
 	return tci.status, tci.err
-
 }

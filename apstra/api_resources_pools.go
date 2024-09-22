@@ -2,8 +2,10 @@ package apstra
 
 import "fmt"
 
-type PoolStatus int
-type poolStatus string
+type (
+	PoolStatus int
+	poolStatus string
+)
 
 const (
 	PoolStatusUnused = PoolStatus(iota)

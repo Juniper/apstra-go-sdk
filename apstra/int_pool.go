@@ -203,12 +203,12 @@ type rawIntRange struct {
 }
 
 func (o rawIntRange) first() uint32 {
-	//TODO implement me
+	// TODO implement me
 	return o.First
 }
 
 func (o rawIntRange) last() uint32 {
-	//TODO implement me
+	// TODO implement me
 	return o.Last
 }
 
@@ -248,7 +248,7 @@ func (o *Client) createIntPool(ctx context.Context, in *IntPoolRequest, apiUrlRe
 	response := &objectIdResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      apiUrlResourcePool, //Will be apiUrlResourcesAsnPool or apiUrlResourcesVniPool
+		urlStr:      apiUrlResourcePool, // Will be apiUrlResourcesAsnPool or apiUrlResourcesVniPool
 		apiInput:    in.raw(),
 		apiResponse: response,
 	})
@@ -264,7 +264,7 @@ func (o *Client) listIntPoolIds(ctx context.Context, apiUrlResourcePool string) 
 	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
-		urlStr:      apiUrlResourcePool, //Will be apiUrlResourcesAsnPool or apiUrlResourcesVniPool
+		urlStr:      apiUrlResourcePool, // Will be apiUrlResourcesAsnPool or apiUrlResourcesVniPool
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -296,7 +296,7 @@ func (o *Client) getIntPool(ctx context.Context, apiUrlResourcePoolById string, 
 	response := &rawIntPool{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlResourcePoolById, poolId), //ApiUrl
+		urlStr:      fmt.Sprintf(apiUrlResourcePoolById, poolId), // ApiUrl
 		apiResponse: response,
 	})
 	if err != nil {

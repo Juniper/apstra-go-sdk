@@ -158,7 +158,8 @@ func (o *TwoStageL3ClosClient) GetTransformationIdByIfName(ctx context.Context, 
 func transformByIfName(ifName string, in []struct {
 	Mapping []int  `json:"mapping"`
 	Name    string `json:"name"`
-}) (int, error) {
+},
+) (int, error) {
 	for _, iMapInterface := range in {
 		if iMapInterface.Name != ifName {
 			continue
@@ -171,5 +172,4 @@ func transformByIfName(ifName string, in []struct {
 		errType: ErrNotfound,
 		err:     fmt.Errorf("no mapping for interface %q found in interface map", ifName),
 	}
-
 }

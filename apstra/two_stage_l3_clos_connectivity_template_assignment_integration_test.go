@@ -136,7 +136,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			SetBlueprintType(BlueprintTypeStaging).
 			SetBlueprintId(bpClient.blueprintId).
 			SetClient(bpClient.client).
-			//Node([]QEEAttribute{{"id", QEStringVal(leaf1Id.String())}}).
+			// Node([]QEEAttribute{{"id", QEStringVal(leaf1Id.String())}}).
 			Node([]QEEAttribute{
 				NodeTypeSystem.QEEAttribute(),
 				{"role", QEStringVal("leaf")},

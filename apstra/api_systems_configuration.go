@@ -17,8 +17,8 @@ var _ json.Unmarshaler = new(SystemConfig)
 
 type SystemConfig struct {
 	SystemId ObjectId
-	//DeployState                   string
-	//ConfigurationServiceState     string
+	// DeployState                   string
+	// ConfigurationServiceState     string
 	LastBootTime                  time.Time
 	Deviated                      bool
 	ErrorMessage                  *string
@@ -33,8 +33,8 @@ type SystemConfig struct {
 func (o *SystemConfig) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		SystemId ObjectId `json:"system_id"`
-		//DeployState                   string   `json:"deploy_state"`
-		//ConfigurationServiceState     string   `json:"configuration_service_state"`
+		// DeployState                   string   `json:"deploy_state"`
+		// ConfigurationServiceState     string   `json:"configuration_service_state"`
 		LastBootTime                  float64 `json:"last_boot_time"`
 		Deviated                      bool    `json:"deviated"`
 		ErrorMessage                  string  `json:"error_message,omitempty"`
