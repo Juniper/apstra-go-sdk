@@ -15,7 +15,7 @@ skip_regexes+=("^Third_Party_Code/.*$")
 skip_regexes+=("^\.gitignore$")
 skip_regexes+=("^\.notices.tpl$")
 
-copyright_template="Copyright \(c\) Juniper Networks, Inc\., %s-%s\."
+copyright_template="Copyright \\(c\\) Juniper Networks, Inc\\., %s-%s\\."
 arr_line="All rights reserved\."
 spdx_line="SPDX-License-Identifier: Apache-2.0"
 leading_comment="[ #/]{0,3}"
@@ -39,7 +39,7 @@ do
   [ -n "$skip" ] && printf "skipping %s" "$file" && continue
 
   # shellcheck disable=SC2059
-  printf "checking %s\n" "$file"
+  printf "checking %s...  " "$file"
 
   # determine the the the file was introduced and the year it was most recently modified
   first_year=""
@@ -52,10 +52,11 @@ do
     else
       first_year="$line"
     fi
-  done <<< "$(git log --follow --pretty=format:"%ad" --date=format:'%Y' "$file" | sed -n '1p;$p')"
+  done <<< "$((git log --follow --pretty=format:"%ad" --date=format:'%Y' "$file"; echo) | sed -n '1p;$p')"
 
   # assume current year for both values if git log didn't find anything (new file)
-  [ -z "$first_year" ] && [ -z "$recent_year" ] && first_year=$(date '+%Y') && recent_year=$(date '+%Y')
+  [ -z "$first_year" ] && first_year=$(date '+%Y')
+  [ -z "$recent_year" ] && recent_year=$(date '+%Y')
 
   # shellcheck disable=SC2059
   copyright_line=$(printf "${copyright_template}" "$first_year" "$recent_year")
@@ -69,8 +70,11 @@ do
   grep -Eq "${leading_comment}${arr_line}"       <<< "$head" || ((failed+=2))
   grep -Eq "${leading_comment}${spdx_line}"      <<< "$head" || ((failed+=4))
 
-  if [ "$failed" -gt 0 ]
+  if [ "$failed" -eq 0 ]
   then
+    echo "ok"
+  else
+    echo "failure reason: $failed"
     problem_files+=("$file")
     problem_headers+=("${copyright_line//\\/}\n${arr_line//\\/}\n${spdx_line//\\/}")
   fi
