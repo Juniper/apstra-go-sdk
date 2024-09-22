@@ -16,4 +16,5 @@ jobs:
       - name: license header check
         run: |
           git fetch origin main
+          git pull --unshallow
           make license-header-check
