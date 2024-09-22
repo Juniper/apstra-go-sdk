@@ -4,10 +4,6 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-git log --follow apstra/helpers.go
-echo
-echo
-
 set -euo pipefail
 
 # files we're not interested in
@@ -61,8 +57,6 @@ do
   # assume current year for both values if git log didn't find anything (new file)
   [ -z "$first_year" ] && first_year=$(date '+%Y')
   [ -z "$recent_year" ] && recent_year=$(date '+%Y')
-
-  echo -n "$first_year-$recent_year  "
 
   # shellcheck disable=SC2059
   copyright_line=$(printf "${copyright_template}" "$first_year" "$recent_year")
