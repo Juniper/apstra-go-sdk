@@ -39,7 +39,7 @@ do
   [ -n "$skip" ] && printf "skipping %s" "$file" && continue
 
   # shellcheck disable=SC2059
-  printf "checking %s\n" "$file"
+  printf "checking %s...  " "$file"
 
   # determine the the the file was introduced and the year it was most recently modified
   first_year=""
@@ -70,8 +70,11 @@ do
   grep -Eq "${leading_comment}${arr_line}"       <<< "$head" || ((failed+=2))
   grep -Eq "${leading_comment}${spdx_line}"      <<< "$head" || ((failed+=4))
 
-  if [ "$failed" -gt 0 ]
+  if [ "$failed" -eq 0 ]
   then
+    echo "ok"
+  else
+    echo "failure reason: $failed"
     problem_files+=("$file")
     problem_headers+=("${copyright_line//\\/}\n${arr_line//\\/}\n${spdx_line//\\/}")
   fi
