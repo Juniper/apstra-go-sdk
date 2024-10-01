@@ -75,7 +75,7 @@ func (o SecurityZoneLoopback) MarshalJSON() ([]byte, error) {
 }
 
 // SetSecurityZoneLoopbacks takes a map of SecurityZoneLoopback keyed by the loopback interface graph node ID.
-func (o TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szId ObjectId, loopbacks map[ObjectId]SecurityZoneLoopback) error {
+func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szId ObjectId, loopbacks map[ObjectId]SecurityZoneLoopback) error {
 	if !compatibility.SecurityZoneLoopbackApiSupported.Check(o.client.apiVersion) {
 		return fmt.Errorf("SetSecurityZoneLoopbacks requires Apstra version %s, have version %s",
 			compatibility.SecurityZoneLoopbackApiSupported, o.client.apiVersion,
@@ -105,4 +105,103 @@ func (o TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szId
 	}
 
 	return nil
+}
+
+func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacks(ctx context.Context, szId ObjectId) (map[ObjectId]SecurityZoneLoopback, error) {
+	query := new(PathQuery).
+		SetBlueprintId(o.blueprintId).
+		SetClient(o.client).
+		Node([]QEEAttribute{
+			NodeTypeSecurityZone.QEEAttribute(),
+			{Key: "id", Value: QEStringVal(szId)},
+		}).
+		Out([]QEEAttribute{RelationshipTypeInstantiatedBy.QEEAttribute()}).
+		Node([]QEEAttribute{NodeTypeSecurityZoneInstance.QEEAttribute()}).
+		Out([]QEEAttribute{RelationshipTypeMemberInterfaces.QEEAttribute()}).
+		Node([]QEEAttribute{
+			NodeTypeInterface.QEEAttribute(),
+			{Key: "if_type", Value: QEStringVal("loopback")},
+			{Key: "name", Value: QEStringVal("n_interface")},
+		})
+
+	var queryResponse struct {
+		Items []struct {
+			Interface struct {
+				Id       ObjectId `json:"id"`
+				IPv4Addr *string  `json:"ipv4_addr"`
+				IPv6Addr *string  `json:"ipv6_addr"`
+			} `json:"n_interface""`
+		} `json:"items"`
+	}
+
+	err := query.Do(ctx, &queryResponse)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryResponse.Items) == 0 {
+		return nil, nil
+	}
+
+	result := make(map[ObjectId]SecurityZoneLoopback, len(queryResponse.Items))
+	for _, item := range queryResponse.Items {
+		var ipv4Addr *netip.Prefix
+		if item.Interface.IPv4Addr != nil {
+			ip, err := netip.ParsePrefix(*item.Interface.IPv4Addr)
+			if err != nil {
+				return nil, fmt.Errorf("failed parsing node %q ipv4_addr value %q - %w", item.Interface.Id, *item.Interface.IPv4Addr, err)
+			}
+			ipv4Addr = &ip
+		}
+
+		var ipv6Addr *netip.Prefix
+		if item.Interface.IPv6Addr != nil {
+			ip, err := netip.ParsePrefix(*item.Interface.IPv6Addr)
+			if err != nil {
+				return nil, fmt.Errorf("failed parsing node %q ipv6_addr value %q - %w", item.Interface.Id, *item.Interface.IPv6Addr, err)
+			}
+			ipv6Addr = &ip
+		}
+
+		result[item.Interface.Id] = SecurityZoneLoopback{
+			IPv4Addr: ipv4Addr,
+			IPv6Addr: ipv6Addr,
+		}
+	}
+
+	return result, nil
+}
+
+func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbackByInterfaceId(ctx context.Context, id ObjectId) (*SecurityZoneLoopback, error) {
+	var target struct {
+		IPv4Addr *string `json:"ipv4_addr"`
+		IPv6Addr *string `json:"ipv6_addr"`
+	}
+
+	err := o.client.GetNode(ctx, o.blueprintId, id, &target)
+	if err != nil {
+		return nil, fmt.Errorf("failed fetching ndoe %q from blueprint %q - %w", id, o.blueprintId, err)
+	}
+
+	var ipv4Addr *netip.Prefix
+	if target.IPv4Addr != nil {
+		ip, err := netip.ParsePrefix(*target.IPv4Addr)
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing node %q ipv4_addr value %q - %w", id, *target.IPv4Addr, err)
+		}
+		ipv4Addr = &ip
+	}
+
+	var ipv6Addr *netip.Prefix
+	if target.IPv6Addr != nil {
+		ip, err := netip.ParsePrefix(*target.IPv6Addr)
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing node %q ipv6_addr value %q - %w", id, *target.IPv6Addr, err)
+		}
+		ipv6Addr = &ip
+	}
+
+	return &SecurityZoneLoopback{
+		IPv4Addr: ipv4Addr,
+		IPv6Addr: ipv6Addr,
+	}, nil
 }
