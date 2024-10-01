@@ -130,7 +130,7 @@ func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacks(ctx context.Context, szI
 				Id       ObjectId `json:"id"`
 				IPv4Addr *string  `json:"ipv4_addr"`
 				IPv6Addr *string  `json:"ipv6_addr"`
-			} `json:"n_interface""`
+			} `json:"n_interface"`
 		} `json:"items"`
 	}
 
