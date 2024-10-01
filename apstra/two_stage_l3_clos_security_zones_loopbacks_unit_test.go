@@ -1,12 +1,17 @@
+// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package apstra_test
 
 import (
 	"encoding/json"
-	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/stretchr/testify/require"
 	"log"
 	"net/netip"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSecurityZoneLoopback_MarshalJSON(t *testing.T) {

@@ -1,12 +1,17 @@
+// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package apstra
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"net/http"
 	"net/netip"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 )
 
 const apiUrlBlueprintSecurityZoneLoopbacksById = apiUrlBlueprintSecurityZoneById + apiUrlPathDelim + "loopbacks"
@@ -52,7 +57,6 @@ func (o SecurityZoneLoopback) MarshalJSON() ([]byte, error) {
 
 	if o.IPv4Addr != nil {
 		if o.IPv4Addr.IsValid() {
-			//if o.IPv4Addr.IP != nil || o.IPv4Addr.Mask != nil {
 			ipInfo["ipv4_addr"] = toPtr(o.IPv4Addr.String())
 		} else {
 			ipInfo["ipv4_addr"] = nil
@@ -61,7 +65,6 @@ func (o SecurityZoneLoopback) MarshalJSON() ([]byte, error) {
 
 	if o.IPv6Addr != nil {
 		if o.IPv6Addr.IsValid() {
-			//if o.IPv6Addr.IP != nil || o.IPv6Addr.Mask != nil {
 			ipInfo["ipv6_addr"] = toPtr(o.IPv6Addr.String())
 		} else {
 			ipInfo["ipv6_addr"] = nil

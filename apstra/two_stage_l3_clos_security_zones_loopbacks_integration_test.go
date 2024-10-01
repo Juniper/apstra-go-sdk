@@ -9,10 +9,11 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
-	"github.com/stretchr/testify/require"
 	"net/netip"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
