@@ -146,8 +146,9 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			leafIds, err := getSystemIdsByRole(ctx, bpClient, "leaf")
 			require.NoError(t, err)
 			require.Greater(t, len(leafIds), 0)
+			leafId := leafIds[0]
 
-			loopbackNodeId := getLoopbackNodeId(t, ctx, bpClient, leafIds[0], szId)
+			loopbackNodeId := getLoopbackNodeId(t, ctx, bpClient, leafId, szId)
 
 			for i, tCase := range testCases {
 				t.Run(fmt.Sprintf("test_case_%d", i), func(t *testing.T) {
@@ -159,57 +160,94 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 					})
 					require.NoError(t, err)
 
-					// fetch by id
-					actualById, err := bpClient.GetSecurityZoneLoopbackByInterfaceId(ctx, loopbackNodeId)
+					// fetch by interface id
+					actualByIfId, err := bpClient.GetSecurityZoneLoopbackByInterfaceId(ctx, loopbackNodeId)
 					require.NoError(t, err)
+					require.Equal(t, loopbackNodeId, actualByIfId.Id)
+					require.Equal(t, szId, actualByIfId.SecurityZoneId)
+					require.Equal(t, 0, actualByIfId.LoopbackId)
+
+					// fetch by system id
+					actualsBySysId, err := bpClient.GetSecurityZoneLoopbacksBySystemId(ctx, leafId)
+					require.NoError(t, err)
+					var actualBySysId *SecurityZoneLoopback
+					for _, szl := range actualsBySysId {
+						if szl.Id == loopbackNodeId {
+							actualBySysId = &szl
+							break
+						}
+					}
+					require.NotNil(t, actualBySysId)
+					require.Equal(t, loopbackNodeId, actualBySysId.Id)
+					require.Equal(t, szId, actualBySysId.SecurityZoneId)
+					require.Equal(t, 0, actualBySysId.LoopbackId)
 
 					// fetch all
 					actualMap, err := bpClient.GetSecurityZoneLoopbacks(ctx, szId)
 					require.NoError(t, err)
 					require.Contains(t, actualMap, loopbackNodeId)
+					require.Equal(t, loopbackNodeId, actualMap[loopbackNodeId].Id)
+					require.Equal(t, szId, actualMap[loopbackNodeId].SecurityZoneId)
+					require.Equal(t, 0, actualMap[loopbackNodeId].LoopbackId)
 
 					switch {
 					case tCase.ipv4 == nil:
-						require.Equalf(t, persistIpv4.String(), actualById.IPv4Addr.String(),
-							"we sent <nil>, so actual ipv4 address (by id) should use the old value %s, got %s",
-							persistIpv4.String(), actualById.IPv4Addr.String())
+						require.Equalf(t, persistIpv4.String(), actualByIfId.IPv4Addr.String(),
+							"we sent <nil>, so actual ipv4 address (by if id) should use the old value %s, got %s",
+							persistIpv4.String(), actualByIfId.IPv4Addr.String())
 						require.Equalf(t, persistIpv4.String(), actualMap[loopbackNodeId].IPv4Addr.String(),
 							"we sent <nil>, so actual ipv4 address (by map) should use the old value %s, got %s",
 							persistIpv4.String(), actualMap[loopbackNodeId].IPv4Addr.String())
+						require.Equalf(t, persistIpv4.String(), actualBySysId.IPv4Addr.String(),
+							"we sent <nil>, so actual ipv4 address (by sys id) should use the old value %s, got %s",
+							persistIpv4.String(), actualBySysId.IPv4Addr.String())
 					case !tCase.ipv4.IsValid():
-						require.Truef(t, ipv4PoolPrefix.Contains(actualById.IPv4Addr.Addr()),
-							"we sent <invalid>, so actual (by id) ipv4 address should fall within the pool prefix %s, got %s",
-							ipv4PoolPrefix, actualById.IPv4Addr)
+						require.Truef(t, ipv4PoolPrefix.Contains(actualByIfId.IPv4Addr.Addr()),
+							"we sent <invalid>, so actual (by if id) ipv4 address should fall within the pool prefix %s, got %s",
+							ipv4PoolPrefix, actualByIfId.IPv4Addr)
 						require.Truef(t, ipv4PoolPrefix.Contains(actualMap[loopbackNodeId].IPv4Addr.Addr()),
 							"we sent <invalid>, so actual (by map) ipv4 address should fall within the pool prefix %s, got %s",
 							ipv4PoolPrefix, actualMap[loopbackNodeId])
+						require.Truef(t, ipv4PoolPrefix.Contains(actualBySysId.IPv4Addr.Addr()),
+							"we sent <invalid>, so actual (by sys id) ipv4 address should fall within the pool prefix %s, got %s",
+							ipv4PoolPrefix, actualBySysId.IPv4Addr)
 					default:
-						require.Equalf(t, tCase.ipv4.String(), actualById.IPv4Addr.String(), "expected: %s actual (by id) %s",
-							tCase.ipv4.String(), actualById.IPv4Addr.String())
-						require.Equalf(t, tCase.ipv4.String(), actualById.IPv4Addr.String(), "expected: %s actual (by map) %s",
+						require.Equalf(t, tCase.ipv4.String(), actualByIfId.IPv4Addr.String(), "expected: %s actual (by if id) %s",
+							tCase.ipv4.String(), actualByIfId.IPv4Addr.String())
+						require.Equalf(t, tCase.ipv4.String(), actualByIfId.IPv4Addr.String(), "expected: %s actual (by map) %s",
 							tCase.ipv4.String(), actualMap[loopbackNodeId].IPv4Addr.String())
+						require.Equalf(t, tCase.ipv4.String(), actualBySysId.IPv4Addr.String(), "expected: %s actual (by sys id) %s",
+							tCase.ipv4.String(), actualBySysId.IPv4Addr.String())
 					}
 
 					switch {
 					case tCase.ipv6 == nil:
-						require.Equalf(t, persistIpv6.String(), actualById.IPv6Addr.String(),
-							"we sent <nil>, so actual ipv6 address (by id) should use the old value %s, got %s",
-							persistIpv6.String(), actualById.IPv6Addr.String())
+						require.Equalf(t, persistIpv6.String(), actualByIfId.IPv6Addr.String(),
+							"we sent <nil>, so actual ipv6 address (by if id) should use the old value %s, got %s",
+							persistIpv6.String(), actualByIfId.IPv6Addr.String())
 						require.Equalf(t, persistIpv6.String(), actualMap[loopbackNodeId].IPv6Addr.String(),
 							"we sent <nil>, so actual ipv6 address (by map) should use the old value %s, got %s",
 							persistIpv6.String(), actualMap[loopbackNodeId].IPv6Addr.String())
+						require.Equalf(t, persistIpv6.String(), actualBySysId.IPv6Addr.String(),
+							"we sent <nil>, so actual ipv6 address (by sys id) should use the old value %s, got %s",
+							persistIpv6.String(), actualBySysId.IPv6Addr.String())
 					case !tCase.ipv6.IsValid():
-						require.Truef(t, ipv6PoolPrefix.Contains(actualById.IPv6Addr.Addr()),
-							"we sent <invalid>, so actual (by id) ipv6 address should fall within the pool prefix %s, got %s",
-							ipv6PoolPrefix, actualById.IPv6Addr)
+						require.Truef(t, ipv6PoolPrefix.Contains(actualByIfId.IPv6Addr.Addr()),
+							"we sent <invalid>, so actual (by if id) ipv6 address should fall within the pool prefix %s, got %s",
+							ipv6PoolPrefix, actualByIfId.IPv6Addr)
 						require.Truef(t, ipv6PoolPrefix.Contains(actualMap[loopbackNodeId].IPv6Addr.Addr()),
 							"we sent <invalid>, so actual (by map) ipv6 address should fall within the pool prefix %s, got %s",
 							ipv6PoolPrefix, actualMap[loopbackNodeId])
+						require.Truef(t, ipv6PoolPrefix.Contains(actualBySysId.IPv6Addr.Addr()),
+							"we sent <invalid>, so actual (by sys d) ipv6 address should fall within the pool prefix %s, got %s",
+							ipv6PoolPrefix, actualBySysId.IPv6Addr)
 					default:
-						require.Equalf(t, tCase.ipv6.String(), actualById.IPv6Addr.String(), "expected: %s actual (by id) %s",
-							tCase.ipv6.String(), actualById.IPv6Addr.String())
-						require.Equalf(t, tCase.ipv6.String(), actualById.IPv6Addr.String(), "expected: %s actual (by map) %s",
+						require.Equalf(t, tCase.ipv6.String(), actualByIfId.IPv6Addr.String(), "expected: %s actual (by if id) %s",
+							tCase.ipv6.String(), actualByIfId.IPv6Addr.String())
+						require.Equalf(t, tCase.ipv6.String(), actualByIfId.IPv6Addr.String(), "expected: %s actual (by map) %s",
 							tCase.ipv6.String(), actualMap[loopbackNodeId].IPv6Addr.String())
+						require.Equalf(t, tCase.ipv6.String(), actualBySysId.IPv6Addr.String(), "expected: %s actual (by sys id) %s",
+							tCase.ipv6.String(), actualBySysId.IPv6Addr.String())
 					}
 				})
 			}
