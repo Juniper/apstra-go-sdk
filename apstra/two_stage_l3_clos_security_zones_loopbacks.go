@@ -104,6 +104,9 @@ func (o SecurityZoneLoopback) MarshalJSON() ([]byte, error) {
 }
 
 // SetSecurityZoneLoopbacks takes a map of SecurityZoneLoopback keyed by the loopback interface graph node ID.
+// Only IP information is required in the `SecurityZoneLoopback` objects passed to this function. The other
+// elements will not be rendered to JSON and would be ignored by the API. See the SecurityZoneLoopback for an
+// explanation of how to set and clear addresses (Go nil vs. JSON null, etc...)
 func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szId ObjectId, loopbacks map[ObjectId]SecurityZoneLoopback) error {
 	if !compatibility.SecurityZoneLoopbackApiSupported.Check(o.client.apiVersion) {
 		return fmt.Errorf("SetSecurityZoneLoopbacks requires Apstra version %s, have version %s",
