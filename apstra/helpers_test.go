@@ -427,8 +427,8 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, bpDeleteFunc
 }
 
-// testBlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient and a cleanup function
-// which deletes the test blueprint. The blueprint will use a dual-stack fabric and have ipv6 enabled.
+// testBlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient.
+// The blueprint will use a dual-stack fabric and have ipv6 enabled.
 func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
