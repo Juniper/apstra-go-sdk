@@ -56,6 +56,7 @@ const (
 
 	mutexKeySeparator   = ":"
 	mutexKeyHttpHeaders = "http headers"
+	tuningParamLock     = "tuning param lock"
 )
 
 type ErrCtAssignedToLinkDetail struct {
@@ -161,6 +162,8 @@ type Client struct {
 // For un-configured parameters containing "TimeoutSec", "PollingIntervalMs" or "MaxRetries" a default
 // value is returned. Other un-configured values return zero.
 func (o *Client) GetTuningParam(name string) int {
+	o.lock(tuningParamLock)
+	defer o.unlock(tuningParamLock)
 	result, ok := o.cfg.tuningParams[name]
 	if ok {
 		return result
@@ -182,6 +185,11 @@ func (o *Client) GetTuningParam(name string) int {
 
 // SetTuningParam configures a value in the client configuration. It's a simple map, so any name may be used.
 func (o *Client) SetTuningParam(name string, val int) {
+	o.lock(tuningParamLock)
+	defer o.unlock(tuningParamLock)
+	if o.cfg.tuningParams == nil {
+		o.cfg.tuningParams = make(map[string]int)
+	}
 	o.cfg.tuningParams[name] = val
 }
 
