@@ -280,10 +280,6 @@ func (o ClientCfg) validate() error {
 
 // NewClient creates a Client object
 func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
-	if o.tuningParams == nil {
-		o.tuningParams = make(map[string]int)
-	}
-
 	err := o.validate()
 	if err != nil {
 		return nil, err
