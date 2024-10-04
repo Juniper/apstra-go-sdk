@@ -32,11 +32,11 @@ var (
 	PatchNodeSupportsUnsafeArg = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
-	TemplateRequestRequiresAntiAffinityPolicy = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
-	}
 	RoutingPolicyExportHasL3EdgeLinks = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
+	}
+	SecurityZoneLoopbackApiSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
 	ServerVersionSupported = Constraint{
 		constraints:             version.MustConstraints(version.NewConstraint(strings.Join(SupportedApiVersions(), ","))),
@@ -45,5 +45,8 @@ var (
 	}
 	SystemManagerHasSkipInterfaceShutdownOnUpgrade = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	}
+	TemplateRequestRequiresAntiAffinityPolicy = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
 	}
 )
