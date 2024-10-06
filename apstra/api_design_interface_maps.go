@@ -177,7 +177,7 @@ type InterfaceMapInterfaceSetting struct {
 
 type InterfaceMapInterface struct {
 	Name        string
-	Roles       LogicalDevicePortRoleFlags
+	Roles       LogicalDevicePortRoles
 	Mapping     InterfaceMapMapping
 	ActiveState InterfaceStateActive
 	Position    int
@@ -188,7 +188,7 @@ type InterfaceMapInterface struct {
 func (o *InterfaceMapInterface) raw() *rawInterfaceMapInterface {
 	return &rawInterfaceMapInterface{
 		Name:     o.Name,
-		Roles:    o.Roles.raw(),
+		Roles:    o.Roles.Strings(),
 		Mapping:  *o.Mapping.raw(),
 		State:    o.ActiveState.raw(),
 		Setting:  o.Setting,
@@ -199,7 +199,7 @@ func (o *InterfaceMapInterface) raw() *rawInterfaceMapInterface {
 
 type rawInterfaceMapInterface struct {
 	Name     string                       `json:"name"`
-	Roles    logicalDevicePortRoles       `json:"roles"`
+	Roles    []string                     `json:"roles"`
 	Mapping  rawInterfaceMapping          `json:"mapping"`
 	State    rawInterfaceState            `json:"state"`
 	Setting  InterfaceMapInterfaceSetting `json:"setting"`
@@ -208,10 +208,12 @@ type rawInterfaceMapInterface struct {
 }
 
 func (o *rawInterfaceMapInterface) polish() (*InterfaceMapInterface, error) {
-	roles, err := o.Roles.parse()
+	var roles LogicalDevicePortRoles
+	err := roles.FromStrings(o.Roles)
 	if err != nil {
 		return nil, err
 	}
+
 	state, err := o.State.polish()
 	if err != nil {
 		return nil, err

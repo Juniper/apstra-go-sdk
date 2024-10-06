@@ -7,7 +7,6 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,130 +22,6 @@ const (
 	PortIndexingHorizontalFirst = "T-B, L-R"
 	PortIndexingSchemaAbsolute  = "absolute"
 )
-
-type (
-	LogicalDevicePortRoleFlags uint16
-	logicalDevicePortRole      string
-)
-
-// class PortGroupSchema (scotch/schemas/logical_device.py) specifies:
-// validate=validate.OneOf(
-//
-//	['spine', 'superspine', 'leaf', 'access',
-//	 'l3_server', 'peer', 'unused', 'generic']
-const (
-	LogicalDevicePortRoleSpine = LogicalDevicePortRoleFlags(1 << iota)
-	LogicalDevicePortRoleSuperspine
-	LogicalDevicePortRoleLeaf
-	LogicalDevicePortRoleAccess
-	LogicalDevicePortRoleL3Server
-	LogicalDevicePortRolePeer
-	LogicalDevicePortRoleUnused
-	LogicalDevicePortRoleGeneric
-	LogicalDevicePortRoleUnknown = "unknown logical device port role '%s'"
-
-	logicalDevicePortRoleSpine      = logicalDevicePortRole("spine")
-	logicalDevicePortRoleSuperspine = logicalDevicePortRole("superspine")
-	logicalDevicePortRoleLeaf       = logicalDevicePortRole("leaf")
-	logicalDevicePortRoleAccess     = logicalDevicePortRole("access")
-	logicalDevicePortRoleL3Server   = logicalDevicePortRole("l3_server")
-	logicalDevicePortRolePeer       = logicalDevicePortRole("peer")
-	logicalDevicePortRoleUnused     = logicalDevicePortRole("unused")
-	logicalDevicePortRoleGeneric    = logicalDevicePortRole("generic")
-)
-
-func (o *LogicalDevicePortRoleFlags) raw() []logicalDevicePortRole {
-	// instantiate as zero-length rather than nil so we send "[]"
-	// rather than "null" when no roles are specified.
-	result := make([]logicalDevicePortRole, 0)
-
-	if *o&LogicalDevicePortRoleSpine != 0 {
-		result = append(result, logicalDevicePortRoleSpine)
-	}
-	if *o&LogicalDevicePortRoleSuperspine != 0 {
-		result = append(result, logicalDevicePortRoleSuperspine)
-	}
-	if *o&LogicalDevicePortRoleLeaf != 0 {
-		result = append(result, logicalDevicePortRoleLeaf)
-	}
-	if *o&LogicalDevicePortRoleAccess != 0 {
-		result = append(result, logicalDevicePortRoleAccess)
-	}
-	if *o&LogicalDevicePortRoleL3Server != 0 {
-		result = append(result, logicalDevicePortRoleL3Server)
-	}
-	if *o&LogicalDevicePortRolePeer != 0 {
-		result = append(result, logicalDevicePortRolePeer)
-	}
-	if *o&LogicalDevicePortRoleUnused != 0 {
-		result = append(result, logicalDevicePortRoleUnused)
-	}
-	if *o&LogicalDevicePortRoleGeneric != 0 {
-		result = append(result, logicalDevicePortRoleGeneric)
-	}
-	return result
-}
-
-func (o *LogicalDevicePortRoleFlags) Strings() []string {
-	var result []string
-	for _, role := range o.raw() {
-		result = append(result, string(role))
-	}
-	return result
-}
-
-func (o *LogicalDevicePortRoleFlags) FromStrings(in []string) error {
-	*o = 0
-	for _, s := range in {
-		f, err := logicalDevicePortRole(s).parse()
-		if err != nil {
-			return err
-		}
-		*o = *o | f
-	}
-	return nil
-}
-
-func (o *LogicalDevicePortRoleFlags) SetAll() {
-	*o = LogicalDevicePortRoleFlags(math.MaxUint16)
-}
-
-func (o logicalDevicePortRole) parse() (LogicalDevicePortRoleFlags, error) {
-	switch o {
-	case logicalDevicePortRoleSpine:
-		return LogicalDevicePortRoleSpine, nil
-	case logicalDevicePortRoleSuperspine:
-		return LogicalDevicePortRoleSuperspine, nil
-	case logicalDevicePortRoleLeaf:
-		return LogicalDevicePortRoleLeaf, nil
-	case logicalDevicePortRoleAccess:
-		return LogicalDevicePortRoleAccess, nil
-	case logicalDevicePortRoleL3Server:
-		return LogicalDevicePortRoleL3Server, nil
-	case logicalDevicePortRolePeer:
-		return LogicalDevicePortRolePeer, nil
-	case logicalDevicePortRoleUnused:
-		return LogicalDevicePortRoleUnused, nil
-	case logicalDevicePortRoleGeneric:
-		return LogicalDevicePortRoleGeneric, nil
-	default:
-		return 0, fmt.Errorf(LogicalDevicePortRoleUnknown, o)
-	}
-}
-
-type logicalDevicePortRoles []logicalDevicePortRole
-
-func (o logicalDevicePortRoles) parse() (LogicalDevicePortRoleFlags, error) {
-	var result LogicalDevicePortRoleFlags
-	for _, r := range o {
-		roleFlag, err := r.parse()
-		if err != nil {
-			return result, err
-		}
-		result = result | roleFlag
-	}
-	return result, nil
-}
 
 type optionsLogicalDevicesResponse struct {
 	Items   []ObjectId `json:"items"`
@@ -191,35 +66,37 @@ type LogicalDevicePortIndexing struct {
 }
 
 type LogicalDevicePortGroup struct {
-	Count int                        `json:"count"`
-	Speed LogicalDevicePortSpeed     `json:"speed"`
-	Roles LogicalDevicePortRoleFlags `json:"roles"`
+	Count int                    `json:"count"`
+	Speed LogicalDevicePortSpeed `json:"speed"`
+	Roles LogicalDevicePortRoles `json:"roles"`
 }
 
 func (o LogicalDevicePortGroup) raw() *rawLogicalDevicePortGroup {
 	return &rawLogicalDevicePortGroup{
 		Count: o.Count,
 		Speed: *o.Speed.raw(),
-		Roles: o.Roles.raw(),
+		Roles: o.Roles.Strings(),
 	}
 }
 
 type rawLogicalDevicePortGroup struct {
 	Count int                       `json:"count"`
 	Speed rawLogicalDevicePortSpeed `json:"speed"`
-	Roles logicalDevicePortRoles    `json:"roles"`
+	Roles []string                  `json:"roles"`
 }
 
 func (o *rawLogicalDevicePortGroup) parse() (*LogicalDevicePortGroup, error) {
-	roles, err := o.Roles.parse()
+	result := LogicalDevicePortGroup{
+		Count: o.Count,
+		Speed: o.Speed.parse(),
+	}
+
+	err := result.Roles.FromStrings(o.Roles)
 	if err != nil {
 		return nil, err
 	}
-	return &LogicalDevicePortGroup{
-		Count: o.Count,
-		Speed: o.Speed.parse(),
-		Roles: roles,
-	}, nil
+
+	return &result, nil
 }
 
 type LogicalDevicePortSpeed string

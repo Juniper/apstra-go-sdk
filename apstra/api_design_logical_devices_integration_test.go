@@ -12,6 +12,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,7 +84,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 								{
 									Count: 4,
 									Speed: "10G",
-									Roles: LogicalDevicePortRoleUnused,
+									Roles: LogicalDevicePortRoles{enum.PortRoleUnused},
 								},
 							},
 						},
