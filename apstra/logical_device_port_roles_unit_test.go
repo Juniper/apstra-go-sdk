@@ -108,3 +108,21 @@ func TestLogicalDevicePortRoles_Sort(t *testing.T) {
 		})
 	}
 }
+
+func TestLogicalDevicePortRoles_SetAll(t *testing.T) {
+	var data apstra.LogicalDevicePortRoles
+	data.SetAll()
+
+	expected := apstra.LogicalDevicePortRoles{
+		enum.PortRoleAccess,
+		enum.PortRoleGeneric,
+		// enum.PortRoleL3Server, <---- TEST VALIDATES THAT THIS ONE IS OMITTED
+		enum.PortRoleLeaf,
+		enum.PortRolePeer,
+		enum.PortRoleSpine,
+		enum.PortRoleSuperspine,
+		enum.PortRoleUnused,
+	}
+
+	require.Equal(t, expected, data)
+}

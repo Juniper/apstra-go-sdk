@@ -39,7 +39,16 @@ func (o *LogicalDevicePortRoles) FromStrings(in []string) error {
 }
 
 func (o *LogicalDevicePortRoles) SetAll() {
-	*o = enum.PortRoles.Members()
+	members := enum.PortRoles.Members()
+	for i, member := range members {
+		if member == enum.PortRoleL3Server {
+			members[i] = members[len(members)-1]
+			members = members[:len(members)-1]
+		}
+	}
+
+	*o = members
+	o.Sort()
 }
 
 func (o *LogicalDevicePortRoles) Sort() {
