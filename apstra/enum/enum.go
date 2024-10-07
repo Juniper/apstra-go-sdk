@@ -233,6 +233,24 @@ var (
 		ApiFeatureFullAccess,
 		ApiFeatureTaskApi,
 	)
+
+	_                  enum = new(PortRole)
+	PortRoleAccess          = PortRole{Value: "access"}
+	PortRoleGeneric         = PortRole{Value: "generic"}
+	PortRoleLeaf            = PortRole{Value: "leaf"}
+	PortRolePeer            = PortRole{Value: "peer"}
+	PortRoleSpine           = PortRole{Value: "spine"}
+	PortRoleSuperspine      = PortRole{Value: "superspine"}
+	PortRoleUnused          = PortRole{Value: "unused"}
+	PortRoles               = oenum.New(
+		PortRoleAccess,
+		PortRoleGeneric,
+		PortRoleLeaf,
+		PortRolePeer,
+		PortRoleSpine,
+		PortRoleSuperspine,
+		PortRoleUnused,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -482,6 +500,21 @@ func (o ApiFeature) String() string {
 
 func (o *ApiFeature) FromString(s string) error {
 	t := ApiFeatures.Parse(s)
+	if t == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type PortRole oenum.Member[string]
+
+func (o PortRole) String() string {
+	return o.Value
+}
+
+func (o *PortRole) FromString(s string) error {
+	t := PortRoles.Parse(s)
 	if t == nil {
 		return newEnumParseError(o, s)
 	}

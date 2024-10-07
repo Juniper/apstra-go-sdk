@@ -71,16 +71,3 @@ func TestLogicalDevicePortSpeed_IsEqual(t *testing.T) {
 		}
 	}
 }
-
-func TestLogicalDevicePortRoleFlagsFromStrings(t *testing.T) {
-	data := []string{"spine", "leaf"}
-	expected := LogicalDevicePortRoleSpine | LogicalDevicePortRoleLeaf
-	var result LogicalDevicePortRoleFlags
-	err := result.FromStrings(data)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result != expected {
-		t.Fatalf("expected %d, got %d", expected, result)
-	}
-}
