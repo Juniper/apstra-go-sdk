@@ -804,7 +804,7 @@ func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, intSyst
 		intSystemIds[i], err = c.CreateSystem(ctx, &FreeformSystemData{
 			Type:            SystemTypeInternal,
 			Label:           randString(6, "hex"),
-			DeviceProfileId: dpId,
+			DeviceProfileId: &dpId,
 		})
 		require.NoError(t, err)
 	}

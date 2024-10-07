@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -52,7 +51,7 @@ func TestCRUDInternalSystem(t *testing.T) {
 
 		cfg := FreeformSystemData{
 			Label:           randString(6, "hex"),
-			DeviceProfileId: dpIdA,
+			DeviceProfileId: &dpIdA,
 			Type:            SystemTypeInternal,
 		}
 
@@ -69,7 +68,7 @@ func TestCRUDInternalSystem(t *testing.T) {
 			Label:           randString(6, "hex"),
 			Hostname:        randString(6, "hex"),
 			Tags:            []string{"tagA", "tagB"},
-			DeviceProfileId: dpIdB,
+			DeviceProfileId: &dpIdB,
 		}
 
 		err = ffc.UpdateSystem(ctx, id, &cfg)
@@ -83,7 +82,7 @@ func TestCRUDInternalSystem(t *testing.T) {
 		cfg = FreeformSystemData{
 			Type:            SystemTypeInternal,
 			Label:           randString(6, "hex"),
-			DeviceProfileId: dpIdA,
+			DeviceProfileId: &dpIdA,
 		}
 
 		err = ffc.UpdateSystem(ctx, id, &cfg)
@@ -148,71 +147,75 @@ func TestCRUDExternalSystem(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		ffc := testFFBlueprintA(ctx, t, client.client)
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		cfg := FreeformSystemData{
-			Label: randString(6, "hex"),
-			Type:  SystemTypeExternal,
-		}
+			ffc := testFFBlueprintA(ctx, t, client.client)
 
-		id, err := ffc.CreateSystem(ctx, &cfg)
-		require.NoError(t, err)
+			cfg := FreeformSystemData{
+				Label: randString(6, "hex"),
+				Type:  SystemTypeExternal,
+			}
 
-		ffSystem, err := ffc.GetSystem(ctx, id)
-		require.NoError(t, err)
-		require.Equal(t, id, ffSystem.Id)
-		compare(t, &cfg, ffSystem.Data)
+			id, err := ffc.CreateSystem(ctx, &cfg)
+			require.NoError(t, err)
 
-		cfg = FreeformSystemData{
-			Type:     SystemTypeExternal,
-			Label:    randString(6, "hex"),
-			Hostname: randString(6, "hex"),
-			Tags:     []string{"tagA", "tagB"},
-		}
+			ffSystem, err := ffc.GetSystem(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, id, ffSystem.Id)
+			compare(t, &cfg, ffSystem.Data)
 
-		err = ffc.UpdateSystem(ctx, id, &cfg)
-		require.NoError(t, err)
+			cfg = FreeformSystemData{
+				Type:     SystemTypeExternal,
+				Label:    randString(6, "hex"),
+				Hostname: randString(6, "hex"),
+				Tags:     []string{"tagA", "tagB"},
+			}
 
-		ffSystem, err = ffc.GetSystem(ctx, id)
-		require.NoError(t, err)
-		require.Equal(t, id, ffSystem.Id)
-		compare(t, &cfg, ffSystem.Data)
+			err = ffc.UpdateSystem(ctx, id, &cfg)
+			require.NoError(t, err)
 
-		cfg = FreeformSystemData{
-			Type:  SystemTypeExternal,
-			Label: randString(6, "hex"),
-		}
+			ffSystem, err = ffc.GetSystem(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, id, ffSystem.Id)
+			compare(t, &cfg, ffSystem.Data)
 
-		err = ffc.UpdateSystem(ctx, id, &cfg)
-		require.NoError(t, err)
+			cfg = FreeformSystemData{
+				Type:  SystemTypeExternal,
+				Label: randString(6, "hex"),
+			}
 
-		ffSystem, err = ffc.GetSystem(ctx, id)
-		require.NoError(t, err)
-		require.Equal(t, id, ffSystem.Id)
-		cfg.Hostname = ffSystem.Data.Hostname // compare cannot anticipate this value.
-		compare(t, &cfg, ffSystem.Data)
+			err = ffc.UpdateSystem(ctx, id, &cfg)
+			require.NoError(t, err)
 
-		ffSystems, err := ffc.GetAllSystems(ctx)
-		require.NoError(t, err)
-		ids := make([]ObjectId, len(ffSystems))
-		for i, template := range ffSystems {
-			ids[i] = template.Id
-		}
-		require.Contains(t, ids, id)
+			ffSystem, err = ffc.GetSystem(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, id, ffSystem.Id)
+			cfg.Hostname = ffSystem.Data.Hostname // compare cannot anticipate this value.
+			compare(t, &cfg, ffSystem.Data)
 
-		err = ffc.DeleteSystem(ctx, id)
-		require.NoError(t, err)
+			ffSystems, err := ffc.GetAllSystems(ctx)
+			require.NoError(t, err)
+			ids := make([]ObjectId, len(ffSystems))
+			for i, template := range ffSystems {
+				ids[i] = template.Id
+			}
+			require.Contains(t, ids, id)
 
-		var ace ClientErr
+			err = ffc.DeleteSystem(ctx, id)
+			require.NoError(t, err)
 
-		_, err = ffc.GetSystem(ctx, id)
-		require.Error(t, err)
-		require.ErrorAs(t, err, &ace)
-		require.Equal(t, ErrNotfound, ace.Type())
+			var ace ClientErr
 
-		err = ffc.DeleteSystem(ctx, id)
-		require.Error(t, err)
-		require.ErrorAs(t, err, &ace)
-		require.Equal(t, ErrNotfound, ace.Type())
+			_, err = ffc.GetSystem(ctx, id)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, ErrNotfound, ace.Type())
+
+			err = ffc.DeleteSystem(ctx, id)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, ErrNotfound, ace.Type())
+		})
 	}
 }
