@@ -126,3 +126,41 @@ func TestLogicalDevicePortRoles_SetAll(t *testing.T) {
 
 	require.Equal(t, expected, data)
 }
+
+func TestLogicalDevicePortRoles_Validate(t *testing.T) {
+	type testCase struct {
+		roles       []string
+		errContains string
+	}
+
+	testCases := map[string]testCase{
+		"okay": {
+			roles: []string{"access", "leaf", "spine"},
+		},
+		"empty": {},
+		"single_err": {
+			roles:       []string{"l3_server"},
+			errContains: "l3_server",
+		},
+		"multiple_err": {
+			roles:       []string{"access", "l3_server", "spine"},
+			errContains: "l3_server",
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			var portRoles apstra.LogicalDevicePortRoles
+			err := portRoles.FromStrings(tCase.roles)
+			require.NoError(t, err)
+
+			err = portRoles.Validate()
+			if tCase.errContains != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tCase.errContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
