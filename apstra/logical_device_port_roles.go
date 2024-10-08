@@ -5,6 +5,7 @@
 package apstra
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
@@ -39,7 +40,16 @@ func (o *LogicalDevicePortRoles) FromStrings(in []string) error {
 }
 
 func (o *LogicalDevicePortRoles) SetAll() {
-	*o = enum.PortRoles.Members()
+	members := enum.PortRoles.Members()
+	for i, member := range members {
+		if member == enum.PortRoleL3Server {
+			members[i] = members[len(members)-1]
+			members = members[:len(members)-1]
+		}
+	}
+
+	*o = members
+	o.Sort()
 }
 
 func (o *LogicalDevicePortRoles) Sort() {
@@ -52,4 +62,18 @@ func (o *LogicalDevicePortRoles) Sort() {
 	sort.Slice(*o, func(i, j int) bool {
 		return clone[i].Value < clone[j].Value
 	})
+}
+
+func (o *LogicalDevicePortRoles) Validate() error {
+	if o == nil {
+		return nil
+	}
+
+	for _, ldpr := range *o {
+		if ldpr == enum.PortRoleL3Server {
+			return fmt.Errorf("logical device port role %q is no longer supported", ldpr.String())
+		}
+	}
+
+	return nil
 }

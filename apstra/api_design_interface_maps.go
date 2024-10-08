@@ -369,6 +369,13 @@ func (o *Client) getInterfaceMapByName(ctx context.Context, desired string) (*ra
 }
 
 func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMapData) (ObjectId, error) {
+	for _, intf := range in.Interfaces {
+		err := intf.Roles.Validate()
+		if err != nil {
+			return "", err
+		}
+	}
+
 	response := &objectIdResponse{}
 	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -379,6 +386,13 @@ func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMapData) (
 }
 
 func (o *Client) updateInterfaceMap(ctx context.Context, id ObjectId, in *InterfaceMapData) error {
+	for _, intf := range in.Interfaces {
+		err := intf.Roles.Validate()
+		if err != nil {
+			return err
+		}
+	}
+
 	return o.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignInterfaceMapById, id),

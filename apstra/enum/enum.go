@@ -237,6 +237,7 @@ var (
 	_                  enum = new(PortRole)
 	PortRoleAccess          = PortRole{Value: "access"}
 	PortRoleGeneric         = PortRole{Value: "generic"}
+	PortRoleL3Server        = PortRole{Value: "l3_server"} // todo: remove this
 	PortRoleLeaf            = PortRole{Value: "leaf"}
 	PortRolePeer            = PortRole{Value: "peer"}
 	PortRoleSpine           = PortRole{Value: "spine"}
@@ -245,6 +246,11 @@ var (
 	PortRoles               = oenum.New(
 		PortRoleAccess,
 		PortRoleGeneric,
+		// todo: remove PortRoleL3Server. Then:
+		//  - remove TestLogicalDevicePortRoles_SetAll()
+		//  - remove LogicalDevicePortRoles.Validate()
+		//  - simplify LogicalDevicePortRoles.SetAll()
+		PortRoleL3Server,
 		PortRoleLeaf,
 		PortRolePeer,
 		PortRoleSpine,
