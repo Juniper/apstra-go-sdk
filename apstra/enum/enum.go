@@ -247,9 +247,8 @@ var (
 		PortRoleAccess,
 		PortRoleGeneric,
 		// todo: remove PortRoleL3Server. Then:
-		//  - remove TestLogicalDevicePortRoles_SetAll()
 		//  - remove LogicalDevicePortRoles.Validate()
-		//  - simplify LogicalDevicePortRoles.SetAll()
+		//  - simplify LogicalDevicePortRoles.IncludeAllUses()
 		PortRoleL3Server,
 		PortRoleLeaf,
 		PortRolePeer,

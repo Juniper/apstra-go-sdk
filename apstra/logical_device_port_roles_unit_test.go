@@ -20,7 +20,7 @@ func TestLogicalDevicePortRoles_Strings(t *testing.T) {
 	}
 
 	var all apstra.LogicalDevicePortRoles
-	all.SetAll()
+	all.IncludeAllUses()
 
 	testCases := map[string]testCase{
 		"none": {},
@@ -53,7 +53,7 @@ func TestLogicalDevicePortRoles_FromStrings(t *testing.T) {
 	}
 
 	var all apstra.LogicalDevicePortRoles
-	all.SetAll()
+	all.IncludeAllUses()
 
 	testCases := map[string]testCase{
 		"none": {},
@@ -81,37 +81,9 @@ func TestLogicalDevicePortRoles_FromStrings(t *testing.T) {
 	}
 }
 
-func TestLogicalDevicePortRoles_Sort(t *testing.T) {
-	type testCase struct {
-		data     apstra.LogicalDevicePortRoles
-		expected apstra.LogicalDevicePortRoles
-	}
-
-	testCases := map[string]testCase{
-		"empty": {},
-		"presorted": {
-			data:     apstra.LogicalDevicePortRoles{enum.PortRoleAccess, enum.PortRoleGeneric, enum.PortRoleSpine},
-			expected: apstra.LogicalDevicePortRoles{enum.PortRoleAccess, enum.PortRoleGeneric, enum.PortRoleSpine},
-		},
-		"unsorted": {
-			data:     apstra.LogicalDevicePortRoles{enum.PortRoleSpine, enum.PortRoleGeneric, enum.PortRoleAccess},
-			expected: apstra.LogicalDevicePortRoles{enum.PortRoleAccess, enum.PortRoleGeneric, enum.PortRoleSpine},
-		},
-	}
-
-	for tName, tCase := range testCases {
-		t.Run(tName, func(t *testing.T) {
-			t.Parallel()
-
-			tCase.data.Sort()
-			require.Equal(t, tCase.expected, tCase.data)
-		})
-	}
-}
-
-func TestLogicalDevicePortRoles_SetAll(t *testing.T) {
+func TestLogicalDevicePortRoles_IncludeAllUses(t *testing.T) {
 	var data apstra.LogicalDevicePortRoles
-	data.SetAll()
+	data.IncludeAllUses()
 
 	expected := apstra.LogicalDevicePortRoles{
 		enum.PortRoleAccess,
@@ -121,7 +93,7 @@ func TestLogicalDevicePortRoles_SetAll(t *testing.T) {
 		enum.PortRolePeer,
 		enum.PortRoleSpine,
 		enum.PortRoleSuperspine,
-		enum.PortRoleUnused,
+		// enum.PortRoleUnused,  <---- TEST VALIDATES THAT THIS ONE IS OMITTED
 	}
 
 	require.Equal(t, expected, data)

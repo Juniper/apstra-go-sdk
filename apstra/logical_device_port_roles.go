@@ -6,8 +6,6 @@ package apstra
 
 import (
 	"fmt"
-	"sort"
-
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
@@ -39,29 +37,21 @@ func (o *LogicalDevicePortRoles) FromStrings(in []string) error {
 	return nil
 }
 
-func (o *LogicalDevicePortRoles) SetAll() {
-	members := enum.PortRoles.Members()
-	for i, member := range members {
-		if member == enum.PortRoleL3Server {
-			members[i] = members[len(members)-1]
-			members = members[:len(members)-1]
+// IncludeAllUses ensures that the LogicalDevicePortRoles contains the entire
+// set of "available for use" port roles: All roles excluding "l3_server"
+// (deprecated) and "unused".
+func (o *LogicalDevicePortRoles) IncludeAllUses() {
+	// wipe out any existing values
+	*o = nil
+
+	for _, member := range enum.PortRoles.Members() {
+		switch member {
+		case enum.PortRoleL3Server: // don't add this one
+		case enum.PortRoleUnused: //   don't add this one
+		default:
+			*o = append(*o, member) // this one's a keeper
 		}
 	}
-
-	*o = members
-	o.Sort()
-}
-
-func (o *LogicalDevicePortRoles) Sort() {
-	if o == nil || *o == nil {
-		return
-	}
-
-	clone := *o
-
-	sort.Slice(*o, func(i, j int) bool {
-		return clone[i].Value < clone[j].Value
-	})
 }
 
 func (o *LogicalDevicePortRoles) Validate() error {
