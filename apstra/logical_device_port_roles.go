@@ -6,6 +6,7 @@ package apstra
 
 import (
 	"fmt"
+
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
