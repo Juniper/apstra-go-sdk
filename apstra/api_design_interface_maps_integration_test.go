@@ -123,9 +123,6 @@ func TestCreateInterfaceMap(t *testing.T) {
 		require.Equal(t, asCreated.Data.Interfaces, newMapInfo.Interfaces)
 
 		for i := range asCreated.Data.Interfaces {
-			newMapInfo.Interfaces[i].Roles.Sort()
-			asCreated.Data.Interfaces[i].Roles.Sort()
-
 			require.Equal(t, newMapInfo.Interfaces[i].Name, asCreated.Data.Interfaces[i].Name)
 			require.Equal(t, newMapInfo.Interfaces[i].Roles, asCreated.Data.Interfaces[i].Roles)
 			require.Equal(t, newMapInfo.Interfaces[i].ActiveState, asCreated.Data.Interfaces[i].ActiveState)
