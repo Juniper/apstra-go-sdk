@@ -93,7 +93,7 @@ func TestLogicalDevicePortRoles_IncludeAllUses(t *testing.T) {
 		enum.PortRolePeer,
 		enum.PortRoleSpine,
 		enum.PortRoleSuperspine,
-		// enum.PortRoleUnused,  <---- TEST VALIDATES THAT THIS ONE IS OMITTED
+		enum.PortRoleUnused,
 	}
 
 	require.Equal(t, expected, data)
