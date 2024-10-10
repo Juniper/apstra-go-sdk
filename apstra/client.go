@@ -57,6 +57,7 @@ const (
 	mutexKeySeparator   = ":"
 	mutexKeyHttpHeaders = "http headers"
 	tuningParamLock     = "tuning param lock"
+	userAgentDefault    = "apstra-go-sdk"
 )
 
 type ErrCtAssignedToLinkDetail struct {
@@ -305,7 +306,9 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 	}
 
 	httpHeaders := map[string]string{"Accept": "application/json"}
-	if o.UserAgent != "" {
+	if o.UserAgent == "" {
+		httpHeaders["User-Agent"] = userAgentDefault
+	} else {
 		httpHeaders["User-Agent"] = o.UserAgent
 	}
 
