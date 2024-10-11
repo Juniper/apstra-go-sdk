@@ -48,7 +48,6 @@ func (o *LogicalDevicePortRoles) IncludeAllUses() {
 	for _, member := range enum.PortRoles.Members() {
 		switch member {
 		case enum.PortRoleL3Server: // don't add this one
-		case enum.PortRoleUnused: //   don't add this one
 		default:
 			*o = append(*o, member) // this one's a keeper
 		}

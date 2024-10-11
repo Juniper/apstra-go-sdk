@@ -52,8 +52,13 @@ func TestLogicalDevicePortRoles_FromStrings(t *testing.T) {
 		e apstra.LogicalDevicePortRoles
 	}
 
+	// prepare a sorted LogicalDevicePortRoles with all possible values
 	var all apstra.LogicalDevicePortRoles
 	all.IncludeAllUses()
+	all = append(all, enum.PortRoleL3Server)
+	sort.Slice(all, func(i, j int) bool {
+		return all[i].Value < all[j].Value
+	})
 
 	testCases := map[string]testCase{
 		"none": {},
@@ -93,7 +98,7 @@ func TestLogicalDevicePortRoles_IncludeAllUses(t *testing.T) {
 		enum.PortRolePeer,
 		enum.PortRoleSpine,
 		enum.PortRoleSuperspine,
-		// enum.PortRoleUnused,  <---- TEST VALIDATES THAT THIS ONE IS OMITTED
+		enum.PortRoleUnused,
 	}
 
 	require.Equal(t, expected, data)
