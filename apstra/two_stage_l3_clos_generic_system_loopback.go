@@ -12,10 +12,11 @@ import (
 )
 
 const (
-	apiUrlGenericSystemSystems            = apiUrlBlueprintById + apiUrlPathDelim + "systems"
-	apiUrlGenericSystemSystemsById        = apiUrlGenericSystemSystems + apiUrlPathDelim + "%s"
-	apiUrlGenericSystemSystemLoopback     = apiUrlGenericSystemSystemsById + apiUrlPathDelim + "loopback"
-	apiUrlGenericSystemSystemLoopbackById = apiUrlGenericSystemSystemLoopback + apiUrlPathDelim + "%d"
+	apiUrlBlueprintSystems          = apiUrlBlueprintById + apiUrlPathDelim + "systems"
+	apiUrlBlueprintSystemById       = apiUrlBlueprintSystems + apiUrlPathDelim + "%s"
+	apiUrlBlueprintSystemByIdPrefix = apiUrlBlueprintSystemById + apiUrlPathDelim
+	apiUrlGenericSystemLoopback     = apiUrlBlueprintSystemById + apiUrlPathDelim + "loopback"
+	apiUrlGenericSystemLoopbackById = apiUrlGenericSystemLoopback + apiUrlPathDelim + "%d"
 )
 
 type GenericSystemLoopback struct {
@@ -91,7 +92,7 @@ func (o *TwoStageL3ClosClient) getGenericSystemLoopback(ctx context.Context, nod
 	var response rawGenericSystemLoopback
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlGenericSystemSystemLoopbackById, o.blueprintId, nodeId, loopbackId),
+		urlStr:      fmt.Sprintf(apiUrlGenericSystemLoopbackById, o.blueprintId, nodeId, loopbackId),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -173,7 +174,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopback(ctx context.Context, nod
 func (o *TwoStageL3ClosClient) setGenericSystemLoopback(ctx context.Context, nodeId ObjectId, loopbackId int, in *rawGenericSystemLoopback) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlGenericSystemSystemLoopbackById, o.blueprintId, nodeId, loopbackId),
+		urlStr:   fmt.Sprintf(apiUrlGenericSystemLoopbackById, o.blueprintId, nodeId, loopbackId),
 		apiInput: in,
 	})
 	if err != nil {
