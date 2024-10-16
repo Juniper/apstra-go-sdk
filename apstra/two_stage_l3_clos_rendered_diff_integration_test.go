@@ -15,7 +15,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,22 +42,13 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 					t.Parallel()
 
 					// staging config should have no diffs at this point
-					stagingConfigDiff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId, enum.RenderedConfigTypeStaging)
+					diff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId)
 					require.NoError(t, err)
-					require.NotNil(t, stagingConfigDiff)
-					require.Equal(t, "null", string(stagingConfigDiff.PristineConfig)) // no pristine config, i guess
-					require.Empty(t, stagingConfigDiff.Config)                         // no diff
-					require.False(t, stagingConfigDiff.SupportsDiffConfig)             // whatever this is
-					require.Greater(t, len(stagingConfigDiff.Context), 4000)           // 4KB-ish of context?
-
-					// deployed config should have no diffs at this point
-					deployedConfigDiff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId, enum.RenderedConfigTypeStaging)
-					require.NoError(t, err)
-					require.NotNil(t, deployedConfigDiff)
-					require.Equal(t, "null", string(deployedConfigDiff.PristineConfig)) // no pristine config, i guess
-					require.Empty(t, deployedConfigDiff.Config)                         // no diff
-					require.False(t, deployedConfigDiff.SupportsDiffConfig)             // whatever this is
-					require.Greater(t, len(deployedConfigDiff.Context), 4000)           // 4KB-ish of context?
+					require.NotNil(t, diff)
+					require.Equal(t, "null", string(diff.PristineConfig)) // no pristine config, i guess
+					require.Empty(t, diff.Config)                         // no diff
+					require.False(t, diff.SupportsDiffConfig)             // whatever this is
+					require.Greater(t, len(diff.Context), 4000)           // 4KB-ish of context?
 
 					leafWg.Done()
 				})
@@ -118,14 +108,14 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 						t.Parallel()
 
 						// staging config should have diffs at this point
-						stagingConfigDiff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId, enum.RenderedConfigTypeStaging)
+						diff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId)
 						require.NoError(t, err)
-						require.NotNil(t, stagingConfigDiff)
-						require.Equal(t, "null", string(stagingConfigDiff.PristineConfig)) // no pristine config, i guess
-						require.False(t, stagingConfigDiff.SupportsDiffConfig)             // whatever this is
-						require.Greater(t, len(stagingConfigDiff.Context), 4000)           // 4KB-ish of context?
+						require.NotNil(t, diff)
+						require.Equal(t, "null", string(diff.PristineConfig)) // no pristine config, i guess
+						require.False(t, diff.SupportsDiffConfig)             // whatever this is
+						require.Greater(t, len(diff.Context), 4000)           // 4KB-ish of context?
 						adds, dels := 0, 0
-						scanner := bufio.NewScanner(strings.NewReader(stagingConfigDiff.Config))
+						scanner := bufio.NewScanner(strings.NewReader(diff.Config))
 						for scanner.Scan() {
 							switch {
 							case strings.HasPrefix(scanner.Text(), "+"):
@@ -136,15 +126,6 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 						}
 						require.Greater(t, adds, 40)
 						require.Equal(t, dels, 0)
-
-						// deployed config should still have no diffs at this point
-						deployedConfigDiff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId, enum.RenderedConfigTypeDeployed)
-						require.NoError(t, err)
-						require.NotNil(t, deployedConfigDiff)
-						require.Equal(t, "null", string(deployedConfigDiff.PristineConfig)) // no pristine config, i guess
-						require.Empty(t, deployedConfigDiff.Config)                         // no diff
-						require.False(t, deployedConfigDiff.SupportsDiffConfig)             // whatever this is
-						require.Greater(t, len(deployedConfigDiff.Context), 4000)           // 4KB-ish of context?
 
 						leafWg.Done()
 					})
@@ -171,14 +152,14 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 
 					for _, leafId := range leafIds {
 						// staging config should have diffs at this point
-						stagingConfigDiff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId, enum.RenderedConfigTypeStaging)
+						diff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId)
 						require.NoError(t, err)
-						require.NotNil(t, stagingConfigDiff)
-						require.Equal(t, "null", string(stagingConfigDiff.PristineConfig)) // no pristine config, i guess
-						require.False(t, stagingConfigDiff.SupportsDiffConfig)             // whatever this is
-						require.Greater(t, len(stagingConfigDiff.Context), 4000)           // 4KB-ish of context?
+						require.NotNil(t, diff)
+						require.Equal(t, "null", string(diff.PristineConfig)) // no pristine config, i guess
+						require.False(t, diff.SupportsDiffConfig)             // whatever this is
+						require.Greater(t, len(diff.Context), 4000)           // 4KB-ish of context?
 						adds, dels := 0, 0
-						scanner := bufio.NewScanner(strings.NewReader(stagingConfigDiff.Config))
+						scanner := bufio.NewScanner(strings.NewReader(diff.Config))
 						for scanner.Scan() {
 							switch {
 							case strings.HasPrefix(scanner.Text(), "+"):
@@ -189,15 +170,6 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 						}
 						require.Equal(t, adds, 0)
 						require.Greater(t, dels, 40)
-
-						// deployed config should still have no diffs at this point
-						deployedConfigDiff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId, enum.RenderedConfigTypeDeployed)
-						require.NoError(t, err)
-						require.NotNil(t, deployedConfigDiff)
-						require.Equal(t, "null", string(deployedConfigDiff.PristineConfig)) // no pristine config, i guess
-						require.Empty(t, deployedConfigDiff.Config)                         // no diff
-						require.False(t, deployedConfigDiff.SupportsDiffConfig)             // whatever this is
-						require.Greater(t, len(deployedConfigDiff.Context), 4000)           // 4KB-ish of context?
 					}
 				})
 			})

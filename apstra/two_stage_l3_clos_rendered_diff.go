@@ -9,13 +9,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
-	apiUrlBlueprintNodeConfigRenderDiff   = apiUrlBlueprintNodeByIdPrefix + "config-incremental?type=%s"
-	apiUrlBlueprintSystemConfigRenderDiff = apiUrlBlueprintSystemByIdPrefix + "config-incremental?type=%s"
+	apiUrlBlueprintNodeConfigRenderDiff   = apiUrlBlueprintNodeByIdPrefix + "config-incremental"
+	apiUrlBlueprintSystemConfigRenderDiff = apiUrlBlueprintSystemByIdPrefix + "config-incremental"
 )
 
 type RenderDiff struct {
@@ -25,12 +23,12 @@ type RenderDiff struct {
 	SupportsDiffConfig bool            `json:"supports_diff_config"`
 }
 
-func (o *TwoStageL3ClosClient) GetNodeRenderedConfigDiff(ctx context.Context, id ObjectId, rcType enum.RenderedConfigType) (*RenderDiff, error) {
+func (o *TwoStageL3ClosClient) GetNodeRenderedConfigDiff(ctx context.Context, id ObjectId) (*RenderDiff, error) {
 	var apiResponse RenderDiff
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeConfigRenderDiff, o.blueprintId, id, rcType.String()),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeConfigRenderDiff, o.blueprintId, id),
 		apiResponse: &apiResponse,
 	})
 	if err != nil {
@@ -40,12 +38,12 @@ func (o *TwoStageL3ClosClient) GetNodeRenderedConfigDiff(ctx context.Context, id
 	return &apiResponse, nil
 }
 
-func (o *TwoStageL3ClosClient) GetSystemRenderedConfigDiff(ctx context.Context, id ObjectId, rcType enum.RenderedConfigType) (*RenderDiff, error) {
+func (o *TwoStageL3ClosClient) GetSystemRenderedConfigDiff(ctx context.Context, id ObjectId) (*RenderDiff, error) {
 	var apiResponse RenderDiff
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRenderDiff, o.blueprintId, id, rcType.String()),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRenderDiff, o.blueprintId, id),
 		apiResponse: &apiResponse,
 	})
 	if err != nil {
