@@ -10,10 +10,11 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetNodeRenderedConfig(t *testing.T) {
@@ -59,7 +60,6 @@ func TestGetNodeRenderedConfig(t *testing.T) {
 					require.Greaterf(t, lineCount, 100, "deployed config less than 100 lines is sus")
 				})
 			}
-
 		})
 	}
 }

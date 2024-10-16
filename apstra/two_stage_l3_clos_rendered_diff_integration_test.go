@@ -10,12 +10,13 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
-	"github.com/stretchr/testify/require"
 	"math/rand/v2"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetNodeRenderedDiff(t *testing.T) {
