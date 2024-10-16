@@ -472,6 +472,95 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	return bpClient
 }
 
+// testBlueprintI returns a collapsed fabric which has been committed and has no build errors
+func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
+	t.Helper()
+
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
+		RefDesign:  RefDesignTwoStageL3Clos,
+		Label:      randString(5, "hex"),
+		TemplateId: "L3_Collapsed_ESI",
+	})
+	require.NoError(t, err)
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	require.NoError(t, err)
+
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+
+	// assign leaf interface maps
+	leafIds, err := getSystemIdsByRole(ctx, bpClient, "leaf")
+	require.NoError(t, err)
+	mappings := make(SystemIdToInterfaceMapAssignment, len(leafIds))
+	for _, leafId := range leafIds {
+		mappings[leafId.String()] = "Juniper_vQFX__AOS-7x10-Leaf"
+	}
+	err = bpClient.SetInterfaceMapAssignments(ctx, mappings)
+	require.NoError(t, err)
+
+	// set leaf loopback pool
+	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{
+			Type: ResourceTypeIp4Pool,
+			Name: ResourceGroupNameLeafIp4,
+		},
+		PoolIds: []ObjectId{"Private-10_0_0_0-8"},
+	})
+	require.NoError(t, err)
+
+	// set leaf-leaf pool
+	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{
+			Type: ResourceTypeIp4Pool,
+			Name: ResourceGroupNameLeafLeafIp4,
+		},
+		PoolIds: []ObjectId{"Private-10_0_0_0-8"},
+	})
+	require.NoError(t, err)
+
+	// set leaf ASN pool
+	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{
+			Type: ResourceTypeAsnPool,
+			Name: ResourceGroupNameLeafAsn,
+		},
+		PoolIds: []ObjectId{"Private-64512-65534"},
+	})
+	require.NoError(t, err)
+
+	// set VN VNI pool
+	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{
+			Type: ResourceTypeVniPool,
+			Name: ResourceGroupNameEvpnL3Vni,
+		},
+		PoolIds: []ObjectId{"Default-10000-20000"},
+	})
+	require.NoError(t, err)
+
+	// set VN VNI pool
+	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{
+			Type: ResourceTypeVniPool,
+			Name: ResourceGroupNameVxlanVnIds,
+		},
+		PoolIds: []ObjectId{"Default-10000-20000"},
+	})
+	require.NoError(t, err)
+
+	// commit
+	bpStatus, err := client.GetBlueprintStatus(ctx, bpClient.blueprintId)
+	require.NoError(t, err)
+	_, err = client.DeployBlueprint(ctx, &BlueprintDeployRequest{
+		Id:          bpClient.blueprintId,
+		Description: "initial commit in test: " + t.Name(),
+		Version:     bpStatus.Version,
+	})
+	require.NoError(t, err)
+
+	return bpClient
+}
+
 func TestItemInSlice(t *testing.T) {
 	type testCase struct {
 		item     any

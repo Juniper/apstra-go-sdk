@@ -256,6 +256,14 @@ var (
 		PortRoleSuperspine,
 		PortRoleUnused,
 	)
+
+	_                          enum = new(RenderedConfigType)
+	RenderedConfigTypeStaging       = RenderedConfigType{Value: "staging"}
+	RenderedConfigTypeDeployed      = RenderedConfigType{Value: "deployed"}
+	RenderedConfigTypes             = oenum.New(
+		RenderedConfigTypeStaging,
+		RenderedConfigTypeDeployed,
+	)
 )
 
 type DeployMode oenum.Member[string]
@@ -519,6 +527,21 @@ func (o PortRole) String() string {
 }
 
 func (o *PortRole) FromString(s string) error {
+	t := PortRoles.Parse(s)
+	if t == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = t.Value
+	return nil
+}
+
+type RenderedConfigType oenum.Member[string]
+
+func (o RenderedConfigType) String() string {
+	return o.Value
+}
+
+func (o *RenderedConfigType) FromString(s string) error {
 	t := PortRoles.Parse(s)
 	if t == nil {
 		return newEnumParseError(o, s)

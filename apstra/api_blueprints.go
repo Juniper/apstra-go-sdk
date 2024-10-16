@@ -16,13 +16,14 @@ import (
 )
 
 const (
-	apiUrlBlueprints          = "/api/blueprints"
-	apiUrlPathDelim           = "/"
-	apiUrlBlueprintsPrefix    = apiUrlBlueprints + apiUrlPathDelim
-	apiUrlBlueprintById       = apiUrlBlueprintsPrefix + "%s"
-	apiUrlBlueprintByIdPrefix = apiUrlBlueprintById + apiUrlPathDelim
-	apiUrlBlueprintNodes      = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
-	apiUrlBlueprintNodeById   = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
+	apiUrlBlueprints              = "/api/blueprints"
+	apiUrlPathDelim               = "/"
+	apiUrlBlueprintsPrefix        = apiUrlBlueprints + apiUrlPathDelim
+	apiUrlBlueprintById           = apiUrlBlueprintsPrefix + "%s"
+	apiUrlBlueprintByIdPrefix     = apiUrlBlueprintById + apiUrlPathDelim
+	apiUrlBlueprintNodes          = apiUrlBlueprintById + apiUrlPathDelim + "nodes"
+	apiUrlBlueprintNodeById       = apiUrlBlueprintNodes + apiUrlPathDelim + "%s"
+	apiUrlBlueprintNodeByIdPrefix = apiUrlBlueprintNodeById + apiUrlPathDelim
 
 	initTypeFromTemplate   = "template_reference"
 	initTypeTemplateInline = "rack_based_template_inline"
