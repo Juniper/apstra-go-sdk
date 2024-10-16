@@ -23,12 +23,12 @@ type RenderDiff struct {
 	SupportsDiffConfig bool            `json:"supports_diff_config"`
 }
 
-func (o *TwoStageL3ClosClient) GetNodeRenderedConfigDiff(ctx context.Context, id ObjectId) (*RenderDiff, error) {
+func (o *Client) GetNodeRenderedConfigDiff(ctx context.Context, bpId, nodeId ObjectId) (*RenderDiff, error) {
 	var apiResponse RenderDiff
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeConfigRenderDiff, o.blueprintId, id),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeConfigRenderDiff, bpId, nodeId),
 		apiResponse: &apiResponse,
 	})
 	if err != nil {
@@ -38,12 +38,12 @@ func (o *TwoStageL3ClosClient) GetNodeRenderedConfigDiff(ctx context.Context, id
 	return &apiResponse, nil
 }
 
-func (o *TwoStageL3ClosClient) GetSystemRenderedConfigDiff(ctx context.Context, id ObjectId) (*RenderDiff, error) {
+func (o *Client) GetSystemRenderedConfigDiff(ctx context.Context, bpId, nodeId ObjectId) (*RenderDiff, error) {
 	var apiResponse RenderDiff
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRenderDiff, o.blueprintId, id),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRenderDiff, bpId, nodeId),
 		apiResponse: &apiResponse,
 	})
 	if err != nil {
