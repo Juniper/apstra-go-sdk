@@ -38,12 +38,12 @@ func (o *Client) GetNodeRenderedConfigDiff(ctx context.Context, bpId, nodeId Obj
 	return &apiResponse, nil
 }
 
-func (o *Client) GetSystemRenderedConfigDiff(ctx context.Context, bpId, nodeId ObjectId) (*RenderDiff, error) {
+func (o *Client) GetSystemRenderedConfigDiff(ctx context.Context, bpId, sysId ObjectId) (*RenderDiff, error) {
 	var apiResponse RenderDiff
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRenderDiff, bpId, nodeId),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRenderDiff, bpId, sysId),
 		apiResponse: &apiResponse,
 	})
 	if err != nil {

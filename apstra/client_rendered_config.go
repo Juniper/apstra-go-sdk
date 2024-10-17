@@ -34,14 +34,14 @@ func (o *Client) GetNodeRenderedConfig(ctx context.Context, bpId, nodeId ObjectI
 	return apiResponse.Config, nil
 }
 
-func (o *Client) GetSystemRenderedConfig(ctx context.Context, bpId, nodeId ObjectId, rcType enum.RenderedConfigType) (string, error) {
+func (o *Client) GetSystemRenderedConfig(ctx context.Context, bpId, sysId ObjectId, rcType enum.RenderedConfigType) (string, error) {
 	var apiResponse struct {
 		Config string `json:"config"`
 	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRender, bpId, nodeId, rcType.String()),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRender, bpId, sysId, rcType.String()),
 		apiResponse: &apiResponse,
 	})
 	if err != nil {
