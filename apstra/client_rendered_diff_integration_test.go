@@ -42,7 +42,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 					t.Parallel()
 
 					// staging config should have no diffs at this point
-					diff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId)
+					diff, err := bp.Client().GetNodeRenderedConfigDiff(ctx, bp.Id(), leafId)
 					require.NoError(t, err)
 					require.NotNil(t, diff)
 					require.Equal(t, "null", string(diff.PristineConfig)) // no pristine config, i guess
@@ -108,7 +108,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 						t.Parallel()
 
 						// staging config should have diffs at this point
-						diff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId)
+						diff, err := bp.Client().GetNodeRenderedConfigDiff(ctx, bp.Id(), leafId)
 						require.NoError(t, err)
 						require.NotNil(t, diff)
 						require.Equal(t, "null", string(diff.PristineConfig)) // no pristine config, i guess
@@ -152,7 +152,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 
 					for _, leafId := range leafIds {
 						// staging config should have diffs at this point
-						diff, err := bp.GetNodeRenderedConfigDiff(ctx, leafId)
+						diff, err := bp.Client().GetNodeRenderedConfigDiff(ctx, bp.Id(), leafId)
 						require.NoError(t, err)
 						require.NotNil(t, diff)
 						require.Equal(t, "null", string(diff.PristineConfig)) // no pristine config, i guess

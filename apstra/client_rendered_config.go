@@ -17,14 +17,14 @@ const (
 	apiUrlBlueprintSystemConfigRender = apiUrlBlueprintSystemByIdPrefix + "config-rendering?type=%s"
 )
 
-func (o *TwoStageL3ClosClient) GetNodeRenderedConfig(ctx context.Context, id ObjectId, rcType enum.RenderedConfigType) (string, error) {
+func (o *Client) GetNodeRenderedConfig(ctx context.Context, bpId, nodeId ObjectId, rcType enum.RenderedConfigType) (string, error) {
 	var apiResponse struct {
 		Config string `json:"config"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeConfigRender, o.blueprintId, id, rcType.String()),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeConfigRender, bpId, nodeId, rcType.String()),
 		apiResponse: &apiResponse,
 	})
 	if err != nil {
@@ -34,14 +34,14 @@ func (o *TwoStageL3ClosClient) GetNodeRenderedConfig(ctx context.Context, id Obj
 	return apiResponse.Config, nil
 }
 
-func (o *TwoStageL3ClosClient) GetSystemRenderedConfig(ctx context.Context, id ObjectId, rcType enum.RenderedConfigType) (string, error) {
+func (o *Client) GetSystemRenderedConfig(ctx context.Context, bpId, sysId ObjectId, rcType enum.RenderedConfigType) (string, error) {
 	var apiResponse struct {
 		Config string `json:"config"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRender, o.blueprintId, id, rcType.String()),
+		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRender, bpId, sysId, rcType.String()),
 		apiResponse: &apiResponse,
 	})
 	if err != nil {
