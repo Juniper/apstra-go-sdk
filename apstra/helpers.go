@@ -103,7 +103,7 @@ func featureSwitchEnumFromStringPtr(in *string) *enum.FeatureSwitch {
 	if in == nil {
 		return nil
 	}
-	return enum.FeatureSwitchs.Parse(*in)
+	return enum.FeatureSwitches.Parse(*in)
 }
 
 func isv4(ip net.IP) bool {

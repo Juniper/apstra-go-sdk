@@ -17,6 +17,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/gertd/go-pluralize"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -33,7 +34,7 @@ const (
 package enum
 
 import oenum "github.com/orsinium-labs/enum"
-{{ range $key, $value := .TypeToVals }}
+{{ range $key, $value := .NameToTypeInfo }}
 var _ enum = (*{{ $key }})(nil)
 
 func (o {{ $key }}) String() string {
@@ -48,19 +49,28 @@ func (o *{{ $key }}) FromString(s string) error {
 	return nil
 }
 {{ end }}
-var ({{ range  $key, $value := .TypeToVals }}
+var ({{ range  $key, $value := .NameToTypeInfo }}
 	_ enum = new({{ $key }})
-	{{ $key }}s = oenum.New({{ range $v := $value }}
+	{{ $value.Plural }} = oenum.New({{ range $v := $value.Values }}
 		{{ $v }},{{ end }}
 	)
 {{ end }})
 `
 )
 
-var TypeToVals map[string][]string
+type TypeInfo struct {
+	Plural string   // used with oenum.New() - Things
+	Values []string // each enum value       - Thing1, Thing2, ... ThingN
+}
+
+var (
+	Pluralize      *pluralize.Client
+	TypeNameToInfo map[string]TypeInfo
+)
 
 func main() {
-	TypeToVals = make(map[string][]string)
+	Pluralize = pluralize.NewClient()
+	TypeNameToInfo = make(map[string]TypeInfo)
 
 	cfg := packages.Config{Mode: packages.NeedTypes | packages.NeedSyntax}
 
@@ -104,13 +114,13 @@ func main() {
 }
 
 func render() error {
-	var data struct {
-		Year       string
-		TypeToVals map[string][]string
+	var tmplData struct {
+		Year           string
+		NameToTypeInfo map[string]TypeInfo
 	}
 
-	data.Year = time.Now().Format("2006")
-	data.TypeToVals = TypeToVals
+	tmplData.Year = time.Now().Format("2006")
+	tmplData.NameToTypeInfo = TypeNameToInfo
 
 	f, err := os.Create(outFile)
 	if err != nil {
@@ -122,7 +132,7 @@ func render() error {
 		return fmt.Errorf("while parsing template - %w", err)
 	}
 
-	err = tmpl.Execute(f, data)
+	err = tmpl.Execute(f, tmplData)
 	if err != nil {
 		return fmt.Errorf("while executing template - %w", err)
 	}
@@ -163,7 +173,16 @@ func handleVar(gd *ast.GenDecl) error {
 
 		tName := valueType.Name
 
-		TypeToVals[tName] = append(TypeToVals[tName], name.Name)
+		// Fill the TypeNameToInfo map which is used by render()
+		var typeInfo TypeInfo
+		if typeInfo, ok = TypeNameToInfo[tName]; !ok {
+			typeInfo.Plural = Pluralize.Plural(tName)
+			if tName == typeInfo.Plural {
+				return fmt.Errorf("cannot pluralize - plural of %q is %q", tName, typeInfo.Plural)
+			}
+		}
+		typeInfo.Values = append(typeInfo.Values, name.Name)
+		TypeNameToInfo[tName] = typeInfo
 	}
 
 	return nil

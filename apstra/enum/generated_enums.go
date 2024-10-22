@@ -71,7 +71,7 @@ func (o FeatureSwitch) String() string {
 }
 
 func (o *FeatureSwitch) FromString(s string) error {
-	if FeatureSwitchs.Parse(s) == nil {
+	if FeatureSwitches.Parse(s) == nil {
 		return newEnumParseError(o, s)
 	}
 	o.Value = s
@@ -312,8 +312,8 @@ var (
 		FFResourceTypeVni,
 	)
 
-	_              enum = new(FeatureSwitch)
-	FeatureSwitchs      = oenum.New(
+	_               enum = new(FeatureSwitch)
+	FeatureSwitches      = oenum.New(
 		FeatureSwitchEnabled,
 		FeatureSwitchDisabled,
 	)
