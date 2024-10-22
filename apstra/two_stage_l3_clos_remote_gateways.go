@@ -46,7 +46,7 @@ type rawRemoteGatewayResponse struct {
 }
 
 func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
-	routeTypes := enum.RemoteGatewayRouteTypesEnum.Parse(o.RouteTypes)
+	routeTypes := enum.RemoteGatewayRouteTypes.Parse(o.RouteTypes)
 	if routeTypes == nil {
 		return nil, fmt.Errorf("failed parsing remote gateway route types: %q", o.RouteTypes)
 	}
@@ -77,7 +77,7 @@ func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
 }
 
 type RemoteGatewayData struct {
-	RouteTypes     enum.RemoteGatewayRouteTypes
+	RouteTypes     enum.RemoteGatewayRouteType
 	LocalGwNodes   []ObjectId
 	GwAsn          uint32
 	GwIp           net.IP

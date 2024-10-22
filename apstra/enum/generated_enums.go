@@ -190,14 +190,14 @@ func (o *PortRole) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*RemoteGatewayRouteTypes)(nil)
+var _ enum = (*RemoteGatewayRouteType)(nil)
 
-func (o RemoteGatewayRouteTypes) String() string {
+func (o RemoteGatewayRouteType) String() string {
 	return o.Value
 }
 
-func (o *RemoteGatewayRouteTypes) FromString(s string) error {
-	if RemoteGatewayRouteTypess.Parse(s) == nil {
+func (o *RemoteGatewayRouteType) FromString(s string) error {
+	if RemoteGatewayRouteTypes.Parse(s) == nil {
 		return newEnumParseError(o, s)
 	}
 	o.Value = s
@@ -380,10 +380,10 @@ var (
 		PortRoleUnused,
 	)
 
-	_                        enum = new(RemoteGatewayRouteTypes)
-	RemoteGatewayRouteTypess      = oenum.New(
-		RemoteGatewayRouteTypesAll,
-		RemoteGatewayRouteTypesFiveOnly,
+	_                       enum = new(RemoteGatewayRouteType)
+	RemoteGatewayRouteTypes      = oenum.New(
+		RemoteGatewayRouteTypeAll,
+		RemoteGatewayRouteTypeFiveOnly,
 	)
 
 	_                   enum = new(RenderedConfigType)

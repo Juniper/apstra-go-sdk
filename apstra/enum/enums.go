@@ -75,11 +75,11 @@ var (
 	PolicyRuleProtocolUdp  = PolicyRuleProtocol{Value: "UDP"}
 )
 
-type RemoteGatewayRouteTypes oenum.Member[string]
+type RemoteGatewayRouteType oenum.Member[string]
 
 var (
-	RemoteGatewayRouteTypesAll      = RemoteGatewayRouteTypes{Value: "all"}
-	RemoteGatewayRouteTypesFiveOnly = RemoteGatewayRouteTypes{Value: "type5_only"}
+	RemoteGatewayRouteTypeAll      = RemoteGatewayRouteType{Value: "all"}
+	RemoteGatewayRouteTypeFiveOnly = RemoteGatewayRouteType{Value: "type5_only"}
 )
 
 type TcpStateQualifier oenum.Member[string]
