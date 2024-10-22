@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	inFile         = "enums.go"
-	outFilePrefix  = "generated_" + inFile
-	renderTemplate = `` +
+	inFile          = "enums.go"
+	outFile         = "generated_" + inFile
+	outFileTemplate = `` +
 		`// Copyright (c) Juniper Networks, Inc., 2024-{{.Year}}.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
@@ -59,29 +59,16 @@ var ({{ range  $key, $value := .TypeToVals }}
 
 var (
 	TypeToVals map[string][]string
-	outfile    string
 )
 
 func main() {
 	TypeToVals = make(map[string][]string)
 
-	cfg := packages.Config{
-		// Mode:     packages.NeedTypes | packages.NeedTypesInfo | packages.NeedSyntax | packages.NeedName,
-		Mode:       65535, // everything
-		Context:    nil,
-		Logf:       nil,
-		Dir:        "",
-		Env:        nil,
-		BuildFlags: nil,
-		Fset:       nil,
-		ParseFile:  nil,
-		Tests:      false,
-		Overlay:    nil,
-	}
+	cfg := packages.Config{Mode: packages.NeedTypes | packages.NeedSyntax}
 
 	pkgs, err := packages.Load(&cfg)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("while loading packages - %w", err))
 	}
 
 	if len(pkgs) != 1 {
@@ -94,8 +81,6 @@ func main() {
 		if path.Base(absPath) != inFile {
 			continue
 		}
-
-		outfile = path.Join(path.Dir(absPath), outFilePrefix+path.Base(absPath))
 
 		for _, decl := range file.Decls {
 			gd, ok := decl.(*ast.GenDecl)
@@ -129,12 +114,12 @@ func render() error {
 	data.Year = time.Now().Format("2006")
 	data.TypeToVals = TypeToVals
 
-	f, err := os.Create(outFilePrefix)
+	f, err := os.Create(outFile)
 	if err != nil {
 		return fmt.Errorf("while creating file for generated code - %w", err)
 	}
 
-	tmpl, err := template.New("").Parse(renderTemplate)
+	tmpl, err := template.New("").Parse(outFileTemplate)
 	if err != nil {
 		return fmt.Errorf("while parsing template - %w", err)
 	}
@@ -146,7 +131,7 @@ func render() error {
 
 	err = f.Close()
 	if err != nil {
-		return fmt.Errorf("while closing file %q - %w", outFilePrefix, err)
+		return fmt.Errorf("while closing file %q - %w", outFile, err)
 	}
 
 	return nil
