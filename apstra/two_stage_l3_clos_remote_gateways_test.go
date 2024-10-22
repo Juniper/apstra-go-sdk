@@ -101,7 +101,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 	}
 
 	var remoteGwCfgs []RemoteGatewayData
-	for _, routeType := range enum.RemoteGatewayRouteTypesEnum.Members() {
+	for _, routeType := range enum.RemoteGatewayRouteTypes.Members() {
 		remoteGwCfgs = append(remoteGwCfgs, RemoteGatewayData{
 			RouteTypes:     routeType,
 			LocalGwNodes:   nil, // blueprint-specific details set in client loop below
@@ -116,7 +116,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 	}
 
 	randomGwCfgWithNil := RemoteGatewayData{
-		RouteTypes:   enum.RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(enum.RemoteGatewayRouteTypesEnum.Members()))],
+		RouteTypes:   enum.RemoteGatewayRouteTypes.Members()[rand.Intn(len(enum.RemoteGatewayRouteTypes.Members()))],
 		LocalGwNodes: nil,
 		GwAsn:        rand.Uint32(),
 	}
@@ -126,7 +126,7 @@ func TestCreateDeleteRemoteGateway(t *testing.T) {
 	randHoldtimeTimer := uint16(rand.Int())
 	randomPassword := randString(5, "hex")
 	randomGwCfg := RemoteGatewayData{
-		RouteTypes:     enum.RemoteGatewayRouteTypesEnum.Members()[rand.Intn(len(enum.RemoteGatewayRouteTypesEnum.Members()))],
+		RouteTypes:     enum.RemoteGatewayRouteTypes.Members()[rand.Intn(len(enum.RemoteGatewayRouteTypes.Members()))],
 		LocalGwNodes:   nil,
 		GwAsn:          rand.Uint32(),
 		Ttl:            &randTtl,
