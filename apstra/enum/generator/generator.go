@@ -143,7 +143,7 @@ func handleVar(gd *ast.GenDecl) error {
 		}
 
 		if len(spec.Names) != 1 {
-			return fmt.Errorf("expected 1 spec name, got %d spec naems", len(spec.Names))
+			return fmt.Errorf("expected 1 spec name, got %d spec names", len(spec.Names))
 		}
 
 		if len(spec.Values) != 1 {
