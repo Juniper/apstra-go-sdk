@@ -55,14 +55,14 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	o.Data.Speed = raw.Speed
 	o.Data.Label = raw.Label
 	o.Data.AggregateLinkId = raw.AggregateLinkId
-	o.Data.Endpoints[0] = FreeformEndpoint{
+	o.Data.Endpoints[0] = FreeformEthernetEndpoint{
 		SystemId: raw.Endpoints[0].System.Id,
 		Interface: FreeformInterface{
 			Id:   raw.Endpoints[0].Interface.Id,
 			Data: raw.Endpoints[0].Interface.Data,
 		},
 	}
-	o.Data.Endpoints[1] = FreeformEndpoint{
+	o.Data.Endpoints[1] = FreeformEthernetEndpoint{
 		SystemId: raw.Endpoints[1].System.Id,
 		Interface: FreeformInterface{
 			Id:   raw.Endpoints[1].Interface.Id,
@@ -79,7 +79,7 @@ type FreeformLinkData struct {
 	Label           string
 	Speed           LogicalDevicePortSpeed
 	Tags            []string
-	Endpoints       [2]FreeformEndpoint
+	Endpoints       [2]FreeformEthernetEndpoint
 }
 
 var _ json.Marshaler = new(FreeformInterfaceData)
@@ -193,16 +193,16 @@ func (o *FreeformInterface) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
-	_ json.Marshaler   = new(FreeformEndpoint)
-	_ json.Unmarshaler = new(FreeformEndpoint)
+	_ json.Marshaler   = new(FreeformEthernetEndpoint)
+	_ json.Unmarshaler = new(FreeformEthernetEndpoint)
 )
 
-type FreeformEndpoint struct {
+type FreeformEthernetEndpoint struct {
 	SystemId  ObjectId
 	Interface FreeformInterface
 }
 
-func (o *FreeformEndpoint) UnmarshalJSON(bytes []byte) error {
+func (o *FreeformEthernetEndpoint) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		System struct {
 			Id ObjectId `json:"id"`
@@ -216,7 +216,7 @@ func (o *FreeformEndpoint) UnmarshalJSON(bytes []byte) error {
 	return json.Unmarshal(bytes, &raw)
 }
 
-func (o FreeformEndpoint) MarshalJSON() ([]byte, error) {
+func (o FreeformEthernetEndpoint) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		System *struct {
 			Id ObjectId `json:"id"`
@@ -251,9 +251,9 @@ func (o FreeformEndpoint) MarshalJSON() ([]byte, error) {
 }
 
 type FreeformLinkRequest struct {
-	Label     string              `json:"label"`
-	Tags      []string            `json:"tags"`
-	Endpoints [2]FreeformEndpoint `json:"endpoints"`
+	Label     string                      `json:"label"`
+	Tags      []string                    `json:"tags"`
+	Endpoints [2]FreeformEthernetEndpoint `json:"endpoints"`
 }
 
 func (o *FreeformClient) CreateLink(ctx context.Context, in *FreeformLinkRequest) (ObjectId, error) {
