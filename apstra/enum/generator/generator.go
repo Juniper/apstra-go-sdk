@@ -42,7 +42,7 @@ func (o {{ $key }}) String() string {
 }
 
 func (o *{{ $key }}) FromString(s string) error {
-	if {{ $key }}s.Parse(s) == nil {
+	if {{ $value.Plural }}.Parse(s) == nil {
 		return newEnumParseError(o, s)
 	}
 	o.Value = s
