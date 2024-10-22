@@ -57,9 +57,7 @@ var ({{ range  $key, $value := .TypeToVals }}
 `
 )
 
-var (
-	TypeToVals map[string][]string
-)
+var TypeToVals map[string][]string
 
 func main() {
 	TypeToVals = make(map[string][]string)
