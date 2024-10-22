@@ -14,6 +14,8 @@ skip_regexes+=("^README.md$")
 skip_regexes+=("^Third_Party_Code/.*$")
 skip_regexes+=("^\.gitignore$")
 skip_regexes+=("^\.notices.tpl$")
+skip_regexes+=("^go.mod$")
+skip_regexes+=("^go.sum$")
 
 copyright_template="Copyright \\(c\\) Juniper Networks, Inc\\., %s-%s\\."
 arr_line="All rights reserved\."

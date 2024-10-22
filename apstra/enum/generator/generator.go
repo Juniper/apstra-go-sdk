@@ -176,6 +176,7 @@ func handleVar(gd *ast.GenDecl) error {
 		// Fill the TypeNameToInfo map which is used by render()
 		var typeInfo TypeInfo
 		if typeInfo, ok = TypeNameToInfo[tName]; !ok {
+			// entry not found - create one with the plural version of the type name included
 			typeInfo.Plural = Pluralize.Plural(tName)
 			if tName == typeInfo.Plural {
 				return fmt.Errorf("cannot pluralize - plural of %q is %q", tName, typeInfo.Plural)
