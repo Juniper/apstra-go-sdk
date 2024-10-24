@@ -147,6 +147,11 @@ func TestVirtualNetworkDataMarshalJson(t *testing.T) {
 			a, err := json.Marshal(tCase.d)
 			require.NoError(t, err)
 			require.JSONEq(t, tCase.e, string(a))
+
+			var fc VirtualNetwork // fc: full circle test result
+			err = json.Unmarshal(a, &fc)
+			require.NoError(t, err)
+			compareVirtualNetworkData(t, &tCase.d, fc.Data, true)
 		})
 	}
 }

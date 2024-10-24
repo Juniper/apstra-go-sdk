@@ -47,9 +47,7 @@ func comapareSviIps(t *testing.T, a, b SviIp) {
 }
 
 func compareSviIpSlices(t *testing.T, a, b []SviIp) {
-	if len(a) != len(b) {
-		t.Fatalf("SviIps length mismatch: %d vs %d", len(a), len(b))
-	}
+	require.Equal(t, len(a), len(b))
 	for i := range a {
 		log.Printf("comparing SviIps at index %d", i)
 		comapareSviIps(t, a[i], b[i])
@@ -59,23 +57,17 @@ func compareSviIpSlices(t *testing.T, a, b []SviIp) {
 func compareVnBindings(t *testing.T, a, b VnBinding, strict bool) {
 	compareSlices(t, a.AccessSwitchNodeIds, b.AccessSwitchNodeIds, "VnBindings.AccessSwitchNodeIds")
 
-	if a.SystemId != b.SystemId {
-		t.Fatalf("SystemId mismatch: %q vs. %q", a.SystemId, b.SystemId)
-	}
+	require.Equal(t, a.SystemId, b.SystemId)
 
-	if strict && (a.VlanId != nil) != (b.VlanId != nil) {
-		t.Fatalf("VlanId exists mismatch: %t vs. %t", a.VlanId != nil, b.VlanId != nil)
-	}
-
-	if a.VlanId != nil && b.VlanId != nil && *a.VlanId != *b.VlanId {
-		t.Fatalf("VlanId mismatch: %d vs. %d", *a.VlanId, *b.VlanId)
+	if a.VlanId != nil || b.VlanId != nil {
+		require.NotNil(t, a.VlanId)
+		require.NotNil(t, b.VlanId)
+		require.Equal(t, a.VlanId, b.VlanId)
 	}
 }
 
 func compareVnBindingSlices(t *testing.T, a, b []VnBinding, strict bool) {
-	if len(a) != len(b) {
-		t.Fatalf("VnBindings length mismatch: %d vs %d", len(a), len(b))
-	}
+	require.Equal(t, len(a), len(b))
 	for i := range a {
 		log.Printf("comparing VnBindings at index %d", i)
 		compareVnBindings(t, a[i], b[i], strict)
@@ -83,93 +75,42 @@ func compareVnBindingSlices(t *testing.T, a, b []VnBinding, strict bool) {
 }
 
 func compareVirtualNetworkData(t *testing.T, a, b *VirtualNetworkData, strict bool) {
-	if a.DhcpService != b.DhcpService {
-		t.Fatalf("DhcpService mismatch: %q vs. %q", a.DhcpService.String(), b.DhcpService.String())
+	require.Equal(t, a.DhcpService, b.DhcpService)
+	require.Equal(t, a.Ipv4Enabled, b.Ipv4Enabled)
+	require.Equal(t, a.Ipv4Subnet, b.Ipv4Subnet)
+	require.Equal(t, a.Ipv6Enabled, b.Ipv6Enabled)
+	require.Equal(t, a.Ipv6Subnet, b.Ipv6Subnet)
+	require.Equal(t, a.Label, b.Label)
+	require.Equal(t, a.RouteTarget, b.RouteTarget)
+	require.Equal(t, a.SecurityZoneId, b.SecurityZoneId)
+	require.Equal(t, a.VirtualGatewayIpv4, b.VirtualGatewayIpv4)
+	require.Equal(t, a.VirtualGatewayIpv6, b.VirtualGatewayIpv6)
+	require.Equal(t, a.VirtualGatewayIpv4Enabled, b.VirtualGatewayIpv4Enabled)
+	require.Equal(t, a.VirtualGatewayIpv6Enabled, b.VirtualGatewayIpv6Enabled)
+	require.Equal(t, a.VnType, b.VnType)
+	require.Equal(t, a.VirtualMac, b.VirtualMac)
+
+	if a.L3Mtu != nil || b.L3Mtu != nil {
+		require.NotNil(t, a.L3Mtu)
+		require.NotNil(t, b.L3Mtu)
+		require.Equal(t, a.L3Mtu, b.L3Mtu)
 	}
 
-	if a.Ipv4Enabled != b.Ipv4Enabled {
-		t.Fatalf("Ipv4Enabled mismatch: %t vs. %t", a.Ipv4Enabled, b.Ipv4Enabled)
+	if a.ReservedVlanId != nil || b.ReservedVlanId != nil {
+		require.NotNil(t, a.ReservedVlanId)
+		require.NotNil(t, b.ReservedVlanId)
+		require.Equal(t, a.ReservedVlanId, b.ReservedVlanId)
 	}
 
-	if a.Ipv4Subnet.String() != b.Ipv4Subnet.String() {
-		t.Fatalf("Ipv4Subnet mismatch: %q vs. %q", a.Ipv4Subnet.String(), b.Ipv4Subnet.String())
-	}
-
-	if a.Ipv6Enabled != b.Ipv6Enabled {
-		t.Fatalf("Ipv6Enabled mismatch: %t vs. %t", a.Ipv6Enabled, b.Ipv6Enabled)
-	}
-
-	if a.Ipv6Subnet.String() != b.Ipv6Subnet.String() {
-		t.Fatalf("Ipv6Subnet mismatch: %q vs. %q", a.Ipv6Subnet.String(), b.Ipv6Subnet.String())
-	}
-
-	aL3Mtu := a.L3Mtu != nil
-	bL3Mtu := b.L3Mtu != nil
-	if (aL3Mtu || bL3Mtu) && !(aL3Mtu && bL3Mtu) { // xor
-		t.Fatalf("L3 MTU setting mismatch: set %t vs. set %t", aL3Mtu, bL3Mtu)
-	}
-
-	if aL3Mtu && bL3Mtu && (*a.L3Mtu != *b.L3Mtu) {
-		t.Fatalf("L3 MTU setting mismatch: %d vs. %d", *a.L3Mtu, *b.L3Mtu)
-	}
-
-	if a.Label != b.Label {
-		t.Fatalf("Label mismatch: %q vs. %q", a.Label, b.Label)
-	}
-
-	if (a.ReservedVlanId != nil) != (b.ReservedVlanId != nil) { // XOR
-		t.Fatalf("ReservedVlanId exists mismatch: %t vs %t", a.ReservedVlanId != nil, b.ReservedVlanId != nil)
-	}
-
-	if a.ReservedVlanId != nil && b.ReservedVlanId != nil && *a.ReservedVlanId != *b.ReservedVlanId {
-		t.Fatalf("ReservedVlanId mismatch: %d vs %d", *a.ReservedVlanId, *b.ReservedVlanId)
-	}
-
-	if a.RouteTarget != b.RouteTarget {
-		t.Fatalf("RouteTarget mismatch: %q vs. %q", a.RouteTarget, b.RouteTarget)
+	if a.VnId != nil || b.VnId != nil {
+		require.NotNil(t, a.VnId)
+		require.NotNil(t, b.VnId)
+		require.Equal(t, a.VnId, b.VnId)
 	}
 
 	compareRtPolicy(t, a.RtPolicy, b.RtPolicy)
-
-	if a.SecurityZoneId != b.SecurityZoneId {
-		t.Fatalf("SecurityZoneId mismatch: %q vs %q", a.SecurityZoneId, b.SecurityZoneId)
-	}
-
 	compareSviIpSlices(t, a.SviIps, b.SviIps)
-
-	if !a.VirtualGatewayIpv4.Equal(b.VirtualGatewayIpv4) {
-		t.Fatalf("VirtualGatwayIpv4 mismatch: %q vs. %q", a.VirtualGatewayIpv4.String(), b.VirtualGatewayIpv4.String())
-	}
-
-	if !a.VirtualGatewayIpv6.Equal(b.VirtualGatewayIpv6) {
-		t.Fatalf("VirtualGatwayIpv6 mismatch: %q vs. %q", a.VirtualGatewayIpv6.String(), b.VirtualGatewayIpv6.String())
-	}
-
-	if a.VirtualGatewayIpv4Enabled != b.VirtualGatewayIpv4Enabled {
-		t.Fatalf("VirtualGatewayIpv4Enabled mismatch: %t vs %t", a.VirtualGatewayIpv4Enabled, b.VirtualGatewayIpv4Enabled)
-	}
-
-	if a.VirtualGatewayIpv6Enabled != b.VirtualGatewayIpv6Enabled {
-		t.Fatalf("VirtualGatewayIpv6Enabled mismatch: %t vs %t", a.VirtualGatewayIpv6Enabled, b.VirtualGatewayIpv6Enabled)
-	}
-
 	compareVnBindingSlices(t, a.VnBindings, b.VnBindings, strict)
-
-	if (a.VnId != nil) != (b.VnId != nil) {
-		t.Fatalf("VnId exists mismatch: %t vs. %t", a.VnId != nil, b.VnId != nil)
-	}
-
-	if a.VnId != nil && b.VnId != nil && *a.VnId != *b.VnId {
-		t.Fatalf("VnId mismatch: %d vs. %d", *a.VnId, *b.VnId)
-	}
-
-	if a.VnType != b.VnType {
-		t.Fatalf("VnType mismatch: %q vs. %q", a.VnType, b.VnType)
-	}
-
-	if a.VirtualMac.String() != b.VirtualMac.String() {
-		t.Fatalf("VirtualMac mismatch: %q vs. %q", a.VirtualMac.String(), b.VirtualMac.String())
-	}
 }
 
 func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
@@ -350,27 +291,5 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 		if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
 			t.Fatalf("expected a 404/NotFound error after deletion")
 		}
-
-		//log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		//err = bpClient.SetResourceAllocation(ctx, rga)
-		//if err != nil {
-		//	t.Fatal()
-		//}
-		//
-		//log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		//rga, err = bpClient.GetResourceAllocation(ctx, &rga.ResourceGroup)
-		//if err != nil {
-		//	t.Fatal()
-		//}
-		//
-		//if len(rga.PoolIds) != 0 {
-		//	t.Fatalf("expected 0 pool ids, got %d", len(rga.PoolIds))
-		//}
-		//
-		//log.Printf("testing DeleteSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		//err = bpClient.DeleteSecurityZone(ctx, zoneId)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
 	}
 }
