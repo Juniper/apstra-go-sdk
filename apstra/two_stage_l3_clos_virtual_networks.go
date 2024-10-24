@@ -307,6 +307,14 @@ func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 	o.Data.VirtualGatewayIpv6Enabled = raw.VirtualGatewayIpv6Enabled
 	o.Data.VnBindings = raw.VnBindings
 
+	if raw.VnId != "" {
+		vnId, err := strconv.Atoi(raw.VnId)
+		if err != nil {
+			return fmt.Errorf("while parsing virtual network data vn_id %q - %w", raw.VnId, err)
+		}
+		o.Data.VnId = (*VNI)(toPtr(uint32(vnId)))
+	}
+
 	err = o.Data.VnType.FromString(raw.VnType)
 	if err != nil {
 		return fmt.Errorf("while parsing virtual network data vn_type %q - %w", raw.VnType, err)
