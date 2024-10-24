@@ -402,10 +402,6 @@ func (o VirtualNetworkData) MarshalJSON() ([]byte, error) {
 		raw.VirtualGatewayIpv6 = o.VirtualGatewayIpv6.String()
 	}
 	if o.VnId != nil {
-		err := o.VnId.validate()
-		if err != nil {
-			return nil, fmt.Errorf("while validating VNI value %d - %w", *o.VnId, err)
-		}
 		raw.VnId = strconv.Itoa(int(*o.VnId))
 	}
 	raw.VnType = o.VnType.String()
