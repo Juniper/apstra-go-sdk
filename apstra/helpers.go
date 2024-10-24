@@ -117,7 +117,7 @@ func isv6(ip net.IP) bool {
 	return 16 == len(ip.To16())
 }
 
-// ipFromString is an improvemen ton calling net.ParseIP() directly because it
+// ipFromString is an improvement on calling net.ParseIP() directly because it
 // handles empty strings gracefully (returns nil net.IP) and because it returns
 // errors in case of un-parseable input strings.
 func ipFromString(s string) (net.IP, error) {
