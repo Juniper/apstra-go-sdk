@@ -69,20 +69,29 @@ func TestVirtualNetworkDataMarshalJson(t *testing.T) {
 		return result
 	}
 
+	mustParseMac := func(t testing.TB, s string) net.HardwareAddr {
+		t.Helper()
+		result, err := macFromString(s)
+		require.NoError(t, err)
+		return result
+	}
+
 	type testCase struct {
 		d VirtualNetworkData
 		e string
 	}
 
 	testCases := map[string]testCase{
-		"a": {
+		"full_detail_vlan": {
 			d: VirtualNetworkData{
+				DhcpService:    true,
 				Ipv4Enabled:    true,
 				Ipv4Subnet:     mustParseIpNet(t, "192.0.2.0/24"),
 				Ipv6Enabled:    true,
 				Ipv6Subnet:     mustParseIpNet(t, "3fff::/64"),
-				L3Mtu:          toPtr(9000),
+				L3Mtu:          toPtr(9010),
 				Label:          "a",
+				ReservedVlanId: toPtr(Vlan(10)),
 				SecurityZoneId: "dtUF3UAr4Cqfuoy6iII",
 				SviIps: []SviIp{
 					{
@@ -99,22 +108,25 @@ func TestVirtualNetworkDataMarshalJson(t *testing.T) {
 				VirtualGatewayIpv6Enabled: true,
 				VnBindings: []VnBinding{
 					{
-						AccessSwitchNodeIds: []ObjectId{},
+						AccessSwitchNodeIds: []ObjectId{"tFlHPPD766lj8g8PYsqw", "Ik82Xta17zkWGHNw6pbN"},
 						SystemId:            "UJoJhK-jXJkc5Mtarc8",
-						VlanId:              toPtr(Vlan(3)),
+						VlanId:              toPtr(Vlan(10)),
 					},
 				},
-				VnType: enum.VnTypeVxlan,
+				VnId:       toPtr(VNI(10 * 1000)),
+				VnType:     enum.VnTypeVlan,
+				VirtualMac: mustParseMac(t, "08:00:20:01:02:03"),
 			},
 			e: `{
-                  "dhcp_service": "dhcpServiceDisabled",
+                  "dhcp_service": "dhcpServiceEnabled",
                   "ipv4_enabled": true,
                   "ipv4_subnet": "192.0.2.0/24",
                   "ipv6_enabled": true,
                   "ipv6_subnet": "3fff::/64",
-                  "l3_mtu": 9000,
+                  "l3_mtu": 9010,
                   "label": "a",
                   "rt_policy": null,
+                  "reserved_vlan_id": 10,
                   "security_zone_id": "dtUF3UAr4Cqfuoy6iII",
                   "svi_ips": [
                     {
@@ -131,11 +143,116 @@ func TestVirtualNetworkDataMarshalJson(t *testing.T) {
                   "virtual_gateway_ipv4_enabled": true,
                   "bound_to": [
                     {
-                      "access_switch_node_ids": [],
+                      "access_switch_node_ids": [
+                        "tFlHPPD766lj8g8PYsqw",
+                        "Ik82Xta17zkWGHNw6pbN"
+                      ],
                       "system_id": "UJoJhK-jXJkc5Mtarc8",
-                      "vlan_id": 3
+                      "vlan_id": 10
                     }
                   ],
+                  "virtual_mac": "08:00:20:01:02:03",
+                  "vn_id": "10000",
+                  "vn_type": "vlan"
+                }`,
+		},
+		"full_detail_vxlan": {
+			d: VirtualNetworkData{
+				DhcpService:    false,
+				Ipv4Enabled:    false,
+				Ipv4Subnet:     nil,
+				Ipv6Enabled:    false,
+				Ipv6Subnet:     nil,
+				L3Mtu:          toPtr(9010),
+				Label:          "a",
+				ReservedVlanId: toPtr(Vlan(10)),
+				SecurityZoneId: "dtUF3UAr4Cqfuoy6iII",
+				SviIps: []SviIp{
+					{
+						SystemId: "UJoJhK-jXJkc5Mtarc8",
+						Ipv4Addr: mustParseIpNet(t, "192.0.2.2/24"),
+						Ipv4Mode: enum.SviIpv4ModeEnabled,
+						Ipv6Addr: mustParseIpNet(t, "3fff::2/64"),
+						Ipv6Mode: enum.SviIpv6ModeEnabled,
+					},
+					{
+						SystemId: "iEbRhCoGzNlIgfO9DZ4r",
+						Ipv4Addr: mustParseIpNet(t, "192.0.2.3/24"),
+						Ipv4Mode: enum.SviIpv4ModeEnabled,
+						Ipv6Addr: mustParseIpNet(t, "3fff::3/64"),
+						Ipv6Mode: enum.SviIpv6ModeEnabled,
+					},
+				},
+				VirtualGatewayIpv4:        mustParseIp(t, "192.0.2.1"),
+				VirtualGatewayIpv6:        mustParseIp(t, "3fff::1"),
+				VirtualGatewayIpv4Enabled: true,
+				VirtualGatewayIpv6Enabled: true,
+				VnBindings: []VnBinding{
+					{
+						AccessSwitchNodeIds: []ObjectId{"tFlHPPD766lj8g8PYsqw", "Ik82Xta17zkWGHNw6pbN"},
+						SystemId:            "UJoJhK-jXJkc5Mtarc8",
+						VlanId:              toPtr(Vlan(10)),
+					},
+					{
+						AccessSwitchNodeIds: []ObjectId{"dxodxTyx6SAlMYbP45Bp", "7ZNWB3KlYGlxj87UdeaF", "v6mwfD43FJP3mhhvF7YN"},
+						SystemId:            "iEbRhCoGzNlIgfO9DZ4r",
+						VlanId:              toPtr(Vlan(10)),
+					},
+				},
+				VnId:       toPtr(VNI(10 * 1000)),
+				VnType:     enum.VnTypeVxlan,
+				VirtualMac: mustParseMac(t, "08:00:20:01:02:03"),
+			},
+			e: `{
+                  "dhcp_service": "dhcpServiceDisabled",
+                  "ipv4_enabled": false,
+                  "ipv6_enabled": false,
+                  "l3_mtu": 9010,
+                  "label": "a",
+                  "rt_policy": null,
+                  "reserved_vlan_id": 10,
+                  "security_zone_id": "dtUF3UAr4Cqfuoy6iII",
+                  "svi_ips": [
+                    {
+                      "ipv4_addr": "192.0.2.2/24",
+                      "ipv4_mode": "enabled",
+                      "ipv6_addr": "3fff::2/64",
+                      "ipv6_mode": "enabled",
+                      "system_id": "UJoJhK-jXJkc5Mtarc8"
+                    },
+                    {
+                      "ipv4_addr": "192.0.2.3/24",
+                      "ipv4_mode": "enabled",
+                      "ipv6_addr": "3fff::3/64",
+                      "ipv6_mode": "enabled",
+                      "system_id": "iEbRhCoGzNlIgfO9DZ4r"
+                    }
+                  ],
+                  "virtual_gateway_ipv4": "192.0.2.1",
+                  "virtual_gateway_ipv6": "3fff::1",
+                  "virtual_gateway_ipv6_enabled": true,
+                  "virtual_gateway_ipv4_enabled": true,
+                  "bound_to": [
+                    {
+                      "access_switch_node_ids": [
+                        "tFlHPPD766lj8g8PYsqw",
+                        "Ik82Xta17zkWGHNw6pbN"
+                      ],
+                      "system_id": "UJoJhK-jXJkc5Mtarc8",
+                      "vlan_id": 10
+                    },
+                    {
+                      "access_switch_node_ids": [
+                        "dxodxTyx6SAlMYbP45Bp",
+                        "7ZNWB3KlYGlxj87UdeaF",
+                        "v6mwfD43FJP3mhhvF7YN"
+                      ],
+                      "system_id": "iEbRhCoGzNlIgfO9DZ4r",
+                      "vlan_id": 10
+                    }
+                  ],
+                  "virtual_mac": "08:00:20:01:02:03",
+                  "vn_id": "10000",
                   "vn_type": "vxlan"
                 }`,
 		},
