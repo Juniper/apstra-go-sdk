@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -13,6 +12,9 @@ import (
 	"log"
 	"math/rand"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/stretchr/testify/require"
 )
 
 func compareRtPolicy(t *testing.T, a, b *RtPolicy) {
@@ -27,32 +29,20 @@ func compareRtPolicy(t *testing.T, a, b *RtPolicy) {
 }
 
 func comapareSviIps(t *testing.T, a, b SviIp) {
-	if a.SystemId != b.SystemId {
-		t.Fatalf("SystemId mismatch: %q vs. %q", a.SystemId, b.SystemId)
+	require.Equal(t, a.SystemId, b.SystemId)
+
+	require.Equal(t, a.Ipv4Mode, b.Ipv4Mode)
+	if a.Ipv4Addr != nil || b.Ipv4Addr != nil {
+		require.NotNil(t, a.Ipv4Addr)
+		require.NotNil(t, b.Ipv4Addr)
+		require.Equal(t, a.Ipv4Addr.String(), b.Ipv4Addr.String())
 	}
 
-	if !a.Ipv4Addr.Equal(b.Ipv4Addr) {
-		t.Fatalf("Ipv4Addr mismatch: %q vs. %q", a.Ipv4Addr.String(), b.Ipv4Addr.String())
-	}
-
-	if a.Ipv4Mode != b.Ipv4Mode {
-		t.Fatalf("Ipv4Mode mismatch: %q vs. %q", a.Ipv4Mode.String(), b.Ipv4Mode.String())
-	}
-
-	if a.Ipv4Requirement != b.Ipv4Requirement {
-		t.Fatalf("Ipv4Requirement mismatch: %q vs. %q", a.Ipv4Requirement.String(), b.Ipv4Requirement.String())
-	}
-
-	if !a.Ipv6Addr.Equal(b.Ipv6Addr) {
-		t.Fatalf("Ipv6Addr mismatch: %q vs. %q", a.Ipv6Addr.String(), b.Ipv6Addr.String())
-	}
-
-	if a.Ipv6Mode != b.Ipv6Mode {
-		t.Fatalf("Ipv6Mode mismatch: %q vs. %q", a.Ipv6Mode.String(), b.Ipv6Mode.String())
-	}
-
-	if a.Ipv6Requirement != b.Ipv6Requirement {
-		t.Fatalf("Ipv6Requirement mismatch: %q vs. %q", a.Ipv6Requirement.String(), b.Ipv6Requirement.String())
+	require.Equal(t, a.Ipv6Mode, b.Ipv6Mode)
+	if a.Ipv6Addr != nil || b.Ipv6Addr != nil {
+		require.NotNil(t, a.Ipv6Addr)
+		require.NotNil(t, b.Ipv6Addr)
+		require.Equal(t, a.Ipv6Addr.String(), b.Ipv6Addr.String())
 	}
 }
 
@@ -94,7 +84,7 @@ func compareVnBindingSlices(t *testing.T, a, b []VnBinding, strict bool) {
 
 func compareVirtualNetworkData(t *testing.T, a, b *VirtualNetworkData, strict bool) {
 	if a.DhcpService != b.DhcpService {
-		t.Fatalf("DhcpService mismatch: %q vs. %q", a.DhcpService.raw(), b.DhcpService.raw())
+		t.Fatalf("DhcpService mismatch: %q vs. %q", a.DhcpService.String(), b.DhcpService.String())
 	}
 
 	if a.Ipv4Enabled != b.Ipv4Enabled {
@@ -174,7 +164,7 @@ func compareVirtualNetworkData(t *testing.T, a, b *VirtualNetworkData, strict bo
 	}
 
 	if a.VnType != b.VnType {
-		t.Fatalf("VnType mismatch: %q vs. %q", a.VnType.String(), b.VnType.String())
+		t.Fatalf("VnType mismatch: %q vs. %q", a.VnType, b.VnType)
 	}
 
 	if a.VirtualMac.String() != b.VirtualMac.String() {
@@ -239,8 +229,8 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			leafId := ObjectId(result.Items[i].System.SystemId)
 			sviIps[i] = SviIp{
 				SystemId: leafId,
-				Ipv4Mode: Ipv4ModeEnabled,
-				Ipv6Mode: Ipv6ModeDisabled,
+				Ipv4Mode: enum.SviIpv4ModeEnabled,
+				Ipv6Mode: enum.SviIpv6ModeDisabled,
 			}
 			vnBindings[i] = VnBinding{
 				SystemId: leafId,
@@ -257,7 +247,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			SviIps:                    sviIps[:1],
 			VirtualGatewayIpv4Enabled: true,
 			VnBindings:                vnBindings[:1],
-			VnType:                    VnTypeVxlan,
+			VnType:                    enum.VnTypeVxlan,
 		}
 
 		log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())

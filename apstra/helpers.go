@@ -116,3 +116,51 @@ func isv6(ip net.IP) bool {
 	}
 	return 16 == len(ip.To16())
 }
+
+// ipFromString is an improvemen ton calling net.ParseIP() directly because it
+// handles empty strings gracefully (returns nil net.IP) and because it returns
+// errors in case of un-parseable input strings.
+func ipFromString(s string) (net.IP, error) {
+	if s == "" {
+		return nil, nil
+	}
+
+	ip := net.ParseIP(s)
+	if ip == nil {
+		return nil, fmt.Errorf("cannot parse IP %q", s)
+	}
+
+	return ip, nil
+}
+
+// ipNetFromString is an improvement on calling net.ParseCIDR() directly because
+// it handles empty strings gracefully (returns nil pointer) and because it
+// returns a net.IPNet with the actual IP address, rather than the base address.
+func ipNetFromString(s string) (*net.IPNet, error) {
+	if s == "" {
+		return nil, nil
+	}
+
+	ip, ipNet, err := net.ParseCIDR(s)
+	if err != nil {
+		return nil, fmt.Errorf("while parsing CIDR string %q - %w", s, err)
+	}
+	ipNet.IP = ip
+
+	return ipNet, nil
+}
+
+// macFromString is an improvement on calling net.ParseMAC() directly because it
+// handles empty strings gracefully (returns nil net.HardwareAddr)
+func macFromString(s string) (net.HardwareAddr, error) {
+	if s == "" {
+		return nil, nil
+	}
+
+	mac, err := net.ParseMAC(s)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse hardware address %q", s)
+	}
+
+	return mac, nil
+}

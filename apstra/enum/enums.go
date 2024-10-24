@@ -195,3 +195,35 @@ var (
 	RenderedConfigTypeStaging  = RenderedConfigType{Value: "staging"}
 	RenderedConfigTypeDeployed = RenderedConfigType{Value: "deployed"}
 )
+
+type SviIpv4Mode oenum.Member[string]
+
+var (
+	SviIpv4ModeDisabled = SviIpv4Mode{Value: "disabled"}
+	SviIpv4ModeEnabled  = SviIpv4Mode{Value: "enabled"}
+	SviIpv4ModeForced   = SviIpv4Mode{Value: "forced"}
+)
+
+type SviIpv6Mode oenum.Member[string]
+
+var (
+	SviIpv6ModeDisabled  = SviIpv6Mode{Value: "disabled"}
+	SviIpv6ModeEnabled   = SviIpv6Mode{Value: "enabled"}
+	SviIpv6ModeForced    = SviIpv6Mode{Value: "forced"}
+	SviIpv6ModeLinkLocal = SviIpv6Mode{Value: "link_local"}
+)
+
+type DhcpServiceMode oenum.Member[string]
+
+var (
+	DhcpServiceModeDisabled = DhcpServiceMode{Value: "dhcpServiceDisabled"}
+	DhcpServiceModeEnabled  = DhcpServiceMode{Value: "dhcpServiceEnabled"}
+)
+
+type VnType oenum.Member[string]
+
+var (
+	VnTypeExternal = VnType{Value: "disabled"}
+	VnTypeVlan     = VnType{Value: "vlan"}
+	VnTypeVxlan    = VnType{Value: "vxlan"}
+)

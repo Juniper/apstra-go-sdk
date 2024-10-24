@@ -846,7 +846,7 @@ func testVirtualNetwork(t testing.TB, ctx context.Context, bp *TwoStageL3ClosCli
 		SecurityZoneId:            szId,
 		VirtualGatewayIpv4Enabled: true,
 		VnBindings:                vnBindings,
-		VnType:                    VnTypeVxlan,
+		VnType:                    enum.VnTypeVxlan,
 	})
 	require.NoError(t, err)
 
