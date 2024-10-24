@@ -50,6 +50,20 @@ func (o *DeviceProfileType) FromString(s string) error {
 	return nil
 }
 
+var _ enum = (*DhcpServiceMode)(nil)
+
+func (o DhcpServiceMode) String() string {
+	return o.Value
+}
+
+func (o *DhcpServiceMode) FromString(s string) error {
+	if DhcpServiceModes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
 var _ enum = (*FFResourceType)(nil)
 
 func (o FFResourceType) String() string {
@@ -260,6 +274,34 @@ func (o *StorageSchemaPath) FromString(s string) error {
 	return nil
 }
 
+var _ enum = (*SviIpv4Mode)(nil)
+
+func (o SviIpv4Mode) String() string {
+	return o.Value
+}
+
+func (o *SviIpv4Mode) FromString(s string) error {
+	if SviIpv4Modes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+var _ enum = (*SviIpv6Mode)(nil)
+
+func (o SviIpv6Mode) String() string {
+	return o.Value
+}
+
+func (o *SviIpv6Mode) FromString(s string) error {
+	if SviIpv6Modes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
 var _ enum = (*TcpStateQualifier)(nil)
 
 func (o TcpStateQualifier) String() string {
@@ -268,6 +310,20 @@ func (o TcpStateQualifier) String() string {
 
 func (o *TcpStateQualifier) FromString(s string) error {
 	if TcpStateQualifiers.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+var _ enum = (*VnType)(nil)
+
+func (o VnType) String() string {
+	return o.Value
+}
+
+func (o *VnType) FromString(s string) error {
+	if VnTypes.Parse(s) == nil {
 		return newEnumParseError(o, s)
 	}
 	o.Value = s
@@ -298,6 +354,12 @@ var (
 	DeviceProfileTypes      = oenum.New(
 		DeviceProfileTypeModular,
 		DeviceProfileTypeMonolithic,
+	)
+
+	_                enum = new(DhcpServiceMode)
+	DhcpServiceModes      = oenum.New(
+		DhcpServiceModeDisabled,
+		DhcpServiceModeEnabled,
 	)
 
 	_               enum = new(FFResourceType)
@@ -434,8 +496,30 @@ var (
 		StorageSchemaPathXcvr,
 	)
 
+	_            enum = new(SviIpv4Mode)
+	SviIpv4Modes      = oenum.New(
+		SviIpv4ModeDisabled,
+		SviIpv4ModeEnabled,
+		SviIpv4ModeForced,
+	)
+
+	_            enum = new(SviIpv6Mode)
+	SviIpv6Modes      = oenum.New(
+		SviIpv6ModeDisabled,
+		SviIpv6ModeEnabled,
+		SviIpv6ModeForced,
+		SviIpv6ModeLinkLocal,
+	)
+
 	_                  enum = new(TcpStateQualifier)
 	TcpStateQualifiers      = oenum.New(
 		TcpStateQualifierEstablished,
+	)
+
+	_       enum = new(VnType)
+	VnTypes      = oenum.New(
+		VnTypeExternal,
+		VnTypeVlan,
+		VnTypeVxlan,
 	)
 )

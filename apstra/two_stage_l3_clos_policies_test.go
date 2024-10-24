@@ -278,7 +278,7 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 				Label:          "vn_" + strconv.Itoa(i),
 				SecurityZoneId: szId,
 				VnBindings:     bindings,
-				VnType:         VnTypeVxlan,
+				VnType:         enum.VnTypeVxlan,
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -399,7 +399,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 				Label:          "vn_" + strconv.Itoa(i),
 				SecurityZoneId: szId,
 				VnBindings:     bindings,
-				VnType:         VnTypeVxlan,
+				VnType:         enum.VnTypeVxlan,
 			})
 			if err != nil {
 				t.Fatal(err)

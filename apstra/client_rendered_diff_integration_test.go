@@ -15,6 +15,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -97,7 +98,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 					Label:                     randString(6, "hex"),
 					SecurityZoneId:            szId,
 					VnBindings:                vnBindings,
-					VnType:                    VnTypeVxlan,
+					VnType:                    enum.VnTypeVxlan,
 				})
 				require.NoError(t, err)
 				t.Logf(vnId.String())

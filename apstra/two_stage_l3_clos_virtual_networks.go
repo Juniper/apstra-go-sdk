@@ -6,10 +6,13 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"strconv"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -18,319 +21,31 @@ const (
 	// apiUrlVirtualNetworkById
 	apiUrlVirtualNetworks    = apiUrlBlueprintById + apiUrlPathDelim + "virtual-networks"
 	apiUrlVirtualNetworkById = apiUrlVirtualNetworks + apiUrlPathDelim + "%s"
-
-	dhcpServiceDisabled = dhcpServiceMode("dhcpServiceDisabled")
-	dhcpServiceEnabled  = dhcpServiceMode("dhcpServiceEnabled")
 )
 
 type (
 	DhcpServiceEnabled bool
-	dhcpServiceMode    string
 )
 
-func (o DhcpServiceEnabled) raw() dhcpServiceMode {
-	if o {
-		return dhcpServiceEnabled
-	}
-	return dhcpServiceDisabled
-}
+func (o *DhcpServiceEnabled) FromString(s string) error {
+	var dsm enum.DhcpServiceMode
 
-func (o dhcpServiceMode) polish() DhcpServiceEnabled {
-	return o == dhcpServiceEnabled
-}
-
-//const (
-//	l3ConnectivityEnabled  = l3ConnectivityMode("l3Enabled")
-//	l3ConnectivityDisabled = l3ConnectivityMode("l3Disabled")
-//)
-//
-//type L3ConnectivityMode bool
-//type l3ConnectivityMode string
-//
-//func (o L3ConnectivityMode) raw() l3ConnectivityMode {
-//	if o {
-//		return l3ConnectivityEnabled
-//	}
-//	return l3ConnectivityDisabled
-//}
-//
-//func (o l3ConnectivityMode) polish() L3ConnectivityMode {
-//	return o == l3ConnectivityEnabled
-//}
-
-type (
-	SviIpRequirement int
-	sviIpRequirement string
-)
-
-const (
-	SviIpRequirementNone = SviIpRequirement(iota)
-	SviIpRequirementOptional
-	SviIpRequirementForbidden
-	SviIpRequirementMandatory
-	SviIpRequirementIntentionConflict
-	SviIpRequirementUnknown = "SVI IP requirement mode '%s' unknown"
-
-	sviIpRequirementNone              = sviIpRequirement("")
-	sviIpRequirementOptional          = sviIpRequirement("optional")
-	sviIpRequirementForbidden         = sviIpRequirement("forbidden")
-	sviIpRequirementMandatory         = sviIpRequirement("mandatory")
-	sviIpRequirementIntentionConflict = sviIpRequirement("intention_conflict")
-	sviIpRequirementUnknown           = "SVI IP requirement mode %d unknown"
-)
-
-func (o SviIpRequirement) String() string {
-	return string(o.raw())
-}
-
-func (o SviIpRequirement) int() int {
-	return int(o)
-}
-
-func (o SviIpRequirement) raw() sviIpRequirement {
-	switch o {
-	case SviIpRequirementNone:
-		return sviIpRequirementNone
-	case SviIpRequirementOptional:
-		return sviIpRequirementOptional
-	case SviIpRequirementForbidden:
-		return sviIpRequirementForbidden
-	case SviIpRequirementMandatory:
-		return sviIpRequirementMandatory
-	case SviIpRequirementIntentionConflict:
-		return sviIpRequirementIntentionConflict
-	default:
-		return sviIpRequirement(fmt.Sprintf(sviIpRequirementUnknown, o))
-	}
-}
-
-func (o sviIpRequirement) string() string {
-	return string(o)
-}
-
-func (o sviIpRequirement) parse() (int, error) {
-	switch o {
-	case sviIpRequirementNone:
-		return int(SviIpRequirementNone), nil
-	case sviIpRequirementOptional:
-		return int(SviIpRequirementOptional), nil
-	case sviIpRequirementForbidden:
-		return int(SviIpRequirementForbidden), nil
-	case sviIpRequirementMandatory:
-		return int(SviIpRequirementMandatory), nil
-	case sviIpRequirementIntentionConflict:
-		return int(SviIpRequirementIntentionConflict), nil
-	default:
-		return 0, fmt.Errorf(SviIpRequirementUnknown, o)
-	}
-}
-
-type (
-	Ipv4Mode int
-	ipv4Mode string
-)
-
-const (
-	Ipv4ModeNone = Ipv4Mode(iota)
-	Ipv4ModeDisabled
-	Ipv4ModeEnabled
-	Ipv4ModeForced
-	Ipv4ModeUnknown = "unknown IPv4 mode '%s'"
-
-	ipv4ModeNone     = ipv4Mode("")
-	ipv4ModeDisabled = ipv4Mode("disabled")
-	ipv4ModeEnabled  = ipv4Mode("enabled")
-	ipv4ModeForced   = ipv4Mode("forced")
-	ipv4ModeUnknown  = "unknown IPv4 mode %d"
-)
-
-func (o Ipv4Mode) String() string {
-	return string(o.raw())
-}
-
-func (o Ipv4Mode) int() int {
-	return int(o)
-}
-
-func (o Ipv4Mode) raw() ipv4Mode {
-	switch o {
-	case Ipv4ModeNone:
-		return ipv4ModeNone
-	case Ipv4ModeDisabled:
-		return ipv4ModeDisabled
-	case Ipv4ModeEnabled:
-		return ipv4ModeEnabled
-	case Ipv4ModeForced:
-		return ipv4ModeForced
-	default:
-		return ipv4Mode(fmt.Sprintf(ipv4ModeUnknown, o))
-	}
-}
-
-func (o ipv4Mode) string() string {
-	return string(o)
-}
-
-func (o ipv4Mode) parse() (int, error) {
-	switch o {
-	case ipv4ModeNone:
-		return int(Ipv4ModeNone), nil
-	case ipv4ModeDisabled:
-		return int(Ipv4ModeDisabled), nil
-	case ipv4ModeEnabled:
-		return int(Ipv4ModeEnabled), nil
-	case ipv4ModeForced:
-		return int(Ipv4ModeForced), nil
-	default:
-		return 0, fmt.Errorf(Ipv4ModeUnknown, o)
-	}
-}
-
-type (
-	Ipv6Mode int
-	ipv6Mode string
-)
-
-const (
-	Ipv6ModeNone = Ipv6Mode(iota)
-	Ipv6ModeDisabled
-	Ipv6ModeEnabled
-	Ipv6ModeForced
-	Ipv6ModeLinkLocal
-	Ipv6ModeUnknown = "unknown IPv6 mode '%s'"
-
-	ipv6ModeNone      = ipv6Mode("")
-	ipv6ModeDisabled  = ipv6Mode("disabled")
-	ipv6ModeEnabled   = ipv6Mode("enabled")
-	ipv6ModeForced    = ipv6Mode("forced")
-	ipv6ModeLinkLocal = ipv6Mode("link_local")
-	ipv6ModeUnknown   = "unknown IPv6 mode %d"
-)
-
-func (o Ipv6Mode) String() string {
-	return string(o.raw())
-}
-
-func (o Ipv6Mode) int() int {
-	return int(o)
-}
-
-func (o Ipv6Mode) raw() ipv6Mode {
-	switch o {
-	case Ipv6ModeNone:
-		return ipv6ModeNone
-	case Ipv6ModeDisabled:
-		return ipv6ModeDisabled
-	case Ipv6ModeEnabled:
-		return ipv6ModeEnabled
-	case Ipv6ModeLinkLocal:
-		return ipv6ModeLinkLocal
-	case Ipv6ModeForced:
-		return ipv6ModeForced
-	default:
-		return ipv6Mode(fmt.Sprintf(ipv6ModeUnknown, o))
-	}
-}
-
-func (o ipv6Mode) string() string {
-	return string(o)
-}
-
-func (o ipv6Mode) parse() (int, error) {
-	switch o {
-	case ipv6ModeNone:
-		return int(Ipv6ModeNone), nil
-	case ipv6ModeDisabled:
-		return int(Ipv6ModeDisabled), nil
-	case ipv6ModeEnabled:
-		return int(Ipv6ModeEnabled), nil
-	case ipv6ModeLinkLocal:
-		return int(Ipv6ModeLinkLocal), nil
-	case ipv6ModeForced:
-		return int(Ipv6ModeForced), nil
-	default:
-		return 0, fmt.Errorf(Ipv6ModeUnknown, o)
-	}
-}
-
-type (
-	VnType int
-	vnType string
-)
-
-const (
-	VnTypeExternal = VnType(iota)
-	VnTypeVlan
-	VnTypeVxlan
-	VnTypeUnknown = "unknown VN type '%s'"
-
-	vnTypeExternal = vnType("external")
-	vnTypeVlan     = vnType("vlan")
-	vnTypeVxlan    = vnType("vxlan")
-	vnTypeUnknown  = "unknown VN type '%d'"
-)
-
-func (o VnType) String() string {
-	return string(o.raw())
-}
-
-func (o VnType) int() int {
-	return int(o)
-}
-
-func (o *VnType) FromString(s string) error {
-	i, err := vnType(s).parse()
+	err := dsm.FromString(s)
 	if err != nil {
-		return err
+		return fmt.Errorf("while parsing dhcp service mode - %w", err)
 	}
-	*o = VnType(i)
+
+	*o = dsm == enum.DhcpServiceModeEnabled
+
 	return nil
 }
 
-func (o VnType) raw() vnType {
-	switch o {
-	case VnTypeExternal:
-		return vnTypeExternal
-	case VnTypeVlan:
-		return vnTypeVlan
-	case VnTypeVxlan:
-		return vnTypeVxlan
-	default:
-		return vnType(fmt.Sprintf(vnTypeUnknown, o))
+func (o DhcpServiceEnabled) String() string {
+	if o {
+		return enum.DhcpServiceModeEnabled.String()
 	}
-}
 
-func (o vnType) string() string {
-	return string(o)
-}
-
-func (o vnType) parse() (int, error) {
-	switch o {
-	case vnTypeExternal:
-		return int(VnTypeExternal), nil
-	case vnTypeVlan:
-		return int(VnTypeVlan), nil
-	case vnTypeVxlan:
-		return int(VnTypeVxlan), nil
-	default:
-		return 0, fmt.Errorf(VnTypeUnknown, o)
-	}
-}
-
-// AllVirtualNetworkTypes returns the []VnType representing
-// each supported VnType
-func AllVirtualNetworkTypes() []VnType {
-	i := 0
-	var result []VnType
-	for {
-		var os VnType
-		err := os.FromString(VnType(i).String())
-		if err != nil {
-			return result[:i]
-		}
-		result = append(result, os)
-		i++
-	}
+	return enum.DhcpServiceModeDisabled.String()
 }
 
 type (
@@ -421,114 +136,196 @@ func (o systemRole) parse() (int, error) {
 	}
 }
 
+var (
+	_ json.Marshaler   = (*SviIp)(nil)
+	_ json.Unmarshaler = (*SviIp)(nil)
+)
+
 type SviIp struct {
-	SystemId        ObjectId         `json:"system_id"`
-	Ipv4Addr        net.IP           `json:"ipv4_addr"`
-	Ipv4Mode        Ipv4Mode         `json:"ipv4_mode"`
-	Ipv4Requirement SviIpRequirement `json:"ipv4_requirement"`
-	Ipv6Addr        net.IP           `json:"ipv6_addr"`
-	Ipv6Mode        Ipv6Mode         `json:"ipv6_mode"`
-	Ipv6Requirement SviIpRequirement `json:"ipv6_requirement"`
+	SystemId ObjectId
+	Ipv4Addr *net.IPNet
+	Ipv4Mode enum.SviIpv4Mode
+	Ipv6Addr *net.IPNet
+	Ipv6Mode enum.SviIpv6Mode
 }
 
-func (o *SviIp) raw() *rawSviIp {
-	var ipv4Addr, ipv6Addr string
-	if len(o.Ipv4Addr) != 0 {
-		ipv4Addr = o.Ipv4Addr.String()
+func (o *SviIp) MarshalJSON() ([]byte, error) {
+	var raw struct {
+		Ipv4Addr string   `json:"ipv4_addr,omitempty"`
+		Ipv4Mode string   `json:"ipv4_mode,omitempty"`
+		Ipv6Addr string   `json:"ipv6_addr,omitempty"`
+		Ipv6Mode string   `json:"ipv6_mode,omitempty"`
+		SystemId ObjectId `json:"system_id"`
 	}
-	if len(o.Ipv6Addr) != 0 {
-		ipv6Addr = o.Ipv6Addr.String()
+
+	if o.Ipv4Addr != nil {
+		raw.Ipv4Addr = o.Ipv4Addr.String()
 	}
-	return &rawSviIp{
-		SystemId:        o.SystemId,
-		Ipv4Addr:        ipv4Addr,
-		Ipv4Mode:        o.Ipv4Mode.raw(),
-		Ipv4Requirement: o.Ipv4Requirement.raw(),
-		Ipv6Addr:        ipv6Addr,
-		Ipv6Mode:        o.Ipv6Mode.raw(),
-		Ipv6Requirement: o.Ipv6Requirement.raw(),
+	raw.Ipv4Mode = o.Ipv4Mode.String()
+
+	if o.Ipv6Addr != nil {
+		raw.Ipv6Addr = o.Ipv6Addr.String()
 	}
+	raw.Ipv6Mode = o.Ipv6Mode.String()
+
+	raw.SystemId = o.SystemId
+
+	return json.Marshal(raw)
 }
 
-type rawSviIp struct {
-	Ipv4Addr        string           `json:"ipv4_addr,omitempty"`
-	Ipv4Mode        ipv4Mode         `json:"ipv4_mode,omitempty"`
-	Ipv4Requirement sviIpRequirement `json:"ipv4_requirement,omitempty"` // not present in swagger example, not present in GET
-	Ipv6Addr        string           `json:"ipv6_addr,omitempty"`
-	Ipv6Mode        ipv6Mode         `json:"ipv6_mode,omitempty"`
-	Ipv6Requirement sviIpRequirement `json:"ipv6_requirement,omitempty"` // not present in swagger example, not present in GET
-	SystemId        ObjectId         `json:"system_id"`
-}
+func (o *SviIp) UnmarshalJSON(bytes []byte) error {
+	var raw struct {
+		Ipv4Addr string   `json:"ipv4_addr"`
+		Ipv4Mode string   `json:"ipv4_mode"`
+		Ipv6Addr string   `json:"ipv6_addr"`
+		Ipv6Mode string   `json:"ipv6_mode"`
+		SystemId ObjectId `json:"system_id"`
+	}
 
-func (o *rawSviIp) parse() (*SviIp, error) {
-	var ipv4Addr, ipv6Addr net.IP
-	var err error
+	err := json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return fmt.Errorf("while unmarshaling an SviIp - %w", err)
+	}
 
-	if o.Ipv4Addr != "" {
-		ipv4Addr, _, err = net.ParseCIDR(o.Ipv4Addr)
+	o.Ipv4Addr = nil
+	if raw.Ipv4Addr != "" {
+		var ip net.IP
+		ip, o.Ipv4Addr, err = net.ParseCIDR(raw.Ipv4Addr)
 		if err != nil {
-			return nil, err
+			return fmt.Errorf("while parsing SviIp.Ipv4Addr - %w", err)
 		}
+		o.Ipv4Addr.IP = ip
 	}
 
-	if o.Ipv6Addr != "" {
-		ipv6Addr, _, err = net.ParseCIDR(o.Ipv6Addr)
+	err = o.Ipv4Mode.FromString(raw.Ipv4Mode)
+	if err != nil {
+		return fmt.Errorf("while parsing SviIp.Ipv4Mode - %w", err)
+	}
+
+	o.Ipv6Addr = nil
+	if raw.Ipv6Addr != "" {
+		var ip net.IP
+		ip, o.Ipv6Addr, err = net.ParseCIDR(raw.Ipv6Addr)
 		if err != nil {
-			return nil, err
+			return fmt.Errorf("while parsing SviIp.Ipv6Addr - %w", err)
 		}
+		o.Ipv6Addr.IP = ip
 	}
 
-	ipv4mode, err := o.Ipv4Mode.parse()
+	err = o.Ipv6Mode.FromString(raw.Ipv6Mode)
 	if err != nil {
-		return nil, err
-	}
-	ipv6mode, err := o.Ipv6Mode.parse()
-	if err != nil {
-		return nil, err
+		return fmt.Errorf("while parsing SviIp.Ipv6Mode - %w", err)
 	}
 
-	ipv4Requirement, err := o.Ipv4Requirement.parse()
-	if err != nil {
-		return nil, err
-	}
-	ipv6Requirement, err := o.Ipv6Requirement.parse()
-	if err != nil {
-		return nil, err
-	}
+	o.SystemId = raw.SystemId
 
-	return &SviIp{
-		SystemId:        o.SystemId,
-		Ipv4Addr:        ipv4Addr,
-		Ipv4Mode:        Ipv4Mode(ipv4mode),
-		Ipv4Requirement: SviIpRequirement(ipv4Requirement),
-		Ipv6Addr:        ipv6Addr,
-		Ipv6Mode:        Ipv6Mode(ipv6mode),
-		Ipv6Requirement: SviIpRequirement(ipv6Requirement),
-	}, nil
+	return nil
 }
 
 type VnBinding struct {
-	// AccessSwitches []interface `json:"access_switches"`
 	AccessSwitchNodeIds []ObjectId `json:"access_switch_node_ids"`
-	// Role                string     `json:"role"`      // so far: "leaf", possibly graphdb "role" element
-	SystemId ObjectId `json:"system_id"` // graphdb node id of a leaf (so far) switch
-	VlanId   *Vlan    `json:"vlan_id"`   // optional (auto-assign)
-	// Selected            bool       `json:"selected?"`
-	// Tags []interface `json:"tags"` //sent as empty string by 4.1.2 web UI, not seen in 4.1.0 or 4.1.1
-
-	//PodData struct {
-	//	Description     interface{} `json:"description"`
-	//	GlobalCatalogId interface{} `json:"global_catalog_id"`
-	//	Label           string      `json:"label"`
-	//	Position        int         `json:"position"`
-	//	Type            string      `json:"type"`
-	//	Id              string      `json:"id"`
-	//} `json:"pod-data"`
+	SystemId            ObjectId   `json:"system_id"` // graphdb node id of a leaf (so far) switch
+	VlanId              *Vlan      `json:"vlan_id"`   // optional (auto-assign)
 }
+
+var _ json.Unmarshaler = (*VirtualNetwork)(nil)
 
 type VirtualNetwork struct {
 	Id   ObjectId
 	Data *VirtualNetworkData
+}
+
+func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
+	var raw struct {
+		Id                        ObjectId    `json:"id"`
+		DhcpService               string      `json:"dhcp_service"`
+		Ipv4Enabled               bool        `json:"ipv4_enabled"`
+		Ipv4Subnet                string      `json:"ipv4_subnet"`
+		Ipv6Enabled               bool        `json:"ipv6_enabled"`
+		Ipv6Subnet                string      `json:"ipv6_subnet"`
+		L3Mtu                     *int        `json:"l3_mtu"`
+		Label                     string      `json:"label"`
+		ReservedVlanId            *Vlan       `json:"reserved_vlan_id"`
+		RouteTarget               string      `json:"route_target"`
+		RtPolicy                  *RtPolicy   `json:"rt_policy"`
+		SecurityZoneId            ObjectId    `json:"security_zone_id"`
+		SviIps                    []SviIp     `json:"svi_ips"`
+		VirtualGatewayIpv4        string      `json:"virtual_gateway_ipv4"`
+		VirtualGatewayIpv6        string      `json:"virtual_gateway_ipv6"`
+		VirtualGatewayIpv4Enabled bool        `json:"virtual_gateway_ipv4_enabled"`
+		VirtualGatewayIpv6Enabled bool        `json:"virtual_gateway_ipv6_enabled"`
+		VnBindings                []VnBinding `json:"bound_to"`
+		VnId                      string      `json:"vn_id"`
+		VnType                    string      `json:"vn_type"`
+		VirtualMac                string      `json:"virtual_mac"`
+	}
+
+	err := json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return fmt.Errorf("while unmarshaling raw API response - %w", err)
+	}
+
+	o.Id = raw.Id
+	o.Data = new(VirtualNetworkData)
+
+	err = o.Data.DhcpService.FromString(raw.DhcpService)
+	if err != nil {
+		return fmt.Errorf("while unmarshaling dhcp_service %q - %w", raw.DhcpService, err)
+	}
+
+	o.Data.Ipv4Enabled = raw.Ipv4Enabled
+	o.Data.Ipv4Subnet, err = ipNetFromString(raw.Ipv4Subnet)
+	if err != nil {
+		return fmt.Errorf("while parsing virtual network data ipv4_subnet %q - %w", raw.Ipv4Subnet, err)
+	}
+
+	o.Data.Ipv6Enabled = raw.Ipv6Enabled
+	o.Data.Ipv6Subnet, err = ipNetFromString(raw.Ipv6Subnet)
+	if err != nil {
+		return fmt.Errorf("while parsing virtual network data ipv6_subnet %q - %w", raw.Ipv6Subnet, err)
+	}
+
+	o.Data.L3Mtu = raw.L3Mtu
+	o.Data.Label = raw.Label
+	o.Data.ReservedVlanId = raw.ReservedVlanId
+	o.Data.RouteTarget = raw.RouteTarget
+	o.Data.RtPolicy = raw.RtPolicy
+	o.Data.SecurityZoneId = raw.SecurityZoneId
+	o.Data.SviIps = raw.SviIps
+
+	o.Data.VirtualGatewayIpv4, err = ipFromString(raw.VirtualGatewayIpv4)
+	if err != nil {
+		return fmt.Errorf("while parsing virtual network data virtual_gateway_ipv4 %q - %w", raw.VirtualGatewayIpv4, err)
+	}
+
+	o.Data.VirtualGatewayIpv6, err = ipFromString(raw.VirtualGatewayIpv6)
+	if err != nil {
+		return fmt.Errorf("while parsing virtual network data virtual_gateway_ipv6 %q - %w", raw.VirtualGatewayIpv6, err)
+	}
+
+	o.Data.VirtualGatewayIpv4Enabled = raw.VirtualGatewayIpv4Enabled
+	o.Data.VirtualGatewayIpv6Enabled = raw.VirtualGatewayIpv6Enabled
+	o.Data.VnBindings = raw.VnBindings
+
+	if raw.VnId != "" {
+		vnId, err := strconv.Atoi(raw.VnId)
+		if err != nil {
+			return fmt.Errorf("while parsing virtual network data vn_id %q - %w", raw.VnId, err)
+		}
+		o.Data.VnId = (*VNI)(toPtr(uint32(vnId)))
+	}
+
+	err = o.Data.VnType.FromString(raw.VnType)
+	if err != nil {
+		return fmt.Errorf("while parsing virtual network data vn_type %q - %w", raw.VnType, err)
+	}
+
+	o.Data.VirtualMac, err = macFromString(raw.VirtualMac)
+	if err != nil {
+		return fmt.Errorf("while parsing virtual network data virtual_mac %q - %w", raw.VirtualMac, err)
+	}
+
+	return nil
 }
 
 type Endpoint struct {
@@ -537,201 +334,88 @@ type Endpoint struct {
 	Label       string   `json:"label"`
 }
 
+var _ json.Marshaler = (*VirtualNetworkData)(nil)
+
 type VirtualNetworkData struct {
-	DhcpService               DhcpServiceEnabled
-	Ipv4Enabled               bool
-	Ipv4Subnet                *net.IPNet
-	Ipv6Enabled               bool
-	Ipv6Subnet                *net.IPNet
-	L3Mtu                     *int
-	Label                     string
-	ReservedVlanId            *Vlan
-	RouteTarget               string
-	RtPolicy                  *RtPolicy
-	SecurityZoneId            ObjectId
-	SviIps                    []SviIp
-	VirtualGatewayIpv4        net.IP
-	VirtualGatewayIpv6        net.IP
-	VirtualGatewayIpv4Enabled bool
-	VirtualGatewayIpv6Enabled bool
-	VnBindings                []VnBinding
-	VnId                      *VNI
-	VnType                    VnType
-	VirtualMac                net.HardwareAddr
+	DhcpService               DhcpServiceEnabled `json:"dhcp_service"`
+	Ipv4Enabled               bool               `json:"ipv4_enabled"`
+	Ipv4Subnet                *net.IPNet         `json:"ipv4_subnet,omitempty"`
+	Ipv6Enabled               bool               `json:"ipv6_enabled"`
+	Ipv6Subnet                *net.IPNet         `json:"ipv6_subnet,omitempty"`
+	L3Mtu                     *int               `json:"l3_mtu,omitempty"`
+	Label                     string             `json:"label"`
+	ReservedVlanId            *Vlan              `json:"reserved_vlan_id,omitempty"`
+	RouteTarget               string             `json:"route_target,omitempty"`
+	RtPolicy                  *RtPolicy          `json:"rt_policy"`
+	SecurityZoneId            ObjectId           `json:"security_zone_id,omitempty"`
+	SviIps                    []SviIp            `json:"svi_ips"`
+	VirtualGatewayIpv4        net.IP             `json:"virtual_gateway_ipv4,omitempty"`
+	VirtualGatewayIpv6        net.IP             `json:"virtual_gateway_ipv6,omitempty"`
+	VirtualGatewayIpv4Enabled bool               `json:"virtual_gateway_ipv4_enabled"`
+	VirtualGatewayIpv6Enabled bool               `json:"virtual_gateway_ipv6_enabled"`
+	VnBindings                []VnBinding        `json:"bound_to"`
+	VnId                      *VNI               `json:"vn_id,omitempty"` // VNI as a string, null when unset
+	VnType                    enum.VnType        `json:"vn_type"`
+	VirtualMac                net.HardwareAddr   `json:"virtual_mac,omitempty"`
 }
 
-func (o *VirtualNetworkData) raw() *rawVirtualNetwork {
-	var ipv4Subnet, ipv6Subnet string
-	if o.Ipv4Subnet != nil {
-		ipv4Subnet = o.Ipv4Subnet.String()
-	}
-	if o.Ipv6Subnet != nil {
-		ipv6Subnet = o.Ipv6Subnet.String()
-	}
-
-	var l3Mtu *int
-	if o.L3Mtu != nil {
-		mtu := *o.L3Mtu
-		l3Mtu = &mtu
-	}
-
-	sviIps := make([]rawSviIp, len(o.SviIps))
-	for i := range o.SviIps {
-		sviIps[i] = *o.SviIps[i].raw()
-	}
-
-	var virtualGatewayIpv4, virtualGatewayIpv6 string
-	if len(o.VirtualGatewayIpv4.To4()) == net.IPv4len {
-		virtualGatewayIpv4 = o.VirtualGatewayIpv4.String()
-	}
-	if len(o.VirtualGatewayIpv6) == net.IPv6len {
-		virtualGatewayIpv6 = o.VirtualGatewayIpv6.String()
-	}
-
-	var vnId string
-	if o.VnId != nil {
-		vnId = strconv.Itoa(int(*o.VnId))
-	}
-
-	return &rawVirtualNetwork{
-		DhcpService:               o.DhcpService.raw(),
+func (o VirtualNetworkData) MarshalJSON() ([]byte, error) {
+	raw := struct {
+		DhcpService               string      `json:"dhcp_service"`
+		Ipv4Enabled               bool        `json:"ipv4_enabled"`
+		Ipv4Subnet                string      `json:"ipv4_subnet,omitempty"`
+		Ipv6Enabled               bool        `json:"ipv6_enabled"`
+		Ipv6Subnet                string      `json:"ipv6_subnet,omitempty"`
+		L3Mtu                     *int        `json:"l3_mtu,omitempty"`
+		Label                     string      `json:"label"`
+		ReservedVlanId            *Vlan       `json:"reserved_vlan_id,omitempty"`
+		RouteTarget               string      `json:"route_target,omitempty"`
+		RtPolicy                  *RtPolicy   `json:"rt_policy"`
+		SecurityZoneId            ObjectId    `json:"security_zone_id,omitempty"`
+		SviIps                    []SviIp     `json:"svi_ips"`
+		VirtualGatewayIpv4        string      `json:"virtual_gateway_ipv4,omitempty"`
+		VirtualGatewayIpv6        string      `json:"virtual_gateway_ipv6,omitempty"`
+		VirtualGatewayIpv4Enabled bool        `json:"virtual_gateway_ipv4_enabled"`
+		VirtualGatewayIpv6Enabled bool        `json:"virtual_gateway_ipv6_enabled"`
+		VnBindings                []VnBinding `json:"bound_to"`
+		VnId                      string      `json:"vn_id,omitempty"`
+		VnType                    string      `json:"vn_type"`
+		VirtualMac                string      `json:"virtual_mac,omitempty"`
+	}{
 		Ipv4Enabled:               o.Ipv4Enabled,
-		Ipv4Subnet:                ipv4Subnet,
 		Ipv6Enabled:               o.Ipv6Enabled,
-		Ipv6Subnet:                ipv6Subnet,
-		L3Mtu:                     l3Mtu,
+		L3Mtu:                     o.L3Mtu,
 		Label:                     o.Label,
 		ReservedVlanId:            o.ReservedVlanId,
 		RouteTarget:               o.RouteTarget,
 		RtPolicy:                  o.RtPolicy,
 		SecurityZoneId:            o.SecurityZoneId,
-		SviIps:                    sviIps,
-		VirtualGatewayIpv4:        virtualGatewayIpv4,
-		VirtualGatewayIpv6:        virtualGatewayIpv6,
+		SviIps:                    o.SviIps,
 		VirtualGatewayIpv4Enabled: o.VirtualGatewayIpv4Enabled,
 		VirtualGatewayIpv6Enabled: o.VirtualGatewayIpv6Enabled,
 		VnBindings:                o.VnBindings,
-		VnId:                      vnId,
-		VnType:                    o.VnType.raw(),
-		VirtualMac:                o.VirtualMac.String(),
-	}
-}
-
-type rawVirtualNetwork struct {
-	Id                        ObjectId        `json:"id,omitempty"`
-	DhcpService               dhcpServiceMode `json:"dhcp_service"`
-	Ipv4Enabled               bool            `json:"ipv4_enabled"`
-	Ipv4Subnet                string          `json:"ipv4_subnet,omitempty"`
-	Ipv6Enabled               bool            `json:"ipv6_enabled"`
-	Ipv6Subnet                string          `json:"ipv6_subnet,omitempty"`
-	L3Mtu                     *int            `json:"l3_mtu,omitempty"`
-	Label                     string          `json:"label"`
-	ReservedVlanId            *Vlan           `json:"reserved_vlan_id,omitempty"`
-	RouteTarget               string          `json:"route_target,omitempty"` // not mentioned in swagger, seen in 4.1.1: "10000:1"
-	RtPolicy                  *RtPolicy       `json:"rt_policy"`
-	SecurityZoneId            ObjectId        `json:"security_zone_id,omitempty"`
-	SviIps                    []rawSviIp      `json:"svi_ips"`
-	VirtualGatewayIpv4        string          `json:"virtual_gateway_ipv4,omitempty"`
-	VirtualGatewayIpv6        string          `json:"virtual_gateway_ipv6,omitempty"`
-	VirtualGatewayIpv4Enabled bool            `json:"virtual_gateway_ipv4_enabled"`
-	VirtualGatewayIpv6Enabled bool            `json:"virtual_gateway_ipv6_enabled"`
-	VnBindings                []VnBinding     `json:"bound_to"`
-	VnId                      string          `json:"vn_id,omitempty"` // VNI as a string, null when unset
-	VnType                    vnType          `json:"vn_type"`
-	VirtualMac                string          `json:"virtual_mac,omitempty"`
-	// CreatePolicyTagged      bool            `json:"create_policy_tagged"`
-	// CreatePolicyUntagged    bool            `json:"create_policy_untagged"`
-	// DefaultEndpointTagTypes interface{}     `json:"default_endpoint_tag_types"`    // what is this? not present in 4.1.1 api response
-	// Description             string          `json:"description"`                   // not used in the web UI
-	// FloatingIps             []interface{}   `json:"floating_ips"`                  // seen in 4.1.1 api response
-	// ForceMoveUntaggedEndpoints bool         `json:"force_move_untagged_endpoints"` // not used in post/get with web UI
-	// L3Connectivity          *l3ConnectivityMode `json:"l3_connectivity,omitempty"` // does not appear in 4.1.2 swagger
-	// VniIds                  []interface{}   `json:"vni_ids,omitempty"`             // unknown, sent by web UI as empty list
-	// Endpoints               []interface{}   `json:"endpoints"`                     // unknown, maybe relates to servers, etc?
-}
-
-func (o rawVirtualNetwork) polish() (*VirtualNetwork, error) {
-	var err error
-
-	var ipv4Subnet *net.IPNet
-	if o.Ipv4Subnet != "" {
-		_, ipv4Subnet, err = net.ParseCIDR(o.Ipv4Subnet)
-		if err != nil {
-			return nil, err
-		}
 	}
 
-	var ipv6Subnet *net.IPNet
-	if o.Ipv6Subnet != "" {
-		_, ipv6Subnet, err = net.ParseCIDR(o.Ipv6Subnet)
-		if err != nil {
-			return nil, err
-		}
+	raw.DhcpService = o.DhcpService.String()
+	if o.Ipv4Subnet != nil && o.Ipv4Subnet.IP != nil { // todo: handle zero/removal of existing IP address value
+		raw.Ipv4Subnet = o.Ipv4Subnet.String()
 	}
-
-	var l3mtu *int
-	if o.L3Mtu != nil {
-		mtu := *o.L3Mtu
-		l3mtu = &mtu
+	if o.Ipv6Subnet != nil && o.Ipv6Subnet.IP != nil { // todo: handle zero/removal of existing IP address value
+		raw.Ipv6Subnet = o.Ipv6Subnet.String()
 	}
-
-	sviIps := make([]SviIp, len(o.SviIps))
-	for i, sviIp := range o.SviIps {
-		SviIp, err := sviIp.parse()
-		if err != nil {
-			return nil, err
-		}
-		sviIps[i] = *SviIp
+	if len(o.VirtualGatewayIpv4.To4()) == net.IPv4len { // todo: handle zero/removal o fexisting IP address value
+		raw.VirtualGatewayIpv4 = o.VirtualGatewayIpv4.String()
 	}
-
-	var vnId *VNI
-	if o.VnId != "" {
-		vniUint64, err := strconv.ParseUint(o.VnId, 10, 32)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing VNID from string %q - %w", o.VnId, err)
-		}
-		vni := VNI(uint32(vniUint64))
-		vnId = &vni
+	if len(o.VirtualGatewayIpv6) == net.IPv6len { // todo: handle zero/removal o fexisting IP address value
+		raw.VirtualGatewayIpv6 = o.VirtualGatewayIpv6.String()
 	}
-
-	vntype, err := o.VnType.parse()
-	if err != nil {
-		return nil, err
+	if o.VnId != nil {
+		raw.VnId = strconv.Itoa(int(*o.VnId))
 	}
+	raw.VnType = o.VnType.String()
+	raw.VirtualMac = o.VirtualMac.String()
 
-	var virtualMac net.HardwareAddr
-	if o.VirtualMac != "" {
-		virtualMac, err = net.ParseMAC(o.VirtualMac)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing mac address %q - %w", o.VirtualMac, err)
-		}
-	}
-
-	return &VirtualNetwork{
-		Id: o.Id,
-		Data: &VirtualNetworkData{
-			DhcpService:               o.DhcpService.polish(),
-			Ipv4Enabled:               o.Ipv4Enabled,
-			Ipv4Subnet:                ipv4Subnet,
-			Ipv6Enabled:               o.Ipv6Enabled,
-			Ipv6Subnet:                ipv6Subnet,
-			L3Mtu:                     l3mtu,
-			Label:                     o.Label,
-			ReservedVlanId:            o.ReservedVlanId,
-			RouteTarget:               o.RouteTarget,
-			RtPolicy:                  o.RtPolicy,
-			SecurityZoneId:            o.SecurityZoneId,
-			SviIps:                    sviIps,
-			VirtualGatewayIpv4:        net.ParseIP(o.VirtualGatewayIpv4),
-			VirtualGatewayIpv6:        net.ParseIP(o.VirtualGatewayIpv6),
-			VirtualGatewayIpv4Enabled: o.VirtualGatewayIpv4Enabled,
-			VirtualGatewayIpv6Enabled: o.VirtualGatewayIpv6Enabled,
-			VnBindings:                o.VnBindings,
-			VnId:                      vnId,
-			VnType:                    VnType(vntype),
-			VirtualMac:                virtualMac,
-		},
-	}, nil
+	return json.Marshal(raw)
 }
 
 func (o *TwoStageL3ClosClient) listAllVirtualNetworkIds(ctx context.Context) ([]ObjectId, error) {
@@ -741,7 +425,7 @@ func (o *TwoStageL3ClosClient) listAllVirtualNetworkIds(ctx context.Context) ([]
 	}
 
 	response := &struct {
-		VirtualNetworks map[ObjectId]rawVirtualNetwork `json:"virtual_networks"`
+		VirtualNetworks map[ObjectId]VirtualNetwork `json:"virtual_networks"`
 	}{}
 
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -762,37 +446,37 @@ func (o *TwoStageL3ClosClient) listAllVirtualNetworkIds(ctx context.Context) ([]
 	return result, nil
 }
 
-func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId ObjectId) (*rawVirtualNetwork, error) {
+func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId ObjectId) (*VirtualNetwork, error) {
 	apstraUrl, err := o.urlWithParam(fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, vnId))
 	if err != nil {
 		return nil, err
 	}
 
-	response := &rawVirtualNetwork{}
+	response := VirtualNetwork{}
 
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:         http.MethodGet,
 		url:            apstraUrl,
-		apiResponse:    response,
+		apiResponse:    &response,
 		unsynchronized: true,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	return response, nil
+	return &response, nil
 }
 
-func (o *TwoStageL3ClosClient) getVirtualNetworkByName(ctx context.Context, name string) (*rawVirtualNetwork, error) {
+func (o *TwoStageL3ClosClient) getVirtualNetworkByName(ctx context.Context, name string) (*VirtualNetwork, error) {
 	rawVns, err := o.getAllVirtualNetworks(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var found int
-	var rawVn rawVirtualNetwork
+	var rawVn VirtualNetwork
 	for i := range rawVns {
-		if rawVns[i].Label == name {
+		if rawVns[i].Data.Label == name {
 			found++
 			rawVn = rawVns[i]
 		}
@@ -815,9 +499,9 @@ func (o *TwoStageL3ClosClient) getVirtualNetworkByName(ctx context.Context, name
 	}
 }
 
-func (o *TwoStageL3ClosClient) getAllVirtualNetworks(ctx context.Context) (map[ObjectId]rawVirtualNetwork, error) {
+func (o *TwoStageL3ClosClient) getAllVirtualNetworks(ctx context.Context) (map[ObjectId]VirtualNetwork, error) {
 	var response struct {
-		VirtualNetworks map[ObjectId]rawVirtualNetwork `json:"virtual_networks"`
+		VirtualNetworks map[ObjectId]VirtualNetwork `json:"virtual_networks"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -832,10 +516,7 @@ func (o *TwoStageL3ClosClient) getAllVirtualNetworks(ctx context.Context) (map[O
 	return response.VirtualNetworks, nil
 }
 
-func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, cfg *rawVirtualNetwork) (ObjectId, error) {
-	if cfg.Id != "" {
-		return "", fmt.Errorf("refusing to create virtual network using input data with a populated ID field")
-	}
+func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, cfg *VirtualNetworkData) (ObjectId, error) {
 	response := &objectIdResponse{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -850,11 +531,7 @@ func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, cfg *ra
 	return response.Id, nil
 }
 
-func (o *TwoStageL3ClosClient) updateVirtualNetwork(ctx context.Context, id ObjectId, cfg *rawVirtualNetwork) error {
-	if cfg.Id != "" {
-		return fmt.Errorf("refusing to update virtual network using input data with a populated ID field")
-	}
-
+func (o *TwoStageL3ClosClient) updateVirtualNetwork(ctx context.Context, id ObjectId, cfg *VirtualNetworkData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, id),
