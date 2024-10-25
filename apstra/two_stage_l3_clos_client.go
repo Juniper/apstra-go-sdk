@@ -344,7 +344,7 @@ func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyI
 
 // CreateVirtualNetwork creates a new virtual network according to the supplied VirtualNetworkData
 func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, in *VirtualNetworkData) (ObjectId, error) {
-	return o.createVirtualNetwork(ctx, in.raw())
+	return o.createVirtualNetwork(ctx, in)
 }
 
 // ListAllVirtualNetworkIds returns []ObjectId representing virtual networks configured in the blueprint
@@ -354,20 +354,12 @@ func (o *TwoStageL3ClosClient) ListAllVirtualNetworkIds(ctx context.Context) ([]
 
 // GetVirtualNetwork returns *VirtualNetwork representing the given vnId
 func (o *TwoStageL3ClosClient) GetVirtualNetwork(ctx context.Context, vnId ObjectId) (*VirtualNetwork, error) {
-	raw, err := o.getVirtualNetwork(ctx, vnId)
-	if err != nil {
-		return nil, err
-	}
-	return raw.polish()
+	return o.getVirtualNetwork(ctx, vnId)
 }
 
 // GetVirtualNetworkByName returns *VirtualNetwork representing the given VN name
 func (o *TwoStageL3ClosClient) GetVirtualNetworkByName(ctx context.Context, name string) (*VirtualNetwork, error) {
-	raw, err := o.getVirtualNetworkByName(ctx, name)
-	if err != nil {
-		return nil, err
-	}
-	return raw.polish()
+	return o.getVirtualNetworkByName(ctx, name)
 }
 
 // GetAllVirtualNetworks return map[ObjectId]VirtualNetwork representing all
@@ -375,27 +367,13 @@ func (o *TwoStageL3ClosClient) GetVirtualNetworkByName(ctx context.Context, name
 // RETURN the SVI information, so each map entry will have a nil slice at it's
 // Data.SviIps struct element.
 func (o *TwoStageL3ClosClient) GetAllVirtualNetworks(ctx context.Context) (map[ObjectId]VirtualNetwork, error) {
-	rawMap, err := o.getAllVirtualNetworks(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[ObjectId]VirtualNetwork, len(rawMap))
-	for id, raw := range rawMap {
-		polished, err := raw.polish()
-		if err != nil {
-			return nil, err
-		}
-		result[id] = *polished
-	}
-
-	return result, nil
+	return o.getAllVirtualNetworks(ctx)
 }
 
 // UpdateVirtualNetwork updates the virtual network specified by ID using the
 // VirtualNetworkData and HTTP method PUT.
 func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, in *VirtualNetworkData) error {
-	return o.updateVirtualNetwork(ctx, id, in.raw())
+	return o.updateVirtualNetwork(ctx, id, in)
 }
 
 // DeleteVirtualNetwork deletes the virtual network specified by id from the

@@ -11,6 +11,8 @@ import (
 	"context"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func compareConnectivityTemplateAssignments(a, b map[ObjectId]bool, applicationPointId ObjectId, t *testing.T) {
@@ -100,7 +102,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 				Label:          randString(6, "hex"),
 				SecurityZoneId: szId,
 				VnBindings:     bindings,
-				VnType:         VnTypeVxlan,
+				VnType:         enum.VnTypeVxlan,
 			})
 			if err != nil {
 				t.Fatal(err)
