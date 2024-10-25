@@ -55,11 +55,14 @@ func compareSviIpSlices(t *testing.T, a, b []SviIp) {
 }
 
 func compareVnBindings(t *testing.T, a, b VnBinding, strict bool) {
-	compareSlices(t, a.AccessSwitchNodeIds, b.AccessSwitchNodeIds, "VnBindings.AccessSwitchNodeIds")
+	if len(a.AccessSwitchNodeIds) != 0 || len(b.AccessSwitchNodeIds) != 0 { // nil and [] slices are equal for our purpose
+		compareSlices(t, a.AccessSwitchNodeIds, b.AccessSwitchNodeIds, "VnBindings.AccessSwitchNodeIds")
+	}
 
 	require.Equal(t, a.SystemId, b.SystemId)
 
-	if a.VlanId != nil || b.VlanId != nil {
+	if a.VlanId != nil || // the caller specified a VLAN, so we check it
+		((a.VlanId != nil || b.VlanId != nil) && strict) { // strict mode means we always check
 		require.NotNil(t, a.VlanId)
 		require.NotNil(t, b.VlanId)
 		require.Equal(t, a.VlanId, b.VlanId)
