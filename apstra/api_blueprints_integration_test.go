@@ -73,57 +73,61 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		req := CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      randString(10, "hex"),
-			TemplateId: "L2_Virtual_EVPN",
-			FabricSettings: &FabricSettings{
-				FabricL3Mtu:          toPtr(uint16(rand.Intn(50)*2 + 9100)),
-				SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-				SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
-			},
-		}
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateBlueprintFromTemplate(ctx, &req)
-		if err != nil {
-			t.Fatal(err)
-		}
+			req := CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      randString(10, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &FabricSettings{
+					FabricL3Mtu:          toPtr(uint16(rand.Intn(50)*2 + 9100)),
+					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+				},
+			}
 
-		bp, err := client.client.GetBlueprint(ctx, id)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if id != bp.Id {
-			t.Fatalf("expected id %q, got %q", id, bp.Id)
-		}
-
-		if req.Label != bp.Label {
-			t.Fatalf("expected label %q, got %q", req.Label, bp.Label)
-		}
-
-		bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if req.FabricSettings != nil && req.FabricSettings.FabricL3Mtu != nil {
-			fap, err := bpClient.GetFabricSettings(ctx)
+			log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			id, err := client.client.CreateBlueprintFromTemplate(ctx, &req)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if *req.FabricSettings.FabricL3Mtu != *fap.FabricL3Mtu {
-				t.Fatalf("expected fabric MTU %d, got %d", *req.FabricSettings.FabricL3Mtu, *fap.FabricL3Mtu)
-			}
-		}
 
-		log.Printf("got id '%s', deleting blueprint...\n", id)
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(ctx, id)
-		if err != nil {
-			t.Fatal(err)
-		}
+			bp, err := client.client.GetBlueprint(ctx, id)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if id != bp.Id {
+				t.Fatalf("expected id %q, got %q", id, bp.Id)
+			}
+
+			if req.Label != bp.Label {
+				t.Fatalf("expected label %q, got %q", req.Label, bp.Label)
+			}
+
+			bpClient, err := client.client.NewTwoStageL3ClosClient(ctx, id)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if req.FabricSettings != nil && req.FabricSettings.FabricL3Mtu != nil {
+				fap, err := bpClient.GetFabricSettings(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if *req.FabricSettings.FabricL3Mtu != *fap.FabricL3Mtu {
+					t.Fatalf("expected fabric MTU %d, got %d", *req.FabricSettings.FabricL3Mtu, *fap.FabricL3Mtu)
+				}
+			}
+
+			log.Printf("got id '%s', deleting blueprint...\n", id)
+			log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = client.client.deleteBlueprint(ctx, id)
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
 
@@ -210,40 +214,44 @@ func TestGetDcNodes(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient := testBlueprintB(ctx, t, client.client)
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		type node struct {
-			Id         ObjectId `json:"id"`
-			Label      string   `json:"label"`
-			SystemType string   `json:"system_type"`
-		}
-		equal := func(a, b node) bool {
-			return a.Id == b.Id &&
-				a.Label == b.Label &&
-				a.SystemType == b.SystemType
-		}
+			bpClient := testBlueprintB(ctx, t, client.client)
 
-		var response struct {
-			Nodes map[ObjectId]node `json:"nodes"`
-		}
-		log.Printf("testing GetNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.Client().GetNodes(ctx, bpClient.Id(), NodeTypeSystem, &response)
-		if err != nil {
-			t.Fatal(err)
-		}
+			type node struct {
+				Id         ObjectId `json:"id"`
+				Label      string   `json:"label"`
+				SystemType string   `json:"system_type"`
+			}
+			equal := func(a, b node) bool {
+				return a.Id == b.Id &&
+					a.Label == b.Label &&
+					a.SystemType == b.SystemType
+			}
 
-		log.Printf("got %d nodes. Fetch each one...", len(response.Nodes))
-		var nodeB node
-		for id, nodeA := range response.Nodes {
-			log.Printf("testing GetNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.Client().GetNode(ctx, bpClient.Id(), id, &nodeB)
+			var response struct {
+				Nodes map[ObjectId]node `json:"nodes"`
+			}
+			log.Printf("testing GetNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.Client().GetNodes(ctx, bpClient.Id(), NodeTypeSystem, &response)
 			if err != nil {
-				t.Fatal()
+				t.Fatal(err)
 			}
-			if !equal(nodeA, nodeB) {
-				t.Fatalf("nodes don't match:\n%v\n%v", nodeA, nodeB)
+
+			log.Printf("got %d nodes. Fetch each one...", len(response.Nodes))
+			var nodeB node
+			for id, nodeA := range response.Nodes {
+				log.Printf("testing GetNode() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.Client().GetNode(ctx, bpClient.Id(), id, &nodeB)
+				if err != nil {
+					t.Fatal()
+				}
+				if !equal(nodeA, nodeB) {
+					t.Fatalf("nodes don't match:\n%v\n%v", nodeA, nodeB)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -255,49 +263,53 @@ func TestPatchNodes(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient := testBlueprintB(ctx, t, client.client)
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		type node struct {
-			Id         ObjectId `json:"id"`
-			Label      string   `json:"label"`
-			SystemType string   `json:"system_type,omitempty"`
-		}
+			bpClient := testBlueprintB(ctx, t, client.client)
 
-		var getResponse struct {
-			Nodes map[ObjectId]node `json:"nodes"`
-		}
-		log.Printf("testing GetNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.Client().GetNodes(ctx, bpClient.Id(), NodeTypeSystem, &getResponse)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		var patch []interface{}
-		for k, v := range getResponse.Nodes {
-			if v.SystemType == "server" {
-				patch = append(patch, node{
-					Id:    k,
-					Label: randString(5, "hex"),
-				})
+			type node struct {
+				Id         ObjectId `json:"id"`
+				Label      string   `json:"label"`
+				SystemType string   `json:"system_type,omitempty"`
 			}
-		}
 
-		err = client.client.PatchNodes(ctx, bpClient.Id(), patch)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		for _, n := range patch {
-			var result node
-			err = client.client.GetNode(ctx, bpClient.Id(), n.(node).Id, &result)
+			var getResponse struct {
+				Nodes map[ObjectId]node `json:"nodes"`
+			}
+			log.Printf("testing GetNodes() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.Client().GetNodes(ctx, bpClient.Id(), NodeTypeSystem, &getResponse)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if n.(node).Label != result.Label {
-				t.Fatalf("patch expected label %s, got label %s", n.(node).Label, result.Label)
+			var patch []interface{}
+			for k, v := range getResponse.Nodes {
+				if v.SystemType == "server" {
+					patch = append(patch, node{
+						Id:    k,
+						Label: randString(5, "hex"),
+					})
+				}
 			}
-		}
+
+			err = client.client.PatchNodes(ctx, bpClient.Id(), patch)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, n := range patch {
+				var result node
+				err = client.client.GetNode(ctx, bpClient.Id(), n.(node).Id, &result)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if n.(node).Label != result.Label {
+					t.Fatalf("patch expected label %s, got label %s", n.(node).Label, result.Label)
+				}
+			}
+		})
 	}
 }
 

@@ -34,7 +34,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 
 	for clientName, client := range clients {
 		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
 
 			bpClient, bpDel := testBlueprintE(ctx, t, client.client)

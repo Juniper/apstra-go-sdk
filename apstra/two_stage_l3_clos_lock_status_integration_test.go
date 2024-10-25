@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -20,32 +19,36 @@ func TestGetLockInfo(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		name := randString(10, "hex")
-		id, err := client.client.CreateBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplateRequest{
-			RefDesign:  RefDesignTwoStageL3Clos,
-			Label:      name,
-			TemplateId: "L2_Virtual_EVPN",
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
+
+			log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			name := randString(10, "hex")
+			id, err := client.client.CreateBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplateRequest{
+				RefDesign:  RefDesignTwoStageL3Clos,
+				Label:      name,
+				TemplateId: "L2_Virtual_EVPN",
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			bp, err := client.client.NewTwoStageL3ClosClient(context.Background(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			l, err := bp.getLockInfo(context.TODO())
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Println(l)
+			log.Printf("got id '%s', deleting blueprint...\n", id)
+			log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = client.client.deleteBlueprint(context.TODO(), id)
+			if err != nil {
+				t.Fatal(err)
+			}
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		bp, err := client.client.NewTwoStageL3ClosClient(context.Background(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		l, err := bp.getLockInfo(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(l)
-		log.Printf("got id '%s', deleting blueprint...\n", id)
-		log.Printf("testing deleteBlueprint() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.deleteBlueprint(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }

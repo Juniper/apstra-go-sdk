@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -147,112 +146,116 @@ func TestSetSystemLoopbackIpv4v6(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bpClient := testBlueprintG(ctx, t, client.client)
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		nodeInfos, err := bpClient.GetAllSystemNodeInfos(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+			bpClient := testBlueprintG(ctx, t, client.client)
 
-		var genericIDs []ObjectId
-		for id, info := range nodeInfos {
-			if info.Role == SystemRoleGeneric {
-				genericIDs = append(genericIDs, id)
-			}
-		}
-
-		ipv4Map := make(map[ObjectId]net.IPNet, len(genericIDs))
-		ipv6Map := make(map[ObjectId]net.IPNet, len(genericIDs))
-		for _, id := range genericIDs {
-			ipv4Map[id] = net.IPNet{
-				IP:   randomIpv4(),
-				Mask: net.CIDRMask(rand.Intn(9)+24, 32),
-			}
-
-			var v6Mask net.IPMask
-			if rand.Int()%2 == 0 {
-				v6Mask = net.CIDRMask(64, 128)
-			} else {
-				v6Mask = net.CIDRMask(128, 128)
-			}
-			ipv6Map[id] = net.IPNet{
-				IP:   randomIpv6(),
-				Mask: v6Mask,
-			}
-
-			ipv4Net := ipv4Map[id]
-			log.Printf("testing SetGenericSystemLoopbackIpv4() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.SetGenericSystemLoopbackIpv4(ctx, id, &ipv4Net, 0)
+			log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			nodeInfos, err := bpClient.GetAllSystemNodeInfos(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			ipv6Net := ipv6Map[id]
-			log.Printf("testing SetGenericSystemLoopbackIpv6() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.SetGenericSystemLoopbackIpv6(ctx, id, &ipv6Net, 0)
+			var genericIDs []ObjectId
+			for id, info := range nodeInfos {
+				if info.Role == SystemRoleGeneric {
+					genericIDs = append(genericIDs, id)
+				}
+			}
+
+			ipv4Map := make(map[ObjectId]net.IPNet, len(genericIDs))
+			ipv6Map := make(map[ObjectId]net.IPNet, len(genericIDs))
+			for _, id := range genericIDs {
+				ipv4Map[id] = net.IPNet{
+					IP:   randomIpv4(),
+					Mask: net.CIDRMask(rand.Intn(9)+24, 32),
+				}
+
+				var v6Mask net.IPMask
+				if rand.Int()%2 == 0 {
+					v6Mask = net.CIDRMask(64, 128)
+				} else {
+					v6Mask = net.CIDRMask(128, 128)
+				}
+				ipv6Map[id] = net.IPNet{
+					IP:   randomIpv6(),
+					Mask: v6Mask,
+				}
+
+				ipv4Net := ipv4Map[id]
+				log.Printf("testing SetGenericSystemLoopbackIpv4() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.SetGenericSystemLoopbackIpv4(ctx, id, &ipv4Net, 0)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				ipv6Net := ipv6Map[id]
+				log.Printf("testing SetGenericSystemLoopbackIpv6() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.SetGenericSystemLoopbackIpv6(ctx, id, &ipv6Net, 0)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			nodeInfos, err = bpClient.GetAllSystemNodeInfos(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
-		}
 
-		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		nodeInfos, err = bpClient.GetAllSystemNodeInfos(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+			for nodeId, ip := range ipv4Map {
+				if nodeInfos[nodeId].LoopbackIpv4 == nil {
+					t.Fatalf("expected node %q to have loopback %s, got nil", nodeId, ip.String())
+				}
+				if !nodeInfos[nodeId].LoopbackIpv4.IP.Equal(ip.IP) {
+					t.Fatalf("expected node %q to have loopback IP %s, got %s", nodeId, ip.IP, nodeInfos[nodeId].LoopbackIpv4.IP)
+				}
+				if nodeInfos[nodeId].LoopbackIpv4.Mask.String() != ip.Mask.String() {
+					t.Fatalf("expected node %q to have loopback IP %s, got %s", nodeId, ip.IP, nodeInfos[nodeId].LoopbackIpv4.IP)
+				}
 
-		for nodeId, ip := range ipv4Map {
-			if nodeInfos[nodeId].LoopbackIpv4 == nil {
-				t.Fatalf("expected node %q to have loopback %s, got nil", nodeId, ip.String())
-			}
-			if !nodeInfos[nodeId].LoopbackIpv4.IP.Equal(ip.IP) {
-				t.Fatalf("expected node %q to have loopback IP %s, got %s", nodeId, ip.IP, nodeInfos[nodeId].LoopbackIpv4.IP)
-			}
-			if nodeInfos[nodeId].LoopbackIpv4.Mask.String() != ip.Mask.String() {
-				t.Fatalf("expected node %q to have loopback IP %s, got %s", nodeId, ip.IP, nodeInfos[nodeId].LoopbackIpv4.IP)
+				log.Printf("testing SetGenericSystemLoopbackIpv4() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.SetGenericSystemLoopbackIpv4(ctx, nodeId, nil, 0)
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 
-			log.Printf("testing SetGenericSystemLoopbackIpv4() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.SetGenericSystemLoopbackIpv4(ctx, nodeId, nil, 0)
+			for nodeId, ip := range ipv6Map {
+				if nodeInfos[nodeId].LoopbackIpv6 == nil {
+					t.Fatalf("expected node %q to have loopback %s, got nil", nodeId, ip.String())
+				}
+				if !nodeInfos[nodeId].LoopbackIpv6.IP.Equal(ip.IP) {
+					t.Fatalf("expected node %q to have loopback IP %s, got %s", nodeId, ip.IP, nodeInfos[nodeId].LoopbackIpv6.IP)
+				}
+				if nodeInfos[nodeId].LoopbackIpv6.Mask.String() != ip.Mask.String() {
+					t.Fatalf("expected node %q to have loopback IP %s, got %s", nodeId, ip.IP, nodeInfos[nodeId].LoopbackIpv6.IP)
+				}
+
+				log.Printf("testing SetGenericSystemLoopbackIpv6() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.SetGenericSystemLoopbackIpv6(ctx, nodeId, nil, 0)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			nodeInfos, err = bpClient.GetAllSystemNodeInfos(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
-		}
 
-		for nodeId, ip := range ipv6Map {
-			if nodeInfos[nodeId].LoopbackIpv6 == nil {
-				t.Fatalf("expected node %q to have loopback %s, got nil", nodeId, ip.String())
-			}
-			if !nodeInfos[nodeId].LoopbackIpv6.IP.Equal(ip.IP) {
-				t.Fatalf("expected node %q to have loopback IP %s, got %s", nodeId, ip.IP, nodeInfos[nodeId].LoopbackIpv6.IP)
-			}
-			if nodeInfos[nodeId].LoopbackIpv6.Mask.String() != ip.Mask.String() {
-				t.Fatalf("expected node %q to have loopback IP %s, got %s", nodeId, ip.IP, nodeInfos[nodeId].LoopbackIpv6.IP)
-			}
+			for _, id := range genericIDs {
+				if nodeInfos[id].LoopbackIpv4 != nil {
+					t.Fatalf("expected node %q to have no Loopback IPv4, got %s", id, nodeInfos[id].LoopbackIpv4)
+				}
 
-			log.Printf("testing SetGenericSystemLoopbackIpv6() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.SetGenericSystemLoopbackIpv6(ctx, nodeId, nil, 0)
-			if err != nil {
-				t.Fatal(err)
+				if nodeInfos[id].LoopbackIpv6 != nil {
+					t.Fatalf("expected node %q to have no Loopback IPv6, got %s", id, nodeInfos[id].LoopbackIpv6)
+				}
 			}
-		}
-
-		log.Printf("testing GetAllSystemNodeInfos() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		nodeInfos, err = bpClient.GetAllSystemNodeInfos(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		for _, id := range genericIDs {
-			if nodeInfos[id].LoopbackIpv4 != nil {
-				t.Fatalf("expected node %q to have no Loopback IPv4, got %s", id, nodeInfos[id].LoopbackIpv4)
-			}
-
-			if nodeInfos[id].LoopbackIpv6 != nil {
-				t.Fatalf("expected node %q to have no Loopback IPv6, got %s", id, nodeInfos[id].LoopbackIpv6)
-			}
-		}
+		})
 	}
 }
 

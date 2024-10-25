@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -43,20 +42,24 @@ func TestCreateDeleteRack(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bp := testBlueprintC(ctx, t, client.client)
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		for _, tCase := range testCases {
-			log.Printf("testing CreateRack() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			id, err := bp.CreateRack(ctx, &tCase)
-			if err != nil {
-				t.Fatal(err)
-			}
+			bp := testBlueprintC(ctx, t, client.client)
 
-			log.Printf("testing DeleteRack() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bp.DeleteRack(ctx, id)
-			if err != nil {
-				t.Fatal(err)
+			for _, tCase := range testCases {
+				log.Printf("testing CreateRack() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				id, err := bp.CreateRack(ctx, &tCase)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				log.Printf("testing DeleteRack() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bp.DeleteRack(ctx, id)
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
-		}
+		})
 	}
 }

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -245,87 +244,105 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bp := testBlueprintA(ctx, t, client.client)
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		// collect leaf switch IDs
-		leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
-		if err != nil {
-			t.Fatal(err)
-		}
+			bp := testBlueprintA(ctx, t, client.client)
 
-		// prep VN bindings
-		bindings := make([]VnBinding, len(leafIds))
-		for i, leafId := range leafIds {
-			bindings[i] = VnBinding{SystemId: leafId}
-		}
+			// collect leaf switch IDs
+			leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		// create a security zone (VNs live here)
-		szName := randString(5, "hex")
-		szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
-			SzType:  SecurityZoneTypeEVPN,
-			Label:   szName,
-			VrfName: szName,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
+			// prep VN bindings
+			bindings := make([]VnBinding, len(leafIds))
+			for i, leafId := range leafIds {
+				bindings[i] = VnBinding{SystemId: leafId}
+			}
 
-		// create a couple of virtual networks we'll use a policy rule endpoints
-		vnIds := make([]ObjectId, 2)
-		for i := range vnIds {
-			vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-				Ipv4Enabled:    true,
-				Label:          "vn_" + strconv.Itoa(i),
-				SecurityZoneId: szId,
-				VnBindings:     bindings,
-				VnType:         enum.VnTypeVxlan,
+			// create a security zone (VNs live here)
+			szName := randString(5, "hex")
+			szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+				SzType:  SecurityZoneTypeEVPN,
+				Label:   szName,
+				VrfName: szName,
 			})
 			if err != nil {
 				t.Fatal(err)
 			}
-			vnIds[i] = vnId
-		}
 
-		tags := make([]string, rand.Intn(4))
-		for i := range tags {
-			tags[i] = randString(5, "hex")
-		}
-
-		policyDatas := []PolicyData{
-			{
-				Enabled:             randBool(),
-				Label:               randString(5, "hex"),
-				Description:         randString(5, "hex"),
-				SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
-				DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
-				Rules:               nil,
-				Tags:                tags,
-			},
-			{
-				Enabled:             randBool(),
-				Label:               randString(5, "hex"),
-				Description:         randString(5, "hex"),
-				SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
-				DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
-				Rules:               nil,
-				Tags:                tags,
-			},
-		}
-
-		var previousPolicy *Policy
-		var previousPolicyId ObjectId
-		for i, policyData := range policyDatas {
-			policyData := policyData
-			if previousPolicy == nil {
-				log.Printf("testing CreatePolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-				previousPolicyId, err = bp.CreatePolicy(ctx, &policyData)
+			// create a couple of virtual networks we'll use as policy rule endpoints
+			vnIds := make([]ObjectId, 2)
+			for i := range vnIds {
+				vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+					Ipv4Enabled:    true,
+					Label:          "vn_" + strconv.Itoa(i),
+					SecurityZoneId: szId,
+					VnBindings:     bindings,
+					VnType:         enum.VnTypeVxlan,
+				})
 				if err != nil {
 					t.Fatal(err)
 				}
+				vnIds[i] = vnId
+			}
 
-				created := Policy{
-					Id:   previousPolicyId,
-					Data: &policyData,
+			tags := make([]string, rand.Intn(4))
+			for i := range tags {
+				tags[i] = randString(5, "hex")
+			}
+
+			policyDatas := []PolicyData{
+				{
+					Enabled:             randBool(),
+					Label:               randString(5, "hex"),
+					Description:         randString(5, "hex"),
+					SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
+					DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
+					Rules:               nil,
+					Tags:                tags,
+				},
+				{
+					Enabled:             randBool(),
+					Label:               randString(5, "hex"),
+					Description:         randString(5, "hex"),
+					SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
+					DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
+					Rules:               nil,
+					Tags:                tags,
+				},
+			}
+
+			var previousPolicy *Policy
+			var previousPolicyId ObjectId
+			for i, policyData := range policyDatas {
+				policyData := policyData
+				if previousPolicy == nil {
+					log.Printf("testing CreatePolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+					previousPolicyId, err = bp.CreatePolicy(ctx, &policyData)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					created := Policy{
+						Id:   previousPolicyId,
+						Data: &policyData,
+					}
+
+					log.Printf("testing GetPolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+					previousPolicy, err = bp.GetPolicy(ctx, previousPolicyId)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					comparePolicies(&created, "created", previousPolicy, "fetched", t)
+				}
+
+				log.Printf("testing UpdatePolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
+				err = bp.UpdatePolicy(ctx, previousPolicyId, &policyData)
+				if err != nil {
+					t.Fatal(err)
 				}
 
 				log.Printf("testing GetPolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
@@ -334,26 +351,12 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				comparePolicies(&created, "created", previousPolicy, "fetched", t)
+				comparePolicies(&Policy{
+					Id:   previousPolicyId,
+					Data: &policyData,
+				}, "updated", previousPolicy, "fetched", t)
 			}
-
-			log.Printf("testing UpdatePolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			err = bp.UpdatePolicy(ctx, previousPolicyId, &policyData)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			log.Printf("testing GetPolicy(%d) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-			previousPolicy, err = bp.GetPolicy(ctx, previousPolicyId)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			comparePolicies(&Policy{
-				Id:   previousPolicyId,
-				Data: &policyData,
-			}, "updated", previousPolicy, "fetched", t)
-		}
+		})
 	}
 }
 
@@ -366,100 +369,104 @@ func TestAddDeletePolicyRule(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		bp := testBlueprintA(ctx, t, client.client)
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		// collect leaf switch IDs
-		leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
-		if err != nil {
-			t.Fatal(err)
-		}
+			bp := testBlueprintA(ctx, t, client.client)
 
-		// prep VN bindings
-		bindings := make([]VnBinding, len(leafIds))
-		for i, leafId := range leafIds {
-			bindings[i] = VnBinding{SystemId: leafId}
-		}
+			// collect leaf switch IDs
+			leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		// create a security zone (VNs live here)
-		szName := randString(5, "hex")
-		szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
-			SzType:  SecurityZoneTypeEVPN,
-			Label:   szName,
-			VrfName: szName,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
+			// prep VN bindings
+			bindings := make([]VnBinding, len(leafIds))
+			for i, leafId := range leafIds {
+				bindings[i] = VnBinding{SystemId: leafId}
+			}
 
-		// create a couple of virtual networks we'll use a policy rule endpoints
-		vnIds := make([]ObjectId, 2)
-		for i := range vnIds {
-			vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-				Ipv4Enabled:    true,
-				Label:          "vn_" + strconv.Itoa(i),
-				SecurityZoneId: szId,
-				VnBindings:     bindings,
-				VnType:         enum.VnTypeVxlan,
+			// create a security zone (VNs live here)
+			szName := randString(5, "hex")
+			szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+				SzType:  SecurityZoneTypeEVPN,
+				Label:   szName,
+				VrfName: szName,
 			})
 			if err != nil {
 				t.Fatal(err)
 			}
-			vnIds[i] = vnId
-		}
 
-		// create a security policy
-		policyId, err := bp.CreatePolicy(ctx, &PolicyData{
-			Enabled:             false,
-			Label:               randString(5, "hex"),
-			SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
-			DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
+			// create a couple of virtual networks we'll use a policy rule endpoints
+			vnIds := make([]ObjectId, 2)
+			for i := range vnIds {
+				vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+					Ipv4Enabled:    true,
+					Label:          "vn_" + strconv.Itoa(i),
+					SecurityZoneId: szId,
+					VnBindings:     bindings,
+					VnType:         enum.VnTypeVxlan,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				vnIds[i] = vnId
+			}
+
+			// create a security policy
+			policyId, err := bp.CreatePolicy(ctx, &PolicyData{
+				Enabled:             false,
+				Label:               randString(5, "hex"),
+				SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
+				DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			newRule := &PolicyRuleData{
+				Label:             randString(5, "hex"),
+				Description:       randString(5, "hex"),
+				Protocol:          enum.PolicyRuleProtocolTcp,
+				Action:            enum.PolicyRuleActionDenyLog,
+				SrcPort:           PortRanges{{5, 6}},
+				DstPort:           PortRanges{{7, 8}, {9, 10}},
+				TcpStateQualifier: &enum.TcpStateQualifierEstablished,
+			}
+
+			p, err := bp.getPolicy(ctx, policyId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ruleCount := len(p.Rules)
+
+			log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			ruleId, err := bp.AddPolicyRule(ctx, newRule, 0, policyId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			p, err = bp.getPolicy(ctx, policyId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(p.Rules) != ruleCount+1 {
+				t.Fatalf("expected %d rules, got %d rules", ruleCount+1, len(p.Rules))
+			}
+
+			log.Printf("testing deletePolicyRuleById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bp.deletePolicyRuleById(ctx, policyId, ruleId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			p, err = bp.getPolicy(ctx, policyId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(p.Rules) != ruleCount {
+				t.Fatalf("expected %d rules, got %d rules", ruleCount, len(p.Rules))
+			}
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		newRule := &PolicyRuleData{
-			Label:             randString(5, "hex"),
-			Description:       randString(5, "hex"),
-			Protocol:          enum.PolicyRuleProtocolTcp,
-			Action:            enum.PolicyRuleActionDenyLog,
-			SrcPort:           PortRanges{{5, 6}},
-			DstPort:           PortRanges{{7, 8}, {9, 10}},
-			TcpStateQualifier: &enum.TcpStateQualifierEstablished,
-		}
-
-		p, err := bp.getPolicy(ctx, policyId)
-		if err != nil {
-			t.Fatal(err)
-		}
-		ruleCount := len(p.Rules)
-
-		log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ruleId, err := bp.AddPolicyRule(ctx, newRule, 0, policyId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		p, err = bp.getPolicy(ctx, policyId)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(p.Rules) != ruleCount+1 {
-			t.Fatalf("expected %d rules, got %d rules", ruleCount+1, len(p.Rules))
-		}
-
-		log.Printf("testing deletePolicyRuleById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bp.deletePolicyRuleById(ctx, policyId, ruleId)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		p, err = bp.getPolicy(ctx, policyId)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(p.Rules) != ruleCount {
-			t.Fatalf("expected %d rules, got %d rules", ruleCount, len(p.Rules))
-		}
 	}
 }
