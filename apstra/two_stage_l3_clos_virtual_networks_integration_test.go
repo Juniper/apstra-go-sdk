@@ -130,169 +130,173 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 	vrfName := "test-" + randStr
 
 	for clientName, client := range clients {
-		bpClient := testBlueprintC(ctx, t, client.client)
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		bpClient.SetType(BlueprintTypeStaging)
+			bpClient := testBlueprintC(ctx, t, client.client)
 
-		log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		zoneId, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
-			SzType:  SecurityZoneTypeEVPN,
-			VrfName: vrfName,
-			Label:   label,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
+			bpClient.SetType(BlueprintTypeStaging)
 
-		var result struct {
-			Items []struct {
-				System struct {
-					SystemId string `json:"id"`
-				} `json:"system"`
-			} `json:"items"`
-		}
-
-		query := new(PathQuery).
-			SetClient(client.client).
-			SetBlueprintId(bpClient.Id()).
-			Node([]QEEAttribute{
-				{"type", QEStringVal("system")},
-				{"system_type", QEStringVal("switch")},
-				{"role", QEStringVal("leaf")},
-				{"name", QEStringVal("system")},
+			log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			zoneId, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
+				SzType:  SecurityZoneTypeEVPN,
+				VrfName: vrfName,
+				Label:   label,
 			})
-
-		err = query.Do(ctx, &result)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		sviIps := make([]SviIp, len(result.Items))
-		vnBindings := make([]VnBinding, len(result.Items))
-		for i := range result.Items {
-			leafId := ObjectId(result.Items[i].System.SystemId)
-			sviIps[i] = SviIp{
-				SystemId: leafId,
-				Ipv4Mode: enum.SviIpv4ModeEnabled,
-				Ipv6Mode: enum.SviIpv6ModeDisabled,
+			if err != nil {
+				t.Fatal(err)
 			}
-			vnBindings[i] = VnBinding{
-				SystemId: leafId,
+
+			var result struct {
+				Items []struct {
+					System struct {
+						SystemId string `json:"id"`
+					} `json:"system"`
+				} `json:"items"`
 			}
-		}
 
-		l3Mtu := toPtr(1280 + (2 * rand.Intn(3969))) // 1280 - 9216 even numbers only
+			query := new(PathQuery).
+				SetClient(client.client).
+				SetBlueprintId(bpClient.Id()).
+				Node([]QEEAttribute{
+					{"type", QEStringVal("system")},
+					{"system_type", QEStringVal("switch")},
+					{"role", QEStringVal("leaf")},
+					{"name", QEStringVal("system")},
+				})
 
-		createData := VirtualNetworkData{
-			Ipv4Enabled:               true,
-			L3Mtu:                     l3Mtu,
-			Label:                     label,
-			SecurityZoneId:            zoneId,
-			SviIps:                    sviIps[:1],
-			VirtualGatewayIpv4Enabled: true,
-			VnBindings:                vnBindings[:1],
-			VnType:                    enum.VnTypeVxlan,
-		}
+			err = query.Do(ctx, &result)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		vnId, err := bpClient.CreateVirtualNetwork(ctx, &createData)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("created virtual network - id:'%s', name: '%s', label:'%s'", vnId, vrfName, label)
+			sviIps := make([]SviIp, len(result.Items))
+			vnBindings := make([]VnBinding, len(result.Items))
+			for i := range result.Items {
+				leafId := ObjectId(result.Items[i].System.SystemId)
+				sviIps[i] = SviIp{
+					SystemId: leafId,
+					Ipv4Mode: enum.SviIpv4ModeEnabled,
+					Ipv6Mode: enum.SviIpv6ModeDisabled,
+				}
+				vnBindings[i] = VnBinding{
+					SystemId: leafId,
+				}
+			}
 
-		log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		shouldFail, err := bpClient.CreateVirtualNetwork(ctx, &createData)
-		if err == nil {
-			t.Fatalf("Creating two virtual networks with name %q should have failed, but %q and %q seem to coexist",
-				label, vnId, shouldFail)
-		}
-		if !errors.As(err, &ace) || ace.Type() != ErrExists {
-			t.Fatalf("creating two VNs with same name should fail, but not for this reason: %q", err.Error())
-		}
+			l3Mtu := toPtr(1280 + (2 * rand.Intn(3969))) // 1280 - 9216 even numbers only
 
-		log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		getById, err := bpClient.GetVirtualNetwork(ctx, vnId)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if vnId != getById.Id {
-			t.Fatalf("Virtual Network ID mismatch: %q vs. %q", vnId, getById.Id)
-		}
-		compareVirtualNetworkData(t, &createData, getById.Data, false)
+			createData := VirtualNetworkData{
+				Ipv4Enabled:               true,
+				L3Mtu:                     l3Mtu,
+				Label:                     label,
+				SecurityZoneId:            zoneId,
+				SviIps:                    sviIps[:1],
+				VirtualGatewayIpv4Enabled: true,
+				VnBindings:                vnBindings[:1],
+				VnType:                    enum.VnTypeVxlan,
+			}
 
-		getByName, err := bpClient.GetVirtualNetworkByName(ctx, getById.Data.Label)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if vnId != getByName.Id {
-			t.Fatalf("Virtual Network ID mismatch: %q vs. %q", vnId, getByName.Id)
-		}
-		compareVirtualNetworkData(t, &createData, getByName.Data, false)
+			log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			vnId, err := bpClient.CreateVirtualNetwork(ctx, &createData)
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Printf("created virtual network - id:'%s', name: '%s', label:'%s'", vnId, vrfName, label)
 
-		newVlan := Vlan(100)
-		createData.ReservedVlanId = &newVlan
-		createData.Label = randString(10, "hex")
-		createData.L3Mtu = toPtr(1280 + (2 * rand.Intn(3969))) // 1280 - 9216 even numbers only
+			log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			shouldFail, err := bpClient.CreateVirtualNetwork(ctx, &createData)
+			if err == nil {
+				t.Fatalf("Creating two virtual networks with name %q should have failed, but %q and %q seem to coexist",
+					label, vnId, shouldFail)
+			}
+			if !errors.As(err, &ace) || ace.Type() != ErrExists {
+				t.Fatalf("creating two VNs with same name should fail, but not for this reason: %q", err.Error())
+			}
 
-		for i := range createData.VnBindings {
-			createData.VnBindings[i].VlanId = &newVlan
-		}
+			log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			getById, err := bpClient.GetVirtualNetwork(ctx, vnId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if vnId != getById.Id {
+				t.Fatalf("Virtual Network ID mismatch: %q vs. %q", vnId, getById.Id)
+			}
+			compareVirtualNetworkData(t, &createData, getById.Data, false)
 
-		log.Printf("testing UpdateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.UpdateVirtualNetwork(ctx, vnId, &createData)
-		if err != nil {
-			t.Fatal(err)
-		}
+			getByName, err := bpClient.GetVirtualNetworkByName(ctx, getById.Data.Label)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if vnId != getByName.Id {
+				t.Fatalf("Virtual Network ID mismatch: %q vs. %q", vnId, getByName.Id)
+			}
+			compareVirtualNetworkData(t, &createData, getByName.Data, false)
 
-		log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		getById, err = bpClient.GetVirtualNetwork(ctx, vnId)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if vnId != getById.Id {
-			t.Fatalf("Virtual Network ID mismatch: %q vs. %q", vnId, getById.Id)
-		}
-		compareVirtualNetworkData(t, &createData, getById.Data, true)
+			newVlan := Vlan(100)
+			createData.ReservedVlanId = &newVlan
+			createData.Label = randString(10, "hex")
+			createData.L3Mtu = toPtr(1280 + (2 * rand.Intn(3969))) // 1280 - 9216 even numbers only
 
-		vnMap, err := bpClient.GetAllVirtualNetworks(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(vnMap) != 1 {
-			t.Fatalf("expected one VN got %d", len(vnMap))
-		}
-		if _, ok := vnMap[vnId]; !ok {
-			t.Fatalf("map does not contain virtual network %q", vnId)
-		}
-		batchData := createData
-		batchData.SviIps = nil // the "get all" API call omits SVI info. for. some. reason.
-		compareVirtualNetworkData(t, &batchData, vnMap[vnId].Data, true)
+			for i := range createData.VnBindings {
+				createData.VnBindings[i].VlanId = &newVlan
+			}
 
-		log.Printf("testing DeleteVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.DeleteVirtualNetwork(ctx, vnId)
-		if err != nil {
-			t.Fatal(err)
-		}
+			log.Printf("testing UpdateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.UpdateVirtualNetwork(ctx, vnId, &createData)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		// get the deleted VN, expect 404
-		log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		_, err = bpClient.GetVirtualNetwork(ctx, vnId)
-		if err == nil {
-			t.Fatal("GetVirtualNetwork after DeleteVirtualNetwork should have produced an error")
-		}
-		if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
-			t.Fatalf("expected a 404/NotFound error after deletion")
-		}
+			log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			getById, err = bpClient.GetVirtualNetwork(ctx, vnId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if vnId != getById.Id {
+				t.Fatalf("Virtual Network ID mismatch: %q vs. %q", vnId, getById.Id)
+			}
+			compareVirtualNetworkData(t, &createData, getById.Data, true)
 
-		// delete the deleted VN, expect 404
-		log.Printf("testing DeleteVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = bpClient.DeleteVirtualNetwork(ctx, vnId)
-		if err == nil {
-			t.Fatal("DeleteVirtualNetwork after DeleteVirtualNetwork should have produced an error")
-		}
-		if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
-			t.Fatalf("expected a 404/NotFound error after deletion")
-		}
+			vnMap, err := bpClient.GetAllVirtualNetworks(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(vnMap) != 1 {
+				t.Fatalf("expected one VN got %d", len(vnMap))
+			}
+			if _, ok := vnMap[vnId]; !ok {
+				t.Fatalf("map does not contain virtual network %q", vnId)
+			}
+			batchData := createData
+			batchData.SviIps = nil // the "get all" API call omits SVI info. for. some. reason.
+			compareVirtualNetworkData(t, &batchData, vnMap[vnId].Data, true)
+
+			log.Printf("testing DeleteVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.DeleteVirtualNetwork(ctx, vnId)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// get the deleted VN, expect 404
+			log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			_, err = bpClient.GetVirtualNetwork(ctx, vnId)
+			if err == nil {
+				t.Fatal("GetVirtualNetwork after DeleteVirtualNetwork should have produced an error")
+			}
+			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
+				t.Fatalf("expected a 404/NotFound error after deletion")
+			}
+
+			// delete the deleted VN, expect 404
+			log.Printf("testing DeleteVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.DeleteVirtualNetwork(ctx, vnId)
+			if err == nil {
+				t.Fatal("DeleteVirtualNetwork after DeleteVirtualNetwork should have produced an error")
+			}
+			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
+				t.Fatalf("expected a 404/NotFound error after deletion")
+			}
+		})
 	}
 }
