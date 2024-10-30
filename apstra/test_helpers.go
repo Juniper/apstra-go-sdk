@@ -81,7 +81,7 @@ func samples(t testing.TB, length int, count ...int) []int {
 	return result
 }
 
-func compareSlices[A comparable](t *testing.T, a, b []A, info string) {
+func compareSlices[A comparable](t testing.TB, a, b []A, info string) {
 	if len(a) != len(b) {
 		t.Fatalf("%s slice length mismatch: %d vs %d", info, len(a), len(b))
 	}
