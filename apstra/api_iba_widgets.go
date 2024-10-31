@@ -6,8 +6,9 @@ package apstra
 
 import (
 	"encoding/json"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 type IbaWidget struct {
@@ -37,11 +38,13 @@ type IbaWidgetData struct {
 	UpdatedBy          string
 }
 
-var _ json.Marshaler = new(IbaWidgetData)
-var _ json.Unmarshaler = new(IbaWidgetData)
+var (
+	_ json.Marshaler   = new(IbaWidgetData)
+	_ json.Unmarshaler = new(IbaWidgetData)
+)
 
 func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
-	//TODO implement me
+	// TODO implement me
 	var raw struct {
 		AggregationPeriod  *int     `json:"aggregation_period,omitempty"`
 		OrderBy            string   `json:"orderby,omitempty"`
@@ -121,7 +124,7 @@ func (i *IbaWidgetData) MarshalJSON() ([]byte, error) {
 		timeSeriesDuration = 1
 	}
 
-	var raw = struct {
+	raw := struct {
 		AggregationPeriod  *int     `json:"aggregation_period,omitempty"`
 		OrderBy            string   `json:"orderby,omitempty"`
 		StageName          string   `json:"stage_name,omitempty"`

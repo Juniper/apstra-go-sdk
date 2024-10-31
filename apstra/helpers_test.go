@@ -758,8 +758,8 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 		AggregationPeriod:  &ap,
 		TimeSeriesDuration: &ap,
 	}
-	//widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
-	//require.NoError(t, err)
+	// widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
+	// require.NoError(t, err)
 
 	widgetB := IbaWidgetData{
 		Label:              "Drain Traffic Anomaly",
@@ -769,8 +769,8 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 		AggregationPeriod:  &ap,
 		TimeSeriesDuration: &ap,
 	}
-	//widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
-	//require.NoError(t, err)
+	// widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
+	// require.NoError(t, err)
 
 	return widgetA, widgetB
 }

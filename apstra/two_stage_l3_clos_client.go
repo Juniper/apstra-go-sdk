@@ -809,7 +809,6 @@ func (o *TwoStageL3ClosClient) GetIbaProbeState(ctx context.Context, id ObjectId
 
 // DeleteIbaProbe deletes an IBA Probe
 func (o *TwoStageL3ClosClient) DeleteIbaProbe(ctx context.Context, id ObjectId) error {
-
 	return o.client.deleteIbaProbe(ctx, o.blueprintId, id)
 }
 

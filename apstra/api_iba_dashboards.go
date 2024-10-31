@@ -20,8 +20,10 @@ const (
 	apiUrlIbaDashboardsById   = apiUrlIbaDashboardsPrefix + "%s"
 )
 
-var _ json.Marshaler = new(IbaDashboard)
-var _ json.Unmarshaler = new(IbaDashboard)
+var (
+	_ json.Marshaler   = new(IbaDashboard)
+	_ json.Unmarshaler = new(IbaDashboard)
+)
 
 var _ json.Marshaler = new(IbaDashboardData)
 
