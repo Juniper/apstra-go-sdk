@@ -731,14 +731,12 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStage
 
 // testWidgetsAB instantiates two predefined probes and creates widgets from them,
 // returning the widget Object Id and the IbaWidgetData object used for creation
-func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (ObjectId, IbaWidgetData, ObjectId, IbaWidgetData) {
+func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (IbaWidgetData, IbaWidgetData) {
 	t.Helper()
 	probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "bgp_session",
 		Data: []byte(`{
-			"Label":     "BGP Session Flapping",
-			"Duration":  300,
-			"Threshold": 40
+			"label":     "BGP Session Flapping"
 		}`),
 	})
 	require.NoError(t, err)
@@ -746,31 +744,53 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	probeBId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "drain_node_traffic_anomaly",
 		Data: []byte(`{
-			"Label":     "Drain Traffic Anomaly",
-			"Threshold": 100000
+			"label":     "Drain Traffic Anomaly"
 		}`),
 	})
 	require.NoError(t, err)
 
+	ap := time.Duration(1000000000)
 	widgetA := IbaWidgetData{
-		Type:      enum.IbaWidgetTypeStage,
-		Label:     "BGP Session Flapping",
-		ProbeId:   probeAId,
-		StageName: "BGP Session",
+		Label:              "BGP Session Flapping",
+		ProbeId:            probeAId,
+		StageName:          "BGP Session",
+		WidgetType:         enum.IbaWidgetTypeStage,
+		AggregationPeriod:  &ap,
+		TimeSeriesDuration: &ap,
 	}
-	widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
-	require.NoError(t, err)
+	//widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
+	//require.NoError(t, err)
 
 	widgetB := IbaWidgetData{
-		Type:      enum.IbaWidgetTypeStage,
-		Label:     "Drain Traffic Anomaly",
-		ProbeId:   probeBId,
-		StageName: "excess_range",
+		Label:              "Drain Traffic Anomaly",
+		ProbeId:            probeBId,
+		StageName:          "excess_range",
+		WidgetType:         enum.IbaWidgetTypeStage,
+		AggregationPeriod:  &ap,
+		TimeSeriesDuration: &ap,
 	}
-	widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
-	require.NoError(t, err)
+	//widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
+	//require.NoError(t, err)
 
-	return widgetAId, widgetA, widgetBId, widgetB
+	return widgetA, widgetB
+}
+
+func compareDashboards(d1, d2 IbaDashboardData) bool {
+	if d1.Label != d2.Label || d1.Default != d2.Default || d1.PredefinedDashboard != d2.PredefinedDashboard ||
+		d1.Description != d2.Description || len(d1.IbaWidgetGrid) != len(d2.IbaWidgetGrid) {
+		return false
+	}
+
+	for k1, v1 := range d1.IbaWidgetGrid {
+		for k2, v2 := range v1 {
+			if v2.Label != d2.IbaWidgetGrid[k1][k2].Label || v2.Description != d2.IbaWidgetGrid[k1][k2].Description ||
+				v2.ProbeId != d2.IbaWidgetGrid[k1][k2].ProbeId {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {

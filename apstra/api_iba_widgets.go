@@ -5,20 +5,9 @@
 package apstra
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"math/rand"
-	"net/http"
-	"time"
-
+	"encoding/json"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
-)
-
-const (
-	apiUrlIbaWidgets       = "/api/blueprints/%s/iba/widgets"
-	apiUrlIbaWidgetsPrefix = apiUrlIbaWidgets + apiUrlPathDelim
-	apiUrlIbaWidgetsById   = apiUrlIbaWidgetsPrefix + "%s"
+	"time"
 )
 
 type IbaWidget struct {
@@ -30,6 +19,7 @@ type IbaWidget struct {
 
 type IbaWidgetData struct {
 	AggregationPeriod  *time.Duration
+	WidgetType         enum.IbaWidgetType
 	OrderBy            string
 	StageName          string
 	ShowContext        bool
@@ -44,271 +34,129 @@ type IbaWidgetData struct {
 	MaxItems           *int
 	CombineGraphs      string
 	VisibleColumns     []string
-	Type               enum.IbaWidgetType
 	UpdatedBy          string
 }
 
-type rawIbaWidget struct {
-	AggregationPeriod  *int     `json:"aggregation_period,omitempty"`
-	OrderBy            string   `json:"orderby,omitempty"`
-	StageName          string   `json:"stage_name,omitempty"`
-	ShowContext        bool     `json:"show_context,omitempty"`
-	Description        string   `json:"description,omitempty"`
-	AnomalousOnly      bool     `json:"anomalous_only,omitempty"`
-	CreatedAt          *string  `json:"created_at,omitempty"`
-	SpotlightMode      bool     `json:"spotlight_mode,omitempty"`
-	UpdatedAt          *string  `json:"updated_at,omitempty"`
-	ProbeId            string   `json:"probe_id"`
-	Label              string   `json:"label"`
-	Filter             string   `json:"filter,omitempty"`
-	TimeSeriesDuration *int     `json:"time_series_duration,omitempty"`
-	DataSource         string   `json:"data_source,omitempty"`
-	MaxItems           *int     `json:"max_items,omitempty"`
-	CombineGraphs      string   `json:"combine_graphs,omitempty"`
-	VisibleColumns     []string `json:"visible_columns,omitempty"`
-	Type               string   `json:"type"`
-	Id                 ObjectId `json:"id,omitempty"`
-	UpdatedBy          string   `json:"updated_by,omitempty"`
-}
+var _ json.Marshaler = new(IbaWidgetData)
+var _ json.Unmarshaler = new(IbaWidgetData)
 
-func (o *rawIbaWidget) polish() (*IbaWidget, error) {
-	var created, updated time.Time
-
-	if o.CreatedAt != nil {
-		t, err := time.Parse("2006-01-02T15:04:05.000000+0000", *o.CreatedAt)
-		if err != nil {
-			return nil, fmt.Errorf("failure parsing create time %s - %w", *o.CreatedAt, err)
-		}
-		created = t
+func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
+	//TODO implement me
+	var raw struct {
+		AggregationPeriod  *int     `json:"aggregation_period,omitempty"`
+		OrderBy            string   `json:"orderby,omitempty"`
+		StageName          string   `json:"stage_name,omitempty"`
+		ShowContext        bool     `json:"show_context,omitempty"`
+		Description        string   `json:"description,omitempty"`
+		AnomalousOnly      bool     `json:"anomalous_only,omitempty"`
+		SpotlightMode      bool     `json:"spotlight_mode,omitempty"`
+		ProbeId            string   `json:"probe_id"`
+		Label              string   `json:"label"`
+		Filter             string   `json:"filter,omitempty"`
+		TimeSeriesDuration *int     `json:"time_series_duration,omitempty"`
+		DataSource         string   `json:"data_source,omitempty"`
+		MaxItems           *int     `json:"max_items,omitempty"`
+		CombineGraphs      string   `json:"combine_graphs,omitempty"`
+		VisibleColumns     []string `json:"visible_columns,omitempty"`
+		Id                 ObjectId `json:"id,omitempty"`
+		UpdatedBy          string   `json:"updated_by,omitempty"`
+		Type               string   `json:"type,omitempty"`
+	}
+	err := json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return err
 	}
 
-	if o.UpdatedAt != nil {
-		t, err := time.Parse("2006-01-02T15:04:05.000000+0000", *o.UpdatedAt)
-		if err != nil {
-			return nil, fmt.Errorf("failure parsing create time %s - %w", *o.CreatedAt, err)
-		}
-		created = t
-	}
-
-	widgetType := enum.IbaWidgetTypes.Parse(o.Type)
-	if widgetType == nil {
-		return nil, fmt.Errorf("failure to parse returned Iba Widget type %s", o.Type)
+	var t enum.IbaWidgetType
+	err = t.FromString(raw.Type)
+	if err != nil {
+		return err
 	}
 
 	var aggregationPeriod *time.Duration
-	if o.AggregationPeriod != nil {
-		td := time.Duration(float64(*o.AggregationPeriod) * float64(time.Second))
+	if raw.AggregationPeriod != nil {
+		td := time.Duration(float64(*raw.AggregationPeriod) * float64(time.Second))
 		aggregationPeriod = &td
 	}
 
 	var timeSeriesDuration *time.Duration
-	if o.TimeSeriesDuration != nil {
-		td := time.Duration(float64(*o.AggregationPeriod) * float64(time.Second))
+	if raw.TimeSeriesDuration != nil {
+		td := time.Duration(float64(*raw.TimeSeriesDuration) * float64(time.Second))
 		timeSeriesDuration = &td
 	}
 
-	return &IbaWidget{
-		Id:        o.Id,
-		CreatedAt: created,
-		UpdatedAt: updated,
-		Data: &IbaWidgetData{
-			AggregationPeriod:  aggregationPeriod,
-			OrderBy:            o.OrderBy,
-			StageName:          o.StageName,
-			ShowContext:        o.ShowContext,
-			Description:        o.Description,
-			AnomalousOnly:      o.AnomalousOnly,
-			SpotlightMode:      o.SpotlightMode,
-			ProbeId:            ObjectId(o.ProbeId),
-			Label:              o.Label,
-			Filter:             o.Filter,
-			TimeSeriesDuration: timeSeriesDuration,
-			DataSource:         o.DataSource,
-			MaxItems:           o.MaxItems,
-			CombineGraphs:      o.CombineGraphs,
-			VisibleColumns:     o.VisibleColumns,
-			Type:               *widgetType,
-			UpdatedBy:          o.UpdatedBy,
-		},
-	}, nil
+	*i = IbaWidgetData{
+		AggregationPeriod:  aggregationPeriod,
+		OrderBy:            raw.OrderBy,
+		StageName:          raw.StageName,
+		ShowContext:        raw.ShowContext,
+		Description:        raw.Description,
+		AnomalousOnly:      raw.AnomalousOnly,
+		SpotlightMode:      raw.SpotlightMode,
+		ProbeId:            ObjectId(raw.ProbeId),
+		Label:              raw.Label,
+		Filter:             raw.Filter,
+		TimeSeriesDuration: timeSeriesDuration,
+		DataSource:         raw.DataSource,
+		MaxItems:           raw.MaxItems,
+		CombineGraphs:      raw.CombineGraphs,
+		VisibleColumns:     raw.VisibleColumns,
+		UpdatedBy:          raw.UpdatedBy,
+		WidgetType:         t,
+	}
+
+	return err
 }
 
-func (o *IbaWidgetData) raw() *rawIbaWidget {
+func (i *IbaWidgetData) MarshalJSON() ([]byte, error) {
 	var aggPeriod, timeSeriesDuration int
-	if o.AggregationPeriod != nil {
-		aggPeriod = int(o.AggregationPeriod.Seconds())
+	if i.AggregationPeriod != nil {
+		aggPeriod = int(i.AggregationPeriod.Seconds())
 	} else {
 		aggPeriod = 1
 	}
-	if o.TimeSeriesDuration != nil {
-		timeSeriesDuration = int(o.TimeSeriesDuration.Seconds())
+	if i.TimeSeriesDuration != nil {
+		timeSeriesDuration = int(i.TimeSeriesDuration.Seconds())
 	} else {
 		timeSeriesDuration = 1
 	}
-	return &rawIbaWidget{
+
+	var raw = struct {
+		AggregationPeriod  *int     `json:"aggregation_period,omitempty"`
+		OrderBy            string   `json:"orderby,omitempty"`
+		StageName          string   `json:"stage_name,omitempty"`
+		ShowContext        bool     `json:"show_context,omitempty"`
+		Description        string   `json:"description,omitempty"`
+		AnomalousOnly      bool     `json:"anomalous_only,omitempty"`
+		SpotlightMode      bool     `json:"spotlight_mode,omitempty"`
+		ProbeId            string   `json:"probe_id"`
+		Label              string   `json:"label"`
+		Filter             string   `json:"filter,omitempty"`
+		TimeSeriesDuration *int     `json:"time_series_duration,omitempty"`
+		DataSource         string   `json:"data_source,omitempty"`
+		MaxItems           *int     `json:"max_items,omitempty"`
+		CombineGraphs      string   `json:"combine_graphs,omitempty"`
+		VisibleColumns     []string `json:"visible_columns,omitempty"`
+		Id                 ObjectId `json:"id,omitempty"`
+		UpdatedBy          string   `json:"updated_by,omitempty"`
+		Type               string   `json:"type,omitempty"`
+	}{
 		AggregationPeriod:  &aggPeriod,
-		OrderBy:            o.OrderBy,
-		StageName:          o.StageName,
-		ShowContext:        o.ShowContext,
-		Description:        o.Description,
-		AnomalousOnly:      o.AnomalousOnly,
-		CreatedAt:          nil,
-		SpotlightMode:      o.SpotlightMode,
-		UpdatedAt:          nil,
-		ProbeId:            o.ProbeId.String(),
-		Label:              o.Label,
-		Filter:             o.Filter,
+		OrderBy:            i.OrderBy,
+		StageName:          i.StageName,
+		ShowContext:        i.ShowContext,
+		Description:        i.Description,
+		AnomalousOnly:      i.AnomalousOnly,
+		SpotlightMode:      i.SpotlightMode,
+		ProbeId:            i.ProbeId.String(),
+		Label:              i.Label,
+		Filter:             i.Filter,
 		TimeSeriesDuration: &timeSeriesDuration,
-		DataSource:         o.DataSource,
-		MaxItems:           o.MaxItems,
-		CombineGraphs:      o.CombineGraphs,
-		VisibleColumns:     o.VisibleColumns,
-		Type:               o.Type.Value,
+		DataSource:         i.DataSource,
+		MaxItems:           i.MaxItems,
+		CombineGraphs:      i.CombineGraphs,
+		VisibleColumns:     i.VisibleColumns,
+		Type:               i.WidgetType.String(),
 	}
-}
-
-func (o *Client) getAllIbaWidgets(ctx context.Context, bp_id ObjectId) ([]rawIbaWidget, error) {
-	response := &struct {
-		Items []rawIbaWidget `json:"items"`
-	}{}
-
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bp_id),
-		apiResponse: response,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-	return response.Items, nil
-}
-
-func (o *Client) getIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId) (*rawIbaWidget, error) {
-	response := &rawIbaWidget{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlIbaWidgetsById, bpId, id),
-		apiResponse: response,
-	})
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-	return response, nil
-}
-
-func (o *Client) getIbaWidgetsByLabel(ctx context.Context, bpId ObjectId, label string) ([]rawIbaWidget, error) {
-	allIbaWidgets, err := o.getAllIbaWidgets(ctx, bpId)
-	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
-	}
-
-	var result []rawIbaWidget
-	for _, w := range allIbaWidgets {
-		if w.Label == label {
-			result = append(result, w)
-		}
-	}
-
-	if len(result) == 0 {
-		return nil, ClientErr{
-			errType: ErrNotfound,
-			err:     fmt.Errorf("property set with label '%s' not found", label),
-		}
-	}
-	return result, nil
-}
-
-func (o *Client) getIbaWidgetByLabel(ctx context.Context, bpId ObjectId, label string) (*rawIbaWidget, error) {
-	rawWidgets, err := o.getIbaWidgetsByLabel(ctx, bpId, label)
-	if err != nil {
-		return nil, err
-	}
-
-	switch len(rawWidgets) {
-	case 0:
-		return nil, ClientErr{
-			errType: ErrNotfound,
-			err:     fmt.Errorf("IBA widget with label %q not found in blueprint %q", label, bpId),
-		}
-	case 1:
-		return &rawWidgets[0], nil
-	}
-
-	return nil, ClientErr{
-		errType: ErrMultipleMatch,
-		err:     fmt.Errorf("multiple IBA widget with label %q found in blueprint %q", label, bpId),
-	}
-}
-
-func (o *Client) createIbaWidget(ctx context.Context, bpId ObjectId, widget *rawIbaWidget) (ObjectId, error) {
-	var response objectIdResponse
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bpId),
-		apiInput:    &widget,
-		apiResponse: &response,
-	})
-	if err == nil {
-		return response.Id, nil
-	}
-
-	err = convertTtaeToAceWherePossible(err)
-
-	var ace ClientErr
-	if !(errors.As(err, &ace) && ace.IsRetryable()) {
-		return "", err // fatal error
-	}
-
-	retryMax := o.GetTuningParam("createIbaWidgetMaxRetries")
-	retryInterval := time.Duration(o.GetTuningParam("createIbaWidgetRetryIntervalMs")) * time.Millisecond
-
-	for i := 0; i < retryMax; i++ {
-		// Make a random wait, in case multiple threads are running
-		if rand.Int()%2 == 0 {
-			time.Sleep(retryInterval)
-		}
-
-		time.Sleep(retryInterval * time.Duration(i))
-
-		e := o.talkToApstra(ctx, &talkToApstraIn{
-			method:      http.MethodPost,
-			urlStr:      fmt.Sprintf(apiUrlIbaWidgets, bpId),
-			apiInput:    &widget,
-			apiResponse: &response,
-		})
-		if e == nil {
-			return response.Id, nil // success!
-		}
-
-		e = convertTtaeToAceWherePossible(e)
-		if !(errors.As(e, &ace) && ace.IsRetryable()) {
-			return "", e // return the fatal error
-		}
-
-		err = errors.Join(err, e) // the error is retryable; stack it with the rest
-	}
-
-	return "", errors.Join(err, fmt.Errorf("reached retry limit %d", retryMax))
-}
-
-func (o *Client) updateIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId, widget *rawIbaWidget) error {
-	response := &objectIdResponse{}
-
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPut,
-		urlStr:      fmt.Sprintf(apiUrlIbaWidgetsById, bpId, id),
-		apiInput:    &widget,
-		apiResponse: &response,
-	})
-	if err != nil {
-		return convertTtaeToAceWherePossible(err)
-	}
-	return nil
-}
-
-func (o *Client) deleteIbaWidget(ctx context.Context, bpId ObjectId, id ObjectId) error {
-	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlIbaWidgetsById, bpId, id),
-	}))
+	return json.Marshal(raw)
 }
