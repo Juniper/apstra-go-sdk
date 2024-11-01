@@ -18,7 +18,11 @@ const (
 
 var (
 	// Todo: find usages of these constraints, replace them with appropriately named compatibility.Constraints
-	EqApstra420 = version.MustConstraints(version.NewConstraint(apstra420))
+	EqApstra420  = version.MustConstraints(version.NewConstraint(apstra420))
+	EqApstra421  = version.MustConstraints(version.NewConstraint(apstra421))
+	EqApstra4211 = version.MustConstraints(version.NewConstraint(apstra4211))
+	EqApstra422  = version.MustConstraints(version.NewConstraint(apstra422))
+
 	GeApstra421 = version.MustConstraints(version.NewConstraint(">=" + apstra421))
 	GeApstra500 = version.MustConstraints(version.NewConstraint(">=" + apstra500))
 	LeApstra500 = version.MustConstraints(version.NewConstraint("<=" + apstra500))
@@ -33,4 +37,19 @@ func SupportedApiVersions() []string {
 		apstra422,
 		apstra500,
 	}
+}
+
+// Make sure the version is 5.0.0 5.1, 5.0.0A etc
+
+func OnlyFiveAndAbove(v *version.Version) bool {
+	switch {
+	case EqApstra420.Check(v):
+	case EqApstra421.Check(v):
+	case EqApstra4211.Check(v):
+	case EqApstra422.Check(v):
+		return false
+	default:
+		return true
+	}
+	return true
 }

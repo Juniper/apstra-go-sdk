@@ -34,15 +34,15 @@ type IbaDashboard struct {
 
 func (i *IbaDashboard) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id                  string            `json:"id,omitempty"`
+		Id                  string            `json:"id"`
 		Label               string            `json:"label"`
 		Description         string            `json:"description"`
-		Default             bool              `json:"default,omitempty"`
-		CreatedAt           *string           `json:"created_at,omitempty"`
-		UpdatedAt           *string           `json:"updated_at,omitempty"`
+		Default             bool              `json:"default"`
+		CreatedAt           *string           `json:"created_at"`
+		UpdatedAt           *string           `json:"updated_at"`
 		IbaWidgetGrid       [][]IbaWidgetData `json:"grid"`
-		PredefinedDashboard string            `json:"predefined_dashboard,omitempty"`
-		UpdatedBy           string            `json:"updated_by,omitempty"`
+		PredefinedDashboard string            `json:"predefined_dashboard"`
+		UpdatedBy           string            `json:"updated_by"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
