@@ -20,7 +20,9 @@ var (
 	FabricSettingsApiOk = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
 	}
-
+	IbaDashboardSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	}
 	PatchNodeSupportsUnsafeArg = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
