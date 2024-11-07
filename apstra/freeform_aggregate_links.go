@@ -19,8 +19,7 @@ const (
 	apiUrlFfAggLinkById = apiUrlFfAggLinks + apiUrlPathDelim + "%s"
 )
 
-//var _ json.Marshaler = (*FreeformAggregateLinkMemberEndpoint)(nil)
-
+// var _ json.Marshaler = (*FreeformAggregateLinkMemberEndpoint)(nil)
 type FreeformAggregateLinkMemberEndpoint struct {
 	AggIntfId     ObjectId // not used in create
 	SystemId      ObjectId

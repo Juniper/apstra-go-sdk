@@ -37,7 +37,7 @@ func TestCRUDFFAggLink(t *testing.T) {
 
 	for _, client := range clients {
 		ffc, intSysIds, _ := testFFBlueprintB(ctx, t, client.client, 4, 0)
-		//todo build links now
+		// todo build links now
 		link1 := []FreeformLinkRequest{
 			{
 				Label: randString(2, "hex"),
@@ -193,7 +193,7 @@ func TestCRUDFFAggLink(t *testing.T) {
 			tName, tCase := tName, tCase
 
 			t.Run(tName, func(t *testing.T) {
-				//t.Parallel()
+				// t.Parallel()
 
 				// create the link
 				id, err := ffc.CreateAggregateLink(ctx, &tCase.steps[0])
