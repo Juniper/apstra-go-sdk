@@ -2,9 +2,10 @@ package apstra_test
 
 import (
 	"encoding/json"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestFreeformAggregateLinkRequest_MarshalJSON(t *testing.T) {
@@ -16,7 +17,7 @@ func TestFreeformAggregateLinkRequest_MarshalJSON(t *testing.T) {
 		"foo": {
 			data: apstra.FreeformAggregateLinkData{
 				Endpoints: [2][]apstra.FreeformAggregateLinkMemberEndpoint{
-					[]apstra.FreeformAggregateLinkMemberEndpoint{
+					{
 						{
 							SystemId:      "system1",
 							PortChannelId: 1,
@@ -28,7 +29,7 @@ func TestFreeformAggregateLinkRequest_MarshalJSON(t *testing.T) {
 							LagMode:       apstra.RackLinkLagModeActive,
 						},
 					},
-					[]apstra.FreeformAggregateLinkMemberEndpoint{
+					{
 						{
 							SystemId:      "system3",
 							PortChannelId: 3,
