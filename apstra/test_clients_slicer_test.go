@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -23,7 +22,7 @@ import (
 )
 
 const (
-	slicerTopologyUrlById   = "http://slicer-topology-management-ui.k8s-ci.dc1.apstra.com/v1_1/systest/%s"
+	slicerTopologyUrlById   = "http://slicer-topology-management-ui.k8s-autobuild.dc1.apstra.com/v1_1/systest/%s"
 	envSlicerTopologyIdList = "SLICER_TOPOLOGIES"
 )
 
