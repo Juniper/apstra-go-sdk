@@ -37,7 +37,7 @@ func TestCRUDFFAggLink(t *testing.T) {
 
 	for _, client := range clients {
 		ffc, intSysIds, _ := testFFBlueprintB(ctx, t, client.client, 4, 0)
-		// todo build links now
+		// build links now
 		link1 := []FreeformLinkRequest{
 			{
 				Label: randString(2, "hex"),
@@ -68,12 +68,47 @@ func TestCRUDFFAggLink(t *testing.T) {
 				},
 			},
 		}
-
+		link3 := []FreeformLinkRequest{
+			{
+				Label: randString(2, "hex"),
+				Endpoints: [2]FreeformEndpoint{
+					{SystemId: intSysIds[2], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						IfName:           toPtr("ge-0/0/0"),
+						TransformationId: toPtr(1),
+					}}},
+					{SystemId: intSysIds[3], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						IfName:           toPtr("ge-0/0/0"),
+						TransformationId: toPtr(1),
+					}}},
+				},
+			},
+		}
+		link4 := []FreeformLinkRequest{
+			{
+				Label: randString(2, "hex"),
+				Endpoints: [2]FreeformEndpoint{
+					{SystemId: intSysIds[2], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						IfName:           toPtr("ge-0/0/1"),
+						TransformationId: toPtr(1),
+					}}},
+					{SystemId: intSysIds[3], Interface: FreeformInterface{Data: &FreeformInterfaceData{
+						IfName:           toPtr("ge-0/0/1"),
+						TransformationId: toPtr(1),
+					}}},
+				},
+			},
+		}
 		var link1id ObjectId
 		var link2id ObjectId
+		var link3id ObjectId
+		var link4id ObjectId
 		link1id, err = ffc.CreateLink(ctx, &link1[0])
 		require.NoError(t, err)
 		link2id, err = ffc.CreateLink(ctx, &link2[0])
+		require.NoError(t, err)
+		link3id, err = ffc.CreateLink(ctx, &link3[0])
+		require.NoError(t, err)
+		link4id, err = ffc.CreateLink(ctx, &link4[0])
 		require.NoError(t, err)
 
 		testCases := map[string]testCase{
@@ -133,6 +168,8 @@ func TestCRUDFFAggLink(t *testing.T) {
 									SystemId:      intSysIds[2],
 									PortChannelId: 1,
 									LagMode:       RackLinkLagModeActive,
+									Ipv4Address:   netip.MustParsePrefix("192.168.2.1/31"),
+									Ipv6Address:   netip.MustParsePrefix("2001:db8::1/127"),
 								},
 							},
 							{
@@ -140,10 +177,12 @@ func TestCRUDFFAggLink(t *testing.T) {
 									SystemId:      intSysIds[3],
 									PortChannelId: 1,
 									LagMode:       RackLinkLagModeActive,
+									Ipv4Address:   netip.MustParsePrefix("192.168.2.2/31"),
+									Ipv6Address:   netip.MustParsePrefix("2001:db8::2/127"),
 								},
 							},
 						},
-						MemberLinkIds: []ObjectId{link1id, link2id},
+						MemberLinkIds: []ObjectId{link3id, link4id},
 					},
 					{
 						Label: randString(2, "hex"),
@@ -153,7 +192,6 @@ func TestCRUDFFAggLink(t *testing.T) {
 									SystemId:      intSysIds[2],
 									PortChannelId: 1,
 									LagMode:       RackLinkLagModeActive,
-									Ipv4Address:   netip.MustParsePrefix("192.168.2.0/31"),
 								},
 							},
 							{
@@ -161,11 +199,10 @@ func TestCRUDFFAggLink(t *testing.T) {
 									SystemId:      intSysIds[3],
 									PortChannelId: 1,
 									LagMode:       RackLinkLagModeActive,
-									Ipv4Address:   netip.MustParsePrefix("192.168.2.1/31"),
 								},
 							},
 						},
-						MemberLinkIds: []ObjectId{link1id, link2id},
+						MemberLinkIds: []ObjectId{link3id, link4id},
 					},
 				},
 			},
