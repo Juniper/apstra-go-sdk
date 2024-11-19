@@ -19,7 +19,6 @@ const (
 	apiUrlFfAggLinkById = apiUrlFfAggLinks + apiUrlPathDelim + "%s"
 )
 
-// var _ json.Marshaler = (*FreeformAggregateLinkMemberEndpoint)(nil)
 type FreeformAggregateLinkMemberEndpoint struct {
 	AggIntfId     ObjectId // not used in create
 	SystemId      ObjectId
@@ -35,6 +34,7 @@ type FreeformAggregateLinkData struct {
 	Label         string
 	Endpoints     [2][]FreeformAggregateLinkMemberEndpoint
 	MemberLinkIds []ObjectId
+	Tags          []string
 }
 
 func (o FreeformAggregateLinkData) MarshalJSON() ([]byte, error) {
@@ -56,6 +56,7 @@ func (o FreeformAggregateLinkData) MarshalJSON() ([]byte, error) {
 		Label         string     `json:"label"`
 		Endpoints     []Endpoint `json:"endpoints"`
 		MemberLinkIds []ObjectId `json:"member_link_ids"`
+		Tags          []string   `json:"tags"`
 	}
 
 	raw.Label = o.Label
@@ -135,7 +136,7 @@ func (o FreeformAggregateLinkData) MarshalJSON() ([]byte, error) {
 			EndpointGroup: 1,
 		}
 	}
-
+	raw.Tags = o.Tags
 	return json.Marshal(raw)
 }
 
@@ -166,7 +167,7 @@ func (o *FreeformAggregateLink) UnmarshalJSON(bytes []byte) error {
 			EndpointGroup int `json:"endpoint_group"`
 		} `json:"endpoints"`
 		MemberLinkIds []ObjectId `json:"member_link_ids"`
-		// Tags       []string   `json:"tags"`
+		Tags          []string   `json:"tags"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
@@ -177,6 +178,7 @@ func (o *FreeformAggregateLink) UnmarshalJSON(bytes []byte) error {
 	o.Data = new(FreeformAggregateLinkData)
 	o.Data.Label = raw.Label
 	o.Data.MemberLinkIds = raw.MemberLinkIds
+	o.Data.Tags = raw.Tags
 	for _, endpoint := range raw.Endpoints {
 		if endpoint.EndpointGroup < 0 || endpoint.EndpointGroup > 2 {
 			return fmt.Errorf("only endpoints 0 and 1 are valid, got endpoint group %d", endpoint.EndpointGroup)
