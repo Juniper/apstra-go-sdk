@@ -204,6 +204,30 @@ func TestCRUDFFAggLink(t *testing.T) {
 						},
 						MemberLinkIds: []ObjectId{link3id, link4id},
 					},
+					{
+						Label: randString(2, "hex"),
+						Endpoints: [2][]FreeformAggregateLinkMemberEndpoint{
+							{
+								{
+									SystemId:      intSysIds[2],
+									PortChannelId: 1,
+									LagMode:       RackLinkLagModePassive,
+									Ipv4Address:   netip.MustParsePrefix("192.168.2.1/31"),
+									Ipv6Address:   netip.MustParsePrefix("2001:db8::1/127"),
+								},
+							},
+							{
+								{
+									SystemId:      intSysIds[3],
+									PortChannelId: 1,
+									LagMode:       RackLinkLagModePassive,
+									Ipv4Address:   netip.MustParsePrefix("192.168.2.2/31"),
+									Ipv6Address:   netip.MustParsePrefix("2001:db8::2/127"),
+								},
+							},
+						},
+						MemberLinkIds: []ObjectId{link3id, link4id},
+					},
 				},
 			},
 		}
