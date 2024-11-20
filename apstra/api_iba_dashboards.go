@@ -21,9 +21,7 @@ const (
 	apiUrlIbaDashboardsById   = apiUrlIbaDashboardsPrefix + "%s"
 )
 
-var (
-	_ json.Unmarshaler = (*IbaDashboard)(nil)
-)
+var _ json.Unmarshaler = (*IbaDashboard)(nil)
 
 type IbaDashboard struct {
 	Id   ObjectId
