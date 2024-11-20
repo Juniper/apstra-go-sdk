@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -21,11 +22,8 @@ const (
 )
 
 var (
-	_ json.Marshaler   = new(IbaDashboard)
-	_ json.Unmarshaler = new(IbaDashboard)
+	_ json.Unmarshaler = (*IbaDashboard)(nil)
 )
-
-var _ json.Marshaler = new(IbaDashboardData)
 
 type IbaDashboard struct {
 	Id   ObjectId
@@ -63,26 +61,7 @@ func (i *IbaDashboard) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-func (i *IbaDashboard) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		Id                  string            `json:"id,omitempty"`
-		Label               string            `json:"label"`
-		Description         string            `json:"description"`
-		Default             bool              `json:"default,omitempty"`
-		IbaWidgetGrid       [][]IbaWidgetData `json:"grid"`
-		PredefinedDashboard string            `json:"predefined_dashboard,omitempty"`
-		UpdatedBy           string            `json:"updated_by,omitempty"`
-	}{
-		Id:                  i.Id.String(),
-		Label:               i.Data.Label,
-		Description:         i.Data.Description,
-		Default:             i.Data.Default,
-		IbaWidgetGrid:       i.Data.IbaWidgetGrid,
-		PredefinedDashboard: i.Data.PredefinedDashboard,
-		UpdatedBy:           i.Data.UpdatedBy,
-	},
-	)
-}
+var _ json.Marshaler = (*IbaDashboardData)(nil)
 
 type IbaDashboardData struct {
 	Description         string
@@ -95,7 +74,6 @@ type IbaDashboardData struct {
 
 func (i *IbaDashboardData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Id                  string            `json:"id,omitempty"`
 		Label               string            `json:"label"`
 		Description         string            `json:"description"`
 		Default             bool              `json:"default,omitempty"`
@@ -109,18 +87,17 @@ func (i *IbaDashboardData) MarshalJSON() ([]byte, error) {
 		IbaWidgetGrid:       i.IbaWidgetGrid,
 		PredefinedDashboard: i.PredefinedDashboard,
 		UpdatedBy:           i.UpdatedBy,
-	},
-	)
+	})
 }
 
 func (o *Client) getAllIbaDashboards(ctx context.Context, BlueprintId ObjectId) ([]IbaDashboard, error) {
-	response := &struct {
+	var response struct {
 		Items []IbaDashboard `json:"items"`
-	}{}
+	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodGet, urlStr: fmt.Sprintf(apiUrlIbaDashboards, BlueprintId.String()),
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
@@ -172,6 +149,12 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 
 func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *IbaDashboardData) (ObjectId, error) {
 	var response objectIdResponse
+	if strings.TrimSpace(in.UpdatedBy) != "" {
+		return "", errors.New("UpdatedBy is set by Apstra")
+	}
+	if strings.TrimSpace(in.PredefinedDashboard) != "" {
+		return "", errors.New("predefined Dashboard should not be defined here")
+	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlIbaDashboards, blueprintId),
@@ -222,6 +205,9 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 }
 
 func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *IbaDashboardData) error {
+	if strings.TrimSpace(in.UpdatedBy) != "" {
+		return errors.New("UpdatedBy is set by Apstra")
+	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiInput: in,
 	})

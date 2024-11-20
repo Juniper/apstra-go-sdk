@@ -74,6 +74,8 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 				priorValue := req1.UpdatedBy
 				req1.UpdatedBy = d1.Data.UpdatedBy // this wasn't part of the request
 				if !compareDashboards(req1, *d1.Data) {
+					t.Log(req1)
+					t.Log(d1.Data)
 					t.Fatal("Dashboard request doesn't match GetIbaDashboard.Data")
 				}
 				req1.UpdatedBy = priorValue // restore prior value

@@ -53,7 +53,7 @@ func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
 		Description        string   `json:"description,omitempty"`
 		AnomalousOnly      bool     `json:"anomalous_only,omitempty"`
 		SpotlightMode      bool     `json:"spotlight_mode,omitempty"`
-		ProbeId            string   `json:"probe_id"`
+		ProbeId            ObjectId `json:"probe_id"`
 		Label              string   `json:"label"`
 		Filter             string   `json:"filter,omitempty"`
 		TimeSeriesDuration *int     `json:"time_series_duration,omitempty"`
@@ -78,13 +78,13 @@ func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
 
 	var aggregationPeriod *time.Duration
 	if raw.AggregationPeriod != nil {
-		td := time.Duration(float64(*raw.AggregationPeriod) * float64(time.Second))
+		td := time.Duration(*raw.AggregationPeriod) * time.Second
 		aggregationPeriod = &td
 	}
 
 	var timeSeriesDuration *time.Duration
 	if raw.TimeSeriesDuration != nil {
-		td := time.Duration(float64(*raw.TimeSeriesDuration) * float64(time.Second))
+		td := time.Duration(*raw.TimeSeriesDuration) * time.Second
 		timeSeriesDuration = &td
 	}
 
@@ -96,7 +96,7 @@ func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
 		Description:        raw.Description,
 		AnomalousOnly:      raw.AnomalousOnly,
 		SpotlightMode:      raw.SpotlightMode,
-		ProbeId:            ObjectId(raw.ProbeId),
+		ProbeId:            raw.ProbeId,
 		Label:              raw.Label,
 		Filter:             raw.Filter,
 		TimeSeriesDuration: timeSeriesDuration,
@@ -132,7 +132,7 @@ func (i *IbaWidgetData) MarshalJSON() ([]byte, error) {
 		Description        string   `json:"description,omitempty"`
 		AnomalousOnly      bool     `json:"anomalous_only,omitempty"`
 		SpotlightMode      bool     `json:"spotlight_mode,omitempty"`
-		ProbeId            string   `json:"probe_id"`
+		ProbeId            ObjectId `json:"probe_id"`
 		Label              string   `json:"label"`
 		Filter             string   `json:"filter,omitempty"`
 		TimeSeriesDuration *int     `json:"time_series_duration,omitempty"`
@@ -151,7 +151,7 @@ func (i *IbaWidgetData) MarshalJSON() ([]byte, error) {
 		Description:        i.Description,
 		AnomalousOnly:      i.AnomalousOnly,
 		SpotlightMode:      i.SpotlightMode,
-		ProbeId:            i.ProbeId.String(),
+		ProbeId:            i.ProbeId,
 		Label:              i.Label,
 		Filter:             i.Filter,
 		TimeSeriesDuration: &timeSeriesDuration,
