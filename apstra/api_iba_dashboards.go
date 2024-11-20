@@ -94,7 +94,8 @@ func (o *Client) getAllIbaDashboards(ctx context.Context, BlueprintId ObjectId) 
 	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodGet, urlStr: fmt.Sprintf(apiUrlIbaDashboards, BlueprintId.String()),
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlIbaDashboards, BlueprintId),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -106,7 +107,9 @@ func (o *Client) getAllIbaDashboards(ctx context.Context, BlueprintId ObjectId) 
 func (o *Client) getIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) (*IbaDashboard, error) {
 	response := &IbaDashboard{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodGet, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiResponse: response,
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id),
+		apiResponse: response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)

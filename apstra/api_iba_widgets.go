@@ -46,24 +46,24 @@ var (
 func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
 	// TODO implement me
 	var raw struct {
-		AggregationPeriod  *int     `json:"aggregation_period,omitempty"`
-		OrderBy            string   `json:"orderby,omitempty"`
-		StageName          string   `json:"stage_name,omitempty"`
-		ShowContext        bool     `json:"show_context,omitempty"`
-		Description        string   `json:"description,omitempty"`
-		AnomalousOnly      bool     `json:"anomalous_only,omitempty"`
-		SpotlightMode      bool     `json:"spotlight_mode,omitempty"`
+		AggregationPeriod  *int     `json:"aggregation_period"`
+		OrderBy            string   `json:"orderby"`
+		StageName          string   `json:"stage_name"`
+		ShowContext        bool     `json:"show_context"`
+		Description        string   `json:"description"`
+		AnomalousOnly      bool     `json:"anomalous_only"`
+		SpotlightMode      bool     `json:"spotlight_mode"`
 		ProbeId            ObjectId `json:"probe_id"`
 		Label              string   `json:"label"`
-		Filter             string   `json:"filter,omitempty"`
-		TimeSeriesDuration *int     `json:"time_series_duration,omitempty"`
-		DataSource         string   `json:"data_source,omitempty"`
-		MaxItems           *int     `json:"max_items,omitempty"`
-		CombineGraphs      string   `json:"combine_graphs,omitempty"`
-		VisibleColumns     []string `json:"visible_columns,omitempty"`
-		Id                 ObjectId `json:"id,omitempty"`
-		UpdatedBy          string   `json:"updated_by,omitempty"`
-		Type               string   `json:"type,omitempty"`
+		Filter             string   `json:"filter"`
+		TimeSeriesDuration *int     `json:"time_series_duration"`
+		DataSource         string   `json:"data_source"`
+		MaxItems           *int     `json:"max_items"`
+		CombineGraphs      string   `json:"combine_graphs"`
+		VisibleColumns     []string `json:"visible_columns"`
+		Id                 ObjectId `json:"id"`
+		UpdatedBy          string   `json:"updated_by"`
+		Type               string   `json:"type"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
