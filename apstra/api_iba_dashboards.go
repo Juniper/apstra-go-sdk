@@ -105,16 +105,16 @@ func (o *Client) getAllIbaDashboards(ctx context.Context, BlueprintId ObjectId) 
 }
 
 func (o *Client) getIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) (*IbaDashboard, error) {
-	response := &IbaDashboard{}
+	var response IbaDashboard
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id),
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response, nil
+	return &response, nil
 }
 
 func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectId, label string) (*IbaDashboard, error) {
