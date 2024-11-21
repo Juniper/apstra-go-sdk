@@ -44,7 +44,6 @@ var (
 )
 
 func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
-	// TODO implement me
 	var raw struct {
 		AggregationPeriod  *int     `json:"aggregation_period"`
 		OrderBy            string   `json:"orderby"`
