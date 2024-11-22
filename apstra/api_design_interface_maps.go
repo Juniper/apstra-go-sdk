@@ -258,7 +258,7 @@ func (o *InterfaceMapData) raw() *rawInterfaceMap {
 
 type rawInterfaceMap struct {
 	LogicalDeviceId ObjectId                   `json:"logical_device_id"`
-	DeviceProfileId ObjectId                   `json:"device_profile_id"`
+	DeviceProfileId ObjectId                   `json:"device_profile_id,omitempty"`
 	CreatedAt       time.Time                  `json:"created_at"`
 	LastModifiedAt  time.Time                  `json:"last_modified_at"`
 	Id              ObjectId                   `json:"id,omitempty"`
