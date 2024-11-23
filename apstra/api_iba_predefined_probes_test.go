@@ -14,9 +14,6 @@ import (
 	"log"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
-
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,11 +26,6 @@ func TestIbaPredefinedProbes(t *testing.T) {
 		clientName, client := clientName, client
 		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
 			t.Parallel()
-
-			if !compatibility.IbaProbeSupported.Check(client.client.apiVersion) ||
-				!compatibility.IbaWidgetSupported.Check(client.client.apiVersion) {
-				t.Skip()
-			}
 
 			log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 
@@ -79,49 +71,12 @@ func TestIbaPredefinedProbes(t *testing.T) {
 					if !expectedToFail[p.Name] {
 						t.Fatal(err)
 					} else {
+						t.Log(err)
 						t.Logf("%s was expected to fail", p.Name)
 						continue
 					}
 				}
-
 				t.Logf("Got back Probe Id %s \n Now Make a Widget with it.", probeId)
-
-				widgetId, err := bpClient.CreateIbaWidget(ctx, &IbaWidgetData{
-					Type:      enum.IbaWidgetTypeStage,
-					ProbeId:   probeId,
-					Label:     p.Name,
-					StageName: p.Name,
-				})
-				if err != nil {
-					t.Fatal(err)
-				}
-				t.Logf("Got back Widget Id %s \n Now fetch it.", widgetId)
-
-				widget, err := bpClient.GetIbaWidget(ctx, widgetId)
-				if err != nil {
-					t.Fatal(err)
-				}
-				t.Logf("Widget %s created", widget.Data.Label)
-
-				t.Logf("Try to Delete Probe this should fail because a widget is using it")
-				err = bpClient.DeleteIbaProbe(ctx, probeId)
-				if err == nil {
-					t.Fatal("Probe Deletion should have failed")
-				} else {
-					t.Log(err)
-				}
-
-				t.Logf("Delete Widget and then the probe this path should succeed")
-				err = bpClient.DeleteIbaWidget(ctx, widgetId)
-				if err != nil {
-					t.Fatal(err)
-				}
-				t.Logf("Delete probe")
-
-				err = bpClient.DeleteIbaProbe(ctx, probeId)
-				if err != nil {
-					t.Fatal(err)
-				}
 			}
 		})
 	}

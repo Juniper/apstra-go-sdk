@@ -21,13 +21,7 @@ var (
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
 	}
 	IbaDashboardSupported = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
-	}
-	IbaProbeSupported = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
-	}
-	IbaWidgetSupported = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
 	PatchNodeSupportsUnsafeArg = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),

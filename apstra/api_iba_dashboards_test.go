@@ -9,7 +9,6 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
@@ -33,7 +32,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			}
 
 			bpClient := testBlueprintA(ctx, t, client.client)
-			widgetAId, _, widgetBId, _ := testWidgetsAB(ctx, t, bpClient)
+			widgetA, widgetB := testWidgetsAB(ctx, t, bpClient)
 
 			ds, err := bpClient.GetAllIbaDashboards(ctx)
 			require.NoError(t, err)
@@ -43,16 +42,19 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 				Description:   "Test Dashboard",
 				Default:       false,
 				Label:         "Test Dash",
-				IbaWidgetGrid: [][]ObjectId{{widgetAId, widgetBId}, {widgetAId, widgetBId}},
+				IbaWidgetGrid: [][]IbaWidgetData{{widgetA, widgetB}},
 			}
 			id, err := bpClient.CreateIbaDashboard(ctx, &req1)
 			require.NoError(t, err)
+
+			widgetA.Label = "label2A"
+			widgetB.Label = "label2B"
 
 			req2 := IbaDashboardData{
 				Description:   "Test Dashboard Backup",
 				Default:       false,
 				Label:         "Test Dash B",
-				IbaWidgetGrid: [][]ObjectId{{widgetAId, widgetBId}, {widgetAId, widgetBId}},
+				IbaWidgetGrid: [][]IbaWidgetData{{widgetA, widgetB}},
 			}
 			_, err = bpClient.CreateIbaDashboard(ctx, &req2)
 			require.NoError(t, err)
@@ -71,19 +73,21 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 
 				priorValue := req1.UpdatedBy
 				req1.UpdatedBy = d1.Data.UpdatedBy // this wasn't part of the request
-				if !reflect.DeepEqual(req1, *d1.Data) {
+				if !compareDashboards(req1, *d1.Data) {
+					t.Log(req1)
+					t.Log(d1.Data)
 					t.Fatal("Dashboard request doesn't match GetIbaDashboard.Data")
 				}
 				req1.UpdatedBy = priorValue // restore prior value
 
-				if !reflect.DeepEqual(d1, d2) {
+				if !compareDashboards(*d1.Data, *d2.Data) {
 					t.Fatal("GetIbaDashboardByLabel gets different object than GetIbaDashboard")
 				}
 			}
 			checkDashes()
 
 			req1.Label = "Test Dash 2"
-			req1.IbaWidgetGrid = append(req1.IbaWidgetGrid, []ObjectId{widgetAId, widgetBId})
+			req1.IbaWidgetGrid = append(req1.IbaWidgetGrid, []IbaWidgetData{widgetA, widgetB})
 			req1.Description = "Test Dashboard 2"
 			err = bpClient.UpdateIbaDashboard(ctx, id, &req1)
 			require.NoError(t, err)

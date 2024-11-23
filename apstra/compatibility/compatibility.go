@@ -20,7 +20,6 @@ var (
 	// Todo: find usages of these constraints, replace them with appropriately named compatibility.Constraints
 	EqApstra420 = version.MustConstraints(version.NewConstraint(apstra420))
 	GeApstra421 = version.MustConstraints(version.NewConstraint(">=" + apstra421))
-	GeApstra500 = version.MustConstraints(version.NewConstraint(">=" + apstra500))
 	LeApstra500 = version.MustConstraints(version.NewConstraint("<=" + apstra500))
 )
 

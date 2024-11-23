@@ -642,181 +642,24 @@ func (o *TwoStageL3ClosClient) GetSystemNodeInfo(ctx context.Context, nodeId Obj
 	}
 }
 
-// GetAllIbaWidgets returns a list of IBA Widgets in the blueprint
-func (o *TwoStageL3ClosClient) GetAllIbaWidgets(ctx context.Context) ([]IbaWidget, error) {
-	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
-		return nil, ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
-		}
-	}
-
-	rawWidgets, err := o.client.getAllIbaWidgets(ctx, o.blueprintId)
-	if err != nil {
-		return nil, err
-	}
-
-	widgets := make([]IbaWidget, len(rawWidgets))
-	for i, w := range rawWidgets {
-		pw, err := w.polish()
-		if err != nil {
-			return nil, err
-		}
-		widgets[i] = *pw
-	}
-
-	return widgets, nil
-}
-
-// GetIbaWidgetByLabel returns the IBA Widgets in the blueprint which matches the specified
-// label, or an error in the case of no matches, or multiple matches
-func (o *TwoStageL3ClosClient) GetIbaWidgetByLabel(ctx context.Context, label string) (*IbaWidget, error) {
-	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
-		return nil, ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
-		}
-	}
-
-	rawWidget, err := o.client.getIbaWidgetByLabel(ctx, o.blueprintId, label)
-	if err != nil {
-		return nil, err
-	}
-
-	return rawWidget.polish()
-}
-
-// GetIbaWidgetsByLabel returns a list of IBA Widgets in the blueprint that match the label
-func (o *TwoStageL3ClosClient) GetIbaWidgetsByLabel(ctx context.Context, label string) ([]IbaWidget, error) {
-	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
-		return nil, ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
-		}
-	}
-
-	rawWidgets, err := o.client.getIbaWidgetsByLabel(ctx, o.blueprintId, label)
-	if err != nil {
-		return nil, err
-	}
-
-	widgets := make([]IbaWidget, len(rawWidgets))
-	for i, w := range rawWidgets {
-		pw, err := w.polish()
-		widgets[i] = *pw
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return widgets, nil
-}
-
-// GetIbaWidget returns the IBA Widget that matches the ID
-func (o *TwoStageL3ClosClient) GetIbaWidget(ctx context.Context, id ObjectId) (*IbaWidget, error) {
-	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
-		return nil, ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
-		}
-	}
-
-	rawWidget, err := o.client.getIbaWidget(ctx, o.blueprintId, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return rawWidget.polish()
-}
-
-// CreateIbaWidget creates an IBA Widget and returns the id of the created dashboard on success,
-// or a blank and error on failure
-func (o *TwoStageL3ClosClient) CreateIbaWidget(ctx context.Context, data *IbaWidgetData) (ObjectId, error) {
-	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
-		return "", ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
-		}
-	}
-
-	id, err := o.client.createIbaWidget(ctx, o.blueprintId, data.raw())
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
-}
-
-// UpdateIbaWidget updates an IBA Widget.
-func (o *TwoStageL3ClosClient) UpdateIbaWidget(ctx context.Context, id ObjectId, c *IbaWidgetData) error {
-	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
-		return ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
-		}
-	}
-
-	return o.client.updateIbaWidget(ctx, o.blueprintId, id, c.raw())
-}
-
-// DeleteIbaWidget deletes an IBA Widget
-func (o *TwoStageL3ClosClient) DeleteIbaWidget(ctx context.Context, id ObjectId) error {
-	if !compatibility.IbaWidgetSupported.Check(o.client.apiVersion) {
-		return ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba widgets supported only with apstra version %s", compatibility.IbaWidgetSupported),
-		}
-	}
-
-	return o.client.deleteIbaWidget(ctx, o.blueprintId, id)
-}
-
 // InstantiateIbaPredefinedProbe instantiates a predefined probe using the name and properties specified in data
 // and returns the id of the created probe on success, or a blank and error on failure.
 func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedProbe(ctx context.Context, data *IbaPredefinedProbeRequest) (ObjectId, error) {
-	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
-		return "", ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
-		}
-	}
-
 	return o.client.instantiatePredefinedIbaProbe(ctx, o.blueprintId, data)
 }
 
 // GetAllIbaPredefinedProbes lists all the Predefined IBA probes available to a blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaPredefinedProbes(ctx context.Context) ([]IbaPredefinedProbe, error) {
-	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
-		return nil, ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
-		}
-	}
-
 	return o.client.getAllIbaPredefinedProbes(ctx, o.blueprintId)
 }
 
 // GetIbaPredefinedProbeByName locates a predefined probe by name
 func (o *TwoStageL3ClosClient) GetIbaPredefinedProbeByName(ctx context.Context, name string) (*IbaPredefinedProbe, error) {
-	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
-		return nil, ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
-		}
-	}
-
 	return o.client.getIbaPredefinedProbeByName(ctx, o.blueprintId, name)
 }
 
 // GetIbaProbe returns the IBA Probe that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaProbe(ctx context.Context, id ObjectId) (*IbaProbe, error) {
-	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
-		return nil, ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
-		}
-	}
-
 	probe, err := o.client.getIbaProbe(ctx, o.blueprintId, id)
 	if err != nil {
 		return nil, err
@@ -827,13 +670,6 @@ func (o *TwoStageL3ClosClient) GetIbaProbe(ctx context.Context, id ObjectId) (*I
 
 // GetIbaProbeState returns the State of the IBA Probe that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaProbeState(ctx context.Context, id ObjectId) (*IbaProbeState, error) {
-	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
-		return nil, ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
-		}
-	}
-
 	probe, err := o.client.getIbaProbeState(ctx, o.blueprintId, id)
 	if err != nil {
 		return nil, err
@@ -844,108 +680,63 @@ func (o *TwoStageL3ClosClient) GetIbaProbeState(ctx context.Context, id ObjectId
 
 // DeleteIbaProbe deletes an IBA Probe
 func (o *TwoStageL3ClosClient) DeleteIbaProbe(ctx context.Context, id ObjectId) error {
-	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
-		return ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
-		}
-	}
-
 	return o.client.deleteIbaProbe(ctx, o.blueprintId, id)
 }
 
 // CreateIbaProbeFromJson creates an IBA Probe
 func (o *TwoStageL3ClosClient) CreateIbaProbeFromJson(ctx context.Context, probeJson json.RawMessage) (ObjectId, error) {
-	if !compatibility.IbaProbeSupported.Check(o.client.apiVersion) {
-		return "", ClientErr{
-			errType: ErrCompatibility,
-			err:     fmt.Errorf("iba probes supported only with apstra version %s", compatibility.IbaProbeSupported),
-		}
-	}
-
 	return o.client.createIbaProbeFromJson(ctx, o.blueprintId, probeJson)
 }
 
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDashboard, error) {
-	if compatibility.GeApstra500.Check(o.client.apiVersion) {
-		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
+		return nil, fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
 	}
-
-	rawDashes, err := o.client.getAllIbaDashboards(ctx, o.blueprintId)
-	if err != nil {
-		return nil, err
-	}
-
-	dashes := make([]IbaDashboard, len(rawDashes))
-	for i, w := range rawDashes {
-		pw, err := w.polish()
-		if err != nil {
-			return nil, err
-		}
-		dashes[i] = *pw
-	}
-
-	return dashes, nil
+	return o.client.getAllIbaDashboards(ctx, o.blueprintId)
 }
 
 // GetIbaDashboard returns the IBA Dashboard that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaDashboard(ctx context.Context, id ObjectId) (*IbaDashboard, error) {
-	if compatibility.GeApstra500.Check(o.client.apiVersion) {
-		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
+		return nil, fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
 	}
-
-	rawIbaDb, err := o.client.getIbaDashboard(ctx, o.blueprintId, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return rawIbaDb.polish()
+	return o.client.getIbaDashboard(ctx, o.blueprintId, id)
 }
 
 // GetIbaDashboardByLabel returns the IBA Dashboard that matches the label.
 // It will return an error if more than one IBA dashboard matches the label.
 func (o *TwoStageL3ClosClient) GetIbaDashboardByLabel(ctx context.Context, label string) (*IbaDashboard, error) {
-	if compatibility.GeApstra500.Check(o.client.apiVersion) {
-		return nil, fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
+		return nil, fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
 	}
 
-	rawIbaDb, err := o.client.getIbaDashboardByLabel(ctx, o.blueprintId, label)
-	if err != nil {
-		return nil, err
-	}
-
-	return rawIbaDb.polish()
+	return o.client.getIbaDashboardByLabel(ctx, o.blueprintId, label)
 }
 
 // CreateIbaDashboard creates an IBA Dashboard and returns the id of the created dashboard on success,
 // or a blank and error on failure
 func (o *TwoStageL3ClosClient) CreateIbaDashboard(ctx context.Context, data *IbaDashboardData) (ObjectId, error) {
-	if compatibility.GeApstra500.Check(o.client.apiVersion) {
-		return "", fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
+		return "", fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
 	}
 
-	id, err := o.client.createIbaDashboard(ctx, o.blueprintId, data.raw())
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
+	return o.client.createIbaDashboard(ctx, o.blueprintId, data)
 }
 
 // UpdateIbaDashboard updates an IBA Dashboard and returns an error on failure
 func (o *TwoStageL3ClosClient) UpdateIbaDashboard(ctx context.Context, id ObjectId, data *IbaDashboardData) error {
-	if compatibility.GeApstra500.Check(o.client.apiVersion) {
-		return fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
+		return fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
 	}
 
-	return o.client.updateIbaDashboard(ctx, o.blueprintId, id, data.raw())
+	return o.client.updateIbaDashboard(ctx, o.blueprintId, id, data)
 }
 
 // DeleteIbaDashboard deletes an IBA Dashboard and returns an error on failure
 func (o *TwoStageL3ClosClient) DeleteIbaDashboard(ctx context.Context, id ObjectId) error {
-	if compatibility.GeApstra500.Check(o.client.apiVersion) {
-		return fmt.Errorf("IBA Dashboard not supported with Asptra %s", o.client.apiVersion)
+	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
+		return fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
 	}
 
 	return o.client.deleteIbaDashboard(ctx, o.blueprintId, id)
