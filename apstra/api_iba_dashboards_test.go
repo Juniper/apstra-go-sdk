@@ -34,28 +34,25 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			bpClient := testBlueprintA(ctx, t, client.client)
 			widgetA, widgetB := testWidgetsAB(ctx, t, bpClient)
 
-			pds, err := bpClient.GetAllIbaPredefinedDashboards(ctx)
+			pds, err := bpClient.ListAllIbaPredefinedDashboardIds(ctx)
 			t.Log(len(pds))
 
 			for _, d := range pds {
-				t.Log(d.Name)
-				if d.Name == "evpn_vxlan_route_summary" {
+				if d == "evpn_vxlan_route_summary" {
 					// This requires a evpn vxlan blueprint, so skip
 					continue
 				}
-				id, err := bpClient.InstantiateIbaPredefinedDashboard(ctx, d.Name.String(), d.Name.String())
+				id, err := bpClient.InstantiateIbaPredefinedDashboard(ctx, d, d.String())
 				if err != nil {
 					t.Fatal(err)
 				} else {
-					t.Logf("Name :%s Created Id :%s", d.Name, id)
+					t.Logf("Name :%s Created Id :%s", d, id)
 					t.Log("Getting Dashboard")
 					d1, err := bpClient.GetIbaDashboard(ctx, id)
 					if err != nil {
 						t.Fatal(err)
 					}
 					d1.Data.Label = randString(5, "hex")
-					d1.Data.UpdatedBy = ""
-					d1.Data.PredefinedDashboard = ""
 					t.Log("Updating Dashboard")
 
 					err = bpClient.UpdateIbaDashboard(ctx, id, d1.Data)

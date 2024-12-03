@@ -99,23 +99,27 @@ func (i *IbaDashboardData) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (o *Client) getAllIbaPredefinedDashboards(ctx context.Context, BlueprintId ObjectId) ([]IbaPredefinedDashboard, error) {
+func (o *Client) listAllIbaPredefinedDashboardIds(ctx context.Context, blueprintId ObjectId) ([]ObjectId, error) {
 	var response struct {
 		Items []IbaPredefinedDashboard `json:"items"`
 	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedDashboards, BlueprintId),
+		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedDashboards, blueprintId),
 		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
-	return response.Items, nil
+	ids := make([]ObjectId, len(response.Items))
+	for i, r := range response.Items {
+		ids[i] = r.Name
+	}
+	return ids, nil
 }
 
-func (o *Client) createIbaPredefinedDashboard(ctx context.Context, blueprintId ObjectId, dashboardId string, label string) (ObjectId, error) {
+func (o *Client) instantiateIbaPredefinedDashboard(ctx context.Context, blueprintId ObjectId, dashboardId ObjectId, label string) (ObjectId, error) {
 	var response objectIdResponse
 	var in struct {
 		Label string `json:"label"`
@@ -199,7 +203,7 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 		return "", errors.New("UpdatedBy is set by Apstra")
 	}
 	if strings.TrimSpace(in.PredefinedDashboard) != "" {
-		return "", errors.New("predefined Dashboard should not be defined here")
+		return "", errors.New("to instantiate predefined dashboard, please use InstantiatePredefinedDashboard")
 	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -251,12 +255,8 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 }
 
 func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *IbaDashboardData) error {
-	if strings.TrimSpace(in.UpdatedBy) != "" {
-		return errors.New("UpdatedBy is set by Apstra")
-	}
-	if strings.TrimSpace(in.PredefinedDashboard) != "" {
-		return errors.New("PredefinedDashboard must be empty while updating dashboard")
-	}
+	in.UpdatedBy = ""
+	in.PredefinedDashboard = ""
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiInput: in,
 	})

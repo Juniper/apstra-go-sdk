@@ -688,20 +688,20 @@ func (o *TwoStageL3ClosClient) CreateIbaProbeFromJson(ctx context.Context, probe
 	return o.client.createIbaProbeFromJson(ctx, o.blueprintId, probeJson)
 }
 
-// GetAllIbaPredefinedDashboards returns a list of Predefined IBA Dashboards in the blueprint
-func (o *TwoStageL3ClosClient) GetAllIbaPredefinedDashboards(ctx context.Context) ([]IbaPredefinedDashboard, error) {
+// ListAllIbaPredefinedDashboardIds returns a list of Predefined IBA Dashboards in the blueprint
+func (o *TwoStageL3ClosClient) ListAllIbaPredefinedDashboardIds(ctx context.Context) ([]ObjectId, error) {
 	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
 		return nil, fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
 	}
-	return o.client.getAllIbaPredefinedDashboards(ctx, o.blueprintId)
+	return o.client.listAllIbaPredefinedDashboardIds(ctx, o.blueprintId)
 }
 
 // InstantiateIbaPredefinedDashboard instantiates a Predefined IBA Dashboard
-func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedDashboard(ctx context.Context, dashboardId string, label string) (ObjectId, error) {
+func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedDashboard(ctx context.Context, dashboardId ObjectId, label string) (ObjectId, error) {
 	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
 		return "", fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
 	}
-	return o.client.createIbaPredefinedDashboard(ctx, o.blueprintId, dashboardId, label)
+	return o.client.instantiateIbaPredefinedDashboard(ctx, o.blueprintId, dashboardId, label)
 }
 
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint
