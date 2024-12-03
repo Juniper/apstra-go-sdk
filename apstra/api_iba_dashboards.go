@@ -26,14 +26,6 @@ const (
 
 var _ json.Unmarshaler = (*IbaDashboard)(nil)
 
-type IbaPredefinedDashboard struct {
-	Name ObjectId `json:"name"`
-}
-
-type IbaPredefinedDashboardInput struct {
-	Label string `json:"label"`
-}
-
 type IbaDashboard struct {
 	Id   ObjectId
 	Data *IbaDashboardData
@@ -101,7 +93,9 @@ func (i *IbaDashboardData) MarshalJSON() ([]byte, error) {
 
 func (o *Client) listAllIbaPredefinedDashboardIds(ctx context.Context, blueprintId ObjectId) ([]ObjectId, error) {
 	var response struct {
-		Items []IbaPredefinedDashboard `json:"items"`
+		Items []struct {
+			Name ObjectId `json:"name"`
+		} `json:"items"`
 	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -112,10 +106,12 @@ func (o *Client) listAllIbaPredefinedDashboardIds(ctx context.Context, blueprint
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+
 	ids := make([]ObjectId, len(response.Items))
 	for i, r := range response.Items {
 		ids[i] = r.Name
 	}
+
 	return ids, nil
 }
 
@@ -131,10 +127,11 @@ func (o *Client) instantiateIbaPredefinedDashboard(ctx context.Context, blueprin
 		apiInput:    &in,
 		apiResponse: &response,
 	})
-	if err == nil {
-		return response.Id, nil
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
 	}
-	return "", err
+
+	return response.Id, nil
 }
 
 func (o *Client) getAllIbaDashboards(ctx context.Context, BlueprintId ObjectId) ([]IbaDashboard, error) {
@@ -199,10 +196,10 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 
 func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *IbaDashboardData) (ObjectId, error) {
 	var response objectIdResponse
-	if strings.TrimSpace(in.UpdatedBy) != "" {
+	if strings.TrimSpace(in.UpdatedBy) != "" { // todo: why is TrimSpace() used here?
 		return "", errors.New("UpdatedBy is set by Apstra")
 	}
-	if strings.TrimSpace(in.PredefinedDashboard) != "" {
+	if strings.TrimSpace(in.PredefinedDashboard) != "" { // todo: why is TrimSpace() used here?
 		return "", errors.New("to instantiate predefined dashboard, please use InstantiatePredefinedDashboard")
 	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{

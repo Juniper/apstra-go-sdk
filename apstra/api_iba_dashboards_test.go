@@ -35,6 +35,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			widgetA, widgetB := testWidgetsAB(ctx, t, bpClient)
 
 			pds, err := bpClient.ListAllIbaPredefinedDashboardIds(ctx)
+			require.NoError(t, err)
 			t.Log(len(pds))
 
 			for _, d := range pds {
@@ -42,36 +43,28 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 					// This requires a evpn vxlan blueprint, so skip
 					continue
 				}
-				id, err := bpClient.InstantiateIbaPredefinedDashboard(ctx, d, d.String())
-				if err != nil {
-					t.Fatal(err)
-				} else {
-					t.Logf("Name :%s Created Id :%s", d, id)
-					t.Log("Getting Dashboard")
-					d1, err := bpClient.GetIbaDashboard(ctx, id)
-					if err != nil {
-						t.Fatal(err)
-					}
-					d1.Data.Label = randString(5, "hex")
-					t.Log("Updating Dashboard")
 
-					err = bpClient.UpdateIbaDashboard(ctx, id, d1.Data)
-					if err != nil {
-						t.Fatal(err)
-					}
-					d2, err := bpClient.GetIbaDashboard(ctx, id)
-					if err != nil {
-						t.Fatal(err)
-					}
-					if d2.Data.Label != d1.Data.Label {
-						t.Fatalf("Update Seems to have failed. Label should have been %s is %s", d1.Data.Label, d2.Data.Label)
-					}
-					t.Log("Deleting Dashboard")
-					err = bpClient.DeleteIbaDashboard(ctx, id)
-					if err != nil {
-						t.Fatal(err)
-					}
-				}
+				id, err := bpClient.InstantiateIbaPredefinedDashboard(ctx, d, d.String())
+				require.NoError(t, err)
+
+				t.Logf("Name :%s Created Id :%s", d, id)
+				t.Log("Getting Dashboard")
+				d1, err := bpClient.GetIbaDashboard(ctx, id)
+				require.NoError(t, err)
+
+				d1.Data.Label = randString(5, "hex")
+				t.Log("Updating Dashboard")
+
+				err = bpClient.UpdateIbaDashboard(ctx, id, d1.Data)
+				require.NoError(t, err)
+
+				d2, err := bpClient.GetIbaDashboard(ctx, id)
+				require.NoError(t, err)
+				require.Equalf(t, d1.Data.Label, d2.Data.Label, "Update Seems to have failed. Label should have been %s is %s", d1.Data.Label, d2.Data.Label)
+
+				t.Log("Deleting Dashboard")
+				err = bpClient.DeleteIbaDashboard(ctx, id)
+				require.NoError(t, err)
 			}
 
 			ds, err := bpClient.GetAllIbaDashboards(ctx)
