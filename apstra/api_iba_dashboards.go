@@ -196,10 +196,11 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *IbaDashboardData) (ObjectId, error) {
 	var response objectIdResponse
 	if in.UpdatedBy != "" {
-		return "", errors.New("UpdatedBy is set by Apstra")
+		return "", errors.New("attempt to create dashboard with non-empty updated_by value - this value can be set only by the server")
 	}
 	if in.PredefinedDashboard != "" {
-		return "", errors.New("to instantiate predefined dashboard, please use InstantiatePredefinedDashboard")
+		return "", errors.New("attempt to create dashboard with non-empty predefined_dashboard value - this value can " +
+			"be set only by the server, and only when a dashboard is instantiated from a predefined template")
 	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -251,8 +252,14 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 }
 
 func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *IbaDashboardData) error {
-	in.UpdatedBy = ""
-	in.PredefinedDashboard = ""
+	if in.UpdatedBy != "" {
+		return errors.New("attempt to update dashboard with non-empty updated_by value - this value can be set only by the server")
+	}
+	if in.PredefinedDashboard != "" {
+		return errors.New("attempt to update dashboard with non-empty predefined_dashboard value - this value can " +
+			"be set only by the server, and only when a dashboard is instantiated from a predefined template")
+	}
+
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiInput: in,
 	})
