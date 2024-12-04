@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -196,10 +195,10 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 
 func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *IbaDashboardData) (ObjectId, error) {
 	var response objectIdResponse
-	if strings.TrimSpace(in.UpdatedBy) != "" { // todo: why is TrimSpace() used here?
+	if in.UpdatedBy != "" {
 		return "", errors.New("UpdatedBy is set by Apstra")
 	}
-	if strings.TrimSpace(in.PredefinedDashboard) != "" { // todo: why is TrimSpace() used here?
+	if in.PredefinedDashboard != "" {
 		return "", errors.New("to instantiate predefined dashboard, please use InstantiatePredefinedDashboard")
 	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{

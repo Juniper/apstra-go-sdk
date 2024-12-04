@@ -39,12 +39,17 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			t.Log(len(pds))
 
 			for _, d := range pds {
-				if d == "evpn_vxlan_route_summary" {
-					// This requires a evpn vxlan blueprint, so skip
+
+				// Some predefined dashboards cannot be tested
+				switch d {
+				case "evpn_vxlan_route_summary": // This one requires the blueprint to be deployed
 					continue
 				}
 
 				id, err := bpClient.InstantiateIbaPredefinedDashboard(ctx, d, d.String())
+				if err != nil {
+					t.Log(err)
+				}
 				require.NoError(t, err)
 
 				t.Logf("Name :%s Created Id :%s", d, id)
