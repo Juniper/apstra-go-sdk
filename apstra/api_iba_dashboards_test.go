@@ -47,9 +47,6 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 				}
 
 				id, err := bpClient.InstantiateIbaPredefinedDashboard(ctx, d, d.String())
-				if err != nil {
-					t.Log(err)
-				}
 				require.NoError(t, err)
 
 				t.Logf("Name :%s Created Id :%s", d, id)
