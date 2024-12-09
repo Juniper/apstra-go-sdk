@@ -809,7 +809,7 @@ func (o *Client) GetSystemInfo(ctx context.Context, id SystemId) (*ManagedSystem
 	return raw.polish()
 }
 
-// UpdateSystem deletes the supplied SystemId
+// UpdateSystem updates the supplied SystemId
 func (o *Client) UpdateSystem(ctx context.Context, id SystemId, cfg *SystemUserConfig) error {
 	return o.updateSystem(ctx, id, cfg)
 }
