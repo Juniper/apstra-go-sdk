@@ -291,7 +291,7 @@ func (o *Client) updateSystemByAgentId(ctx context.Context, agentId ObjectId, cf
 	}
 
 	if agent.Status.SystemId == "" {
-		return fmt.Errorf("cannot acknowledge system from agent '%s' - system ID is empty", agentId)
+		return fmt.Errorf("cannot update system with agent '%s' - agent has empty system ID ", agentId)
 	}
 
 	return o.updateSystem(ctx, agent.Status.SystemId, cfg)
