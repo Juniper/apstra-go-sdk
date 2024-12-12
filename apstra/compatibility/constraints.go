@@ -20,6 +20,9 @@ var (
 	FabricSettingsApiOk = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
 	}
+	EmptyVnBindingsOk = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	}
 	IbaDashboardSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}

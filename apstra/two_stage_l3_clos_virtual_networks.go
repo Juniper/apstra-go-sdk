@@ -40,6 +40,10 @@ func (o *DhcpServiceEnabled) FromString(s string) error {
 	return nil
 }
 
+func (o DhcpServiceEnabled) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
 func (o DhcpServiceEnabled) String() string {
 	if o {
 		return enum.DhcpServiceModeEnabled.String()
