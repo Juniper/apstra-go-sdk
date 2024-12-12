@@ -11,14 +11,16 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 )
 
 const (
-	apiUrlIbaDashboards       = "/api/blueprints/%s/iba/dashboards"
-	apiUrlIbaDashboardsPrefix = apiUrlIbaDashboards + apiUrlPathDelim
-	apiUrlIbaDashboardsById   = apiUrlIbaDashboardsPrefix + "%s"
+	apiUrlIbaDashboards                 = "/api/blueprints/%s/iba/dashboards"
+	apiUrlIbaDashboardsPrefix           = apiUrlIbaDashboards + apiUrlPathDelim
+	apiUrlIbaDashboardsById             = apiUrlIbaDashboardsPrefix + "%s"
+	apiUrlIbaPredefinedDashboards       = "/api/blueprints/%s/iba/predefined-dashboards"
+	apiUrlIbaPredefinedDashboardsPrefix = apiUrlIbaPredefinedDashboards + apiUrlPathDelim
+	apiUrlIbaPredefinedDashboardsById   = apiUrlIbaPredefinedDashboardsPrefix + "%s"
 )
 
 var _ json.Unmarshaler = (*IbaDashboard)(nil)
@@ -88,6 +90,49 @@ func (i *IbaDashboardData) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (o *Client) listAllIbaPredefinedDashboardIds(ctx context.Context, blueprintId ObjectId) ([]ObjectId, error) {
+	var response struct {
+		Items []struct {
+			Name ObjectId `json:"name"`
+		} `json:"items"`
+	}
+
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedDashboards, blueprintId),
+		apiResponse: &response,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	ids := make([]ObjectId, len(response.Items))
+	for i, r := range response.Items {
+		ids[i] = r.Name
+	}
+
+	return ids, nil
+}
+
+func (o *Client) instantiateIbaPredefinedDashboard(ctx context.Context, blueprintId ObjectId, dashboardId ObjectId, label string) (ObjectId, error) {
+	var response objectIdResponse
+	var in struct {
+		Label string `json:"label"`
+	}
+	in.Label = label
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedDashboardsById, blueprintId, dashboardId),
+		apiInput:    &in,
+		apiResponse: &response,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
+	}
+
+	return response.Id, nil
+}
+
 func (o *Client) getAllIbaDashboards(ctx context.Context, BlueprintId ObjectId) ([]IbaDashboard, error) {
 	var response struct {
 		Items []IbaDashboard `json:"items"`
@@ -150,11 +195,12 @@ func (o *Client) getIbaDashboardByLabel(ctx context.Context, blueprintId ObjectI
 
 func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, in *IbaDashboardData) (ObjectId, error) {
 	var response objectIdResponse
-	if strings.TrimSpace(in.UpdatedBy) != "" {
-		return "", errors.New("UpdatedBy is set by Apstra")
+	if in.UpdatedBy != "" {
+		return "", errors.New("attempt to create dashboard with non-empty updated_by value - this value can be set only by the server")
 	}
-	if strings.TrimSpace(in.PredefinedDashboard) != "" {
-		return "", errors.New("predefined Dashboard should not be defined here")
+	if in.PredefinedDashboard != "" {
+		return "", errors.New("attempt to create dashboard with non-empty predefined_dashboard value - this value can " +
+			"be set only by the server, and only when a dashboard is instantiated from a predefined template")
 	}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -206,9 +252,14 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 }
 
 func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *IbaDashboardData) error {
-	if strings.TrimSpace(in.UpdatedBy) != "" {
-		return errors.New("UpdatedBy is set by Apstra")
+	if in.UpdatedBy != "" {
+		return errors.New("attempt to update dashboard with non-empty updated_by value - this value can be set only by the server")
 	}
+	if in.PredefinedDashboard != "" {
+		return errors.New("attempt to update dashboard with non-empty predefined_dashboard value - this value can " +
+			"be set only by the server, and only when a dashboard is instantiated from a predefined template")
+	}
+
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiInput: in,
 	})
