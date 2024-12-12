@@ -23,9 +23,9 @@ const (
 	apiUrlVirtualNetworkById = apiUrlVirtualNetworks + apiUrlPathDelim + "%s"
 )
 
-type (
-	DhcpServiceEnabled bool
-)
+var _ json.Marshaler = (*DhcpServiceEnabled)(nil)
+
+type DhcpServiceEnabled bool
 
 func (o *DhcpServiceEnabled) FromString(s string) error {
 	var dsm enum.DhcpServiceMode
