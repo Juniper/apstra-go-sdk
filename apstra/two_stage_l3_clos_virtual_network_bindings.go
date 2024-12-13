@@ -47,7 +47,7 @@ func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context
 			return fmt.Errorf("siMap[%s] has system ID (%s)", k, v.SystemId) // map key should match payload
 		}
 		if _, ok := req.VnBindings[k]; !ok {
-			// this is the big one - check for SVI info
+			// this is the big one - check that SVI info represents an active VN binding
 			return fmt.Errorf("SVI requested for system %[1]s but %[1]s not among bound leaf IDs", k)
 		}
 		sviIps[i] = *v
