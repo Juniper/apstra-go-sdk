@@ -101,7 +101,7 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		if k != v.SystemId {
 			return fmt.Errorf("siMap[%s] has system ID (%s)", k, v.SystemId)
 		}
-		if _, ok := req.VnBindings[v.SystemId]; !ok {
+		if binding := req.VnBindings[k]; binding == nil {
 			return fmt.Errorf("SVI requested for system %[1]s but %[1]s not among bound leaf IDs, or is being removed", k)
 		}
 	}
