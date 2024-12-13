@@ -88,6 +88,7 @@ func randomIpv6() net.IP {
 	}
 }
 
+// randomIntsN fills the supplied slice with non-negative pseudo-random values in the half-open interval [0,n)
 func randomIntsN(s []int, n int) {
 	l := len(s)
 	m := make(map[int]struct{}, l)
