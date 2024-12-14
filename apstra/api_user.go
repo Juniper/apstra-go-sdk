@@ -44,6 +44,10 @@ func (o *Client) stopTaskMonitor() {
 	}
 }
 
+func (o *Client) Config() ClientCfg {
+	return o.cfg
+}
+
 func (o *Client) login(ctx context.Context) error {
 	response := &userLoginResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
