@@ -48,6 +48,12 @@ func (o *Client) Config() ClientCfg {
 	return o.cfg
 }
 
+func (o *Client) ApiToken() string {
+	o.lock(mutexKeyHttpHeaders)
+	defer o.unlock(mutexKeyHttpHeaders)
+	return o.httpHeaders[apstraAuthHeader]
+}
+
 func (o *Client) login(ctx context.Context) error {
 	response := &userLoginResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
