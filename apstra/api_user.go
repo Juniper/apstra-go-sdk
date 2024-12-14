@@ -93,7 +93,7 @@ func (o *Client) logout(ctx context.Context) error {
 	// - "logged in" state and
 	// - operation of a task monitor routine
 	o.lock(mutexKeyHttpHeaders)
-	if _, tokenFound := o.httpHeaders[apstraAuthHeader]; !tokenFound {
+	if token := o.httpHeaders[apstraAuthHeader]; token == "" {
 		o.unlock(mutexKeyHttpHeaders)
 		return nil
 	}
