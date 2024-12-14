@@ -48,10 +48,16 @@ func (o *Client) Config() ClientCfg {
 	return o.cfg
 }
 
-func (o *Client) ApiToken() string {
+func (o *Client) GetApiToken() string {
 	o.lock(mutexKeyHttpHeaders)
 	defer o.unlock(mutexKeyHttpHeaders)
 	return o.httpHeaders[apstraAuthHeader]
+}
+
+func (o *Client) SetApiToken(in string) {
+	o.lock(mutexKeyHttpHeaders)
+	o.httpHeaders[apstraAuthHeader] = in
+	defer o.unlock(mutexKeyHttpHeaders)
 }
 
 func (o *Client) login(ctx context.Context) error {
