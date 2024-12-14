@@ -17,7 +17,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func compareRtPolicy(t *testing.T, a, b *RtPolicy) {
+func compareRtPolicy(t testing.TB, a, b *RtPolicy) {
+	t.Helper()
+
 	if (a != nil) != (b != nil) { // XOR
 		t.Fatalf("RtPolicy exists mismatch: %t vs %t", a != nil, b != nil)
 	}
@@ -28,7 +30,9 @@ func compareRtPolicy(t *testing.T, a, b *RtPolicy) {
 	}
 }
 
-func comapareSviIps(t *testing.T, a, b SviIp) {
+func comapareSviIps(t testing.TB, a, b SviIp) {
+	t.Helper()
+
 	require.Equal(t, a.SystemId, b.SystemId)
 
 	require.Equal(t, a.Ipv4Mode, b.Ipv4Mode)
@@ -46,7 +50,9 @@ func comapareSviIps(t *testing.T, a, b SviIp) {
 	}
 }
 
-func compareSviIpSlices(t *testing.T, a, b []SviIp) {
+func compareSviIpSlices(t testing.TB, a, b []SviIp) {
+	t.Helper()
+
 	require.Equal(t, len(a), len(b))
 	for i := range a {
 		log.Printf("comparing SviIps at index %d", i)
@@ -54,7 +60,9 @@ func compareSviIpSlices(t *testing.T, a, b []SviIp) {
 	}
 }
 
-func compareVnBindings(t *testing.T, a, b VnBinding, strict bool) {
+func compareVnBindings(t testing.TB, a, b VnBinding, strict bool) {
+	t.Helper()
+
 	if len(a.AccessSwitchNodeIds) != 0 || len(b.AccessSwitchNodeIds) != 0 { // nil and [] slices are equal for our purpose
 		compareSlices(t, a.AccessSwitchNodeIds, b.AccessSwitchNodeIds, "VnBindings.AccessSwitchNodeIds")
 	}
@@ -69,7 +77,9 @@ func compareVnBindings(t *testing.T, a, b VnBinding, strict bool) {
 	}
 }
 
-func compareVnBindingSlices(t *testing.T, a, b []VnBinding, strict bool) {
+func compareVnBindingSlices(t testing.TB, a, b []VnBinding, strict bool) {
+	t.Helper()
+
 	require.Equal(t, len(a), len(b))
 	for i := range a {
 		log.Printf("comparing VnBindings at index %d", i)
@@ -77,7 +87,9 @@ func compareVnBindingSlices(t *testing.T, a, b []VnBinding, strict bool) {
 	}
 }
 
-func compareVirtualNetworkData(t *testing.T, a, b *VirtualNetworkData, strict bool) {
+func compareVirtualNetworkData(t testing.TB, a, b *VirtualNetworkData, strict bool) {
+	t.Helper()
+
 	require.Equal(t, a.DhcpService, b.DhcpService)
 	require.Equal(t, a.Ipv4Enabled, b.Ipv4Enabled)
 	require.Equal(t, a.Ipv4Subnet, b.Ipv4Subnet)

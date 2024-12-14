@@ -88,6 +88,21 @@ func randomIpv6() net.IP {
 	}
 }
 
+// randomIntsN fills the supplied slice with non-negative pseudo-random values in the half-open interval [0,n)
+func randomIntsN(s []int, n int) {
+	l := len(s)
+	m := make(map[int]struct{}, l)
+	for len(m) < l {
+		m[rand.Intn(n)] = struct{}{}
+	}
+
+	i := 0
+	for k := range m {
+		s[i] = k
+		i++
+	}
+}
+
 func randomPrefix(t testing.TB, cidrBlock string, bits int) net.IPNet {
 	t.Helper()
 
@@ -1123,4 +1138,8 @@ func wrapCtxWithTestId(t testing.TB, ctx context.Context) context.Context {
 	}
 
 	return context.WithValue(ctx, CtxKeyTestID, UUID.String()+"/"+t.Name())
+}
+
+func oneOf[A interface{}](i A, s ...A) A {
+	return append([]A{i}, s...)[rand.Intn(len(s)+1)]
 }
