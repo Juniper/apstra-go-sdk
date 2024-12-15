@@ -77,6 +77,8 @@ func convertTtaeToAceWherePossible(err error) error {
 	var ttae TalkToApstraErr
 	if errors.As(err, &ttae) {
 		switch ttae.Response.StatusCode {
+		case http.StatusUnauthorized:
+			return ClientErr{errType: ErrAuthFail, err: err}
 		case http.StatusNotFound:
 			if ttae.Request.URL.Path == apiUrlBlueprints {
 				return ClientErr{errType: ErrNotfound, retryable: true, err: err}

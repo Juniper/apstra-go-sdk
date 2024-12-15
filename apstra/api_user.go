@@ -114,7 +114,7 @@ func (o *Client) logout(ctx context.Context) error {
 		doNotLogin: true,
 	})
 	if err != nil {
-		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, err)
+		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, convertTtaeToAceWherePossible(err))
 	}
 	return nil
 }
