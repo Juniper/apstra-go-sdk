@@ -100,7 +100,7 @@ func (o *Client) logout(ctx context.Context) error {
 	}()
 
 	o.lock(mutexKeyHttpHeaders)
-	if token := o.httpHeaders[apstraAuthHeader]; token == "" {
+	if token := o.httpHeaders[apstraAuthHeader]; token == "" { // doesn't exist OR is empty string?
 		o.unlock(mutexKeyHttpHeaders)
 		return nil // don't need to call the logout API if we have no token
 	}
