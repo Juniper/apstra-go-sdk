@@ -44,6 +44,22 @@ func (o *Client) stopTaskMonitor() {
 	}
 }
 
+func (o *Client) Config() ClientCfg {
+	return o.cfg
+}
+
+func (o *Client) GetApiToken() string {
+	o.lock(mutexKeyHttpHeaders)
+	defer o.unlock(mutexKeyHttpHeaders)
+	return o.httpHeaders[apstraAuthHeader]
+}
+
+func (o *Client) SetApiToken(in string) {
+	o.lock(mutexKeyHttpHeaders)
+	o.httpHeaders[apstraAuthHeader] = in
+	o.unlock(mutexKeyHttpHeaders)
+}
+
 func (o *Client) login(ctx context.Context) error {
 	response := &userLoginResponse{}
 	err := o.talkToApstra(ctx, &talkToApstraIn{
@@ -73,17 +89,8 @@ func (o *Client) login(ctx context.Context) error {
 
 func (o *Client) logout(ctx context.Context) error {
 	o.Log(1, "client logging out")
-	// presence of an auth token is proxy for both
-	// - "logged in" state and
-	// - operation of a task monitor routine
-	o.lock(mutexKeyHttpHeaders)
-	if _, tokenFound := o.httpHeaders[apstraAuthHeader]; !tokenFound {
-		o.unlock(mutexKeyHttpHeaders)
-		return nil
-	}
-	o.unlock(mutexKeyHttpHeaders)
 
-	defer func() {
+	defer func() { // clear the auth token and stop the task monitor
 		o.Log(1, "deleting auth token")
 		o.lock(mutexKeyHttpHeaders)
 		delete(o.httpHeaders, apstraAuthHeader)
@@ -92,13 +99,20 @@ func (o *Client) logout(ctx context.Context) error {
 		o.stopTaskMonitor()
 	}()
 
+	o.lock(mutexKeyHttpHeaders)
+	if token := o.httpHeaders[apstraAuthHeader]; token == "" { // doesn't exist OR is empty string?
+		o.unlock(mutexKeyHttpHeaders)
+		return nil // don't need to call the logout API if we have no token
+	}
+	o.unlock(mutexKeyHttpHeaders)
+
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:     http.MethodPost,
 		urlStr:     apiUrlUserLogout,
 		doNotLogin: true,
 	})
 	if err != nil {
-		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, err)
+		return fmt.Errorf("error calling '%s' - %w", apiUrlUserLogout, convertTtaeToAceWherePossible(err))
 	}
 	return nil
 }
