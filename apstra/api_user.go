@@ -57,7 +57,7 @@ func (o *Client) GetApiToken() string {
 func (o *Client) SetApiToken(in string) {
 	o.lock(mutexKeyHttpHeaders)
 	o.httpHeaders[apstraAuthHeader] = in
-	defer o.unlock(mutexKeyHttpHeaders)
+	o.unlock(mutexKeyHttpHeaders)
 }
 
 func (o *Client) login(ctx context.Context) error {
