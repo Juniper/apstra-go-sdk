@@ -89,17 +89,8 @@ func (o *Client) login(ctx context.Context) error {
 
 func (o *Client) logout(ctx context.Context) error {
 	o.Log(1, "client logging out")
-	// presence of an auth token is proxy for both
-	// - "logged in" state and
-	// - operation of a task monitor routine
-	o.lock(mutexKeyHttpHeaders)
-	if token := o.httpHeaders[apstraAuthHeader]; token == "" {
-		o.unlock(mutexKeyHttpHeaders)
-		return nil
-	}
-	o.unlock(mutexKeyHttpHeaders)
 
-	defer func() {
+	defer func() { // clear the auth token and stop the task monitor
 		o.Log(1, "deleting auth token")
 		o.lock(mutexKeyHttpHeaders)
 		delete(o.httpHeaders, apstraAuthHeader)
@@ -107,6 +98,13 @@ func (o *Client) logout(ctx context.Context) error {
 		o.Log(1, "shutting down the task monitor")
 		o.stopTaskMonitor()
 	}()
+
+	o.lock(mutexKeyHttpHeaders)
+	if token := o.httpHeaders[apstraAuthHeader]; token == "" {
+		o.unlock(mutexKeyHttpHeaders)
+		return nil // don't need to call the logout API if we have no token
+	}
+	o.unlock(mutexKeyHttpHeaders)
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:     http.MethodPost,
