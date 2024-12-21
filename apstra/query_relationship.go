@@ -10,6 +10,7 @@ const (
 	RelationshipTypeNone = RelationshipType(iota)
 	RelationshipTypeComposedOf
 	RelationshipTypeComposedOfSystems
+	RelationshipTypeConstraint
 	RelationshipTypeDeviceProfile
 	RelationshipTypeEpAffectedBy
 	RelationshipTypeEpFirstSubpolicy
@@ -37,6 +38,7 @@ const (
 	relationshipTypeNone              = relationshipType("")
 	relationshipTypeComposedOf        = relationshipType("composed_of")
 	relationshipTypeComposedOfSystems = relationshipType("composed_of_systems")
+	relationshipTypeConstraint        = relationshipType("constraint")
 	relationshipTypeDeviceProfile     = relationshipType("device_profile")
 	relationshipTypeEpAffectedBy      = relationshipType("ep_affected_by")
 	relationshipTypeEpFirstSubpolicy  = relationshipType("ep_first_subpolicy")
@@ -75,6 +77,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeComposedOf)
 	case RelationshipTypeComposedOfSystems:
 		return string(relationshipTypeComposedOfSystems)
+	case RelationshipTypeConstraint:
+		return string(relationshipTypeConstraint)
 	case RelationshipTypeDeviceProfile:
 		return string(relationshipTypeDeviceProfile)
 	case RelationshipTypeEpAffectedBy:

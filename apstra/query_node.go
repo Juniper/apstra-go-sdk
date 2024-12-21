@@ -27,6 +27,7 @@ const (
 	NodeTypeRedundancyGroup
 	NodeTypeRouteTargetPolicy
 	NodeTypeRoutingPolicy
+	NodeTypeRoutingZoneConstraint
 	NodeTypeSecurityZone
 	NodeTypeSecurityZoneInstance
 	NodeTypeSecurityZonePolicy
@@ -57,6 +58,7 @@ const (
 	nodeTypeRedundancyGroup        = nodeType("redundancy_group")
 	nodeTypeRouteTargetPolicy      = nodeType("route_target_policy")
 	nodeTypeRoutingPolicy          = nodeType("routing_policy")
+	nodeTypeRoutingZoneConstraint  = nodeType("routing_zone_constraint")
 	nodeTypeSecurityZone           = nodeType("security_zone")
 	nodeTypeSecurityZoneInstance   = nodeType("sz_instance")
 	nodeTypeSecurityZonePolicy     = nodeType("security_zone_policy")
@@ -115,6 +117,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeRouteTargetPolicy)
 	case NodeTypeRoutingPolicy:
 		return string(nodeTypeRoutingPolicy)
+	case NodeTypeRoutingZoneConstraint:
+		return string(nodeTypeRoutingZoneConstraint)
 	case NodeTypeSecurityZone:
 		return string(nodeTypeSecurityZone)
 	case NodeTypeSecurityZoneInstance:
