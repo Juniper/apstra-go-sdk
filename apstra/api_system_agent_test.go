@@ -10,6 +10,7 @@ package apstra
 import (
 	"context"
 	"log"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
@@ -34,6 +35,9 @@ func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
 				SkipRevertToPristineOnUninstall: !mgrCfg.SkipRevertToPristineOnUninstall,
 				SkipPristineValidation:          !mgrCfg.SkipPristineValidation,
 				SkipInterfaceShutdownOnUpgrade:  !mgrCfg.SkipInterfaceShutdownOnUpgrade,
+			}
+			if compatibility.HasDeviceOsImageDownloadTimeout.Check(client.client.apiVersion) {
+				testCfg.DeviceOsImageDownloadTimeout = toPtr(rand.IntN(2700) + 1)
 			}
 
 			// set new config

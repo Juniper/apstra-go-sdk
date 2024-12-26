@@ -12,6 +12,7 @@ import (
 const apiUrlSystemAgentManagerConfig = "/api/system-agent/manager-config"
 
 type SystemAgentManagerConfig struct {
+	DeviceOsImageDownloadTimeout    *int `json:"device_os_image_download_timeout"` // introduced in and required by 5.1.0 (1-2700)
 	SkipRevertToPristineOnUninstall bool `json:"skip_revert_to_pristine_on_uninstall"`
 	SkipPristineValidation          bool `json:"skip_pristine_validation"`
 	SkipInterfaceShutdownOnUpgrade  bool `json:"skip_interface_shutdown_on_upgrade"`
