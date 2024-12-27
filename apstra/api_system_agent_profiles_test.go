@@ -151,44 +151,71 @@ func TestClient_UpdateAgentProfile(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		log.Printf("testing GetAllSystemAgents() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		agents, err := client.client.GetAllSystemAgents(ctx)
-		require.NoError(t, err)
+		clientName, client := clientName, client
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		var profileWithAckedSystem ObjectId
-		for _, agent := range agents {
-			if agent.Config.Profile == "" {
-				continue
-			}
-
-			systemInfo, err := client.client.GetSystemInfo(ctx, agent.Status.SystemId)
+			t.Logf("testing GetAllSystemAgents() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			agents, err := client.client.GetAllSystemAgents(ctx)
 			require.NoError(t, err)
 
-			if systemInfo.Status.IsAcknowledged {
-				profileWithAckedSystem = agent.Config.Profile
-				break
+			profiles, err := client.client.GetAllAgentProfiles(ctx)
+			require.NoError(t, err)
+			profileMap := make(map[ObjectId]AgentProfile, len(profiles))
+			for _, profile := range profiles {
+				profileMap[profile.Id] = profile
 			}
-		}
 
-		if profileWithAckedSystem == "" {
-			t.Skipf("no agent profile")
-		}
+			for i := len(agents) - 1; i >= 0; i-- { // loop backward through agents
+				// remove agents without profile
+				if agents[i].Config.Profile == "" {
+					agents[i] = agents[len(agents)-1] // copy last to index i
+					agents = agents[:len(agents)-1]   // delete last item
+					continue
+				}
 
-		profile, err := client.client.GetAgentProfile(ctx, profileWithAckedSystem)
-		require.NoError(t, err)
+				// remove agents with platform configured
+				if agents[i].Config.Platform != "" {
+					agents[i] = agents[len(agents)-1] // copy last to index i
+					agents = agents[:len(agents)-1]   // delete last item
+					continue
+				}
 
-		origPlatform := profile.Platform
-		_ = origPlatform
-		profile.Platform = ""
+				_, ok := profileMap[agents[i].Config.Profile]
+				if !ok {
+					t.Fatal(fmt.Errorf("agent %s claims profile %s, which is not a valid profile", agents[i].Id, agents[i].Config.Profile))
+				}
 
-		err = client.client.UpdateAgentProfile(ctx, profile.Id, &AgentProfileConfig{
-			Label:    profile.Label,
-			Platform: nil,
+				// remove agents with un-acked systems
+				systemInfo, err := client.client.GetSystemInfo(ctx, agents[i].Status.SystemId)
+				require.NoError(t, err)
+				if !systemInfo.Status.IsAcknowledged {
+					agents[i] = agents[len(agents)-1] // copy last to index i
+					agents = agents[:len(agents)-1]   // delete last item
+					continue
+				}
+			}
+
+			if len(agents) == 0 {
+				t.Skip("skipping because no system agents rely on agent profile to determine platform type")
+			}
+
+			// At this point, agents is full of system agents which rely on their associated agent
+			// profile for platform info. We'll attempt to modify the agent profile to elicit an error.
+
+			for _, agent := range agents {
+				profile := profileMap[agent.Config.Profile]
+				t.Logf("trying to provoke an error with UpdateAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = client.client.UpdateAgentProfile(ctx, profile.Id, &AgentProfileConfig{
+					Label:    profile.Label,
+					Platform: toPtr(""),
+				})
+				require.Error(t, err)
+				var ace ClientErr
+				if !(errors.As(err, &ace) && ace.errType == ErrAgentProfilePlatformRequired) {
+					t.Fatalf("error should have been type %d, err is %q", ErrAgentProfilePlatformRequired, err.Error())
+				}
+			}
 		})
-		require.Error(t, err)
-		var ace ClientErr
-		if !(errors.As(err, &ace) && ace.errType == ErrAgentProfilePlatformRequired) {
-			t.Fatalf("error should have been type %d, err is %q", ErrAgentProfilePlatformRequired, err.Error())
-		}
 	}
 }
