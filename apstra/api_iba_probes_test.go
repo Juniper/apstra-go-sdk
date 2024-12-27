@@ -14,6 +14,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
@@ -369,10 +370,12 @@ func TestIbaProbes(t *testing.T) {
 				"eastwest_traffic":                   true,
 				"vxlan_floodlist":                    true,
 				"fabric_hotcold_ifcounter":           true,
-				"specific_interface_flapping":        true,
 				"evpn_vxlan_type3":                   true,
 				"specific_hotcold_ifcounter":         true,
 				"spine_superspine_hotcold_ifcounter": true,
+			}
+			if version.MustConstraints(version.NewConstraint("<5.1.0")).Check(client.client.apiVersion) {
+				expectedToFail["specific_interface_flapping"] = true
 			}
 
 			for _, predefinedProbe := range predefinedProbes {
