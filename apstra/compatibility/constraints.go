@@ -17,11 +17,14 @@ var (
 	BpHasVirtualNetworkPolicyNode = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
 	}
+	EmptyVnBindingsOk = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	}
 	FabricSettingsApiOk = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
 	}
-	EmptyVnBindingsOk = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	HasDeviceOsImageDownloadTimeout = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra510)),
 	}
 	IbaDashboardSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),

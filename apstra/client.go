@@ -1674,6 +1674,9 @@ func (o *Client) GetSystemAgentManagerConfig(ctx context.Context) (*SystemAgentM
 // SetSystemAgentManagerConfig uses a *SystemAgentManagerConfig object to configure the Advanced Settings
 // found on the Managed Devices page of the Web UI.
 func (o *Client) SetSystemAgentManagerConfig(ctx context.Context, cfg *SystemAgentManagerConfig) error {
+	if compatibility.HasDeviceOsImageDownloadTimeout.Check(o.apiVersion) != (cfg.DeviceOsImageDownloadTimeout != nil) {
+		return fmt.Errorf("DeviceOsImageDownloadTimeout is required with apstra %s, and must not be used with other versions", compatibility.HasDeviceOsImageDownloadTimeout)
+	}
 	if !compatibility.SystemManagerHasSkipInterfaceShutdownOnUpgrade.Check(o.apiVersion) && cfg.SkipInterfaceShutdownOnUpgrade {
 		return fmt.Errorf("SkipInterfaceShutdownOnUpgrade may only be used with apstra %s", compatibility.SystemManagerHasSkipInterfaceShutdownOnUpgrade)
 	}

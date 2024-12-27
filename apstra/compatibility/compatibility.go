@@ -15,6 +15,7 @@ const (
 	apstra422  = "4.2.2"
 	apstra500  = "5.0.0"
 	apstra501  = "5.0.1"
+	apstra510  = "5.1.0"
 )
 
 var (
