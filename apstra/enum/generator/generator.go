@@ -33,9 +33,17 @@ const (
 
 package enum
 
-import oenum "github.com/orsinium-labs/enum"
+import (
+	"encoding/json"
+
+	oenum "github.com/orsinium-labs/enum"
+)
 {{ range $key, $value := .NameToTypeInfo }}
-var _ enum = (*{{ $key }})(nil)
+var (
+	_ enum             = (*{{ $key }})(nil)
+	_ json.Marshaler   = (*{{ $key }})(nil)
+	_ json.Unmarshaler = (*{{ $key }})(nil)
+)
 
 func (o {{ $key }}) String() string {
 	return o.Value
@@ -47,6 +55,14 @@ func (o *{{ $key }}) FromString(s string) error {
 	}
 	o.Value = s
 	return nil
+}
+
+func (o *{{ $key }}) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *{{ $key }}) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
 }
 {{ end }}
 var ({{ range  $key, $value := .NameToTypeInfo }}

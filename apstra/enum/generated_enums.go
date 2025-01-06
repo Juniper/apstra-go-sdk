@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,9 +6,17 @@
 
 package enum
 
-import oenum "github.com/orsinium-labs/enum"
+import (
+	"encoding/json"
 
-var _ enum = (*ApiFeature)(nil)
+	oenum "github.com/orsinium-labs/enum"
+)
+
+var (
+	_ enum             = (*ApiFeature)(nil)
+	_ json.Marshaler   = (*ApiFeature)(nil)
+	_ json.Unmarshaler = (*ApiFeature)(nil)
+)
 
 func (o ApiFeature) String() string {
 	return o.Value
@@ -22,7 +30,19 @@ func (o *ApiFeature) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*DeployMode)(nil)
+func (o *ApiFeature) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *ApiFeature) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*DeployMode)(nil)
+	_ json.Marshaler   = (*DeployMode)(nil)
+	_ json.Unmarshaler = (*DeployMode)(nil)
+)
 
 func (o DeployMode) String() string {
 	return o.Value
@@ -36,7 +56,19 @@ func (o *DeployMode) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*DeviceProfileType)(nil)
+func (o *DeployMode) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *DeployMode) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*DeviceProfileType)(nil)
+	_ json.Marshaler   = (*DeviceProfileType)(nil)
+	_ json.Unmarshaler = (*DeviceProfileType)(nil)
+)
 
 func (o DeviceProfileType) String() string {
 	return o.Value
@@ -50,7 +82,19 @@ func (o *DeviceProfileType) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*DhcpServiceMode)(nil)
+func (o *DeviceProfileType) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *DeviceProfileType) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*DhcpServiceMode)(nil)
+	_ json.Marshaler   = (*DhcpServiceMode)(nil)
+	_ json.Unmarshaler = (*DhcpServiceMode)(nil)
+)
 
 func (o DhcpServiceMode) String() string {
 	return o.Value
@@ -64,7 +108,19 @@ func (o *DhcpServiceMode) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*FFResourceType)(nil)
+func (o *DhcpServiceMode) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *DhcpServiceMode) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*FFResourceType)(nil)
+	_ json.Marshaler   = (*FFResourceType)(nil)
+	_ json.Unmarshaler = (*FFResourceType)(nil)
+)
 
 func (o FFResourceType) String() string {
 	return o.Value
@@ -78,7 +134,19 @@ func (o *FFResourceType) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*FeatureSwitch)(nil)
+func (o *FFResourceType) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *FFResourceType) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*FeatureSwitch)(nil)
+	_ json.Marshaler   = (*FeatureSwitch)(nil)
+	_ json.Unmarshaler = (*FeatureSwitch)(nil)
+)
 
 func (o FeatureSwitch) String() string {
 	return o.Value
@@ -92,7 +160,19 @@ func (o *FeatureSwitch) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*IbaWidgetType)(nil)
+func (o *FeatureSwitch) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *FeatureSwitch) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*IbaWidgetType)(nil)
+	_ json.Marshaler   = (*IbaWidgetType)(nil)
+	_ json.Unmarshaler = (*IbaWidgetType)(nil)
+)
 
 func (o IbaWidgetType) String() string {
 	return o.Value
@@ -106,7 +186,19 @@ func (o *IbaWidgetType) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*InterfaceNumberingIpv4Type)(nil)
+func (o *IbaWidgetType) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *IbaWidgetType) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*InterfaceNumberingIpv4Type)(nil)
+	_ json.Marshaler   = (*InterfaceNumberingIpv4Type)(nil)
+	_ json.Unmarshaler = (*InterfaceNumberingIpv4Type)(nil)
+)
 
 func (o InterfaceNumberingIpv4Type) String() string {
 	return o.Value
@@ -120,7 +212,19 @@ func (o *InterfaceNumberingIpv4Type) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*InterfaceNumberingIpv6Type)(nil)
+func (o *InterfaceNumberingIpv4Type) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *InterfaceNumberingIpv4Type) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*InterfaceNumberingIpv6Type)(nil)
+	_ json.Marshaler   = (*InterfaceNumberingIpv6Type)(nil)
+	_ json.Unmarshaler = (*InterfaceNumberingIpv6Type)(nil)
+)
 
 func (o InterfaceNumberingIpv6Type) String() string {
 	return o.Value
@@ -134,7 +238,19 @@ func (o *InterfaceNumberingIpv6Type) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*JunosEvpnIrbMode)(nil)
+func (o *InterfaceNumberingIpv6Type) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *InterfaceNumberingIpv6Type) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*JunosEvpnIrbMode)(nil)
+	_ json.Marshaler   = (*JunosEvpnIrbMode)(nil)
+	_ json.Unmarshaler = (*JunosEvpnIrbMode)(nil)
+)
 
 func (o JunosEvpnIrbMode) String() string {
 	return o.Value
@@ -148,7 +264,19 @@ func (o *JunosEvpnIrbMode) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*PolicyApplicationPointType)(nil)
+func (o *JunosEvpnIrbMode) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *JunosEvpnIrbMode) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*PolicyApplicationPointType)(nil)
+	_ json.Marshaler   = (*PolicyApplicationPointType)(nil)
+	_ json.Unmarshaler = (*PolicyApplicationPointType)(nil)
+)
 
 func (o PolicyApplicationPointType) String() string {
 	return o.Value
@@ -162,7 +290,19 @@ func (o *PolicyApplicationPointType) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*PolicyRuleAction)(nil)
+func (o *PolicyApplicationPointType) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *PolicyApplicationPointType) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*PolicyRuleAction)(nil)
+	_ json.Marshaler   = (*PolicyRuleAction)(nil)
+	_ json.Unmarshaler = (*PolicyRuleAction)(nil)
+)
 
 func (o PolicyRuleAction) String() string {
 	return o.Value
@@ -176,7 +316,19 @@ func (o *PolicyRuleAction) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*PolicyRuleProtocol)(nil)
+func (o *PolicyRuleAction) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *PolicyRuleAction) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*PolicyRuleProtocol)(nil)
+	_ json.Marshaler   = (*PolicyRuleProtocol)(nil)
+	_ json.Unmarshaler = (*PolicyRuleProtocol)(nil)
+)
 
 func (o PolicyRuleProtocol) String() string {
 	return o.Value
@@ -190,7 +342,19 @@ func (o *PolicyRuleProtocol) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*PortRole)(nil)
+func (o *PolicyRuleProtocol) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *PolicyRuleProtocol) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*PortRole)(nil)
+	_ json.Marshaler   = (*PortRole)(nil)
+	_ json.Unmarshaler = (*PortRole)(nil)
+)
 
 func (o PortRole) String() string {
 	return o.Value
@@ -204,7 +368,19 @@ func (o *PortRole) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*RemoteGatewayRouteType)(nil)
+func (o *PortRole) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *PortRole) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*RemoteGatewayRouteType)(nil)
+	_ json.Marshaler   = (*RemoteGatewayRouteType)(nil)
+	_ json.Unmarshaler = (*RemoteGatewayRouteType)(nil)
+)
 
 func (o RemoteGatewayRouteType) String() string {
 	return o.Value
@@ -218,7 +394,19 @@ func (o *RemoteGatewayRouteType) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*RenderedConfigType)(nil)
+func (o *RemoteGatewayRouteType) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *RemoteGatewayRouteType) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*RenderedConfigType)(nil)
+	_ json.Marshaler   = (*RenderedConfigType)(nil)
+	_ json.Unmarshaler = (*RenderedConfigType)(nil)
+)
 
 func (o RenderedConfigType) String() string {
 	return o.Value
@@ -232,7 +420,19 @@ func (o *RenderedConfigType) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*ResourcePoolType)(nil)
+func (o *RenderedConfigType) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *RenderedConfigType) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*ResourcePoolType)(nil)
+	_ json.Marshaler   = (*ResourcePoolType)(nil)
+	_ json.Unmarshaler = (*ResourcePoolType)(nil)
+)
 
 func (o ResourcePoolType) String() string {
 	return o.Value
@@ -246,7 +446,19 @@ func (o *ResourcePoolType) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*RoutingZoneConstraintMode)(nil)
+func (o *ResourcePoolType) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *ResourcePoolType) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*RoutingZoneConstraintMode)(nil)
+	_ json.Marshaler   = (*RoutingZoneConstraintMode)(nil)
+	_ json.Unmarshaler = (*RoutingZoneConstraintMode)(nil)
+)
 
 func (o RoutingZoneConstraintMode) String() string {
 	return o.Value
@@ -260,7 +472,19 @@ func (o *RoutingZoneConstraintMode) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*StorageSchemaPath)(nil)
+func (o *RoutingZoneConstraintMode) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *RoutingZoneConstraintMode) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*StorageSchemaPath)(nil)
+	_ json.Marshaler   = (*StorageSchemaPath)(nil)
+	_ json.Unmarshaler = (*StorageSchemaPath)(nil)
+)
 
 func (o StorageSchemaPath) String() string {
 	return o.Value
@@ -274,7 +498,19 @@ func (o *StorageSchemaPath) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*SviIpv4Mode)(nil)
+func (o *StorageSchemaPath) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *StorageSchemaPath) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*SviIpv4Mode)(nil)
+	_ json.Marshaler   = (*SviIpv4Mode)(nil)
+	_ json.Unmarshaler = (*SviIpv4Mode)(nil)
+)
 
 func (o SviIpv4Mode) String() string {
 	return o.Value
@@ -288,7 +524,19 @@ func (o *SviIpv4Mode) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*SviIpv6Mode)(nil)
+func (o *SviIpv4Mode) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *SviIpv4Mode) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*SviIpv6Mode)(nil)
+	_ json.Marshaler   = (*SviIpv6Mode)(nil)
+	_ json.Unmarshaler = (*SviIpv6Mode)(nil)
+)
 
 func (o SviIpv6Mode) String() string {
 	return o.Value
@@ -302,7 +550,19 @@ func (o *SviIpv6Mode) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*TcpStateQualifier)(nil)
+func (o *SviIpv6Mode) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *SviIpv6Mode) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*TcpStateQualifier)(nil)
+	_ json.Marshaler   = (*TcpStateQualifier)(nil)
+	_ json.Unmarshaler = (*TcpStateQualifier)(nil)
+)
 
 func (o TcpStateQualifier) String() string {
 	return o.Value
@@ -316,7 +576,19 @@ func (o *TcpStateQualifier) FromString(s string) error {
 	return nil
 }
 
-var _ enum = (*VnType)(nil)
+func (o *TcpStateQualifier) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *TcpStateQualifier) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
+}
+
+var (
+	_ enum             = (*VnType)(nil)
+	_ json.Marshaler   = (*VnType)(nil)
+	_ json.Unmarshaler = (*VnType)(nil)
+)
 
 func (o VnType) String() string {
 	return o.Value
@@ -328,6 +600,14 @@ func (o *VnType) FromString(s string) error {
 	}
 	o.Value = s
 	return nil
+}
+
+func (o *VnType) MarshalJSON() ([]byte, error) {
+	return []byte(o.String()), nil
+}
+
+func (o *VnType) UnmarshalJSON(bytes []byte) error {
+	return o.FromString(string(bytes))
 }
 
 var (
