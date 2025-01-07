@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -360,7 +360,7 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	return bpClient
 }
 
-func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
+func testBlueprintE(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  RefDesignTwoStageL3Clos,
 		Label:      randString(5, "hex"),
@@ -374,10 +374,7 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	bpDeleteFunc := func(ctx context.Context) error {
-		return client.DeleteBlueprint(ctx, bpId)
-	}
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
 
 	leafQuery := new(PathQuery).
 		SetBlueprintId(bpId).
@@ -397,17 +394,14 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		} `json:"items"`
 	}
 	err = leafQuery.Do(ctx, &leafResponse)
-	if err != nil {
-		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
-	}
+	require.NoError(t, err)
+
 	leafAssignements := make(SystemIdToInterfaceMapAssignment)
 	for _, item := range leafResponse.Items {
 		leafAssignements[item.Leaf.ID] = "Juniper_vQFX__AOS-7x10-Leaf"
 	}
 	err = bpClient.SetInterfaceMapAssignments(ctx, leafAssignements)
-	if err != nil {
-		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
-	}
+	require.NoError(t, err)
 
 	accessQuery := new(PathQuery).
 		SetBlueprintId(bpId).
@@ -427,19 +421,16 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 		} `json:"items"`
 	}
 	err = accessQuery.Do(ctx, &accessResponse)
-	if err != nil {
-		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
-	}
+	require.NoError(t, err)
+
 	accessAssignements := make(SystemIdToInterfaceMapAssignment)
 	for _, item := range accessResponse.Items {
 		accessAssignements[item.Leaf.ID] = "Juniper_vQFX__AOS-8x10-1"
 	}
 	err = bpClient.SetInterfaceMapAssignments(ctx, accessAssignements)
-	if err != nil {
-		t.Fatal(errors.Join(err, bpDeleteFunc(ctx)))
-	}
+	require.NoError(t, err)
 
-	return bpClient, bpDeleteFunc
+	return bpClient
 }
 
 // testBlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient.

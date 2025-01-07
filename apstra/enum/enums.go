@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -226,4 +226,29 @@ var (
 	VnTypeExternal = VnType{Value: "disabled"}
 	VnTypeVlan     = VnType{Value: "vlan"}
 	VnTypeVxlan    = VnType{Value: "vxlan"}
+)
+
+type RedundancyGroupType oenum.Member[string]
+
+var (
+	RedundancyGroupTypeEsi  = RedundancyGroupType{Value: "esi"}
+	RedundancyGroupTypeMlag = RedundancyGroupType{Value: "mlag"}
+)
+
+type SystemType oenum.Member[string]
+
+var (
+	SystemTypeServer = SystemType{Value: "server"}
+	SystemTypeSwitch = SystemType{Value: "switch"}
+)
+
+type NodeRole oenum.Member[string]
+
+var (
+	NodeRoleAccess        = NodeRole{Value: "access"}
+	NodeRoleGeneric       = NodeRole{Value: "generic"}
+	NodeRoleLeaf          = NodeRole{Value: "leaf"}
+	NodeRoleRemoteGateway = NodeRole{Value: "remote_gateway"}
+	NodeRoleSpine         = NodeRole{Value: "spine"}
+	NodeRoleSuperspine    = NodeRole{Value: "superspine"}
 )

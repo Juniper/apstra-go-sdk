@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,6 +28,7 @@ const (
 	RelationshipTypeMemberInterfaces
 	RelationshipTypeMemberVNs
 	RelationshipTypePartOfRack
+	RelationshipTypePartOfRedundancyGroup
 	RelationshipTypePolicy
 	RelationshipTypeProtocol
 	RelationshipTypeRouteTargetPolicy
@@ -35,33 +36,34 @@ const (
 	RelationshipTypeTag
 	RelationshipTypeUnknown = "unknown node type %s"
 
-	relationshipTypeNone              = relationshipType("")
-	relationshipTypeComposedOf        = relationshipType("composed_of")
-	relationshipTypeComposedOfSystems = relationshipType("composed_of_systems")
-	relationshipTypeConstraint        = relationshipType("constraint")
-	relationshipTypeDeviceProfile     = relationshipType("device_profile")
-	relationshipTypeEpAffectedBy      = relationshipType("ep_affected_by")
-	relationshipTypeEpFirstSubpolicy  = relationshipType("ep_first_subpolicy")
-	relationshipTypeEpMemberOf        = relationshipType("ep_member_of")
-	relationshipTypeEpNested          = relationshipType("ep_nested")
-	relationshipTypeEpSubpolicy       = relationshipType("ep_subpolicy")
-	relationshipTypeEpTopLevel        = relationshipType("ep_top_level")
-	relationshipTypeHostedInterfaces  = relationshipType("hosted_interfaces")
-	relationshipTypeHostedVnInstances = relationshipType("hosted_vn_instances")
-	relationshipTypeInterfaceMap      = relationshipType("interface_map")
-	relationshipTypeInstantiatedBy    = relationshipType("instantiated_by")
-	relationshipTypeInstantiates      = relationshipType("instantiates")
-	relationshipTypeLink              = relationshipType("link")
-	relationshipTypeLogicalDevice     = relationshipType("logical_device")
-	relationshipTypeMemberInterfaces  = relationshipType("member_interfaces")
-	relationshipTypeMemberVNs         = relationshipType("member_vns")
-	relationshipTypePartOfRack        = relationshipType("part_of_rack")
-	relationshipTypePolicy            = relationshipType("policy")
-	relationshipTypeProtocol          = relationshipType("protocol")
-	relationshipTypeRouteTargetPolicy = relationshipType("route_target_policy")
-	relationshipTypeSecurityPolicy    = relationshipType("security_policy")
-	relationshipTypeTag               = relationshipType("tag")
-	relationshipTypeUnknown           = "unknown node type %d"
+	relationshipTypeNone                  = relationshipType("")
+	relationshipTypeComposedOf            = relationshipType("composed_of")
+	relationshipTypeComposedOfSystems     = relationshipType("composed_of_systems")
+	relationshipTypeConstraint            = relationshipType("constraint")
+	relationshipTypeDeviceProfile         = relationshipType("device_profile")
+	relationshipTypeEpAffectedBy          = relationshipType("ep_affected_by")
+	relationshipTypeEpFirstSubpolicy      = relationshipType("ep_first_subpolicy")
+	relationshipTypeEpMemberOf            = relationshipType("ep_member_of")
+	relationshipTypeEpNested              = relationshipType("ep_nested")
+	relationshipTypeEpSubpolicy           = relationshipType("ep_subpolicy")
+	relationshipTypeEpTopLevel            = relationshipType("ep_top_level")
+	relationshipTypeHostedInterfaces      = relationshipType("hosted_interfaces")
+	relationshipTypeHostedVnInstances     = relationshipType("hosted_vn_instances")
+	relationshipTypeInterfaceMap          = relationshipType("interface_map")
+	relationshipTypeInstantiatedBy        = relationshipType("instantiated_by")
+	relationshipTypeInstantiates          = relationshipType("instantiates")
+	relationshipTypeLink                  = relationshipType("link")
+	relationshipTypeLogicalDevice         = relationshipType("logical_device")
+	relationshipTypeMemberInterfaces      = relationshipType("member_interfaces")
+	relationshipTypeMemberVNs             = relationshipType("member_vns")
+	relationshipTypePartOfRack            = relationshipType("part_of_rack")
+	relationshipTypePartOfRedundancyGroup = relationshipType("part_of_redundancy_group")
+	relationshipTypePolicy                = relationshipType("policy")
+	relationshipTypeProtocol              = relationshipType("protocol")
+	relationshipTypeRouteTargetPolicy     = relationshipType("route_target_policy")
+	relationshipTypeSecurityPolicy        = relationshipType("security_policy")
+	relationshipTypeTag                   = relationshipType("tag")
+	relationshipTypeUnknown               = "unknown node type %d"
 )
 
 type (
@@ -113,6 +115,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeMemberVNs)
 	case RelationshipTypePartOfRack:
 		return string(relationshipTypePartOfRack)
+	case RelationshipTypePartOfRedundancyGroup:
+		return string(relationshipTypePartOfRedundancyGroup)
 	case RelationshipTypePolicy:
 		return string(relationshipTypePolicy)
 	case RelationshipTypeProtocol:
