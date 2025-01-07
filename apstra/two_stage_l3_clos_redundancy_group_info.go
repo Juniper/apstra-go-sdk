@@ -13,7 +13,7 @@ import (
 
 type RedundancyGroupInfo struct {
 	Id         ObjectId
-	Type       enum.RgType
+	Type       enum.RedundancyGroupType
 	SystemType enum.SystemType
 	SystemRole enum.NodeRole
 	SystemIds  [2]ObjectId
@@ -59,8 +59,8 @@ func (o *TwoStageL3ClosClient) getRedundancyGroupInfo(ctx context.Context, id Ob
 	var queryResult struct {
 		Items []struct {
 			RedundancyGroup struct {
-				Id   ObjectId    `json:"id"`
-				Type enum.RgType `json:"rg_type"`
+				Id   ObjectId                 `json:"id"`
+				Type enum.RedundancyGroupType `json:"rg_type"`
 			} `json:"n_redundancy_group"`
 			System struct {
 				Id   ObjectId        `json:"id"`
@@ -117,4 +117,72 @@ func (o *TwoStageL3ClosClient) getRedundancyGroupInfo(ctx context.Context, id Ob
 	}
 
 	return result, nil
+}
+
+func (o *TwoStageL3ClosClient) GetRedundancyGroupInfoBySystemId(ctx context.Context, id ObjectId) (*RedundancyGroupInfo, error) {
+	query := new(PathQuery).
+		SetBlueprintId(o.blueprintId).
+		SetClient(o.client).
+		Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(), {Key: "id", Value: QEStringVal(id)}}).
+		Out([]QEEAttribute{RelationshipTypePartOfRedundancyGroup.QEEAttribute()}).
+		Node([]QEEAttribute{NodeTypeRedundancyGroup.QEEAttribute(), {Key: "name", Value: QEStringVal("n_redundancy_group")}}).
+		Out([]QEEAttribute{RelationshipTypeComposedOfSystems.QEEAttribute()}).
+		Node([]QEEAttribute{NodeTypeSystem.QEEAttribute(), {Key: "name", Value: QEStringVal("n_system")}})
+
+	var queryResult struct {
+		Items []struct {
+			RedundancyGroup struct {
+				Id   ObjectId                 `json:"id"`
+				Type enum.RedundancyGroupType `json:"rg_type"`
+			} `json:"n_redundancy_group"`
+			System struct {
+				Id   ObjectId        `json:"id"`
+				Role enum.NodeRole   `json:"role"`
+				Type enum.SystemType `json:"system_type"`
+			} `json:"n_system"`
+		} `json:"items"`
+	}
+
+	err := query.Do(ctx, &queryResult)
+	if err != nil {
+		return nil, fmt.Errorf("graph query %q failed - %w", query, err)
+	}
+
+	switch len(queryResult.Items) {
+	case 0:
+		return nil, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("redundancy group associated with system %q not found", id),
+		}
+	case 2:
+	default:
+		return nil, fmt.Errorf("graph query %q returned an unexpected number of results. Expected 0 or 2, got %d", query, len(queryResult.Items))
+	}
+
+	var result RedundancyGroupInfo
+	for i, item := range queryResult.Items {
+		if i == 0 {
+			result.Id = item.RedundancyGroup.Id
+			result.Type = item.RedundancyGroup.Type
+			result.SystemType = item.System.Type
+			result.SystemRole = item.System.Role
+			result.SystemIds[i] = item.System.Id
+		} else {
+			if result.Id != item.RedundancyGroup.Id {
+				return nil, fmt.Errorf("graph query %q returned inconsistent redundancy group IDs for system %q: %q and %q", query, id, result.Id, item.RedundancyGroup.Id)
+			}
+			if result.Type != item.RedundancyGroup.Type {
+				return nil, fmt.Errorf("graph query %q returned inconsistent redundancy group types for system %q: %q and %q", query, id, result.Type, item.RedundancyGroup.Type)
+			}
+			if result.SystemType != item.System.Type {
+				return nil, fmt.Errorf("graph query %q returned inconsistent system types for system %q: %q and %q", query, id, result.SystemType, item.System.Type)
+			}
+			if result.SystemRole != item.System.Role {
+				return nil, fmt.Errorf("graph query %q returned inconsistent system roles for system %q: %q and %q", query, id, result.SystemRole, item.System.Role)
+			}
+			result.SystemIds[1] = item.System.Id
+		}
+	}
+
+	return &result, nil
 }

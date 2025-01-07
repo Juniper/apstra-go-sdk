@@ -478,6 +478,37 @@ func (o *PortRole) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*RedundancyGroupType)(nil)
+	_ json.Marshaler   = (*RedundancyGroupType)(nil)
+	_ json.Unmarshaler = (*RedundancyGroupType)(nil)
+)
+
+func (o RedundancyGroupType) String() string {
+	return o.Value
+}
+
+func (o *RedundancyGroupType) FromString(s string) error {
+	if RedundancyGroupTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *RedundancyGroupType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *RedundancyGroupType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*RemoteGatewayRouteType)(nil)
 	_ json.Marshaler   = (*RemoteGatewayRouteType)(nil)
 	_ json.Unmarshaler = (*RemoteGatewayRouteType)(nil)
@@ -562,37 +593,6 @@ func (o *ResourcePoolType) MarshalJSON() ([]byte, error) {
 }
 
 func (o *ResourcePoolType) UnmarshalJSON(bytes []byte) error {
-	var s string
-	err := json.Unmarshal(bytes, &s)
-	if err != nil {
-		return err
-	}
-	return o.FromString(s)
-}
-
-var (
-	_ enum             = (*RgType)(nil)
-	_ json.Marshaler   = (*RgType)(nil)
-	_ json.Unmarshaler = (*RgType)(nil)
-)
-
-func (o RgType) String() string {
-	return o.Value
-}
-
-func (o *RgType) FromString(s string) error {
-	if RgTypes.Parse(s) == nil {
-		return newEnumParseError(o, s)
-	}
-	o.Value = s
-	return nil
-}
-
-func (o *RgType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.String())
-}
-
-func (o *RgType) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -940,6 +940,12 @@ var (
 		PortRoleUnused,
 	)
 
+	_                    enum = new(RedundancyGroupType)
+	RedundancyGroupTypes      = oenum.New(
+		RedundancyGroupTypeEsi,
+		RedundancyGroupTypeMlag,
+	)
+
 	_                       enum = new(RemoteGatewayRouteType)
 	RemoteGatewayRouteTypes      = oenum.New(
 		RemoteGatewayRouteTypeAll,
@@ -960,12 +966,6 @@ var (
 		ResourcePoolTypeIpv6,
 		ResourcePoolTypeVlan,
 		ResourcePoolTypeVni,
-	)
-
-	_       enum = new(RgType)
-	RgTypes      = oenum.New(
-		RgTypeEsi,
-		RgTypeMlag,
 	)
 
 	_                          enum = new(RoutingZoneConstraintMode)

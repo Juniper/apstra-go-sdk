@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2024.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -228,11 +228,11 @@ var (
 	VnTypeVxlan    = VnType{Value: "vxlan"}
 )
 
-type RgType oenum.Member[string]
+type RedundancyGroupType oenum.Member[string]
 
 var (
-	RgTypeEsi  = RgType{Value: "esi"}
-	RgTypeMlag = RgType{Value: "mlag"}
+	RedundancyGroupTypeEsi  = RedundancyGroupType{Value: "esi"}
+	RedundancyGroupTypeMlag = RedundancyGroupType{Value: "mlag"}
 )
 
 type SystemType oenum.Member[string]

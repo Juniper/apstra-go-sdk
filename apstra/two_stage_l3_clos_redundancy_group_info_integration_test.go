@@ -55,7 +55,7 @@ func TestGetRedundancyGroupInfo(t *testing.T) {
 			systemIds := make(map[ObjectId]struct{}, len(rgInfoMap)*2)
 			for k, v := range rgInfoMap {
 				require.Equal(t, k, v.Id)
-				require.Equal(t, enum.RgTypeEsi.String(), v.Type.String())
+				require.Equal(t, enum.RedundancyGroupTypeEsi.String(), v.Type.String())
 				require.Equal(t, enum.SystemTypeSwitch.String(), v.SystemType.String())
 
 				switch v.SystemRole.String() {
@@ -77,6 +77,12 @@ func TestGetRedundancyGroupInfo(t *testing.T) {
 				rgInfo, err := bp.GetRedundancyGroupInfo(ctx, k)
 				require.NoError(t, err)
 				compare(t, &v, rgInfo)
+
+				for _, id := range v.SystemIds {
+					rgInfo, err = bp.GetRedundancyGroupInfoBySystemId(ctx, id)
+					require.NoError(t, err)
+					compare(t, &v, rgInfo)
+				}
 			}
 		})
 	}
