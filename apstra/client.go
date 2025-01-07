@@ -30,6 +30,7 @@ const (
 	ErrCannotChangeTransform
 	ErrRangeOverlap
 	ErrAuthFail
+	ErrInvalidApiResponse
 	ErrCompatibility
 	ErrConflict
 	ErrExists

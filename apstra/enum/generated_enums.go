@@ -323,6 +323,37 @@ func (o *JunosEvpnIrbMode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*NodeRole)(nil)
+	_ json.Marshaler   = (*NodeRole)(nil)
+	_ json.Unmarshaler = (*NodeRole)(nil)
+)
+
+func (o NodeRole) String() string {
+	return o.Value
+}
+
+func (o *NodeRole) FromString(s string) error {
+	if NodeRoles.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *NodeRole) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *NodeRole) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*PolicyApplicationPointType)(nil)
 	_ json.Marshaler   = (*PolicyApplicationPointType)(nil)
 	_ json.Unmarshaler = (*PolicyApplicationPointType)(nil)
@@ -540,6 +571,37 @@ func (o *ResourcePoolType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*RgType)(nil)
+	_ json.Marshaler   = (*RgType)(nil)
+	_ json.Unmarshaler = (*RgType)(nil)
+)
+
+func (o RgType) String() string {
+	return o.Value
+}
+
+func (o *RgType) FromString(s string) error {
+	if RgTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *RgType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *RgType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*RoutingZoneConstraintMode)(nil)
 	_ json.Marshaler   = (*RoutingZoneConstraintMode)(nil)
 	_ json.Unmarshaler = (*RoutingZoneConstraintMode)(nil)
@@ -655,6 +717,37 @@ func (o *SviIpv6Mode) MarshalJSON() ([]byte, error) {
 }
 
 func (o *SviIpv6Mode) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*SystemType)(nil)
+	_ json.Marshaler   = (*SystemType)(nil)
+	_ json.Unmarshaler = (*SystemType)(nil)
+)
+
+func (o SystemType) String() string {
+	return o.Value
+}
+
+func (o *SystemType) FromString(s string) error {
+	if SystemTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *SystemType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *SystemType) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -800,6 +893,16 @@ var (
 		JunosEvpnIrbModeAsymmetric,
 	)
 
+	_         enum = new(NodeRole)
+	NodeRoles      = oenum.New(
+		NodeRoleAccess,
+		NodeRoleGeneric,
+		NodeRoleLeaf,
+		NodeRoleRemoteGateway,
+		NodeRoleSpine,
+		NodeRoleSuperspine,
+	)
+
 	_                           enum = new(PolicyApplicationPointType)
 	PolicyApplicationPointTypes      = oenum.New(
 		PolicyApplicationPointTypeGroup,
@@ -859,6 +962,12 @@ var (
 		ResourcePoolTypeVni,
 	)
 
+	_       enum = new(RgType)
+	RgTypes      = oenum.New(
+		RgTypeEsi,
+		RgTypeMlag,
+	)
+
 	_                          enum = new(RoutingZoneConstraintMode)
 	RoutingZoneConstraintModes      = oenum.New(
 		RoutingZoneConstraintModeNone,
@@ -904,6 +1013,12 @@ var (
 		SviIpv6ModeEnabled,
 		SviIpv6ModeForced,
 		SviIpv6ModeLinkLocal,
+	)
+
+	_           enum = new(SystemType)
+	SystemTypes      = oenum.New(
+		SystemTypeServer,
+		SystemTypeSwitch,
 	)
 
 	_                  enum = new(TcpStateQualifier)

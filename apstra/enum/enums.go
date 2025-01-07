@@ -227,3 +227,28 @@ var (
 	VnTypeVlan     = VnType{Value: "vlan"}
 	VnTypeVxlan    = VnType{Value: "vxlan"}
 )
+
+type RgType oenum.Member[string]
+
+var (
+	RgTypeEsi  = RgType{Value: "esi"}
+	RgTypeMlag = RgType{Value: "mlag"}
+)
+
+type SystemType oenum.Member[string]
+
+var (
+	SystemTypeServer = SystemType{Value: "server"}
+	SystemTypeSwitch = SystemType{Value: "switch"}
+)
+
+type NodeRole oenum.Member[string]
+
+var (
+	NodeRoleAccess        = NodeRole{Value: "access"}
+	NodeRoleGeneric       = NodeRole{Value: "generic"}
+	NodeRoleLeaf          = NodeRole{Value: "leaf"}
+	NodeRoleRemoteGateway = NodeRole{Value: "remote_gateway"}
+	NodeRoleSpine         = NodeRole{Value: "spine"}
+	NodeRoleSuperspine    = NodeRole{Value: "superspine"}
+)
