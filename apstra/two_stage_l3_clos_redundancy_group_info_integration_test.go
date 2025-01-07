@@ -8,10 +8,11 @@ package apstra
 
 import (
 	"context"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
-	"github.com/stretchr/testify/require"
 	"sort"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetRedundancyGroupInfo(t *testing.T) {
