@@ -37,10 +37,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
 
-			bpClient, bpDel := testBlueprintE(ctx, t, client.client)
-			t.Cleanup(func() {
-				require.NoError(t, bpDel(ctx))
-			})
+			bpClient := testBlueprintE(ctx, t, client.client)
 
 			leafQuery := new(PathQuery).
 				SetBlueprintId(bpClient.Id()).
