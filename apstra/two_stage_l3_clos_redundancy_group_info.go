@@ -112,10 +112,7 @@ func (o *TwoStageL3ClosClient) getRedundancyGroupInfo(ctx context.Context, id Ob
 	// ensure that each redundancy group has both system IDs
 	for k, v := range result {
 		if v.SystemIds[0] == "" || v.SystemIds[1] == "" {
-			return nil, ClientErr{
-				errType: ErrInvalidApiResponse,
-				err:     fmt.Errorf("graph query %q didn't find system pairs for redundancy group %q, got: %q", query, k, v),
-			}
+			return nil, fmt.Errorf("graph query %q didn't find system pairs for redundancy group %q, got: %q", query, k, v)
 		}
 	}
 

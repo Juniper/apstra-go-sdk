@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2024.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,7 +30,6 @@ const (
 	ErrCannotChangeTransform
 	ErrRangeOverlap
 	ErrAuthFail
-	ErrInvalidApiResponse
 	ErrCompatibility
 	ErrConflict
 	ErrExists
