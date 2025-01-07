@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -33,9 +33,17 @@ const (
 
 package enum
 
-import oenum "github.com/orsinium-labs/enum"
+import (
+	"encoding/json"
+
+	oenum "github.com/orsinium-labs/enum"
+)
 {{ range $key, $value := .NameToTypeInfo }}
-var _ enum = (*{{ $key }})(nil)
+var (
+	_ enum             = (*{{ $key }})(nil)
+	_ json.Marshaler   = (*{{ $key }})(nil)
+	_ json.Unmarshaler = (*{{ $key }})(nil)
+)
 
 func (o {{ $key }}) String() string {
 	return o.Value
@@ -47,6 +55,19 @@ func (o *{{ $key }}) FromString(s string) error {
 	}
 	o.Value = s
 	return nil
+}
+
+func (o *{{ $key }}) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *{{ $key }}) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 {{ end }}
 var ({{ range  $key, $value := .NameToTypeInfo }}
