@@ -58,11 +58,16 @@ func (o *{{ $key }}) FromString(s string) error {
 }
 
 func (o *{{ $key }}) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *{{ $key }}) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 {{ end }}
 var ({{ range  $key, $value := .NameToTypeInfo }}

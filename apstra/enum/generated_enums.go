@@ -31,11 +31,16 @@ func (o *ApiFeature) FromString(s string) error {
 }
 
 func (o *ApiFeature) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *ApiFeature) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -57,11 +62,16 @@ func (o *DeployMode) FromString(s string) error {
 }
 
 func (o *DeployMode) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *DeployMode) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -83,11 +93,16 @@ func (o *DeviceProfileType) FromString(s string) error {
 }
 
 func (o *DeviceProfileType) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *DeviceProfileType) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -109,11 +124,16 @@ func (o *DhcpServiceMode) FromString(s string) error {
 }
 
 func (o *DhcpServiceMode) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *DhcpServiceMode) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -135,11 +155,16 @@ func (o *FFResourceType) FromString(s string) error {
 }
 
 func (o *FFResourceType) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *FFResourceType) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -161,11 +186,16 @@ func (o *FeatureSwitch) FromString(s string) error {
 }
 
 func (o *FeatureSwitch) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *FeatureSwitch) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -187,11 +217,16 @@ func (o *IbaWidgetType) FromString(s string) error {
 }
 
 func (o *IbaWidgetType) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *IbaWidgetType) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -213,11 +248,16 @@ func (o *InterfaceNumberingIpv4Type) FromString(s string) error {
 }
 
 func (o *InterfaceNumberingIpv4Type) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *InterfaceNumberingIpv4Type) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -239,11 +279,16 @@ func (o *InterfaceNumberingIpv6Type) FromString(s string) error {
 }
 
 func (o *InterfaceNumberingIpv6Type) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *InterfaceNumberingIpv6Type) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -265,11 +310,16 @@ func (o *JunosEvpnIrbMode) FromString(s string) error {
 }
 
 func (o *JunosEvpnIrbMode) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *JunosEvpnIrbMode) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -291,11 +341,16 @@ func (o *PolicyApplicationPointType) FromString(s string) error {
 }
 
 func (o *PolicyApplicationPointType) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *PolicyApplicationPointType) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -317,11 +372,16 @@ func (o *PolicyRuleAction) FromString(s string) error {
 }
 
 func (o *PolicyRuleAction) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *PolicyRuleAction) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -343,11 +403,16 @@ func (o *PolicyRuleProtocol) FromString(s string) error {
 }
 
 func (o *PolicyRuleProtocol) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *PolicyRuleProtocol) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -369,11 +434,16 @@ func (o *PortRole) FromString(s string) error {
 }
 
 func (o *PortRole) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *PortRole) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -395,11 +465,16 @@ func (o *RemoteGatewayRouteType) FromString(s string) error {
 }
 
 func (o *RemoteGatewayRouteType) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *RemoteGatewayRouteType) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -421,11 +496,16 @@ func (o *RenderedConfigType) FromString(s string) error {
 }
 
 func (o *RenderedConfigType) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *RenderedConfigType) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -447,11 +527,16 @@ func (o *ResourcePoolType) FromString(s string) error {
 }
 
 func (o *ResourcePoolType) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *ResourcePoolType) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -473,11 +558,16 @@ func (o *RoutingZoneConstraintMode) FromString(s string) error {
 }
 
 func (o *RoutingZoneConstraintMode) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *RoutingZoneConstraintMode) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -499,11 +589,16 @@ func (o *StorageSchemaPath) FromString(s string) error {
 }
 
 func (o *StorageSchemaPath) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *StorageSchemaPath) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -525,11 +620,16 @@ func (o *SviIpv4Mode) FromString(s string) error {
 }
 
 func (o *SviIpv4Mode) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *SviIpv4Mode) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -551,11 +651,16 @@ func (o *SviIpv6Mode) FromString(s string) error {
 }
 
 func (o *SviIpv6Mode) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *SviIpv6Mode) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -577,11 +682,16 @@ func (o *TcpStateQualifier) FromString(s string) error {
 }
 
 func (o *TcpStateQualifier) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *TcpStateQualifier) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
@@ -603,11 +713,16 @@ func (o *VnType) FromString(s string) error {
 }
 
 func (o *VnType) MarshalJSON() ([]byte, error) {
-	return []byte(o.String()), nil
+	return json.Marshal(o.String())
 }
 
 func (o *VnType) UnmarshalJSON(bytes []byte) error {
-	return o.FromString(string(bytes))
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
 }
 
 var (
