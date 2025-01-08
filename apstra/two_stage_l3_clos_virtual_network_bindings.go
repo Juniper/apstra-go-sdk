@@ -151,11 +151,13 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		method: http.MethodPatch,
 		urlStr: fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, req.VnId),
 		apiInput: struct {
-			SviIps  []SviIp     `json:"svi_ips"`
-			BoundTo []VnBinding `json:"bound_to"`
+			SviIps             []SviIp             `json:"svi_ips"`
+			BoundTo            []VnBinding         `json:"bound_to"`
+			DhcpServiceEnabled *DhcpServiceEnabled `json:"dhcp_service,omitempty"`
 		}{
-			SviIps:  vn.Data.SviIps,
-			BoundTo: vn.Data.VnBindings,
+			SviIps:             vn.Data.SviIps,
+			BoundTo:            vn.Data.VnBindings,
+			DhcpServiceEnabled: req.DhcpServiceEnabled,
 		},
 	})
 	if err != nil {
