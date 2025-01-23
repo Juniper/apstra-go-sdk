@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -77,7 +77,7 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 			t.Parallel()
 
 			req := CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(10, "hex"),
 				TemplateId: "L2_Virtual_EVPN",
 				FabricSettings: &FabricSettings{
@@ -327,14 +327,14 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 	testCases := map[string]testCase{
 		"simple": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual_EVPN",
 			},
 		},
 		"4.1.1_and_later": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual_EVPN",
 				FabricSettings: &FabricSettings{
@@ -345,7 +345,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 		},
 		"4.2.0_specific_test": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual_EVPN",
 				FabricSettings: &FabricSettings{
@@ -357,7 +357,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 		},
 		"lots_of_values": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual_EVPN",
 				FabricSettings: &FabricSettings{
@@ -392,7 +392,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 		},
 		"different_values": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual_EVPN",
 				FabricSettings: &FabricSettings{
@@ -541,14 +541,14 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 	testCases := map[string]testCase{
 		"simple": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual",
 			},
 		},
 		"4.1.1_and_later": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual",
 				FabricSettings: &FabricSettings{
@@ -559,7 +559,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		},
 		"4.2.0_specific_test": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual",
 				FabricSettings: &FabricSettings{
@@ -571,7 +571,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		},
 		"lots_of_values": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual",
 				FabricSettings: &FabricSettings{
@@ -606,7 +606,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		},
 		"different_values": {
 			req: CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual",
 				FabricSettings: &FabricSettings{
@@ -747,10 +747,12 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
 
-	blueprintRequest := CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
-		Label:      randString(5, "hex"),
-		TemplateId: "L2_Virtual",
+	blueprintRequest := func() CreateBlueprintFromTemplateRequest {
+		return CreateBlueprintFromTemplateRequest{
+			RefDesign:  enum.RefDesignDatacenter,
+			Label:      randString(5, "hex"),
+			TemplateId: "L2_Virtual",
+		}
 	}
 
 	type testCase struct {
@@ -795,7 +797,7 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 				tCase := tCase
 
 				t.Run(tCase.name, func(t *testing.T) {
-					bpr := blueprintRequest
+					bpr := blueprintRequest()
 					bpr.FabricSettings = &tCase.fabricSettings
 					t.Logf("testing CreateBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 					id, err := client.client.CreateBlueprintFromTemplate(ctx, &bpr)

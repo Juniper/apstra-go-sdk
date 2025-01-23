@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -31,16 +33,6 @@ const (
 	nodeQueryNodeTypeUrlParam = "node_type"
 
 	cablingMapMaxWaitSec = 30
-)
-
-const (
-	RefDesignTwoStageL3Clos = RefDesign(iota)
-	RefDesignFreeform
-	RefDesignUnknown = "unknown reference design '%s'"
-
-	refDesignTwoStageL3Clos = refDesign("two_stage_l3clos")
-	refDesignFreeform       = refDesign("freeform")
-	refDesignUnknown        = refDesign("unknown reference design %d")
 )
 
 type BlueprintRequestFabricAddressingPolicy struct {
@@ -69,42 +61,6 @@ type rawBlueprintRequestFabricAddressingPolicy struct {
 	FabricL3Mtu          *uint16          `json:"fabric_l3_mtu,omitempty"`
 }
 
-type (
-	RefDesign int
-	refDesign string
-)
-
-func (o RefDesign) String() string {
-	switch o {
-	case RefDesignTwoStageL3Clos:
-		return string(refDesignTwoStageL3Clos)
-	case RefDesignFreeform:
-		return string(refDesignFreeform)
-	default:
-		return fmt.Sprintf(string(refDesignUnknown), o)
-	}
-}
-
-func (o *RefDesign) FromString(s string) error {
-	i, err := refDesign(s).parse()
-	if err != nil {
-		return err
-	}
-	*o = i
-	return nil
-}
-
-func (o refDesign) parse() (RefDesign, error) {
-	switch o {
-	case refDesignTwoStageL3Clos:
-		return RefDesignTwoStageL3Clos, nil
-	case refDesignFreeform:
-		return RefDesignFreeform, nil
-	default:
-		return 0, fmt.Errorf(RefDesignUnknown, o)
-	}
-}
-
 type getBluePrintsResponse struct {
 	Items []rawBlueprintStatus `json:"items"`
 }
@@ -123,7 +79,7 @@ type Blueprint struct {
 	client         *Client
 	Id             ObjectId
 	Version        int
-	Design         RefDesign
+	Design         enum.RefDesign
 	LastModifiedAt time.Time
 	Label          string
 	Relationships  map[string]json.RawMessage
@@ -136,7 +92,7 @@ type Blueprint struct {
 type rawBlueprint struct {
 	Id             ObjectId                   `json:"id"`
 	Version        int                        `json:"version"`
-	Design         refDesign                  `json:"design"`
+	Design         enum.RefDesign             `json:"design"`
 	LastModifiedAt time.Time                  `json:"last_modified_at"`
 	Label          string                     `json:"label"`
 	Relationships  map[string]json.RawMessage `json:"relationships"`
@@ -147,15 +103,11 @@ type rawBlueprint struct {
 }
 
 func (o *rawBlueprint) polish() (*Blueprint, error) {
-	design, err := o.Design.parse()
-	if err != nil {
-		return nil, err
-	}
 	return &Blueprint{
 		client:         nil,
 		Id:             o.Id,
 		Version:        o.Version,
-		Design:         design,
+		Design:         o.Design,
 		LastModifiedAt: o.LastModifiedAt,
 		Label:          o.Label,
 		Relationships:  o.Relationships,
@@ -209,7 +161,7 @@ type BlueprintStatus struct {
 	Id                     ObjectId                  `json:"id"`
 	Label                  string                    `json:"label"`
 	Status                 string                    `json:"status"`
-	Design                 RefDesign                 `json:"design"`
+	Design                 enum.RefDesign            `json:"design"`
 	HasUncommittedChanges  bool                      `json:"has_uncommitted_changes"`
 	Version                int                       `json:"version"`
 	LastModifiedAt         time.Time                 `json:"last_modified_at"`
@@ -234,7 +186,7 @@ type rawBlueprintStatus struct {
 	Id                     ObjectId                  `json:"id"`
 	Label                  string                    `json:"label"`
 	Status                 string                    `json:"status"`
-	Design                 refDesign                 `json:"design"`
+	Design                 enum.RefDesign            `json:"design"`
 	HasUncommittedChanges  bool                      `json:"has_uncommitted_changes"`
 	Version                int                       `json:"version"`
 	LastModifiedAt         time.Time                 `json:"last_modified_at"`
@@ -263,15 +215,11 @@ type rawBlueprintStatus struct {
 }
 
 func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
-	design, err := o.Design.parse()
-	if err != nil {
-		return nil, err
-	}
 	return &BlueprintStatus{
 		Id:                     o.Id,
 		Label:                  o.Label,
 		Status:                 o.Status,
-		Design:                 design,
+		Design:                 o.Design,
 		HasUncommittedChanges:  o.HasUncommittedChanges,
 		Version:                o.Version,
 		LastModifiedAt:         o.LastModifiedAt,
@@ -294,7 +242,7 @@ func (o *rawBlueprintStatus) polish() (*BlueprintStatus, error) {
 }
 
 type CreateBlueprintFromTemplateRequest struct {
-	RefDesign                 RefDesign
+	RefDesign                 enum.RefDesign
 	Label                     string
 	TemplateId                ObjectId
 	FabricSettings            *FabricSettings

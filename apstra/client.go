@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -211,9 +211,9 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 	if err != nil {
 		return nil, err
 	}
-	if bp.Design != refDesignTwoStageL3Clos {
+	if bp.Design != enum.RefDesignDatacenter {
 		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
-			RefDesignTwoStageL3Clos.String(), blueprintId, bp.Design)
+			enum.RefDesignDatacenter, blueprintId, bp.Design)
 	}
 
 	result := &TwoStageL3ClosClient{
@@ -233,7 +233,7 @@ func (o *Client) CreateFreeformBlueprint(ctx context.Context, label string) (Obj
 		Label  string `json:"label"`
 	}
 
-	request.Design = RefDesignFreeform.String()
+	request.Design = enum.RefDesignFreeform.String()
 	request.Label = label
 
 	var response postBlueprintsResponse
@@ -256,9 +256,9 @@ func (o *Client) NewFreeformClient(ctx context.Context, blueprintId ObjectId) (*
 	if err != nil {
 		return nil, err
 	}
-	if bp.Design != refDesignFreeform {
+	if bp.Design != enum.RefDesignFreeform {
 		return nil, fmt.Errorf("cannot create '%s' client for blueprint '%s' (type '%s')",
-			RefDesignFreeform, blueprintId, bp.Design)
+			enum.RefDesignFreeform, blueprintId, bp.Design)
 	}
 
 	return &FreeformClient{
@@ -1164,7 +1164,7 @@ func (o *Client) DeleteTag(ctx context.Context, id ObjectId) error {
 
 // CreateConfiglet creates a Configlet and returns its ObjectId.
 func (o *Client) CreateConfiglet(ctx context.Context, in *ConfigletData) (ObjectId, error) {
-	return o.createConfiglet(ctx, in.raw())
+	return o.createConfiglet(ctx, in)
 }
 
 // DeleteConfiglet deletes a configlet.
@@ -1174,35 +1174,17 @@ func (o *Client) DeleteConfiglet(ctx context.Context, in ObjectId) error {
 
 // GetConfiglet Accepts an ID and returns the Configlet object
 func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, error) {
-	r, err := o.getConfiglet(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	return r.polish()
+	return o.getConfiglet(ctx, in)
 }
 
 // UpdateConfiglet updates a configlet
 func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletData) error {
-	return o.updateConfiglet(ctx, id, in.raw())
+	return o.updateConfiglet(ctx, id, in)
 }
 
 // GetAllConfiglets returns []Configlet representing all configlets
 func (o *Client) GetAllConfiglets(ctx context.Context) ([]Configlet, error) {
-	rawConfiglets, err := o.getAllConfiglets(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]Configlet, len(rawConfiglets))
-	for i := range rawConfiglets {
-		polished, err := rawConfiglets[i].polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *polished
-	}
-
-	return result, nil
+	return o.getAllConfiglets(ctx)
 }
 
 // ListAllConfiglets gets the List of All configlet IDs
@@ -1212,11 +1194,7 @@ func (o *Client) ListAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 
 // GetConfigletByName gets a configlet by Name
 func (o *Client) GetConfigletByName(ctx context.Context, Name string) (*Configlet, error) {
-	c, err := o.getConfigletByName(ctx, Name)
-	if err != nil {
-		return nil, err
-	}
-	return c.polish()
+	return o.getConfigletByName(ctx, Name)
 }
 
 // ListAllTemplateIds returns []ObjectId representing all blueprint templates

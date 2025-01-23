@@ -44,6 +44,68 @@ func (o *ApiFeature) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*ConfigletSection)(nil)
+	_ json.Marshaler   = (*ConfigletSection)(nil)
+	_ json.Unmarshaler = (*ConfigletSection)(nil)
+)
+
+func (o ConfigletSection) String() string {
+	return o.Value
+}
+
+func (o *ConfigletSection) FromString(s string) error {
+	if ConfigletSections.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *ConfigletSection) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *ConfigletSection) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*ConfigletStyle)(nil)
+	_ json.Marshaler   = (*ConfigletStyle)(nil)
+	_ json.Unmarshaler = (*ConfigletStyle)(nil)
+)
+
+func (o ConfigletStyle) String() string {
+	return o.Value
+}
+
+func (o *ConfigletStyle) FromString(s string) error {
+	if ConfigletStyles.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *ConfigletStyle) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *ConfigletStyle) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*DeployMode)(nil)
 	_ json.Marshaler   = (*DeployMode)(nil)
 	_ json.Unmarshaler = (*DeployMode)(nil)
@@ -509,6 +571,37 @@ func (o *RedundancyGroupType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*RefDesign)(nil)
+	_ json.Marshaler   = (*RefDesign)(nil)
+	_ json.Unmarshaler = (*RefDesign)(nil)
+)
+
+func (o RefDesign) String() string {
+	return o.Value
+}
+
+func (o *RefDesign) FromString(s string) error {
+	if RefDesigns.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *RefDesign) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *RefDesign) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*RemoteGatewayRouteType)(nil)
 	_ json.Marshaler   = (*RemoteGatewayRouteType)(nil)
 	_ json.Unmarshaler = (*RemoteGatewayRouteType)(nil)
@@ -829,6 +922,28 @@ var (
 		ApiFeatureTaskApi,
 	)
 
+	_                 enum = new(ConfigletSection)
+	ConfigletSections      = oenum.New(
+		ConfigletSectionDeleteBasedInterface,
+		ConfigletSectionFile,
+		ConfigletSectionFrr,
+		ConfigletSectionInterface,
+		ConfigletSectionOspf,
+		ConfigletSectionSetBasedInterface,
+		ConfigletSectionSetBasedSystem,
+		ConfigletSectionSystem,
+		ConfigletSectionSystemTop,
+	)
+
+	_               enum = new(ConfigletStyle)
+	ConfigletStyles      = oenum.New(
+		ConfigletStyleCumulus,
+		ConfigletStyleEos,
+		ConfigletStyleJunos,
+		ConfigletStyleNxos,
+		ConfigletStyleSonic,
+	)
+
 	_           enum = new(DeployMode)
 	DeployModes      = oenum.New(
 		DeployModeDeploy,
@@ -944,6 +1059,12 @@ var (
 	RedundancyGroupTypes      = oenum.New(
 		RedundancyGroupTypeEsi,
 		RedundancyGroupTypeMlag,
+	)
+
+	_          enum = new(RefDesign)
+	RefDesigns      = oenum.New(
+		RefDesignDatacenter,
+		RefDesignFreeform,
 	)
 
 	_                       enum = new(RemoteGatewayRouteType)

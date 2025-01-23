@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,6 +10,8 @@ import (
 	"context"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestGetLockInfo(t *testing.T) {
@@ -25,7 +27,7 @@ func TestGetLockInfo(t *testing.T) {
 			log.Printf("testing createBlueprintFromTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			name := randString(10, "hex")
 			id, err := client.client.CreateBlueprintFromTemplate(context.TODO(), &CreateBlueprintFromTemplateRequest{
-				RefDesign:  RefDesignTwoStageL3Clos,
+				RefDesign:  enum.RefDesignDatacenter,
 				Label:      name,
 				TemplateId: "L2_Virtual_EVPN",
 			})

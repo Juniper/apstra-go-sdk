@@ -1,9 +1,8 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -11,6 +10,8 @@ import (
 	"context"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
@@ -24,17 +25,14 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 		var cg []ConfigletGenerator
 
 		cg = append(cg, ConfigletGenerator{
-			ConfigStyle:  PlatformOSJunos,
-			Section:      ConfigletSectionSystem,
+			ConfigStyle:  enum.ConfigletStyleJunos,
+			Section:      enum.ConfigletSectionSystem,
 			TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
 		})
-		var refarchs []RefDesign
-
-		refarchs = append(refarchs, RefDesignTwoStageL3Clos)
 
 		id1, err := client.client.CreateConfiglet(context.Background(), &ConfigletData{
 			DisplayName: Name,
-			RefArchs:    refarchs,
+			RefArchs:    []enum.RefDesign{enum.RefDesignDatacenter},
 			Generators:  cg,
 		})
 		if err != nil {
@@ -53,8 +51,8 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 		log.Println(c)
 		g1 := len(c.Data.Generators)
 		c.Data.Generators = append(c.Data.Generators, ConfigletGenerator{
-			ConfigStyle:  PlatformOSJunos,
-			Section:      ConfigletSectionSystem,
+			ConfigStyle:  enum.ConfigletStyleJunos,
+			Section:      enum.ConfigletSectionSystem,
 			TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
 		})
 		log.Println("Update Config")
@@ -91,72 +89,5 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 		if err == nil {
 			t.Fatal("Error :: Deleting non-existent item works")
 		}
-	}
-}
-
-func TestConfigletStrings(t *testing.T) {
-	type apiStringIota interface {
-		String() string
-		Int() int
-	}
-
-	type apiIotaString interface {
-		parse() (int, error)
-		string() string
-	}
-
-	type stringTestData struct {
-		stringVal  string
-		intType    apiStringIota
-		stringType apiIotaString
-	}
-	testData := []stringTestData{
-		{stringVal: "system", intType: ConfigletSectionSystem, stringType: configletSectionSystem},
-		{stringVal: "interface", intType: ConfigletSectionInterface, stringType: configletSectionInterface},
-		{stringVal: "file", intType: ConfigletSectionFile, stringType: configletSectionFile},
-		{stringVal: "frr", intType: ConfigletSectionFRR, stringType: configletSectionFRR},
-		{stringVal: "ospf", intType: ConfigletSectionOSPF, stringType: configletSectionOSPF},
-		{stringVal: "system_top", intType: ConfigletSectionSystemTop, stringType: configletSectionSystemTop},
-		{stringVal: "set_based_system", intType: ConfigletSectionSetBasedSystem, stringType: configletSectionSetBasedSystem},
-		{stringVal: "set_based_interface", intType: ConfigletSectionSetBasedInterface, stringType: configletSectionSetBasedInterface},
-		{stringVal: "delete_based_interface", intType: ConfigletSectionDeleteBasedInterface, stringType: configletSectionDeleteBasedInterface},
-
-		{stringVal: "cumulus", intType: PlatformOSCumulus, stringType: platformOSCumulus},
-		{stringVal: "nxos", intType: PlatformOSNxos, stringType: platformOSNxos},
-		{stringVal: "eos", intType: PlatformOSEos, stringType: platformOSEos},
-		{stringVal: "junos", intType: PlatformOSJunos, stringType: platformOSJunos},
-		{stringVal: "sonic", intType: PlatformOSSonic, stringType: platformOSSonic},
-	}
-
-	for i, td := range testData {
-		ii := td.intType.Int()
-		is := td.intType.String()
-		sp, err := td.stringType.parse()
-		if err != nil {
-			t.Fatal(err)
-		}
-		ss := td.stringType.string()
-		if td.intType.String() != td.stringType.string() ||
-			td.intType.Int() != sp ||
-			td.stringType.string() != td.stringVal {
-			t.Fatalf("test index %d mismatch: %d %d '%s' '%s' '%s'",
-				i, ii, sp, is, ss, td.stringVal)
-		}
-	}
-}
-
-func TestAllPlatformOSes(t *testing.T) {
-	all := AllPlatformOSes()
-	expected := 5
-	if len(all) != expected {
-		t.Fatalf("expected %d platform OSes, got %d", expected, len(all))
-	}
-}
-
-func TestAllConfigletSections(t *testing.T) {
-	all := AllConfigletSections()
-	expected := 9
-	if len(all) != expected {
-		t.Fatalf("expected %d configlet sections, got %d", expected, len(all))
 	}
 }
