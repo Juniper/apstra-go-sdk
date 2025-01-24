@@ -1164,6 +1164,12 @@ func (o *Client) DeleteTag(ctx context.Context, id ObjectId) error {
 
 // CreateConfiglet creates a Configlet and returns its ObjectId.
 func (o *Client) CreateConfiglet(ctx context.Context, in *ConfigletData) (ObjectId, error) {
+	for i, generator := range in.Generators {
+		if generator.SectionCondition != "" {
+			return "", fmt.Errorf("SectionCondition not supported in Design Catalog - generator[%d] has non-empty SectionCondition", i)
+		}
+	}
+
 	return o.createConfiglet(ctx, in)
 }
 
@@ -1179,6 +1185,12 @@ func (o *Client) GetConfiglet(ctx context.Context, in ObjectId) (*Configlet, err
 
 // UpdateConfiglet updates a configlet
 func (o *Client) UpdateConfiglet(ctx context.Context, id ObjectId, in *ConfigletData) error {
+	for i, generator := range in.Generators {
+		if generator.SectionCondition != "" {
+			return fmt.Errorf("SectionCondition not supported in Design Catalog - generator[%d] has non-empty SectionCondition", i)
+		}
+	}
+
 	return o.updateConfiglet(ctx, id, in)
 }
 
