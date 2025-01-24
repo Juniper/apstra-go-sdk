@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
@@ -103,6 +104,8 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 				require.NoError(t, err)
 				t.Logf(vnId.String())
 
+				time.Sleep(time.Second) // ensure time for config diffs to render
+
 				leafWg.Add(len(leafIds))
 				for _, leafId := range leafIds {
 					t.Run("leaf_"+leafId.String(), func(t *testing.T) {
@@ -128,7 +131,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 						require.Greater(t, adds, 40)
 						require.Equal(t, dels, 0)
 
-						leafWg.Done()
+						leafWg.Done() // there is a deadlock here if require above fails
 					})
 				}
 
@@ -150,6 +153,8 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 					// delete the VN to generate config withdrawals
 					err = bp.DeleteVirtualNetwork(ctx, vnId)
 					require.NoError(t, err)
+
+					time.Sleep(time.Second) // ensure time for config diffs to render
 
 					for _, leafId := range leafIds {
 						// staging config should have diffs at this point
