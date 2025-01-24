@@ -42,7 +42,7 @@ func (o *Configlet) UnmarshalJSON(bytes []byte) error {
 		RefArchs       []enum.RefDesign     `json:"ref_archs"`
 		Generators     []ConfigletGenerator `json:"generators"`
 		CreatedAt      time.Time            `json:"created_at"`
-		Id             ObjectId             `json:"id,omitempty"`
+		Id             ObjectId             `json:"id"`
 		LastModifiedAt time.Time            `json:"last_modified_at"`
 		DisplayName    string               `json:"display_name"`
 	}
