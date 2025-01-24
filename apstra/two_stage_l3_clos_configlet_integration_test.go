@@ -1,9 +1,8 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -12,6 +11,8 @@ import (
 	"errors"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
@@ -23,10 +24,10 @@ func TestImportGetUpdateGetDeleteConfiglet(t *testing.T) {
 
 	configletData := ConfigletData{
 		DisplayName: randString(5, "hex"),
-		RefArchs:    []RefDesign{RefDesignTwoStageL3Clos},
+		RefArchs:    []enum.RefDesign{enum.RefDesignDatacenter},
 		Generators: []ConfigletGenerator{{
-			ConfigStyle:  PlatformOSJunos,
-			Section:      ConfigletSectionSystem,
+			ConfigStyle:  enum.ConfigletStyleJunos,
+			Section:      enum.ConfigletSectionSystem,
 			TemplateText: "interfaces {\n   {% if 'leaf1' in hostname %}\n    xe-0/0/3 {\n      disable;\n    }\n   {% endif %}\n   {% if 'leaf2' in hostname %}\n    xe-0/0/2 {\n      disable;\n    }\n   {% endif %}\n}",
 		}},
 	}

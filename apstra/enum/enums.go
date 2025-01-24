@@ -252,3 +252,34 @@ var (
 	NodeRoleSpine         = NodeRole{Value: "spine"}
 	NodeRoleSuperspine    = NodeRole{Value: "superspine"}
 )
+
+type RefDesign oenum.Member[string]
+
+var (
+	RefDesignDatacenter = RefDesign{Value: "two_stage_l3clos"}
+	RefDesignFreeform   = RefDesign{Value: "freeform"}
+)
+
+type ConfigletStyle oenum.Member[string]
+
+var (
+	ConfigletStyleCumulus = ConfigletStyle{Value: "cumulus"}
+	ConfigletStyleEos     = ConfigletStyle{Value: "eos"}
+	ConfigletStyleJunos   = ConfigletStyle{Value: "junos"}
+	ConfigletStyleNxos    = ConfigletStyle{Value: "nxos"}
+	ConfigletStyleSonic   = ConfigletStyle{Value: "sonic"}
+)
+
+type ConfigletSection oenum.Member[string]
+
+var (
+	ConfigletSectionDeleteBasedInterface = ConfigletSection{Value: "delete_based_interface"}
+	ConfigletSectionFile                 = ConfigletSection{Value: "file"}
+	ConfigletSectionFrr                  = ConfigletSection{Value: "frr"}
+	ConfigletSectionInterface            = ConfigletSection{Value: "interface"}
+	ConfigletSectionOspf                 = ConfigletSection{Value: "ospf"}
+	ConfigletSectionSetBasedInterface    = ConfigletSection{Value: "set_based_interface"}
+	ConfigletSectionSetBasedSystem       = ConfigletSection{Value: "set_based_system"}
+	ConfigletSectionSystem               = ConfigletSection{Value: "system"}
+	ConfigletSectionSystemTop            = ConfigletSection{Value: "system_top"}
+)

@@ -266,7 +266,7 @@ func testBlueprintA(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: "L3_Collapsed_ESI",
 	})
@@ -284,7 +284,7 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual",
 	})
@@ -302,7 +302,7 @@ func testBlueprintC(ctx context.Context, t testing.TB, client *Client) *TwoStage
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
 	})
@@ -319,7 +319,7 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_ESI_2x_Links",
 	})
@@ -362,7 +362,7 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) *TwoStage
 
 func testBlueprintE(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_ESI_Access",
 	})
@@ -439,7 +439,7 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	t.Helper()
 
 	bpRequest := CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
 		FabricSettings: &FabricSettings{
@@ -483,7 +483,7 @@ func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: "L3_Collapsed_ESI",
 	})
@@ -690,7 +690,7 @@ func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	}
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
 	})
@@ -715,7 +715,7 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	templateId := testTemplateB(ctx, t, client)
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
-		RefDesign:  RefDesignTwoStageL3Clos,
+		RefDesign:  enum.RefDesignDatacenter,
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
 		FabricSettings: &FabricSettings{

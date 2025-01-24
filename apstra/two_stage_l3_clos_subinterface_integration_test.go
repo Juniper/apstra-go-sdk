@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
@@ -209,6 +210,8 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 
 			// update the link endpoints
 			require.NoError(t, bp.UpdateSubinterfaces(ctx, subinterfaceConfigs))
+
+			time.Sleep(time.Second)
 
 			// fetch the result
 			links, err = bp.GetAllSubinterfaceLinks(ctx)

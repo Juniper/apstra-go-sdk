@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -523,19 +523,7 @@ func (o *TwoStageL3ClosClient) DeletePropertySet(ctx context.Context, id ObjectI
 // GetAllConfiglets returns []TwoStageL3ClosConfiglet representing all
 // configlets imported into a blueprint
 func (o *TwoStageL3ClosClient) GetAllConfiglets(ctx context.Context) ([]TwoStageL3ClosConfiglet, error) {
-	rawConfiglets, err := o.getAllConfiglets(ctx)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]TwoStageL3ClosConfiglet, len(rawConfiglets))
-	for i := range rawConfiglets {
-		polished, err := rawConfiglets[i].polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *polished
-	}
-	return result, nil
+	return o.getAllConfiglets(ctx)
 }
 
 // GetAllConfigletIds returns Ids of all the configlets imported into a
@@ -547,21 +535,13 @@ func (o *TwoStageL3ClosClient) GetAllConfigletIds(ctx context.Context) ([]Object
 // GetConfiglet returns *TwoStageL3ClosConfiglet representing the imported
 // configlet with the given ID in the specified blueprint
 func (o *TwoStageL3ClosClient) GetConfiglet(ctx context.Context, id ObjectId) (*TwoStageL3ClosConfiglet, error) {
-	c, err := o.getConfiglet(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return c.polish()
+	return o.getConfiglet(ctx, id)
 }
 
 // GetConfigletByName returns *TwoStageL3ClosConfiglet representing the only
 // configlet with the given label, or an error if no configlet by that name exists
 func (o *TwoStageL3ClosClient) GetConfigletByName(ctx context.Context, in string) (*TwoStageL3ClosConfiglet, error) {
-	c, err := o.getConfigletByName(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	return c.polish()
+	return o.getConfigletByName(ctx, in)
 }
 
 // ImportConfigletById imports a configlet from the catalog into a blueprint.
@@ -575,13 +555,13 @@ func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid Obje
 		return "", err
 	}
 
-	return o.createConfiglet(ctx, &rawTwoStageL3ClosConfigletData{
+	return o.createConfiglet(ctx, &TwoStageL3ClosConfigletData{
 		Condition: condition,
 		Label:     label,
-		Data: rawConfigletData{
-			RefArchs:    cfg.RefArchs,
-			Generators:  cfg.Generators,
-			DisplayName: cfg.DisplayName,
+		Data: &ConfigletData{
+			RefArchs:    cfg.Data.RefArchs,
+			Generators:  cfg.Data.Generators,
+			DisplayName: cfg.Data.DisplayName,
 		},
 	})
 }
@@ -589,12 +569,12 @@ func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid Obje
 // CreateConfiglet creates a configlet described by a TwoStageL3ClosConfigletData structure
 // in a blueprint.
 func (o *TwoStageL3ClosClient) CreateConfiglet(ctx context.Context, c *TwoStageL3ClosConfigletData) (ObjectId, error) {
-	return o.createConfiglet(ctx, c.raw())
+	return o.createConfiglet(ctx, c)
 }
 
 // UpdateConfiglet updates a configlet imported into a blueprint.
 func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, id ObjectId, c *TwoStageL3ClosConfigletData) error {
-	return o.updateConfiglet(ctx, id, c.raw())
+	return o.updateConfiglet(ctx, id, c)
 }
 
 // DeleteConfiglet deletes a configlet from the blueprint given the id
