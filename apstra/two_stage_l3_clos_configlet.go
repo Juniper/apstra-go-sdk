@@ -54,17 +54,19 @@ func (o *TwoStageL3ClosConfiglet) UnmarshalJSON(bytes []byte) error {
 }
 
 func (o *TwoStageL3ClosClient) getAllConfiglets(ctx context.Context) ([]TwoStageL3ClosConfiglet, error) {
-	response := &struct {
+	var response struct {
 		Items []TwoStageL3ClosConfiglet `json:"items"`
-	}{}
+	}
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintConfiglets, o.blueprintId.String()),
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Items, nil
 }
 
@@ -73,10 +75,12 @@ func (o *TwoStageL3ClosClient) getAllConfigletIds(ctx context.Context) ([]Object
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+
 	ids := make([]ObjectId, len(configlets))
 	for i, c := range configlets {
 		ids[i] = c.Id
 	}
+
 	return ids, nil
 }
 
@@ -90,6 +94,7 @@ func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+
 	return &response, nil
 }
 
@@ -135,6 +140,7 @@ func (o *TwoStageL3ClosClient) createConfiglet(ctx context.Context, in *TwoStage
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Id, nil
 }
 
@@ -147,12 +153,18 @@ func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, id ObjectId,
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
+
 	return nil
 }
 
 func (o *TwoStageL3ClosClient) deleteConfiglet(ctx context.Context, id ObjectId) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), id.String()),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
 }
