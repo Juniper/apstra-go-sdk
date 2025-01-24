@@ -28,14 +28,6 @@ type ConfigletGenerator struct {
 	Filename             string                `json:"filename"`
 }
 
-type rawConfigletGenerator struct {
-	ConfigStyle          enum.ConfigletStyle   `json:"config_style"`
-	Section              enum.ConfigletSection `json:"section"`
-	TemplateText         string                `json:"template_text"`
-	NegationTemplateText string                `json:"negation_template_text"`
-	Filename             string                `json:"filename"`
-}
-
 var _ json.Unmarshaler = (*Configlet)(nil)
 
 type Configlet struct {
