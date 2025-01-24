@@ -23,6 +23,7 @@ const (
 type ConfigletGenerator struct {
 	ConfigStyle          enum.ConfigletStyle   `json:"config_style"`
 	Section              enum.ConfigletSection `json:"section"`
+	SectionCondition     string                `json:"section_condition,omitempty"`
 	TemplateText         string                `json:"template_text"`
 	NegationTemplateText string                `json:"negation_template_text"`
 	Filename             string                `json:"filename"`
