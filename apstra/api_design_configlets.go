@@ -130,32 +130,35 @@ func (o *Client) getConfigletByName(ctx context.Context, name string) (*Configle
 }
 
 func (o *Client) getAllConfiglets(ctx context.Context) ([]Configlet, error) {
-	response := &struct {
+	var response struct {
 		Items []Configlet `json:"items"`
-	}{}
+	}
+
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignConfiglets,
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Items, nil
 }
 
 func (o *Client) createConfiglet(ctx context.Context, in *ConfigletData) (ObjectId, error) {
-	response := &objectIdResponse{}
+	var response objectIdResponse
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignConfiglets,
 		apiInput:    in,
-		apiResponse: response,
+		apiResponse: &response,
 	})
 	if err != nil {
 		return "", convertTtaeToAceWherePossible(err)
 	}
+
 	return response.Id, nil
 }
 
@@ -168,12 +171,18 @@ func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *Configlet
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
 	}
+
 	return nil
 }
 
 func (o *Client) deleteConfiglet(ctx context.Context, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDesignConfigletsById, id),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
 }
