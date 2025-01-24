@@ -569,11 +569,25 @@ func (o *TwoStageL3ClosClient) ImportConfigletById(ctx context.Context, cid Obje
 // CreateConfiglet creates a configlet described by a TwoStageL3ClosConfigletData structure
 // in a blueprint.
 func (o *TwoStageL3ClosClient) CreateConfiglet(ctx context.Context, c *TwoStageL3ClosConfigletData) (ObjectId, error) {
+	if c.Data == nil {
+		return "", errors.New("cannot create configlet with nil data")
+	}
+	if len(c.Data.RefArchs) != 0 {
+		return "", errors.New("RefArchs not permitted when creating configlet")
+	}
+
 	return o.createConfiglet(ctx, c)
 }
 
 // UpdateConfiglet updates a configlet imported into a blueprint.
 func (o *TwoStageL3ClosClient) UpdateConfiglet(ctx context.Context, id ObjectId, c *TwoStageL3ClosConfigletData) error {
+	if c.Data == nil {
+		return errors.New("cannot update configlet with nil data")
+	}
+	if len(c.Data.RefArchs) != 0 {
+		return errors.New("RefArchs not permitted when updating configlet")
+	}
+
 	return o.updateConfiglet(ctx, id, c)
 }
 
