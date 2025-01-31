@@ -391,6 +391,7 @@ func (o VirtualNetworkData) MarshalJSON() ([]byte, error) {
 		VnType                    string      `json:"vn_type"`
 		VirtualMac                string      `json:"virtual_mac,omitempty"`
 	}{
+		Description:               o.Description,
 		Ipv4Enabled:               o.Ipv4Enabled,
 		Ipv6Enabled:               o.Ipv6Enabled,
 		L3Mtu:                     o.L3Mtu,
