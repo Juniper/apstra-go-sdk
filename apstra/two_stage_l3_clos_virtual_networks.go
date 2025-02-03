@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -242,6 +242,7 @@ type VirtualNetwork struct {
 func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		Id                        ObjectId    `json:"id"`
+		Description               string      `json:"description"`
 		DhcpService               string      `json:"dhcp_service"`
 		Ipv4Enabled               bool        `json:"ipv4_enabled"`
 		Ipv4Subnet                string      `json:"ipv4_subnet"`
@@ -271,6 +272,8 @@ func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 
 	o.Id = raw.Id
 	o.Data = new(VirtualNetworkData)
+
+	o.Data.Description = raw.Description
 
 	err = o.Data.DhcpService.FromString(raw.DhcpService)
 	if err != nil {
@@ -341,6 +344,7 @@ type Endpoint struct {
 var _ json.Marshaler = (*VirtualNetworkData)(nil)
 
 type VirtualNetworkData struct {
+	Description               string
 	DhcpService               DhcpServiceEnabled `json:"dhcp_service"`
 	Ipv4Enabled               bool               `json:"ipv4_enabled"`
 	Ipv4Subnet                *net.IPNet         `json:"ipv4_subnet,omitempty"`
@@ -365,6 +369,7 @@ type VirtualNetworkData struct {
 
 func (o VirtualNetworkData) MarshalJSON() ([]byte, error) {
 	raw := struct {
+		Description               string      `json:"description,omitempty"` // 5.0 and later only
 		DhcpService               string      `json:"dhcp_service"`
 		Ipv4Enabled               bool        `json:"ipv4_enabled"`
 		Ipv4Subnet                string      `json:"ipv4_subnet,omitempty"`
@@ -386,6 +391,7 @@ func (o VirtualNetworkData) MarshalJSON() ([]byte, error) {
 		VnType                    string      `json:"vn_type"`
 		VirtualMac                string      `json:"virtual_mac,omitempty"`
 	}{
+		Description:               o.Description,
 		Ipv4Enabled:               o.Ipv4Enabled,
 		Ipv6Enabled:               o.Ipv6Enabled,
 		L3Mtu:                     o.L3Mtu,
