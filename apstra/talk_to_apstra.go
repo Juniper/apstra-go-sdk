@@ -52,7 +52,7 @@ var (
 // talkToApstraIn is the input structure for the Client.talkToApstra() function
 type talkToApstraIn struct {
 	method         string      // how to talk to Apstra
-	url            *url.URL    // where to talk to Aptstra (as little as /path/to/thing ok) this is considered before urlStr
+	url            *url.URL    // where to talk to Apstra (as little as /path/to/thing ok) this is considered before urlStr
 	urlStr         string      // where to talk to Apstra, this one is used if url is nil
 	apiInput       interface{} // if non-nil we'll JSON encode this prior to sending it
 	apiResponse    interface{} // if non-nil we'll JSON decode Apstra response here
