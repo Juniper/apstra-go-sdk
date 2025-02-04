@@ -1065,6 +1065,7 @@ var (
 	RefDesigns      = oenum.New(
 		RefDesignDatacenter,
 		RefDesignFreeform,
+		RefDesignRailCollapsed,
 	)
 
 	_                       enum = new(RemoteGatewayRouteType)

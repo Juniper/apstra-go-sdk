@@ -256,8 +256,9 @@ var (
 type RefDesign oenum.Member[string]
 
 var (
-	RefDesignDatacenter = RefDesign{Value: "two_stage_l3clos"}
-	RefDesignFreeform   = RefDesign{Value: "freeform"}
+	RefDesignDatacenter    = RefDesign{Value: "two_stage_l3clos"}
+	RefDesignFreeform      = RefDesign{Value: "freeform"}
+	RefDesignRailCollapsed = RefDesign{Value: "rail_collapsed"}
 )
 
 type ConfigletStyle oenum.Member[string]
