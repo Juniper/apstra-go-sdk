@@ -75,7 +75,6 @@ func TestClient_DoRawJsonTransaction(t *testing.T) {
 			}, &itemsResponse)
 			require.NoError(t, err)
 			require.NotContains(t, itemsResponse.Items, idResponse.Id)
-
 		})
 	}
 }
