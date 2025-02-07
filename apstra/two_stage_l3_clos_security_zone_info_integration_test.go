@@ -8,11 +8,11 @@ package apstra
 
 import (
 	"context"
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"math/rand"
 	"net/netip"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
