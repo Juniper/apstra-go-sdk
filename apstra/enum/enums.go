@@ -285,6 +285,7 @@ var (
 	ConfigletSectionSystemTop            = ConfigletSection{Value: "system_top"}
 )
 
+<<<<<<< HEAD
 type IbaWidgetDataSource oenum.Member[string]
 
 var (
@@ -311,4 +312,11 @@ var (
 	IbaWidgetCombineGraphNone    = IbaWidgetCombineGraph{Value: "none"}
 	IbaWidgetCombineGraphLinear  = IbaWidgetCombineGraph{Value: "linear"}
 	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
+)
+type SecurityZoneType oenum.Member[string]
+
+var (
+	SecurityZoneTypeEvpn            = SecurityZoneType{Value: "evpn"}
+	SecurityZoneTypeL3Fabric        = SecurityZoneType{Value: "l3_fabric"}
+	SecurityZoneTypeVirtualL3Fabric = SecurityZoneType{Value: "virtual_l3_fabric"}
 )
