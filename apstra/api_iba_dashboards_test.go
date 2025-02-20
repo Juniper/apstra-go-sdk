@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -56,6 +56,8 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 
 				d1.Data.Label = randString(5, "hex")
 				t.Log("Updating Dashboard")
+				d1.Data.UpdatedBy = ""
+				d1.Data.PredefinedDashboard = ""
 
 				err = bpClient.UpdateIbaDashboard(ctx, id, d1.Data)
 				require.NoError(t, err)

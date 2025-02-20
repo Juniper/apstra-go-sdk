@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,13 +10,6 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
-
-type IbaWidget struct {
-	Id        ObjectId
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Data      *IbaWidgetData
-}
 
 type IbaWidgetData struct {
 	AggregationPeriod  *time.Duration
