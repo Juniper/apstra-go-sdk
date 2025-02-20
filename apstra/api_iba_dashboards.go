@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -253,11 +253,12 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 
 func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId, in *IbaDashboardData) error {
 	if in.UpdatedBy != "" {
-		return errors.New("attempt to update dashboard with non-empty updated_by value - this value can be set only by the server")
+		return errors.New(fmt.Sprintf("attempt to update dashboard with non-empty updated_by value - this value can be set only by the server Got '%s', Expected blank", in.UpdatedBy))
 	}
 	if in.PredefinedDashboard != "" {
-		return errors.New("attempt to update dashboard with non-empty predefined_dashboard value - this value can " +
-			"be set only by the server, and only when a dashboard is instantiated from a predefined template")
+		return errors.New(fmt.Sprintf("attempt to update dashboard with non-empty predefined_dashboard value - this value can "+
+			"be set only by the server, and only when a dashboard is instantiated from a predefined template "+
+			"Got '%s' Expected blank", in.PredefinedDashboard))
 	}
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
