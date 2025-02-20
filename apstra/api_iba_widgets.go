@@ -6,8 +6,9 @@ package apstra
 
 import (
 	"encoding/json"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 type IbaWidgetData struct {
