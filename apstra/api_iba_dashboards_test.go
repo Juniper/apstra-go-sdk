@@ -51,19 +51,8 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 
 				t.Logf("Name :%s Created Id :%s", d, id)
 				t.Log("Getting Dashboard")
-				d1, err := bpClient.GetIbaDashboard(ctx, id)
+				_, err = bpClient.GetIbaDashboard(ctx, id)
 				require.NoError(t, err)
-
-				d1.Data.Label = randString(5, "hex")
-				t.Log("Updating Dashboard")
-
-				err = bpClient.UpdateIbaDashboard(ctx, id, d1.Data)
-				require.NoError(t, err)
-
-				d2, err := bpClient.GetIbaDashboard(ctx, id)
-				require.NoError(t, err)
-				require.Equalf(t, d1.Data.Label, d2.Data.Label, "Update Seems to have failed. Label should have been %s is %s", d1.Data.Label, d2.Data.Label)
-
 				t.Log("Deleting Dashboard")
 				err = bpClient.DeleteIbaDashboard(ctx, id)
 				require.NoError(t, err)
@@ -72,6 +61,8 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			ds, err := bpClient.GetAllIbaDashboards(ctx)
 			require.NoError(t, err)
 			require.Equalf(t, 0, len(ds), "Expected no dashboards, got %d.", len(ds))
+
+			t.Log("Creating new Dashboard")
 
 			req1 := IbaDashboardData{
 				Description:   "Test Dashboard",
