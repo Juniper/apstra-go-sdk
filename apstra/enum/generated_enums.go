@@ -726,6 +726,37 @@ func (o *RoutingZoneConstraintMode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*SecurityZoneType)(nil)
+	_ json.Marshaler   = (*SecurityZoneType)(nil)
+	_ json.Unmarshaler = (*SecurityZoneType)(nil)
+)
+
+func (o SecurityZoneType) String() string {
+	return o.Value
+}
+
+func (o *SecurityZoneType) FromString(s string) error {
+	if SecurityZoneTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *SecurityZoneType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *SecurityZoneType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*StorageSchemaPath)(nil)
 	_ json.Marshaler   = (*StorageSchemaPath)(nil)
 	_ json.Unmarshaler = (*StorageSchemaPath)(nil)
@@ -1095,6 +1126,13 @@ var (
 		RoutingZoneConstraintModeNone,
 		RoutingZoneConstraintModeAllow,
 		RoutingZoneConstraintModeDeny,
+	)
+
+	_                 enum = new(SecurityZoneType)
+	SecurityZoneTypes      = oenum.New(
+		SecurityZoneTypeEvpn,
+		SecurityZoneTypeL3Fabric,
+		SecurityZoneTypeVirtualL3Fabric,
 	)
 
 	_                  enum = new(StorageSchemaPath)

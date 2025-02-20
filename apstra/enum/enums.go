@@ -284,3 +284,11 @@ var (
 	ConfigletSectionSystem               = ConfigletSection{Value: "system"}
 	ConfigletSectionSystemTop            = ConfigletSection{Value: "system_top"}
 )
+
+type SecurityZoneType oenum.Member[string]
+
+var (
+	SecurityZoneTypeEvpn            = SecurityZoneType{Value: "evpn"}
+	SecurityZoneTypeL3Fabric        = SecurityZoneType{Value: "l3_fabric"}
+	SecurityZoneTypeVirtualL3Fabric = SecurityZoneType{Value: "virtual_l3_fabric"}
+)
