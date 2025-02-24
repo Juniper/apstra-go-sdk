@@ -191,7 +191,7 @@ func (o *FreeformClient) CreateRaResource(ctx context.Context, in *FreeformRaRes
 
 	var response objectIdResponse
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFfRaResources, o.blueprintId),
 		apiInput:    in,
@@ -209,7 +209,7 @@ func (o *FreeformClient) GetAllRaResources(ctx context.Context) ([]FreeformRaRes
 		Items []FreeformRaResource `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfRaResources, o.blueprintId),
 		apiResponse: &response,
@@ -224,7 +224,7 @@ func (o *FreeformClient) GetAllRaResources(ctx context.Context) ([]FreeformRaRes
 func (o *FreeformClient) GetRaResource(ctx context.Context, id ObjectId) (*FreeformRaResource, error) {
 	var response FreeformRaResource
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfRaResourceById, o.blueprintId, id),
 		apiResponse: &response,
@@ -273,7 +273,7 @@ func (o *FreeformClient) UpdateRaResource(ctx context.Context, id ObjectId, in *
 		return err
 	}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfRaResourceById, o.blueprintId, id),
 		apiInput: in,
@@ -286,7 +286,7 @@ func (o *FreeformClient) UpdateRaResource(ctx context.Context, id ObjectId, in *
 }
 
 func (o *FreeformClient) DeleteRaResource(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfRaResourceById, o.blueprintId, id),
 	})

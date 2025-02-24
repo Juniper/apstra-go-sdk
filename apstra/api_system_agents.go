@@ -773,7 +773,7 @@ type jobIdResponse struct {
 
 func (o *Client) listSystemAgents(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsAgentsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlSystemAgents,
 		apiResponse: response,
@@ -786,7 +786,7 @@ func (o *Client) listSystemAgents(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) getSystemAgent(ctx context.Context, id ObjectId) (*SystemAgent, error) {
 	response := &rawSystemAgent{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlSystemAgentsById, id),
 		apiResponse: response,
@@ -799,7 +799,7 @@ func (o *Client) getSystemAgent(ctx context.Context, id ObjectId) (*SystemAgent,
 
 func (o *Client) getAllSystemAgents(ctx context.Context) ([]SystemAgent, error) {
 	response := &getAgentsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlSystemAgents,
 		apiResponse: response,
@@ -837,7 +837,7 @@ func (o *Client) getSystemAgentByManagementIp(ctx context.Context, ip string) (*
 
 func (o *Client) createSystemAgent(ctx context.Context, request *SystemAgentRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlSystemAgents,
 		apiInput:    request.raw(),
@@ -854,7 +854,7 @@ func (o *Client) updateSystemAgent(ctx context.Context, id ObjectId, cfg *System
 	rawCfg := cfg.raw()
 	rawCfg.AgentType = "" // cannot change agent type
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPatch,
 		urlStr:      fmt.Sprintf(apiUrlSystemAgentsById, id),
 		apiInput:    rawCfg,
@@ -877,7 +877,7 @@ func (o *Client) deleteSystemAgent(ctx context.Context, id ObjectId) error {
 		return fmt.Errorf("error running agent uninstall job prior to deletion - %w", convertTtaeToAceWherePossible(err))
 	}
 
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlSystemAgentsById, id),
 	})
@@ -919,7 +919,7 @@ func (o *Client) systemAgentStartJob(ctx context.Context, id ObjectId, job Agent
 		return 0, fmt.Errorf("don't know how to run job '%s' (type %d)", job.String(), job)
 	}
 	response := &jobIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      urlStr,
 		apiResponse: response,
@@ -933,7 +933,7 @@ func (o *Client) systemAgentStartJob(ctx context.Context, id ObjectId, job Agent
 
 func (o *Client) getSystemAgentJobHistory(ctx context.Context, id ObjectId) ([]AgentJobStatus, error) {
 	response := &agentJobHistoryResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlSystemAgentJobHistory, id),
 		apiResponse: response,

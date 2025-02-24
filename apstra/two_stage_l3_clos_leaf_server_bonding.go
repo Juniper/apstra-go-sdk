@@ -68,7 +68,7 @@ func (o *TwoStageL3ClosClient) SetLinkLagParams(ctx context.Context, req *SetLin
 		apiInput.Requests[k] = *raw
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlLeafServerLinkLabels, o.blueprintId),
 		apiInput: &apiInput,

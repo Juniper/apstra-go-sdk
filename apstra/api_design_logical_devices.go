@@ -273,7 +273,7 @@ func (o rawLogicalDevice) polish() (*LogicalDevice, error) {
 
 func (o *Client) listLogicalDeviceIds(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsLogicalDevicesResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignLogicalDevices,
 		apiResponse: response,
@@ -286,7 +286,7 @@ func (o *Client) listLogicalDeviceIds(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) getAllLogicalDevices(ctx context.Context) ([]LogicalDevice, error) {
 	response := &getLogicalDevicesResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignLogicalDevices,
 		apiResponse: response,
@@ -307,7 +307,7 @@ func (o *Client) getAllLogicalDevices(ctx context.Context) ([]LogicalDevice, err
 
 func (o *Client) getLogicalDevice(ctx context.Context, id ObjectId) (*rawLogicalDevice, error) {
 	response := &rawLogicalDevice{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignLogicalDeviceById, id),
 		apiResponse: response,
@@ -350,7 +350,7 @@ func (o *Client) getLogicalDeviceByName(ctx context.Context, name string) (*Logi
 
 func (o *Client) createLogicalDevice(ctx context.Context, in *rawLogicalDeviceData) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignLogicalDevices,
 		apiInput:    in,
@@ -363,7 +363,7 @@ func (o *Client) createLogicalDevice(ctx context.Context, in *rawLogicalDeviceDa
 }
 
 func (o *Client) updateLogicalDevice(ctx context.Context, id ObjectId, in *rawLogicalDeviceData) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignLogicalDeviceById, id),
 		apiInput: in,
@@ -371,7 +371,7 @@ func (o *Client) updateLogicalDevice(ctx context.Context, id ObjectId, in *rawLo
 }
 
 func (o *Client) deleteLogicalDevice(ctx context.Context, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDesignLogicalDeviceById, id),
 	})

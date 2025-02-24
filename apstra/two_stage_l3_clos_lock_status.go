@@ -117,7 +117,7 @@ func (o *LockInfo) String() string {
 
 func (o *TwoStageL3ClosClient) getLockInfo(ctx context.Context) (*rawLockInfo, error) {
 	response := &rawLockInfo{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintLockStatus, o.blueprintId),
 		apiResponse: response,

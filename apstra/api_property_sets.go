@@ -74,7 +74,7 @@ func (o *Client) listAllPropertySets(ctx context.Context) ([]ObjectId, error) {
 		Items []ObjectId `json:"items"`
 	}{}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlPropertySets,
 		apiResponse: response,
@@ -87,7 +87,7 @@ func (o *Client) listAllPropertySets(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) getPropertySet(ctx context.Context, id ObjectId) (*rawPropertySet, error) {
 	response := &rawPropertySet{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlPropertySetById, id),
 		apiResponse: response,
@@ -158,7 +158,7 @@ func (o *Client) createPropertySet(ctx context.Context, in *PropertySetData) (Ob
 		return "", errors.New("blueprints field must be empty when creating property set")
 	}
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlPropertySets,
 		apiInput:    in,
@@ -171,7 +171,7 @@ func (o *Client) createPropertySet(ctx context.Context, in *PropertySetData) (Ob
 }
 
 func (o *Client) updatePropertySet(ctx context.Context, id ObjectId, in *PropertySetData) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlPropertySetById, id),
 		apiInput: in,
@@ -183,7 +183,7 @@ func (o *Client) updatePropertySet(ctx context.Context, id ObjectId, in *Propert
 }
 
 func (o *Client) deletePropertySet(ctx context.Context, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlPropertySetById, id),
 	})

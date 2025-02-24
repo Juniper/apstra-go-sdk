@@ -97,7 +97,7 @@ func (o *Client) listAllIbaPredefinedDashboardIds(ctx context.Context, blueprint
 		} `json:"items"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedDashboards, blueprintId),
 		apiResponse: &response,
@@ -120,7 +120,7 @@ func (o *Client) instantiateIbaPredefinedDashboard(ctx context.Context, blueprin
 		Label string `json:"label"`
 	}
 	in.Label = label
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedDashboardsById, blueprintId, dashboardId),
 		apiInput:    &in,
@@ -138,7 +138,7 @@ func (o *Client) getAllIbaDashboards(ctx context.Context, BlueprintId ObjectId) 
 		Items []IbaDashboard `json:"items"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlIbaDashboards, BlueprintId),
 		apiResponse: &response,
@@ -151,7 +151,7 @@ func (o *Client) getAllIbaDashboards(ctx context.Context, BlueprintId ObjectId) 
 
 func (o *Client) getIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) (*IbaDashboard, error) {
 	var response IbaDashboard
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id),
 		apiResponse: &response,
@@ -202,7 +202,7 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 		return "", errors.New("attempt to create dashboard with non-empty predefined_dashboard value - this value can " +
 			"be set only by the server, and only when a dashboard is instantiated from a predefined template")
 	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlIbaDashboards, blueprintId),
 		apiInput:    in,
@@ -230,7 +230,7 @@ func (o *Client) createIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 
 		time.Sleep(retryInterval * time.Duration(i))
 
-		e := o.talkToApstra(ctx, &talkToApstraIn{
+		e := o.talkToApstra(ctx, talkToApstraIn{
 			method:      http.MethodPost,
 			urlStr:      fmt.Sprintf(apiUrlIbaDashboards, blueprintId),
 			apiInput:    in,
@@ -261,7 +261,7 @@ func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 			"Got '%s' Expected blank", in.PredefinedDashboard))
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPut, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id), apiInput: in,
 	})
 	if err != nil {
@@ -272,7 +272,7 @@ func (o *Client) updateIbaDashboard(ctx context.Context, blueprintId ObjectId, i
 }
 
 func (o *Client) deleteIbaDashboard(ctx context.Context, blueprintId ObjectId, id ObjectId) error {
-	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete, urlStr: fmt.Sprintf(apiUrlIbaDashboardsById, blueprintId, id),
 	}))
 }

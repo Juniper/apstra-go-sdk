@@ -120,7 +120,7 @@ func (o *TwoStageL3ClosClient) getAllPolicies(ctx context.Context) ([]rawPolicy,
 	response := &struct {
 		Policies []rawPolicy `json:"policies"`
 	}{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlPolicies, o.blueprintId),
 		apiResponse: response,
@@ -134,7 +134,7 @@ func (o *TwoStageL3ClosClient) getAllPolicies(ctx context.Context) ([]rawPolicy,
 
 func (o *TwoStageL3ClosClient) getPolicy(ctx context.Context, id ObjectId) (*rawPolicy, error) {
 	response := &rawPolicy{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
 		apiResponse: response,
@@ -187,7 +187,7 @@ func (o *TwoStageL3ClosClient) getPolicyByLabel(ctx context.Context, label strin
 
 func (o *TwoStageL3ClosClient) createPolicy(ctx context.Context, data *policyRequest) (ObjectId, error) {
 	var response objectIdResponse
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlPolicies, o.blueprintId),
 		apiInput:    data,
@@ -200,7 +200,7 @@ func (o *TwoStageL3ClosClient) createPolicy(ctx context.Context, data *policyReq
 }
 
 func (o *TwoStageL3ClosClient) deletePolicy(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
 	})
@@ -208,7 +208,7 @@ func (o *TwoStageL3ClosClient) deletePolicy(ctx context.Context, id ObjectId) er
 }
 
 func (o *TwoStageL3ClosClient) updatePolicy(ctx context.Context, id ObjectId, data *policyRequest) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlPolicyById, o.blueprintId, id),
 		apiInput: data,

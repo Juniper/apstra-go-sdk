@@ -62,7 +62,7 @@ func (o *Client) SetApiToken(in string) {
 
 func (o *Client) login(ctx context.Context) error {
 	response := &userLoginResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPost,
 		urlStr: apiUrlUserLogin,
 		apiInput: &userLoginRequest{
@@ -106,7 +106,7 @@ func (o *Client) logout(ctx context.Context) error {
 	}
 	o.unlock(mutexKeyHttpHeaders)
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:     http.MethodPost,
 		urlStr:     apiUrlUserLogout,
 		doNotLogin: true,

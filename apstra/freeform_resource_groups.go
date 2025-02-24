@@ -62,7 +62,7 @@ type FreeformRaGroupData struct {
 func (o *FreeformClient) CreateRaGroup(ctx context.Context, in *FreeformRaGroupData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFfRaGroups, o.blueprintId),
 		apiInput:    in,
@@ -80,7 +80,7 @@ func (o *FreeformClient) GetAllRaGroups(ctx context.Context) ([]FreeformRaGroup,
 		Items []FreeformRaGroup `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfRaGroups, o.blueprintId),
 		apiResponse: &response,
@@ -95,7 +95,7 @@ func (o *FreeformClient) GetAllRaGroups(ctx context.Context) ([]FreeformRaGroup,
 func (o *FreeformClient) GetRaGroup(ctx context.Context, id ObjectId) (*FreeformRaGroup, error) {
 	var response FreeformRaGroup
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfRaGroupById, o.blueprintId, id),
 		apiResponse: &response,
@@ -139,7 +139,7 @@ func (o *FreeformClient) GetRaGroupByName(ctx context.Context, name string) (*Fr
 }
 
 func (o *FreeformClient) UpdateRaGroup(ctx context.Context, id ObjectId, in *FreeformRaGroupData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfRaGroupById, o.blueprintId, id),
 		apiInput: in,
@@ -152,7 +152,7 @@ func (o *FreeformClient) UpdateRaGroup(ctx context.Context, id ObjectId, in *Fre
 }
 
 func (o *FreeformClient) DeleteRaGroup(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfRaGroupById, o.blueprintId, id),
 	})

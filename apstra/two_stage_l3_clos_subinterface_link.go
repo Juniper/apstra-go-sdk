@@ -130,7 +130,7 @@ func (o *TwoStageL3ClosClient) GetAllSubinterfaceLinks(ctx context.Context) ([]T
 		Links []TwoStageL3ClosSubinterfaceLink `json:"subinterfaces"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlWebExpSubinterfaces, o.Id()),
 		apiResponse: &response,

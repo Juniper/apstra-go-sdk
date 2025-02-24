@@ -250,7 +250,7 @@ func (o *rawIntRange) polish() (*IntRange, error) {
 
 func (o *Client) createIntPool(ctx context.Context, in *IntPoolRequest, apiUrlResourcePool string) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlResourcePool, // Will be apiUrlResourcesAsnPool or apiUrlResourcesVniPool
 		apiInput:    in.raw(),
@@ -266,7 +266,7 @@ func (o *Client) listIntPoolIds(ctx context.Context, apiUrlResourcePool string) 
 	var response struct {
 		Items []ObjectId `json:"items"`
 	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlResourcePool, // Will be apiUrlResourcesAsnPool or apiUrlResourcesVniPool
 		apiResponse: &response,
@@ -281,7 +281,7 @@ func (o *Client) getIntPools(ctx context.Context, apiUrlResourcePool string) ([]
 	var response struct {
 		Items []rawIntPool `json:"items"`
 	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlResourcePool,
 		apiResponse: &response,
@@ -298,7 +298,7 @@ func (o *Client) getIntPool(ctx context.Context, apiUrlResourcePoolById string, 
 		return nil, errors.New("attempt to get Int Pool info with empty pool ID")
 	}
 	response := &rawIntPool{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlResourcePoolById, poolId), // ApiUrl
 		apiResponse: response,
@@ -313,7 +313,7 @@ func (o *Client) deleteIntPool(ctx context.Context, apiUrlResourcePoolById strin
 	if poolId == "" {
 		return errors.New("attempt to delete Int Pool with empty pool ID")
 	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlResourcePoolById, poolId),
 	})
@@ -327,7 +327,7 @@ func (o *Client) updateIntPool(ctx context.Context, apiUrlResourcePoolById strin
 	if poolId == "" {
 		return errors.New("attempt to update Int Pool with empty pool ID")
 	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlResourcePoolById, poolId),
 		apiInput: pool.raw(),

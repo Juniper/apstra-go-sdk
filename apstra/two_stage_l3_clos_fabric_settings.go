@@ -216,7 +216,7 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 
 func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*rawFabricSettings, error) {
 	var response rawFabricSettings
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintFabricSettings, o.blueprintId),
 		apiResponse: &response,
@@ -274,7 +274,7 @@ func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*rawFa
 }
 
 func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFabricSettings) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintFabricSettings, o.blueprintId),
 		apiInput: in,
@@ -358,7 +358,7 @@ func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context
 		return fmt.Errorf("expected 1 %s, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
 	}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPatch,
 		urlStr: fmt.Sprintf(apiUrlBlueprintNodeById, o.blueprintId, securityZonePolicyNodeIds[0]),
 		apiInput: &struct {

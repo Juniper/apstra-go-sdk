@@ -19,7 +19,7 @@ type TelemetryQueryResponse struct {
 
 func (o *Client) getTelemetryQuery(ctx context.Context) (*TelemetryQueryResponse, error) {
 	response := &TelemetryQueryResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlTelemetryQuery,
 		apiResponse: response,

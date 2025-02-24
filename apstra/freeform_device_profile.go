@@ -21,7 +21,7 @@ func (o *FreeformClient) ImportDeviceProfile(ctx context.Context, id ObjectId) (
 		Ids []ObjectId `json:"ids"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPost,
 		urlStr: fmt.Sprintf(apiUrlFfDpImport, o.blueprintId),
 		apiInput: struct {
@@ -42,7 +42,7 @@ func (o *FreeformClient) ImportDeviceProfile(ctx context.Context, id ObjectId) (
 }
 
 func (o *FreeformClient) DeleteDeviceProfile(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfDpById, o.blueprintId, id),
 	})

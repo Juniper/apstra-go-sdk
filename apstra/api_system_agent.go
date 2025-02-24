@@ -20,7 +20,7 @@ type SystemAgentManagerConfig struct {
 
 func (o *Client) getSystemAgentManagerConfig(ctx context.Context) (*SystemAgentManagerConfig, error) {
 	result := &SystemAgentManagerConfig{}
-	return result, o.talkToApstra(ctx, &talkToApstraIn{
+	return result, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlSystemAgentManagerConfig,
 		apiResponse: result,
@@ -28,7 +28,7 @@ func (o *Client) getSystemAgentManagerConfig(ctx context.Context) (*SystemAgentM
 }
 
 func (o *Client) setSystemAgentManagerConfig(ctx context.Context, cfg *SystemAgentManagerConfig) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   apiUrlSystemAgentManagerConfig,
 		apiInput: cfg,

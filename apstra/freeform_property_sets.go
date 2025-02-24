@@ -57,7 +57,7 @@ type FreeformPropertySetData struct {
 func (o *FreeformClient) CreatePropertySet(ctx context.Context, in *FreeformPropertySetData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFFPropertySets, o.blueprintId),
 		apiInput:    in,
@@ -73,7 +73,7 @@ func (o *FreeformClient) CreatePropertySet(ctx context.Context, in *FreeformProp
 func (o *FreeformClient) GetPropertySet(ctx context.Context, id ObjectId) (*FreeformPropertySet, error) {
 	var response FreeformPropertySet
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFFPropertySetById, o.blueprintId, id),
 		apiResponse: &response,
@@ -121,7 +121,7 @@ func (o *FreeformClient) GetAllPropertySets(ctx context.Context) ([]FreeformProp
 		Items []FreeformPropertySet `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFFPropertySets, o.blueprintId),
 		apiResponse: &response,
@@ -134,7 +134,7 @@ func (o *FreeformClient) GetAllPropertySets(ctx context.Context) ([]FreeformProp
 }
 
 func (o *FreeformClient) UpdatePropertySet(ctx context.Context, id ObjectId, in *FreeformPropertySetData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFFPropertySetById, o.blueprintId, id),
 		apiInput: in,
@@ -147,7 +147,7 @@ func (o *FreeformClient) UpdatePropertySet(ctx context.Context, id ObjectId, in 
 }
 
 func (o *FreeformClient) DeletePropertySet(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFFPropertySetById, o.blueprintId, id),
 	})

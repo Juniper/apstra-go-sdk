@@ -224,7 +224,7 @@ func (o *TwoStageL3ClosClient) CreateLinksWithNewSystem(ctx context.Context, req
 		IDs []ObjectId `json:"ids"`
 	}{}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlSwitchSystemLinks, o.blueprintId),
 		apiInput:    apiInput,
@@ -239,7 +239,7 @@ func (o *TwoStageL3ClosClient) DeleteLinksFromSystem(ctx context.Context, ids []
 		LinkIds []ObjectId `json:"link_ids"`
 	}{ids}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   fmt.Sprintf(apiUrlDeleteSwitchSystemLinks, o.blueprintId),
 		apiInput: &apiInput,
@@ -457,7 +457,7 @@ func (o *TwoStageL3ClosClient) DeleteGenericSystem(ctx context.Context, id Objec
 	}
 
 	if response.Items[0].System.External {
-		err = o.client.talkToApstra(ctx, &talkToApstraIn{
+		err = o.client.talkToApstra(ctx, talkToApstraIn{
 			method: http.MethodDelete,
 			urlStr: fmt.Sprintf(apiUrlBlueprintExternalGenericSystem, o.blueprintId, id),
 		})
@@ -480,7 +480,7 @@ func (o *TwoStageL3ClosClient) AddLinksToSystem(ctx context.Context, linkRequest
 		Ids []ObjectId `json:"ids"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlSwitchSystemLinks, o.blueprintId),
 		apiInput:    &apiInput,

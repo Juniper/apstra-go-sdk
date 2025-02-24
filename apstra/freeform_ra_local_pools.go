@@ -97,7 +97,7 @@ type FFLocalIntPoolChunk struct {
 func (o *FreeformClient) CreateRaLocalIntPool(ctx context.Context, in *FreeformRaLocalIntPoolData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPools, o.blueprintId),
 		apiInput:    in,
@@ -115,7 +115,7 @@ func (o *FreeformClient) GetAllRaLocalIntPools(ctx context.Context) ([]FreeformR
 		Items []FreeformRaLocalIntPool `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPools, o.blueprintId),
 		apiResponse: &response,
@@ -130,7 +130,7 @@ func (o *FreeformClient) GetAllRaLocalIntPools(ctx context.Context) ([]FreeformR
 func (o *FreeformClient) GetRaLocalIntPool(ctx context.Context, id ObjectId) (*FreeformRaLocalIntPool, error) {
 	var response FreeformRaLocalIntPool
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPoolById, o.blueprintId, id),
 		apiResponse: &response,
@@ -143,7 +143,7 @@ func (o *FreeformClient) GetRaLocalIntPool(ctx context.Context, id ObjectId) (*F
 }
 
 func (o *FreeformClient) UpdateRaLocalIntPool(ctx context.Context, id ObjectId, in *FreeformRaLocalIntPoolData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfRaLocalPoolById, o.blueprintId, id),
 		apiInput: in,
@@ -156,7 +156,7 @@ func (o *FreeformClient) UpdateRaLocalIntPool(ctx context.Context, id ObjectId, 
 }
 
 func (o *FreeformClient) DeleteRaLocalIntPool(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfRaLocalPoolById, o.blueprintId, id),
 	})

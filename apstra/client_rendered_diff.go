@@ -26,7 +26,7 @@ type RenderDiff struct {
 func (o *Client) GetNodeRenderedConfigDiff(ctx context.Context, bpId, nodeId ObjectId) (*RenderDiff, error) {
 	var apiResponse RenderDiff
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeConfigRenderDiff, bpId, nodeId),
 		apiResponse: &apiResponse,
@@ -41,7 +41,7 @@ func (o *Client) GetNodeRenderedConfigDiff(ctx context.Context, bpId, nodeId Obj
 func (o *Client) GetSystemRenderedConfigDiff(ctx context.Context, bpId, sysId ObjectId) (*RenderDiff, error) {
 	var apiResponse RenderDiff
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRenderDiff, bpId, sysId),
 		apiResponse: &apiResponse,

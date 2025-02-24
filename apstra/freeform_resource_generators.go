@@ -95,7 +95,7 @@ func (o FreeformResourceGeneratorData) MarshalJSON() ([]byte, error) {
 func (o *FreeformClient) CreateResourceGenerator(ctx context.Context, in *FreeformResourceGeneratorData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFfResourceGenerators, o.blueprintId),
 		apiInput:    in,
@@ -113,7 +113,7 @@ func (o *FreeformClient) GetAllResourceGenerators(ctx context.Context) ([]Freefo
 		Items []FreeformResourceGenerator `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfResourceGenerators, o.blueprintId),
 		apiResponse: &response,
@@ -128,7 +128,7 @@ func (o *FreeformClient) GetAllResourceGenerators(ctx context.Context) ([]Freefo
 func (o *FreeformClient) GetResourceGenerator(ctx context.Context, id ObjectId) (*FreeformResourceGenerator, error) {
 	var response FreeformResourceGenerator
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfResourceGeneratorById, o.blueprintId, id),
 		apiResponse: &response,
@@ -172,7 +172,7 @@ func (o *FreeformClient) GetResourceGeneratorByName(ctx context.Context, name st
 }
 
 func (o *FreeformClient) UpdateResourceGenerator(ctx context.Context, id ObjectId, in *FreeformResourceGeneratorData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfResourceGeneratorById, o.blueprintId, id),
 		apiInput: in,
@@ -185,7 +185,7 @@ func (o *FreeformClient) UpdateResourceGenerator(ctx context.Context, id ObjectI
 }
 
 func (o *FreeformClient) DeleteResourceGenerator(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfResourceGeneratorById, o.blueprintId, id),
 	})

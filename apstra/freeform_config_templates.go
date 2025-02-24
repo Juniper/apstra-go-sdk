@@ -58,7 +58,7 @@ type ConfigTemplateData struct {
 func (o *FreeformClient) CreateConfigTemplate(ctx context.Context, in *ConfigTemplateData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlConfigTemplates, o.blueprintId),
 		apiInput:    in,
@@ -74,7 +74,7 @@ func (o *FreeformClient) CreateConfigTemplate(ctx context.Context, in *ConfigTem
 func (o *FreeformClient) GetConfigTemplate(ctx context.Context, id ObjectId) (*ConfigTemplate, error) {
 	var response ConfigTemplate
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlConfigTemplateById, o.blueprintId, id),
 		apiResponse: &response,
@@ -122,7 +122,7 @@ func (o *FreeformClient) GetAllConfigTemplates(ctx context.Context) ([]ConfigTem
 		Items []ConfigTemplate `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlConfigTemplates, o.blueprintId),
 		apiResponse: &response,
@@ -135,7 +135,7 @@ func (o *FreeformClient) GetAllConfigTemplates(ctx context.Context) ([]ConfigTem
 }
 
 func (o *FreeformClient) UpdateConfigTemplate(ctx context.Context, id ObjectId, in *ConfigTemplateData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlConfigTemplateById, o.blueprintId, id),
 		apiInput: in,
@@ -148,7 +148,7 @@ func (o *FreeformClient) UpdateConfigTemplate(ctx context.Context, id ObjectId, 
 }
 
 func (o *FreeformClient) DeleteConfigTemplate(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlConfigTemplateById, o.blueprintId, id),
 	})

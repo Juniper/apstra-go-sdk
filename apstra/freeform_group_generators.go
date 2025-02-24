@@ -70,7 +70,7 @@ func (o FreeformGroupGeneratorData) MarshalJSON() ([]byte, error) {
 func (o *FreeformClient) CreateGroupGenerator(ctx context.Context, in *FreeformGroupGeneratorData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFfGroupGenerators, o.blueprintId),
 		apiInput:    in,
@@ -88,7 +88,7 @@ func (o *FreeformClient) GetAllGroupGenerators(ctx context.Context) ([]FreeformG
 		Items []FreeformGroupGenerator `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfGroupGenerators, o.blueprintId),
 		apiResponse: &response,
@@ -103,7 +103,7 @@ func (o *FreeformClient) GetAllGroupGenerators(ctx context.Context) ([]FreeformG
 func (o *FreeformClient) GetGroupGenerator(ctx context.Context, id ObjectId) (*FreeformGroupGenerator, error) {
 	var response FreeformGroupGenerator
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfGroupGeneratorById, o.blueprintId, id),
 		apiResponse: &response,
@@ -147,7 +147,7 @@ func (o *FreeformClient) GetGroupGeneratorByName(ctx context.Context, name strin
 }
 
 func (o *FreeformClient) UpdateGroupGenerator(ctx context.Context, id ObjectId, in *FreeformGroupGeneratorData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfGroupGeneratorById, o.blueprintId, id),
 		apiInput: in,
@@ -160,7 +160,7 @@ func (o *FreeformClient) UpdateGroupGenerator(ctx context.Context, id ObjectId, 
 }
 
 func (o *FreeformClient) DeleteGroupGenerator(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfGroupGeneratorById, o.blueprintId, id),
 	})

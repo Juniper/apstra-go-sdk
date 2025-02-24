@@ -109,7 +109,7 @@ func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeployRequest
 		return nil, err
 	}
 
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		url:      deployUrl,
 		apiInput: request,
@@ -119,7 +119,7 @@ func (o *Client) deployBlueprint(ctx context.Context, in *BlueprintDeployRequest
 	}
 
 	response := &rawBlueprintDeployResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         deployUrl,
 		apiResponse: &response,
@@ -170,7 +170,7 @@ func (o *Client) getBlueprintRevisions(ctx context.Context, id ObjectId) ([]rawB
 	result := &struct {
 		Items []rawBlueprintRevision `json:"items"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintRevisions, id),
 		apiResponse: result,

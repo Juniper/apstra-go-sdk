@@ -99,7 +99,7 @@ func (o *TwoStageL3ClosClient) SetNodeTags(ctx context.Context, nodeId ObjectId,
 		Remove: removeTags,
 	}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintTagging, o.blueprintId),
 		apiInput: &apiInput,

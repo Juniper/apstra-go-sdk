@@ -92,7 +92,7 @@ func (o *Client) getVersionsAosdi(ctx context.Context) (*versionsAosdiResponse, 
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsAosdi, err)
 	}
 	response := &versionsAosdiResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	return response, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,
@@ -105,7 +105,7 @@ func (o *Client) getVersionsApi(ctx context.Context) (*versionsApiResponse, erro
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsApi, err)
 	}
 	response := &versionsApiResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	return response, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,
@@ -118,7 +118,7 @@ func (o *Client) getVersionsBuild(ctx context.Context) (*versionsBuildResponse, 
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsBuild, err)
 	}
 	response := &versionsBuildResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	return response, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,
@@ -132,7 +132,7 @@ func (o *Client) postVersionsDevice(ctx context.Context, request *versionsDevice
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsDevice, err)
 	}
 	response := &versionsDeviceResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	return response, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		url:         apstraUrl,
 		apiInput:    request,
@@ -147,7 +147,7 @@ func (o *Client) postVersionsIba(ctx context.Context, request *versionsIbaReques
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsIba, err)
 	}
 	response := &versionsIbaResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	return response, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		url:         apstraUrl,
 		apiInput:    request,
@@ -162,7 +162,7 @@ func (o *Client) postVersionsNode(ctx context.Context, request *versionsNodeRequ
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsNode, err)
 	}
 	response := &versionsNodeResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	return response, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		url:         apstraUrl,
 		apiInput:    request,
@@ -176,7 +176,7 @@ func (o *Client) getVersionsServer(ctx context.Context) (*versionsServerResponse
 		return nil, fmt.Errorf("error parsing url '%s' - %w", apiUrlVersionsServer, err)
 	}
 	response := &versionsServerResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	return response, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,

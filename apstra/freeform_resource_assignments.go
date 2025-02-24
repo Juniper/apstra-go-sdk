@@ -21,7 +21,7 @@ func (o *FreeformClient) ListResourceAssignments(ctx context.Context, resource O
 		} `json:"assigned_to"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiURLFfResourceAssignments, o.blueprintId, resource),
 		apiResponse: &response,
@@ -49,7 +49,7 @@ func (o *FreeformClient) UpdateResourceAssignments(ctx context.Context, resource
 		apiInput.Targets = targets
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiURLFfResourceAssignments, o.blueprintId, resource),
 		apiInput: apiInput,

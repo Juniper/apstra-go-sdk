@@ -438,7 +438,7 @@ func (o *TwoStageL3ClosClient) listAllVirtualNetworkIds(ctx context.Context) ([]
 		VirtualNetworks map[ObjectId]VirtualNetwork `json:"virtual_networks"`
 	}{}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:         http.MethodGet,
 		url:            apstraUrl,
 		apiResponse:    response,
@@ -464,7 +464,7 @@ func (o *TwoStageL3ClosClient) getVirtualNetwork(ctx context.Context, vnId Objec
 
 	response := VirtualNetwork{}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:         http.MethodGet,
 		url:            apstraUrl,
 		apiResponse:    &response,
@@ -514,7 +514,7 @@ func (o *TwoStageL3ClosClient) getAllVirtualNetworks(ctx context.Context) (map[O
 		VirtualNetworks map[ObjectId]VirtualNetwork `json:"virtual_networks"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId),
 		apiResponse: &response,
@@ -528,7 +528,7 @@ func (o *TwoStageL3ClosClient) getAllVirtualNetworks(ctx context.Context) (map[O
 
 func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, cfg *VirtualNetworkData) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlVirtualNetworks, o.blueprintId),
 		apiInput:    cfg,
@@ -542,7 +542,7 @@ func (o *TwoStageL3ClosClient) createVirtualNetwork(ctx context.Context, cfg *Vi
 }
 
 func (o *TwoStageL3ClosClient) updateVirtualNetwork(ctx context.Context, id ObjectId, cfg *VirtualNetworkData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, id),
 		apiInput: cfg,
@@ -555,7 +555,7 @@ func (o *TwoStageL3ClosClient) updateVirtualNetwork(ctx context.Context, id Obje
 }
 
 func (o *TwoStageL3ClosClient) deleteVirtualNetwork(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, id),
 	})

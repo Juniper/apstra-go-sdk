@@ -22,7 +22,7 @@ type TwoStageL3ClosFabricAddressingPolicy struct {
 
 func (o *TwoStageL3ClosClient) GetFabricAddressingPolicy(ctx context.Context) (*TwoStageL3ClosFabricAddressingPolicy, error) {
 	var result TwoStageL3ClosFabricAddressingPolicy
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintFabricAddressingPolicy, o.blueprintId),
 		apiResponse: &result,
@@ -41,7 +41,7 @@ func (o *TwoStageL3ClosClient) SetFabricAddressingPolicy(ctx context.Context, in
 		return nil // nothing to do if all relevant input fields are nil
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintFabricAddressingPolicy, o.blueprintId),
 		apiInput: in,

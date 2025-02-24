@@ -28,7 +28,7 @@ type rawSetTransformationRequest struct {
 // change the transform number, particularly when such a change would change
 // the link speed.
 func (o *TwoStageL3ClosClient) SetTransformIdByIfName(ctx context.Context, systemId ObjectId, ifName string, transformId int) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPut,
 		urlStr: fmt.Sprintf(apiUrlBlueprintInterfaceTransformation, o.blueprintId),
 		apiInput: &rawSetTransformationRequest{

@@ -110,7 +110,7 @@ func (o *RemoteGatewayData) raw() *rawRemoteGatewayRequest {
 func (o *TwoStageL3ClosClient) createRemoteGateway(ctx context.Context, in *rawRemoteGatewayRequest) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintRemoteGateways, o.Id()),
 		apiInput:    in,
@@ -126,7 +126,7 @@ func (o *TwoStageL3ClosClient) createRemoteGateway(ctx context.Context, in *rawR
 func (o *TwoStageL3ClosClient) getRemoteGateway(ctx context.Context, id ObjectId) (*rawRemoteGatewayResponse, error) {
 	var response rawRemoteGatewayResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintRemoteGatewayById, o.Id(), id),
 		apiResponse: &response,
@@ -143,7 +143,7 @@ func (o *TwoStageL3ClosClient) getAllRemoteGateways(ctx context.Context) ([]rawR
 		RemoteGateways []rawRemoteGatewayResponse `json:"remote_gateways"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintRemoteGateways, o.Id()),
 		apiResponse: &response,
@@ -188,7 +188,7 @@ func (o *TwoStageL3ClosClient) getRemoteGatewayByName(ctx context.Context, name 
 }
 
 func (o *TwoStageL3ClosClient) updateRemoteGateway(ctx context.Context, id ObjectId, in *rawRemoteGatewayRequest) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintRemoteGatewayById, o.Id(), id),
 		apiInput: in,
@@ -201,7 +201,7 @@ func (o *TwoStageL3ClosClient) updateRemoteGateway(ctx context.Context, id Objec
 }
 
 func (o *TwoStageL3ClosClient) deleteRemoteGateway(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintRemoteGatewayById, o.Id(), id),
 	})

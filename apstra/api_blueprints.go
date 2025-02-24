@@ -295,7 +295,7 @@ type rawCreateBlueprintFromTemplateRequest420 struct {
 
 func (o *Client) listAllBlueprintIds(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsBlueprintsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlBlueprints,
 		apiResponse: response,
@@ -338,7 +338,7 @@ func (o *Client) getBlueprintIdByName(ctx context.Context, name string) (ObjectI
 
 func (o *Client) getBlueprint(ctx context.Context, id ObjectId) (*Blueprint, error) {
 	response := &rawBlueprint{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintById, id),
 		apiResponse: response,
@@ -363,7 +363,7 @@ func (o *Client) getAllBlueprintStatus(ctx context.Context) ([]rawBlueprintStatu
 	var errs []error
 
 	for i := range o.GetTuningParam("BlueprintStatusMaxRetries") {
-		err := o.talkToApstra(ctx, &talkToApstraIn{
+		err := o.talkToApstra(ctx, talkToApstraIn{
 			method:      http.MethodGet,
 			urlStr:      apiUrlBlueprints,
 			apiResponse: &response,
@@ -485,7 +485,7 @@ func (o *Client) waitForBlueprintCabling(ctx context.Context, bpId ObjectId) err
 
 func (o *Client) createBlueprintFromTemplate(ctx context.Context, req *rawCreateBlueprintFromTemplateRequest) (ObjectId, error) {
 	response := &postBlueprintsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlBlueprints,
 		apiInput:    req,
@@ -496,7 +496,7 @@ func (o *Client) createBlueprintFromTemplate(ctx context.Context, req *rawCreate
 
 func (o *Client) createBlueprintFromTemplate420(ctx context.Context, req *rawCreateBlueprintFromTemplateRequest420) (ObjectId, error) {
 	response := &postBlueprintsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlBlueprints,
 		apiInput:    req,
@@ -506,7 +506,7 @@ func (o *Client) createBlueprintFromTemplate420(ctx context.Context, req *rawCre
 }
 
 func (o *Client) deleteBlueprint(ctx context.Context, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintById, id),
 	})
@@ -532,7 +532,7 @@ func (o *Client) runQuery(ctx context.Context, blueprint ObjectId, query QEQuery
 	// talkToApstra will copy the http response into this buffer
 	httpBody := new(bytes.Buffer)
 
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:         http.MethodPost,
 		url:            apstraUrl,
 		apiInput:       apiInput,
@@ -569,7 +569,7 @@ func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType Node
 		apstraUrl.RawQuery = params.Encode()
 	}
 
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,
@@ -578,7 +578,7 @@ func (o *Client) getNodes(ctx context.Context, blueprint ObjectId, nodeType Node
 }
 
 func (o *Client) getNode(ctx context.Context, blueprintId ObjectId, nodeId ObjectId, target interface{}) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, blueprintId, nodeId),
 		apiResponse: target,
@@ -587,7 +587,7 @@ func (o *Client) getNode(ctx context.Context, blueprintId ObjectId, nodeId Objec
 }
 
 func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectId, request interface{}, response interface{}, unsafe bool) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPatch,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeById, blueprint, node),
 		apiInput:    request,
@@ -598,7 +598,7 @@ func (o *Client) patchNode(ctx context.Context, blueprint ObjectId, node ObjectI
 }
 
 func (o *Client) patchNodes(ctx context.Context, blueprint ObjectId, request []interface{}) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintNodes, blueprint),
 		apiInput: request,

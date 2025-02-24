@@ -127,7 +127,7 @@ func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szI
 		apiInput.Loopbacks[k] = rawJson
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSecurityZoneLoopbacksById, o.blueprintId, szId),
 		apiInput: apiInput,

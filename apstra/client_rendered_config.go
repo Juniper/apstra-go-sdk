@@ -22,7 +22,7 @@ func (o *Client) GetNodeRenderedConfig(ctx context.Context, bpId, nodeId ObjectI
 		Config string `json:"config"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintNodeConfigRender, bpId, nodeId, rcType.String()),
 		apiResponse: &apiResponse,
@@ -39,7 +39,7 @@ func (o *Client) GetSystemRenderedConfig(ctx context.Context, bpId, sysId Object
 		Config string `json:"config"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintSystemConfigRender, bpId, sysId, rcType.String()),
 		apiResponse: &apiResponse,

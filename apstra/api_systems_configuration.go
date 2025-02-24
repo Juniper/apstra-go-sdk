@@ -85,7 +85,7 @@ func (o *SystemConfig) UnmarshalJSON(bytes []byte) error {
 // a managed device).
 func (o *Client) GetSystemConfig(ctx context.Context, id ObjectId) (SystemConfig, error) {
 	var response SystemConfig
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlSystemsConfiguration, id),
 		apiResponse: &response,

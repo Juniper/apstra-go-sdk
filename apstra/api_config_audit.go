@@ -19,7 +19,7 @@ type AuditConfig struct {
 
 func (o *Client) getAuditConfig(ctx context.Context) (*AuditConfig, error) {
 	response := &AuditConfig{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlConfigAudit,
 		apiResponse: response,
@@ -32,7 +32,7 @@ func (o *Client) getAuditConfig(ctx context.Context) (*AuditConfig, error) {
 }
 
 func (o *Client) putAuditConfig(ctx context.Context, config *AuditConfig) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   apiUrlConfigAudit,
 		apiInput: config,

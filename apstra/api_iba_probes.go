@@ -64,7 +64,7 @@ func (o *Client) getAllIbaProbes(ctx context.Context, bpId ObjectId) ([]IbaProbe
 		Items []IbaProbe `json:"items"`
 	}{}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlIbaProbes, bpId),
 		apiResponse: response,
@@ -106,7 +106,7 @@ func (o *Client) getIbaProbeByLabel(ctx context.Context, bpId ObjectId, label st
 func (o *Client) getIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId) (*IbaProbe, error) {
 	response := &IbaProbe{}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlIbaProbesById, bpId, id),
 		apiResponse: response,
@@ -120,7 +120,7 @@ func (o *Client) getIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId) (*
 func (o *Client) getIbaProbeState(ctx context.Context, bpId ObjectId, id ObjectId) (*IbaProbeState, error) {
 	response := &IbaProbeState{}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlIbaProbesById, bpId, id),
 		apiResponse: response,
@@ -132,7 +132,7 @@ func (o *Client) getIbaProbeState(ctx context.Context, bpId ObjectId, id ObjectI
 }
 
 func (o *Client) deleteIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId) error {
-	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlIbaProbesById, bpId, id),
 	}))
@@ -140,7 +140,7 @@ func (o *Client) deleteIbaProbe(ctx context.Context, bpId ObjectId, id ObjectId)
 
 func (o *Client) createIbaProbeFromJson(ctx context.Context, bpId ObjectId, probeJson json.RawMessage) (ObjectId, error) {
 	var response objectIdResponse
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlIbaProbes, bpId),
 		apiInput:    probeJson,
@@ -168,7 +168,7 @@ func (o *Client) createIbaProbeFromJson(ctx context.Context, bpId ObjectId, prob
 
 		time.Sleep(retryInterval * time.Duration(i))
 
-		e := o.talkToApstra(ctx, &talkToApstraIn{
+		e := o.talkToApstra(ctx, talkToApstraIn{
 			method:      http.MethodPost,
 			urlStr:      fmt.Sprintf(apiUrlIbaProbes, bpId),
 			apiInput:    probeJson,

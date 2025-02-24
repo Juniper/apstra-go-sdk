@@ -1259,7 +1259,7 @@ func (o *rawRackType) tagByLabel(desired string) (*DesignTagData, bool) {
 
 func (o *Client) listRackTypeIds(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsRackTypeResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignRackTypes,
 		apiResponse: response,
@@ -1272,7 +1272,7 @@ func (o *Client) listRackTypeIds(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) getRackType(ctx context.Context, id ObjectId) (*rawRackType, error) {
 	response := &rawRackType{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignRackTypeById, id),
 		apiResponse: response,
@@ -1288,7 +1288,7 @@ func (o *Client) getAllRackTypes(ctx context.Context) ([]RackType, error) {
 	response := &struct {
 		Items []rawRackType `json:"items"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignRackTypes,
 		apiResponse: response,
@@ -1326,7 +1326,7 @@ func (o *Client) getRackTypeByName(ctx context.Context, name string) (*RackType,
 
 func (o *Client) createRackType(ctx context.Context, request *rawRackTypeRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignRackTypes,
 		apiInput:    request,
@@ -1344,7 +1344,7 @@ func (o *Client) updateRackType(ctx context.Context, id ObjectId, request *RackT
 		return err
 	}
 
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignRackTypeById, id),
 		apiInput: rawRequest,
@@ -1356,7 +1356,7 @@ func (o *Client) updateRackType(ctx context.Context, id ObjectId, request *RackT
 }
 
 func (o *Client) deleteRackType(ctx context.Context, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDesignRackTypeById, id),
 	})

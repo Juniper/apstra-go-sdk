@@ -689,7 +689,7 @@ func (o *TwoStageL3ClosClient) GetCablingMapLinks(ctx context.Context) ([]Cablin
 		Links []rawCablingMapLink `json:"links"`
 	}{}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: &response,
@@ -726,7 +726,7 @@ func (o *TwoStageL3ClosClient) GetCablingMapLinksBySystem(ctx context.Context, s
 		Links []rawCablingMapLink `json:"links"`
 	}{}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: &response,

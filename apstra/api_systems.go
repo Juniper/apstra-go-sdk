@@ -244,7 +244,7 @@ func (o *Client) listSystems(ctx context.Context) ([]SystemId, error) {
 		return nil, fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 	response := &optionsSystemsResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:      method,
 		url:         apstraUrl,
 		apiResponse: response,
@@ -258,7 +258,7 @@ func (o *Client) listSystems(ctx context.Context) ([]SystemId, error) {
 
 func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*rawManagedSystemInfo, error) {
 	response := &rawManagedSystemInfo{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlSystemsById, id),
 		apiResponse: response,
@@ -272,7 +272,7 @@ func (o *Client) getSystemInfo(ctx context.Context, id SystemId) (*rawManagedSys
 
 func (o *Client) getAllSystemsInfo(ctx context.Context) ([]rawManagedSystemInfo, error) {
 	response := &struct{ Items []rawManagedSystemInfo }{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlSystems,
 		apiResponse: response,
@@ -305,7 +305,7 @@ func (o *Client) updateSystem(ctx context.Context, id SystemId, cfg *SystemUserC
 		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method:   method,
 		url:      apstraUrl,
 		apiInput: &systemUpdate{UserConfig: *cfg.raw()},
@@ -320,7 +320,7 @@ func (o *Client) deleteSystem(ctx context.Context, id SystemId) error {
 		return fmt.Errorf("error parsing url '%s' - %w", urlStr, err)
 	}
 
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method: method,
 		url:    apstraUrl,
 	})

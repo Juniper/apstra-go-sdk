@@ -453,7 +453,7 @@ func (o *TwoStageL3ClosClient) getAllRoutingPolicies(ctx context.Context) ([]raw
 	response := &struct {
 		Items []rawDcRoutingPolicy `json:"items"`
 	}{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingPolicies, o.blueprintId),
 		apiResponse: response,
@@ -467,7 +467,7 @@ func (o *TwoStageL3ClosClient) getAllRoutingPolicies(ctx context.Context) ([]raw
 
 func (o *TwoStageL3ClosClient) getRoutingPolicy(ctx context.Context, id ObjectId) (*rawDcRoutingPolicy, error) {
 	response := &rawDcRoutingPolicy{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingPolicyById, o.blueprintId, id),
 		apiResponse: response,
@@ -532,7 +532,7 @@ func (o *TwoStageL3ClosClient) getDefaultRoutingPolicy(ctx context.Context) (*ra
 
 func (o *TwoStageL3ClosClient) createRoutingPolicy(ctx context.Context, cfg *rawDcRoutingPolicy) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintRoutingPolicies, o.blueprintId),
 		apiInput:    cfg,
@@ -545,7 +545,7 @@ func (o *TwoStageL3ClosClient) createRoutingPolicy(ctx context.Context, cfg *raw
 }
 
 func (o *TwoStageL3ClosClient) updateRoutingPolicy(ctx context.Context, id ObjectId, cfg *rawDcRoutingPolicy) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintRoutingPolicyById, o.blueprintId, id),
 		apiInput: cfg,
@@ -554,7 +554,7 @@ func (o *TwoStageL3ClosClient) updateRoutingPolicy(ctx context.Context, id Objec
 }
 
 func (o *TwoStageL3ClosClient) deleteRoutingPolicy(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintRoutingPolicyById, o.blueprintId, id),
 	})

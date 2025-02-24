@@ -166,7 +166,7 @@ func (o *TwoStageL3ClosClient) getAllSystemNodeInfos(ctx context.Context) ([]raw
 		Data []rawSystemNodeInfo `json:"data"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintExperienceWebSystemInfo, o.blueprintId),
 		apiResponse: &apiResponse,
@@ -185,7 +185,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemAsn(ctx context.Context, id Objec
 		DomainId: asn,
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeDomain, o.blueprintId, id),
 		apiInput: &apiInput,
@@ -229,7 +229,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIPs(ctx context.Context, 
 		apiInput.Ipv6Addr = toPtr(gslo.Ipv6Addr.String())
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, gsId, gslo.LoopbackId),
 		apiInput: &apiInput,
@@ -247,7 +247,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv4(ctx context.Context,
 		apiInput.Ipv4Addr = &s
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
 		apiInput: &apiInput,
@@ -265,7 +265,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopbackIpv6(ctx context.Context,
 		apiInput.Ipv6Addr = &s
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetNodeLoopback, o.blueprintId, id, instance),
 		apiInput: &apiInput,
@@ -294,7 +294,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemPortChannelMinMax(ctx context.Con
 		},
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSetPortChannelIdMinMax, o.blueprintId),
 		apiInput: &input,

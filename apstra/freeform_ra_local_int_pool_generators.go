@@ -91,7 +91,7 @@ func (o FreeformRaLocalIntPoolGeneratorData) MarshalJSON() ([]byte, error) {
 func (o *FreeformClient) CreateRaLocalIntPoolGenerator(ctx context.Context, in *FreeformRaLocalIntPoolGeneratorData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPoolGenerators, o.blueprintId),
 		apiInput:    in,
@@ -109,7 +109,7 @@ func (o *FreeformClient) GetAllLocalIntPoolGenerators(ctx context.Context) ([]Fr
 		Items []FreeformRaLocalIntPoolGenerator `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPoolGenerators, o.blueprintId),
 		apiResponse: &response,
@@ -124,7 +124,7 @@ func (o *FreeformClient) GetAllLocalIntPoolGenerators(ctx context.Context) ([]Fr
 func (o *FreeformClient) GetRaLocalIntPoolGenerator(ctx context.Context, id ObjectId) (*FreeformRaLocalIntPoolGenerator, error) {
 	var response FreeformRaLocalIntPoolGenerator
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfRaLocalPoolGeneratorById, o.blueprintId, id),
 		apiResponse: &response,
@@ -137,7 +137,7 @@ func (o *FreeformClient) GetRaLocalIntPoolGenerator(ctx context.Context, id Obje
 }
 
 func (o *FreeformClient) UpdateRaLocalIntPoolGenerator(ctx context.Context, id ObjectId, in *FreeformRaLocalIntPoolGeneratorData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfRaLocalPoolGeneratorById, o.blueprintId, id),
 		apiInput: &in,
@@ -150,7 +150,7 @@ func (o *FreeformClient) UpdateRaLocalIntPoolGenerator(ctx context.Context, id O
 }
 
 func (o *FreeformClient) DeleteRaLocalPoolGenerator(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfRaLocalPoolGeneratorById, o.blueprintId, id),
 	})

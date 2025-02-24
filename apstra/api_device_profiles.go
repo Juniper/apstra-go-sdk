@@ -433,7 +433,7 @@ func (o *PortInfo) TransformationCandidates(intfName string, intfSpeed LogicalDe
 
 func (o *Client) listDeviceProfileIds(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsDeviceProfilessResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDeviceProfiles,
 		apiResponse: response,
@@ -449,7 +449,7 @@ func (o *Client) getAllDeviceProfiles(ctx context.Context) ([]rawDeviceProfile, 
 		Items []rawDeviceProfile
 	}{}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDeviceProfiles,
 		apiResponse: response,
@@ -494,7 +494,7 @@ func (o *Client) getDeviceProfileByName(ctx context.Context, desired string) (*r
 
 func (o *Client) getDeviceProfile(ctx context.Context, id ObjectId) (*rawDeviceProfile, error) {
 	response := &rawDeviceProfile{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDeviceProfileById, id),
 		apiResponse: response,
@@ -504,7 +504,7 @@ func (o *Client) getDeviceProfile(ctx context.Context, id ObjectId) (*rawDeviceP
 
 func (o *Client) createDeviceProfile(ctx context.Context, profile *rawDeviceProfileData) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDeviceProfiles,
 		apiInput:    profile,
@@ -517,7 +517,7 @@ func (o *Client) createDeviceProfile(ctx context.Context, profile *rawDeviceProf
 }
 
 func (o *Client) updateDeviceProfile(ctx context.Context, id ObjectId, profile *rawDeviceProfileData) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDeviceProfileById, id),
 		apiInput: profile,
@@ -529,7 +529,7 @@ func (o *Client) updateDeviceProfile(ctx context.Context, id ObjectId, profile *
 }
 
 func (o *Client) deleteDeviceProfile(ctx context.Context, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDeviceProfileById, id),
 	})

@@ -27,7 +27,7 @@ type GetTelemetryServiceMappingResult struct {
 func (o *Client) GetTelemetryServicesDeviceMapping(ctx context.Context) (*GetTelemetryServiceMappingResult, error) {
 	var result GetTelemetryServiceMappingResult
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlTelemetryServices,
 		apiResponse: &result,

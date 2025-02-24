@@ -585,7 +585,7 @@ func (o *TwoStageL3ClosClient) ListConnectivityTemplates(ctx context.Context) ([
 		Policies []rawConnectivityTemplatePolicy `json:"policies"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:         http.MethodGet,
 		urlStr:         fmt.Sprintf(apiUrlBlueprintObjPolicyExport, o.blueprintId),
 		apiResponse:    &apiResponse,
@@ -612,7 +612,7 @@ func (o *TwoStageL3ClosClient) CreateConnectivityTemplate(ctx context.Context, i
 		return err
 	}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintObjPolicyImport, o.blueprintId),
 		apiInput: &apiInput,
@@ -639,7 +639,7 @@ func (o *TwoStageL3ClosClient) DeleteConnectivityTemplate(ctx context.Context, i
 	params.Set(deleteRecursive, "true")
 	urlObj.RawQuery = params.Encode()
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		url:    urlObj,
 	})
@@ -653,7 +653,7 @@ func (o *TwoStageL3ClosClient) DeleteConnectivityTemplate(ctx context.Context, i
 func (o *TwoStageL3ClosClient) GetConnectivityTemplate(ctx context.Context, id ObjectId) (*ConnectivityTemplate, error) {
 	var response rawConnectivityTemplate
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintObjPolicyExportById, o.blueprintId, id),
 		apiResponse: &response,
@@ -667,7 +667,7 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplate(ctx context.Context, id O
 
 func (o *TwoStageL3ClosClient) GetAllConnectivityTemplates(ctx context.Context) ([]ConnectivityTemplate, error) {
 	var response rawConnectivityTemplate
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintObjPolicyExport, o.blueprintId),
 		apiResponse: &response,
@@ -694,7 +694,7 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplateState(ctx context.Context,
 		EndpointPolicy rawConnectivityTemplateState `json:"endpoint_policy"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintEndpointPolicyById, o.blueprintId, id),
 		apiResponse: &response,
@@ -711,7 +711,7 @@ func (o *TwoStageL3ClosClient) GetAllConnectivityTemplateStates(ctx context.Cont
 		EndpointPolicies []rawConnectivityTemplateState `json:"endpoint_policies"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintEndpointPolicies, o.blueprintId),
 		apiResponse: &response,

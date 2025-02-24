@@ -78,7 +78,7 @@ type MetricDbQueryResponse struct {
 func (o *Client) getMetricdbMetrics(ctx context.Context) (*metricdbMetricResponse, error) {
 	var response metricdbMetricResponse
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlMetricdbMetric,
 		apiResponse: &response,
@@ -93,7 +93,7 @@ func (o *Client) getMetricdbMetrics(ctx context.Context) (*metricdbMetricRespons
 func (o *Client) queryMetricdb(ctx context.Context, begin, end time.Time, metric MetricdbMetric) (*MetricDbQueryResponse, error) {
 	var response MetricDbQueryResponse
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPost,
 		urlStr: apiUrlMetricdbQuery,
 		apiInput: metricdbQuery{

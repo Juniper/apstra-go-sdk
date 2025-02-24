@@ -259,7 +259,7 @@ type FreeformLinkRequest struct {
 func (o *FreeformClient) CreateLink(ctx context.Context, in *FreeformLinkRequest) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFfLinks, o.blueprintId),
 		apiInput:    in,
@@ -275,7 +275,7 @@ func (o *FreeformClient) CreateLink(ctx context.Context, in *FreeformLinkRequest
 func (o *FreeformClient) GetLink(ctx context.Context, id ObjectId) (*FreeformLink, error) {
 	var response FreeformLink
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfLinkById, o.blueprintId, id),
 		apiResponse: &response,
@@ -323,7 +323,7 @@ func (o *FreeformClient) GetAllLinks(ctx context.Context) ([]FreeformLink, error
 		Items []FreeformLink `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfLinks, o.blueprintId),
 		apiResponse: &response,
@@ -341,7 +341,7 @@ func (o *FreeformClient) UpdateLink(ctx context.Context, id ObjectId, in *Freefo
 	copy.Endpoints[0].SystemId = ""
 	copy.Endpoints[1].SystemId = ""
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfLinkById, o.blueprintId, id),
 		apiInput: &copy,
@@ -354,7 +354,7 @@ func (o *FreeformClient) UpdateLink(ctx context.Context, id ObjectId, in *Freefo
 }
 
 func (o *FreeformClient) DeleteLink(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfLinkById, o.blueprintId, id),
 	})

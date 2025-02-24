@@ -45,7 +45,7 @@ func (o *TwoStageL3ClosClient) createRacks(ctx context.Context, request *rawTwoS
 		RackIds []ObjectId `json:"rack_ids"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintAddRacks, o.Id()),
 		apiInput:    &request,
@@ -81,7 +81,7 @@ func (o *TwoStageL3ClosClient) DeleteRack(ctx context.Context, id ObjectId) erro
 		RacksToDelete []ObjectId `json:"racks_to_delete"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintDeleteRacks, o.Id()),
 		apiInput: &request{RacksToDelete: []ObjectId{id}},

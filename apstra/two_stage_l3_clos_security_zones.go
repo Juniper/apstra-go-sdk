@@ -174,7 +174,7 @@ func (o rawSecurityZone) polish() (*SecurityZone, error) {
 
 func (o *TwoStageL3ClosClient) createSecurityZone(ctx context.Context, cfg *rawSecurityZone) (*objectIdResponse, error) {
 	response := &objectIdResponse{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintSecurityZones, o.blueprintId),
 		apiInput:    cfg,
@@ -188,7 +188,7 @@ func (o *TwoStageL3ClosClient) createSecurityZone(ctx context.Context, cfg *rawS
 
 func (o *TwoStageL3ClosClient) getSecurityZone(ctx context.Context, zoneId ObjectId) (*rawSecurityZone, error) {
 	response := &rawSecurityZone{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
 		apiResponse: response,
@@ -221,7 +221,7 @@ func (o *TwoStageL3ClosClient) getAllSecurityZones(ctx context.Context) (map[str
 	response := &struct {
 		Items map[string]rawSecurityZone `json:"items"`
 	}{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintSecurityZones, o.blueprintId),
 		apiResponse: response,
@@ -234,7 +234,7 @@ func (o *TwoStageL3ClosClient) getAllSecurityZones(ctx context.Context) (map[str
 }
 
 func (o *TwoStageL3ClosClient) updateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *rawSecurityZone) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
 		apiInput: cfg,
@@ -243,7 +243,7 @@ func (o *TwoStageL3ClosClient) updateSecurityZone(ctx context.Context, zoneId Ob
 }
 
 func (o *TwoStageL3ClosClient) deleteSecurityZone(ctx context.Context, zoneId ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintSecurityZoneById, o.blueprintId, zoneId),
 	})
@@ -254,7 +254,7 @@ func (o *TwoStageL3ClosClient) getSecurityZoneDhcpServers(ctx context.Context, z
 	response := &struct {
 		Items []string `json:"items"`
 	}{}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintSecurityZoneByIdDhcpServers, o.blueprintId, zoneId),
 		apiResponse: response,
@@ -263,7 +263,7 @@ func (o *TwoStageL3ClosClient) getSecurityZoneDhcpServers(ctx context.Context, z
 }
 
 func (o *TwoStageL3ClosClient) setSecurityZoneDhcpServers(ctx context.Context, zoneId ObjectId, ips []string) error {
-	return convertTtaeToAceWherePossible(o.client.talkToApstra(ctx, &talkToApstraIn{
+	return convertTtaeToAceWherePossible(o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPut,
 		urlStr: fmt.Sprintf(apiUrlBlueprintSecurityZoneByIdDhcpServers, o.blueprintId, zoneId),
 		apiInput: &struct {

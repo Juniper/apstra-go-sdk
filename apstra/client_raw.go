@@ -21,7 +21,7 @@ func (o *Client) DoRawJsonTransaction(ctx context.Context, req RawJsonRequest, r
 		return errors.New("no url provided")
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      req.Method,
 		url:         req.Url,
 		apiInput:    req.Payload,

@@ -86,7 +86,7 @@ func (o *Client) GetAllTelemetryServiceRegistryEntries(ctx context.Context) ([]T
 		Items []TelemetryServiceRegistryEntry `json:"items"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlTelemetryServiceRegistry),
 		apiResponse: &response,
@@ -102,7 +102,7 @@ func (o *Client) GetAllTelemetryServiceRegistryEntries(ctx context.Context) ([]T
 func (o *Client) GetTelemetryServiceRegistryEntry(ctx context.Context, name string) (*TelemetryServiceRegistryEntry, error) {
 	var response TelemetryServiceRegistryEntry
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlTelemetryServiceRegistryEntryByName, name),
 		apiResponse: &response,
@@ -120,7 +120,7 @@ func (o *Client) CreateTelemetryServiceRegistryEntry(ctx context.Context, in *Te
 		Name string `json:"service_name"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlTelemetryServiceRegistry),
 		apiInput:    in,
@@ -139,7 +139,7 @@ func (o *Client) UpdateTelemetryServiceRegistryEntry(ctx context.Context, name s
 		Name string `json:"service_name"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPut,
 		urlStr:      fmt.Sprintf(apiUrlTelemetryServiceRegistryEntryByName, name),
 		apiInput:    in,
@@ -154,7 +154,7 @@ func (o *Client) UpdateTelemetryServiceRegistryEntry(ctx context.Context, name s
 
 // DeleteTelemetryServiceRegistryEntry deletes a telemetry service registry entry
 func (o *Client) DeleteTelemetryServiceRegistryEntry(ctx context.Context, name string) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlTelemetryServiceRegistryEntryByName, name),
 	})

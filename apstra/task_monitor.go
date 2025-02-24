@@ -359,7 +359,7 @@ func (o *Client) getBlueprintTasksStatus(ctx context.Context, bpid ObjectId, tas
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix, err)
 	}
 	response := &getAllTasksResponse{}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiInput:    nil,
@@ -390,7 +390,7 @@ func (o *Client) getBlueprintTaskStatusById(ctx context.Context, bpid ObjectId, 
 			apiUrlTasksPrefix+string(bpid)+apiUrlTasksSuffix+string(tid), err)
 	}
 	result := &getTaskResponse{}
-	return result, o.talkToApstra(ctx, &talkToApstraIn{
+	return result, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiInput:    nil,

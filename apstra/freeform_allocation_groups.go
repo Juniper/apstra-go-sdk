@@ -61,7 +61,7 @@ func (o *FreeformClient) CreateAllocGroup(ctx context.Context, in *FreeformAlloc
 }
 
 func (o *FreeformClient) createAllocGroup(ctx context.Context, in *FreeformAllocGroupData, groupType enum.ResourcePoolType) (ObjectId, error) {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   fmt.Sprintf(apiUrlFfAllocGroupByType, o.blueprintId, groupType),
 		apiInput: in,
@@ -78,7 +78,7 @@ func (o *FreeformClient) GetAllAllocGroups(ctx context.Context) ([]FreeformAlloc
 		Items []FreeformAllocGroup `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfAllocGroups, o.blueprintId),
 		apiResponse: &response,
@@ -100,7 +100,7 @@ func (o *FreeformClient) GetAllocGroup(ctx context.Context, id ObjectId) (*Freef
 	}
 
 	var response FreeformAllocGroup
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfAllocGroupByTypeName, o.blueprintId, parts[1], parts[2]),
 		apiResponse: &response,
@@ -152,7 +152,7 @@ func (o *FreeformClient) UpdateAllocGroup(ctx context.Context, id ObjectId, in *
 		}
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlFfAllocGroupByTypeName, o.blueprintId, parts[1], parts[2]),
 		apiInput: in,
@@ -178,7 +178,7 @@ func (o *FreeformClient) UpdateAllocGroup(ctx context.Context, id ObjectId, in *
 //		}
 //	}
 //
-//	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+//	err = o.client.talkToApstra(ctx, talkToApstraIn{
 //		method:   http.MethodPatch,
 //		urlStr:   fmt.Sprintf(apiUrlFfAllocGroups, o.blueprintId),
 //		apiInput: in,
@@ -198,7 +198,7 @@ func (o *FreeformClient) DeleteAllocGroup(ctx context.Context, id ObjectId) erro
 			err:     fmt.Errorf("freeform resource groups groupids must take the form rag_xxx_yyy, got : %q", id),
 		}
 	}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfAllocGroupByTypeName, o.blueprintId, parts[1], parts[2]),
 	})

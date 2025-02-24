@@ -126,7 +126,7 @@ func (o *TwoStageL3ClosClient) SetApplicationPointConnectivityTemplates(ctx cont
 		ApplicationPoints: []applicationPoints{appPoints},
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintObjPolicyBatchApply, o.blueprintId),
 		apiInput: &apiInput,
@@ -168,7 +168,7 @@ func (o *TwoStageL3ClosClient) DelApplicationPointConnectivityTemplates(ctx cont
 		ApplicationPoints: []applicationPoint{appPoint},
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintObjPolicyBatchApply, o.blueprintId),
 		apiInput: &apiInput,
@@ -221,7 +221,7 @@ func (o *TwoStageL3ClosClient) SetApplicationPointsConnectivityTemplates(ctx con
 		i++
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintObjPolicyBatchApply, o.blueprintId),
 		apiInput: &apiInput,
@@ -406,7 +406,7 @@ func (o *TwoStageL3ClosClient) GetConnectivityTemplatesByApplicationPoints(ctx c
 		apstraUrl.RawQuery = params.Encode()
 
 		var apiResponse objPolicyApplicationPointsApiResponse
-		err = o.client.talkToApstra(ctx, &talkToApstraIn{
+		err = o.client.talkToApstra(ctx, talkToApstraIn{
 			method:         http.MethodGet,
 			url:            apstraUrl,
 			apiResponse:    &apiResponse,
@@ -496,7 +496,7 @@ func (o *TwoStageL3ClosClient) getApplicationPointsConnectivityTemplatesByCt(ctx
 		apstraUrl.RawQuery = params.Encode()
 
 		var apiResponse objPolicyApplicationPointsApiResponse
-		err = o.client.talkToApstra(ctx, &talkToApstraIn{
+		err = o.client.talkToApstra(ctx, talkToApstraIn{
 			method:         http.MethodGet,
 			url:            apstraUrl,
 			apiResponse:    &apiResponse,

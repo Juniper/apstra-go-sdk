@@ -37,7 +37,7 @@ func (o *Client) getAllIbaPredefinedProbes(ctx context.Context, bpId ObjectId) (
 		Items []IbaPredefinedProbe `json:"items"`
 	}{}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbes, bpId),
 		apiResponse: response,
@@ -68,7 +68,7 @@ func (o *Client) getIbaPredefinedProbeByName(ctx context.Context, bpId ObjectId,
 
 func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpId ObjectId, in *IbaPredefinedProbeRequest) (ObjectId, error) {
 	var response objectIdResponse
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbesByName, bpId, in.Name),
 		apiInput:    in.Data,
@@ -96,7 +96,7 @@ func (o *Client) instantiatePredefinedIbaProbe(ctx context.Context, bpId ObjectI
 
 		time.Sleep(retryInterval * time.Duration(i))
 
-		e := o.talkToApstra(ctx, &talkToApstraIn{
+		e := o.talkToApstra(ctx, talkToApstraIn{
 			method:      http.MethodPost,
 			urlStr:      fmt.Sprintf(apiUrlIbaPredefinedProbesByName, bpId, in.Name),
 			apiInput:    in.Data,

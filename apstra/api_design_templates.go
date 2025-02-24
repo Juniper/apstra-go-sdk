@@ -1065,7 +1065,7 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 	response := &struct {
 		Items []ObjectId `json:"items"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignTemplates,
 		apiResponse: response,
@@ -1081,7 +1081,7 @@ func (o *Client) listAllTemplateIds(ctx context.Context) ([]ObjectId, error) {
 // used to cast them into the correct type.
 func (o *Client) getTemplate(ctx context.Context, id ObjectId) (template, error) {
 	rawMsg := &json.RawMessage{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
 		apiResponse: rawMsg,
@@ -1097,7 +1097,7 @@ func (o *Client) getAllTemplates(ctx context.Context) ([]template, error) {
 	response := &struct {
 		Items []json.RawMessage `json:"items"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignTemplates,
 		apiResponse: response,
@@ -1410,7 +1410,7 @@ type rawCreateRackBasedTemplateRequest struct {
 
 func (o *Client) createRackBasedTemplate(ctx context.Context, in *rawCreateRackBasedTemplateRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTemplates,
 		apiInput:    in,
@@ -1427,7 +1427,7 @@ func (o *Client) updateRackBasedTemplate(ctx context.Context, id ObjectId, in *C
 	if err != nil {
 		return err
 	}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignTemplateById, id),
 		apiInput: raw,
@@ -1514,7 +1514,7 @@ type rawCreatePodBasedTemplateRequest struct {
 
 func (o *Client) createPodBasedTemplate(ctx context.Context, in *rawCreatePodBasedTemplateRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTemplates,
 		apiInput:    in,
@@ -1532,7 +1532,7 @@ func (o *Client) updatePodBasedTemplate(ctx context.Context, id ObjectId, in *Cr
 	if err != nil {
 		return err
 	}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignTemplateById, id),
 		apiInput: apiInput,
@@ -1597,7 +1597,7 @@ type rawCreateL3CollapsedTemplateRequest struct {
 
 func (o *Client) createL3CollapsedTemplate(ctx context.Context, in *rawCreateL3CollapsedTemplateRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTemplates,
 		apiInput:    in,
@@ -1615,7 +1615,7 @@ func (o *Client) updateL3CollapsedTemplate(ctx context.Context, id ObjectId, in 
 	if err != nil {
 		return err
 	}
-	err = o.talkToApstra(ctx, &talkToApstraIn{
+	err = o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignTemplateById, id),
 		apiInput: apiInput,
@@ -1628,7 +1628,7 @@ func (o *Client) updateL3CollapsedTemplate(ctx context.Context, id ObjectId, in 
 }
 
 func (o *Client) deleteTemplate(ctx context.Context, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDesignTemplateById, id),
 	})
@@ -1642,7 +1642,7 @@ func (o *Client) getTemplateType(ctx context.Context, id ObjectId) (templateType
 	response := &struct {
 		Type templateType `tfsdk:"type"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
 		apiResponse: response,
@@ -1661,7 +1661,7 @@ func (o *Client) getTemplateIdsTypesByName(ctx context.Context, desired string) 
 			DisplayName string       `json:"display_name"`
 		} `json:"Items"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignTemplates,
 		apiResponse: response,

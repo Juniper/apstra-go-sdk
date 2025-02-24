@@ -57,7 +57,7 @@ func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context
 	o.client.lock(o.blueprintId.String() + "_" + req.VnId.String())
 	defer o.client.unlock(o.blueprintId.String() + "_" + req.VnId.String())
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPatch,
 		urlStr: fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, req.VnId),
 		apiInput: struct {
@@ -147,7 +147,7 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		}
 	}
 
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
+	err = o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPatch,
 		urlStr: fmt.Sprintf(apiUrlVirtualNetworkById, o.blueprintId, req.VnId),
 		apiInput: struct {

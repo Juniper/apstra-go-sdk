@@ -165,7 +165,7 @@ func (o *TwoStageL3ClosClient) GetSubinterface(ctx context.Context, id ObjectId)
 }
 
 func (o *TwoStageL3ClosClient) UpdateSubinterfaces(ctx context.Context, in map[ObjectId]TwoStageL3ClosSubinterface) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPatch,
 		urlStr: fmt.Sprintf(apiUrlSubinterfaces, o.Id()),
 		apiInput: &struct {

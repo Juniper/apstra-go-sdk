@@ -76,7 +76,7 @@ func (o *Client) listAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 		Items []ObjectId `json:"items"`
 	}{}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignConfiglets,
 		apiResponse: response,
@@ -89,7 +89,7 @@ func (o *Client) listAllConfiglets(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) getConfiglet(ctx context.Context, id ObjectId) (*Configlet, error) {
 	response := &Configlet{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignConfigletsById, id),
 		apiResponse: response,
@@ -134,7 +134,7 @@ func (o *Client) getAllConfiglets(ctx context.Context) ([]Configlet, error) {
 		Items []Configlet `json:"items"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignConfiglets,
 		apiResponse: &response,
@@ -149,7 +149,7 @@ func (o *Client) getAllConfiglets(ctx context.Context) ([]Configlet, error) {
 func (o *Client) createConfiglet(ctx context.Context, in *ConfigletData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignConfiglets,
 		apiInput:    in,
@@ -163,7 +163,7 @@ func (o *Client) createConfiglet(ctx context.Context, in *ConfigletData) (Object
 }
 
 func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *ConfigletData) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignConfigletsById, id),
 		apiInput: in,
@@ -176,7 +176,7 @@ func (o *Client) updateConfiglet(ctx context.Context, id ObjectId, in *Configlet
 }
 
 func (o *Client) deleteConfiglet(ctx context.Context, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDesignConfigletsById, id),
 	})

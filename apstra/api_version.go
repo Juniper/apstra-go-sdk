@@ -29,7 +29,7 @@ func (o *Client) getVersion(ctx context.Context) (*VersionResponse, error) {
 	}
 
 	response := &VersionResponse{}
-	return response, o.talkToApstra(ctx, &talkToApstraIn{
+	return response, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		url:         apstraUrl,
 		apiResponse: response,

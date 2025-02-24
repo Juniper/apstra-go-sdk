@@ -23,7 +23,7 @@ func (o *TwoStageL3ClosClient) getAntiAffinityPolicy(ctx context.Context) (*rawA
 	}
 
 	var result rawAntiAffinityPolicy
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintAntiAffinityPolicy, o.blueprintId),
 		apiResponse: &result,
@@ -45,7 +45,7 @@ func (o *TwoStageL3ClosClient) setAntiAffinityPolicy(ctx context.Context, in *ra
 		return fmt.Errorf("apstra %s does not support %q", o.client.apiVersion, apiUrlBlueprintAntiAffinityPolicy)
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintAntiAffinityPolicy, o.blueprintId),
 		apiInput: &in,

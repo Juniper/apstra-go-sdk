@@ -56,7 +56,7 @@ func (o *Client) listAllTags(ctx context.Context) ([]ObjectId, error) {
 		Items []ObjectId `json:"items"`
 	}{}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignTags,
 		apiResponse: response,
@@ -69,7 +69,7 @@ func (o *Client) listAllTags(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) getTag(ctx context.Context, id ObjectId) (*rawDesignTag, error) {
 	response := &rawDesignTag{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignTagById, id),
 		apiResponse: response,
@@ -136,7 +136,7 @@ func (o *Client) getAllTags(ctx context.Context) ([]rawDesignTag, error) {
 	response := &struct {
 		Items []rawDesignTag `json:"items"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignTags,
 		apiResponse: response,
@@ -149,7 +149,7 @@ func (o *Client) getAllTags(ctx context.Context) ([]rawDesignTag, error) {
 
 func (o *Client) createTag(ctx context.Context, in *DesignTagRequest) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignTags,
 		apiInput:    in,
@@ -162,7 +162,7 @@ func (o *Client) createTag(ctx context.Context, in *DesignTagRequest) (ObjectId,
 }
 
 func (o *Client) updateTag(ctx context.Context, id ObjectId, in *DesignTagRequest) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignTagById, id),
 		apiInput: in,
@@ -174,7 +174,7 @@ func (o *Client) updateTag(ctx context.Context, id ObjectId, in *DesignTagReques
 }
 
 func (o *Client) deleteTag(ctx context.Context, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDesignTagById, id),
 	})

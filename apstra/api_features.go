@@ -20,7 +20,7 @@ func (o *Client) getFeatures(ctx context.Context) error {
 		Status string `json:"status"`
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlFeatures,
 		apiResponse: &response,

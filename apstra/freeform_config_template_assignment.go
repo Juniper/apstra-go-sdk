@@ -20,7 +20,7 @@ func (o *FreeformClient) ListConfigTemplateAssignments(ctx context.Context) (map
 		Assignments map[ObjectId]*ObjectId `json:"assignments"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlConfigTemplateAssignments, o.blueprintId),
 		apiResponse: &response,
@@ -50,7 +50,7 @@ func (o *FreeformClient) GetConfigTemplateAssignments(ctx context.Context, in Ob
 // UpdateConfigTemplateAssignments returns map [ObjectId]*ObjectId where keys are system IDs and values are Config Template IDs.
 // A nil value will clear the assignment of the Config Template to the System.
 func (o *FreeformClient) UpdateConfigTemplateAssignments(ctx context.Context, assignments map[ObjectId]*ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodPatch,
 		urlStr: fmt.Sprintf(apiUrlConfigTemplateAssignments, o.blueprintId),
 		apiInput: struct {

@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -238,7 +239,7 @@ func (o *Client) CreateFreeformBlueprint(ctx context.Context, label string) (Obj
 
 	var response postBlueprintsResponse
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlBlueprints,
 		apiInput:    &request,
@@ -268,14 +269,17 @@ func (o *Client) NewFreeformClient(ctx context.Context, blueprintId ObjectId) (*
 }
 
 func (o ClientCfg) validate() error {
+	_, useEdgeProxy := os.LookupEnv(envAosOpsEdgeId)
+
 	switch {
 	case o.Url == "":
 		return errors.New("error Url for Apstra Service cannot be empty")
-	case o.User == "":
+	case o.User == "" && !useEdgeProxy:
 		return errors.New("error username for Apstra service cannot be empty")
-	case o.Pass == "":
+	case o.Pass == "" && !useEdgeProxy:
 		return errors.New("error password for Apstra service cannot be empty")
 	}
+
 	return nil
 }
 

@@ -84,7 +84,7 @@ func (o *RoutingZoneConstraint) UnmarshalJSON(bytes []byte) error {
 
 func (o *TwoStageL3ClosClient) CreateRoutingZoneConstraint(ctx context.Context, in *RoutingZoneConstraintData) (ObjectId, error) {
 	var response objectIdResponse
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlRoutingZoneConstraints, o.Id()),
 		apiInput:    in,
@@ -99,7 +99,7 @@ func (o *TwoStageL3ClosClient) CreateRoutingZoneConstraint(ctx context.Context, 
 
 func (o *TwoStageL3ClosClient) GetRoutingZoneConstraint(ctx context.Context, id ObjectId) (*RoutingZoneConstraint, error) {
 	var response RoutingZoneConstraint
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlRoutingZoneConstraintById, o.Id(), id),
 		apiResponse: &response,
@@ -116,7 +116,7 @@ func (o *TwoStageL3ClosClient) GetAllRoutingZoneConstraints(ctx context.Context)
 	var response struct {
 		Items []RoutingZoneConstraint `json:"items"`
 	}
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlRoutingZoneConstraints, o.Id()),
 		apiResponse: &response,
@@ -160,7 +160,7 @@ func (o *TwoStageL3ClosClient) GetRoutingZoneConstraintByName(ctx context.Contex
 }
 
 func (o *TwoStageL3ClosClient) UpdateRoutingZoneConstraint(ctx context.Context, id ObjectId, in *RoutingZoneConstraintData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlRoutingZoneConstraintById, o.Id(), id),
 		apiInput: in,
@@ -173,7 +173,7 @@ func (o *TwoStageL3ClosClient) UpdateRoutingZoneConstraint(ctx context.Context, 
 }
 
 func (o *TwoStageL3ClosClient) DeleteRoutingZoneConstraint(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlRoutingZoneConstraintById, o.Id(), id),
 	})

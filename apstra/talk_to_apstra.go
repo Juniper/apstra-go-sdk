@@ -15,12 +15,15 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 const (
+	envAosOpsEdgeId = "API_OPS_EDGE_ID"
+
 	CtxKeyTestID   = "Test-ID"   // context.Context key for a test ID string
 	CtxKeyTestUUID = "Test-UUID" // context.Context key for a uuid.UUID upon which the test ID string is based
 
@@ -183,12 +186,12 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 // talkToApstra talks to the Apstra server using in.method. If in.apiInput is
 // not nil, it JSON-encodes that data structure and sends it. In case the
 // in.apiResponse is not nil, the server response is extracted into it.
-func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
+func (o *Client) talkToApstra(ctx context.Context, in talkToApstraIn) error {
 	var err error
 	var requestBody []byte
 
 	// create URL
-	apstraUrl, err := o.craftUrl(in)
+	apstraUrl, err := o.craftUrl(&in)
 	if err != nil {
 		return err
 	}
@@ -242,8 +245,13 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	o.logFunc(2, o.dumpHttpRequest, req)
 
-	// talk to the server
-	resp, err := o.httpClient.Do(req)
+	var resp *http.Response
+	if edgeId, ok := os.LookupEnv(envAosOpsEdgeId); ok {
+		in.doNotLogin = true                    // we never log in via proxy
+		resp, err = o.talkToApiOps(edgeId, req) // talk to the api-ops proxy
+	} else {
+		resp, err = o.httpClient.Do(req) // talk to the server
+	}
 
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
 	req.Header.Del(apstraAuthHeader)

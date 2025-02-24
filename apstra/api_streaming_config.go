@@ -77,7 +77,7 @@ type StreamingConfigParams struct {
 
 func (o *Client) getAllStreamingConfigIds(ctx context.Context) ([]ObjectId, error) {
 	result := &getStreamingConfigsOptionsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlStreamingConfig,
 		apiInput:    nil,
@@ -92,7 +92,7 @@ func (o *Client) getAllStreamingConfigIds(ctx context.Context) ([]ObjectId, erro
 
 func (o *Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigInfo, error) {
 	gscr := &getStreamingConfigsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlStreamingConfig,
 		apiInput:    nil,
@@ -112,7 +112,7 @@ func (o *Client) getAllStreamingConfigs(ctx context.Context) ([]StreamingConfigI
 
 func (o *Client) getStreamingConfig(ctx context.Context, id ObjectId) (*StreamingConfigInfo, error) {
 	result := &StreamingConfigInfo{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlStreamingConfigById, id),
 		apiResponse: result,
@@ -125,7 +125,7 @@ func (o *Client) getStreamingConfig(ctx context.Context, id ObjectId) (*Streamin
 
 func (o *Client) newStreamingConfig(ctx context.Context, cfg *StreamingConfigParams) (*objectIdResponse, error) {
 	result := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlStreamingConfig,
 		apiInput:    cfg,
@@ -138,7 +138,7 @@ func (o *Client) newStreamingConfig(ctx context.Context, cfg *StreamingConfigPar
 }
 
 func (o *Client) deleteStreamingConfig(ctx context.Context, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlStreamingConfigById, id),
 	})

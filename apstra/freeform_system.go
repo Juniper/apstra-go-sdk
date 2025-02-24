@@ -117,7 +117,7 @@ func (o *FreeformSystemData) UnmarshalJSON(bytes []byte) error {
 func (o *FreeformClient) CreateSystem(ctx context.Context, in *FreeformSystemData) (ObjectId, error) {
 	var response objectIdResponse
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlFfGenericSystems, o.blueprintId),
 		apiInput:    in,
@@ -133,7 +133,7 @@ func (o *FreeformClient) CreateSystem(ctx context.Context, in *FreeformSystemDat
 func (o *FreeformClient) GetSystem(ctx context.Context, systemId ObjectId) (*FreeformSystem, error) {
 	var response FreeformSystem
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfGenericSystemsById, o.blueprintId, systemId),
 		apiResponse: &response,
@@ -181,7 +181,7 @@ func (o *FreeformClient) GetAllSystems(ctx context.Context) ([]FreeformSystem, e
 		Items []FreeformSystem `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlFfGenericSystems, o.blueprintId),
 		apiResponse: &response,
@@ -194,7 +194,7 @@ func (o *FreeformClient) GetAllSystems(ctx context.Context) ([]FreeformSystem, e
 }
 
 func (o *FreeformClient) UpdateSystem(ctx context.Context, id ObjectId, in *FreeformSystemData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlFfGenericSystemsById, o.blueprintId, id),
 		apiInput: in,
@@ -207,7 +207,7 @@ func (o *FreeformClient) UpdateSystem(ctx context.Context, id ObjectId, in *Free
 }
 
 func (o *FreeformClient) DeleteSystem(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlFfGenericSystemsById, o.blueprintId, id),
 	})

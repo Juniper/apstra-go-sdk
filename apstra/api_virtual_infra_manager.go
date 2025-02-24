@@ -30,7 +30,7 @@ type VirtualInfraMgrInfo struct {
 
 func (o *Client) getVirtualInfraMgrs(ctx context.Context) ([]VirtualInfraMgrInfo, error) {
 	response := &virtualInfraMgrsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlVirtualInfraManagers,
 		apiResponse: response,

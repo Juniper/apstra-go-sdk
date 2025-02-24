@@ -124,7 +124,7 @@ func (o *rawAgentProfile) polish() *AgentProfile {
 
 func (o *Client) listAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
 	response := &optionsAgentProfilesResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlSystemAgentProfiles,
 		apiResponse: response,
@@ -137,7 +137,7 @@ func (o *Client) listAgentProfileIds(ctx context.Context) ([]ObjectId, error) {
 
 func (o *Client) createAgentProfile(ctx context.Context, in *AgentProfileConfig) (ObjectId, error) {
 	response := &objectIdResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlSystemAgentProfiles,
 		apiInput:    in.raw(),
@@ -158,7 +158,7 @@ func (o *Client) createAgentProfile(ctx context.Context, in *AgentProfileConfig)
 
 func (o *Client) getAgentProfile(ctx context.Context, id ObjectId) (*AgentProfile, error) {
 	response := &rawAgentProfile{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlSystemAgentProfilesById, id),
 		apiResponse: response,
@@ -178,7 +178,7 @@ func (o *Client) getAgentProfile(ctx context.Context, id ObjectId) (*AgentProfil
 
 func (o *Client) getAllAgentProfiles(ctx context.Context) ([]AgentProfile, error) {
 	response := &getAgentProfilesResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlSystemAgentProfiles,
 		apiResponse: response,
@@ -195,7 +195,7 @@ func (o *Client) getAllAgentProfiles(ctx context.Context) ([]AgentProfile, error
 }
 
 func (o *Client) updateAgentProfile(ctx context.Context, id ObjectId, in *AgentProfileConfig) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlSystemAgentProfilesById, id),
 		apiInput: in.raw(),
@@ -207,7 +207,7 @@ func (o *Client) updateAgentProfile(ctx context.Context, id ObjectId, in *AgentP
 }
 
 func (o *Client) deleteAgentProfile(ctx context.Context, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlSystemAgentProfilesById, id),
 	})
@@ -231,7 +231,7 @@ func (o *Client) deleteAgentProfile(ctx context.Context, id ObjectId) error {
 
 func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*AgentProfile, error) {
 	response := &getAgentProfilesResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlSystemAgentProfiles,
 		apiResponse: response,
@@ -263,7 +263,7 @@ func (o *Client) getAgentProfileByLabel(ctx context.Context, label string) (*Age
 }
 
 func (o *Client) assignAgentProfile(ctx context.Context, req *AssignAgentProfileRequest) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   fmt.Sprintf(apiUrlSystemAgentProfilesAssignById, req.ProfileId),
 		apiInput: req,

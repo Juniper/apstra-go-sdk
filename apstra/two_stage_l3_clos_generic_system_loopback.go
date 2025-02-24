@@ -90,7 +90,7 @@ func (o *TwoStageL3ClosClient) GetGenericSystemLoopback(ctx context.Context, nod
 
 func (o *TwoStageL3ClosClient) getGenericSystemLoopback(ctx context.Context, nodeId ObjectId, loopbackId int) (*rawGenericSystemLoopback, error) {
 	var response rawGenericSystemLoopback
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlGenericSystemLoopbackById, o.blueprintId, nodeId, loopbackId),
 		apiResponse: &response,
@@ -172,7 +172,7 @@ func (o *TwoStageL3ClosClient) SetGenericSystemLoopback(ctx context.Context, nod
 }
 
 func (o *TwoStageL3ClosClient) setGenericSystemLoopback(ctx context.Context, nodeId ObjectId, loopbackId int, in *rawGenericSystemLoopback) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlGenericSystemLoopbackById, o.blueprintId, nodeId, loopbackId),
 		apiInput: in,

@@ -58,7 +58,7 @@ func (o *TwoStageL3ClosClient) getAllConfiglets(ctx context.Context) ([]TwoStage
 		Items []TwoStageL3ClosConfiglet `json:"items"`
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintConfiglets, o.blueprintId.String()),
 		apiResponse: &response,
@@ -86,7 +86,7 @@ func (o *TwoStageL3ClosClient) getAllConfigletIds(ctx context.Context) ([]Object
 
 func (o *TwoStageL3ClosClient) getConfiglet(ctx context.Context, id ObjectId) (*TwoStageL3ClosConfiglet, error) {
 	var response TwoStageL3ClosConfiglet
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), id.String()),
 		apiResponse: &response,
@@ -131,7 +131,7 @@ func (o *TwoStageL3ClosClient) createConfiglet(ctx context.Context, in *TwoStage
 		in.Label = in.Data.DisplayName
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintConfiglets, o.blueprintId.String()),
 		apiInput:    in,
@@ -145,7 +145,7 @@ func (o *TwoStageL3ClosClient) createConfiglet(ctx context.Context, in *TwoStage
 }
 
 func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, id ObjectId, in *TwoStageL3ClosConfigletData) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), id),
 		apiInput: in,
@@ -158,7 +158,7 @@ func (o *TwoStageL3ClosClient) updateConfiglet(ctx context.Context, id ObjectId,
 }
 
 func (o *TwoStageL3ClosClient) deleteConfiglet(ctx context.Context, id ObjectId) error {
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintConfigletsById, o.blueprintId.String(), id.String()),
 	})

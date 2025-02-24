@@ -234,7 +234,7 @@ func (o *Client) getBlueprintAnomalies(ctx context.Context, blueprintId ObjectId
 		Items []BlueprintAnomaly
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:         http.MethodGet,
 		urlStr:         fmt.Sprintf(apiUrlBlueprintAnomalies, blueprintId),
 		apiResponse:    &apiResonse,
@@ -248,7 +248,7 @@ func (o *Client) getBlueprintNodeAnomalyCounts(ctx context.Context, blueprintId 
 		Items []BlueprintNodeAnomalyCounts
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:         http.MethodGet,
 		urlStr:         fmt.Sprintf(apiUrlBlueprintAnomaliesByNode, blueprintId),
 		apiResponse:    &apiResonse,
@@ -262,7 +262,7 @@ func (o *Client) getBlueprintServiceAnomalyCounts(ctx context.Context, blueprint
 		Items []BlueprintServiceAnomalyCount
 	}
 
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:         http.MethodGet,
 		urlStr:         fmt.Sprintf(apiUrlBlueprintAnomaliesByService, blueprintId),
 		apiResponse:    &apiResonse,

@@ -561,7 +561,7 @@ func (o *TwoStageL3ClosClient) getAllResourceAllocations(ctx context.Context) ([
 	response := &struct {
 		Items []rawResourceGroupAllocation `json:"items"`
 	}{}
-	return response.Items, o.client.talkToApstra(ctx, &talkToApstraIn{
+	return response.Items, o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroups, o.blueprintId),
 		apiResponse: response,
@@ -573,7 +573,7 @@ func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg *Re
 		ResourceGroup: *rg,
 	}
 	response := rga.raw()
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, response.Type, response.Name),
 		apiResponse: response,
@@ -585,7 +585,7 @@ func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg *Re
 }
 
 func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga *rawResourceGroupAllocation) error {
-	return o.client.talkToApstra(ctx, &talkToApstraIn{
+	return o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.Type, rga.Name),
 		apiInput: rga,

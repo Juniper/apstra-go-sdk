@@ -143,7 +143,7 @@ func (o *Client) listIpPoolIds(ctx context.Context, urlStr string) ([]ObjectId, 
 	var response struct {
 		Items []ObjectId `json:"items"`
 	}
-	return response.Items, o.talkToApstra(ctx, &talkToApstraIn{
+	return response.Items, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      urlStr,
 		apiResponse: &response,
@@ -154,7 +154,7 @@ func (o *Client) getIpPools(ctx context.Context, urlStr string) ([]rawIpPool, er
 	var response struct {
 		Items []rawIpPool `json:"items"`
 	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      urlStr,
 		apiResponse: &response,
@@ -168,7 +168,7 @@ func (o *Client) getIpPools(ctx context.Context, urlStr string) ([]rawIpPool, er
 
 func (o *Client) getIpPool(ctx context.Context, urlStr string) (*rawIpPool, error) {
 	response := &rawIpPool{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      urlStr,
 		apiResponse: response,
@@ -242,7 +242,7 @@ func (o *Client) createIpPool(ctx context.Context, ipv6 bool, request *NewIpPool
 		urlStr = apiUrlResourcesIp4Pools
 	}
 	response := &objectIdResponse{}
-	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
+	return response.Id, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      urlStr,
 		apiInput:    request,
@@ -251,7 +251,7 @@ func (o *Client) createIpPool(ctx context.Context, ipv6 bool, request *NewIpPool
 }
 
 func (o *Client) deleteIpPool(ctx context.Context, urlStr string, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodDelete,
 		urlStr:   fmt.Sprintf(urlStr, id),
 		apiInput: nil,
@@ -269,7 +269,7 @@ func (o *Client) updateIpPool(ctx context.Context, urlStr string, request *NewIp
 	if request.Tags == nil {
 		request.Tags = []string{}
 	}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   urlStr,
 		apiInput: request,

@@ -294,7 +294,7 @@ func (o *Client) listAllInterfaceMapIds(ctx context.Context) ([]ObjectId, error)
 	response := &struct {
 		Items []ObjectId `json:"items"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodOptions,
 		urlStr:      apiUrlDesignInterfaceMaps,
 		apiResponse: response,
@@ -309,7 +309,7 @@ func (o *Client) getAllInterfaceMaps(ctx context.Context) ([]rawInterfaceMap, er
 	response := &struct {
 		Items []rawInterfaceMap `json:"items"`
 	}{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      apiUrlDesignInterfaceMaps,
 		apiResponse: response,
@@ -322,7 +322,7 @@ func (o *Client) getAllInterfaceMaps(ctx context.Context) ([]rawInterfaceMap, er
 
 func (o *Client) getInterfaceMap(ctx context.Context, id ObjectId) (*rawInterfaceMap, error) {
 	response := &rawInterfaceMap{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDesignInterfaceMapById, id),
 		apiResponse: &response,
@@ -377,7 +377,7 @@ func (o *Client) createInterfaceMap(ctx context.Context, in *InterfaceMapData) (
 	}
 
 	response := &objectIdResponse{}
-	return response.Id, o.talkToApstra(ctx, &talkToApstraIn{
+	return response.Id, o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDesignInterfaceMaps,
 		apiInput:    in.raw(),
@@ -393,7 +393,7 @@ func (o *Client) updateInterfaceMap(ctx context.Context, id ObjectId, in *Interf
 		}
 	}
 
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDesignInterfaceMapById, id),
 		apiInput: in.raw(),
@@ -401,7 +401,7 @@ func (o *Client) updateInterfaceMap(ctx context.Context, id ObjectId, in *Interf
 }
 
 func (o *Client) deleteInterfaceMap(ctx context.Context, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	return o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDesignInterfaceMapById, id),
 	})

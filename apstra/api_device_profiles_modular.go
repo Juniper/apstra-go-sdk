@@ -72,7 +72,7 @@ func (o *rawModularDeviceProfile) polish() *ModularDeviceProfile {
 
 func (o *Client) createModularDeviceProfile(ctx context.Context, in *rawModularDeviceProfile) (ObjectId, error) {
 	response := new(objectIdResponse)
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodPost,
 		urlStr:      apiUrlDeviceProfiles,
 		apiInput:    in,
@@ -87,7 +87,7 @@ func (o *Client) createModularDeviceProfile(ctx context.Context, in *rawModularD
 
 func (o *Client) getModularDeviceProfile(ctx context.Context, id ObjectId) (*rawModularDeviceProfile, error) {
 	response := new(rawModularDeviceProfile)
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlDeviceProfileById, id),
 		apiResponse: response,
@@ -100,7 +100,7 @@ func (o *Client) getModularDeviceProfile(ctx context.Context, id ObjectId) (*raw
 }
 
 func (o *Client) updateModularDeviceProfile(ctx context.Context, id ObjectId, cfg *rawModularDeviceProfile) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlDeviceProfileById, id),
 		apiInput: cfg,
@@ -113,7 +113,7 @@ func (o *Client) updateModularDeviceProfile(ctx context.Context, id ObjectId, cf
 }
 
 func (o *Client) deleteModularDeviceProfile(ctx context.Context, id ObjectId) error {
-	err := o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlDeviceProfileById, id),
 	})

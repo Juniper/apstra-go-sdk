@@ -71,7 +71,7 @@ func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, i
 		MaxMlagRoutes:                         in.MaxMlagRoutes,
 	}
 
-	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+	err := o.client.talkToApstra(ctx, talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintVirtualNetworkPolicy, o.blueprintId),
 		apiInput: &apiInput,

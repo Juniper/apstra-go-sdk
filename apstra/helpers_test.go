@@ -464,7 +464,7 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStage
 		// todo - this is temporary
 		require.NoError(t, bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: toPtr(true)}))
 	} else {
-		require.NoError(t, client.talkToApstra(ctx, &talkToApstraIn{
+		require.NoError(t, client.talkToApstra(ctx, talkToApstraIn{
 			method: http.MethodPatch,
 			urlStr: fmt.Sprintf("/api/blueprints/%s/fabric-settings", bpId),
 			apiInput: struct {
