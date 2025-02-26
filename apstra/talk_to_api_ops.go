@@ -255,7 +255,6 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	// it's impossible to know exactly what'll be in there. Extract it now into
 	// whatever in.apiResponse (interface{} controlled by the caller) is.
 	return json.Unmarshal(taskResponse.DetailedStatus.ApiResponse, in.apiResponse)
-
 }
 
 //func (o *Client) talkToApiOpsOld(apstraReq *http.Request) (*http.Response, error) {
