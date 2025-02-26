@@ -109,7 +109,6 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Dest-Fallback", "s3")
-	req.Header.Set("X-Dest-Fallback-Region", "us-east-1")
 
 	resp, err := o.httpClient.Do(req)
 	if err != nil {
