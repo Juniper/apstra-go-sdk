@@ -77,13 +77,11 @@ func (o *Client) login(ctx context.Context) error {
 	}
 
 	// stash auth token in client's default set of apstra http httpHeaders
-	// and start the tasskMonitor (these go together)
 	o.lock(mutexKeyHttpHeaders)
 	o.httpHeaders[apstraAuthHeader] = response.Token
 	o.unlock(mutexKeyHttpHeaders)
 
 	o.id = response.Id
-	o.startTaskMonitor()
 	return nil
 }
 
@@ -96,7 +94,6 @@ func (o *Client) logout(ctx context.Context) error {
 		delete(o.httpHeaders, apstraAuthHeader)
 		o.unlock(mutexKeyHttpHeaders)
 		o.Log(1, "shutting down the task monitor")
-		o.stopTaskMonitor()
 	}()
 
 	o.lock(mutexKeyHttpHeaders)

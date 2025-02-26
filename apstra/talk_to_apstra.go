@@ -184,6 +184,10 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 // not nil, it JSON-encodes that data structure and sends it. In case the
 // in.apiResponse is not nil, the server response is extracted into it.
 func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
+	if o.apiOpsDcId != nil {
+		return o.talkToApiOps(ctx, in)
+	}
+
 	var err error
 	var requestBody []byte
 
@@ -244,6 +248,9 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	// talk to the server
 	resp, err := o.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("error making http request for url '%s' - %w", apstraUrl.String(), err)
+	}
 
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
 	req.Header.Del(apstraAuthHeader)
@@ -381,12 +388,12 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 			ContentLength: int64(len(taskResponse.DetailedStatus.Errors)),
 		}
 
-		detailedStatus, _ := json.Marshal(&taskResponse.DetailedStatus)
+		dsMsg, _ := json.Marshal(&taskResponse.DetailedStatus)
 
 		return TalkToApstraErr{
 			Request:  request,
 			Response: response,
-			Msg:      string(detailedStatus),
+			Msg:      string(dsMsg),
 		}
 	}
 
