@@ -130,5 +130,14 @@ func getTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 		testClientCfgs[k] = v
 	}
 
+	apiOpsTestClientCfgs, err := getApiOpsTestClientCfgs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range apiOpsTestClientCfgs {
+		testClientCfgs[k] = v
+	}
+
 	return testClientCfgs, nil
 }
