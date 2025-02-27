@@ -45,7 +45,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	for k, v := range o.httpHeaders {
 		headers[k] = v
 	}
-	headers["API-Ops-Datacenter-Id"] = *o.apiOpsDcId
+	headers["API-Ops-Datacenter-Id"] = *o.cfg.apiOpsDcId
 	if in.apiInput != nil {
 		headers["Content-Type"] = "application/json"
 	}
@@ -78,7 +78,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 		DcId         string       `json:"datacenter_edge_id"`
 		ProxyMessage proxyMessage `json:"payload"`
 	}{
-		DcId:         *o.apiOpsDcId,
+		DcId:         *o.cfg.apiOpsDcId,
 		ProxyMessage: msg,
 	})
 	if err != nil {
@@ -141,11 +141,12 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	// create a bogus http.Response so that our previously implemented logic works with it
 	innerResp := new(http.Response)
 	innerResp.Body = io.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(proxyResponse.HTTPResponse)))
+	innerResp.StatusCode = proxyResponse.HTTPStatusCode
 	// noinspection GoUnhandledErrorResult
 	defer innerResp.Body.Close()
 
 	if proxyResponse.HTTPStatusCode/100 != 2 {
-		return newTalkToApstraErr(req, requestBody, innerResp, fmt.Sprintf("API-ops proxy response code: %d, error message: %q", proxyResponse.HTTPStatusCode, proxyResponse.ErrorMsg))
+		return newTalkToApstraErr(req, requestBody, innerResp, fmt.Sprintf("API-ops proxy inner message response code: %d, error message: %q", proxyResponse.HTTPStatusCode, proxyResponse.ErrorMsg))
 	}
 
 	// If the caller gave us an httpBodyWriter, copy the response body into it and return
