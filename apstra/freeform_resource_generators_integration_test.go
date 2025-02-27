@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -75,7 +75,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 
 			systemsAndVlanPools := make([]systemIdAndPoolLabel, systemCount)
 			for i, systemId := range systemIds {
-				label := randString(6, "hex")
+				label := "a" + randString(6, "hex") // all numeric values cause problem
 				_ = testRaLocalVlanPool(ctx, t, ffc, systemId, label)
 				systemsAndVlanPools[i] = systemIdAndPoolLabel{
 					systemId:  systemId,
