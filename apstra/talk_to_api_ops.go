@@ -146,7 +146,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	defer innerResp.Body.Close()
 
 	if proxyResponse.HTTPStatusCode/100 != 2 {
-		return newTalkToApstraErr(req, requestBody, innerResp, fmt.Sprintf("API-ops proxy inner message response code: %d, error message: %q", proxyResponse.HTTPStatusCode, proxyResponse.ErrorMsg))
+		return newTalkToApstraErr(req, requestBody, innerResp, "")
 	}
 
 	// If the caller gave us an httpBodyWriter, copy the response body into it and return
