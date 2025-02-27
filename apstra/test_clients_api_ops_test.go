@@ -73,7 +73,7 @@ func getApiOpsTestClientCfgs(_ context.Context) (map[string]testClientCfg, error
 			cfg: &ClientCfg{
 				Url:        x,
 				apiOpsDcId: toPtr(path.Base(p)),
-				//HttpClient: httpClient,
+				// HttpClient: httpClient,
 			},
 		}
 	}
