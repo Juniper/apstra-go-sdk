@@ -6,6 +6,7 @@ package apstra
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -18,7 +19,8 @@ import (
 
 const (
 	aosOpsUrlPath   = "/send"
-	EnvAosOpsEdgeId = "API_OPS_DATACENTER_EDGE_ID"
+	envAosOpsEdgeId = "API_OPS_DATACENTER_EDGE_ID"
+	envAosOpsNoGzip = "API_OPS_DISABLE_GZIP"
 )
 
 func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
@@ -41,14 +43,18 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	}
 
 	o.lock(mutexKeyHttpHeaders)
-	headers := make(map[string]string, len(o.httpHeaders)+1)
+	headers := make(map[string]string, len(o.httpHeaders)+3)
 	for k, v := range o.httpHeaders {
 		headers[k] = v
 	}
 	headers["API-Ops-Datacenter-Id"] = *o.cfg.apiOpsDcId
+	if !o.skipGzip {
+		headers["Accept-Encoding"] = "gzip"
+	}
 	if in.apiInput != nil {
 		headers["Content-Type"] = "application/json"
 	}
+	headers["X-Dest-Fallback"] = "s3"
 	o.unlock(mutexKeyHttpHeaders)
 
 	type proxyMessage struct {
@@ -126,21 +132,38 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	defer resp.Body.Close()
 
 	var proxyResponse struct {
-		HTTPStatusCode int    `json:"statusCode"`
-		HTTPResponse   string `json:"response"`
-		ErrorMsg       string `json:"errorMsg"`
+		Uid            string            `json:"uid"`
+		Headers        map[string]string `json:"headers"`
+		HTTPStatusCode int               `json:"statusCode"`
+		HTTPResponse   string            `json:"response"`
+		ErrorMsg       string            `json:"errorMsg"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&proxyResponse)
 	if err != nil {
 		return fmt.Errorf("error decoding proxy response for url '%s' - %w", apstraUrl.String(), err)
 	}
 	if proxyResponse.ErrorMsg != "" {
-		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("API-ops proxy error message: %s", proxyResponse.ErrorMsg))
+		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("API-ops proxy error message for transaction %s: %s", proxyResponse.Uid, proxyResponse.ErrorMsg))
+	}
+
+	var gz bool
+	if ce, ok := proxyResponse.Headers["Content-Encoding"]; ok {
+		if strings.Contains(ce, "gzip") {
+			gz = true
+		}
 	}
 
 	// create a bogus http.Response so that our previously implemented logic works with it
 	innerResp := new(http.Response)
-	innerResp.Body = io.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(proxyResponse.HTTPResponse)))
+	if gz {
+		gzReader, err := gzip.NewReader(base64.NewDecoder(base64.StdEncoding, strings.NewReader(proxyResponse.HTTPResponse)))
+		if err != nil {
+			return fmt.Errorf("error creating gzip reader for transaction %s - %w", proxyResponse.Uid, err)
+		}
+		innerResp.Body = gzReader
+	} else {
+		innerResp.Body = io.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(proxyResponse.HTTPResponse)))
+	}
 	innerResp.StatusCode = proxyResponse.HTTPStatusCode
 	// noinspection GoUnhandledErrorResult
 	defer innerResp.Body.Close()
