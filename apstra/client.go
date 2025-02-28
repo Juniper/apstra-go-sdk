@@ -159,6 +159,7 @@ type Client struct {
 	sync        map[string]*sync.Mutex   // some client operations are not concurrency safe. Their locks live here.
 	syncLock    sync.Mutex               // control access to the 'sync' map
 	features    map[enum.ApiFeature]bool // true/false indicate feature enabled/disabled status
+	skipGzip    bool                     // prevents setting 'Accept-Encoding: gzip' - only implemented for api-ops proxy
 }
 
 // GetTuningParam returns a named timer value from the client configuration if one has been configured.
@@ -284,6 +285,13 @@ func (o ClientCfg) validate() error {
 
 // NewClient creates a Client object
 func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
+	if proxyId, ok := os.LookupEnv(envAosOpsEdgeId); ok {
+		if proxyId == "" {
+			return nil, fmt.Errorf("environment variable %s must not be empty if set", envAosOpsEdgeId)
+		}
+		o.apiOpsDcId = &proxyId
+	}
+
 	err := o.validate()
 	if err != nil {
 		return nil, err
@@ -315,13 +323,6 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		httpHeaders["User-Agent"] = o.UserAgent
 	}
 
-	if proxyId, ok := os.LookupEnv(EnvAosOpsEdgeId); ok {
-		if proxyId == "" {
-			return nil, fmt.Errorf("environment variable %s must not be empty if set", EnvAosOpsEdgeId)
-		}
-		o.apiOpsDcId = &proxyId
-	}
-
 	c := &Client{
 		cfg:         o,
 		baseUrl:     baseUrl,
@@ -331,6 +332,10 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		taskMonChan: make(chan *taskMonitorMonReq),
 		sync:        make(map[string]*sync.Mutex),
 		ctx:         context.Background(),
+	}
+
+	if _, ok := os.LookupEnv(envAosOpsNoGzip); ok {
+		c.skipGzip = true
 	}
 
 	if o.apiOpsDcId != nil {
