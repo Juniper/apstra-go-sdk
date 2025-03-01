@@ -19,7 +19,7 @@ import (
 
 const (
 	aosOpsUrlPath   = "/send"
-	envAosOpsEdgeId = "API_OPS_DATACENTER_EDGE_ID"
+	EnvAosOpsEdgeId = "API_OPS_DATACENTER_EDGE_ID"
 	envAosOpsNoGzip = "API_OPS_DISABLE_GZIP"
 )
 
