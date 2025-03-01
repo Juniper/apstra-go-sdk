@@ -1,17 +1,17 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
 import (
 	"context"
-	"errors"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetAllTags(t *testing.T) {
@@ -90,35 +90,33 @@ func TestCreateGetDeleteTag(t *testing.T) {
 }
 
 func TestCreateTagCollision(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	label := randString(10, "hex")
 	for _, client := range clients {
-		id1, err := client.client.CreateTag(context.Background(), &DesignTagRequest{
-			Label: label,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
 
-		id2, err := client.client.CreateTag(context.Background(), &DesignTagRequest{
-			Label: label,
-		})
-		if err == nil {
-			_ = client.client.deleteTag(context.Background(), id1)
-			_ = client.client.deleteTag(context.Background(), id2)
-			t.Fatal(errors.New("expected error, got none"))
-		}
-		_ = client.client.deleteTag(context.Background(), id1)
+			id1, err := client.client.CreateTag(ctx, &DesignTagRequest{
+				Label: label,
+			})
+			require.NoError(t, err)
+			t.Cleanup(func() { require.NoError(t, client.client.deleteTag(ctx, id1)) })
 
-		var ace ClientErr
-		if errors.As(err, &ace) && ace.errType == ErrExists { // this is the error we want
-			continue
-		}
-		t.Fatal(err)
+			_, err = client.client.CreateTag(ctx, &DesignTagRequest{
+				Label: label,
+			})
+			require.Error(t, err)
+
+			var ace ClientErr
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, ace.Type(), ErrExists)
+		})
 	}
 }
 
