@@ -40,7 +40,7 @@ func TestGetLockInfo(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			l, err := bp.getLockInfo(context.TODO())
+			l, err := bp.GetLockInfo(context.TODO())
 			if err != nil {
 				t.Fatal(err)
 			}

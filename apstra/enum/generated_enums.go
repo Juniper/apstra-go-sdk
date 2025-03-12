@@ -385,6 +385,68 @@ func (o *JunosEvpnIrbMode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*LockStatus)(nil)
+	_ json.Marshaler   = (*LockStatus)(nil)
+	_ json.Unmarshaler = (*LockStatus)(nil)
+)
+
+func (o LockStatus) String() string {
+	return o.Value
+}
+
+func (o *LockStatus) FromString(s string) error {
+	if LockStatuses.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *LockStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LockStatus) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*LockType)(nil)
+	_ json.Marshaler   = (*LockType)(nil)
+	_ json.Unmarshaler = (*LockType)(nil)
+)
+
+func (o LockType) String() string {
+	return o.Value
+}
+
+func (o *LockType) FromString(s string) error {
+	if LockTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *LockType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LockType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*NodeRole)(nil)
 	_ json.Marshaler   = (*NodeRole)(nil)
 	_ json.Unmarshaler = (*NodeRole)(nil)
@@ -1037,6 +1099,22 @@ var (
 	JunosEvpnIrbModes      = oenum.New(
 		JunosEvpnIrbModeSymmetric,
 		JunosEvpnIrbModeAsymmetric,
+	)
+
+	_            enum = new(LockStatus)
+	LockStatuses      = oenum.New(
+		LockStatusLocked,
+		LockStatusLockedByAdmin,
+		LockStatusLockedByDeletedUser,
+		LockStatusLockedByRestrictedUser,
+		LockStatusUnlocked,
+	)
+
+	_         enum = new(LockType)
+	LockTypes      = oenum.New(
+		LockTypeLockedByChanges,
+		LockTypeLockedByUser,
+		LockTypeUnlocked,
 	)
 
 	_         enum = new(NodeRole)

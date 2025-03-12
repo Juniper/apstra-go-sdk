@@ -43,7 +43,7 @@ do
   # shellcheck disable=SC2059
   printf "checking %s...  " "$file"
 
-  # determine the the the file was introduced and the year it was most recently modified
+  # determine the year the file was introduced and the year it was most recently modified
   first_year=""
   recent_year=""
   while read -r line

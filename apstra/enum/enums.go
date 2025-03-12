@@ -292,3 +292,21 @@ var (
 	SecurityZoneTypeL3Fabric        = SecurityZoneType{Value: "l3_fabric"}
 	SecurityZoneTypeVirtualL3Fabric = SecurityZoneType{Value: "virtual_l3_fabric"}
 )
+
+type LockStatus oenum.Member[string]
+
+var (
+	LockStatusLocked                 = LockStatus{Value: "locked"}
+	LockStatusLockedByAdmin          = LockStatus{Value: "locked_by_admin"}
+	LockStatusLockedByDeletedUser    = LockStatus{Value: "locked_by_deleted_user"}
+	LockStatusLockedByRestrictedUser = LockStatus{Value: "locked_by_restricted_user"}
+	LockStatusUnlocked               = LockStatus{Value: "unlocked"}
+)
+
+type LockType oenum.Member[string]
+
+var (
+	LockTypeLockedByChanges = LockType{Value: "lock_by_changes"}
+	LockTypeLockedByUser    = LockType{Value: "lock_by_user"}
+	LockTypeUnlocked        = LockType{Value: "unlocked"}
+)

@@ -382,15 +382,6 @@ func (o *TwoStageL3ClosClient) DeleteVirtualNetwork(ctx context.Context, id Obje
 	return o.deleteVirtualNetwork(ctx, id)
 }
 
-// GetLockInfo returns *LockInfo describing the current state of the blueprint lock
-func (o *TwoStageL3ClosClient) GetLockInfo(ctx context.Context) (*LockInfo, error) {
-	li, err := o.getLockInfo(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return li.polish()
-}
-
 // GetNodes fetches the node of the specified type, unpacks the API response
 // into 'response'
 func (o *TwoStageL3ClosClient) GetNodes(ctx context.Context, nodeType NodeType, response interface{}) error {
