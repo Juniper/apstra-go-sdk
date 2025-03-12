@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -66,6 +67,10 @@ func TestClient_DoRawJsonTransaction(t *testing.T) {
 				Method: http.MethodDelete,
 				Url:    parseUrl(t, fmt.Sprintf("/api/resources/ip-pools/%s", idResponse.Id)),
 			}, nil)
+			require.NoError(t, err)
+
+			// pools don't disappear immediately
+			time.Sleep(time.Second)
 
 			// ensure the pool ID does not exist
 			err = client.client.DoRawJsonTransaction(ctx, RawJsonRequest{
