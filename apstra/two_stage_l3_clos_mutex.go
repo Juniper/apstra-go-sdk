@@ -93,7 +93,7 @@ func (o *TwoStageL3ClosMutex) lock(ctx context.Context, nonBlocking bool) error 
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context cancelled while waiting for lock status %q - %w",
-				enum.LockStatusUnlocked.String(), ctx.Err())
+				enum.LockStatusUnlocked, ctx.Err())
 		case <-tickerA.C:
 		}
 
