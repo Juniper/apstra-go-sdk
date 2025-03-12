@@ -143,11 +143,11 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 
 				sviIps := make(map[ObjectId]*SviIp, count)
 				lastOctets := make([]int, count)
-				randomIntsN(lastOctets, 253) // avoid .0, .1 and .255
+				randomIntsN(lastOctets, 253) // 253 possible values while avoiding .0, .1 and .255
 				for j := range count {
 					_, ipNet, err := net.ParseCIDR(vnPrefix.String())
 					require.NoError(t, err)
-					ipNet.IP[3] = byte(lastOctets[j])
+					ipNet.IP[3] = byte(lastOctets[j] + 2) // add 2 to to avoid .0 and .1
 					sviIps[leafIds[j]] = &SviIp{
 						SystemId: leafIds[j],
 						Ipv4Addr: ipNet,
@@ -322,12 +322,12 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 
 				requestSviIps := make(map[ObjectId]*SviIp, count)
 				lastOctets := make([]int, count)
-				randomIntsN(lastOctets, 253) // avoid .0, .1 and .255
+				randomIntsN(lastOctets, 253) // 253 possible values while avoiding .0, .1 and .255
 				for j, leafId := range leafIds {
 					if j < count {
 						_, ipNet, err := net.ParseCIDR(vnPrefix.String())
 						require.NoError(t, err)
-						ipNet.IP[3] = byte(lastOctets[j])
+						ipNet.IP[3] = byte(lastOctets[j] + 2) // add 2 to to avoid .0 and .1
 						requestSviIps[leafId] = &SviIp{
 							SystemId: leafIds[j],
 							Ipv4Addr: ipNet,

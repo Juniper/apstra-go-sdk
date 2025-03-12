@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -81,18 +83,17 @@ func (o *TwoStageL3ClosMutex) lock(ctx context.Context, nonBlocking bool) error 
 		return fmt.Errorf("lock name %q exceeds limit (max %d characters)", lockName, tagNameLenMax)
 	}
 
-	// set initial LockStatus to bogus value b/c desired state is "0"
-	li := &LockInfo{LockStatus: -1}
+	li := new(LockInfo)
 
 	var err error
 	tickerA := immediateTicker(lockPollInterval)
 	defer tickerA.Stop()
 
-	for li.LockStatus != LockStatusUnlocked {
+	for li.LockStatus != enum.LockStatusUnlocked {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context cancelled while waiting for lock status %q - %w",
-				LockStatusUnlocked.String(), ctx.Err())
+				enum.LockStatusUnlocked, ctx.Err())
 		case <-tickerA.C:
 		}
 
@@ -102,11 +103,11 @@ func (o *TwoStageL3ClosMutex) lock(ctx context.Context, nonBlocking bool) error 
 		}
 
 		// Pass when locked by our own ID.
-		if li.UserId == o.client.client.ID() {
+		if li.LockStatus == enum.LockStatusLocked && li.UserId != nil && *li.UserId == o.client.client.id {
 			break
 		}
 
-		if nonBlocking && li.LockStatus != LockStatusUnlocked {
+		if nonBlocking && li.LockStatus != enum.LockStatusUnlocked {
 			return MutexErr{
 				LockInfo: li,
 				err:      fmt.Errorf("blueprint %q: %s", o.client.blueprintId, li.String()),
