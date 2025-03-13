@@ -24,9 +24,10 @@ type IbaWidgetData struct {
 	Label              string
 	Filter             string
 	TimeSeriesDuration *time.Duration
-	DataSource         string
+	DataSource         enum.IbaWidgetDataSource
+	AggregationType    enum.IbaWidgetAggregationType
 	MaxItems           *int
-	CombineGraphs      string
+	CombineGraphs      enum.IbaWidgetCombineGraph
 	VisibleColumns     []string
 	UpdatedBy          string
 }
@@ -39,6 +40,7 @@ var (
 func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		AggregationPeriod  *int     `json:"aggregation_period"`
+		AggregationType    string   `json:"aggregation_type"`
 		OrderBy            string   `json:"orderby"`
 		StageName          string   `json:"stage_name"`
 		ShowContext        bool     `json:"show_context"`
@@ -62,12 +64,6 @@ func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 
-	var t enum.IbaWidgetType
-	err = t.FromString(raw.Type)
-	if err != nil {
-		return err
-	}
-
 	var aggregationPeriod *time.Duration
 	if raw.AggregationPeriod != nil {
 		td := time.Duration(*raw.AggregationPeriod) * time.Second
@@ -80,8 +76,33 @@ func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
 		timeSeriesDuration = &td
 	}
 
+	var t enum.IbaWidgetType
+	err = t.FromString(raw.Type)
+	if err != nil {
+		return err
+	}
+
+	var ds enum.IbaWidgetDataSource
+	err = ds.FromString(raw.DataSource)
+	if err != nil {
+		return err
+	}
+
+	var aggType enum.IbaWidgetAggregationType
+	err = aggType.FromString(raw.AggregationType)
+	if err != nil {
+		return err
+	}
+
+	var cg enum.IbaWidgetCombineGraph
+	err = cg.FromString(raw.CombineGraphs)
+	if err != nil {
+		return err
+	}
+
 	*i = IbaWidgetData{
 		AggregationPeriod:  aggregationPeriod,
+		AggregationType:    aggType,
 		OrderBy:            raw.OrderBy,
 		StageName:          raw.StageName,
 		ShowContext:        raw.ShowContext,
@@ -92,9 +113,9 @@ func (i *IbaWidgetData) UnmarshalJSON(bytes []byte) error {
 		Label:              raw.Label,
 		Filter:             raw.Filter,
 		TimeSeriesDuration: timeSeriesDuration,
-		DataSource:         raw.DataSource,
+		DataSource:         ds,
 		MaxItems:           raw.MaxItems,
-		CombineGraphs:      raw.CombineGraphs,
+		CombineGraphs:      cg,
 		VisibleColumns:     raw.VisibleColumns,
 		UpdatedBy:          raw.UpdatedBy,
 		WidgetType:         t,
@@ -147,9 +168,9 @@ func (i *IbaWidgetData) MarshalJSON() ([]byte, error) {
 		Label:              i.Label,
 		Filter:             i.Filter,
 		TimeSeriesDuration: &timeSeriesDuration,
-		DataSource:         i.DataSource,
+		DataSource:         i.DataSource.String(),
 		MaxItems:           i.MaxItems,
-		CombineGraphs:      i.CombineGraphs,
+		CombineGraphs:      i.CombineGraphs.String(),
 		VisibleColumns:     i.VisibleColumns,
 		Type:               i.WidgetType.String(),
 	}
