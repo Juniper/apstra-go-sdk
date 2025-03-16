@@ -9,10 +9,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
