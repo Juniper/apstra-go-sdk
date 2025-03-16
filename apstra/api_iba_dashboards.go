@@ -32,7 +32,7 @@ type IbaDashboard struct {
 	Data *IbaDashboardData
 }
 
-type IbaWidgetData struct {
+type IbaWidget struct {
 	AggregationPeriod  *DurationInSecs                `json:"aggregation_period,omitempty"`
 	AggregationType    *enum.IbaWidgetAggregationType `json:"aggregation_type,omitempty"`
 	OrderBy            string                         `json:"orderby"`
@@ -54,15 +54,15 @@ type IbaWidgetData struct {
 
 func (i *IbaDashboard) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id                  string            `json:"id"`
-		Label               string            `json:"label"`
-		Description         string            `json:"description"`
-		Default             bool              `json:"default"`
-		CreatedAt           *string           `json:"created_at"`
-		UpdatedAt           *string           `json:"updated_at"`
-		IbaWidgetGrid       [][]IbaWidgetData `json:"grid"`
-		PredefinedDashboard string            `json:"predefined_dashboard"`
-		UpdatedBy           string            `json:"updated_by"`
+		Id                  string        `json:"id"`
+		Label               string        `json:"label"`
+		Description         string        `json:"description"`
+		Default             bool          `json:"default"`
+		CreatedAt           *string       `json:"created_at"`
+		UpdatedAt           *string       `json:"updated_at"`
+		IbaWidgetGrid       [][]IbaWidget `json:"grid"`
+		PredefinedDashboard string        `json:"predefined_dashboard"`
+		UpdatedBy           string        `json:"updated_by"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
@@ -89,19 +89,19 @@ type IbaDashboardData struct {
 	Description         string
 	Default             bool
 	Label               string
-	IbaWidgetGrid       [][]IbaWidgetData
+	IbaWidgetGrid       [][]IbaWidget
 	PredefinedDashboard string
 	UpdatedBy           string
 }
 
 func (i *IbaDashboardData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Label               string            `json:"label"`
-		Description         string            `json:"description"`
-		Default             bool              `json:"default,omitempty"`
-		IbaWidgetGrid       [][]IbaWidgetData `json:"grid"`
-		PredefinedDashboard string            `json:"predefined_dashboard,omitempty"`
-		UpdatedBy           string            `json:"updated_by,omitempty"`
+		Label               string        `json:"label"`
+		Description         string        `json:"description"`
+		Default             bool          `json:"default,omitempty"`
+		IbaWidgetGrid       [][]IbaWidget `json:"grid"`
+		PredefinedDashboard string        `json:"predefined_dashboard,omitempty"`
+		UpdatedBy           string        `json:"updated_by,omitempty"`
 	}{
 		Label:               i.Label,
 		Description:         i.Description,

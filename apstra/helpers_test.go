@@ -736,8 +736,8 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStage
 }
 
 // testWidgetsAB instantiates two predefined probes and creates widgets from them,
-// returning the widget Object Id and the IbaWidgetData object used for creation
-func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (IbaWidgetData, IbaWidgetData) {
+// returning the widget Object Id and the IbaWidget object used for creation
+func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (IbaWidget, IbaWidget) {
 	t.Helper()
 	probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "bgp_session",
@@ -756,7 +756,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	require.NoError(t, err)
 
 	ap := DurationInSecs(1000000000)
-	widgetA := IbaWidgetData{
+	widgetA := IbaWidget{
 		Label:              "BGP Session Flapping",
 		ProbeId:            probeAId,
 		StageName:          "BGP Session",
@@ -767,7 +767,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	// widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
 	// require.NoError(t, err)
 
-	widgetB := IbaWidgetData{
+	widgetB := IbaWidget{
 		Label:              "Drain Traffic Anomaly",
 		ProbeId:            probeBId,
 		StageName:          "excess_range",
