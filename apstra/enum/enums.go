@@ -314,7 +314,6 @@ var (
 type IbaWidgetDataSource oenum.Member[string]
 
 var (
-	// IbaWidgetDataSourceBlank      = IbaWidgetDataSource{Value: ""}
 	IbaWidgetDataSourceRealTime   = IbaWidgetDataSource{Value: "real_time"}
 	IbaWidgetDataSourceTimeSeries = IbaWidgetDataSource{Value: "time_series"}
 )
@@ -322,7 +321,6 @@ var (
 type IbaWidgetAggregationType oenum.Member[string]
 
 var (
-	// IbaWidgetAggregationTypeBlank   = IbaWidgetAggregationType{Value: ""}
 	IbaWidgetAggregationTypeUnset   = IbaWidgetAggregationType{Value: "unset"}
 	IbaWidgetAggregationTypeMin     = IbaWidgetAggregationType{Value: "min"}
 	IbaWidgetAggregationTypeAverage = IbaWidgetAggregationType{Value: "average"}
@@ -336,7 +334,6 @@ var (
 type IbaWidgetCombineGraph oenum.Member[string]
 
 var (
-	// IbaWidgetCombineGraphBlank   = IbaWidgetCombineGraph{Value: ""}
 	IbaWidgetCombineGraphNone    = IbaWidgetCombineGraph{Value: "none"}
 	IbaWidgetCombineGraphLinear  = IbaWidgetCombineGraph{Value: "linear"}
 	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
