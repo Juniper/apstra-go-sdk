@@ -285,34 +285,6 @@ var (
 	ConfigletSectionSystemTop            = ConfigletSection{Value: "system_top"}
 )
 
-<<<<<<< HEAD
-type IbaWidgetDataSource oenum.Member[string]
-
-var (
-	IbaWidgetDataSourceRealTime   = IbaWidgetDataSource{Value: "real_time"}
-	IbaWidgetDataSourceTimeSeries = IbaWidgetDataSource{Value: "time_series"}
-)
-
-type IbaWidgetAggregationType oenum.Member[string]
-
-var (
-	IbaWidgetAggregationTypeUnset   = IbaWidgetAggregationType{Value: "unset"}
-	IbaWidgetAggregationTypeMin     = IbaWidgetAggregationType{Value: "min"}
-	IbaWidgetAggregationTypeAverage = IbaWidgetAggregationType{Value: "average"}
-	IbaWidgetAggregationTypeNone    = IbaWidgetAggregationType{Value: "none"}
-	IbaWidgetAggregationTypeAnyOf   = IbaWidgetAggregationType{Value: "any_of"}
-	IbaWidgetAggregationTypeLast    = IbaWidgetAggregationType{Value: "last"}
-	IbaWidgetAggregationTypeAllOf   = IbaWidgetAggregationType{Value: "all_of"}
-	IbaWidgetAggregationTypeMax     = IbaWidgetAggregationType{Value: "max"}
-)
-
-type IbaWidgetCombineGraph oenum.Member[string]
-
-var (
-	IbaWidgetCombineGraphNone    = IbaWidgetCombineGraph{Value: "none"}
-	IbaWidgetCombineGraphLinear  = IbaWidgetCombineGraph{Value: "linear"}
-	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
-)
 type SecurityZoneType oenum.Member[string]
 
 var (
@@ -337,4 +309,35 @@ var (
 	LockTypeLockedByChanges = LockType{Value: "lock_by_changes"}
 	LockTypeLockedByUser    = LockType{Value: "lock_by_user"}
 	LockTypeUnlocked        = LockType{Value: "unlocked"}
+)
+
+type IbaWidgetDataSource oenum.Member[string]
+
+var (
+	//IbaWidgetDataSourceBlank      = IbaWidgetDataSource{Value: ""}
+	IbaWidgetDataSourceRealTime   = IbaWidgetDataSource{Value: "real_time"}
+	IbaWidgetDataSourceTimeSeries = IbaWidgetDataSource{Value: "time_series"}
+)
+
+type IbaWidgetAggregationType oenum.Member[string]
+
+var (
+	//IbaWidgetAggregationTypeBlank   = IbaWidgetAggregationType{Value: ""}
+	IbaWidgetAggregationTypeUnset   = IbaWidgetAggregationType{Value: "unset"}
+	IbaWidgetAggregationTypeMin     = IbaWidgetAggregationType{Value: "min"}
+	IbaWidgetAggregationTypeAverage = IbaWidgetAggregationType{Value: "average"}
+	IbaWidgetAggregationTypeNone    = IbaWidgetAggregationType{Value: "none"}
+	IbaWidgetAggregationTypeAnyOf   = IbaWidgetAggregationType{Value: "any_of"}
+	IbaWidgetAggregationTypeLast    = IbaWidgetAggregationType{Value: "last"}
+	IbaWidgetAggregationTypeAllOf   = IbaWidgetAggregationType{Value: "all_of"}
+	IbaWidgetAggregationTypeMax     = IbaWidgetAggregationType{Value: "max"}
+)
+
+type IbaWidgetCombineGraph oenum.Member[string]
+
+var (
+	//IbaWidgetCombineGraphBlank   = IbaWidgetCombineGraph{Value: ""}
+	IbaWidgetCombineGraphNone    = IbaWidgetCombineGraph{Value: "none"}
+	IbaWidgetCombineGraphLinear  = IbaWidgetCombineGraph{Value: "linear"}
+	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
 )
