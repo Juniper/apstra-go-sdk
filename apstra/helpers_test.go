@@ -755,12 +755,12 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	})
 	require.NoError(t, err)
 
-	ap := time.Duration(1000000000)
+	ap := DurationInSecs(1000000000)
 	widgetA := IbaWidgetData{
 		Label:              "BGP Session Flapping",
 		ProbeId:            probeAId,
 		StageName:          "BGP Session",
-		WidgetType:         enum.IbaWidgetTypeStage,
+		Type:               enum.IbaWidgetTypeStage,
 		AggregationPeriod:  &ap,
 		TimeSeriesDuration: &ap,
 	}
@@ -771,7 +771,7 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 		Label:              "Drain Traffic Anomaly",
 		ProbeId:            probeBId,
 		StageName:          "excess_range",
-		WidgetType:         enum.IbaWidgetTypeStage,
+		Type:               enum.IbaWidgetTypeStage,
 		AggregationPeriod:  &ap,
 		TimeSeriesDuration: &ap,
 	}
@@ -790,8 +790,8 @@ func compareDashboards(d1, d2 IbaDashboardData) bool {
 	for k1, v1 := range d1.IbaWidgetGrid {
 		for k2, v2 := range v1 {
 			if v2.Label != d2.IbaWidgetGrid[k1][k2].Label || v2.Description != d2.IbaWidgetGrid[k1][k2].Description ||
-				v2.ProbeId != d2.IbaWidgetGrid[k1][k2].ProbeId || v2.TimeSeriesDuration.Seconds() != d2.IbaWidgetGrid[k1][k2].TimeSeriesDuration.Seconds() ||
-				v2.AggregationPeriod.Seconds() != d2.IbaWidgetGrid[k1][k2].AggregationPeriod.Seconds() {
+				v2.ProbeId != d2.IbaWidgetGrid[k1][k2].ProbeId || *v2.TimeSeriesDuration != *d2.IbaWidgetGrid[k1][k2].TimeSeriesDuration ||
+				*v2.AggregationPeriod != *d2.IbaWidgetGrid[k1][k2].AggregationPeriod {
 				return false
 			}
 		}

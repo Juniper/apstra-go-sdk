@@ -12,6 +12,8 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -28,6 +30,26 @@ var _ json.Unmarshaler = (*IbaDashboard)(nil)
 type IbaDashboard struct {
 	Id   ObjectId
 	Data *IbaDashboardData
+}
+
+type IbaWidgetData struct {
+	AggregationPeriod  *DurationInSecs                `json:"aggregation_period,omitempty"`
+	AggregationType    *enum.IbaWidgetAggregationType `json:"aggregation_type,omitempty"`
+	OrderBy            string                         `json:"orderby"`
+	StageName          string                         `json:"stage_name"`
+	ShowContext        bool                           `json:"show_context"`
+	Description        string                         `json:"description"`
+	AnomalousOnly      bool                           `json:"anomalous_only"`
+	SpotlightMode      bool                           `json:"spotlight_mode"`
+	ProbeId            ObjectId                       `json:"probe_id"`
+	Label              string                         `json:"label"`
+	Filter             string                         `json:"filter"`
+	TimeSeriesDuration *DurationInSecs                `json:"time_series_duration,omitempty"`
+	DataSource         *enum.IbaWidgetDataSource      `json:"data_source"`
+	MaxItems           *int                           `json:"max_items"`
+	CombineGraphs      *enum.IbaWidgetCombineGraph    `json:"combine_graphs,omitempty"`
+	VisibleColumns     []string                       `json:"visible_columns"`
+	Type               enum.IbaWidgetType             `json:"type"`
 }
 
 func (i *IbaDashboard) UnmarshalJSON(bytes []byte) error {
