@@ -36,23 +36,20 @@ type RtPolicy struct {
 
 type DurationInSecs time.Duration
 
-func (i *DurationInSecs) MarshalJSON() ([]byte, error) {
-	secs := 1
-	if i != nil {
-		secs = int((*time.Duration)(i).Seconds())
-	}
-	return json.Marshal(secs)
+func (i DurationInSecs) MarshalJSON() ([]byte, error) {
+	return json.Marshal(int((time.Duration)(i).Seconds()))
 }
 
 func (o *DurationInSecs) UnmarshalJSON(bytes []byte) error {
 	var i int
-	if len(bytes) == 0 {
-		return nil
-	}
 	err := json.Unmarshal(bytes, &i)
 	if err != nil {
 		return err
 	}
 	*o = DurationInSecs(time.Duration(i) * time.Second)
 	return nil
+}
+
+func (o *DurationInSecs) TimeinSecs() int {
+	return int(time.Duration(*o).Seconds())
 }

@@ -735,9 +735,9 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	return bpClient
 }
 
-// testWidgetsAB instantiates two predefined probes and creates widgets from them,
+// testWidgetsABC instantiates two predefined probes and creates widgets from them,
 // returning the widget Object Id and the IbaWidget object used for creation
-func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (IbaWidget, IbaWidget) {
+func testWidgetsABC(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosClient) (IbaWidget, IbaWidget, IbaWidget) {
 	t.Helper()
 	probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
 		Name: "bgp_session",
@@ -777,11 +777,18 @@ func testWidgetsAB(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosCl
 	}
 	// widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
 	// require.NoError(t, err)
-
-	return widgetA, widgetB
+	widgetC := IbaWidget{
+		Label:     "Drain Traffic Anomaly 2",
+		ProbeId:   probeBId,
+		StageName: "excess_range",
+		Type:      enum.IbaWidgetTypeStage,
+	}
+	return widgetA, widgetB, widgetC
 }
 
 func compareDashboards(d1, d2 IbaDashboardData) bool {
+	defaultTimeSeriesDuration := 86400
+	defaultAggregationPeriod := 300
 	if d1.Label != d2.Label || d1.Default != d2.Default || d1.PredefinedDashboard != d2.PredefinedDashboard ||
 		d1.Description != d2.Description || len(d1.IbaWidgetGrid) != len(d2.IbaWidgetGrid) {
 		return false
@@ -790,9 +797,26 @@ func compareDashboards(d1, d2 IbaDashboardData) bool {
 	for k1, v1 := range d1.IbaWidgetGrid {
 		for k2, v2 := range v1 {
 			if v2.Label != d2.IbaWidgetGrid[k1][k2].Label || v2.Description != d2.IbaWidgetGrid[k1][k2].Description ||
-				v2.ProbeId != d2.IbaWidgetGrid[k1][k2].ProbeId || *v2.TimeSeriesDuration != *d2.IbaWidgetGrid[k1][k2].TimeSeriesDuration ||
-				*v2.AggregationPeriod != *d2.IbaWidgetGrid[k1][k2].AggregationPeriod {
+				v2.ProbeId != d2.IbaWidgetGrid[k1][k2].ProbeId {
 				return false
+			}
+			if v2.TimeSeriesDuration == nil {
+				if d2.IbaWidgetGrid[k1][k2].TimeSeriesDuration.TimeinSecs() != defaultTimeSeriesDuration {
+					return false
+				}
+			} else {
+				if v2.TimeSeriesDuration.TimeinSecs() != d2.IbaWidgetGrid[k1][k2].TimeSeriesDuration.TimeinSecs() {
+					return false
+				}
+			}
+			if v2.AggregationPeriod == nil {
+				if d2.IbaWidgetGrid[k1][k2].AggregationPeriod.TimeinSecs() != defaultAggregationPeriod {
+					return false
+				}
+			} else {
+				if v2.AggregationPeriod.TimeinSecs() != d2.IbaWidgetGrid[k1][k2].AggregationPeriod.TimeinSecs() {
+					return false
+				}
 			}
 		}
 	}

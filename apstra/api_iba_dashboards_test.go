@@ -32,14 +32,13 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			}
 
 			bpClient := testBlueprintA(ctx, t, client.client)
-			widgetA, widgetB := testWidgetsAB(ctx, t, bpClient)
+			widgetA, widgetB, widgetC := testWidgetsABC(ctx, t, bpClient)
 
 			pds, err := bpClient.ListAllIbaPredefinedDashboardIds(ctx)
 			require.NoError(t, err)
 			t.Log(len(pds))
 
 			for _, d := range pds {
-
 				// Some predefined dashboards cannot be tested
 				switch d {
 				case "evpn_vxlan_route_summary": // This one requires the blueprint to be deployed
@@ -79,7 +78,7 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 				Description:   "Test Dashboard",
 				Default:       false,
 				Label:         "Test Dash",
-				IbaWidgetGrid: [][]IbaWidget{{widgetA, widgetB}},
+				IbaWidgetGrid: [][]IbaWidget{{widgetA, widgetB}, {widgetC}},
 			}
 			id, err := bpClient.CreateIbaDashboard(ctx, &req1)
 			require.NoError(t, err)
