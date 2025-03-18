@@ -57,5 +57,4 @@ func (o *DurationInSecs) TimeinSecs() int {
 func NewDurationInSecs(timeinsecs int) *DurationInSecs {
 	t := DurationInSecs(time.Duration(timeinsecs) * time.Second)
 	return &t
-
 }
