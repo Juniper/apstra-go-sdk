@@ -53,3 +53,9 @@ func (o *DurationInSecs) UnmarshalJSON(bytes []byte) error {
 func (o *DurationInSecs) TimeinSecs() int {
 	return int(time.Duration(*o).Seconds())
 }
+
+func NewDurationInSecs(timeinsecs int) *DurationInSecs {
+	t := DurationInSecs(time.Duration(timeinsecs) * time.Second)
+	return &t
+
+}

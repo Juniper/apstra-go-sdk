@@ -755,14 +755,14 @@ func testWidgetsABC(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosC
 	})
 	require.NoError(t, err)
 
-	ap := DurationInSecs(1000000000)
+	ap := NewDurationInSecs(1)
 	widgetA := IbaWidget{
 		Label:              "BGP Session Flapping",
 		ProbeId:            probeAId,
 		StageName:          "BGP Session",
 		Type:               enum.IbaWidgetTypeStage,
-		AggregationPeriod:  &ap,
-		TimeSeriesDuration: &ap,
+		AggregationPeriod:  ap,
+		TimeSeriesDuration: ap,
 	}
 	// widgetAId, err := bpClient.CreateIbaWidget(ctx, &widgetA)
 	// require.NoError(t, err)
@@ -772,8 +772,8 @@ func testWidgetsABC(ctx context.Context, t *testing.T, bpClient *TwoStageL3ClosC
 		ProbeId:            probeBId,
 		StageName:          "excess_range",
 		Type:               enum.IbaWidgetTypeStage,
-		AggregationPeriod:  &ap,
-		TimeSeriesDuration: &ap,
+		AggregationPeriod:  ap,
+		TimeSeriesDuration: ap,
 	}
 	// widgetBId, err := bpClient.CreateIbaWidget(ctx, &widgetB)
 	// require.NoError(t, err)
