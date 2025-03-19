@@ -800,23 +800,19 @@ func compareDashboards(d1, d2 IbaDashboardData) bool {
 				v2.ProbeId != d2.IbaWidgetGrid[k1][k2].ProbeId {
 				return false
 			}
+
 			if v2.TimeSeriesDuration == nil {
-				if d2.IbaWidgetGrid[k1][k2].TimeSeriesDuration.TimeinSecs() != defaultTimeSeriesDuration {
-					return false
-				}
-			} else {
-				if v2.TimeSeriesDuration.TimeinSecs() != d2.IbaWidgetGrid[k1][k2].TimeSeriesDuration.TimeinSecs() {
-					return false
-				}
+				v2.TimeSeriesDuration = NewDurationInSecs(defaultTimeSeriesDuration)
 			}
+			if v2.TimeSeriesDuration.TimeinSecs() != d2.IbaWidgetGrid[k1][k2].TimeSeriesDuration.TimeinSecs() {
+				return false
+			}
+
 			if v2.AggregationPeriod == nil {
-				if d2.IbaWidgetGrid[k1][k2].AggregationPeriod.TimeinSecs() != defaultAggregationPeriod {
-					return false
-				}
-			} else {
-				if v2.AggregationPeriod.TimeinSecs() != d2.IbaWidgetGrid[k1][k2].AggregationPeriod.TimeinSecs() {
-					return false
-				}
+				v2.AggregationPeriod = NewDurationInSecs(defaultAggregationPeriod)
+			}
+			if v2.AggregationPeriod.TimeinSecs() != d2.IbaWidgetGrid[k1][k2].AggregationPeriod.TimeinSecs() {
+				return false
 			}
 		}
 	}

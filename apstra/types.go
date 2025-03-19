@@ -37,7 +37,7 @@ type RtPolicy struct {
 type DurationInSecs time.Duration
 
 func (i DurationInSecs) MarshalJSON() ([]byte, error) {
-	return json.Marshal(int((time.Duration)(i).Seconds()))
+	return json.Marshal(int(time.Duration(i).Seconds()))
 }
 
 func (o *DurationInSecs) UnmarshalJSON(bytes []byte) error {
