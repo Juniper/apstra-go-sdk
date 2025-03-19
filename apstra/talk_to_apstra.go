@@ -85,7 +85,35 @@ func convertTtaeToAceWherePossible(err error) error {
 			}
 			return ClientErr{errType: ErrNotfound, err: err}
 		case http.StatusConflict:
-			return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
+			switch {
+			case apiUrlLockBlueprintRegex.MatchString(ttae.Request.URL.Path):
+				switch {
+				case strings.HasSuffix(ttae.Msg, " already locked"):
+					return ClientErr{errType: ErrAlreadyLocked, err: err}
+				case strings.Contains(ttae.Msg, " already locked by user: "):
+					var errs apiErrors
+					if e := json.Unmarshal([]byte(ttae.Msg), &errs); e != nil {
+						return ClientErr{errType: ErrAlreadyLocked, err: err}
+					}
+					if len(errs.Errors) != 1 {
+						return ClientErr{errType: ErrAlreadyLocked, err: err}
+					}
+
+					s := apiUrlLockBlueprintLockedByUserRegex.FindStringSubmatch(errs.Errors[0])
+					if len(s) != 6 {
+						return ClientErr{errType: ErrAlreadyLocked, err: err}
+					}
+					return ClientErr{
+						errType: ErrAlreadyLocked,
+						err:     err,
+						detail:  ErrAlreadyLockedDetail{UserId: toPtr(ObjectId(s[2]))},
+					}
+				default:
+					return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
+				}
+			default:
+				return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
+			}
 		case http.StatusUnprocessableEntity:
 			switch {
 			case strings.Contains(ttae.Msg, "Direct graph modification operation is unsafe") &&
@@ -114,6 +142,14 @@ func convertTtaeToAceWherePossible(err error) error {
 				}
 			case regexpApiUrlLeafServerLinkLabels.MatchString(ttae.Request.URL.Path):
 				return ClientErr{errType: ErrLagHasAssignedStructrues, err: errors.New(ttae.Msg)}
+			case apiUrlUnlockBlueprintRegex.MatchString(ttae.Request.URL.Path):
+				if strings.Contains(ttae.Msg, " does not have enough permissions to unlock blueprint ") {
+					return ClientErr{
+						errType: ErrCannotUnlock,
+						err:     errors.New(ttae.Msg),
+						detail:  ErrCannotUnlockDetail{NotEnoughPermission: toPtr(true)},
+					}
+				}
 			}
 		case http.StatusInternalServerError:
 			switch {

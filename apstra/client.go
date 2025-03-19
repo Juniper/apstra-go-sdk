@@ -46,6 +46,8 @@ const (
 	ErrIbaCurrentMountConflictsWithExistingMount
 	ErrInvalidId
 	ErrUnsafePatchProhibited
+	ErrAlreadyLocked
+	ErrCannotUnlock
 
 	clientPollingIntervalMs = 1000
 
