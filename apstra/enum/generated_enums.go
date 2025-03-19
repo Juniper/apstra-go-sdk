@@ -261,6 +261,99 @@ func (o *FeatureSwitch) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*IbaWidgetAggregationType)(nil)
+	_ json.Marshaler   = (*IbaWidgetAggregationType)(nil)
+	_ json.Unmarshaler = (*IbaWidgetAggregationType)(nil)
+)
+
+func (o IbaWidgetAggregationType) String() string {
+	return o.Value
+}
+
+func (o *IbaWidgetAggregationType) FromString(s string) error {
+	if IbaWidgetAggregationTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *IbaWidgetAggregationType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *IbaWidgetAggregationType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*IbaWidgetCombineGraph)(nil)
+	_ json.Marshaler   = (*IbaWidgetCombineGraph)(nil)
+	_ json.Unmarshaler = (*IbaWidgetCombineGraph)(nil)
+)
+
+func (o IbaWidgetCombineGraph) String() string {
+	return o.Value
+}
+
+func (o *IbaWidgetCombineGraph) FromString(s string) error {
+	if IbaWidgetCombineGraphs.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *IbaWidgetCombineGraph) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *IbaWidgetCombineGraph) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*IbaWidgetDataSource)(nil)
+	_ json.Marshaler   = (*IbaWidgetDataSource)(nil)
+	_ json.Unmarshaler = (*IbaWidgetDataSource)(nil)
+)
+
+func (o IbaWidgetDataSource) String() string {
+	return o.Value
+}
+
+func (o *IbaWidgetDataSource) FromString(s string) error {
+	if IbaWidgetDataSources.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *IbaWidgetDataSource) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *IbaWidgetDataSource) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*IbaWidgetType)(nil)
 	_ json.Marshaler   = (*IbaWidgetType)(nil)
 	_ json.Unmarshaler = (*IbaWidgetType)(nil)
@@ -1074,6 +1167,31 @@ var (
 	FeatureSwitches      = oenum.New(
 		FeatureSwitchEnabled,
 		FeatureSwitchDisabled,
+	)
+
+	_                         enum = new(IbaWidgetAggregationType)
+	IbaWidgetAggregationTypes      = oenum.New(
+		IbaWidgetAggregationTypeUnset,
+		IbaWidgetAggregationTypeMin,
+		IbaWidgetAggregationTypeAverage,
+		IbaWidgetAggregationTypeNone,
+		IbaWidgetAggregationTypeAnyOf,
+		IbaWidgetAggregationTypeLast,
+		IbaWidgetAggregationTypeAllOf,
+		IbaWidgetAggregationTypeMax,
+	)
+
+	_                      enum = new(IbaWidgetCombineGraph)
+	IbaWidgetCombineGraphs      = oenum.New(
+		IbaWidgetCombineGraphNone,
+		IbaWidgetCombineGraphLinear,
+		IbaWidgetCombineGraphStacked,
+	)
+
+	_                    enum = new(IbaWidgetDataSource)
+	IbaWidgetDataSources      = oenum.New(
+		IbaWidgetDataSourceRealTime,
+		IbaWidgetDataSourceTimeSeries,
 	)
 
 	_              enum = new(IbaWidgetType)
