@@ -25,13 +25,6 @@ const (
 	apiUrlIbaPredefinedDashboardsById   = apiUrlIbaPredefinedDashboardsPrefix + "%s"
 )
 
-var _ json.Unmarshaler = (*IbaDashboard)(nil)
-
-type IbaDashboard struct {
-	Id   ObjectId
-	Data *IbaDashboardData
-}
-
 type IbaWidget struct {
 	AggregationPeriod  *DurationInSecs                `json:"aggregation_period,omitempty"`
 	AggregationType    *enum.IbaWidgetAggregationType `json:"aggregation_type,omitempty"`
@@ -50,6 +43,13 @@ type IbaWidget struct {
 	CombineGraphs      *enum.IbaWidgetCombineGraph    `json:"combine_graphs,omitempty"`
 	VisibleColumns     []string                       `json:"visible_columns"`
 	Type               enum.IbaWidgetType             `json:"type"`
+}
+
+var _ json.Unmarshaler = (*IbaDashboard)(nil)
+
+type IbaDashboard struct {
+	Id   ObjectId
+	Data *IbaDashboardData
 }
 
 func (i *IbaDashboard) UnmarshalJSON(bytes []byte) error {
