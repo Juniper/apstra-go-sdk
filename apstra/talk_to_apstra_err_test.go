@@ -6,8 +6,9 @@ package apstra
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestApiErrors_UnmarshalJSON(t *testing.T) {
