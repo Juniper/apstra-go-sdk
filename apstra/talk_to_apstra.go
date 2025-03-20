@@ -75,63 +75,66 @@ type taskIdResponse struct {
 
 func convertTtaeToAceWherePossible(err error) error {
 	var ttae TalkToApstraErr
-	if errors.As(err, &ttae) {
-		switch ttae.Response.StatusCode {
-		case http.StatusUnauthorized:
-			return ClientErr{errType: ErrAuthFail, err: err}
-		case http.StatusNotFound:
-			if ttae.Request.URL.Path == apiUrlBlueprints {
-				return ClientErr{errType: ErrNotfound, retryable: true, err: err}
-			}
-			return ClientErr{errType: ErrNotfound, err: err}
-		case http.StatusConflict:
+	if !errors.As(err, &ttae) {
+		return err // we can't do anything else with this
+	}
+
+	switch ttae.Response.StatusCode {
+	case http.StatusUnauthorized:
+		return ClientErr{errType: ErrAuthFail, err: err}
+	case http.StatusNotFound:
+		if ttae.Request.URL.Path == apiUrlBlueprints {
+			return ClientErr{errType: ErrNotfound, retryable: true, err: err}
+		}
+		return ClientErr{errType: ErrNotfound, err: err}
+	case http.StatusConflict:
+		switch {
+		case apiUrlLockBlueprintRegex.MatchString(ttae.Request.URL.Path):
+			return decorateTwoStageL3ClosLockError(ttae)
+		default:
+			return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
+		}
+	case http.StatusUnprocessableEntity:
+		switch {
+		case strings.Contains(ttae.Msg, "Direct graph modification operation is unsafe") &&
+			strings.Contains(ttae.Msg, "If you want to proceed with this PATCH API call"):
+			return ClientErr{errType: ErrUnsafePatchProhibited, err: errors.New(ttae.Msg)}
+		case strings.Contains(ttae.Msg, "No value in either user config or profile"):
+			return ClientErr{errType: ErrAgentProfilePlatformRequired, err: errors.New(ttae.Msg)}
+		case strings.Contains(ttae.Msg, "already exists"):
+			return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
+		case strings.Contains(ttae.Msg, "No node with id: "):
+			return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+		case strings.Contains(ttae.Msg, "No virtual_network with id: "):
+			return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+		case strings.Contains(ttae.Msg, "Virtual Network name not unique"):
+			return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
+		case strings.Contains(ttae.Msg, "Transformation cannot be changed"):
+			return ClientErr{errType: ErrCannotChangeTransform, err: errors.New(ttae.Msg)}
+		case strings.Contains(ttae.Msg, "does not exist"):
+			return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+		case regexpApiUrlDeleteSwitchSystemLinks.MatchString(ttae.Request.URL.Path):
 			switch {
-			case apiUrlLockBlueprintRegex.MatchString(ttae.Request.URL.Path):
-				return decorateTwoStageL3ClosLockError(ttae)
-			default:
-				return ClientErr{errType: ErrConflict, err: errors.New(ttae.Msg)}
+			case regexpLinkHasCtAssignedErr.MatchString(ttae.Msg):
+				return ClientErr{errType: ErrCtAssignedToLink, err: errors.New(ttae.Msg)}
+			case regexpLagHasCtAssignedErr.MatchString(ttae.Msg):
+				return ClientErr{errType: ErrCtAssignedToLink, err: errors.New(ttae.Msg)}
 			}
-		case http.StatusUnprocessableEntity:
-			switch {
-			case strings.Contains(ttae.Msg, "Direct graph modification operation is unsafe") &&
-				strings.Contains(ttae.Msg, "If you want to proceed with this PATCH API call"):
-				return ClientErr{errType: ErrUnsafePatchProhibited, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "No value in either user config or profile"):
-				return ClientErr{errType: ErrAgentProfilePlatformRequired, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "already exists"):
-				return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "No node with id: "):
-				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "No virtual_network with id: "):
-				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "Virtual Network name not unique"):
-				return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "Transformation cannot be changed"):
-				return ClientErr{errType: ErrCannotChangeTransform, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "does not exist"):
-				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
-			case regexpApiUrlDeleteSwitchSystemLinks.MatchString(ttae.Request.URL.Path):
-				switch {
-				case regexpLinkHasCtAssignedErr.MatchString(ttae.Msg):
-					return ClientErr{errType: ErrCtAssignedToLink, err: errors.New(ttae.Msg)}
-				case regexpLagHasCtAssignedErr.MatchString(ttae.Msg):
-					return ClientErr{errType: ErrCtAssignedToLink, err: errors.New(ttae.Msg)}
-				}
-			case regexpApiUrlLeafServerLinkLabels.MatchString(ttae.Request.URL.Path):
-				return ClientErr{errType: ErrLagHasAssignedStructrues, err: errors.New(ttae.Msg)}
-			case apiUrlUnlockBlueprintRegex.MatchString(ttae.Request.URL.Path):
-				return decorateTwoStageL3ClosUnlockError(ttae)
-			}
-		case http.StatusInternalServerError:
-			switch {
-			case strings.Contains(ttae.Msg, "Error executing facade API GET /obj-policy-export") &&
-				strings.Contains(ttae.Msg, "'NoneType' object has no attribute 'id'"):
-				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "The current mount is conflicting with an existing mount"):
-				return ClientErr{errType: ErrIbaCurrentMountConflictsWithExistingMount, retryable: true, err: errors.New(ttae.Msg)}
-			}
+		case regexpApiUrlLeafServerLinkLabels.MatchString(ttae.Request.URL.Path):
+			return ClientErr{errType: ErrLagHasAssignedStructrues, err: errors.New(ttae.Msg)}
+		case apiUrlUnlockBlueprintRegex.MatchString(ttae.Request.URL.Path):
+			return decorateTwoStageL3ClosUnlockError(ttae)
+		}
+	case http.StatusInternalServerError:
+		switch {
+		case strings.Contains(ttae.Msg, "Error executing facade API GET /obj-policy-export") &&
+			strings.Contains(ttae.Msg, "'NoneType' object has no attribute 'id'"):
+			return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
+		case strings.Contains(ttae.Msg, "The current mount is conflicting with an existing mount"):
+			return ClientErr{errType: ErrIbaCurrentMountConflictsWithExistingMount, retryable: true, err: errors.New(ttae.Msg)}
 		}
 	}
+
 	return err
 }
 

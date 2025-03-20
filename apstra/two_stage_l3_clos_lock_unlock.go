@@ -35,31 +35,31 @@ type ErrAlreadyLockedDetail struct {
 	UserId *ObjectId
 }
 
-func decorateTwoStageL3ClosLockError(err TalkToApstraErr) error {
+func decorateTwoStageL3ClosLockError(ttae TalkToApstraErr) error {
 	switch {
-	case strings.HasSuffix(err.Msg, " already locked"):
-		return ClientErr{errType: ErrAlreadyLocked, err: err}
-	case strings.Contains(err.Msg, " already locked by user: "):
+	case strings.HasSuffix(ttae.Msg, " already locked"):
+		return ClientErr{errType: ErrAlreadyLocked, err: ttae}
+	case strings.Contains(ttae.Msg, " already locked by user: "):
 		var errs apiErrors
-		if e := json.Unmarshal([]byte(err.Msg), &errs); e != nil {
-			return ClientErr{errType: ErrAlreadyLocked, err: err}
+		if e := json.Unmarshal([]byte(ttae.Msg), &errs); e != nil {
+			return ClientErr{errType: ErrAlreadyLocked, err: ttae}
 		}
 		if len(errs.Errors) != 1 {
-			return ClientErr{errType: ErrAlreadyLocked, err: err}
+			return ClientErr{errType: ErrAlreadyLocked, err: ttae}
 		}
 
 		s := apiUrlLockBlueprintLockedByUserRegex.FindStringSubmatch(errs.Errors[0])
 		if len(s) != 6 {
-			return ClientErr{errType: ErrAlreadyLocked, err: err}
+			return ClientErr{errType: ErrAlreadyLocked, err: ttae}
 		}
 		return ClientErr{
 			errType: ErrAlreadyLocked,
-			err:     err,
+			err:     ttae,
 			detail:  ErrAlreadyLockedDetail{UserId: toPtr(ObjectId(s[2]))},
 		}
 	}
 
-	return err
+	return ttae
 }
 
 type ErrCannotUnlockDetail struct {
