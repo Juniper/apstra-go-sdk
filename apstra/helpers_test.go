@@ -773,9 +773,11 @@ func testBlueprintJ(ctx context.Context, t *testing.T, client *Client, sysId Obj
 	require.NoError(t, err)
 
 	err = bp.PatchNode(ctx, leafId, struct {
-		SystemId ObjectId `json:"system_id"`
+		SystemId   ObjectId `json:"system_id"`
+		DeployMode string   `json:"deploy_mode"`
 	}{
-		SystemId: sysId,
+		SystemId:   sysId,
+		DeployMode: enum.DeployModeDeploy.String(),
 	}, nil)
 	require.NoError(t, err)
 
