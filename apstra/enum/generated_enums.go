@@ -44,6 +44,99 @@ func (o *ApiFeature) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*CommitCheckSource)(nil)
+	_ json.Marshaler   = (*CommitCheckSource)(nil)
+	_ json.Unmarshaler = (*CommitCheckSource)(nil)
+)
+
+func (o CommitCheckSource) String() string {
+	return o.Value
+}
+
+func (o *CommitCheckSource) FromString(s string) error {
+	if CommitCheckSources.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *CommitCheckSource) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *CommitCheckSource) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*CommitCheckState)(nil)
+	_ json.Marshaler   = (*CommitCheckState)(nil)
+	_ json.Unmarshaler = (*CommitCheckState)(nil)
+)
+
+func (o CommitCheckState) String() string {
+	return o.Value
+}
+
+func (o *CommitCheckState) FromString(s string) error {
+	if CommitCheckStates.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *CommitCheckState) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *CommitCheckState) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*CommitCheckValidity)(nil)
+	_ json.Marshaler   = (*CommitCheckValidity)(nil)
+	_ json.Unmarshaler = (*CommitCheckValidity)(nil)
+)
+
+func (o CommitCheckValidity) String() string {
+	return o.Value
+}
+
+func (o *CommitCheckValidity) FromString(s string) error {
+	if CommitCheckValidities.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *CommitCheckValidity) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *CommitCheckValidity) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*ConfigletSection)(nil)
 	_ json.Marshaler   = (*ConfigletSection)(nil)
 	_ json.Unmarshaler = (*ConfigletSection)(nil)
@@ -1013,6 +1106,33 @@ var (
 		ApiFeatureFreeform,
 		ApiFeatureFullAccess,
 		ApiFeatureTaskApi,
+	)
+
+	_                  enum = new(CommitCheckSource)
+	CommitCheckSources      = oenum.New(
+		CommitCheckSourceUser,
+		CommitCheckSourceStaging,
+	)
+
+	_                 enum = new(CommitCheckState)
+	CommitCheckStates      = oenum.New(
+		CommitCheckStateEmpty,
+		CommitCheckStateFailure,
+		CommitCheckStatePending,
+		CommitCheckStateRejected,
+		CommitCheckStateSuccess,
+		CommitCheckStateTimeout,
+		CommitCheckStateUnavailable,
+		CommitCheckStateUnknown,
+		CommitCheckStateUnloadable,
+		CommitCheckStateUnsupported,
+	)
+
+	_                     enum = new(CommitCheckValidity)
+	CommitCheckValidities      = oenum.New(
+		CommitCheckValidityFresh,
+		CommitCheckValidityStale,
+		CommitCheckValidityUnknown,
 	)
 
 	_                 enum = new(ConfigletSection)

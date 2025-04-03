@@ -310,3 +310,41 @@ var (
 	LockTypeLockedByUser    = LockType{Value: "lock_by_user"}
 	LockTypeUnlocked        = LockType{Value: "unlocked"}
 )
+
+type CommitCheckState oenum.Member[string]
+
+func (o CommitCheckState) IsFinal() bool {
+	switch o {
+	case CommitCheckStatePending:
+		return false
+	}
+	return true
+}
+
+var (
+	CommitCheckStateEmpty       = CommitCheckState{Value: "empty"}
+	CommitCheckStateFailure     = CommitCheckState{Value: "failure"}
+	CommitCheckStatePending     = CommitCheckState{Value: "pending"}
+	CommitCheckStateRejected    = CommitCheckState{Value: "rejected"}
+	CommitCheckStateSuccess     = CommitCheckState{Value: "success"}
+	CommitCheckStateTimeout     = CommitCheckState{Value: "timeout"}
+	CommitCheckStateUnavailable = CommitCheckState{Value: "unavailable"}
+	CommitCheckStateUnknown     = CommitCheckState{Value: "unknown"}
+	CommitCheckStateUnloadable  = CommitCheckState{Value: "unloadable"}
+	CommitCheckStateUnsupported = CommitCheckState{Value: "unsupported"}
+)
+
+type CommitCheckSource oenum.Member[string]
+
+var (
+	CommitCheckSourceUser    = CommitCheckSource{Value: "user_supplied"}
+	CommitCheckSourceStaging = CommitCheckSource{Value: "staging_graph"}
+)
+
+type CommitCheckValidity oenum.Member[string]
+
+var (
+	CommitCheckValidityFresh   = CommitCheckValidity{Value: "fresh"}
+	CommitCheckValidityStale   = CommitCheckValidity{Value: "stale"}
+	CommitCheckValidityUnknown = CommitCheckValidity{Value: "unknown"}
+)

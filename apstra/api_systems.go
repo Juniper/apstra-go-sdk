@@ -162,17 +162,21 @@ type SystemFacts struct {
 }
 
 type SystemStatus struct {
-	AgentStartTime  time.Time             `json:"agent_start_time"`
-	CommState       string                `json:"comm_state"`
-	DeviceStartTime time.Time             `json:"device_start_time"`
-	ErrorMessage    string                `json:"error_message"`
-	IsAcknowledged  bool                  `json:"is_acknowledged"`
-	OperationMode   SystemManagementLevel `json:"operation_mode"`
-	State           string                `json:"state"`
+	AgentStartTime  time.Time
+	BlueprintActive bool
+	BlueprintId     *ObjectId
+	CommState       string
+	DeviceStartTime time.Time
+	ErrorMessage    string
+	IsAcknowledged  bool
+	OperationMode   SystemManagementLevel
+	State           string
 }
 
 type rawSystemStatus struct {
 	AgentStartTime  time.Time             `json:"agent_start_time"`
+	BlueprintActive bool                  `json:"blueprint_active"`
+	BlueprintId     *ObjectId             `json:"blueprint_id"`
 	CommState       string                `json:"comm_state"`
 	DeviceStartTime time.Time             `json:"device_start_time"`
 	ErrorMessage    string                `json:"error_message"`
@@ -190,6 +194,8 @@ func (o *rawSystemStatus) polish() (*SystemStatus, error) {
 
 	return &SystemStatus{
 		AgentStartTime:  o.AgentStartTime,
+		BlueprintActive: o.BlueprintActive,
+		BlueprintId:     o.BlueprintId,
 		CommState:       o.CommState,
 		DeviceStartTime: o.DeviceStartTime,
 		ErrorMessage:    o.ErrorMessage,

@@ -643,6 +643,26 @@ func testRackA(ctx context.Context, t *testing.T, client *Client) (ObjectId, fun
 	return id, deleteFunc
 }
 
+// testRackC creates a "collapsed" rack with a single leaf appropriate for use with a Juniper_vEX switch
+func testRackC(ctx context.Context, t *testing.T, client *Client) ObjectId {
+	t.Helper()
+
+	id, err := client.CreateRackType(ctx, &RackTypeRequest{
+		DisplayName:              randString(5, "hex"),
+		FabricConnectivityDesign: FabricConnectivityDesignL3Collapsed,
+		LeafSwitches: []RackElementLeafSwitchRequest{
+			{
+				Label:           randString(6, "hex"),
+				LogicalDeviceId: "slicer-7x10-1",
+			},
+		},
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteRackType(ctx, id)) })
+
+	return id
+}
+
 func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId, func(context.Context) error) {
 	deleteFunc := func(context.Context) error { return nil }
 	rackId, rackDeleteFunc := testRackA(ctx, t, client)
@@ -680,6 +700,86 @@ func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 	}
 
 	return id, deleteFunc
+}
+
+// testTemplateC creates a "collapsed" template with a single leaf appropriate for use with a Juniper_vEX switch
+func testTemplateC(ctx context.Context, t *testing.T, client *Client) ObjectId {
+	t.Helper()
+
+	rackId := testRackC(ctx, t, client)
+
+	id, err := client.CreateL3CollapsedTemplate(ctx, &CreateL3CollapsedTemplateRequest{
+		DisplayName:          randString(6, "hex"),
+		MeshLinkCount:        1,
+		MeshLinkSpeed:        "10G",
+		RackTypeIds:          []ObjectId{rackId},
+		RackTypeCounts:       []RackTypeCount{{RackTypeId: rackId, Count: 1}},
+		DhcpServiceIntent:    DhcpServiceIntent{},
+		AntiAffinityPolicy:   nil,
+		VirtualNetworkPolicy: VirtualNetworkPolicy{OverlayControlProtocol: OverlayControlProtocolEvpn},
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteTemplate(ctx, id)) })
+
+	return id
+}
+
+// testBlueprintJ creates a collapsed blueprint with a single leaf and associates sysId with that system.
+// sysId should be the ID of an available Juniper_vEX system.
+func testBlueprintJ(ctx context.Context, t *testing.T, client *Client, sysId ObjectId) *TwoStageL3ClosClient {
+	t.Helper()
+
+	id, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
+		RefDesign:  enum.RefDesignDatacenter,
+		Label:      randString(6, "hex"),
+		TemplateId: testTemplateC(ctx, t, client),
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, id)) })
+
+	bp, err := client.NewTwoStageL3ClosClient(ctx, id)
+	require.NoError(t, err)
+
+	asni, err := bp.GetAllSystemNodeInfos(ctx)
+	require.NoError(t, err)
+	require.Len(t, asni, 1)
+
+	var leafId ObjectId
+	for k := range asni {
+		leafId = k
+	}
+
+	q := new(PathQuery).
+		SetClient(client).
+		SetBlueprintId(bp.Id()).
+		Node([]QEEAttribute{
+			NodeTypeInterfaceMap.QEEAttribute(),
+			{Key: "device_profile_id", Value: QEStringVal("Juniper_vEX")},
+			{Key: "name", Value: QEStringVal("n_interface_map")},
+		})
+	var r struct {
+		Items []struct {
+			InterfaceMap struct {
+				Id ObjectId `json:"id"`
+			} `json:"n_interface_map"`
+		} `json:"items"`
+	}
+	err = q.Do(ctx, &r)
+	require.NoError(t, err)
+	require.Len(t, r.Items, 1)
+	ifMapId := r.Items[0].InterfaceMap.Id
+
+	err = bp.SetInterfaceMapAssignments(ctx, SystemIdToInterfaceMapAssignment{leafId.String(): ifMapId})
+	require.NoError(t, err)
+
+	err = bp.PatchNode(ctx, leafId, struct {
+		SystemId ObjectId `json:"system_id"`
+	}{
+		SystemId: sysId,
+	}, nil)
+	require.NoError(t, err)
+
+	return bp
 }
 
 func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
