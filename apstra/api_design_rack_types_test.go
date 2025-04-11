@@ -1,9 +1,8 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -12,6 +11,8 @@ import (
 	"log"
 	"math/rand"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestListGetOneRackType(t *testing.T) {
@@ -109,9 +110,6 @@ func TestRackTypeStrings(t *testing.T) {
 		{stringVal: "", intType: AccessRedundancyProtocolNone, stringType: accessRedundancyProtocolNone},
 		{stringVal: "esi", intType: AccessRedundancyProtocolEsi, stringType: accessRedundancyProtocolEsi},
 
-		{stringVal: "l3clos", intType: FabricConnectivityDesignL3Clos, stringType: fabricConnectivityDesignL3Clos},
-		{stringVal: "l3collapsed", intType: FabricConnectivityDesignL3Collapsed, stringType: fabricConnectivityDesignL3Collapsed},
-
 		{stringVal: "singleAttached", intType: RackLinkAttachmentTypeSingle, stringType: rackLinkAttachmentTypeSingle},
 		{stringVal: "dualAttached", intType: RackLinkAttachmentTypeDual, stringType: rackLinkAttachmentTypeDual},
 
@@ -149,7 +147,7 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 	testCases := map[string]RackTypeRequest{
 		"leaf_only_no_tags": {
 			DisplayName:              "rdn " + randString(5, "hex"),
-			FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
+			FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 			LeafSwitches: []RackElementLeafSwitchRequest{
 				{
 					Label:             leafLabel,
@@ -161,7 +159,7 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 		},
 		"leaf_generic_with_tags": {
 			DisplayName:              "rdn " + randString(5, "hex"),
-			FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
+			FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 			LeafSwitches: []RackElementLeafSwitchRequest{
 				{
 					Label:             leafLabel,

@@ -310,3 +310,11 @@ var (
 	LockTypeLockedByUser    = LockType{Value: "lock_by_user"}
 	LockTypeUnlocked        = LockType{Value: "unlocked"}
 )
+
+type FabricConnectivityDesign oenum.Member[string]
+
+var (
+	FabricConnectivityDesignL3Clos        = FabricConnectivityDesign{Value: "l3clos"}
+	FabricConnectivityDesignL3Collapsed   = FabricConnectivityDesign{Value: "l3collapsed"}
+	FabricConnectivityDesignRailCollapsed = FabricConnectivityDesign{Value: "rail_collapsed"}
+)
