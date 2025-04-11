@@ -12,6 +12,8 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -23,6 +25,26 @@ const (
 	apiUrlIbaPredefinedDashboardsById   = apiUrlIbaPredefinedDashboardsPrefix + "%s"
 )
 
+type IbaWidget struct {
+	AggregationPeriod  *DurationInSecs                `json:"aggregation_period,omitempty"`
+	AggregationType    *enum.IbaWidgetAggregationType `json:"aggregation_type,omitempty"`
+	OrderBy            string                         `json:"orderby"`
+	StageName          string                         `json:"stage_name"`
+	ShowContext        bool                           `json:"show_context"`
+	Description        string                         `json:"description"`
+	AnomalousOnly      bool                           `json:"anomalous_only"`
+	SpotlightMode      bool                           `json:"spotlight_mode"`
+	ProbeId            ObjectId                       `json:"probe_id"`
+	Label              string                         `json:"label"`
+	Filter             string                         `json:"filter"`
+	TimeSeriesDuration *DurationInSecs                `json:"time_series_duration,omitempty"`
+	DataSource         *enum.IbaWidgetDataSource      `json:"data_source"`
+	MaxItems           *int                           `json:"max_items"`
+	CombineGraphs      *enum.IbaWidgetCombineGraph    `json:"combine_graphs,omitempty"`
+	VisibleColumns     []string                       `json:"visible_columns"`
+	Type               enum.IbaWidgetType             `json:"type"`
+}
+
 var _ json.Unmarshaler = (*IbaDashboard)(nil)
 
 type IbaDashboard struct {
@@ -32,15 +54,15 @@ type IbaDashboard struct {
 
 func (i *IbaDashboard) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id                  string            `json:"id"`
-		Label               string            `json:"label"`
-		Description         string            `json:"description"`
-		Default             bool              `json:"default"`
-		CreatedAt           *string           `json:"created_at"`
-		UpdatedAt           *string           `json:"updated_at"`
-		IbaWidgetGrid       [][]IbaWidgetData `json:"grid"`
-		PredefinedDashboard string            `json:"predefined_dashboard"`
-		UpdatedBy           string            `json:"updated_by"`
+		Id                  string        `json:"id"`
+		Label               string        `json:"label"`
+		Description         string        `json:"description"`
+		Default             bool          `json:"default"`
+		CreatedAt           *string       `json:"created_at"`
+		UpdatedAt           *string       `json:"updated_at"`
+		IbaWidgetGrid       [][]IbaWidget `json:"grid"`
+		PredefinedDashboard string        `json:"predefined_dashboard"`
+		UpdatedBy           string        `json:"updated_by"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
@@ -67,19 +89,19 @@ type IbaDashboardData struct {
 	Description         string
 	Default             bool
 	Label               string
-	IbaWidgetGrid       [][]IbaWidgetData
+	IbaWidgetGrid       [][]IbaWidget
 	PredefinedDashboard string
 	UpdatedBy           string
 }
 
 func (i *IbaDashboardData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Label               string            `json:"label"`
-		Description         string            `json:"description"`
-		Default             bool              `json:"default,omitempty"`
-		IbaWidgetGrid       [][]IbaWidgetData `json:"grid"`
-		PredefinedDashboard string            `json:"predefined_dashboard,omitempty"`
-		UpdatedBy           string            `json:"updated_by,omitempty"`
+		Label               string        `json:"label"`
+		Description         string        `json:"description"`
+		Default             bool          `json:"default,omitempty"`
+		IbaWidgetGrid       [][]IbaWidget `json:"grid"`
+		PredefinedDashboard string        `json:"predefined_dashboard,omitempty"`
+		UpdatedBy           string        `json:"updated_by,omitempty"`
 	}{
 		Label:               i.Label,
 		Description:         i.Description,
