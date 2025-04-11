@@ -337,6 +337,7 @@ var (
 	IbaWidgetCombineGraphNone    = IbaWidgetCombineGraph{Value: "none"}
 	IbaWidgetCombineGraphLinear  = IbaWidgetCombineGraph{Value: "linear"}
 	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
+)
 
 type FabricConnectivityDesign oenum.Member[string]
 
