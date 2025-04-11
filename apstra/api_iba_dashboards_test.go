@@ -34,40 +34,47 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			bpClient := testBlueprintA(ctx, t, client.client)
 			widgetA, widgetB, widgetC := testWidgetsABC(ctx, t, bpClient)
 
-			pds, err := bpClient.ListAllIbaPredefinedDashboardIds(ctx)
+			predefinedDashboardIds, err := bpClient.ListAllIbaPredefinedDashboardIds(ctx)
 			require.NoError(t, err)
-			t.Log(len(pds))
+			t.Logf("found %d predefined dashboards", len(predefinedDashboardIds))
 
-			for _, d := range pds {
-				// Some predefined dashboards cannot be tested
-				switch d {
-				case "evpn_vxlan_route_summary": // This one requires the blueprint to be deployed
-					continue
-				}
+			for _, predefinedDashboardId := range predefinedDashboardIds {
+				t.Run(predefinedDashboardId.String(), func(t *testing.T) {
+					t.Parallel()
 
-				id, err := bpClient.InstantiateIbaPredefinedDashboard(ctx, d, d.String())
-				require.NoError(t, err)
+					// Some predefined dashboards cannot be tested
+					switch predefinedDashboardId {
+					case "evpn_vxlan_route_summary": // This one requires the blueprint to be deployed
+						t.Skip("skipping because it requires blueprint to be deployed")
+					case "stripe_traffic_summary": // This one is an autoscaling dashboard, so it cannot be instantiated
+						t.Skip("skipping because it is an autoscaling dashboard")
+					}
 
-				t.Logf("Name :%s Created Id :%s", d, id)
-				t.Log("Getting Dashboard")
-				d1, err := bpClient.GetIbaDashboard(ctx, id)
-				require.NoError(t, err)
+					t.Logf("instantiating dashboard id: %s", predefinedDashboardId)
+					id, err := bpClient.InstantiateIbaPredefinedDashboard(ctx, predefinedDashboardId, randString(6, "hex"))
+					require.NoError(t, err)
 
-				d1.Data.Label = randString(5, "hex")
-				t.Log("Updating Dashboard")
-				d1.Data.UpdatedBy = ""
-				d1.Data.PredefinedDashboard = ""
+					t.Logf("Name :%s Created Id :%s", predefinedDashboardId, id)
+					t.Log("Getting Dashboard")
+					d1, err := bpClient.GetIbaDashboard(ctx, id)
+					require.NoError(t, err)
 
-				err = bpClient.UpdateIbaDashboard(ctx, id, d1.Data)
-				require.NoError(t, err)
+					d1.Data.Label = randString(5, "hex")
+					t.Log("Updating Dashboard")
+					d1.Data.UpdatedBy = ""
+					d1.Data.PredefinedDashboard = ""
 
-				d2, err := bpClient.GetIbaDashboard(ctx, id)
-				require.NoError(t, err)
-				require.Equalf(t, d1.Data.Label, d2.Data.Label, "Update Seems to have failed. Label should have been %s is %s", d1.Data.Label, d2.Data.Label)
+					err = bpClient.UpdateIbaDashboard(ctx, id, d1.Data)
+					require.NoError(t, err)
 
-				t.Log("Deleting Dashboard")
-				err = bpClient.DeleteIbaDashboard(ctx, id)
-				require.NoError(t, err)
+					d2, err := bpClient.GetIbaDashboard(ctx, id)
+					require.NoError(t, err)
+					require.Equalf(t, d1.Data.Label, d2.Data.Label, "Update Seems to have failed. Label should have been %s is %s", d1.Data.Label, d2.Data.Label)
+
+					t.Log("Deleting Dashboard")
+					err = bpClient.DeleteIbaDashboard(ctx, id)
+					require.NoError(t, err)
+				})
 			}
 
 			ds, err := bpClient.GetAllIbaDashboards(ctx)
