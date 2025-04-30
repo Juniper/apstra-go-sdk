@@ -30,6 +30,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 		return err
 	}
 
+	// we need to pack the query string params into proxy-bound http payload
 	values := apstraUrl.Query()
 	params := make(map[string]string, len(values))
 	for k, v := range values {
@@ -47,7 +48,6 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	for k, v := range o.httpHeaders {
 		headers[k] = v
 	}
-	headers["API-Ops-Datacenter-Id"] = *o.cfg.apiOpsDcId
 	if !o.skipGzip {
 		headers["Accept-Encoding"] = "gzip"
 	}
@@ -57,6 +57,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	headers["X-Dest-Fallback"] = "s3"
 	o.unlock(mutexKeyHttpHeaders)
 
+	// this is the structure we send to the proxy
 	type proxyMessage struct {
 		Method  string            `json:"method"`
 		UrlPath string            `json:"urlPath"`
@@ -107,69 +108,124 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 		}
 	}
 
-	// create request
+	// create request to send to the proxy
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, o.baseUrl.String()+aosOpsUrlPath, bytes.NewReader(requestBody))
 	if err != nil {
 		return fmt.Errorf("error creating http Request for url '%s' - %w", apstraUrl.String(), err)
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Dest-Fallback", "s3")
 
 	resp, err := o.httpClient.Do(req)
 	if err != nil {
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
+		}
 		return fmt.Errorf("error calling http.client.Do for url '%s' via api-ops proxy - %w", apstraUrl.String(), err)
 	}
 
-	// response not okay?
+	defer func() { _ = resp.Body.Close() }() // close the response body received directly from the proxy
+
+	// proxy's status code not okay?
 	if resp.StatusCode/100 != 2 {
-		// noinspection GoUnhandledErrorResult
-		defer resp.Body.Close()
+		req.URL = apstraUrl
+		req.URL.Host = "api-ops"
 		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("API-ops proxy response code: %d", resp.StatusCode))
 	}
 
-	// noinspection GoUnhandledErrorResult
-	defer resp.Body.Close()
-
 	var proxyResponse struct {
-		Uid            string            `json:"uid"`
-		Headers        map[string]string `json:"headers"`
-		HTTPStatusCode int               `json:"statusCode"`
-		HTTPResponse   string            `json:"response"`
-		ErrorMsg       string            `json:"errorMsg"`
+		Uid        string            `json:"uid"`
+		Headers    map[string]string `json:"headers"`
+		StatusCode int               `json:"statusCode"`
+		Response   string            `json:"response"`
+		ErrorMsg   string            `json:"errorMsg"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&proxyResponse)
 	if err != nil {
-		return fmt.Errorf("error decoding proxy response for url '%s' - %w", apstraUrl.String(), err)
+		return fmt.Errorf("decoding proxy response for url '%s': %w", apstraUrl.String(), err)
 	}
 	if proxyResponse.ErrorMsg != "" {
+		req.URL = apstraUrl
+		req.URL.Host = "api-ops"
 		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("API-ops proxy error message for transaction %s: %s", proxyResponse.Uid, proxyResponse.ErrorMsg))
 	}
+	// we'll check the proxied status code (the one from AOS) later, after we've assembled a stunt-double http response
 
-	var gz bool
+	var gzResponse bool
 	if ce, ok := proxyResponse.Headers["Content-Encoding"]; ok {
 		if strings.Contains(ce, "gzip") {
-			gz = true
+			gzResponse = true
 		}
+	}
+
+	var s3Response bool
+	if xDestResp, ok := proxyResponse.Headers["X-Dest"]; ok {
+		if xDestResp == "S3" {
+			s3Response = true
+		} else {
+			return fmt.Errorf("unexpected X-Dest header: %s", xDestResp)
+		}
+	}
+
+	var responseS3Url string
+	if s3Response {
+		b, err := base64.StdEncoding.DecodeString(proxyResponse.Response)
+		if err != nil {
+			return fmt.Errorf("b64 decoding s3Url for transaction %q: %w", proxyResponse.Uid, err)
+		}
+
+		responseS3Url = string(b)
 	}
 
 	// create a bogus http.Response so that our previously implemented logic works with it
 	innerResp := new(http.Response)
-	if gz {
-		gzReader, err := gzip.NewReader(base64.NewDecoder(base64.StdEncoding, strings.NewReader(proxyResponse.HTTPResponse)))
+	innerResp.StatusCode = proxyResponse.StatusCode
+
+	defer func() { _ = innerResp.Body.Close() }()
+
+	// Apstra may have responded with compressed data (gzResponse) and api-ops may have
+	// offloaded our desired payload to S3 (s3Response). Each combination of these
+	// possibilities needs to be handled slightly differently.
+	switch {
+	case !gzResponse && !s3Response:
+		innerResp.Body = io.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(proxyResponse.Response)))
+
+	case !gzResponse && s3Response:
+		s3Resp, err := getUrl(ctx, responseS3Url, o.httpClient)
+		if err != nil {
+			return fmt.Errorf("fetching response from S3 URL %q: %w", responseS3Url, err)
+		}
+
+		innerResp.Body = s3Resp.Body
+
+	case gzResponse && !s3Response:
+		gzReader, err := gzip.NewReader(base64.NewDecoder(base64.StdEncoding, strings.NewReader(proxyResponse.Response)))
 		if err != nil {
 			return fmt.Errorf("error creating gzip reader for transaction %s - %w", proxyResponse.Uid, err)
 		}
-		innerResp.Body = gzReader
-	} else {
-		innerResp.Body = io.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(proxyResponse.HTTPResponse)))
-	}
-	innerResp.StatusCode = proxyResponse.HTTPStatusCode
-	// noinspection GoUnhandledErrorResult
-	defer innerResp.Body.Close()
 
-	if proxyResponse.HTTPStatusCode/100 != 2 {
-		return newTalkToApstraErr(req, requestBody, innerResp, "")
+		innerResp.Body = gzReader
+
+	case gzResponse && s3Response:
+		s3Resp, err := getUrl(ctx, responseS3Url, o.httpClient)
+		if err != nil {
+			return fmt.Errorf("fetching response from S3 URL %q: %w", responseS3Url, err)
+		}
+
+		r, err := gzip.NewReader(s3Resp.Body)
+		if err != nil {
+			return fmt.Errorf("creating gz reader for S3 response body: %w", err)
+		}
+
+		defer func() { _ = s3Resp.Body.Close() }()
+
+		innerResp.Body = r
+	}
+
+	if innerResp.StatusCode/100 != 2 {
+		req.URL = apstraUrl
+		req.URL.Host = "api-ops"
+		return newTalkToApstraErr(req, msg.Body, innerResp, "")
 	}
 
 	// If the caller gave us an httpBodyWriter, copy the response body into it and return
@@ -185,6 +241,8 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	var tIdR taskIdResponse
 	taskResponseFound, err := peekParseResponseBodyAsTaskId(innerResp, &tIdR)
 	if err != nil {
+		req.URL = apstraUrl
+		req.URL.Host = "api-ops"
 		return newTalkToApstraErr(req, requestBody, innerResp, "error peeking response body")
 	}
 
@@ -214,6 +272,8 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	case (bpId != "" && tIdR.BlueprintId != "") && (bpId != tIdR.BlueprintId):
 		return fmt.Errorf("blueprint Id in URL ('%s') and returned object body ('%s') don't match", bpId, tIdR.BlueprintId)
 	case bpId == "" && tIdR.BlueprintId == "":
+		req.URL = apstraUrl
+		req.URL.Host = "api-ops"
 		return newTalkToApstraErr(req, requestBody, innerResp, "blueprint id not found in url nor in response body")
 	case bpId == "":
 		bpId = tIdR.BlueprintId
@@ -278,4 +338,22 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	// it's impossible to know exactly what'll be in there. Extract it now into
 	// whatever in.apiResponse (interface{} controlled by the caller) is.
 	return json.Unmarshal(taskResponse.DetailedStatus.ApiResponse, in.apiResponse)
+}
+
+func getUrl(ctx context.Context, urlStr string, client apstraHttpClient) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, urlStr, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating GET request for %q: %w", urlStr, err)
+	}
+
+	resp, err := client.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("perofrming GET for %q: %w", urlStr, err)
+	}
+	if resp.StatusCode/100 != 2 {
+		_ = resp.Body.Close()
+		return nil, fmt.Errorf("http response to GET for %q: %d", urlStr, resp.StatusCode)
+	}
+
+	return resp, nil
 }
