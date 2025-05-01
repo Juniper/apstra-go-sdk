@@ -230,6 +230,37 @@ func (o *FFResourceType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*FabricConnectivityDesign)(nil)
+	_ json.Marshaler   = (*FabricConnectivityDesign)(nil)
+	_ json.Unmarshaler = (*FabricConnectivityDesign)(nil)
+)
+
+func (o FabricConnectivityDesign) String() string {
+	return o.Value
+}
+
+func (o *FabricConnectivityDesign) FromString(s string) error {
+	if FabricConnectivityDesigns.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *FabricConnectivityDesign) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *FabricConnectivityDesign) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*FeatureSwitch)(nil)
 	_ json.Marshaler   = (*FeatureSwitch)(nil)
 	_ json.Unmarshaler = (*FeatureSwitch)(nil)
@@ -1161,6 +1192,13 @@ var (
 		FFResourceTypeIpv6,
 		FFResourceTypeVlan,
 		FFResourceTypeVni,
+	)
+
+	_                         enum = new(FabricConnectivityDesign)
+	FabricConnectivityDesigns      = oenum.New(
+		FabricConnectivityDesignL3Clos,
+		FabricConnectivityDesignL3Collapsed,
+		FabricConnectivityDesignRailCollapsed,
 	)
 
 	_               enum = new(FeatureSwitch)

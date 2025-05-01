@@ -621,7 +621,7 @@ func testRackA(ctx context.Context, t *testing.T, client *Client) (ObjectId, fun
 	deleteFunc := func(context.Context) error { return nil }
 	request := RackTypeRequest{
 		DisplayName:              randString(5, "hex"),
-		FabricConnectivityDesign: FabricConnectivityDesignL3Clos,
+		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 		LeafSwitches: []RackElementLeafSwitchRequest{
 			{
 				Label:             randString(5, "hex"),

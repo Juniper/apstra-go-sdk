@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 const (
@@ -47,21 +49,6 @@ const (
 	leafRedundancyProtocolMlag    = leafRedundancyProtocol("mlag")
 	leafRedundancyProtocolEsi     = leafRedundancyProtocol("esi")
 	leafRedundancyProtocolUnknown = "unknown type %d"
-)
-
-type (
-	FabricConnectivityDesign int
-	fabricConnectivityDesign string
-)
-
-const (
-	FabricConnectivityDesignL3Clos = FabricConnectivityDesign(iota)
-	FabricConnectivityDesignL3Collapsed
-	FabricConnectivityDesignUnknown = "unknown connectivity design '%s'"
-
-	fabricConnectivityDesignL3Clos      = fabricConnectivityDesign("l3clos")
-	fabricConnectivityDesignL3Collapsed = fabricConnectivityDesign("l3collapsed")
-	fabricConnectivityDesignUnknown     = "unknown connectivity design '%d'"
 )
 
 type (
@@ -236,49 +223,6 @@ func (o *LeafRedundancyProtocol) FromString(in string) error {
 		return err
 	}
 	*o = LeafRedundancyProtocol(i)
-	return nil
-}
-
-func (o FabricConnectivityDesign) Int() int {
-	return int(o)
-}
-
-func (o FabricConnectivityDesign) String() string {
-	switch o {
-	case FabricConnectivityDesignL3Clos:
-		return string(fabricConnectivityDesignL3Clos)
-	case FabricConnectivityDesignL3Collapsed:
-		return string(fabricConnectivityDesignL3Collapsed)
-	default:
-		return fmt.Sprintf(fabricConnectivityDesignUnknown, o)
-	}
-}
-
-func (o FabricConnectivityDesign) raw() fabricConnectivityDesign {
-	return fabricConnectivityDesign(o.String())
-}
-
-func (o fabricConnectivityDesign) string() string {
-	return string(o)
-}
-
-func (o fabricConnectivityDesign) parse() (int, error) {
-	switch o {
-	case fabricConnectivityDesignL3Clos:
-		return int(FabricConnectivityDesignL3Clos), nil
-	case fabricConnectivityDesignL3Collapsed:
-		return int(FabricConnectivityDesignL3Collapsed), nil
-	default:
-		return 0, fmt.Errorf(FabricConnectivityDesignUnknown, o)
-	}
-}
-
-func (o *FabricConnectivityDesign) FromString(in string) error {
-	i, err := fabricConnectivityDesign(in).parse()
-	if err != nil {
-		return err
-	}
-	*o = FabricConnectivityDesign(i)
 	return nil
 }
 
@@ -995,7 +939,7 @@ func (o *rawRackElementGenericSystem) polish(rack *rawRackType) (*RackElementGen
 type RackTypeRequest struct {
 	DisplayName              string
 	Description              string
-	FabricConnectivityDesign FabricConnectivityDesign
+	FabricConnectivityDesign enum.FabricConnectivityDesign
 	LeafSwitches             []RackElementLeafSwitchRequest
 	AccessSwitches           []RackElementAccessSwitchRequest
 	GenericSystems           []RackElementGenericSystemRequest
@@ -1005,7 +949,7 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 	result := &rawRackTypeRequest{
 		DisplayName:              o.DisplayName,
 		Description:              o.Description,
-		FabricConnectivityDesign: o.FabricConnectivityDesign.raw(),
+		FabricConnectivityDesign: o.FabricConnectivityDesign,
 		LogicalDevices:           nil, // populated based on ldMap below
 		Tags:                     nil, // populated based on tagMap below
 		LeafSwitches:             make([]rawRackElementLeafSwitch, len(o.LeafSwitches)),
@@ -1154,7 +1098,7 @@ func (o *RackTypeRequest) raw(ctx context.Context, client *Client) (*rawRackType
 type rawRackTypeRequest struct {
 	DisplayName              string                        `json:"display_name"`
 	Description              string                        `json:"description"`
-	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
+	FabricConnectivityDesign enum.FabricConnectivityDesign `json:"fabric_connectivity_design"`
 	Tags                     []DesignTagData               `json:"tags,omitempty"`
 	LogicalDevices           []rawLogicalDevice            `json:"logical_devices,omitempty"`
 	GenericSystems           []rawRackElementGenericSystem `json:"generic_systems,omitempty"`
@@ -1172,7 +1116,7 @@ type RackType struct {
 type RackTypeData struct {
 	DisplayName              string
 	Description              string
-	FabricConnectivityDesign FabricConnectivityDesign
+	FabricConnectivityDesign enum.FabricConnectivityDesign
 	LeafSwitches             []RackElementLeafSwitch
 	GenericSystems           []RackElementGenericSystem
 	AccessSwitches           []RackElementAccessSwitch
@@ -1182,7 +1126,7 @@ type rawRackType struct {
 	Id                       ObjectId                      `json:"id,omitempty"`
 	DisplayName              string                        `json:"display_name"`
 	Description              string                        `json:"description"`
-	FabricConnectivityDesign fabricConnectivityDesign      `json:"fabric_connectivity_design"`
+	FabricConnectivityDesign enum.FabricConnectivityDesign `json:"fabric_connectivity_design"`
 	Tags                     []DesignTagData               `json:"tags,omitempty"`
 	CreatedAt                *time.Time                    `json:"created_at,omitempty"`
 	LastModifiedAt           *time.Time                    `json:"last_modified_at,omitempty"`
@@ -1193,11 +1137,6 @@ type rawRackType struct {
 }
 
 func (o *rawRackType) polish() (*RackType, error) {
-	fcd, err := o.FabricConnectivityDesign.parse()
-	if err != nil {
-		return nil, err
-	}
-
 	result := &RackType{
 		Id:             o.Id,
 		CreatedAt:      o.CreatedAt,
@@ -1205,7 +1144,7 @@ func (o *rawRackType) polish() (*RackType, error) {
 		Data: &RackTypeData{
 			DisplayName:              o.DisplayName,
 			Description:              o.Description,
-			FabricConnectivityDesign: FabricConnectivityDesign(fcd),
+			FabricConnectivityDesign: o.FabricConnectivityDesign,
 			LeafSwitches:             make([]RackElementLeafSwitch, len(o.LeafSwitches)),
 			AccessSwitches:           make([]RackElementAccessSwitch, len(o.AccessSwitches)),
 			GenericSystems:           make([]RackElementGenericSystem, len(o.GenericSystems)),

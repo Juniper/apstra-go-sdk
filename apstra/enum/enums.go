@@ -338,3 +338,11 @@ var (
 	IbaWidgetCombineGraphLinear  = IbaWidgetCombineGraph{Value: "linear"}
 	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
 )
+
+type FabricConnectivityDesign oenum.Member[string]
+
+var (
+	FabricConnectivityDesignL3Clos        = FabricConnectivityDesign{Value: "l3clos"}
+	FabricConnectivityDesignL3Collapsed   = FabricConnectivityDesign{Value: "l3collapsed"}
+	FabricConnectivityDesignRailCollapsed = FabricConnectivityDesign{Value: "rail_collapsed"}
+)
