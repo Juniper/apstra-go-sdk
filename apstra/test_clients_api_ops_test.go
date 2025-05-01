@@ -8,7 +8,9 @@ package apstra
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -25,7 +27,7 @@ func apiOpsTopologyIdsFromEnv() []string {
 	if ids == "" {
 		return nil
 	}
-	return strings.Split(ids, envApiOpsTopologyUrlList)
+	return strings.Split(ids, envApiOpsUrlSep)
 }
 
 func getApiOpsTestClientCfgs(_ context.Context) (map[string]testClientCfg, error) {
@@ -34,48 +36,44 @@ func getApiOpsTestClientCfgs(_ context.Context) (map[string]testClientCfg, error
 		return nil, err
 	}
 
-	var topologyIds []string
+	var proxyUrls []string
 	if len(cfg.ApiOpsProxyUrls) > 0 {
-		topologyIds = make([]string, len(cfg.ApiOpsProxyUrls))
-		for i, s := range cfg.ApiOpsProxyUrls {
-			topologyIds[i] = s
+		proxyUrls = make([]string, len(cfg.ApiOpsProxyUrls))
+		for i, proxyUrl := range cfg.ApiOpsProxyUrls {
+			proxyUrls[i] = proxyUrl
 		}
 	}
 
-	if len(topologyIds) == 0 {
-		topologyIds = apiOpsTopologyIdsFromEnv()
+	if len(proxyUrls) == 0 {
+		proxyUrls = apiOpsTopologyIdsFromEnv()
 	}
 
-	result := make(map[string]testClientCfg, len(topologyIds))
-	for _, id := range topologyIds {
+	result := make(map[string]testClientCfg, len(proxyUrls))
+	for _, id := range proxyUrls {
 		u, err := url.Parse(id)
 		if err != nil {
 			return nil, fmt.Errorf("api ops proxy url parse error: %w", err)
 		}
 
-		p := u.Path
-		x := strings.TrimSuffix(u.String(), p)
+		klw, err := keyLogWriterFromEnv(envApstraApiKeyLogFile)
+		if err != nil {
+			return nil, err
+		}
 
-		//tlsConfig := &tls.Config{InsecureSkipVerify: true}
-		//
-		//klw, err := keyLogWriterFromEnv(envApstraApiKeyLogFile)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//if klw != nil {
-		//	tlsConfig.KeyLogWriter = klw
-		//}
-		//
-		//httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}
+		tlsConfig := &tls.Config{
+			InsecureSkipVerify: true,
+			KeyLogWriter:       klw,
+		}
 
 		result[id] = testClientCfg{
 			cfgType: "api-ops",
 			cfg: &ClientCfg{
-				Url:        x,
-				apiOpsDcId: toPtr(path.Base(p)),
-				// HttpClient: httpClient,
+				Url:        strings.TrimSuffix(u.String(), u.Path),
+				apiOpsDcId: toPtr(path.Base(u.Path)),
+				HttpClient: &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}},
 			},
 		}
 	}
+
 	return result, nil
 }

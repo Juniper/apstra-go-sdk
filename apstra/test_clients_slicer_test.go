@@ -1,9 +1,8 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -25,6 +24,7 @@ import (
 const (
 	slicerTopologyUrlById   = "http://slicer-topology-management-ui.k8s-autobuild.dc1.apstra.com/v1_1/systest/%s"
 	envSlicerTopologyIdList = "SLICER_TOPOLOGIES"
+	envSlicerTopologyIdSep  = ":"
 )
 
 type slicerDeviceType string
@@ -151,7 +151,7 @@ func slicerTopologyIdsFromEnv() []string {
 	if ids == "" {
 		return nil
 	}
-	return strings.Split(ids, envCloudlabsTopologyIdSep)
+	return strings.Split(ids, envSlicerTopologyIdSep)
 }
 
 // getSlicerTestClientCfgs returns map[string]testClientCfg keyed by

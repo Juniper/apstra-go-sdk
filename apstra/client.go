@@ -285,9 +285,9 @@ func (o ClientCfg) validate() error {
 
 // NewClient creates a Client object
 func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
-	if proxyId, ok := os.LookupEnv(EnvAosOpsEdgeId); ok {
+	if proxyId, ok := os.LookupEnv(envAosOpsEdgeId); ok {
 		if proxyId == "" {
-			return nil, fmt.Errorf("environment variable %s must not be empty if set", EnvAosOpsEdgeId)
+			return nil, fmt.Errorf("environment variable %s must not be empty if set", envAosOpsEdgeId)
 		}
 		o.apiOpsDcId = &proxyId
 	}
