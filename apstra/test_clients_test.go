@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -127,6 +127,15 @@ func getTestClientCfgs(ctx context.Context) (map[string]testClientCfg, error) {
 	}
 
 	for k, v := range slicerTestClientCfgs {
+		testClientCfgs[k] = v
+	}
+
+	apiOpsTestClientCfgs, err := getApiOpsTestClientCfgs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range apiOpsTestClientCfgs {
 		testClientCfgs[k] = v
 	}
 

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,6 +20,7 @@ type TestConfig struct {
 	CloudlabsTopologyIds []string `hcl:"cloudlabs_topology_ids,optional"`
 	AwsTopologyIds       []string `hcl:"aws_topology_ids,optional"`
 	SlicerTopologyIds    []string `hcl:"slicer_topology_ids,optional"`
+	ApiOpsProxyUrls      []string `hcl:"api_ops_proxy_urls,optional"`
 }
 
 var (

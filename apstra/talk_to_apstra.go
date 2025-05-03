@@ -184,6 +184,10 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 // not nil, it JSON-encodes that data structure and sends it. In case the
 // in.apiResponse is not nil, the server response is extracted into it.
 func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
+	if o.cfg.apiOpsDcId != nil {
+		return o.talkToApiOps(ctx, in)
+	}
+
 	var err error
 	var requestBody []byte
 
@@ -244,6 +248,9 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 
 	// talk to the server
 	resp, err := o.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("error making http request for url '%s' - %w", apstraUrl.String(), err)
+	}
 
 	// trim authentication token from request - Do() has been called - get this out of the way quickly
 	req.Header.Del(apstraAuthHeader)
@@ -381,12 +388,12 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 			ContentLength: int64(len(taskResponse.DetailedStatus.Errors)),
 		}
 
-		detailedStatus, _ := json.Marshal(&taskResponse.DetailedStatus)
+		dsMsg, _ := json.Marshal(&taskResponse.DetailedStatus)
 
 		return TalkToApstraErr{
 			Request:  request,
 			Response: response,
-			Msg:      string(detailedStatus),
+			Msg:      string(dsMsg),
 		}
 	}
 
@@ -431,24 +438,23 @@ func (o TalkToApstraErr) Error() string {
 // up to some reasonable limit (don't try to buffer gigabytes of data from the
 // webserver).
 func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) TalkToApstraErr {
-	apstraUrl := req.URL.String()
 	// don't include secret in error
 	req.Header.Del(apstraAuthHeader)
 
 	// redact request body for sensitive URLs
-	switch apstraUrl {
+	switch req.URL.Path {
 	case apiUrlUserLogin:
-		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", apstraUrl)))
+		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", req.URL.Path)))
 	default:
 		rehydratedRequest := bytes.NewBuffer(reqBody)
 		req.Body = io.NopCloser(rehydratedRequest)
 	}
 
 	// redact response body for sensitive URLs
-	switch apstraUrl {
+	switch req.URL.Path {
 	case apiUrlUserLogin:
 		_ = resp.Body.Close() // close the real network socket
-		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", apstraUrl)))
+		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", req.URL.Path)))
 	default:
 		// prepare a stunt double response body for the one that's likely attached to a network
 		// socket, and likely to be closed by a `defer` somewhere

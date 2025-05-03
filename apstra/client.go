@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -121,6 +122,7 @@ type ClientCfg struct {
 	Experimental bool           // used to enable experimental features
 	UserAgent    string         // may used to set a custom user-agent
 	tuningParams map[string]int // various tunable parameters keyed by name
+	apiOpsDcId   *string        // indicates that we should be talking to API-ops proxy using this DC ID
 }
 
 // TaskId represents outstanding tasks on an Apstra server
@@ -157,6 +159,7 @@ type Client struct {
 	sync        map[string]*sync.Mutex   // some client operations are not concurrency safe. Their locks live here.
 	syncLock    sync.Mutex               // control access to the 'sync' map
 	features    map[enum.ApiFeature]bool // true/false indicate feature enabled/disabled status
+	skipGzip    bool                     // prevents setting 'Accept-Encoding: gzip' - only implemented for api-ops proxy
 }
 
 // GetTuningParam returns a named timer value from the client configuration if one has been configured.
@@ -271,16 +274,24 @@ func (o ClientCfg) validate() error {
 	switch {
 	case o.Url == "":
 		return errors.New("error Url for Apstra Service cannot be empty")
-	case o.User == "":
+	case o.User == "" && o.apiOpsDcId == nil:
 		return errors.New("error username for Apstra service cannot be empty")
-	case o.Pass == "":
+	case o.Pass == "" && o.apiOpsDcId == nil:
 		return errors.New("error password for Apstra service cannot be empty")
 	}
+
 	return nil
 }
 
 // NewClient creates a Client object
 func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
+	if proxyId, ok := os.LookupEnv(envAosOpsEdgeId); ok {
+		if proxyId == "" {
+			return nil, fmt.Errorf("environment variable %s must not be empty if set", envAosOpsEdgeId)
+		}
+		o.apiOpsDcId = &proxyId
+	}
+
 	err := o.validate()
 	if err != nil {
 		return nil, err
@@ -321,6 +332,14 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		taskMonChan: make(chan *taskMonitorMonReq),
 		sync:        make(map[string]*sync.Mutex),
 		ctx:         context.Background(),
+	}
+
+	if _, ok := os.LookupEnv(envAosOpsNoGzip); ok {
+		c.skipGzip = true
+	}
+
+	if o.apiOpsDcId != nil {
+		c.startTaskMonitor() // because this client will never "log in"
 	}
 
 	err = c.getFeatures(ctx)
@@ -436,11 +455,28 @@ func (o *Client) unlock(id string) {
 // is not already logged in, Apstra will send HTTP 401. The client will log
 // itself in and resubmit the request.
 func (o *Client) Login(ctx context.Context) error {
-	return o.login(ctx)
+	if o.cfg.apiOpsDcId != nil {
+		return nil // we never log in or out when configured to use the api-ops proxy
+	}
+
+	err := o.login(ctx)
+	if err != nil {
+		return err
+	}
+
+	o.startTaskMonitor()
+
+	return nil
 }
 
 // Logout invalidates the Apstra API token held by Client
 func (o *Client) Logout(ctx context.Context) error {
+	if o.cfg.apiOpsDcId != nil {
+		return nil // we never log in or out when configured to use the api-ops proxy
+	}
+
+	o.stopTaskMonitor()
+
 	return o.logout(ctx)
 }
 

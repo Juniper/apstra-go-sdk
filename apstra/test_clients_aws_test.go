@@ -1,9 +1,8 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -24,6 +23,7 @@ import (
 const (
 	envAwsInstanceIdList   = "APSTRA_AWS_INSTANCE_IDS"
 	awsToplogySecretPrefix = "apstra-info-"
+	envAwsTopologyIdSep    = ":"
 )
 
 type awsTopology struct {
@@ -81,7 +81,7 @@ func awsInstanceIdsFromEnv() []string {
 	if ids == "" {
 		return nil
 	}
-	return strings.Split(ids, envCloudlabsTopologyIdSep)
+	return strings.Split(ids, envAwsTopologyIdSep)
 }
 
 // getAwsTestClientCfgs returns map[string]testClientCfg keyed by
