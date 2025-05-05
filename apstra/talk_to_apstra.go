@@ -15,6 +15,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -282,9 +283,15 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 						resp.StatusCode, apstraUrl, in.doNotLogin))
 			}
 
+			if _, ok := os.LookupEnv(envAosOpsEdgeId); ok {
+				return newTalkToApstraErr(req, requestBody, resp,
+					fmt.Sprintf("http %d at '%s' and %s has been set",
+						resp.StatusCode, apstraUrl, envAosOpsEdgeId))
+			}
+
 			o.logStr(1, fmt.Sprintf("got http %d '%s' at '%s' attempting login", resp.StatusCode, resp.Status, apstraUrl.String()))
 			// Try logging in
-			err := o.login(ctx)
+			err := o.Login(ctx)
 			if err != nil {
 				return fmt.Errorf("error attempting login after initial AuthFail - %w", err)
 			}
