@@ -255,6 +255,7 @@ func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 		RtPolicy                  *RtPolicy   `json:"rt_policy"`
 		SecurityZoneId            ObjectId    `json:"security_zone_id"`
 		SviIps                    []SviIp     `json:"svi_ips"`
+		Tags                      []string    `json:"tags"`
 		VirtualGatewayIpv4        string      `json:"virtual_gateway_ipv4"`
 		VirtualGatewayIpv6        string      `json:"virtual_gateway_ipv6"`
 		VirtualGatewayIpv4Enabled bool        `json:"virtual_gateway_ipv4_enabled"`
@@ -299,6 +300,7 @@ func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 	o.Data.RtPolicy = raw.RtPolicy
 	o.Data.SecurityZoneId = raw.SecurityZoneId
 	o.Data.SviIps = raw.SviIps
+	o.Data.Tags = raw.Tags
 
 	o.Data.VirtualGatewayIpv4, err = ipFromString(raw.VirtualGatewayIpv4)
 	if err != nil {
@@ -357,6 +359,7 @@ type VirtualNetworkData struct {
 	RtPolicy                  *RtPolicy          `json:"rt_policy"`
 	SecurityZoneId            ObjectId           `json:"security_zone_id,omitempty"`
 	SviIps                    []SviIp            `json:"svi_ips"`
+	Tags                      []string           `json:"tags"`
 	VirtualGatewayIpv4        net.IP             `json:"virtual_gateway_ipv4,omitempty"`
 	VirtualGatewayIpv6        net.IP             `json:"virtual_gateway_ipv6,omitempty"`
 	VirtualGatewayIpv4Enabled bool               `json:"virtual_gateway_ipv4_enabled"`

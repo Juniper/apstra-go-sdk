@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -48,5 +48,8 @@ var (
 	}
 	TemplateRequestRequiresAntiAffinityPolicy = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
+	}
+	VirtualNetworkTags = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
 )

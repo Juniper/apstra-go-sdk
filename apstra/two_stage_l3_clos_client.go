@@ -344,6 +344,13 @@ func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyI
 
 // CreateVirtualNetwork creates a new virtual network according to the supplied VirtualNetworkData
 func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, in *VirtualNetworkData) (ObjectId, error) {
+	if in.Tags != nil {
+		return "", ClientErr{
+			errType: ErrNotSupported,
+			err:     errors.New("tags must be nil when creating virtual network"),
+		}
+	}
+
 	return o.createVirtualNetwork(ctx, in)
 }
 
@@ -373,6 +380,13 @@ func (o *TwoStageL3ClosClient) GetAllVirtualNetworks(ctx context.Context) (map[O
 // UpdateVirtualNetwork updates the virtual network specified by ID using the
 // VirtualNetworkData and HTTP method PUT.
 func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, in *VirtualNetworkData) error {
+	if in.Tags != nil {
+		return ClientErr{
+			errType: ErrNotSupported,
+			err:     errors.New("tags must be nil when updating virtual network"),
+		}
+	}
+
 	return o.updateVirtualNetwork(ctx, id, in)
 }
 

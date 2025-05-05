@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
@@ -309,6 +310,125 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			if !errors.As(err, &ace) || ace.Type() != ErrNotfound {
 				t.Fatalf("expected a 404/NotFound error after deletion")
 			}
+		})
+	}
+}
+
+func TestVirtualNetworkTags(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	randStr := randString(5, "hex")
+	label := "test-" + randStr
+	vrfName := "test-" + randStr
+
+	for clientName, client := range clients {
+		t.Run(client.name(), func(t *testing.T) {
+			if !compatibility.VirtualNetworkTags.Check(client.client.apiVersion) {
+				t.Skipf("skipping virtual network tag test with version %s", client.client.apiVersion)
+			}
+
+			t.Parallel()
+
+			bpClient := testBlueprintC(ctx, t, client.client)
+
+			log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			zoneId, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
+				SzType:  SecurityZoneTypeEVPN,
+				VrfName: vrfName,
+				Label:   label,
+			})
+			require.NoError(t, err)
+
+			var result struct {
+				Items []struct {
+					System struct {
+						SystemId string `json:"id"`
+					} `json:"system"`
+				} `json:"items"`
+			}
+
+			query := new(PathQuery).
+				SetClient(client.client).
+				SetBlueprintId(bpClient.Id()).
+				Node([]QEEAttribute{
+					{"type", QEStringVal("system")},
+					{"system_type", QEStringVal("switch")},
+					{"role", QEStringVal("leaf")},
+					{"name", QEStringVal("system")},
+				})
+
+			err = query.Do(ctx, &result)
+			require.NoError(t, err)
+
+			vnBindings := make([]VnBinding, len(result.Items))
+			for i := range result.Items {
+				leafId := ObjectId(result.Items[i].System.SystemId)
+				vnBindings[i] = VnBinding{
+					SystemId: leafId,
+				}
+			}
+
+			createData := VirtualNetworkData{
+				Ipv4Enabled:               true,
+				Label:                     label,
+				SecurityZoneId:            zoneId,
+				VirtualGatewayIpv4Enabled: true,
+				VnBindings:                vnBindings[:1],
+				VnType:                    enum.VnTypeVxlan,
+			}
+
+			log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			vnId, err := bpClient.CreateVirtualNetwork(ctx, &createData)
+			require.NoError(t, err)
+
+			log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			vn, err := bpClient.GetVirtualNetwork(ctx, vnId)
+			require.NoError(t, err)
+			require.Equal(t, 0, len(vn.Data.Tags))
+
+			tags := make([]string, rand.Intn(10)+1)
+			for i := range tags {
+				tags[i] = randString(6, "hex")
+			}
+
+			log.Printf("setting tags on virtual network against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.SetNodeTags(ctx, vn.Id, tags)
+			require.NoError(t, err)
+
+			log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			vn, err = bpClient.GetVirtualNetwork(ctx, vnId)
+			require.NoError(t, err)
+			require.Equal(t, len(tags), len(vn.Data.Tags))
+			compareSlicesAsSets(t, tags, vn.Data.Tags, "tag set mismatch")
+
+			log.Printf("clearing tags on virtual network against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.SetNodeTags(ctx, vn.Id, nil)
+			require.NoError(t, err)
+
+			log.Printf("testing GetVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			vn, err = bpClient.GetVirtualNetwork(ctx, vnId)
+			require.NoError(t, err)
+			require.Equal(t, 0, len(vn.Data.Tags))
+
+			createData.Tags = tags
+			var ace ClientErr
+
+			log.Printf("ensuring that CreateVirtualNetwork() with tags fails against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			_, err = bpClient.CreateVirtualNetwork(ctx, &createData)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, ErrNotSupported, ace.Type())
+
+			log.Printf("ensuring that UpdateVirtualNetwork() with tags fails against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+			err = bpClient.UpdateVirtualNetwork(ctx, vnId, &createData)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, ErrNotSupported, ace.Type())
 		})
 	}
 }
