@@ -37,6 +37,7 @@ const (
 	ErrInUse
 	ErrMultipleMatch
 	ErrNotfound
+	ErrNotSupported
 	ErrUncommitted
 	ErrWrongType
 	ErrReadOnly
