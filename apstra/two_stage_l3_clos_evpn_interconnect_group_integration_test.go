@@ -167,7 +167,6 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 
 				for _, evpnInterconnectGroup := range all {
 					t.Run("delete_"+evpnInterconnectGroup.Id.String(), func(t *testing.T) {
-
 						t.Parallel()
 
 						err = bpClient.DeleteEvpnInterconnectGroup(ctx, evpnInterconnectGroup.Id)
@@ -193,6 +192,5 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 				}
 			})
 		})
-
 	}
 }
