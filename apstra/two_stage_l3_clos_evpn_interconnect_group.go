@@ -62,15 +62,15 @@ type EvpnInterconnectGroupData struct {
 
 func (o EvpnInterconnectGroupData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		Label       string  `json:"label"`
-		RouteTarget string  `json:"interconnect_route_target"`
-		EsiMac      *string `json:"interconnect_esi_mac,omitempty"`
+		Label       string `json:"label"`
+		RouteTarget string `json:"interconnect_route_target"`
+		EsiMac      string `json:"interconnect_esi_mac,omitempty"`
 	}
 
 	raw.Label = o.Label
 	raw.RouteTarget = o.RouteTarget
 	if o.EsiMac != nil {
-		raw.EsiMac = toPtr(o.EsiMac.String())
+		raw.EsiMac = o.EsiMac.String()
 	}
 
 	return json.Marshal(raw)
