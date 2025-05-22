@@ -45,7 +45,15 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 		t.Run(clientName, func(t *testing.T) {
 			t.Parallel()
 
+			t.Logf("Creating blueprint")
 			bpClient := testBlueprintA(ctx, t, client.client)
+			fs, err := bpClient.GetFabricSettings(ctx)
+			require.NoError(t, err)
+
+			fs.EsiMacMsb = toPtr(uint8((rand.Int() & 254) | 2))
+			t.Logf("Setting blueprint ESI MAC MSB to %d", *fs.EsiMacMsb)
+			err = bpClient.SetFabricSettings(ctx, fs)
+			require.NoError(t, err)
 
 			type testStep struct {
 				config EvpnInterconnectGroupData
@@ -68,7 +76,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 							config: EvpnInterconnectGroupData{
 								Label:       "a" + randString(6, "hex"),
 								RouteTarget: fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1),
-								EsiMac:      randomHardwareAddr(), // unicast mac
+								EsiMac:      randomHardwareAddr([]byte{*fs.EsiMacMsb}, []byte{^*fs.EsiMacMsb}), // match policy MAC MSB
 							},
 						},
 						{
@@ -85,7 +93,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 							config: EvpnInterconnectGroupData{
 								Label:       "a" + randString(6, "hex"),
 								RouteTarget: fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1),
-								EsiMac:      randomHardwareAddr(),
+								EsiMac:      randomHardwareAddr([]byte{*fs.EsiMacMsb}, []byte{^*fs.EsiMacMsb}), // match policy MAC MSB
 							},
 						},
 						{
@@ -98,7 +106,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 							config: EvpnInterconnectGroupData{
 								Label:       "a" + randString(6, "hex"),
 								RouteTarget: fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1),
-								EsiMac:      randomHardwareAddr(),
+								EsiMac:      randomHardwareAddr([]byte{*fs.EsiMacMsb}, []byte{^*fs.EsiMacMsb}), // match policy MAC MSB
 							},
 						},
 					},
@@ -117,6 +125,11 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 					t.Parallel()
 
 					require.Greater(t, len(tCase.steps), 0)
+					if tCase.steps[0].config.EsiMac == nil {
+						t.Log("creating EVPN Interconnect Group with unspecified ESI MAC")
+					} else {
+						t.Logf("creating EVPN Interconnect Group with ESI MAC %s", tCase.steps[0].config.EsiMac)
+					}
 					id, err := bpClient.CreateEvpnInterconnectGroup(ctx, &tCase.steps[0].config)
 					require.NoError(t, err)
 					idMutex.Lock()
@@ -131,6 +144,11 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 
 					for i, step := range tCase.steps {
 						t.Logf("%s update step %d", tName, i)
+						if step.config.EsiMac == nil {
+							t.Log("updating EVPN Interconnect Group with unspecified ESI MAC")
+						} else {
+							t.Logf("updating EVPN Interconnect Group with ESI MAC %s", step.config.EsiMac)
+						}
 						err := bpClient.UpdateEvpnInterconnectGroup(ctx, id, &step.config)
 						require.NoError(t, err)
 
