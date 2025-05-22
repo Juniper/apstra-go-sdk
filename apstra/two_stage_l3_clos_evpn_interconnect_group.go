@@ -44,7 +44,7 @@ func (o *EvpnInterconnectGroup) UnmarshalJSON(bytes []byte) error {
 	if raw.EsiMac != nil {
 		esiMac, err := net.ParseMAC(*raw.EsiMac)
 		if err != nil {
-			return fmt.Errorf("error parsing interconnect esi mac: %s", err)
+			return fmt.Errorf("parsing interconnect esi mac: %s", err)
 		}
 		o.Data.EsiMac = esiMac
 	}
