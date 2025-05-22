@@ -88,6 +88,25 @@ func randomIpv6() net.IP {
 	}
 }
 
+func randomHardwareAddr(group ...bool) net.HardwareAddr {
+	result := net.HardwareAddr{
+		byte(rand.Intn(math.MaxUint8 + 1)),
+		byte(rand.Intn(math.MaxUint8 + 1)),
+		byte(rand.Intn(math.MaxUint8 + 1)),
+		byte(rand.Intn(math.MaxUint8 + 1)),
+		byte(rand.Intn(math.MaxUint8 + 1)),
+		byte(rand.Intn(math.MaxUint8 + 1)),
+	}
+
+	if len(group) > 0 {
+		result[0] = result[0] | 1 // force an odd number
+	} else {
+		result[0] = result[0] & (math.MaxUint8 - 1) // force an even number
+	}
+
+	return result
+}
+
 // randomIntsN fills the supplied slice with non-negative pseudo-random values in the half-open interval [0,n)
 func randomIntsN(s []int, n int) {
 	l := len(s)
