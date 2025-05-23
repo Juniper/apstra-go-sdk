@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,6 +14,7 @@ const (
 	NodeTypeDomain
 	NodeTypeEpEndpointPolicy
 	NodeTypeEpGroup
+	NodeTypeEvpnInterconnectGroup
 	NodeTypeFabricAddressingPolicy
 	NodeTypeFabricPolicy
 	NodeTypeInterface
@@ -45,6 +46,7 @@ const (
 	nodeTypeDomain                 = nodeType("domain")
 	nodeTypeEpEndpointPolicy       = nodeType("ep_endpoint_policy")
 	nodeTypeEpGroup                = nodeType("ep_group")
+	nodeTypeEvpnInterconnectGroup  = nodeType("evpn_interconnect_group")
 	nodeTypeFabricAddressingPolicy = nodeType("fabric_addressing_policy")
 	nodeTypeFabricPolicy           = nodeType("fabric_policy")
 	nodeTypeInterface              = nodeType("interface")
@@ -91,6 +93,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeEpEndpointPolicy)
 	case NodeTypeEpGroup:
 		return string(nodeTypeEpGroup)
+	case NodeTypeEvpnInterconnectGroup:
+		return string(nodeTypeEvpnInterconnectGroup)
 	case NodeTypeFabricAddressingPolicy:
 		return string(nodeTypeFabricAddressingPolicy)
 	case NodeTypeFabricPolicy:
