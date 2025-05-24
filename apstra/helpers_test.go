@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"sort"
@@ -86,6 +87,13 @@ func randomIpv6() net.IP {
 		byte(rand.Intn(256)), byte(rand.Intn(256)),
 		byte(rand.Intn(256)), byte(rand.Intn(256)),
 	}
+}
+
+func netIpToNetIpAddr(t *testing.T, ip net.IP) netip.Addr {
+	t.Helper()
+	result, err := netip.ParseAddr(ip.String())
+	require.NoError(t, err)
+	return result
 }
 
 // randomHardwareAddr returns a net.HardwareAddr. The set and unset arguments

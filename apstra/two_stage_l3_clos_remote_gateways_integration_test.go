@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,255 +8,325 @@ package apstra
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"math"
 	"math/rand"
-	"net"
-	"sort"
+	"sync"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/stretchr/testify/require"
 )
 
-func ensureRemoteGatewayDataEqual(t *testing.T, a, b *RemoteGatewayData, skipNilValues bool) {
-	sort.Slice(a.LocalGwNodes, func(i, j int) bool {
-		if a.LocalGwNodes[i] > a.LocalGwNodes[j] {
-			return true
-		}
-		return false
-	})
-
-	sort.Slice(b.LocalGwNodes, func(i, j int) bool {
-		if b.LocalGwNodes[i] > b.LocalGwNodes[j] {
-			return true
-		}
-		return false
-	})
-
-	compareSlices(t, a.LocalGwNodes, b.LocalGwNodes, "local gateway nodes don't match")
-
-	if a.RouteTypes.Value != b.RouteTypes.Value {
-		t.Fatalf("remote gateway route types don't match: %q vs %q", a.RouteTypes.Value, b.RouteTypes.Value)
-	}
-
-	if a.GwName != b.GwName {
-		t.Fatalf("remote gateway names don't match: %q vs %q", a.GwName, b.GwName)
-	}
-
-	if !a.GwIp.Equal(b.GwIp) {
-		t.Fatalf("remote gateway IPs don't match: %q vs %q", a.GwIp.String(), b.GwIp.String())
-	}
-
-	if a.GwAsn != b.GwAsn {
-		t.Fatalf("remote gateway ASNs don't match: %q vs %q", a.GwAsn, b.GwAsn)
-	}
-
-	if !possiblyNilValuesMatch(a.Ttl, b.Ttl, skipNilValues) {
-		if a == nil || b == nil {
-			t.Fatalf("remote gateway TTLs don't match: %v vs. %v", a.Ttl, b.Ttl)
-		}
-		t.Fatalf("remote gateway TTLs don't match: %d vs. %d", *a.Ttl, *b.Ttl)
-	}
-
-	if !possiblyNilValuesMatch(a.KeepaliveTimer, b.KeepaliveTimer, skipNilValues) {
-		if a == nil || b == nil {
-			t.Fatalf("remote gateway Keepalive timers don't match: %v vs. %v", a.KeepaliveTimer, b.KeepaliveTimer)
-		}
-		t.Fatalf("remote gateway Keepalive timers don't match: %v vs. %v", a.KeepaliveTimer, b.KeepaliveTimer)
-	}
-
-	if !possiblyNilValuesMatch(a.HoldtimeTimer, b.HoldtimeTimer, skipNilValues) {
-		if a == nil || b == nil {
-			t.Fatalf("remote gateway Holdtime timers don't match: %v vs. %v", a.HoldtimeTimer, b.HoldtimeTimer)
-		}
-		t.Fatalf("remote gateway Holdtime timers don't match: %v vs. %v", a.HoldtimeTimer, b.HoldtimeTimer)
-	}
-}
-
-func possiblyNilValuesMatch[A comparable](a, b *A, skipNilValues bool) bool {
-	if a == nil && b == nil { // two nil values match
-		return true
-	}
-
-	if a == nil || b == nil { // only one value is nil
-		if skipNilValues {
-			return true // but that's okay!
-		}
-		return false // that's not okay
-	}
-
-	// neither value is nil
-	if *a == *b {
-		return true // they match!
-	}
-
-	return false // they don't match
-}
-
-func TestCreateDeleteRemoteGateway(t *testing.T) {
+func TestCRUDRemoteGateway(t *testing.T) {
 	ctx := context.Background()
+
 	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	for clientName, client := range clients {
+	compare := func(t *testing.T, a, b *TwoStageL3ClosRemoteGatewayData) {
+		require.NotNil(t, a)
+		require.NotNil(t, b)
+
+		require.Equal(t, a.Label, b.Label, "label does not match")
+		require.Equal(t, a.GwIp.String(), b.GwIp.String(), fmt.Sprintf("gateway ip addresses do not match"))
+		require.Equal(t, a.GwAsn, b.GwAsn, "gateway ASN does not match")
+
+		require.NotNil(t, b.RouteTypes)
+		if a.RouteTypes == nil {
+			require.Equal(t, enum.RemoteGatewayRouteTypeAll.Value, b.RouteTypes.Value, "expected default route type not found")
+		} else {
+			require.Equal(t, a.RouteTypes.Value, b.RouteTypes.Value, "route type does not match")
+		}
+
+		require.NotNil(t, b.Ttl)
+		if a.Ttl == nil {
+			require.Equal(t, uint8(30), *b.Ttl, "expected default ttl not found")
+		} else {
+			require.Equal(t, *a.Ttl, *b.Ttl, "ttl does not match")
+		}
+
+		require.NotNil(t, b.KeepaliveTimer)
+		if a.KeepaliveTimer == nil {
+			require.Equal(t, uint16(10), *b.KeepaliveTimer, "expected default keepalive timer not found")
+		} else {
+			require.Equal(t, *a.KeepaliveTimer, *b.KeepaliveTimer, "keepalive timer does not match")
+		}
+
+		require.NotNil(t, b.HoldtimeTimer)
+		if a.HoldtimeTimer == nil {
+			require.Equal(t, uint16(30), *b.HoldtimeTimer, "expected default holdtime timer not found")
+		} else {
+			require.Equal(t, *a.HoldtimeTimer, *b.HoldtimeTimer, "holdtime timer does not match")
+		}
+
+		if a.EvpnInterconnectGroupId == nil {
+			require.Nil(t, b.EvpnInterconnectGroupId)
+		} else {
+			require.Equal(t, *a.EvpnInterconnectGroupId, *b.EvpnInterconnectGroupId, fmt.Sprintf("evpn interconnect group id does not match"))
+		}
+
+		compareSlicesAsSets(t, a.LocalGwNodes, b.LocalGwNodes, "mismatched local gateway node sets")
+	}
+
+	for _, client := range clients {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
 
-			var remoteGwCfgs []RemoteGatewayData
-			for _, routeType := range enum.RemoteGatewayRouteTypes.Members() {
-				remoteGwCfgs = append(remoteGwCfgs, RemoteGatewayData{
-					RouteTypes:     routeType,
-					LocalGwNodes:   nil, // blueprint-specific details set in client loop below
-					GwAsn:          rand.Uint32(),
-					GwIp:           net.IPv4(uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int())),
-					GwName:         randString(5, "hex"),
-					Ttl:            nil,
-					KeepaliveTimer: nil,
-					HoldtimeTimer:  nil,
-					Password:       nil,
-				})
-			}
-
-			randomGwCfgWithNil := RemoteGatewayData{
-				RouteTypes:   enum.RemoteGatewayRouteTypes.Members()[rand.Intn(len(enum.RemoteGatewayRouteTypes.Members()))],
-				LocalGwNodes: nil,
-				GwAsn:        rand.Uint32(),
-			}
-
-			randTtl := uint8((rand.Int() % 253) + 2) // range 2 - 255
-			randKeepaliveTimer := uint16(rand.Int())
-			randHoldtimeTimer := uint16(rand.Int())
-			randomPassword := randString(5, "hex")
-			randomGwCfg := RemoteGatewayData{
-				RouteTypes:     enum.RemoteGatewayRouteTypes.Members()[rand.Intn(len(enum.RemoteGatewayRouteTypes.Members()))],
-				LocalGwNodes:   nil,
-				GwAsn:          rand.Uint32(),
-				Ttl:            &randTtl,
-				KeepaliveTimer: &randKeepaliveTimer,
-				HoldtimeTimer:  &randHoldtimeTimer,
-				Password:       &randomPassword,
-			}
+			t.Logf("testing remote gateway CRUD methods against Apstra %s", client.client.apiVersion)
 
 			bp := testBlueprintA(ctx, t, client.client)
 
-			// populate blueprint-specific facts into config slice
-			localGwNodes, err := getSystemIdsByRole(ctx, bp, "leaf")
-			if err != nil {
-				t.Fatal(err)
-			}
-			for i := range remoteGwCfgs {
-				remoteGwCfgs[i].LocalGwNodes = localGwNodes
-			}
+			leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
+			require.NoError(t, err)
 
-			// populate blueprint-specific facts into random config slice
-			randomGwCfg.LocalGwNodes = localGwNodes[rand.Intn(len(localGwNodes)):]
-			randomGwCfgWithNil.LocalGwNodes = localGwNodes[rand.Intn(len(localGwNodes)):]
+			evpnInterConnectGroupId, err := bp.CreateEvpnInterconnectGroup(ctx, &EvpnInterconnectGroupData{
+				Label:       randString(6, "hex"),
+				RouteTarget: fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1),
+			})
+			require.NoError(t, err)
+			_ = evpnInterConnectGroupId
 
-			ids := make([]ObjectId, len(remoteGwCfgs))
-			for i, cfg := range remoteGwCfgs {
-				log.Printf("testing CreateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				ids[i], err = bp.CreateRemoteGateway(ctx, &cfg)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				log.Printf("testing GetRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				gatewayById, err := bp.GetRemoteGateway(ctx, ids[i])
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				if ids[i] != gatewayById.Id {
-					t.Fatalf("expected ID %q, got %q", ids[i], gatewayById.Id)
-				}
-
-				ensureRemoteGatewayDataEqual(t, &cfg, gatewayById.Data, true)
-
-				log.Printf("testing GetRemoteGatewayByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				gatewayByName, err := bp.GetRemoteGatewayByName(ctx, remoteGwCfgs[i].GwName)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				if gatewayById.Id != gatewayByName.Id {
-					t.Fatalf("id fetched by ID doesn't match id fetched by name: %q vs. %q", gatewayById.Id, gatewayByName.Id)
-				}
-
-				ensureRemoteGatewayDataEqual(t, gatewayById.Data, gatewayByName.Data, false)
-
-				log.Printf("testing UpdateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = bp.UpdateRemoteGateway(ctx, ids[i], gatewayById.Data)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				log.Printf("testing GetRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				gatewayById, err = bp.GetRemoteGateway(ctx, ids[i])
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				ensureRemoteGatewayDataEqual(t, gatewayById.Data, gatewayByName.Data, false)
-
-				randomGwCfgWithNil.GwName = randString(5, "hex")
-				randomGwCfgWithNil.GwIp = net.IPv4(uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()))
-				log.Printf("testing UpdateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = bp.UpdateRemoteGateway(ctx, ids[i], &randomGwCfgWithNil)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				log.Printf("testing GetRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				gatewayById, err = bp.GetRemoteGateway(ctx, ids[i])
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				ensureRemoteGatewayDataEqual(t, gatewayById.Data, &randomGwCfgWithNil, true)
-
-				randomGwCfg.GwName = randString(5, "hex")
-				randomGwCfg.GwIp = net.IPv4(uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()), uint8(rand.Int()))
-				log.Printf("testing UpdateRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = bp.UpdateRemoteGateway(ctx, ids[i], &randomGwCfg)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				log.Printf("testing GetRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				gatewayById, err = bp.GetRemoteGateway(ctx, ids[i])
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				ensureRemoteGatewayDataEqual(t, gatewayById.Data, &randomGwCfg, false)
+			type testStep struct {
+				config TwoStageL3ClosRemoteGatewayData
 			}
 
-			log.Printf("testing GetAllRemoteGateways() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			remoteGws, err := bp.GetAllRemoteGateways(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(remoteGwCfgs) != len(remoteGws) {
-				t.Fatalf("expected %d remote gateways, got %d", len(remoteGwCfgs), len(remoteGws))
+			type testCase struct {
+				steps []testStep
 			}
 
-			for _, id := range ids {
-				log.Printf("testing DeleteRemoteGateway() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = bp.DeleteRemoteGateway(ctx, id)
-				if err != nil {
-					t.Fatal(err)
+			testCases := map[string]testCase{
+				"mandatory_fields_only": {
+					steps: []testStep{
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:        randString(6, "hex"),
+								GwIp:         netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:        rand.Uint32(),
+								LocalGwNodes: []ObjectId{leafIds[rand.Intn(len(leafIds))]},
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:        randString(6, "hex"),
+								GwIp:         netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:        rand.Uint32(),
+								LocalGwNodes: []ObjectId{leafIds[rand.Intn(len(leafIds))]},
+							},
+						},
+					},
+				},
+				"start_minimal": {
+					steps: []testStep{
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:        randString(6, "hex"),
+								GwIp:         netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:        rand.Uint32(),
+								LocalGwNodes: []ObjectId{leafIds[rand.Intn(len(leafIds))]},
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:                   randString(6, "hex"),
+								GwIp:                    netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:                   rand.Uint32(),
+								RouteTypes:              &enum.RemoteGatewayRouteTypeAll,
+								Ttl:                     toPtr(uint8(rand.Intn(254) + 2)),               // 2-255
+								KeepaliveTimer:          toPtr(uint16(rand.Intn(math.MaxUint16) + 1)),   // 1-65535
+								HoldtimeTimer:           toPtr(uint16(rand.Intn(math.MaxUint16-2) + 3)), // 3-65535
+								Password:                toPtr(randString(6, "hex")),
+								EvpnInterconnectGroupId: &evpnInterConnectGroupId,
+								LocalGwNodes:            leafIds,
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:                   randString(6, "hex"),
+								GwIp:                    netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:                   rand.Uint32(),
+								RouteTypes:              &enum.RemoteGatewayRouteTypeAll,
+								Ttl:                     toPtr(uint8(rand.Intn(254) + 2)),               // 2-255
+								KeepaliveTimer:          toPtr(uint16(rand.Intn(math.MaxUint16) + 1)),   // 1-65535
+								HoldtimeTimer:           toPtr(uint16(rand.Intn(math.MaxUint16-2) + 3)), // 3-65535
+								Password:                toPtr(randString(6, "hex")),
+								EvpnInterconnectGroupId: nil,
+								LocalGwNodes:            []ObjectId{leafIds[rand.Intn(len(leafIds))]},
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:                   randString(6, "hex"),
+								GwIp:                    netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:                   rand.Uint32(),
+								RouteTypes:              &enum.RemoteGatewayRouteTypeAll,
+								Ttl:                     toPtr(uint8(rand.Intn(254) + 2)),               // 2-255
+								KeepaliveTimer:          toPtr(uint16(rand.Intn(math.MaxUint16) + 1)),   // 1-65535
+								HoldtimeTimer:           toPtr(uint16(rand.Intn(math.MaxUint16-2) + 3)), // 3-65535
+								Password:                toPtr(randString(6, "hex")),
+								EvpnInterconnectGroupId: &evpnInterConnectGroupId,
+								LocalGwNodes:            leafIds,
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:        randString(6, "hex"),
+								GwIp:         netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:        rand.Uint32(),
+								LocalGwNodes: []ObjectId{leafIds[rand.Intn(len(leafIds))]},
+							},
+						},
+					},
+				},
+				"start_maximal": {
+					steps: []testStep{
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:                   randString(6, "hex"),
+								GwIp:                    netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:                   rand.Uint32(),
+								RouteTypes:              &enum.RemoteGatewayRouteTypeAll,
+								Ttl:                     toPtr(uint8(rand.Intn(254) + 2)),               // 2-255
+								KeepaliveTimer:          toPtr(uint16(rand.Intn(math.MaxUint16) + 1)),   // 1-65535
+								HoldtimeTimer:           toPtr(uint16(rand.Intn(math.MaxUint16-2) + 3)), // 3-65535
+								Password:                toPtr(randString(6, "hex")),
+								EvpnInterconnectGroupId: &evpnInterConnectGroupId,
+								LocalGwNodes:            leafIds,
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:        randString(6, "hex"),
+								GwIp:         netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:        rand.Uint32(),
+								LocalGwNodes: []ObjectId{leafIds[rand.Intn(len(leafIds))]},
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:                   randString(6, "hex"),
+								GwIp:                    netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:                   rand.Uint32(),
+								EvpnInterconnectGroupId: &evpnInterConnectGroupId,
+								LocalGwNodes:            []ObjectId{leafIds[rand.Intn(len(leafIds))]},
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:        randString(6, "hex"),
+								GwIp:         netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:        rand.Uint32(),
+								LocalGwNodes: []ObjectId{leafIds[rand.Intn(len(leafIds))]},
+							},
+						},
+						{
+							config: TwoStageL3ClosRemoteGatewayData{
+								Label:                   randString(6, "hex"),
+								GwIp:                    netIpToNetIpAddr(t, randomIpv4()),
+								GwAsn:                   rand.Uint32(),
+								RouteTypes:              &enum.RemoteGatewayRouteTypeFiveOnly,
+								Ttl:                     toPtr(uint8(rand.Intn(254) + 2)),               // 2-255
+								KeepaliveTimer:          toPtr(uint16(rand.Intn(math.MaxUint16) + 1)),   // 1-65535
+								HoldtimeTimer:           toPtr(uint16(rand.Intn(math.MaxUint16-2) + 3)), // 3-65535
+								Password:                toPtr(randString(6, "hex")),
+								EvpnInterconnectGroupId: nil,
+								LocalGwNodes:            leafIds,
+							},
+						},
+					},
+				},
+			}
+
+			wg := new(sync.WaitGroup)
+			wg.Add(len(testCases))
+
+			var createdIds []ObjectId
+			idMutex := new(sync.Mutex)
+
+			for tName, tCase := range testCases {
+				t.Run(tName, func(t *testing.T) {
+					t.Cleanup(func() { wg.Done() })
+					// t.Parallel() - do not parallelize - use leaf nodes one-at-a-time
+
+					require.Greater(t, len(tCase.steps), 0)
+
+					t.Log("creating remote gateay")
+					id, err := bp.CreateRemoteGateway(ctx, &tCase.steps[0].config)
+					require.NoError(t, err)
+					idMutex.Lock()
+					createdIds = append(createdIds, id)
+					idMutex.Unlock()
+
+					t.Log("getting remote gateay")
+					gw, err := bp.GetRemoteGateway(ctx, id)
+					require.NoError(t, err)
+					require.Equal(t, id, gw.Id)
+					compare(t, &tCase.steps[0].config, gw.Data)
+
+					t.Log("getting remote gateay by name")
+					gw, err = bp.GetRemoteGatewayByName(ctx, tCase.steps[0].config.Label)
+					require.NoError(t, err)
+					require.Equal(t, id, gw.Id)
+					compare(t, &tCase.steps[0].config, gw.Data)
+
+					for i, step := range tCase.steps {
+						t.Logf("updating remote gateay (step %d)", i)
+						err = bp.UpdateRemoteGateway(ctx, gw.Id, &step.config)
+						require.NoError(t, err)
+
+						t.Logf("getting remote gateay (step %d)", i)
+						gw, err := bp.GetRemoteGateway(ctx, id)
+						require.NoError(t, err)
+						require.Equal(t, id, gw.Id)
+						compare(t, &step.config, gw.Data)
+					}
+				})
+			}
+
+			t.Run("get_all", func(t *testing.T) {
+				t.Parallel()
+
+				wg.Wait()
+
+				all, err := bp.GetAllRemoteGateways(ctx)
+				require.NoError(t, err)
+				require.Equal(t, len(testCases), len(all))
+
+				retrievedIds := make([]ObjectId, len(all))
+				for i, o := range all {
+					retrievedIds[i] = o.Id
 				}
-			}
 
-			log.Printf("testing GetAllRemoteGateways() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			remoteGws, err = bp.GetAllRemoteGateways(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if 0 != len(remoteGws) {
-				t.Fatalf("expected 0 remote gateways, got %d", len(remoteGws))
-			}
+				compareSlicesAsSets(t, createdIds, retrievedIds, "created and retrieved IDs do not match")
+
+				for _, each := range all {
+					t.Run("delete_"+each.Id.String(), func(t *testing.T) {
+						t.Parallel()
+
+						err = bp.DeleteRemoteGateway(ctx, each.Id)
+						require.NoError(t, err)
+
+						var ace ClientErr
+
+						err = bp.DeleteRemoteGateway(ctx, each.Id)
+						require.Error(t, err)
+						require.ErrorAs(t, err, &ace)
+						require.Equal(t, ErrNotfound, ace.errType)
+
+						_, err = bp.GetRemoteGateway(ctx, each.Id)
+						require.Error(t, err)
+						require.ErrorAs(t, err, &ace)
+						require.Equal(t, ErrNotfound, ace.errType)
+
+						_, err = bp.GetRemoteGatewayByName(ctx, each.Data.Label)
+						require.Error(t, err)
+						require.ErrorAs(t, err, &ace)
+						require.Equal(t, ErrNotfound, ace.errType)
+					})
+				}
+			})
 		})
 	}
 }
