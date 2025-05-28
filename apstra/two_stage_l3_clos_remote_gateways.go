@@ -75,16 +75,16 @@ func (o *TwoStageL3ClosRemoteGateway) UnmarshalJSON(bytes []byte) error {
 var _ json.Marshaler = (*TwoStageL3ClosRemoteGatewayData)(nil)
 
 type TwoStageL3ClosRemoteGatewayData struct {
-	Label                   string                       `json:"gw_name"`
-	GwIp                    netip.Addr                   `json:"gw_ip"`
-	GwAsn                   uint32                       `json:"gw_asn"`
-	RouteTypes              *enum.RemoteGatewayRouteType `json:"evpn_route_types,omitempty"`
-	Ttl                     *uint8                       `json:"ttl,omitempty"`
-	KeepaliveTimer          *uint16                      `json:"keepalive_timer,omitempty"`
-	HoldtimeTimer           *uint16                      `json:"holdtime_timer,omitempty"`
-	Password                *string                      `json:"password,omitempty"`
-	EvpnInterconnectGroupId *ObjectId                    `json:"evpn_interconnect_group_id,omitempty"`
-	LocalGwNodes            []ObjectId                   `json:"local_gw_nodes"`
+	Label                   string
+	GwIp                    netip.Addr
+	GwAsn                   uint32
+	RouteTypes              *enum.RemoteGatewayRouteType
+	Ttl                     *uint8
+	KeepaliveTimer          *uint16
+	HoldtimeTimer           *uint16
+	Password                *string
+	EvpnInterconnectGroupId *ObjectId
+	LocalGwNodes            []ObjectId
 }
 
 func (o TwoStageL3ClosRemoteGatewayData) MarshalJSON() ([]byte, error) {
