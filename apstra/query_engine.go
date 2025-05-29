@@ -165,6 +165,26 @@ func (o QENone) String() string {
 	return "not_none()"
 }
 
+type QEHaving struct {
+	Query   QEQuery
+	AtLeast int
+	AtMost  int
+}
+
+func (o QEHaving) String() string {
+	sb := new(strings.Builder)
+	sb.WriteString(".having(")
+	sb.WriteString(o.Query.String())
+	if o.AtLeast >= 0 {
+		sb.WriteString(fmt.Sprintf(",at_least=%d", o.AtLeast))
+	}
+	if o.AtMost >= 0 {
+		sb.WriteString(fmt.Sprintf(",at_most=%d", o.AtMost))
+	}
+	sb.WriteString(")")
+	return sb.String()
+}
+
 type PathQuery struct {
 	firstElement  *PathQueryElement
 	client        *Client
@@ -174,6 +194,7 @@ type PathQuery struct {
 	where         []string
 	optional      bool
 	rawResult     []byte
+	having        []QEHaving
 }
 
 func (o *PathQuery) getBlueprintType() BlueprintType {
@@ -193,6 +214,11 @@ func (o *PathQuery) Do(ctx context.Context, response interface{}) error {
 		return errors.New("cannot execute PathQuery when embedded client is nil")
 	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
+}
+
+func (o *PathQuery) Having(q QEHaving) *PathQuery {
+	o.having = append(o.having, q)
+	return o
 }
 
 func (o *PathQuery) RawResult() []byte {
@@ -229,6 +255,10 @@ func (o *PathQuery) String() string {
 	}
 	for _, where := range o.where {
 		sb.WriteString(".where(" + where + ")")
+	}
+
+	for _, having := range o.having {
+		sb.WriteString(having.String())
 	}
 
 	if o.optional {

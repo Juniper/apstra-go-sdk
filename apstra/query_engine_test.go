@@ -450,6 +450,36 @@ func TestQueryString(t *testing.T) {
 				Node(nil)).
 				Optional(new(RawQuery).SetQuery("node()")),
 		},
+		"minimal_having": {
+			e: "node().having(node())",
+			q: new(PathQuery).
+				Node(nil).
+				Having(QEHaving{
+					Query:   new(PathQuery).Node(nil),
+					AtLeast: -1,
+					AtMost:  -1,
+				}),
+		},
+		"having": {
+			e: "node().having(node(),at_least=0).having(node(),at_most=0).having(node(),at_least=1,at_most=1)",
+			q: new(PathQuery).
+				Node(nil).
+				Having(QEHaving{
+					Query:   new(PathQuery).Node(nil),
+					AtLeast: 0,
+					AtMost:  -1,
+				}).
+				Having(QEHaving{
+					Query:   new(PathQuery).Node(nil),
+					AtLeast: -1,
+					AtMost:  0,
+				}).
+				Having(QEHaving{
+					Query:   new(PathQuery).Node(nil),
+					AtLeast: 1,
+					AtMost:  1,
+				}),
+		},
 	}
 
 	for tName, tCase := range testCases {
