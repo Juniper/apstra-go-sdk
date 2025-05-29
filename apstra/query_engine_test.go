@@ -480,6 +480,25 @@ func TestQueryString(t *testing.T) {
 					AtMost:  1,
 				}),
 		},
+		"having_1_5_loopbacks": {
+			e: "node(type='system',name='system-1-5-loopbacks').having(node(name='system-1-5-loopbacks').out(type='hosted_interfaces').node(type='interface',if_type='loopback'),at_least=1,at_most=5)",
+			q: new(PathQuery).
+				Node([]QEEAttribute{
+					NodeTypeSystem.QEEAttribute(),
+					{Key: "name", Value: QEStringVal("system-1-5-loopbacks")},
+				}).
+				Having(QEHaving{
+					Query: new(PathQuery).
+						Node([]QEEAttribute{{Key: "name", Value: QEStringVal("system-1-5-loopbacks")}}).
+						Out([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
+						Node([]QEEAttribute{
+							NodeTypeInterface.QEEAttribute(),
+							{Key: "if_type", Value: QEStringVal("loopback")},
+						}),
+					AtLeast: 1,
+					AtMost:  5,
+				}),
+		},
 	}
 
 	for tName, tCase := range testCases {
