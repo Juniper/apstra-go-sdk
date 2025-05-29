@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -449,6 +449,55 @@ func TestQueryString(t *testing.T) {
 			q: new(MatchQuery).Match(new(PathQuery).
 				Node(nil)).
 				Optional(new(RawQuery).SetQuery("node()")),
+		},
+		"minimal_having": {
+			e: "node().having(node())",
+			q: new(PathQuery).
+				Node(nil).
+				Having(QEHaving{
+					Query:   new(PathQuery).Node(nil),
+					AtLeast: -1,
+					AtMost:  -1,
+				}),
+		},
+		"having": {
+			e: "node().having(node(),at_least=0).having(node(),at_most=0).having(node(),at_least=1,at_most=1)",
+			q: new(PathQuery).
+				Node(nil).
+				Having(QEHaving{
+					Query:   new(PathQuery).Node(nil),
+					AtLeast: 0,
+					AtMost:  -1,
+				}).
+				Having(QEHaving{
+					Query:   new(PathQuery).Node(nil),
+					AtLeast: -1,
+					AtMost:  0,
+				}).
+				Having(QEHaving{
+					Query:   new(PathQuery).Node(nil),
+					AtLeast: 1,
+					AtMost:  1,
+				}),
+		},
+		"having_1_5_loopbacks": {
+			e: "node(type='system',name='system-1-5-loopbacks').having(node(name='system-1-5-loopbacks').out(type='hosted_interfaces').node(type='interface',if_type='loopback'),at_least=1,at_most=5)",
+			q: new(PathQuery).
+				Node([]QEEAttribute{
+					NodeTypeSystem.QEEAttribute(),
+					{Key: "name", Value: QEStringVal("system-1-5-loopbacks")},
+				}).
+				Having(QEHaving{
+					Query: new(PathQuery).
+						Node([]QEEAttribute{{Key: "name", Value: QEStringVal("system-1-5-loopbacks")}}).
+						Out([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
+						Node([]QEEAttribute{
+							NodeTypeInterface.QEEAttribute(),
+							{Key: "if_type", Value: QEStringVal("loopback")},
+						}),
+					AtLeast: 1,
+					AtMost:  5,
+				}),
 		},
 	}
 
