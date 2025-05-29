@@ -18,6 +18,7 @@ const (
 	RelationshipTypeEpNested
 	RelationshipTypeEpSubpolicy
 	RelationshipTypeEpTopLevel
+	RelationshipTypeEvpnInterconnectPeer
 	RelationshipTypeHostedInterfaces
 	RelationshipTypeHostedVnInstances
 	RelationshipTypeInterfaceMap
@@ -47,6 +48,7 @@ const (
 	relationshipTypeEpNested              = relationshipType("ep_nested")
 	relationshipTypeEpSubpolicy           = relationshipType("ep_subpolicy")
 	relationshipTypeEpTopLevel            = relationshipType("ep_top_level")
+	relationshipTypeEvpnInterconnectPeer  = relationshipType("evpn_interconnect_peer")
 	relationshipTypeHostedInterfaces      = relationshipType("hosted_interfaces")
 	relationshipTypeHostedVnInstances     = relationshipType("hosted_vn_instances")
 	relationshipTypeInterfaceMap          = relationshipType("interface_map")
@@ -95,6 +97,8 @@ func (o RelationshipType) String() string {
 		return string(relationshipTypeEpSubpolicy)
 	case RelationshipTypeEpTopLevel:
 		return string(relationshipTypeEpTopLevel)
+	case RelationshipTypeEvpnInterconnectPeer:
+		return string(relationshipTypeEvpnInterconnectPeer)
 	case RelationshipTypeHostedInterfaces:
 		return string(relationshipTypeHostedInterfaces)
 	case RelationshipTypeHostedVnInstances:
