@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,9 +6,10 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
+	"net/netip"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
@@ -19,95 +20,102 @@ const (
 	apiUrlBlueprintRemoteGatewayById    = apiUrlBlueprintRemoteGatewaysPrefix + "%s"
 )
 
-type rawRemoteGatewayRequest struct {
-	RouteTypes     string     `json:"evpn_route_types"`
-	LocalGwNodes   []ObjectId `json:"local_gw_nodes"`
-	GwAsn          uint32     `json:"gw_asn"`
-	GwIp           string     `json:"gw_ip"`
-	GwName         string     `json:"gw_name"`
-	Ttl            *uint8     `json:"ttl,omitempty"`
-	KeepaliveTimer *uint16    `json:"keepalive_timer,omitempty"`
-	HoldtimeTimer  *uint16    `json:"holdtime_timer,omitempty"`
-	Password       *string    `json:"password"`
-}
+var _ json.Unmarshaler = (*TwoStageL3ClosRemoteGateway)(nil)
 
-type rawRemoteGatewayResponse struct {
-	Id           ObjectId `json:"id"`
-	RouteTypes   string   `json:"evpn_route_types"`
-	LocalGwNodes []struct {
-		NodeId ObjectId `json:"node_id"`
-	} `json:"local_gw_nodes"`
-	GwAsn          uint32  `json:"gw_asn"`
-	GwIp           string  `json:"gw_ip"`
-	GwName         string  `json:"gw_name"`
-	Ttl            *uint8  `json:"ttl"`
-	KeepaliveTimer *uint16 `json:"keepalive_timer"`
-	HoldtimeTimer  *uint16 `json:"holdtime_timer"`
-}
-
-func (o *rawRemoteGatewayResponse) polish() (*RemoteGateway, error) {
-	routeTypes := enum.RemoteGatewayRouteTypes.Parse(o.RouteTypes)
-	if routeTypes == nil {
-		return nil, fmt.Errorf("failed parsing remote gateway route types: %q", o.RouteTypes)
-	}
-
-	localGwNodes := make([]ObjectId, len(o.LocalGwNodes))
-	for i, localGwNode := range o.LocalGwNodes {
-		localGwNodes[i] = localGwNode.NodeId
-	}
-
-	gwIp := net.ParseIP(o.GwIp)
-	if gwIp == nil {
-		return nil, fmt.Errorf("faileed parsing remote gateway IP: %q", o.GwIp)
-	}
-
-	return &RemoteGateway{
-		Id: o.Id,
-		Data: &RemoteGatewayData{
-			RouteTypes:     *routeTypes,
-			LocalGwNodes:   localGwNodes,
-			GwAsn:          o.GwAsn,
-			GwIp:           gwIp,
-			GwName:         o.GwName,
-			Ttl:            o.Ttl,
-			KeepaliveTimer: o.KeepaliveTimer,
-			HoldtimeTimer:  o.HoldtimeTimer,
-		},
-	}, nil
-}
-
-type RemoteGatewayData struct {
-	RouteTypes     enum.RemoteGatewayRouteType
-	LocalGwNodes   []ObjectId
-	GwAsn          uint32
-	GwIp           net.IP
-	GwName         string
-	Ttl            *uint8
-	KeepaliveTimer *uint16
-	HoldtimeTimer  *uint16
-	Password       *string
-}
-
-type RemoteGateway struct {
+type TwoStageL3ClosRemoteGateway struct {
 	Id   ObjectId
-	Data *RemoteGatewayData
+	Data *TwoStageL3ClosRemoteGatewayData
 }
 
-func (o *RemoteGatewayData) raw() *rawRemoteGatewayRequest {
-	return &rawRemoteGatewayRequest{
-		RouteTypes:     o.RouteTypes.Value,
-		LocalGwNodes:   o.LocalGwNodes,
-		GwAsn:          o.GwAsn,
-		GwIp:           o.GwIp.String(),
-		GwName:         o.GwName,
-		Ttl:            o.Ttl,
-		KeepaliveTimer: o.KeepaliveTimer,
-		HoldtimeTimer:  o.HoldtimeTimer,
-		Password:       o.Password,
+func (o *TwoStageL3ClosRemoteGateway) UnmarshalJSON(bytes []byte) error {
+	var raw struct {
+		Id                      ObjectId                     `json:"id"`
+		Label                   string                       `json:"gw_name"`
+		GwIp                    string                       `json:"gw_ip"`
+		GwAsn                   uint32                       `json:"gw_asn"`
+		RouteTypes              *enum.RemoteGatewayRouteType `json:"evpn_route_types"`
+		Ttl                     *uint8                       `json:"ttl"`
+		KeepaliveTimer          *uint16                      `json:"keepalive_timer"`
+		HoldtimeTimer           *uint16                      `json:"holdtime_timer"`
+		EvpnInterconnectGroupId *ObjectId                    `json:"evpn_interconnect_group_id"`
+		LocalGwNodes            []struct {
+			NodeId ObjectId `json:"node_id"`
+			// Label              string        `json:"label"`
+			// Role               enum.NodeRole `json:"role"`
+			// EvpnInternalRd     interface{}   `json:"evpn_internal_rd"`
+			// EvpnInterconnectRd interface{}   `json:"evpn_interconnect_rd"`
+		} `json:"local_gw_nodes"`
 	}
+	if err := json.Unmarshal(bytes, &raw); err != nil {
+		return err
+	}
+
+	o.Id = raw.Id
+	o.Data = new(TwoStageL3ClosRemoteGatewayData)
+	o.Data.Label = raw.Label
+	gwIp, err := netip.ParseAddr(raw.GwIp)
+	if err != nil {
+		return fmt.Errorf("parse gw_ip address: %q", err)
+	}
+	o.Data.GwIp = gwIp
+	o.Data.GwAsn = raw.GwAsn
+	o.Data.RouteTypes = raw.RouteTypes
+	o.Data.Ttl = raw.Ttl
+	o.Data.KeepaliveTimer = raw.KeepaliveTimer
+	o.Data.HoldtimeTimer = raw.HoldtimeTimer
+	o.Data.EvpnInterconnectGroupId = raw.EvpnInterconnectGroupId
+	o.Data.LocalGwNodes = make([]ObjectId, len(raw.LocalGwNodes))
+	for i, localGwNode := range raw.LocalGwNodes {
+		o.Data.LocalGwNodes[i] = localGwNode.NodeId
+	}
+
+	return nil
 }
 
-func (o *TwoStageL3ClosClient) createRemoteGateway(ctx context.Context, in *rawRemoteGatewayRequest) (ObjectId, error) {
+var _ json.Marshaler = (*TwoStageL3ClosRemoteGatewayData)(nil)
+
+type TwoStageL3ClosRemoteGatewayData struct {
+	Label                   string
+	GwIp                    netip.Addr
+	GwAsn                   uint32
+	RouteTypes              *enum.RemoteGatewayRouteType
+	Ttl                     *uint8
+	KeepaliveTimer          *uint16
+	HoldtimeTimer           *uint16
+	Password                *string
+	EvpnInterconnectGroupId *ObjectId
+	LocalGwNodes            []ObjectId
+}
+
+func (o TwoStageL3ClosRemoteGatewayData) MarshalJSON() ([]byte, error) {
+	var raw struct {
+		Label                   string                       `json:"gw_name"`
+		GwIp                    string                       `json:"gw_ip"`
+		GwAsn                   uint32                       `json:"gw_asn"`
+		LocalGwNodes            []ObjectId                   `json:"local_gw_nodes"`
+		RouteTypes              *enum.RemoteGatewayRouteType `json:"evpn_route_types,omitempty"`
+		Ttl                     *uint8                       `json:"ttl,omitempty"`
+		KeepaliveTimer          *uint16                      `json:"keepalive_timer,omitempty"`
+		HoldtimeTimer           *uint16                      `json:"holdtime_timer,omitempty"`
+		Password                *string                      `json:"password"`
+		EvpnInterconnectGroupId *ObjectId                    `json:"evpn_interconnect_group_id"`
+	}
+
+	raw.Label = o.Label
+	raw.GwIp = o.GwIp.String()
+	raw.GwAsn = o.GwAsn
+	raw.LocalGwNodes = o.LocalGwNodes
+	raw.RouteTypes = o.RouteTypes
+	raw.Ttl = o.Ttl
+	raw.KeepaliveTimer = o.KeepaliveTimer
+	raw.HoldtimeTimer = o.HoldtimeTimer
+	raw.Password = o.Password
+	raw.EvpnInterconnectGroupId = o.EvpnInterconnectGroupId
+
+	return json.Marshal(&raw)
+}
+
+func (o *TwoStageL3ClosClient) CreateRemoteGateway(ctx context.Context, in *TwoStageL3ClosRemoteGatewayData) (ObjectId, error) {
 	var response objectIdResponse
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -123,8 +131,8 @@ func (o *TwoStageL3ClosClient) createRemoteGateway(ctx context.Context, in *rawR
 	return response.Id, nil
 }
 
-func (o *TwoStageL3ClosClient) getRemoteGateway(ctx context.Context, id ObjectId) (*rawRemoteGatewayResponse, error) {
-	var response rawRemoteGatewayResponse
+func (o *TwoStageL3ClosClient) GetRemoteGateway(ctx context.Context, id ObjectId) (*TwoStageL3ClosRemoteGateway, error) {
+	var response TwoStageL3ClosRemoteGateway
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -138,9 +146,9 @@ func (o *TwoStageL3ClosClient) getRemoteGateway(ctx context.Context, id ObjectId
 	return &response, nil
 }
 
-func (o *TwoStageL3ClosClient) getAllRemoteGateways(ctx context.Context) ([]rawRemoteGatewayResponse, error) {
+func (o *TwoStageL3ClosClient) GetAllRemoteGateways(ctx context.Context) ([]TwoStageL3ClosRemoteGateway, error) {
 	var response struct {
-		RemoteGateways []rawRemoteGatewayResponse `json:"remote_gateways"`
+		RemoteGateways []TwoStageL3ClosRemoteGateway `json:"remote_gateways"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -155,39 +163,37 @@ func (o *TwoStageL3ClosClient) getAllRemoteGateways(ctx context.Context) ([]rawR
 	return response.RemoteGateways, nil
 }
 
-func (o *TwoStageL3ClosClient) getRemoteGatewayByName(ctx context.Context, name string) (*rawRemoteGatewayResponse, error) {
-	rawRemoteGateways, err := o.getAllRemoteGateways(ctx)
+func (o *TwoStageL3ClosClient) GetRemoteGatewayByName(ctx context.Context, name string) (*TwoStageL3ClosRemoteGateway, error) {
+	all, err := o.GetAllRemoteGateways(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var result rawRemoteGatewayResponse
-	var found bool
+	var result *TwoStageL3ClosRemoteGateway
 
-	for _, rawRemoteGateway := range rawRemoteGateways {
-		if rawRemoteGateway.GwName == name {
-			if found {
+	for _, each := range all {
+		if each.Data.Label == name {
+			if result != nil {
 				return nil, ClientErr{
 					errType: ErrMultipleMatch,
-					err:     fmt.Errorf("found multiple remote gateways named %q found", name),
+					err:     fmt.Errorf("found multiple remote gateways with name %q", name),
 				}
 			}
-			result = rawRemoteGateway
-			found = true
+			result = &each
 		}
 	}
 
-	if found {
-		return &result, nil
+	if result != nil {
+		return result, nil
 	}
 
 	return nil, ClientErr{
 		errType: ErrNotfound,
-		err:     fmt.Errorf("no remote gateway named %q found", name),
+		err:     fmt.Errorf("no remote gateway with name %q", name),
 	}
 }
 
-func (o *TwoStageL3ClosClient) updateRemoteGateway(ctx context.Context, id ObjectId, in *rawRemoteGatewayRequest) error {
+func (o *TwoStageL3ClosClient) UpdateRemoteGateway(ctx context.Context, id ObjectId, in *TwoStageL3ClosRemoteGatewayData) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintRemoteGatewayById, o.Id(), id),
@@ -200,7 +206,7 @@ func (o *TwoStageL3ClosClient) updateRemoteGateway(ctx context.Context, id Objec
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) deleteRemoteGateway(ctx context.Context, id ObjectId) error {
+func (o *TwoStageL3ClosClient) DeleteRemoteGateway(ctx context.Context, id ObjectId) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintRemoteGatewayById, o.Id(), id),
