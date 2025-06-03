@@ -27,10 +27,11 @@ type EvpnInterconnectGroup struct {
 
 func (o *EvpnInterconnectGroup) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id          ObjectId `json:"id"`
-		Label       string   `json:"label"`
-		RouteTarget string   `json:"interconnect_route_target"`
-		EsiMac      *string  `json:"interconnect_esi_mac"`
+		Id                        ObjectId                                  `json:"id"`
+		Label                     string                                    `json:"label"`
+		RouteTarget               string                                    `json:"interconnect_route_target"`
+		EsiMac                    *string                                   `json:"interconnect_esi_mac"`
+		InterconnectSecurityZones map[ObjectId]InterconnectSecurityZoneData `json:"interconnect_security_zones"`
 	}
 
 	if err := json.Unmarshal(bytes, &raw); err != nil {
@@ -48,23 +49,32 @@ func (o *EvpnInterconnectGroup) UnmarshalJSON(bytes []byte) error {
 		}
 		o.Data.EsiMac = esiMac
 	}
+	o.Data.InterconnectSecurityZones = raw.InterconnectSecurityZones
 
 	return nil
+}
+
+type InterconnectSecurityZoneData struct {
+	RoutingPolicyId *ObjectId `json:"routing_policy_id"`
+	RouteTarget     *string   `json:"interconnect_route_target"`
+	L3Enabled       bool      `json:"enabled_for_l3"`
 }
 
 var _ json.Marshaler = (*EvpnInterconnectGroupData)(nil)
 
 type EvpnInterconnectGroupData struct {
-	Label       string
-	RouteTarget string
-	EsiMac      net.HardwareAddr
+	Label                     string
+	RouteTarget               string
+	EsiMac                    net.HardwareAddr
+	InterconnectSecurityZones map[ObjectId]InterconnectSecurityZoneData
 }
 
 func (o EvpnInterconnectGroupData) MarshalJSON() ([]byte, error) {
 	var raw struct {
-		Label       string `json:"label"`
-		RouteTarget string `json:"interconnect_route_target"`
-		EsiMac      string `json:"interconnect_esi_mac,omitempty"`
+		Label                     string                                    `json:"label"`
+		RouteTarget               string                                    `json:"interconnect_route_target"`
+		EsiMac                    string                                    `json:"interconnect_esi_mac,omitempty"`
+		InterconnectSecurityZones map[ObjectId]InterconnectSecurityZoneData `json:"interconnect_security_zones"`
 	}
 
 	raw.Label = o.Label
@@ -72,6 +82,7 @@ func (o EvpnInterconnectGroupData) MarshalJSON() ([]byte, error) {
 	if o.EsiMac != nil {
 		raw.EsiMac = o.EsiMac.String()
 	}
+	raw.InterconnectSecurityZones = o.InterconnectSecurityZones
 
 	return json.Marshal(raw)
 }
