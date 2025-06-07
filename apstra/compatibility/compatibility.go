@@ -16,6 +16,7 @@ const (
 	apstra500  = "5.0.0"
 	apstra501  = "5.0.1"
 	apstra510  = "5.1.0"
+	apstra600  = "6.0.0"
 )
 
 var (
@@ -35,5 +36,6 @@ func SupportedApiVersions() []string {
 		apstra500,
 		apstra501,
 		apstra510,
+		apstra600,
 	}
 }
