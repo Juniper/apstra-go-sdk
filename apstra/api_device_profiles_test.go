@@ -31,7 +31,7 @@ func TestListAndGetSampleDeviceProfiles(t *testing.T) {
 			require.NoError(t, err)
 			require.Greater(t, len(ids), 0)
 
-			for _, i := range samples(t, len(ids), 20) {
+			for _, i := range sampleIndexes(t, len(ids), 20) {
 				id := ids[i]
 				t.Run(fmt.Sprintf("GET_Device_Profile_ID_%s", id), func(t *testing.T) {
 					t.Parallel()
@@ -50,7 +50,7 @@ func TestListAndGetSampleDeviceProfiles(t *testing.T) {
 			log.Printf("list found %d, GetAll found %d", len(ids), len(profiles))
 			require.Equal(t, len(ids), len(profiles))
 
-			for _, i := range samples(t, len(profiles), 5) {
+			for _, i := range sampleIndexes(t, len(profiles), 5) {
 				label := profiles[i].Data.Label
 				t.Run(fmt.Sprintf("GET_DeviceProfile_Label_%s", label), func(t *testing.T) {
 					// t.Parallel() // this seems to make things worse

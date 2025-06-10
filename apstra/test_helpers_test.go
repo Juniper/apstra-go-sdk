@@ -170,7 +170,7 @@ func TestSamples(t *testing.T) {
 				count = []int{*tCase.count}
 			}
 
-			result := samples(t, tCase.length, count...)
+			result := sampleIndexes(t, tCase.length, count...)
 			wg.Done()
 
 			require.Equalf(t, tCase.expected, len(result), "expected %d samples, got %d", tCase.expected, len(result))

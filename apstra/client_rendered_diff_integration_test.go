@@ -102,7 +102,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 					VnType:                    enum.VnTypeVxlan,
 				})
 				require.NoError(t, err)
-				t.Logf(vnId.String())
+				t.Log(vnId.String())
 
 				time.Sleep(time.Second) // ensure time for config diffs to render
 

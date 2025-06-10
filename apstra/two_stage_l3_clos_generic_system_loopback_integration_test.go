@@ -130,7 +130,7 @@ func TestGenericSystemLoopbacks(t *testing.T) {
 				if err != nil {
 					var ace ClientErr
 					if !(errors.As(err, &ace) && ace.Type() == ErrNotfound) {
-						t.Fatalf("got an error, but not the expected 404: " + err.Error())
+						t.Fatal("got an error, but not the expected 404: " + err.Error())
 					}
 				}
 			})

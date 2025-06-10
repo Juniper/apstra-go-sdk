@@ -38,7 +38,7 @@ do
     grep -Eq "$re" <<< "$file" && skip="yes" && break
   done
   # shellcheck disable=SC2059
-  [ -n "$skip" ] && printf "skipping %s" "$file" && continue
+  [ -n "$skip" ] && printf "skipping %s\n" "$file" && continue
 
   # shellcheck disable=SC2059
   printf "checking %s...  " "$file"

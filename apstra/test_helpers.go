@@ -26,13 +26,26 @@ func intsFromZero(length int) []int {
 	return result
 }
 
-// samples is intended to be used to select some sample items from a slice.
+// samples returns count randomly selected samples fron slice in.
+func samples[T any](t *testing.T, in []T, count int) []T {
+	t.Helper()
+
+	indexes := sampleIndexes(t, len(in), count)
+	result := make([]T, count)
+	for i, index := range indexes {
+		result[i] = in[index]
+	}
+
+	return result
+}
+
+// sampleIndexes is intended to be used to select some sample items from a slice.
 // Pass it the size of the slice, and it returns a []int representing indexes (samples)
 // to be taken from the slice. The number of elements returned is controlled by an
 // environment variable or by the optional "count" argument. If the sample count
 // is not supplied by either environment nor count, then all indexes starting with
 // zero are returned. When sample count is specified both ways, count wins.
-func samples(t testing.TB, length int, count ...int) []int {
+func sampleIndexes(t testing.TB, length int, count ...int) []int {
 	t.Helper()
 
 	if len(count) > 1 {
