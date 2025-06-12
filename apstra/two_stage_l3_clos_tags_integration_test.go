@@ -95,7 +95,7 @@ func TestCRUDTwoStageL3ClosTags(t *testing.T) {
 
 			for tName, tCase := range testCases {
 				t.Run(tName, func(t *testing.T) {
-					//t.Parallel(x) // do not parallelize - we count the total number of tags in here
+					// t.Parallel(x) // do not parallelize - we count the total number of tags in here
 
 					require.Greater(t, len(tCase.steps), 0) // we will blindly refer to steps[0] - it better exist
 
