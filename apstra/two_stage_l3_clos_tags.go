@@ -79,6 +79,24 @@ func (o TwoStageL3ClosClient) GetTag(ctx context.Context, id ObjectId) (TwoStage
 	return apiResponse, nil
 }
 
+func (o TwoStageL3ClosClient) GetTagByLabel(ctx context.Context, label string) (TwoStageL3ClosTag, error) {
+	tags, err := o.GetAllTags(ctx)
+	if err != nil {
+		return TwoStageL3ClosTag{}, fmt.Errorf("getting all tags: %w", err)
+	}
+
+	for _, tag := range tags {
+		if tag.Data.Label == label {
+			return tag, nil
+		}
+	}
+
+	return TwoStageL3ClosTag{}, ClientErr{
+		errType: ErrNotfound,
+		err:     fmt.Errorf("tag with label %q not found", label),
+	}
+}
+
 func (o TwoStageL3ClosClient) GetAllTags(ctx context.Context) (map[ObjectId]TwoStageL3ClosTag, error) {
 	var apiResponse struct {
 		Items []TwoStageL3ClosTag `json:"items"`

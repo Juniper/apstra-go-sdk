@@ -108,6 +108,11 @@ func TestCRUDTwoStageL3ClosTags(t *testing.T) {
 					require.Equal(t, id, tag.Id)
 					compare(t, &tCase.steps[0].tagData, tag.Data)
 
+					tag, err = bp.GetTagByLabel(ctx, tCase.steps[0].tagData.Label)
+					require.NoError(t, err)
+					require.Equal(t, id, tag.Id)
+					compare(t, &tCase.steps[0].tagData, tag.Data)
+
 					tags, err := bp.GetAllTags(ctx)
 					require.NoError(t, err)
 					require.Equal(t, extraTagCount+1, len(tags))
@@ -120,6 +125,11 @@ func TestCRUDTwoStageL3ClosTags(t *testing.T) {
 						require.NoError(t, err)
 
 						tag, err := bp.GetTag(ctx, id)
+						require.NoError(t, err)
+						require.Equal(t, id, tag.Id)
+						compare(t, &step.tagData, tag.Data)
+
+						tag, err = bp.GetTagByLabel(ctx, step.tagData.Label)
 						require.NoError(t, err)
 						require.Equal(t, id, tag.Id)
 						compare(t, &step.tagData, tag.Data)
@@ -143,6 +153,12 @@ func TestCRUDTwoStageL3ClosTags(t *testing.T) {
 
 					// ensure 404
 					_, err = bp.GetTag(ctx, id)
+					require.Error(t, err)
+					require.ErrorAs(t, err, &ace)
+					require.Equal(t, ErrNotfound, ace.Type())
+
+					// ensure 404
+					_, err = bp.GetTagByLabel(ctx, tCase.steps[0].tagData.Label)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, ErrNotfound, ace.Type())
