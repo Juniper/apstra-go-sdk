@@ -346,3 +346,11 @@ var (
 	FabricConnectivityDesignL3Collapsed   = FabricConnectivityDesign{Value: "l3collapsed"}
 	FabricConnectivityDesignRailCollapsed = FabricConnectivityDesign{Value: "rail_collapsed"}
 )
+
+type EndpointPolicyStatus oenum.Member[string]
+
+var (
+	EndpointPolicyStatusAssigned   = EndpointPolicyStatus{Value: "assigned"}
+	EndpointPolicyStatusIncomplete = EndpointPolicyStatus{Value: "incomplete"}
+	EndpointPolicyStatusReady      = EndpointPolicyStatus{Value: "ready"}
+)

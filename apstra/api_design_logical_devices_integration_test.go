@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -34,7 +34,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 			require.NoError(t, err)
 			require.NotEqual(t, len(ids), 0)
 
-			for _, i := range samples(t, len(ids)) {
+			for _, i := range sampleIndexes(t, len(ids)) {
 				id := ids[i]
 				t.Run(fmt.Sprintf("GET_%s", id), func(t *testing.T) {
 					t.Parallel()
@@ -153,7 +153,7 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			for _, i := range samples(t, len(logicalDevices)) {
+			for _, i := range sampleIndexes(t, len(logicalDevices)) {
 				test := logicalDevices[i]
 				t.Run(fmt.Sprintf("GET_LD_%s", test.Data.DisplayName), func(t *testing.T) {
 					t.Parallel()

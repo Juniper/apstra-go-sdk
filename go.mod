@@ -1,6 +1,6 @@
 module github.com/Juniper/apstra-go-sdk
 
-go 1.22
+go 1.24.3
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.17.8
@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/orsinium-labs/enum v1.3.0
 	github.com/stretchr/testify v1.8.1
-	golang.org/x/tools v0.17.0
+	golang.org/x/tools v0.34.0
 	google.golang.org/protobuf v1.33.0
 	mvdan.cc/gofumpt v0.6.0
 )
@@ -46,11 +46,11 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/zclconf/go-cty v1.13.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/mod v0.25.0 // indirect
+	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/sync v0.15.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 )

@@ -199,6 +199,37 @@ func (o *DhcpServiceMode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*EndpointPolicyStatus)(nil)
+	_ json.Marshaler   = (*EndpointPolicyStatus)(nil)
+	_ json.Unmarshaler = (*EndpointPolicyStatus)(nil)
+)
+
+func (o EndpointPolicyStatus) String() string {
+	return o.Value
+}
+
+func (o *EndpointPolicyStatus) FromString(s string) error {
+	if EndpointPolicyStatuses.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *EndpointPolicyStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *EndpointPolicyStatus) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*FFResourceType)(nil)
 	_ json.Marshaler   = (*FFResourceType)(nil)
 	_ json.Unmarshaler = (*FFResourceType)(nil)
@@ -1180,6 +1211,13 @@ var (
 	DhcpServiceModes      = oenum.New(
 		DhcpServiceModeDisabled,
 		DhcpServiceModeEnabled,
+	)
+
+	_                      enum = new(EndpointPolicyStatus)
+	EndpointPolicyStatuses      = oenum.New(
+		EndpointPolicyStatusAssigned,
+		EndpointPolicyStatusIncomplete,
+		EndpointPolicyStatusReady,
 	)
 
 	_               enum = new(FFResourceType)

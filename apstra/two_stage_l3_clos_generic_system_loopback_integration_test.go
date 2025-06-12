@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -130,7 +130,7 @@ func TestGenericSystemLoopbacks(t *testing.T) {
 				if err != nil {
 					var ace ClientErr
 					if !(errors.As(err, &ace) && ace.Type() == ErrNotfound) {
-						t.Fatalf("got an error, but not the expected 404: " + err.Error())
+						t.Fatal("got an error, but not the expected 404: " + err.Error())
 					}
 				}
 			})
