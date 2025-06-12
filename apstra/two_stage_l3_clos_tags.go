@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,103 +6,122 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
 const (
-	apiUrlBlueprintTagging = apiUrlBlueprintById + apiUrlPathDelim + "tagging"
+	apiUrlBlueprintTags    = apiUrlBlueprintByIdPrefix + "tags"
+	apiUrlBlueprintTagById = apiUrlBlueprintTags + apiUrlPathDelim + "%s"
 )
 
-func (o *TwoStageL3ClosClient) GetNodeTags(ctx context.Context, nodeId ObjectId) ([]string, error) {
-	query := new(PathQuery).
-		SetBlueprintType(BlueprintTypeStaging).
-		SetBlueprintId(o.blueprintId).
-		SetClient(o.client).
-		Node([]QEEAttribute{{"id", QEStringVal(nodeId.String())}}).
-		In([]QEEAttribute{RelationshipTypeTag.QEEAttribute()}).
-		Node([]QEEAttribute{
-			NodeTypeTag.QEEAttribute(),
-			{"name", QEStringVal("n_tag")},
-		})
+type TwoStageL3ClosTagData struct {
+	Label       string `json:"label"`
+	Description string `json:"description"`
+}
 
-	var response struct {
-		Items []struct {
-			Tag struct {
-				Label string `json:"label"`
-			} `json:"n_tag"`
-		} `json:"items"`
+var _ json.Unmarshaler = (*TwoStageL3ClosTag)(nil)
+
+type TwoStageL3ClosTag struct {
+	Id   ObjectId               `json:"id"`
+	Data *TwoStageL3ClosTagData `json:"data"`
+}
+
+func (o *TwoStageL3ClosTag) UnmarshalJSON(bytes []byte) error {
+	var raw struct {
+		Id          ObjectId `json:"id"`
+		Label       string   `json:"label"`
+		Description string   `json:"description"`
 	}
 
-	err := query.Do(ctx, &response)
+	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("unmarshal tag data: %w", err)
 	}
 
-	if len(response.Items) == 0 {
-		// no tags found in the graph query. does the node even exist?
-		var trash struct{}
-		return nil, o.Client().GetNode(ctx, o.blueprintId, nodeId, &trash)
+	o.Id = raw.Id
+	o.Data = new(TwoStageL3ClosTagData)
+	o.Data.Label = raw.Label
+	o.Data.Description = raw.Description
+
+	return nil
+}
+
+func (o TwoStageL3ClosClient) CreateTag(ctx context.Context, in TwoStageL3ClosTagData) (ObjectId, error) {
+	var apiResponse objectIdResponse
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodPost,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintTags, o.Id()),
+		apiInput:    &in,
+		apiResponse: &apiResponse,
+	})
+	if err != nil {
+		return "", convertTtaeToAceWherePossible(err)
 	}
 
-	result := make([]string, len(response.Items))
-	for i, item := range response.Items {
-		result[i] = item.Tag.Label
+	return apiResponse.Id, nil
+}
+
+func (o TwoStageL3ClosClient) GetTag(ctx context.Context, id ObjectId) (TwoStageL3ClosTag, error) {
+	var apiResponse TwoStageL3ClosTag
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintTagById, o.Id(), id),
+		apiResponse: &apiResponse,
+	})
+	if err != nil {
+		return TwoStageL3ClosTag{}, convertTtaeToAceWherePossible(err)
+	}
+
+	return apiResponse, nil
+}
+
+func (o TwoStageL3ClosClient) GetAllTags(ctx context.Context) (map[ObjectId]TwoStageL3ClosTag, error) {
+	var apiResponse struct {
+		Items []TwoStageL3ClosTag `json:"items"`
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintTags, o.Id()),
+		apiResponse: &apiResponse,
+	})
+	if err != nil {
+		return nil, convertTtaeToAceWherePossible(err)
+	}
+
+	result := make(map[ObjectId]TwoStageL3ClosTag, len(apiResponse.Items))
+	for _, item := range apiResponse.Items {
+		result[item.Id] = item
 	}
 
 	return result, nil
 }
 
-func (o *TwoStageL3ClosClient) SetNodeTags(ctx context.Context, nodeId ObjectId, tags []string) error {
-	desiredTags := make(map[string]bool, len(tags))
-	for _, tag := range tags {
-		desiredTags[tag] = true
-	}
-
-	tags, err := o.GetNodeTags(ctx, nodeId)
-	if err != nil {
-		return err
-	}
-	currentTags := make(map[string]bool, len(tags))
-	for _, tag := range tags {
-		currentTags[tag] = true
-	}
-
-	var addTags, removeTags []string
-	for k := range desiredTags {
-		if currentTags[k] {
-			delete(currentTags, k)
-			delete(desiredTags, k)
-		}
-	}
-
-	if len(currentTags) == 0 && len(desiredTags) == 0 {
-		// nothing to add, nothing to remove - our job is done
-		return nil
-	}
-
-	for k := range desiredTags {
-		addTags = append(addTags, k)
-	}
-
-	for k := range currentTags {
-		removeTags = append(removeTags, k)
-	}
-
-	apiInput := struct {
-		Nodes  []string `json:"nodes"`
-		Add    []string `json:"add"`
-		Remove []string `json:"remove"`
-	}{
-		Nodes:  []string{nodeId.String()},
-		Add:    addTags,
-		Remove: removeTags,
-	}
-
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPost,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintTagging, o.blueprintId),
-		apiInput: &apiInput,
+func (o TwoStageL3ClosClient) UpdateTag(ctx context.Context, id ObjectId, in TwoStageL3ClosTagData) error {
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPut,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintTagById, o.Id(), id),
+		apiInput: &in,
 	})
-	return convertTtaeToAceWherePossible(err)
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
+}
+
+func (o TwoStageL3ClosClient) DeleteTag(ctx context.Context, id ObjectId) error {
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method: http.MethodDelete,
+		urlStr: fmt.Sprintf(apiUrlBlueprintTagById, o.Id(), id),
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
 }
