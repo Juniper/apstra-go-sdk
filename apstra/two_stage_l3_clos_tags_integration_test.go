@@ -88,6 +88,7 @@ func TestCRUDTwoStageL3ClosTags(t *testing.T) {
 
 			bp := testBlueprintA(ctx, t, client.client)
 
+			// create extra tags so we can count them when doing GetAllTags()
 			for range extraTagCount {
 				_, err = bp.CreateTag(ctx, TwoStageL3ClosTagData{Label: randString(6, "hex")})
 				require.NoError(t, err)
@@ -113,6 +114,7 @@ func TestCRUDTwoStageL3ClosTags(t *testing.T) {
 					require.Contains(t, tags, id)
 					compare(t, tags[id].Data, &tCase.steps[0].tagData)
 
+					// update the tag with each step and re-check as above
 					for _, step := range tCase.steps {
 						err = bp.UpdateTag(ctx, id, step.tagData)
 						require.NoError(t, err)
@@ -132,17 +134,20 @@ func TestCRUDTwoStageL3ClosTags(t *testing.T) {
 					err = bp.DeleteTag(ctx, id)
 					require.NoError(t, err)
 
+					// make sure the tag is gone
 					tags, err = bp.GetAllTags(ctx)
 					require.NoError(t, err)
 					require.NotContains(t, tags, id)
 
 					var ace ClientErr
 
+					// ensure 404
 					_, err = bp.GetTag(ctx, id)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, ErrNotfound, ace.Type())
 
+					// ensure 404
 					err = bp.DeleteTag(ctx, id)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
