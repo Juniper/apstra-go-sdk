@@ -389,8 +389,8 @@ var (
 type AddressingScheme oenum.Member[string]
 
 var (
-	AddressingSchemeIp4  = AddressingScheme{Value: "ip4"}
-	AddressingSchemeIp6  = AddressingScheme{Value: "ip6"}
+	AddressingSchemeIp4  = AddressingScheme{Value: "ipv4"}
+	AddressingSchemeIp6  = AddressingScheme{Value: "ip6v"}
 	AddressingSchemeIp46 = AddressingScheme{Value: "ipv4_ipv6"}
 )
 
