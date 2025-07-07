@@ -8,9 +8,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"net/http"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 var _ Template = &TemplateL3Collapsed{}

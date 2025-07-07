@@ -10,11 +10,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"log"
 	"math/rand"
 	"strings"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestGetTemplate(t *testing.T) {

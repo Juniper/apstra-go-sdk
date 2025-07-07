@@ -357,9 +357,7 @@ var (
 
 type AntiAffinityAlgorithm oenum.Member[string]
 
-var (
-	AntiAffinityAlgorithmHeuristic = AntiAffinityAlgorithm{Value: "heuristic"}
-)
+var AntiAffinityAlgorithmHeuristic = AntiAffinityAlgorithm{Value: "heuristic"}
 
 type AntiAffinityMode oenum.Member[string]
 

@@ -8,9 +8,10 @@ package apstra
 
 import (
 	"context"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 )
 
 func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
