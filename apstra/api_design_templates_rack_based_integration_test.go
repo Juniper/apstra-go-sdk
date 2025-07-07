@@ -9,6 +9,7 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"log"
 	"strings"
 	"testing"
@@ -40,8 +41,8 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			},
 		},
 		DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
-		AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+		AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: enum.AntiAffinityAlgorithmHeuristic},
+		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 		VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 	}
 
@@ -84,8 +85,8 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if rbt.templateType.String() != templateTypeRackBased.string() {
-			t.Fatalf("expected '%s', got '%s'", rbt.templateType.String(), templateTypeRackBased)
+		if rbt.templateType != enum.TemplateTypeRackBased {
+			t.Fatalf("expected '%s', got '%s'", rbt.templateType.String(), enum.TemplateTypeRackBased)
 		}
 		if rbt.Data.DisplayName != name {
 			t.Fatalf("expected '%s', got '%s'", name, rbt.Data.DisplayName)
@@ -235,8 +236,8 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 				Spine:                &spines[0],
 				RackInfos:            rackInfos[0],
 				DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
-				AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic}, // 4.2.0 only?
-				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+				AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: enum.AntiAffinityAlgorithmHeuristic}, // 4.2.0 only?
+				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
 		},
@@ -247,8 +248,8 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 				Spine:                &spines[1],
 				RackInfos:            rackInfos[1],
 				DhcpServiceIntent:    &DhcpServiceIntent{Active: false},
-				AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+				AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: enum.AntiAffinityAlgorithmHeuristic},
+				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
 		},
@@ -259,7 +260,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 				Spine:                &spines[0],
 				RackInfos:            rackInfos[0],
 				DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
-				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
 		},
@@ -269,7 +270,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 				Spine:                &spines[1],
 				RackInfos:            rackInfos[1],
 				DhcpServiceIntent:    &DhcpServiceIntent{Active: false},
-				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 			},
 			versionConstraints: compatibility.GeApstra421,

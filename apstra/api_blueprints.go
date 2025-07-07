@@ -36,8 +36,8 @@ const (
 )
 
 type BlueprintRequestFabricAddressingPolicy struct {
-	SpineSuperspineLinks AddressingScheme
-	SpineLeafLinks       AddressingScheme
+	SpineSuperspineLinks enum.AddressingScheme
+	SpineLeafLinks       enum.AddressingScheme
 	FabricL3Mtu          *uint16
 }
 
@@ -49,16 +49,16 @@ func (o *BlueprintRequestFabricAddressingPolicy) raw() *rawBlueprintRequestFabri
 	}
 
 	return &rawBlueprintRequestFabricAddressingPolicy{
-		SpineSuperspineLinks: o.SpineSuperspineLinks.raw(),
-		SpineLeafLinks:       o.SpineLeafLinks.raw(),
+		SpineSuperspineLinks: o.SpineSuperspineLinks,
+		SpineLeafLinks:       o.SpineLeafLinks,
 		FabricL3Mtu:          fabricL3Mtu,
 	}
 }
 
 type rawBlueprintRequestFabricAddressingPolicy struct {
-	SpineSuperspineLinks addressingScheme `json:"spine_superspine_links,omitempty"`
-	SpineLeafLinks       addressingScheme `json:"spine_leaf_links,omitempty"`
-	FabricL3Mtu          *uint16          `json:"fabric_l3_mtu,omitempty"`
+	SpineSuperspineLinks enum.AddressingScheme `json:"spine_superspine_links,omitempty"`
+	SpineLeafLinks       enum.AddressingScheme `json:"spine_leaf_links,omitempty"`
+	FabricL3Mtu          *uint16               `json:"fabric_l3_mtu,omitempty"`
 }
 
 type getBluePrintsResponse struct {

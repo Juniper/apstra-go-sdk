@@ -127,12 +127,12 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 
 	type testCase struct {
 		bpFunc      func(context.Context, *testing.T, *Client) *TwoStageL3ClosClient
-		expectedOcp OverlayControlProtocol
+		expectedOcp enum.OverlayControlProtocol
 	}
 
 	testCases := []testCase{
-		{bpFunc: testBlueprintA, expectedOcp: OverlayControlProtocolEvpn},
-		{bpFunc: testBlueprintB, expectedOcp: OverlayControlProtocolNone},
+		{bpFunc: testBlueprintA, expectedOcp: enum.OverlayControlProtocolEvpn},
+		{bpFunc: testBlueprintB, expectedOcp: enum.OverlayControlProtocolNone},
 	}
 
 	for clientName, client := range clients {
@@ -359,17 +359,17 @@ func TestBlueprintOverlayControlProtocol(t *testing.T) {
 
 	type testCase struct {
 		templateId ObjectId
-		expected   OverlayControlProtocol
+		expected   enum.OverlayControlProtocol
 	}
 
 	testCases := map[string]testCase{
 		"L2_Virtual_EVPN": {
 			templateId: "L2_Virtual_EVPN",
-			expected:   OverlayControlProtocolEvpn,
+			expected:   enum.OverlayControlProtocolEvpn,
 		},
 		"L2_Virtual": {
 			templateId: "L2_Virtual",
-			expected:   OverlayControlProtocolNone,
+			expected:   enum.OverlayControlProtocolNone,
 		},
 	}
 

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"net/http"
 	"time"
 
@@ -21,11 +22,11 @@ type TemplateRackBased struct {
 	Id             ObjectId
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
-	templateType   TemplateType
+	templateType   enum.TemplateType
 	Data           *TemplateRackBasedData
 }
 
-func (o *TemplateRackBased) Type() TemplateType {
+func (o *TemplateRackBased) Type() enum.TemplateType {
 	return o.templateType
 }
 
@@ -33,23 +34,23 @@ func (o *TemplateRackBased) ID() ObjectId {
 	return o.Id
 }
 
-func (o *TemplateRackBased) OverlayControlProtocol() OverlayControlProtocol {
+func (o *TemplateRackBased) OverlayControlProtocol() enum.OverlayControlProtocol {
 	if o == nil || o.Data == nil {
-		return OverlayControlProtocolNone
+		return enum.OverlayControlProtocolNone
 	}
 	return o.Data.VirtualNetworkPolicy.OverlayControlProtocol
 }
 
 type rawTemplateRackBased struct {
 	Id                   ObjectId                `json:"id"`
-	Type                 templateType            `json:"type"`
+	Type                 enum.TemplateType       `json:"type"`
 	DisplayName          string                  `json:"display_name"`
 	AntiAffinityPolicy   *rawAntiAffinityPolicy  `json:"anti_affinity_policy,omitempty"`
 	CreatedAt            time.Time               `json:"created_at"`
 	LastModifiedAt       time.Time               `json:"last_modified_at"`
 	VirtualNetworkPolicy rawVirtualNetworkPolicy `json:"virtual_network_policy"`
 	AsnAllocationPolicy  rawAsnAllocationPolicy  `json:"asn_allocation_policy"`
-	Capability           templateCapability      `json:"capability,omitempty"`
+	Capability           enum.TemplateCapability `json:"capability,omitempty"`
 	Spine                rawSpine                `json:"spine"`
 	RackTypes            []rawRackType           `json:"rack_types"`
 	RackTypeCounts       []RackTypeCount         `json:"rack_type_counts"`
@@ -57,19 +58,11 @@ type rawTemplateRackBased struct {
 }
 
 func (o rawTemplateRackBased) polish() (*TemplateRackBased, error) {
-	tType, err := o.Type.parse()
-	if err != nil {
-		return nil, err
-	}
 	v, err := o.VirtualNetworkPolicy.polish()
 	if err != nil {
 		return nil, err
 	}
 	a, err := o.AsnAllocationPolicy.polish()
-	if err != nil {
-		return nil, err
-	}
-	c, err := o.Capability.parse()
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +104,7 @@ OUTER:
 
 	return &TemplateRackBased{
 		Id:             o.Id,
-		templateType:   TemplateType(tType),
+		templateType:   o.Type,
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplateRackBasedData{
@@ -119,7 +112,7 @@ OUTER:
 			AntiAffinityPolicy:   aap,
 			VirtualNetworkPolicy: *v,
 			AsnAllocationPolicy:  *a,
-			Capability:           TemplateCapability(c),
+			Capability:           o.Capability,
 			Spine:                *s,
 			RackInfo:             rackTypeInfos,
 			DhcpServiceIntent:    o.DhcpServiceIntent,
@@ -132,27 +125,26 @@ type TemplateRackBasedData struct {
 	AntiAffinityPolicy   *AntiAffinityPolicy
 	VirtualNetworkPolicy VirtualNetworkPolicy
 	AsnAllocationPolicy  AsnAllocationPolicy
-	Capability           TemplateCapability
+	Capability           enum.TemplateCapability
 	Spine                Spine
 	RackInfo             map[ObjectId]TemplateRackBasedRackInfo
 	DhcpServiceIntent    DhcpServiceIntent
 }
 
 type AsnAllocationPolicy struct {
-	SpineAsnScheme AsnAllocationScheme
+	SpineAsnScheme enum.AsnAllocationScheme
 }
 
 func (o *AsnAllocationPolicy) raw() *rawAsnAllocationPolicy {
-	return &rawAsnAllocationPolicy{SpineAsnScheme: o.SpineAsnScheme.raw()}
+	return &rawAsnAllocationPolicy{SpineAsnScheme: o.SpineAsnScheme}
 }
 
 type rawAsnAllocationPolicy struct {
-	SpineAsnScheme asnAllocationScheme `json:"spine_asn_scheme"`
+	SpineAsnScheme enum.AsnAllocationScheme `json:"spine_asn_scheme"`
 }
 
 func (o *rawAsnAllocationPolicy) polish() (*AsnAllocationPolicy, error) {
-	sas, err := o.SpineAsnScheme.parse()
-	return &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationScheme(sas)}, err
+	return &AsnAllocationPolicy{SpineAsnScheme: o.SpineAsnScheme}, nil
 }
 
 type Spine struct {
@@ -239,10 +231,10 @@ func (o *Client) getRackBasedTemplate(ctx context.Context, id ObjectId) (*rawTem
 		return nil, err
 	}
 
-	if tType != templateTypeRackBased {
+	if tType != enum.TemplateTypeRackBased {
 		return nil, ClientErr{
 			errType: ErrWrongType,
-			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeRackBased),
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, enum.TemplateTypeRackBased),
 		}
 	}
 
@@ -262,7 +254,7 @@ func (o *Client) getAllRackBasedTemplates(ctx context.Context) ([]rawTemplateRac
 		if err != nil {
 			return nil, err
 		}
-		if tType != templateTypeRackBased {
+		if tType != enum.TemplateTypeRackBased {
 			continue
 		}
 		var raw rawTemplateRackBased
@@ -341,7 +333,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 	virtualNetworkPolicy := o.VirtualNetworkPolicy.raw()
 
 	return &rawCreateRackBasedTemplateRequest{
-		Type:                 templateTypeRackBased,
+		Type:                 enum.TemplateTypeRackBased,
 		DisplayName:          o.DisplayName,
 		Spine:                *spine,
 		RackTypes:            rackTypes,
@@ -354,7 +346,7 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 }
 
 type rawCreateRackBasedTemplateRequest struct {
-	Type                 templateType            `json:"type"`
+	Type                 enum.TemplateType       `json:"type"`
 	DisplayName          string                  `json:"display_name"`
 	Spine                rawSpine                `json:"spine"`
 	RackTypes            []rawRackType           `json:"rack_types"`

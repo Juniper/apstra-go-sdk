@@ -7,6 +7,7 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
@@ -17,19 +18,19 @@ const (
 )
 
 type rawVirtualNetworkPolicy420 struct {
-	DefaultSviL3Mtu                       *uint16 `json:"default_svi_l3_mtu,omitempty"`
-	EvpnGenerateType5HostRoutes           *string `json:"evpn_generate_type5_host_routes,omitempty"`
-	ExternalRouterMtu                     *uint16 `json:"external_router_mtu,omitempty"`
-	JunosEvpnDuplicateMacRecoveryTime     *uint16 `json:"junos_evpn_duplicate_mac_recovery_time,omitempty"`
-	JunosEvpnMaxNexthopAndInterfaceNumber *string `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"`
-	JunosEvpnRoutingInstanceType          *string `json:"junos_evpn_routing_instance_type,omitempty"`
-	JunosExOverlayEcmp                    *string `json:"junos_ex_overlay_ecmp,omitempty"`
-	JunosGracefulRestart                  *string `json:"junos_graceful_restart,omitempty"`
-	MaxEvpnRoutes                         *uint32 `json:"max_evpn_routes"`
-	MaxExternalRoutes                     *uint32 `json:"max_external_routes"`
-	MaxFabricRoutes                       *uint32 `json:"max_fabric_routes"`
-	MaxMlagRoutes                         *uint32 `json:"max_mlag_routes"`
-	OverlayControlProtocol                *string `json:"overlay_control_protocol,omitempty"`
+	DefaultSviL3Mtu                       *uint16                      `json:"default_svi_l3_mtu,omitempty"`
+	EvpnGenerateType5HostRoutes           *string                      `json:"evpn_generate_type5_host_routes,omitempty"`
+	ExternalRouterMtu                     *uint16                      `json:"external_router_mtu,omitempty"`
+	JunosEvpnDuplicateMacRecoveryTime     *uint16                      `json:"junos_evpn_duplicate_mac_recovery_time,omitempty"`
+	JunosEvpnMaxNexthopAndInterfaceNumber *string                      `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"`
+	JunosEvpnRoutingInstanceType          *string                      `json:"junos_evpn_routing_instance_type,omitempty"`
+	JunosExOverlayEcmp                    *string                      `json:"junos_ex_overlay_ecmp,omitempty"`
+	JunosGracefulRestart                  *string                      `json:"junos_graceful_restart,omitempty"`
+	MaxEvpnRoutes                         *uint32                      `json:"max_evpn_routes"`
+	MaxExternalRoutes                     *uint32                      `json:"max_external_routes"`
+	MaxFabricRoutes                       *uint32                      `json:"max_fabric_routes"`
+	MaxMlagRoutes                         *uint32                      `json:"max_mlag_routes"`
+	OverlayControlProtocol                *enum.OverlayControlProtocol `json:"overlay_control_protocol,omitempty"`
 }
 
 func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy420(ctx context.Context) (*rawVirtualNetworkPolicy420, error) {

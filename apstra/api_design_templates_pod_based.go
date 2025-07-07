@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"net/http"
 	"sort"
 	"time"
@@ -20,13 +21,13 @@ var _ Template = &TemplatePodBased{}
 
 type TemplatePodBased struct {
 	Id             ObjectId
-	templateType   TemplateType
+	templateType   enum.TemplateType
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
 	Data           *TemplatePodBasedData
 }
 
-func (o *TemplatePodBased) Type() TemplateType {
+func (o *TemplatePodBased) Type() enum.TemplateType {
 	return o.templateType
 }
 
@@ -34,9 +35,9 @@ func (o *TemplatePodBased) ID() ObjectId {
 	return o.Id
 }
 
-func (o *TemplatePodBased) OverlayControlProtocol() OverlayControlProtocol {
+func (o *TemplatePodBased) OverlayControlProtocol() enum.OverlayControlProtocol {
 	if o == nil || o.Data == nil || len(o.Data.PodInfo) == 0 {
-		return OverlayControlProtocolNone
+		return enum.OverlayControlProtocolNone
 	}
 
 	// return the first record
@@ -46,18 +47,18 @@ func (o *TemplatePodBased) OverlayControlProtocol() OverlayControlProtocol {
 		}
 	}
 
-	return OverlayControlProtocolNone
+	return enum.OverlayControlProtocolNone
 }
 
 type rawTemplatePodBased struct {
 	Id                      ObjectId                 `json:"id"`
-	Type                    templateType             `json:"type"`
+	Type                    enum.TemplateType        `json:"type"`
 	DisplayName             string                   `json:"display_name"`
 	AntiAffinityPolicy      *rawAntiAffinityPolicy   `json:"anti_affinity_policy,omitempty"`
 	Superspine              rawSuperspine            `json:"superspine"`
 	CreatedAt               time.Time                `json:"created_at"`
 	LastModifiedAt          time.Time                `json:"last_modified_at"`
-	Capability              templateCapability       `json:"capability,omitempty"`
+	Capability              enum.TemplateCapability  `json:"capability,omitempty"`
 	RackBasedTemplates      []rawTemplateRackBased   `json:"rack_based_templates"`
 	RackBasedTemplateCounts []RackBasedTemplateCount `json:"rack_based_template_counts"`
 }
@@ -67,25 +68,17 @@ func (o rawTemplatePodBased) polish() (*TemplatePodBased, error) {
 	if err != nil {
 		return nil, err
 	}
-	capability, err := o.Capability.parse()
-	if err != nil {
-		return nil, err
-	}
 	var _, rbt []TemplateRackBased
 	for _, rrbt := range o.RackBasedTemplates {
-		if rrbt.Type == templateTypeNone {
+		if rrbt.Type == enum.TemplateTypeNone {
 			// because sometimes Apstra doesn't fill this in, but we know based on context
-			rrbt.Type = templateTypeRackBased
+			rrbt.Type = enum.TemplateTypeRackBased
 		}
 		polished, err := rrbt.polish()
 		if err != nil {
 			return nil, err
 		}
 		rbt = append(rbt, *polished)
-	}
-	tType, err := o.Type.parse()
-	if err != nil {
-		return nil, err
 	}
 	var aap *AntiAffinityPolicy
 	if o.AntiAffinityPolicy != nil {
@@ -121,14 +114,14 @@ OUTER:
 
 	return &TemplatePodBased{
 		Id:             o.Id,
-		templateType:   TemplateType(tType),
+		templateType:   o.Type,
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplatePodBasedData{
 			DisplayName:        o.DisplayName,
 			AntiAffinityPolicy: aap,
 			Superspine:         *superspine,
-			Capability:         TemplateCapability(capability),
+			Capability:         o.Capability,
 			PodInfo:            podTypeInfos,
 		},
 	}, nil
@@ -138,7 +131,7 @@ type TemplatePodBasedData struct {
 	DisplayName        string
 	AntiAffinityPolicy *AntiAffinityPolicy
 	Superspine         Superspine
-	Capability         TemplateCapability
+	Capability         enum.TemplateCapability
 	PodInfo            map[ObjectId]TemplatePodBasedInfo
 }
 
@@ -223,10 +216,10 @@ func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemp
 		return nil, err
 	}
 
-	if tType != templateTypePodBased {
+	if tType != enum.TemplateTypePodBased {
 		return nil, ClientErr{
 			errType: ErrWrongType,
-			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypePodBased),
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, enum.TemplateTypePodBased),
 		}
 	}
 
@@ -237,15 +230,8 @@ func (o *Client) getPodBasedTemplate(ctx context.Context, id ObjectId) (*rawTemp
 	}
 
 	// force 'type' field of included rack-based templates to "rack_based" b/c Apstra rejects empty string.
-	for i, rbt := range result.RackBasedTemplates {
-		switch rbt.Type {
-		case "":
-			result.RackBasedTemplates[i].Type = templateTypeRackBased
-		case templateTypeRackBased: // fallthrough
-		default:
-			return nil, fmt.Errorf("rack-based template '%s' within pod-based template '%s' claims to be type '%s', expected '%s'",
-				rbt.DisplayName, result.Id, rbt.Type, templateTypeRackBased)
-		}
+	for i := range result.RackBasedTemplates {
+		result.RackBasedTemplates[i].Type = enum.TemplateTypeRackBased
 	}
 	return result, nil
 }
@@ -262,7 +248,7 @@ func (o *Client) getAllPodBasedTemplates(ctx context.Context) ([]rawTemplatePodB
 		if err != nil {
 			return nil, err
 		}
-		if tType != templateTypePodBased {
+		if tType != enum.TemplateTypePodBased {
 			continue
 		}
 		var raw rawTemplatePodBased
@@ -332,7 +318,7 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 	}
 
 	return &rawCreatePodBasedTemplateRequest{
-		Type:                    templateTypePodBased,
+		Type:                    enum.TemplateTypePodBased,
 		DisplayName:             o.DisplayName,
 		Superspine:              *superspine,
 		RackBasedTemplates:      templatesRackBased,
@@ -342,7 +328,7 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 }
 
 type rawCreatePodBasedTemplateRequest struct {
-	Type                    templateType             `json:"type"`
+	Type                    enum.TemplateType        `json:"type"`
 	DisplayName             string                   `json:"display_name"`
 	Superspine              rawSuperspine            `json:"superspine"`
 	RackBasedTemplates      []rawTemplateRackBased   `json:"rack_based_templates"`

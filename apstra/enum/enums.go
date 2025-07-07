@@ -354,3 +354,59 @@ var (
 	EndpointPolicyStatusIncomplete = EndpointPolicyStatus{Value: "incomplete"}
 	EndpointPolicyStatusReady      = EndpointPolicyStatus{Value: "ready"}
 )
+
+type AntiAffinityAlgorithm oenum.Member[string]
+
+var (
+	AntiAffinityAlgorithmHeuristic = AntiAffinityAlgorithm{Value: "heuristic"}
+)
+
+type AntiAffinityMode oenum.Member[string]
+
+var (
+	AntiAffinityModeDisabled      = AntiAffinityMode{Value: "disabled"}
+	AntiAffinityModeEnabledLoose  = AntiAffinityMode{Value: "enabled_loose"}
+	AntiAffinityModeEnabledStrict = AntiAffinityMode{Value: "enabled_strict"}
+	AntiAffinityModeLoose         = AntiAffinityMode{Value: "loose"}
+	AntiAffinityModeStrict        = AntiAffinityMode{Value: "strict"}
+)
+
+type TemplateType oenum.Member[string]
+
+var (
+	TemplateTypeL3Collapsed   = TemplateType{Value: "l3_collapsed"}
+	TemplateTypeNone          = TemplateType{Value: ""} // This may appear at the pod level within a pod-based template
+	TemplateTypePodBased      = TemplateType{Value: "pod_based"}
+	TemplateTypeRackBased     = TemplateType{Value: "rack_based"}
+	TemplateTypeRailCollapsed = TemplateType{Value: "rail_collapsed"}
+)
+
+type AsnAllocationScheme oenum.Member[string]
+
+var (
+	AsnAllocationSchemeDistinct = AsnAllocationScheme{Value: "distinct"}
+	AsnAllocationSchemeSingle   = AsnAllocationScheme{Value: "single"}
+)
+
+type AddressingScheme oenum.Member[string]
+
+var (
+	AddressingSchemeIp4  = AddressingScheme{Value: "ip4"}
+	AddressingSchemeIp6  = AddressingScheme{Value: "ip6"}
+	AddressingSchemeIp46 = AddressingScheme{Value: "ipv4_ipv6"}
+)
+
+type OverlayControlProtocol oenum.Member[string]
+
+var (
+	OverlayControlProtocolEvpn = OverlayControlProtocol{Value: "evpn"}
+	OverlayControlProtocolNone = OverlayControlProtocol{Value: ""}
+)
+
+type TemplateCapability oenum.Member[string]
+
+var (
+	TemplateCapabilityBlueprint = TemplateCapability{Value: "blueprint"}
+	TemplateCapabilityPod       = TemplateCapability{Value: "pod"}
+	TemplateCapabilityNone      = TemplateCapability{Value: ""}
+)

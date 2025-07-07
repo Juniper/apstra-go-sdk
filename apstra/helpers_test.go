@@ -534,8 +534,8 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStage
 		Label:      randString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
 		FabricSettings: &FabricSettings{
-			SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
-			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+			SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
+			SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
 		},
 	}
 
@@ -751,15 +751,15 @@ func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 			rackId: {Count: 1},
 		},
 		AntiAffinityPolicy: &AntiAffinityPolicy{
-			Algorithm:                AlgorithmHeuristic,
+			Algorithm:                enum.AntiAffinityAlgorithmHeuristic,
 			MaxLinksPerPort:          1,
 			MaxLinksPerSlot:          1,
 			MaxPerSystemLinksPerPort: 1,
 			MaxPerSystemLinksPerSlot: 1,
-			Mode:                     AntiAffinityModeDisabled,
+			Mode:                     enum.AntiAffinityModeDisabled,
 		},
-		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeDistinct},
-		VirtualNetworkPolicy: &VirtualNetworkPolicy{OverlayControlProtocol: OverlayControlProtocolEvpn},
+		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeDistinct},
+		VirtualNetworkPolicy: &VirtualNetworkPolicy{OverlayControlProtocol: enum.OverlayControlProtocolEvpn},
 	}
 
 	id, err := client.CreateRackBasedTemplate(ctx, &request)
@@ -810,8 +810,8 @@ func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStage
 		Label:      randString(5, "hex"),
 		TemplateId: templateId,
 		FabricSettings: &FabricSettings{
-			SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
-			SpineLeafLinks:       toPtr(AddressingSchemeIp46),
+			SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
+			SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
 		},
 	})
 	require.NoError(t, err)

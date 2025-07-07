@@ -8,6 +8,7 @@ package apstra
 
 import (
 	"context"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"log"
 	"testing"
 )
@@ -31,7 +32,7 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 			RackTypeId: "L3_collapsed_acs",
 			Count:      1,
 		}},
-		VirtualNetworkPolicy: VirtualNetworkPolicy{OverlayControlProtocol: OverlayControlProtocolEvpn},
+		VirtualNetworkPolicy: VirtualNetworkPolicy{OverlayControlProtocol: enum.OverlayControlProtocolEvpn},
 	}
 
 	for clientName, client := range clients {
@@ -64,8 +65,8 @@ func TestGetL3CollapsedTemplateByName(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if l3ct.templateType.String() != templateTypeL3Collapsed.string() {
-			t.Fatalf("expected '%s', got '%s'", l3ct.templateType.String(), templateTypeL3Collapsed)
+		if l3ct.templateType != enum.TemplateTypeL3Collapsed {
+			t.Fatalf("expected '%s', got '%s'", l3ct.templateType.String(), enum.TemplateTypeL3Collapsed)
 		}
 		if l3ct.Data.DisplayName != name {
 			t.Fatalf("expected '%s', got '%s'", name, l3ct.Data.DisplayName)

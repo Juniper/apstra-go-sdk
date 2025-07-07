@@ -82,8 +82,8 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 				TemplateId: "L2_Virtual_EVPN",
 				FabricSettings: &FabricSettings{
 					FabricL3Mtu:          toPtr(uint16(rand.Intn(50)*2 + 9100)),
-					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
 				},
 			}
 
@@ -338,8 +338,8 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual_EVPN",
 				FabricSettings: &FabricSettings{
-					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
 				},
 			},
 		},
@@ -349,8 +349,8 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual_EVPN",
 				FabricSettings: &FabricSettings{
-					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
 					FabricL3Mtu:          toPtr(uint16(9178)),
 				},
 			},
@@ -378,15 +378,15 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 					ExternalRouterMtu:                     toPtr(uint16(9100)),
 					MaxEvpnRoutes:                         toPtr(uint32(92342)),
 					AntiAffinityPolicy: &AntiAffinityPolicy{
-						Algorithm:                AlgorithmHeuristic,
+						Algorithm:                enum.AntiAffinityAlgorithmHeuristic,
 						MaxLinksPerPort:          2,
 						MaxLinksPerSlot:          2,
 						MaxPerSystemLinksPerPort: 2,
 						MaxPerSystemLinksPerSlot: 2,
-						Mode:                     AntiAffinityModeEnabledLoose,
+						Mode:                     enum.AntiAffinityModeEnabledLoose,
 					},
-					SpineLeafLinks:       toPtr(AddressingSchemeIp4),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp4),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp4),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp4),
 				},
 			},
 		},
@@ -413,21 +413,21 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 					ExternalRouterMtu:                     toPtr(uint16(9080)),
 					MaxEvpnRoutes:                         toPtr(uint32(91342)),
 					AntiAffinityPolicy: &AntiAffinityPolicy{
-						Algorithm:                AlgorithmHeuristic,
+						Algorithm:                enum.AntiAffinityAlgorithmHeuristic,
 						MaxLinksPerPort:          4,
 						MaxLinksPerSlot:          4,
 						MaxPerSystemLinksPerPort: 4,
 						MaxPerSystemLinksPerSlot: 4,
-						Mode:                     AntiAffinityModeEnabledLoose,
+						Mode:                     enum.AntiAffinityModeEnabledLoose,
 					},
-					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
 				},
 			},
 		},
 	}
 
-	fetchFabricAddressingScheme := func(t testing.TB, client *TwoStageL3ClosClient) (AddressingScheme, AddressingScheme) {
+	fetchFabricAddressingScheme := func(t testing.TB, client *TwoStageL3ClosClient) (enum.AddressingScheme, enum.AddressingScheme) {
 		t.Helper()
 
 		query := new(PathQuery).
@@ -448,8 +448,8 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 		var queryResponse struct {
 			Items []struct {
 				Node struct {
-					SpineLeafLinks       addressingScheme `json:"spine_leaf_links"`
-					SpineSuperspineLinks addressingScheme `json:"spine_superspine_links"`
+					SpineLeafLinks       enum.AddressingScheme `json:"spine_leaf_links"`
+					SpineSuperspineLinks enum.AddressingScheme `json:"spine_superspine_links"`
 				} `json:"node"`
 			} `json:"items"`
 		}
@@ -461,12 +461,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 			t.Fatalf("got %d responses when querying for fabric addressing", len(queryResponse.Items))
 		}
 
-		spineLeaf, err := queryResponse.Items[0].Node.SpineLeafLinks.parse()
-		require.NoError(t, err)
-		spineSuperspine, err := queryResponse.Items[0].Node.SpineLeafLinks.parse()
-		require.NoError(t, err)
-
-		return AddressingScheme(spineLeaf), AddressingScheme(spineSuperspine)
+		return queryResponse.Items[0].Node.SpineLeafLinks, queryResponse.Items[0].Node.SpineSuperspineLinks
 	}
 
 	for tName, tCase := range testCases {
@@ -552,8 +547,8 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual",
 				FabricSettings: &FabricSettings{
-					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
 				},
 			},
 		},
@@ -563,8 +558,8 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 				Label:      randString(5, "hex"),
 				TemplateId: "L2_Virtual",
 				FabricSettings: &FabricSettings{
-					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
 					FabricL3Mtu:          toPtr(uint16(9178)),
 				},
 			},
@@ -592,15 +587,15 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 					ExternalRouterMtu:                     toPtr(uint16(9100)),
 					MaxEvpnRoutes:                         toPtr(uint32(92342)),
 					AntiAffinityPolicy: &AntiAffinityPolicy{
-						Algorithm:                AlgorithmHeuristic,
+						Algorithm:                enum.AntiAffinityAlgorithmHeuristic,
 						MaxLinksPerPort:          2,
 						MaxLinksPerSlot:          2,
 						MaxPerSystemLinksPerPort: 2,
 						MaxPerSystemLinksPerSlot: 2,
-						Mode:                     AntiAffinityModeEnabledLoose,
+						Mode:                     enum.AntiAffinityModeEnabledLoose,
 					},
-					SpineLeafLinks:       toPtr(AddressingSchemeIp4),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp4),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp4),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp4),
 				},
 			},
 		},
@@ -627,21 +622,21 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 					ExternalRouterMtu:                     toPtr(uint16(9080)),
 					MaxEvpnRoutes:                         toPtr(uint32(91342)),
 					AntiAffinityPolicy: &AntiAffinityPolicy{
-						Algorithm:                AlgorithmHeuristic,
+						Algorithm:                enum.AntiAffinityAlgorithmHeuristic,
 						MaxLinksPerPort:          4,
 						MaxLinksPerSlot:          4,
 						MaxPerSystemLinksPerPort: 4,
 						MaxPerSystemLinksPerSlot: 4,
-						Mode:                     AntiAffinityModeEnabledLoose,
+						Mode:                     enum.AntiAffinityModeEnabledLoose,
 					},
-					SpineLeafLinks:       toPtr(AddressingSchemeIp46),
-					SpineSuperspineLinks: toPtr(AddressingSchemeIp46),
+					SpineLeafLinks:       toPtr(enum.AddressingSchemeIp46),
+					SpineSuperspineLinks: toPtr(enum.AddressingSchemeIp46),
 				},
 			},
 		},
 	}
 
-	fetchFabricAddressingScheme := func(t testing.TB, client *TwoStageL3ClosClient) (AddressingScheme, AddressingScheme) {
+	fetchFabricAddressingScheme := func(t testing.TB, client *TwoStageL3ClosClient) (enum.AddressingScheme, enum.AddressingScheme) {
 		t.Helper()
 
 		query := new(PathQuery).
@@ -662,8 +657,8 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		var queryResponse struct {
 			Items []struct {
 				Node struct {
-					SpineLeafLinks       addressingScheme `json:"spine_leaf_links"`
-					SpineSuperspineLinks addressingScheme `json:"spine_superspine_links"`
+					SpineLeafLinks       enum.AddressingScheme `json:"spine_leaf_links"`
+					SpineSuperspineLinks enum.AddressingScheme `json:"spine_superspine_links"`
 				} `json:"node"`
 			} `json:"items"`
 		}
@@ -675,12 +670,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 			t.Fatalf("got %d responses when querying for fabric addressing", len(queryResponse.Items))
 		}
 
-		spineLeaf, err := queryResponse.Items[0].Node.SpineLeafLinks.parse()
-		require.NoError(t, err)
-		spineSuperspine, err := queryResponse.Items[0].Node.SpineLeafLinks.parse()
-		require.NoError(t, err)
-
-		return AddressingScheme(spineLeaf), AddressingScheme(spineSuperspine)
+		return queryResponse.Items[0].Node.SpineLeafLinks, queryResponse.Items[0].Node.SpineSuperspineLinks
 	}
 
 	for tName, tCase := range testCases {

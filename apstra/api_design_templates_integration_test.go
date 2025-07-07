@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"log"
 	"math/rand"
 	"strings"
@@ -17,14 +18,16 @@ import (
 )
 
 func TestGetTemplate(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for clientName, client := range clients {
 		log.Printf("testing listAllTemplateIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		templateIds, err := client.client.listAllTemplateIds(context.TODO())
+		templateIds, err := client.client.listAllTemplateIds(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -33,7 +36,7 @@ func TestGetTemplate(t *testing.T) {
 		for _, i := range sampleIndexes(t, len(templateIds)) {
 			templateId := templateIds[i]
 			log.Printf("testing getTemplate(%s) against %s %s (%s)", templateId, client.clientType, clientName, client.client.ApiVersion())
-			x, err := client.client.getTemplate(context.TODO(), templateId)
+			x, err := client.client.getTemplate(ctx, templateId)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -44,31 +47,14 @@ func TestGetTemplate(t *testing.T) {
 				t.Fatal(err)
 			}
 			switch tType {
-			case templateTypeRackBased:
-				rbt := &rawTemplateRackBased{}
-				err = json.Unmarshal(x, rbt)
+			case enum.TemplateTypeRackBased:
+				var rawTemplate rawTemplateRackBased
+				err = json.Unmarshal(x, &rawTemplate)
 				if err != nil {
 					t.Fatal(err)
 				}
-				name = rbt.DisplayName
-				rbt2, err := client.client.GetRackBasedTemplate(context.TODO(), templateId)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if templateId != rbt2.Id {
-					t.Fatalf("template ID mismatch: '%s' vs. '%s", templateId, rbt2.Id)
-				}
-				if name != rbt2.Data.DisplayName {
-					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.Data.DisplayName)
-				}
-			case templateTypePodBased:
-				rbt := &rawTemplatePodBased{}
-				err = json.Unmarshal(x, rbt)
-				if err != nil {
-					t.Fatal(err)
-				}
-				name = rbt.DisplayName
-				rbt2, err := client.client.GetPodBasedTemplate(context.TODO(), templateId)
+				name = rawTemplate.DisplayName
+				rbt2, err := client.client.GetRackBasedTemplate(ctx, templateId)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -78,14 +64,31 @@ func TestGetTemplate(t *testing.T) {
 				if name != rbt2.Data.DisplayName {
 					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.Data.DisplayName)
 				}
-			case templateTypeL3Collapsed:
-				rbt := &rawTemplateL3Collapsed{}
-				err = json.Unmarshal(x, rbt)
+			case enum.TemplateTypePodBased:
+				var rawTemplate rawTemplatePodBased
+				err = json.Unmarshal(x, &rawTemplate)
 				if err != nil {
 					t.Fatal(err)
 				}
-				name = rbt.DisplayName
-				rbt2, err := client.client.GetL3CollapsedTemplate(context.TODO(), templateId)
+				name = rawTemplate.DisplayName
+				rbt2, err := client.client.GetPodBasedTemplate(ctx, templateId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if templateId != rbt2.Id {
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", templateId, rbt2.Id)
+				}
+				if name != rbt2.Data.DisplayName {
+					t.Fatalf("template ID mismatch: '%s' vs. '%s", name, rbt2.Data.DisplayName)
+				}
+			case enum.TemplateTypeL3Collapsed:
+				var rawTemplate rawTemplateL3Collapsed
+				err = json.Unmarshal(x, &rawTemplate)
+				if err != nil {
+					t.Fatal(err)
+				}
+				name = rawTemplate.DisplayName
+				rbt2, err := client.client.GetL3CollapsedTemplate(ctx, templateId)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -181,24 +184,24 @@ func TestGetTemplateType(t *testing.T) {
 
 	type testData struct {
 		templateId   ObjectId
-		templateType templateType
+		templateType enum.TemplateType
 	}
 
 	data := []testData{
-		{"pod1", templateTypeRackBased},
-		{"L2_superspine_multi_plane", templateTypePodBased},
-		{"L3_Collapsed_ACS", templateTypeL3Collapsed},
+		{"pod1", enum.TemplateTypeRackBased},
+		{"L2_superspine_multi_plane", enum.TemplateTypePodBased},
+		{"L3_Collapsed_ACS", enum.TemplateTypeL3Collapsed},
 	}
 
 	for clientName, client := range clients {
 		for _, d := range data {
 			log.Printf("testing getTemplateType(%s) against %s %s (%s)", d.templateType, client.clientType, clientName, client.client.ApiVersion())
-			ttype, err := client.client.getTemplateType(ctx, d.templateId)
+			ttype, err := client.client.GetTemplateType(ctx, d.templateId)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if ttype != d.templateType {
-				t.Fatalf("expected '%s', got '%s'", ttype.string(), d.templateType)
+				t.Fatalf("expected '%s', got '%s'", ttype, d.templateType)
 			}
 		}
 	}
@@ -222,7 +225,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 
 		// choose a random template for cloning
 		cloneMeId := templateIds[rand.Intn(len(templateIds))]
-		cloneMeType, err := client.client.getTemplateType(ctx, cloneMeId)
+		cloneMeType, err := client.client.GetTemplateType(ctx, cloneMeId)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -233,7 +236,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 		cloneIds := make([]ObjectId, cloneCount)
 		for i := 0; i < cloneCount; i++ {
 			switch cloneMeType {
-			case templateTypeRackBased:
+			case enum.TemplateTypeRackBased:
 				cloneMe, err := client.client.getRackBasedTemplate(ctx, cloneMeId)
 				if err != nil {
 					t.Fatal(err)
@@ -253,7 +256,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 					t.Fatal(err)
 				}
 				cloneIds[i] = id
-			case templateTypePodBased:
+			case enum.TemplateTypePodBased:
 				cloneMe, err := client.client.getPodBasedTemplate(ctx, cloneMeId)
 				if err != nil {
 					t.Fatal(err)
@@ -270,7 +273,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 					t.Fatal(err)
 				}
 				cloneIds[i] = id
-			case templateTypeL3Collapsed:
+			case enum.TemplateTypeL3Collapsed:
 				cloneMe, err := client.client.getL3CollapsedTemplate(ctx, cloneMeId)
 				if err != nil {
 					t.Fatal(err)
@@ -298,7 +301,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 		}
 		log.Printf("clone IDs: '%s'", strings.Join(clones, ", "))
 
-		templateIdsToType := make(map[ObjectId]TemplateType)
+		templateIdsToType := make(map[ObjectId]enum.TemplateType)
 		for i := 0; i < cloneCount; i++ {
 			log.Printf("testing getTemplateIdsTypesByName(%s) against %s %s (%s)", templateName, client.clientType, clientName, client.client.ApiVersion())
 			temp, err := client.client.getTemplateIdsTypesByName(ctx, fmt.Sprintf("%s-%d", templateName, i))
@@ -314,12 +317,8 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 			t.Fatalf("expected %d, got %d", cloneCount, len(templateIdsToType))
 		}
 		for _, v := range templateIdsToType {
-			parsed, err := cloneMeType.parse()
-			if err != nil {
-				t.Fatal(err)
-			}
-			if parsed != v.Int() {
-				t.Fatalf("expected %d, got %d", parsed, v.Int())
+			if cloneMeType != v {
+				t.Fatalf("expected %s, got %s", cloneMeType, v)
 			}
 		}
 
@@ -334,7 +333,7 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 				if cloneId != tId {
 					t.Fatalf("expected template id '%s', got '%s'", cloneIds, tId)
 				}
-				if cloneMeType != templateType(tType.String()) {
+				if cloneMeType != tType {
 					t.Fatalf("expected template type '%s', got '%s'", cloneMeType, tType.String())
 				}
 

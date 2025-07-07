@@ -13,6 +13,99 @@ import (
 )
 
 var (
+	_ enum             = (*AddressingScheme)(nil)
+	_ json.Marshaler   = (*AddressingScheme)(nil)
+	_ json.Unmarshaler = (*AddressingScheme)(nil)
+)
+
+func (o AddressingScheme) String() string {
+	return o.Value
+}
+
+func (o *AddressingScheme) FromString(s string) error {
+	if AddressingSchemes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *AddressingScheme) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *AddressingScheme) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*AntiAffinityAlgorithm)(nil)
+	_ json.Marshaler   = (*AntiAffinityAlgorithm)(nil)
+	_ json.Unmarshaler = (*AntiAffinityAlgorithm)(nil)
+)
+
+func (o AntiAffinityAlgorithm) String() string {
+	return o.Value
+}
+
+func (o *AntiAffinityAlgorithm) FromString(s string) error {
+	if AntiAffinityAlgorithms.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *AntiAffinityAlgorithm) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *AntiAffinityAlgorithm) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*AntiAffinityMode)(nil)
+	_ json.Marshaler   = (*AntiAffinityMode)(nil)
+	_ json.Unmarshaler = (*AntiAffinityMode)(nil)
+)
+
+func (o AntiAffinityMode) String() string {
+	return o.Value
+}
+
+func (o *AntiAffinityMode) FromString(s string) error {
+	if AntiAffinityModes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *AntiAffinityMode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *AntiAffinityMode) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*ApiFeature)(nil)
 	_ json.Marshaler   = (*ApiFeature)(nil)
 	_ json.Unmarshaler = (*ApiFeature)(nil)
@@ -35,6 +128,37 @@ func (o *ApiFeature) MarshalJSON() ([]byte, error) {
 }
 
 func (o *ApiFeature) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*AsnAllocationScheme)(nil)
+	_ json.Marshaler   = (*AsnAllocationScheme)(nil)
+	_ json.Unmarshaler = (*AsnAllocationScheme)(nil)
+)
+
+func (o AsnAllocationScheme) String() string {
+	return o.Value
+}
+
+func (o *AsnAllocationScheme) FromString(s string) error {
+	if AsnAllocationSchemes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *AsnAllocationScheme) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *AsnAllocationScheme) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -633,6 +757,37 @@ func (o *NodeRole) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*OverlayControlProtocol)(nil)
+	_ json.Marshaler   = (*OverlayControlProtocol)(nil)
+	_ json.Unmarshaler = (*OverlayControlProtocol)(nil)
+)
+
+func (o OverlayControlProtocol) String() string {
+	return o.Value
+}
+
+func (o *OverlayControlProtocol) FromString(s string) error {
+	if OverlayControlProtocols.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *OverlayControlProtocol) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *OverlayControlProtocol) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*PolicyApplicationPointType)(nil)
 	_ json.Marshaler   = (*PolicyApplicationPointType)(nil)
 	_ json.Unmarshaler = (*PolicyApplicationPointType)(nil)
@@ -1129,6 +1284,68 @@ func (o *TcpStateQualifier) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*TemplateCapability)(nil)
+	_ json.Marshaler   = (*TemplateCapability)(nil)
+	_ json.Unmarshaler = (*TemplateCapability)(nil)
+)
+
+func (o TemplateCapability) String() string {
+	return o.Value
+}
+
+func (o *TemplateCapability) FromString(s string) error {
+	if TemplateCapabilities.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *TemplateCapability) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *TemplateCapability) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*TemplateType)(nil)
+	_ json.Marshaler   = (*TemplateType)(nil)
+	_ json.Unmarshaler = (*TemplateType)(nil)
+)
+
+func (o TemplateType) String() string {
+	return o.Value
+}
+
+func (o *TemplateType) FromString(s string) error {
+	if TemplateTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *TemplateType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *TemplateType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*VnType)(nil)
 	_ json.Marshaler   = (*VnType)(nil)
 	_ json.Unmarshaler = (*VnType)(nil)
@@ -1160,6 +1377,27 @@ func (o *VnType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_                 enum = new(AddressingScheme)
+	AddressingSchemes      = oenum.New(
+		AddressingSchemeIp4,
+		AddressingSchemeIp6,
+		AddressingSchemeIp46,
+	)
+
+	_                      enum = new(AntiAffinityAlgorithm)
+	AntiAffinityAlgorithms      = oenum.New(
+		AntiAffinityAlgorithmHeuristic,
+	)
+
+	_                 enum = new(AntiAffinityMode)
+	AntiAffinityModes      = oenum.New(
+		AntiAffinityModeDisabled,
+		AntiAffinityModeEnabledLoose,
+		AntiAffinityModeEnabledStrict,
+		AntiAffinityModeLoose,
+		AntiAffinityModeStrict,
+	)
+
 	_           enum = new(ApiFeature)
 	ApiFeatures      = oenum.New(
 		ApiFeatureAiFabric,
@@ -1168,6 +1406,12 @@ var (
 		ApiFeatureFreeform,
 		ApiFeatureFullAccess,
 		ApiFeatureTaskApi,
+	)
+
+	_                    enum = new(AsnAllocationScheme)
+	AsnAllocationSchemes      = oenum.New(
+		AsnAllocationSchemeDistinct,
+		AsnAllocationSchemeSingle,
 	)
 
 	_                 enum = new(ConfigletSection)
@@ -1321,6 +1565,12 @@ var (
 		NodeRoleSuperspine,
 	)
 
+	_                       enum = new(OverlayControlProtocol)
+	OverlayControlProtocols      = oenum.New(
+		OverlayControlProtocolEvpn,
+		OverlayControlProtocolNone,
+	)
+
 	_                           enum = new(PolicyApplicationPointType)
 	PolicyApplicationPointTypes      = oenum.New(
 		PolicyApplicationPointTypeGroup,
@@ -1456,6 +1706,22 @@ var (
 	_                  enum = new(TcpStateQualifier)
 	TcpStateQualifiers      = oenum.New(
 		TcpStateQualifierEstablished,
+	)
+
+	_                    enum = new(TemplateCapability)
+	TemplateCapabilities      = oenum.New(
+		TemplateCapabilityBlueprint,
+		TemplateCapabilityPod,
+		TemplateCapabilityNone,
+	)
+
+	_             enum = new(TemplateType)
+	TemplateTypes      = oenum.New(
+		TemplateTypeL3Collapsed,
+		TemplateTypeNone,
+		TemplateTypePodBased,
+		TemplateTypeRackBased,
+		TemplateTypeRailCollapsed,
 	)
 
 	_       enum = new(VnType)

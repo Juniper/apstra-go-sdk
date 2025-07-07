@@ -27,26 +27,26 @@ var (
 )
 
 type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.1.0
-	AntiAffinityPolicy                    *AntiAffinityPolicy     // /anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy
-	DefaultSviL3Mtu                       *uint16                 // virtual_network_policy node	not supported					not supported					not supported.
-	EsiMacMsb                             *uint8                  // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
-	EvpnGenerateType5HostRoutes           *enum.FeatureSwitch     // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	ExternalRouterMtu                     *uint16                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	FabricL3Mtu                           *uint16                 // /fabric-addressing-policy		not supported					not supported					not supported
-	Ipv6Enabled                           *bool                   // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
-	JunosEvpnDuplicateMacRecoveryTime     *uint16                 // virtual_network_policy node	not supported					not supported					not supported
-	JunosEvpnMaxNexthopAndInterfaceNumber *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
-	JunosEvpnRoutingInstanceVlanAware     *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
-	JunosExOverlayEcmp                    *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
-	JunosGracefulRestart                  *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
-	MaxEvpnRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	MaxExternalRoutes                     *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	MaxFabricRoutes                       *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	MaxMlagRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	OptimiseSzFootprint                   *enum.FeatureSwitch     // security_zone_policy node		not supported					not supported					not supported
-	OverlayControlProtocol                *OverlayControlProtocol // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	SpineLeafLinks                        *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
-	SpineSuperspineLinks                  *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
+	AntiAffinityPolicy                    *AntiAffinityPolicy          // /anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy
+	DefaultSviL3Mtu                       *uint16                      // virtual_network_policy node	not supported					not supported					not supported.
+	EsiMacMsb                             *uint8                       // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
+	EvpnGenerateType5HostRoutes           *enum.FeatureSwitch          // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	ExternalRouterMtu                     *uint16                      // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	FabricL3Mtu                           *uint16                      // /fabric-addressing-policy		not supported					not supported					not supported
+	Ipv6Enabled                           *bool                        // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
+	JunosEvpnDuplicateMacRecoveryTime     *uint16                      // virtual_network_policy node	not supported					not supported					not supported
+	JunosEvpnMaxNexthopAndInterfaceNumber *enum.FeatureSwitch          // virtual_network_policy node	not supported					not supported					not supported
+	JunosEvpnRoutingInstanceVlanAware     *enum.FeatureSwitch          // virtual_network_policy node	not supported					not supported					not supported
+	JunosExOverlayEcmp                    *enum.FeatureSwitch          // virtual_network_policy node	not supported					not supported					not supported
+	JunosGracefulRestart                  *enum.FeatureSwitch          // virtual_network_policy node	not supported					not supported					not supported
+	MaxEvpnRoutes                         *uint32                      // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	MaxExternalRoutes                     *uint32                      // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	MaxFabricRoutes                       *uint32                      // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	MaxMlagRoutes                         *uint32                      // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	OptimiseSzFootprint                   *enum.FeatureSwitch          // security_zone_policy node		not supported					not supported					not supported
+	OverlayControlProtocol                *enum.OverlayControlProtocol // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
+	SpineLeafLinks                        *enum.AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
+	SpineSuperspineLinks                  *enum.AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
 }
 
 func (o FabricSettings) raw() *rawFabricSettings {
@@ -62,16 +62,6 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		} else {
 			jeriType = toPtr(junosEvpnRoutingInstanceTypeDefault.Value)
 		}
-	}
-
-	var spineLeafLinks *addressingScheme
-	if o.SpineLeafLinks != nil {
-		spineLeafLinks = toPtr(addressingScheme(o.SpineLeafLinks.String()))
-	}
-
-	var spineSuperspineLinks *addressingScheme
-	if o.SpineSuperspineLinks != nil {
-		spineSuperspineLinks = toPtr(addressingScheme(o.SpineSuperspineLinks.String()))
 	}
 
 	return &rawFabricSettings{
@@ -92,21 +82,21 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		MaxFabricRoutes:                       o.MaxFabricRoutes,
 		MaxMlagRoutes:                         o.MaxMlagRoutes,
 		OptimiseSzFootprint:                   stringerPtrToStringPtr(o.OptimiseSzFootprint),
-		OverlayControlProtocol:                stringerPtrToStringPtr(o.OverlayControlProtocol),
-		SpineLeafLinks:                        spineLeafLinks,
-		SpineSuperspineLinks:                  spineSuperspineLinks,
+		OverlayControlProtocol:                o.OverlayControlProtocol,
+		SpineLeafLinks:                        o.SpineLeafLinks,
+		SpineSuperspineLinks:                  o.SpineSuperspineLinks,
 	}
 }
 
 func (o FabricSettings) rawBlueprintRequestFabricAddressingPolicy() *rawBlueprintRequestFabricAddressingPolicy {
-	var spineSuperspineLinks addressingScheme
+	var spineSuperspineLinks enum.AddressingScheme
 	if o.SpineSuperspineLinks != nil {
-		spineSuperspineLinks = addressingScheme(o.SpineSuperspineLinks.String())
+		spineSuperspineLinks = *o.SpineSuperspineLinks
 	}
 
-	var spineLeafLinks addressingScheme
+	var spineLeafLinks enum.AddressingScheme
 	if o.SpineLeafLinks != nil {
-		spineLeafLinks = addressingScheme(o.SpineLeafLinks.String())
+		spineLeafLinks = *o.SpineLeafLinks
 	}
 
 	return &rawBlueprintRequestFabricAddressingPolicy{
@@ -117,26 +107,26 @@ func (o FabricSettings) rawBlueprintRequestFabricAddressingPolicy() *rawBlueprin
 }
 
 type rawFabricSettings struct {
-	AntiAffinity                          *rawAntiAffinityPolicy `json:"anti_affinity,omitempty"`
-	DefaultSviL3Mtu                       *uint16                `json:"default_svi_l3_mtu,omitempty"`
-	EsiMacMsb                             *uint8                 `json:"esi_mac_msb,omitempty"`
-	EvpnGenerateType5HostRoutes           *string                `json:"evpn_generate_type5_host_routes,omitempty"`
-	ExternalRouterMtu                     *uint16                `json:"external_router_mtu,omitempty"`
-	FabricL3Mtu                           *uint16                `json:"fabric_l3_mtu,omitempty"`
-	Ipv6Enabled                           *bool                  `json:"ipv6_enabled,omitempty"`
-	JunosEvpnDuplicateMacRecoveryTime     *uint16                `json:"junos_evpn_duplicate_mac_recovery_time,omitempty"`
-	JunosEvpnMaxNexthopAndInterfaceNumber *string                `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"`
-	JunosEvpnRoutingInstanceType          *string                `json:"junos_evpn_routing_instance_type,omitempty"`
-	JunosExOverlayEcmp                    *string                `json:"junos_ex_overlay_ecmp,omitempty"`
-	JunosGracefulRestart                  *string                `json:"junos_graceful_restart,omitempty"`
-	MaxEvpnRoutes                         *uint32                `json:"max_evpn_routes"`
-	MaxExternalRoutes                     *uint32                `json:"max_external_routes"`
-	MaxFabricRoutes                       *uint32                `json:"max_fabric_routes"`
-	MaxMlagRoutes                         *uint32                `json:"max_mlag_routes"`
-	OptimiseSzFootprint                   *string                `json:"optimise_sz_footprint,omitempty"`
-	OverlayControlProtocol                *string                `json:"overlay_control_protocol,omitempty"`
-	SpineLeafLinks                        *addressingScheme      `json:"spine_leaf_links,omitempty"`       // ['ipv4', 'ipv6', 'ipv4_ipv6'],
-	SpineSuperspineLinks                  *addressingScheme      `json:"spine_superspine_links,omitempty"` // ['ipv4', 'ipv6', 'ipv4_ipv6']
+	AntiAffinity                          *rawAntiAffinityPolicy       `json:"anti_affinity,omitempty"`
+	DefaultSviL3Mtu                       *uint16                      `json:"default_svi_l3_mtu,omitempty"`
+	EsiMacMsb                             *uint8                       `json:"esi_mac_msb,omitempty"`
+	EvpnGenerateType5HostRoutes           *string                      `json:"evpn_generate_type5_host_routes,omitempty"`
+	ExternalRouterMtu                     *uint16                      `json:"external_router_mtu,omitempty"`
+	FabricL3Mtu                           *uint16                      `json:"fabric_l3_mtu,omitempty"`
+	Ipv6Enabled                           *bool                        `json:"ipv6_enabled,omitempty"`
+	JunosEvpnDuplicateMacRecoveryTime     *uint16                      `json:"junos_evpn_duplicate_mac_recovery_time,omitempty"`
+	JunosEvpnMaxNexthopAndInterfaceNumber *string                      `json:"junos_evpn_max_nexthop_and_interface_number,omitempty"`
+	JunosEvpnRoutingInstanceType          *string                      `json:"junos_evpn_routing_instance_type,omitempty"`
+	JunosExOverlayEcmp                    *string                      `json:"junos_ex_overlay_ecmp,omitempty"`
+	JunosGracefulRestart                  *string                      `json:"junos_graceful_restart,omitempty"`
+	MaxEvpnRoutes                         *uint32                      `json:"max_evpn_routes"`
+	MaxExternalRoutes                     *uint32                      `json:"max_external_routes"`
+	MaxFabricRoutes                       *uint32                      `json:"max_fabric_routes"`
+	MaxMlagRoutes                         *uint32                      `json:"max_mlag_routes"`
+	OptimiseSzFootprint                   *string                      `json:"optimise_sz_footprint,omitempty"`
+	OverlayControlProtocol                *enum.OverlayControlProtocol `json:"overlay_control_protocol,omitempty"`
+	SpineLeafLinks                        *enum.AddressingScheme       `json:"spine_leaf_links,omitempty"`       // ['ipv4', 'ipv6', 'ipv4_ipv6'],
+	SpineSuperspineLinks                  *enum.AddressingScheme       `json:"spine_superspine_links,omitempty"` // ['ipv4', 'ipv6', 'ipv4_ipv6']
 	// leaf_loopbacks ['ipv4', 'ipv4_ipv6']
 	// spine_loopbacks ['ipv4', 'ipv4_ipv6']
 	// mlag_svi_subnets ['ipv4', 'ipv4_ipv6']
@@ -145,14 +135,14 @@ type rawFabricSettings struct {
 }
 
 func (o rawFabricSettings) polish() (*FabricSettings, error) {
-	var ocp *OverlayControlProtocol
-	if o.OverlayControlProtocol != nil {
-		ocp = new(OverlayControlProtocol)
-		err := ocp.FromString(*o.OverlayControlProtocol)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse overlay_control_protocol value %q", *o.OverlayControlProtocol)
-		}
-	}
+	//var ocp *OverlayControlProtocol
+	//if o.OverlayControlProtocol != nil {
+	//	ocp = new(OverlayControlProtocol)
+	//	err := ocp.FromString(*o.OverlayControlProtocol)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("failed to parse overlay_control_protocol value %q", *o.OverlayControlProtocol)
+	//	}
+	//}
 
 	var junosEvpnRoutingInstanceVlanAware *enum.FeatureSwitch
 	if o.JunosEvpnRoutingInstanceType != nil {
@@ -170,24 +160,6 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 	antiAffinityPolicy, err := o.AntiAffinity.polish()
 	if err != nil {
 		return nil, err
-	}
-
-	var spineLeafLinks *AddressingScheme
-	if o.SpineLeafLinks != nil {
-		i, err := o.SpineLeafLinks.parse()
-		if err != nil {
-			return nil, err
-		}
-		spineLeafLinks = toPtr(AddressingScheme(i))
-	}
-
-	var spineSuperspineLinks *AddressingScheme
-	if o.SpineSuperspineLinks != nil {
-		i, err := o.SpineSuperspineLinks.parse()
-		if err != nil {
-			return nil, err
-		}
-		spineSuperspineLinks = toPtr(AddressingScheme(i))
 	}
 
 	return &FabricSettings{
@@ -208,9 +180,9 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 		MaxFabricRoutes:                       o.MaxFabricRoutes,
 		MaxMlagRoutes:                         o.MaxMlagRoutes,
 		OptimiseSzFootprint:                   featureSwitchEnumFromStringPtr(o.OptimiseSzFootprint),
-		OverlayControlProtocol:                ocp,
-		SpineLeafLinks:                        spineLeafLinks,
-		SpineSuperspineLinks:                  spineSuperspineLinks,
+		OverlayControlProtocol:                o.OverlayControlProtocol,
+		SpineLeafLinks:                        o.SpineLeafLinks,
+		SpineSuperspineLinks:                  o.SpineSuperspineLinks,
 	}, nil
 }
 

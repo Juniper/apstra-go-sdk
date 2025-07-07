@@ -8,6 +8,7 @@ package apstra
 
 import (
 	"context"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"log"
 	"testing"
 )
@@ -38,8 +39,8 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 			},
 		},
 		DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
-		AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
+		AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: enum.AntiAffinityAlgorithmHeuristic},
+		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 		VirtualNetworkPolicy: &VirtualNetworkPolicy{},
 	}
 
@@ -65,12 +66,12 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 				},
 			},
 			AntiAffinityPolicy: &AntiAffinityPolicy{
-				Algorithm:                AlgorithmHeuristic,
+				Algorithm:                enum.AntiAffinityAlgorithmHeuristic,
 				MaxLinksPerPort:          1,
 				MaxLinksPerSlot:          1,
 				MaxPerSystemLinksPerPort: 1,
 				MaxPerSystemLinksPerSlot: 1,
-				Mode:                     AntiAffinityModeDisabled,
+				Mode:                     enum.AntiAffinityModeDisabled,
 			},
 		}
 
@@ -119,8 +120,8 @@ func TestGetPodBasedTemplateByName(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if pbt.templateType.String() != templateTypePodBased.string() {
-			t.Fatalf("expected '%s', got '%s'", pbt.templateType.String(), templateTypePodBased)
+		if pbt.templateType != enum.TemplateTypePodBased {
+			t.Fatalf("expected '%s', got '%s'", pbt.templateType.String(), enum.TemplateTypePodBased)
 		}
 		if pbt.Data.DisplayName != name {
 			t.Fatalf("expected '%s', got '%s'", name, pbt.Data.DisplayName)

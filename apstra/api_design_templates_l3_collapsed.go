@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"net/http"
 	"time"
 )
@@ -16,13 +17,13 @@ var _ Template = &TemplateL3Collapsed{}
 
 type TemplateL3Collapsed struct {
 	Id             ObjectId
-	templateType   TemplateType
+	templateType   enum.TemplateType
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
 	Data           *TemplateL3CollapsedData
 }
 
-func (o *TemplateL3Collapsed) Type() TemplateType {
+func (o *TemplateL3Collapsed) Type() enum.TemplateType {
 	return o.templateType
 }
 
@@ -30,22 +31,22 @@ func (o *TemplateL3Collapsed) ID() ObjectId {
 	return o.Id
 }
 
-func (o *TemplateL3Collapsed) OverlayControlProtocol() OverlayControlProtocol {
+func (o *TemplateL3Collapsed) OverlayControlProtocol() enum.OverlayControlProtocol {
 	if o == nil || o.Data == nil {
-		return OverlayControlProtocolNone
+		return enum.OverlayControlProtocolNone
 	}
 	return o.Data.VirtualNetworkPolicy.OverlayControlProtocol
 }
 
 type rawTemplateL3Collapsed struct {
 	Id                   ObjectId                   `json:"id"`
-	Type                 templateType               `json:"type"`
+	Type                 enum.TemplateType          `json:"type"`
 	DisplayName          string                     `json:"display_name"`
 	AntiAffinityPolicy   *rawAntiAffinityPolicy     `json:"anti_affinity_policy,omitempty"`
 	CreatedAt            time.Time                  `json:"created_at"`
 	LastModifiedAt       time.Time                  `json:"last_modified_at"`
 	RackTypes            []rawRackType              `json:"rack_types"`
-	Capability           templateCapability         `json:"capability"`
+	Capability           enum.TemplateCapability    `json:"capability"`
 	MeshLinkSpeed        *rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
 	VirtualNetworkPolicy rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
 	MeshLinkCount        int                        `json:"mesh_link_count"`
@@ -62,15 +63,7 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 		}
 		prt = append(prt, *polished)
 	}
-	capability, err := o.Capability.parse()
-	if err != nil {
-		return nil, err
-	}
 	vnp, err := o.VirtualNetworkPolicy.polish()
-	if err != nil {
-		return nil, err
-	}
-	tType, err := o.Type.parse()
 	if err != nil {
 		return nil, err
 	}
@@ -83,14 +76,14 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 	}
 	return &TemplateL3Collapsed{
 		Id:             o.Id,
-		templateType:   TemplateType(tType),
+		templateType:   o.Type,
 		CreatedAt:      o.CreatedAt,
 		LastModifiedAt: o.LastModifiedAt,
 		Data: &TemplateL3CollapsedData{
 			DisplayName:          o.DisplayName,
 			AntiAffinityPolicy:   aap,
 			RackTypes:            prt,
-			Capability:           TemplateCapability(capability),
+			Capability:           o.Capability,
 			MeshLinkSpeed:        o.MeshLinkSpeed.parse(),
 			VirtualNetworkPolicy: *vnp,
 			MeshLinkCount:        o.MeshLinkCount,
@@ -104,7 +97,7 @@ type TemplateL3CollapsedData struct {
 	DisplayName          string
 	AntiAffinityPolicy   *AntiAffinityPolicy
 	RackTypes            []RackType
-	Capability           TemplateCapability
+	Capability           enum.TemplateCapability
 	MeshLinkSpeed        LogicalDevicePortSpeed
 	VirtualNetworkPolicy VirtualNetworkPolicy
 	MeshLinkCount        int
@@ -123,10 +116,10 @@ func (o *Client) getL3CollapsedTemplate(ctx context.Context, id ObjectId) (*rawT
 		return nil, err
 	}
 
-	if tType != templateTypeL3Collapsed {
+	if tType != enum.TemplateTypeL3Collapsed {
 		return nil, ClientErr{
 			errType: ErrWrongType,
-			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, templateTypeL3Collapsed),
+			err:     fmt.Errorf("template '%s' is of type '%s', not '%s'", id, tType, enum.TemplateTypeL3Collapsed),
 		}
 	}
 
@@ -146,7 +139,7 @@ func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]rawTemplateL
 		if err != nil {
 			return nil, err
 		}
-		if tType != templateTypeL3Collapsed {
+		if tType != enum.TemplateTypeL3Collapsed {
 			continue
 		}
 		var raw rawTemplateL3Collapsed
@@ -187,7 +180,7 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 	}
 
 	return &rawCreateL3CollapsedTemplateRequest{
-		Type:                 templateTypeL3Collapsed,
+		Type:                 enum.TemplateTypeL3Collapsed,
 		DisplayName:          o.DisplayName,
 		MeshLinkCount:        o.MeshLinkCount,
 		MeshLinkSpeed:        *o.MeshLinkSpeed.raw(),
@@ -200,7 +193,7 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 }
 
 type rawCreateL3CollapsedTemplateRequest struct {
-	Type                 templateType              `json:"type"`
+	Type                 enum.TemplateType         `json:"type"`
 	DisplayName          string                    `json:"display_name"`
 	MeshLinkCount        int                       `json:"mesh_link_count"`
 	MeshLinkSpeed        rawLogicalDevicePortSpeed `json:"mesh_link_speed"`

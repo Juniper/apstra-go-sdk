@@ -1302,7 +1302,7 @@ func (o *Client) GetAllRackBasedTemplates(ctx context.Context) ([]TemplateRackBa
 // GetRackBasedTemplateByName returns *RackBasedTemplate if exactly one pod_based template uses the
 // specified name. If zero templates or more than one template uses the name, an error is returned.
 func (o *Client) GetRackBasedTemplateByName(ctx context.Context, name string) (*TemplateRackBased, error) {
-	t, err := o.getTemplateByTypeAndName(ctx, templateTypeRackBased, name)
+	t, err := o.getTemplateByTypeAndName(ctx, enum.TemplateTypeRackBased, name)
 	if err != nil {
 		return nil, err
 	}
@@ -1343,7 +1343,7 @@ func (o *Client) GetAllPodBasedTemplates(ctx context.Context) ([]TemplatePodBase
 // GetPodBasedTemplateByName returns *PodBasedTemplate if exactly one pod_based template uses the
 // specified name. If zero templates or more than one template uses the name, an error is returned.
 func (o *Client) GetPodBasedTemplateByName(ctx context.Context, name string) (*TemplatePodBased, error) {
-	t, err := o.getTemplateByTypeAndName(ctx, templateTypePodBased, name)
+	t, err := o.getTemplateByTypeAndName(ctx, enum.TemplateTypePodBased, name)
 	if err != nil {
 		return nil, err
 	}
@@ -1384,7 +1384,7 @@ func (o *Client) GetAllL3CollapsedTemplates(ctx context.Context) ([]TemplateL3Co
 // GetL3CollapsedTemplateByName returns *L3CollapsedTemplate if exactly one pod_based template uses the
 // specified name. If zero templates or more than one template uses the name, an error is returned.
 func (o *Client) GetL3CollapsedTemplateByName(ctx context.Context, name string) (*TemplateL3Collapsed, error) {
-	t, err := o.getTemplateByTypeAndName(ctx, templateTypeL3Collapsed, name)
+	t, err := o.getTemplateByTypeAndName(ctx, enum.TemplateTypeL3Collapsed, name)
 	if err != nil {
 		return nil, err
 	}
@@ -1670,25 +1670,31 @@ func (o *Client) ServerName() string {
 }
 
 // GetTemplateType returns the TemplateType of the template known by id
-func (o *Client) GetTemplateType(ctx context.Context, id ObjectId) (TemplateType, error) {
-	t, err := o.getTemplateType(ctx, id)
+func (o *Client) GetTemplateType(ctx context.Context, id ObjectId) (enum.TemplateType, error) {
+	response := &struct {
+		Type enum.TemplateType `tfsdk:"type"`
+	}{}
+	err := o.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(apiUrlDesignTemplateById, id),
+		apiResponse: response,
+	})
 	if err != nil {
-		return -1, err
+		return enum.TemplateType{}, convertTtaeToAceWherePossible(err)
 	}
-	T, err := t.parse()
-	return TemplateType(T), err
+	return response.Type, nil
 }
 
 // GetTemplateIdsTypesByName returns map[ObjectId]TemplateType including all
 // templates with the desired name found in the apstra global catalog.
-func (o *Client) GetTemplateIdsTypesByName(ctx context.Context, desired string) (map[ObjectId]TemplateType, error) {
+func (o *Client) GetTemplateIdsTypesByName(ctx context.Context, desired string) (map[ObjectId]enum.TemplateType, error) {
 	return o.getTemplateIdsTypesByName(ctx, desired)
 }
 
 // GetTemplateIdTypeByName returns the ObjectId and TemplateType of the single
 // template in the apstra global catalog which uses the name 'desired'. If
 // zero templates or more than 1 templates use the name, an error is returned.
-func (o *Client) GetTemplateIdTypeByName(ctx context.Context, desired string) (ObjectId, TemplateType, error) {
+func (o *Client) GetTemplateIdTypeByName(ctx context.Context, desired string) (ObjectId, enum.TemplateType, error) {
 	return o.getTemplateIdTypeByName(ctx, desired)
 }
 
@@ -1909,7 +1915,7 @@ func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*Blu
 	return highestRevPtr, err
 }
 
-func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectId) (OverlayControlProtocol, error) {
+func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectId) (enum.OverlayControlProtocol, error) {
 	nodeAttributes := []QEEAttribute{{"name", QEStringVal("node")}}
 	switch {
 	case compatibility.BpHasVirtualNetworkPolicyNode.Check(o.apiVersion):
@@ -1926,27 +1932,21 @@ func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectI
 	var queryResult struct {
 		Items []struct {
 			VirtualNetworkPolicy struct {
-				OverlayControlProtocol overlayControlProtocol `json:"overlay_control_protocol"`
+				OverlayControlProtocol enum.OverlayControlProtocol `json:"overlay_control_protocol"`
 			} `json:"node"`
 		} `json:"items"`
 	}
 
 	err := query.Do(ctx, &queryResult)
 	if err != nil {
-		return 0, fmt.Errorf("error querying blueprint virtual network policy - %w", err)
+		return enum.OverlayControlProtocol{}, fmt.Errorf("error querying blueprint virtual network policy - %w", err)
 	}
 
 	if len(queryResult.Items) != 1 {
-		return 0, fmt.Errorf("expected 1 overlay_control_protocol node, got %d", len(queryResult.Items))
+		return enum.OverlayControlProtocol{}, fmt.Errorf("expected 1 overlay_control_protocol node, got %d", len(queryResult.Items))
 	}
 
-	ocp, err := queryResult.Items[0].VirtualNetworkPolicy.OverlayControlProtocol.parse()
-	if err != nil {
-		return 0, fmt.Errorf("error parsing overlay control protocol %q - %w",
-			queryResult.Items[0].VirtualNetworkPolicy.OverlayControlProtocol, err)
-	}
-
-	return OverlayControlProtocol(ocp), nil
+	return queryResult.Items[0].VirtualNetworkPolicy.OverlayControlProtocol, nil
 }
 
 // CreateModularDeviceProfile creates a ModularDeviceProfile in Apstra based
