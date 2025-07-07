@@ -9,12 +9,13 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
-	"github.com/hashicorp/go-version"
-	"github.com/stretchr/testify/require"
 	"log"
 	"strings"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/hashicorp/go-version"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
