@@ -33,7 +33,7 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 			RackTypeId: "L3_collapsed_acs",
 			Count:      1,
 		}},
-		VirtualNetworkPolicy: VirtualNetworkPolicy{OverlayControlProtocol: enum.OverlayControlProtocolEvpn},
+		VirtualNetworkPolicy: VirtualNetworkPolicy{OverlayControlProtocol: &enum.OverlayControlProtocolEvpn},
 	}
 
 	for clientName, client := range clients {

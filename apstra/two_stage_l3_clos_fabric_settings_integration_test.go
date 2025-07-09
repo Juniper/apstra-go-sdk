@@ -19,28 +19,14 @@ import (
 func compareAntiAffinityPolicy(t testing.TB, set, get AntiAffinityPolicy) {
 	t.Helper()
 
-	if set.Algorithm != get.Algorithm {
-		t.Errorf("set AntiAffinityPolicy Algorithm %s got %s", set.Algorithm, get.Algorithm)
-	}
-
-	if set.MaxLinksPerPort != get.MaxLinksPerPort {
-		t.Errorf("set AntiAffinityPolicy MaxLinksPerPort %d got %d", set.MaxLinksPerPort, get.MaxLinksPerPort)
-	}
-
-	if set.MaxLinksPerSlot != get.MaxLinksPerSlot {
-		t.Errorf("set AntiAffinityPolicy MaxLinksPerSlot %d got %d", set.MaxLinksPerSlot, get.MaxLinksPerSlot)
-	}
-
-	if set.MaxPerSystemLinksPerPort != get.MaxPerSystemLinksPerPort {
-		t.Errorf("set AntiAffinityPolicy MaxPerSystemLinksPerPort %d got %d", set.MaxPerSystemLinksPerPort, get.MaxPerSystemLinksPerPort)
-	}
-
-	if set.MaxPerSystemLinksPerSlot != get.MaxPerSystemLinksPerSlot {
-		t.Errorf("set AntiAffinityPolicy MaxPerSystemLinksPerSlot %d got %d", set.MaxPerSystemLinksPerSlot, get.MaxPerSystemLinksPerSlot)
-	}
-
-	if set.Mode != get.Mode {
-		t.Errorf("set AntiAffinityPolicy Mode %s got %s", set.Mode, get.Mode)
+	require.Equal(t, set.Algorithm, get.Algorithm)
+	require.Equal(t, set.MaxLinksPerPort, get.MaxLinksPerPort)
+	require.Equal(t, set.MaxLinksPerSlot, get.MaxLinksPerSlot)
+	require.Equal(t, set.MaxPerSystemLinksPerPort, get.MaxPerSystemLinksPerPort)
+	require.Equal(t, set.MaxPerSystemLinksPerSlot, get.MaxPerSystemLinksPerSlot)
+	if set.Mode != nil {
+		require.NotNil(t, get.Mode)
+		require.Equal(t, *set.Mode, *get.Mode)
 	}
 }
 
@@ -177,7 +163,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 					MaxLinksPerSlot:          2,
 					MaxPerSystemLinksPerPort: 2,
 					MaxPerSystemLinksPerSlot: 2,
-					Mode:                     enum.AntiAffinityModeEnabledLoose,
+					Mode:                     &enum.AntiAffinityModeEnabledLoose,
 				},
 			},
 		},
@@ -205,7 +191,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 					MaxLinksPerSlot:          4,
 					MaxPerSystemLinksPerPort: 4,
 					MaxPerSystemLinksPerSlot: 4,
-					Mode:                     enum.AntiAffinityModeEnabledStrict,
+					Mode:                     &enum.AntiAffinityModeEnabledStrict,
 				},
 			},
 		},
@@ -335,7 +321,7 @@ func TestSetGetFabricSettingsV6(t *testing.T) {
 						MaxLinksPerSlot:          2,
 						MaxPerSystemLinksPerPort: 2,
 						MaxPerSystemLinksPerSlot: 2,
-						Mode:                     enum.AntiAffinityModeEnabledStrict,
+						Mode:                     &enum.AntiAffinityModeEnabledStrict,
 					},
 					EsiMacMsb:                   toPtr(uint8(4)),
 					EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnabled,

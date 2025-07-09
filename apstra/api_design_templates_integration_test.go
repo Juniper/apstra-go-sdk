@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"log"
 	"math/rand"
 	"strings"
@@ -212,23 +213,30 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 	ctx := context.Background()
 
 	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	templateName := randString(10, "hex")
 	for clientName, client := range clients {
 		// fetch all template IDs
 		templateIds, err := client.client.listAllTemplateIds(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+
+		var cloneMeId ObjectId
+		var cloneMeType enum.TemplateType
 
 		// choose a random template for cloning
-		cloneMeId := templateIds[rand.Intn(len(templateIds))]
-		cloneMeType, err := client.client.GetTemplateType(ctx, cloneMeId)
-		if err != nil {
-			t.Fatal(err)
+		for cloneMeId == "" {
+			cloneMeId = templateIds[rand.Intn(len(templateIds))]
+			cloneMeType, err = client.client.GetTemplateType(ctx, cloneMeId)
+			require.NoError(t, err)
+
+			switch cloneMeType {
+			case enum.TemplateTypeRackBased: // supported
+			case enum.TemplateTypePodBased: // supported
+			case enum.TemplateTypeL3Collapsed: // supported
+			case enum.TemplateTypeRailCollapsed: // NOT supported yet
+				cloneMeId = "" // go around again
+			}
 		}
 
 		log.Printf("cloning template '%s' (%s) for this test", cloneMeId, cloneMeType)
@@ -239,9 +247,8 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 			switch cloneMeType {
 			case enum.TemplateTypeRackBased:
 				cloneMe, err := client.client.getRackBasedTemplate(ctx, cloneMeId)
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.NoError(t, err)
+
 				id, err := client.client.createRackBasedTemplate(ctx, &rawCreateRackBasedTemplateRequest{
 					Type:                 cloneMe.Type,
 					DisplayName:          fmt.Sprintf("%s-%d", templateName, i),
@@ -253,15 +260,14 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 					AsnAllocationPolicy:  cloneMe.AsnAllocationPolicy,
 					VirtualNetworkPolicy: cloneMe.VirtualNetworkPolicy,
 				})
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.NoError(t, err)
+
 				cloneIds[i] = id
+
 			case enum.TemplateTypePodBased:
 				cloneMe, err := client.client.getPodBasedTemplate(ctx, cloneMeId)
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.NoError(t, err)
+
 				id, err := client.client.createPodBasedTemplate(ctx, &rawCreatePodBasedTemplateRequest{
 					Type:                    cloneMe.Type,
 					DisplayName:             fmt.Sprintf("%s-%d", templateName, i),
@@ -270,15 +276,14 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 					RackBasedTemplateCounts: cloneMe.RackBasedTemplateCounts,
 					AntiAffinityPolicy:      cloneMe.AntiAffinityPolicy,
 				})
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.NoError(t, err)
+
 				cloneIds[i] = id
+
 			case enum.TemplateTypeL3Collapsed:
 				cloneMe, err := client.client.getL3CollapsedTemplate(ctx, cloneMeId)
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.NoError(t, err)
+
 				id, err := client.client.createL3CollapsedTemplate(ctx, &rawCreateL3CollapsedTemplateRequest{
 					Type:                 cloneMe.Type,
 					DisplayName:          fmt.Sprintf("%s-%d", templateName, i),
@@ -290,12 +295,13 @@ func TestGetTemplateIdsTypesByName(t *testing.T) {
 					AntiAffinityPolicy:   cloneMe.AntiAffinityPolicy,
 					VirtualNetworkPolicy: cloneMe.VirtualNetworkPolicy,
 				})
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.NoError(t, err)
+
 				cloneIds[i] = id
+
 			}
 		}
+
 		clones := make([]string, len(cloneIds))
 		for i, clone := range cloneIds {
 			clones[i] = string(clone)

@@ -97,23 +97,15 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 func TestRackBasedTemplateMethods(t *testing.T) {
 	ctx := context.Background()
 
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	clients, err := getTestClients(ctx, t)
+	require.NoError(t, err)
 
-	compareSpine := func(req TemplateElementSpineRequest, rbt Spine) error {
-		if rbt.Count != req.Count {
-			return fmt.Errorf("spine count mismatch: expected %d got %d", rbt.Count, req.Count)
-		}
+	compareSpine := func(t testing.TB, req TemplateElementSpineRequest, rbt Spine) {
+		t.Helper()
 
-		if rbt.LinkPerSuperspineCount != req.LinkPerSuperspineCount {
-			return fmt.Errorf("spine link per superspine count mismatch: expected %d got %d", rbt.LinkPerSuperspineCount, req.LinkPerSuperspineCount)
-		}
-
-		if rbt.LinkPerSuperspineSpeed != req.LinkPerSuperspineSpeed {
-			return fmt.Errorf("spine link per superspine speed mismatch: expected %q got %q", rbt.LinkPerSuperspineSpeed, req.LinkPerSuperspineSpeed)
-		}
+		require.Equal(t, rbt.Count, req.Count)
+		require.Equal(t, rbt.LinkPerSuperspineCount, req.LinkPerSuperspineCount)
+		require.Equal(t, rbt.LinkPerSuperspineSpeed, req.LinkPerSuperspineSpeed)
 
 		reqTags := make(map[string]bool, len(req.Tags))
 		for _, tag := range req.Tags {
@@ -125,17 +117,12 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 			rbtTags[strings.ToLower(tag.Label)] = true
 		}
 
-		if len(reqTags) != len(rbtTags) {
-			return fmt.Errorf("tag count mismatch: expected %d got %d", len(reqTags), len(rbtTags))
-		}
+		require.Equal(t, len(reqTags), len(rbtTags))
 
 		for reqTag := range reqTags {
-			if !rbtTags[reqTag] {
-				return fmt.Errorf("tag mismatch: expected tag %q not found", reqTag)
-			}
+			_, ok := rbtTags[reqTag]
+			require.True(t, ok)
 		}
-
-		return nil
 	}
 
 	compareRackInfo := func(req, rbt TemplateRackBasedRackInfo) error {
@@ -165,41 +152,25 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 		return nil
 	}
 
-	compareRequestToTemplate := func(t testing.TB, req CreateRackBasedTemplateRequest, rbt TemplateRackBasedData) error {
+	compareRequestToTemplate := func(t testing.TB, req CreateRackBasedTemplateRequest, rbt TemplateRackBasedData) {
 		t.Helper()
 
-		if req.DisplayName != rbt.DisplayName {
-			return fmt.Errorf("displayname mismatch expected %q got %q", req.DisplayName, rbt.DisplayName)
-		}
+		require.Equal(t, req.DisplayName, rbt.DisplayName)
 
-		err = compareSpine(*req.Spine, rbt.Spine)
-		if err != nil {
-			return err
-		}
+		compareSpine(t, *req.Spine, rbt.Spine)
 
 		err = compareRackInfos(req.RackInfos, rbt.RackInfo)
-		if err != nil {
-			return err
-		}
+		require.NoError(t, err)
 
-		if req.DhcpServiceIntent.Active != rbt.DhcpServiceIntent.Active {
-			return fmt.Errorf("dhcp service intent mismatch expected %t got %t", req.DhcpServiceIntent.Active, rbt.DhcpServiceIntent.Active)
-		}
+		require.Equal(t, req.DhcpServiceIntent.Active, rbt.DhcpServiceIntent.Active)
 
 		if req.AntiAffinityPolicy != nil {
 			require.NotNilf(t, rbt.AntiAffinityPolicy, "rbt.AntiAffinityPolicy is nil")
 			compareAntiAffinityPolicy(t, *req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
 		}
 
-		if req.AsnAllocationPolicy.SpineAsnScheme != rbt.AsnAllocationPolicy.SpineAsnScheme {
-			return fmt.Errorf("asn allocation policy spine asn scheme mismatch expected %q got %q", req.AsnAllocationPolicy.SpineAsnScheme, rbt.AsnAllocationPolicy.SpineAsnScheme)
-		}
-
-		if req.VirtualNetworkPolicy.OverlayControlProtocol != rbt.VirtualNetworkPolicy.OverlayControlProtocol {
-			return fmt.Errorf("virtual network policy overlay control policy mismatch expected %q got %q", req.VirtualNetworkPolicy.OverlayControlProtocol, rbt.VirtualNetworkPolicy.OverlayControlProtocol)
-		}
-
-		return nil
+		require.Equal(t, req.AsnAllocationPolicy.SpineAsnScheme, rbt.AsnAllocationPolicy.SpineAsnScheme)
+		require.Equal(t, req.VirtualNetworkPolicy.OverlayControlProtocol, rbt.VirtualNetworkPolicy.OverlayControlProtocol)
 	}
 
 	type testCase struct {
@@ -291,24 +262,15 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 
 					log.Printf("testing CreateRackBasedTemplate(testCase[%d]) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
 					id, err := client.client.CreateRackBasedTemplate(ctx, &tc.request)
-					if err != nil {
-						t.Fatal(err)
-					}
+					require.NoError(t, err)
 
 					log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 					rbt, err := client.client.GetRackBasedTemplate(ctx, id)
-					if err != nil {
-						t.Fatal(err)
-					}
+					require.NoError(t, err)
 
-					if id != rbt.Id {
-						t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
-					}
+					require.Equal(t, id, rbt.Id)
 
-					err = compareRequestToTemplate(t, tc.request, *rbt.Data)
-					if err != nil {
-						t.Fatalf("test case %d template differed from request: %s", i, err.Error())
-					}
+					compareRequestToTemplate(t, tc.request, *rbt.Data)
 
 					for j := i; j < i+len(testCases); j++ { // j counts up from i
 						k := j % len(testCases) // k counts up from i, but loops back to zero
@@ -320,31 +282,20 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 						req := testCases[k].request
 						log.Printf("testing UpdateRackBasedTemplate(testCase[%d]) against %s %s (%s)", k, client.clientType, clientName, client.client.ApiVersion())
 						err = client.client.UpdateRackBasedTemplate(ctx, id, &req)
-						if err != nil {
-							t.Fatal(err)
-						}
+						require.NoError(t, err)
 
 						log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 						rbt, err = client.client.GetRackBasedTemplate(ctx, id)
-						if err != nil {
-							t.Fatal(err)
-						}
+						require.NoError(t, err)
 
-						if id != rbt.Id {
-							t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
-						}
+						require.Equal(t, id, rbt.Id)
 
-						err = compareRequestToTemplate(t, req, *rbt.Data)
-						if err != nil {
-							t.Fatalf("test case %d template differed from request: %s", i, err.Error())
-						}
+						compareRequestToTemplate(t, req, *rbt.Data)
 					}
 
 					log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 					err = client.client.DeleteTemplate(ctx, id)
-					if err != nil {
-						t.Fatal(err)
-					}
+					require.NoError(t, err)
 				})
 			}
 		})

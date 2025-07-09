@@ -72,7 +72,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 				MaxLinksPerSlot:          1,
 				MaxPerSystemLinksPerPort: 1,
 				MaxPerSystemLinksPerSlot: 1,
-				Mode:                     enum.AntiAffinityModeDisabled,
+				Mode:                     &enum.AntiAffinityModeDisabled,
 			},
 		}
 

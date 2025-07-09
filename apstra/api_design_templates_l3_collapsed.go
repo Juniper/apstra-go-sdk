@@ -33,10 +33,10 @@ func (o *TemplateL3Collapsed) ID() ObjectId {
 }
 
 func (o *TemplateL3Collapsed) OverlayControlProtocol() enum.OverlayControlProtocol {
-	if o == nil || o.Data == nil {
+	if o == nil || o.Data == nil || o.Data.VirtualNetworkPolicy.OverlayControlProtocol == nil {
 		return enum.OverlayControlProtocolNone
 	}
-	return o.Data.VirtualNetworkPolicy.OverlayControlProtocol
+	return *o.Data.VirtualNetworkPolicy.OverlayControlProtocol
 }
 
 type rawTemplateL3Collapsed struct {

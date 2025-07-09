@@ -43,8 +43,8 @@ func (o *TemplatePodBased) OverlayControlProtocol() enum.OverlayControlProtocol 
 
 	// return the first record
 	for _, v := range o.Data.PodInfo {
-		if v.TemplateRackBasedData != nil {
-			return v.TemplateRackBasedData.VirtualNetworkPolicy.OverlayControlProtocol
+		if v.TemplateRackBasedData != nil && v.TemplateRackBasedData.VirtualNetworkPolicy.OverlayControlProtocol != nil {
+			return *v.TemplateRackBasedData.VirtualNetworkPolicy.OverlayControlProtocol
 		}
 	}
 

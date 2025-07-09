@@ -756,10 +756,10 @@ func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 			MaxLinksPerSlot:          1,
 			MaxPerSystemLinksPerPort: 1,
 			MaxPerSystemLinksPerSlot: 1,
-			Mode:                     enum.AntiAffinityModeDisabled,
+			Mode:                     &enum.AntiAffinityModeDisabled,
 		},
 		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeDistinct},
-		VirtualNetworkPolicy: &VirtualNetworkPolicy{OverlayControlProtocol: enum.OverlayControlProtocolEvpn},
+		VirtualNetworkPolicy: &VirtualNetworkPolicy{OverlayControlProtocol: &enum.OverlayControlProtocolEvpn},
 	}
 
 	id, err := client.CreateRackBasedTemplate(ctx, &request)

@@ -25,10 +25,17 @@ type AntiAffinityPolicy struct {
 	MaxLinksPerSlot          int
 	MaxPerSystemLinksPerPort int
 	MaxPerSystemLinksPerSlot int
-	Mode                     enum.AntiAffinityMode
+	Mode                     *enum.AntiAffinityMode
 }
 
 func (o *AntiAffinityPolicy) raw() *rawAntiAffinityPolicy {
+	//var mode *enum.AntiAffinityMode
+	//if o.Mode.Value == "" {
+	//	mode = &enum.AntiAffinityModeDisabled
+	//} else {
+	//	mode = o.Mode
+	//}
+
 	return &rawAntiAffinityPolicy{
 		Algorithm:                o.Algorithm,
 		MaxLinksPerPort:          o.MaxLinksPerPort,
@@ -45,7 +52,7 @@ type rawAntiAffinityPolicy struct {
 	MaxLinksPerSlot          int                        `json:"max_links_per_slot"`
 	MaxPerSystemLinksPerPort int                        `json:"max_per_system_links_per_port"`
 	MaxPerSystemLinksPerSlot int                        `json:"max_per_system_links_per_slot"`
-	Mode                     enum.AntiAffinityMode      `json:"mode"` // disabled, enabled_loose, enabled_strict
+	Mode                     *enum.AntiAffinityMode     `json:"mode,omitempty"` // disabled, enabled_loose, enabled_strict
 }
 
 func (o *rawAntiAffinityPolicy) polish() (*AntiAffinityPolicy, error) {
@@ -60,7 +67,7 @@ func (o *rawAntiAffinityPolicy) polish() (*AntiAffinityPolicy, error) {
 }
 
 type VirtualNetworkPolicy struct {
-	OverlayControlProtocol enum.OverlayControlProtocol
+	OverlayControlProtocol *enum.OverlayControlProtocol
 }
 
 func (o *VirtualNetworkPolicy) raw() *rawVirtualNetworkPolicy {
@@ -68,7 +75,7 @@ func (o *VirtualNetworkPolicy) raw() *rawVirtualNetworkPolicy {
 }
 
 type rawVirtualNetworkPolicy struct {
-	OverlayControlProtocol enum.OverlayControlProtocol `json:"overlay_control_protocol,omitempty"`
+	OverlayControlProtocol *enum.OverlayControlProtocol `json:"overlay_control_protocol,omitempty"`
 }
 
 func (o *rawVirtualNetworkPolicy) polish() (*VirtualNetworkPolicy, error) {
