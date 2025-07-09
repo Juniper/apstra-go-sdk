@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -32,8 +33,23 @@ func TestSystemNodeInfo(t *testing.T) {
 		bpIds, err := client.client.ListAllBlueprintIds(ctx)
 		require.NoError(t, err)
 
+		// randomly select a datacenter blueprint from existing blueprints
+		rand.Shuffle(len(bpIds), func(i, j int) {
+			bpIds[i], bpIds[j] = bpIds[j], bpIds[i]
+		})
+		var bpId ObjectId
+		for i := range bpIds {
+			status, err := client.client.GetBlueprintStatus(ctx, bpIds[i])
+			require.NoError(t, err)
+			if status.Design == enum.RefDesignDatacenter {
+				bpId = bpIds[i]
+				break
+			}
+		}
+
+		// get a client for the existing blueprint or a newly created blueprint
 		var bpClient *TwoStageL3ClosClient
-		if len(bpIds) > 0 {
+		if bpId != "" {
 			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			bpClient, err = client.client.NewTwoStageL3ClosClient(ctx, bpIds[0])
 			require.NoError(t, err)
