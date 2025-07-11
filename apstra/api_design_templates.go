@@ -29,13 +29,6 @@ type AntiAffinityPolicy struct {
 }
 
 func (o *AntiAffinityPolicy) raw() *rawAntiAffinityPolicy {
-	//var mode *enum.AntiAffinityMode
-	//if o.Mode.Value == "" {
-	//	mode = &enum.AntiAffinityModeDisabled
-	//} else {
-	//	mode = o.Mode
-	//}
-
 	return &rawAntiAffinityPolicy{
 		Algorithm:                o.Algorithm,
 		MaxLinksPerPort:          o.MaxLinksPerPort,
