@@ -10,13 +10,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"log"
 	"math/rand"
 	"strings"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetTemplate(t *testing.T) {
