@@ -161,7 +161,7 @@ func TestGetLogicalDeviceByName(t *testing.T) {
 					logicalDevice, err := client.client.GetLogicalDeviceByName(context.TODO(), test.Data.DisplayName)
 					if err != nil {
 						var ace ClientErr
-						require.ErrorAs(t, err, ace)
+						require.ErrorAs(t, err, &ace)
 						require.Equal(t, ErrMultipleMatch, ace.Type())
 					} else {
 						require.Equal(t, test.Id, logicalDevice.Id)
