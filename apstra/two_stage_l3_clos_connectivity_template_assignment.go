@@ -10,19 +10,24 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
+	"strings"
 
 	oenum "github.com/orsinium-labs/enum"
 )
 
 const (
-	apiUrlBlueprintObjPolicyBatchApply        = apiUrlBlueprintById + apiUrlPathDelim + "obj-policy-batch-apply"
+	apiUrlBlueprintObjPolicyBatchApply = apiUrlBlueprintById + apiUrlPathDelim + "obj-policy-batch-apply"
+
 	apiUrlBlueprintObjPolicyApplicationPoints = apiUrlBlueprintById + apiUrlPathDelim + "obj-policy-application-points"
 
 	objPolicyApplicationPageSizeValue = 1000
 	objPolicyApplicationPageSizeParam = "max_count"
 	objPolicyApplicationPageSkipParam = "offset_max_count"
 )
+
+var apiUrlBlueprintObjPolicyBatchApplyRegex = regexp.MustCompile("^" + strings.Replace(apiUrlBlueprintObjPolicyBatchApply, "%s", "[^/]+", -1) + "$")
 
 // GetAllInterfacesConnectivityTemplates returns a map of ConnectivityTemplate
 // IDs keyed by Interface (switch port) ID.
