@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -523,5 +523,4 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 			}
 		})
 	}
-
 }
