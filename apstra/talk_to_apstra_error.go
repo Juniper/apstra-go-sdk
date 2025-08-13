@@ -87,7 +87,7 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 			switch {
 			case len(policyIdSubMatches) == 2:
 				invalidConnectivityTemplateIds[ObjectId(policyIdSubMatches[1])] = struct{}{}
-				//detail.InvalidConnectivityTemplateIds = append(detail.InvalidConnectivityTemplateIds, ObjectId(policyIdSubMatches[1]))
+				// detail.InvalidConnectivityTemplateIds = append(detail.InvalidConnectivityTemplateIds, ObjectId(policyIdSubMatches[1]))
 			case rawPolicyMsg.Policy == "Not a valid application point":
 				invalidApplicationPointIndexes[apIdx] = struct{}{}
 			default:
