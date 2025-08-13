@@ -63,7 +63,9 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 
 	policyIdRegexp := regexp.MustCompile("^Endpoint policy with node id (.*) does not exist$")
 
+	// store collected indexes and ids in maps for de-dup reasons
 	invalidApplicationPointIndexes := make(map[int]struct{})
+	invalidConnectivityTemplateIds := make(map[ObjectId]struct{})
 
 	for apKey, ap := range raw.ApplicationPoints {
 		apIdx, err := strconv.Atoi(apKey)
@@ -72,9 +74,9 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 		}
 
 		for pKey, p := range ap.Policies {
-			err = json.Unmarshal(p, &rawPolicyMsg)
+			err = json.Unmarshal(p, &rawPolicyMsg) // maybe we got a struct?
 			if err != nil {
-				err = json.Unmarshal(p, &rawPolicyMsg.Policy)
+				err = json.Unmarshal(p, &rawPolicyMsg.Policy) // maybe we got a string?
 				if err != nil {
 					return fmt.Errorf("cannot parse error at application point %q, policy %q: %w", apKey, pKey, o) // don't wrap either err here
 				}
@@ -84,17 +86,21 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 
 			switch {
 			case len(policyIdSubMatches) == 2:
-				detail.InvalidConnectivityTemplateIds = append(detail.InvalidConnectivityTemplateIds, ObjectId(policyIdSubMatches[1]))
+				invalidConnectivityTemplateIds[ObjectId(policyIdSubMatches[1])] = struct{}{}
+				//detail.InvalidConnectivityTemplateIds = append(detail.InvalidConnectivityTemplateIds, ObjectId(policyIdSubMatches[1]))
 			case rawPolicyMsg.Policy == "Not a valid application point":
 				invalidApplicationPointIndexes[apIdx] = struct{}{}
 			default:
 				return fmt.Errorf("cannot parse error at application point %q, policy %q: %w", apKey, pKey, o)
 			}
 		}
+	}
 
-		for invalidApplicationPointIdx := range invalidApplicationPointIndexes {
-			detail.InvalidApplicationPointIndexes = append(detail.InvalidApplicationPointIndexes, invalidApplicationPointIdx)
-		}
+	for invalidApplicationPointIdx := range invalidApplicationPointIndexes {
+		detail.InvalidApplicationPointIndexes = append(detail.InvalidApplicationPointIndexes, invalidApplicationPointIdx)
+	}
+	for invalidConnectivityTemplateId := range invalidConnectivityTemplateIds {
+		detail.InvalidConnectivityTemplateIds = append(detail.InvalidConnectivityTemplateIds, invalidConnectivityTemplateId)
 	}
 
 	return ClientErr{

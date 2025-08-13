@@ -295,57 +295,57 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 
 	type testCase struct {
 		apIdx  int   // index of application point ID in our slice of AP IDs. Negative value indicates "use a bogus AP ID"
-		ctIdxs []int // index of connectivity template ID in our slice of CT IDs. Negative value indicates "use a bogus CT ID"
+		ctIdxs []int // indexes of connectivity template IDs in our slice of CT IDs. Negative value indicates "use a bogus CT ID"
 	}
 
 	testCases := map[string]testCase{
 		"not_bogus_one_CT": {
-			apIdx:  0,
-			ctIdxs: []int{0},
+			apIdx:  1,
+			ctIdxs: []int{1},
 		},
 		"not_bogus_two_CTs": {
-			apIdx:  0,
-			ctIdxs: []int{0, 1},
+			apIdx:  1,
+			ctIdxs: []int{3, 2},
 		},
 		"bogus_AP_one_CT": {
 			apIdx:  -1,
-			ctIdxs: []int{0},
+			ctIdxs: []int{3},
 		},
 		"bogus_AP_two_CTs": {
 			apIdx:  -1,
-			ctIdxs: []int{0, 2},
+			ctIdxs: []int{3, 2},
 		},
 		"good_AP_one_bogus_CT": {
-			apIdx:  0,
+			apIdx:  3,
 			ctIdxs: []int{-1},
 		},
 		"good_AP_two_bogus_CTs": {
-			apIdx:  0,
+			apIdx:  3,
 			ctIdxs: []int{-1, -1},
 		},
 		"good_AP_blended_CTs_a": {
-			apIdx:  0,
-			ctIdxs: []int{0, -1, 1},
+			apIdx:  2,
+			ctIdxs: []int{2, -1, 0},
 		},
 		"good_AP_blended_CTs_b": {
-			apIdx:  0,
-			ctIdxs: []int{-1, 0, -1},
+			apIdx:  2,
+			ctIdxs: []int{-1, 2, -1},
 		},
 		"good_AP_blended_CTs_c": {
-			apIdx:  0,
-			ctIdxs: []int{0, -1, -1, 1},
+			apIdx:  1,
+			ctIdxs: []int{2, -1, -1, 1},
 		},
 		"good_AP_blended_CTs_d": {
-			apIdx:  0,
-			ctIdxs: []int{-1, 0, 1, -1},
+			apIdx:  3,
+			ctIdxs: []int{-1, 2, 1, -1},
 		},
 		"good_AP_blended_CTs_e": {
-			apIdx:  0,
-			ctIdxs: []int{0, -1, 1, -1},
+			apIdx:  3,
+			ctIdxs: []int{2, -1, 0, -1},
 		},
 		"good_AP_blended_CTs_f": {
-			apIdx:  0,
-			ctIdxs: []int{-1, 0, -1, 1},
+			apIdx:  1,
+			ctIdxs: []int{-1, 3, -1, 1},
 		},
 	}
 
@@ -359,25 +359,6 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 			t.Parallel()
 
 			bpClient := testBlueprintC(ctx, t, client.client)
-
-			leafIds, err := getSystemIdsByRole(ctx, bpClient, "leaf")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			// create assignments for the leaf switch nodes
-			assignments := make(SystemIdToInterfaceMapAssignment, len(leafIds))
-			bindings := make([]VnBinding, len(leafIds))
-			for i, leafId := range leafIds {
-				assignments[leafId.String()] = "Juniper_vQFX__AOS-7x10-Leaf"
-				bindings[i] = VnBinding{SystemId: leafId}
-			}
-
-			log.Printf("testing SetInterfaceMapAssignments() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bpClient.SetInterfaceMapAssignments(ctx, assignments)
-			if err != nil {
-				t.Fatal(err)
-			}
 
 			zones, err := bpClient.GetAllSecurityZones(ctx)
 			require.NoError(t, err)
@@ -516,6 +497,251 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 							require.Equal(t, len(bogusApIdxs), len(detail.InvalidApplicationPointIndexes))
 							for _, bogusApId := range bogusApIdxs {
 								require.Contains(t, detail.InvalidApplicationPointIndexes, bogusApId)
+							}
+						}
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
+	ctx := context.Background()
+
+	ctCount := 5
+
+	type testCase struct {
+		apIdxs []int // indexes of application point IDs in our slice of AP IDs. Negative value indicates "use a bogus AP ID"
+		ctIdxs []int // indexes of connectivity template IDs in our slice of CT IDs. Negative value indicates "use a bogus CT ID"
+	}
+
+	testCases := map[string]testCase{
+		"one_AP_one_CT": {
+			apIdxs: []int{2},
+			ctIdxs: []int{3},
+		},
+		"one_AP_two_CTs": {
+			apIdxs: []int{1},
+			ctIdxs: []int{2, 1},
+		},
+		"two_APs_one_CT": {
+			apIdxs: []int{2, 1},
+			ctIdxs: []int{1},
+		},
+		"two_APs_two_CTs": {
+			apIdxs: []int{3, 2},
+			ctIdxs: []int{2, 1},
+		},
+		"one_bogus_AP_one_CT": {
+			apIdxs: []int{-1},
+			ctIdxs: []int{3},
+		},
+		"one_bogus_AP_two_CTs": {
+			apIdxs: []int{-1},
+			ctIdxs: []int{4, 1},
+		},
+		"two_bogus_APs_one_CT": {
+			apIdxs: []int{-1, -1},
+			ctIdxs: []int{2},
+		},
+		"two_bogus_APs_two_CTs": {
+			apIdxs: []int{-1, -1},
+			ctIdxs: []int{3, 0},
+		},
+		"one_AP_one_bogus_CT": {
+			apIdxs: []int{3},
+			ctIdxs: []int{-1},
+		},
+		"one_AP_two_bogus_CTs": {
+			apIdxs: []int{2},
+			ctIdxs: []int{-1, -1},
+		},
+		"one_AP_middle_bogus_CT": {
+			apIdxs: []int{2},
+			ctIdxs: []int{2, -1, 0},
+		},
+		"middle_bogus_AP_one_CT": {
+			apIdxs: []int{2, -1, 1},
+			ctIdxs: []int{2},
+		},
+		"middle_bogus_APs_middle_bogus_CTs": {
+			apIdxs: []int{3, -1, -1, 1},
+			ctIdxs: []int{2, -1, -1, 0},
+		},
+		"outer_bogus_APs_outer_bogus_CTs": {
+			apIdxs: []int{-1, 2, 1, -1},
+			ctIdxs: []int{-1, 2, 1, -1},
+		},
+	}
+
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		t.Run(client.name(), func(t *testing.T) {
+			t.Parallel()
+
+			bpClient := testBlueprintC(ctx, t, client.client)
+
+			zones, err := bpClient.GetAllSecurityZones(ctx)
+			require.NoError(t, err)
+			require.Equal(t, 1, len(zones))
+
+			cts := make([]*ConnectivityTemplate, ctCount)
+			ctIds := make([]ObjectId, ctCount)
+			ctLabel := randString(5, "hex")
+			for i := range ctCount {
+				cts[i] = &ConnectivityTemplate{
+					Label: ctLabel + fmt.Sprintf("-%d", i),
+					Subpolicies: []*ConnectivityTemplatePrimitive{
+						{
+							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
+								SecurityZone:       &zones[0].Id,
+								Tagged:             true,
+								Vlan:               toPtr(Vlan(i + 101)),
+								IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
+							},
+						},
+					},
+				}
+
+				require.NoError(t, cts[i].SetIds())
+				require.NoError(t, cts[i].SetUserData())
+				require.NoError(t, bpClient.CreateConnectivityTemplate(ctx, cts[i]))
+				ctIds[i] = *cts[i].Id
+			}
+
+			// Graph query which picks out generic-facing interfaces on leaf switches
+			query := new(PathQuery).
+				SetBlueprintType(BlueprintTypeStaging).
+				SetBlueprintId(bpClient.blueprintId).
+				SetClient(bpClient.client).
+				// Node([]QEEAttribute{{"id", QEStringVal(leaf1Id.String())}}).
+				Node([]QEEAttribute{
+					NodeTypeSystem.QEEAttribute(),
+					{"role", QEStringVal("leaf")},
+				}).
+				Out([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
+				Node([]QEEAttribute{
+					NodeTypeInterface.QEEAttribute(),
+					{"name", QEStringVal("switch_port")},
+				}).
+				Out([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
+				Node([]QEEAttribute{NodeTypeLink.QEEAttribute()}).
+				In([]QEEAttribute{RelationshipTypeLink.QEEAttribute()}).
+				Node([]QEEAttribute{NodeTypeInterface.QEEAttribute()}).
+				In([]QEEAttribute{RelationshipTypeHostedInterfaces.QEEAttribute()}).
+				Node([]QEEAttribute{
+					NodeTypeSystem.QEEAttribute(),
+					{"role", QEStringVal("generic")},
+				})
+
+			var queryResponse struct {
+				Items []struct {
+					Interface struct {
+						Id ObjectId `json:"id"`
+					} `json:"switch_port"`
+				} `json:"items"`
+			}
+
+			err = query.Do(ctx, &queryResponse)
+			require.NoError(t, err)
+			require.GreaterOrEqual(t, len(queryResponse.Items), 2)
+
+			// collect the server-facing interfaces of leaf switches
+			leafInterfaceIds := make([]ObjectId, len(queryResponse.Items))
+			for i, item := range queryResponse.Items {
+				leafInterfaceIds[i] = item.Interface.Id
+			}
+
+			for tName, tCase := range testCases {
+				t.Run(tName, func(t *testing.T) {
+					// t.Parallel() -- do not use -- all tests use the same interfaces
+
+					var errorExpected bool
+
+					testApIds := make([]ObjectId, len(tCase.apIdxs))
+					for i, idx := range tCase.apIdxs {
+						if idx >= 0 {
+							testApIds[i] = leafInterfaceIds[idx]
+						} else {
+							testApIds[i] = ObjectId(randString(6, "hex"))
+							errorExpected = true
+						}
+					}
+
+					testCtIds := make([]ObjectId, len(tCase.ctIdxs))
+					for i, idx := range tCase.ctIdxs {
+						if idx >= 0 {
+							testCtIds[i] = ctIds[idx]
+						} else {
+							testCtIds[i] = ObjectId(randString(6, "hex"))
+							errorExpected = true
+						}
+					}
+
+					setRequest := make(map[ObjectId]map[ObjectId]bool)
+					delRequest := make(map[ObjectId]map[ObjectId]bool)
+					for _, apId := range testApIds {
+						setRequest[apId] = make(map[ObjectId]bool)
+						for _, ctId := range testCtIds {
+							setRequest[apId][ctId] = true
+						}
+
+						delRequest[apId] = make(map[ObjectId]bool)
+						for _, ctId := range testCtIds {
+							delRequest[apId][ctId] = false
+						}
+					}
+
+					log.Printf("testing SetApplicationPointsConnectivityTemplates() error handling when setting with bogus values against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					setErr := bpClient.SetApplicationPointsConnectivityTemplates(ctx, setRequest)
+					if !errorExpected {
+						require.NoError(t, setErr)
+					}
+
+					log.Printf("testing SetApplicationPointsConnectivityTemplates() error handling when clearing with bogus values against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+					delErr := bpClient.SetApplicationPointsConnectivityTemplates(ctx, delRequest)
+					if !errorExpected {
+						require.NoError(t, setErr)
+						return
+					}
+
+					// if we got here, there should be errors to inspect
+					for _, err := range []error{setErr, delErr} {
+						require.Error(t, err)
+
+						var ace ClientErr
+						require.ErrorAs(t, setErr, &ace)
+						require.Equal(t, ErrCtAssignmentFailed, ace.Type())
+						detail := ace.detail.(*ErrCtAssignmentFailedDetail)
+
+						// collect the bad data we used
+						var bogusApIdxs []int
+						for i, idx := range tCase.apIdxs {
+							if idx < 0 {
+								bogusApIdxs = append(bogusApIdxs, i)
+							}
+						}
+						var bogusCtIds []ObjectId
+						for i, idx := range tCase.ctIdxs {
+							if idx < 0 {
+								bogusCtIds = append(bogusCtIds, testCtIds[i])
+							}
+						}
+
+						require.Equal(t, len(bogusCtIds), len(detail.InvalidConnectivityTemplateIds))
+						for _, bogusCtId := range bogusCtIds {
+							require.Contains(t, detail.InvalidConnectivityTemplateIds, bogusCtId)
+						}
+
+						if len(bogusApIdxs) > 0 && len(bogusCtIds) == 0 { // bogus CT IDs take precedence over bogus AP IDs
+							require.Equal(t, len(bogusApIdxs), len(detail.InvalidApplicationPointIndexes))
+							for _, idx := range bogusApIdxs {
+								require.Contains(t, detail.InvalidApplicationPointIndexes, idx)
 							}
 						}
 					}
