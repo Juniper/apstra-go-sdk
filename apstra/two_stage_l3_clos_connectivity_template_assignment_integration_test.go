@@ -668,7 +668,7 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 						if idx >= 0 {
 							testApIds[i] = leafInterfaceIds[idx]
 						} else {
-							testApIds[i] = ObjectId(randString(6, "hex"))
+							testApIds[i] = ObjectId("bogus-AP-" + randString(6, "hex"))
 							errorExpected = true
 						}
 					}
@@ -678,7 +678,7 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 						if idx >= 0 {
 							testCtIds[i] = ctIds[idx]
 						} else {
-							testCtIds[i] = ObjectId(randString(6, "hex"))
+							testCtIds[i] = ObjectId("bogus-CT-" + randString(6, "hex"))
 							errorExpected = true
 						}
 					}
@@ -698,13 +698,15 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 					}
 
 					log.Printf("testing SetApplicationPointsConnectivityTemplates() error handling when setting with bogus values against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					setErr := bpClient.SetApplicationPointsConnectivityTemplates(ctx, setRequest)
+					setCtx := context.WithValue(ctx, CtxKeyTestID, tName+"(set)")
+					setErr := bpClient.SetApplicationPointsConnectivityTemplates(setCtx, setRequest)
 					if !errorExpected {
 						require.NoError(t, setErr)
 					}
 
 					log.Printf("testing SetApplicationPointsConnectivityTemplates() error handling when clearing with bogus values against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					delErr := bpClient.SetApplicationPointsConnectivityTemplates(ctx, delRequest)
+					delCtx := context.WithValue(ctx, CtxKeyTestID, tName+"(del)")
+					delErr := bpClient.SetApplicationPointsConnectivityTemplates(delCtx, delRequest)
 					if !errorExpected {
 						require.NoError(t, setErr)
 						return
