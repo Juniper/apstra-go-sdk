@@ -12,7 +12,6 @@ import (
 	"io"
 	"net/http"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -40,67 +39,77 @@ func (o TalkToApstraErr) Error() string {
 }
 
 func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
-	body, err := io.ReadAll(o.Response.Body)
-	if err != nil {
-		return fmt.Errorf("reading error response body: %w", err)
-	}
+	var err error
 
-	var raw struct {
-		ApplicationPoints map[string]struct {
-			Policies map[string]json.RawMessage `json:"policies"` // these might be strings or a structs
+	// unpack the request we sent
+	var rawReq struct {
+		ApplicationPoints []struct {
+			Id ObjectId `json:"id"`
+			//Policies []struct {
+			//	Policy ObjectId `json:"policy"`
+			//	Used   bool     `json:"used"`
+			//} `json:"policies"`
 		} `json:"application_points"`
 	}
-
-	if json.Unmarshal(body, &raw) != nil {
-		return fmt.Errorf("parsing obj-policy-batch-apply error: %w", o)
+	err = json.NewDecoder(o.Request.Body).Decode(&rawReq)
+	if err != nil {
+		return fmt.Errorf("reading request body: %w parent error: %w", err, o)
 	}
 
-	var detail ErrCtAssignmentFailedDetail // we return this
+	// unpack the response we received
+	var rawResp struct {
+		ApplicationPoints map[int]struct {
+			Policies map[int]json.RawMessage `json:"policies"` // these might be strings or a structs
+		} `json:"application_points"`
+	}
+	err = json.NewDecoder(o.Response.Body).Decode(&rawResp)
+	if err != nil {
+		return fmt.Errorf("reading response body: %w parent error: %w", err, o)
+	}
 
-	var rawPolicyMsg struct { // we unpack each policy element here
+	var rawPolicyStruct struct { // we attempt to unpack each policy element here
 		Policy string `json:"policy"`
 	}
 
-	policyIdRegexp := regexp.MustCompile("^Endpoint policy with node id (.*) does not exist$")
+	policyIdErrorRegex := regexp.MustCompile("^Endpoint policy with node id (.*) does not exist$")
 
 	// store collected indexes and ids in maps for de-dup reasons
-	invalidApplicationPointIndexes := make(map[int]struct{})
-	invalidConnectivityTemplateIds := make(map[ObjectId]struct{})
+	invalidApIds := make(map[ObjectId]struct{})
+	invalidCTIds := make(map[ObjectId]struct{})
 
-	for apKey, ap := range raw.ApplicationPoints {
-		apIdx, err := strconv.Atoi(apKey)
-		if err != nil {
-			return fmt.Errorf("parsing obj-policy-batch-apply application point map index %q: %w': parsing obj-policy-batch-apply error: %w", apKey, err, o)
-		}
-
+	// loop over the error's application point map
+	for apIdx, ap := range rawResp.ApplicationPoints {
 		for pKey, p := range ap.Policies {
-			err = json.Unmarshal(p, &rawPolicyMsg) // maybe we got a struct?
+			err = json.Unmarshal(p, &rawPolicyStruct) // maybe we got a struct?
 			if err != nil {
-				err = json.Unmarshal(p, &rawPolicyMsg.Policy) // maybe we got a string?
+				err = json.Unmarshal(p, &rawPolicyStruct.Policy) // maybe we got a string?
 				if err != nil {
-					return fmt.Errorf("cannot parse error at application point %q, policy %q: %w", apKey, pKey, o) // don't wrap either err here
+					return fmt.Errorf("parsing error at application point %d, policy %q: %w", apIdx, pKey, o) // don't wrap either err here
 				}
 			}
 
-			policyIdSubMatches := policyIdRegexp.FindStringSubmatch(rawPolicyMsg.Policy)
+			policyIdSubMatches := policyIdErrorRegex.FindStringSubmatch(rawPolicyStruct.Policy)
 
 			switch {
 			case len(policyIdSubMatches) == 2:
-				invalidConnectivityTemplateIds[ObjectId(policyIdSubMatches[1])] = struct{}{}
-				// detail.InvalidConnectivityTemplateIds = append(detail.InvalidConnectivityTemplateIds, ObjectId(policyIdSubMatches[1]))
-			case rawPolicyMsg.Policy == "Not a valid application point":
-				invalidApplicationPointIndexes[apIdx] = struct{}{}
+				invalidCTIds[ObjectId(policyIdSubMatches[1])] = struct{}{}
+			case rawPolicyStruct.Policy == "Not a valid application point":
+				if apIdx < 0 || apIdx >= len(rawReq.ApplicationPoints) {
+					return fmt.Errorf("invalid application point index %d in API response", apIdx)
+				}
+				invalidApIds[rawReq.ApplicationPoints[apIdx].Id] = struct{}{}
 			default:
-				return fmt.Errorf("cannot parse error at application point %q, policy %q: %w", apKey, pKey, o)
+				return fmt.Errorf("cannot parse error at application point %d, policy %q: %w", apIdx, pKey, o)
 			}
 		}
 	}
 
-	for invalidApplicationPointIdx := range invalidApplicationPointIndexes {
-		detail.InvalidApplicationPointIndexes = append(detail.InvalidApplicationPointIndexes, invalidApplicationPointIdx)
+	var detail ErrCtAssignmentFailedDetail // we return this
+	for invalidApId := range invalidApIds {
+		detail.InvalidApplicationPointIds = append(detail.InvalidApplicationPointIds, invalidApId)
 	}
-	for invalidConnectivityTemplateId := range invalidConnectivityTemplateIds {
-		detail.InvalidConnectivityTemplateIds = append(detail.InvalidConnectivityTemplateIds, invalidConnectivityTemplateId)
+	for invalidCtId := range invalidCTIds {
+		detail.InvalidConnectivityTemplateIds = append(detail.InvalidConnectivityTemplateIds, invalidCtId)
 	}
 
 	return ClientErr{

@@ -72,7 +72,7 @@ type ErrLagHasAssignedStructuresDetail struct {
 }
 
 type ErrCtAssignmentFailedDetail struct {
-	InvalidApplicationPointIndexes []int
+	InvalidApplicationPointIds     []ObjectId
 	InvalidConnectivityTemplateIds []ObjectId
 }
 
