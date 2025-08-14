@@ -77,6 +77,13 @@ type taskIdResponse struct {
 func convertTtaeToAceWherePossible(err error) error {
 	var ttae TalkToApstraErr
 	if errors.As(err, &ttae) {
+		// handle response by request URL path
+		switch {
+		case apiUrlBlueprintObjPolicyBatchApplyRegex.MatchString(ttae.Request.URL.Path):
+			return ttae.parseApiUrlBlueprintObjPolicyBatchApplyError()
+		}
+
+		// handle response by status code
 		switch ttae.Response.StatusCode {
 		case http.StatusUnauthorized:
 			return ClientErr{errType: ErrAuthFail, err: err}
@@ -415,76 +422,6 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	// it's impossible to know exactly what'll be in there. Extract it now into
 	// whatever in.apiResponse (interface{} controlled by the caller) is.
 	return json.Unmarshal(taskResponse.DetailedStatus.ApiResponse, in.apiResponse)
-}
-
-// TalkToApstraErr implements error{} and carries around http.Request and
-// http.Response object pointers. Error() method produces a string like
-// "<error> - http response <status> at url <url>".
-type TalkToApstraErr struct {
-	Request  *http.Request
-	Response *http.Response
-	Msg      string
-}
-
-func (o TalkToApstraErr) Error() string {
-	apstraUrl := "nil"
-	if o.Request != nil {
-		apstraUrl = o.Request.URL.String()
-	}
-
-	status := "nil"
-	if o.Response != nil {
-		status = o.Response.Status
-	}
-
-	return fmt.Sprintf("%s - http response '%s' at '%s'", o.Msg, status, apstraUrl)
-}
-
-// newTalkToApstraErr returns a TalkToApstraErr. It's intended to be called after the
-// http.Request has been executed with Do(), so the request body has already
-// been "spent" by Read(). We'll fill it back in. The response body is likely to
-// be closed by a 'defer body.Close()' somewhere, so we'll replace that as well,
-// up to some reasonable limit (don't try to buffer gigabytes of data from the
-// webserver).
-func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) TalkToApstraErr {
-	// don't include secret in error
-	req.Header.Del(apstraAuthHeader)
-
-	// redact request body for sensitive URLs
-	switch req.URL.Path {
-	case apiUrlUserLogin:
-		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("request body for '%s' redacted", req.URL.Path)))
-	default:
-		rehydratedRequest := bytes.NewBuffer(reqBody)
-		req.Body = io.NopCloser(rehydratedRequest)
-	}
-
-	// redact response body for sensitive URLs
-	switch req.URL.Path {
-	case apiUrlUserLogin:
-		_ = resp.Body.Close() // close the real network socket
-		resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf("resposne body for '%s' redacted", req.URL.Path)))
-	default:
-		// prepare a stunt double response body for the one that's likely attached to a network
-		// socket, and likely to be closed by a `defer` somewhere
-		rehydratedResponse := &bytes.Buffer{}
-		_, _ = io.CopyN(rehydratedResponse, resp.Body, errResponseBodyLimit) // size limit
-		resp.Body = io.NopCloser(rehydratedResponse)                         // replace the original body
-	}
-
-	// use first part of response body if errMsg empty
-	if errMsg == "" {
-		peekAbleBodyReader := bufio.NewReader(resp.Body)
-		resp.Body = io.NopCloser(peekAbleBodyReader)
-		peek, _ := peekAbleBodyReader.Peek(errResponseStringLimit)
-		errMsg = string(peek)
-	}
-
-	return TalkToApstraErr{
-		Request:  req,
-		Response: resp,
-		Msg:      errMsg,
-	}
 }
 
 func peekParseResponseBodyAsTaskId(resp *http.Response, result *taskIdResponse) (bool, error) {
