@@ -48,6 +48,7 @@ const (
 	ErrIbaCurrentMountConflictsWithExistingMount
 	ErrInvalidId
 	ErrUnsafePatchProhibited
+	ErrCtAssignmentFailed
 
 	clientPollingIntervalMs = 1000
 
@@ -68,6 +69,11 @@ type ErrCtAssignedToLinkDetail struct {
 
 type ErrLagHasAssignedStructuresDetail struct {
 	GroupLabels []string
+}
+
+type ErrCtAssignmentFailedDetail struct {
+	InvalidApplicationPointIds     []ObjectId
+	InvalidConnectivityTemplateIds []ObjectId
 }
 
 type ClientErr struct {
