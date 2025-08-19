@@ -93,6 +93,21 @@ func (o *PathQueryElement) String() string {
 	return fmt.Sprintf("%s(%s)", o.qeeType, attrsSB.String())
 }
 
+type QEIntValIsIn []int
+
+func (o QEIntValIsIn) String() string {
+	if len(o) == 0 { // handle <nil> gracefully
+		return "is_in([])"
+	}
+	var sb strings.Builder
+	sb.WriteString(strconv.Itoa(o[0]))
+	for _, v := range o[1:] {
+		sb.WriteString(",")
+		sb.WriteString(strconv.Itoa(v))
+	}
+	return "is_in([" + sb.String() + "])"
+}
+
 type QEStringValIsIn []string
 
 func (o QEStringValIsIn) String() string {
