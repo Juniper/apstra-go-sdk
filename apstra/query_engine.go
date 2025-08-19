@@ -96,15 +96,16 @@ func (o *PathQueryElement) String() string {
 type QEIntValIsIn []int
 
 func (o QEIntValIsIn) String() string {
-	if len(o) == 0 { // handle <nil> gracefully
+	if len(o) == 0 {
 		return "is_in([])"
 	}
+
 	var sb strings.Builder
 	sb.WriteString(strconv.Itoa(o[0]))
 	for _, v := range o[1:] {
-		sb.WriteString(",")
-		sb.WriteString(strconv.Itoa(v))
+		sb.WriteString("," + strconv.Itoa(v))
 	}
+
 	return "is_in([" + sb.String() + "])"
 }
 
