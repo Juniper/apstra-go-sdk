@@ -49,15 +49,15 @@ func (o *Client) Config() ClientCfg {
 }
 
 func (o *Client) GetApiToken() string {
-	o.Lock(mutexKeyHttpHeaders)
-	defer o.Unlock(mutexKeyHttpHeaders)
+	o.lock(mutexKeyHttpHeaders)
+	defer o.unlock(mutexKeyHttpHeaders)
 	return o.httpHeaders[apstraAuthHeader]
 }
 
 func (o *Client) SetApiToken(in string) {
-	o.Lock(mutexKeyHttpHeaders)
+	o.lock(mutexKeyHttpHeaders)
 	o.httpHeaders[apstraAuthHeader] = in
-	o.Unlock(mutexKeyHttpHeaders)
+	o.unlock(mutexKeyHttpHeaders)
 }
 
 func (o *Client) login(ctx context.Context) error {
@@ -77,9 +77,9 @@ func (o *Client) login(ctx context.Context) error {
 	}
 
 	// stash auth token in client's default set of apstra http httpHeaders
-	o.Lock(mutexKeyHttpHeaders)
+	o.lock(mutexKeyHttpHeaders)
 	o.httpHeaders[apstraAuthHeader] = response.Token
-	o.Unlock(mutexKeyHttpHeaders)
+	o.unlock(mutexKeyHttpHeaders)
 
 	o.id = response.Id
 	return nil
@@ -90,18 +90,18 @@ func (o *Client) logout(ctx context.Context) error {
 
 	defer func() { // clear the auth token and stop the task monitor
 		o.Log(1, "deleting auth token")
-		o.Lock(mutexKeyHttpHeaders)
+		o.lock(mutexKeyHttpHeaders)
 		delete(o.httpHeaders, apstraAuthHeader)
-		o.Unlock(mutexKeyHttpHeaders)
+		o.unlock(mutexKeyHttpHeaders)
 		o.Log(1, "shutting down the task monitor")
 	}()
 
-	o.Lock(mutexKeyHttpHeaders)
+	o.lock(mutexKeyHttpHeaders)
 	if token := o.httpHeaders[apstraAuthHeader]; token == "" { // doesn't exist OR is empty string?
-		o.Unlock(mutexKeyHttpHeaders)
+		o.unlock(mutexKeyHttpHeaders)
 		return nil // don't need to call the logout API if we have no token
 	}
-	o.Unlock(mutexKeyHttpHeaders)
+	o.unlock(mutexKeyHttpHeaders)
 
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method:     http.MethodPost,

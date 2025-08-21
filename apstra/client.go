@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
-	mutexmap "github.com/Juniper/apstra-go-sdk/mutex_map"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	mutexmap "github.com/Juniper/apstra-go-sdk/mutex_map"
 	"github.com/hashicorp/go-version"
 )
 
@@ -172,8 +172,8 @@ type Client struct {
 // For un-configured parameters containing "TimeoutSec", "PollingIntervalMs" or "MaxRetries" a default
 // value is returned. Other un-configured values return zero.
 func (o *Client) GetTuningParam(name string) int {
-	o.Lock(tuningParamLock)
-	defer o.Unlock(tuningParamLock)
+	o.lock(tuningParamLock)
+	defer o.unlock(tuningParamLock)
 	result, ok := o.cfg.tuningParams[name]
 	if ok {
 		return result
@@ -195,8 +195,8 @@ func (o *Client) GetTuningParam(name string) int {
 
 // SetTuningParam configures a value in the client configuration. It's a simple map, so any name may be used.
 func (o *Client) SetTuningParam(name string, val int) {
-	o.Lock(tuningParamLock)
-	defer o.Unlock(tuningParamLock)
+	o.lock(tuningParamLock)
+	defer o.unlock(tuningParamLock)
 	if o.cfg.tuningParams == nil {
 		o.cfg.tuningParams = make(map[string]int)
 	}
@@ -428,15 +428,15 @@ func (o *Client) apiVersionSupported() bool {
 	return compatibility.ServerVersionSupported.Check(o.apiVersion)
 }
 
-// Lock secures a sync.Mutex specified by id. The sync.Mutex will be created
+// lock secures a sync.Mutex specified by id. The sync.Mutex will be created
 // if it does not exist.
-func (o *Client) Lock(id string) {
+func (o *Client) lock(id string) {
 	o.mutexMap.Lock(id)
 }
 
-// Unlock releases the sync.Mutex specified by id. It is a run-time error if
+// unlock releases the sync.Mutex specified by id. It is a run-time error if
 // the specified sync.Mutex does not exist or is not locked
-func (o *Client) Unlock(id string) {
+func (o *Client) unlock(id string) {
 	o.mutexMap.Unlock(id)
 }
 

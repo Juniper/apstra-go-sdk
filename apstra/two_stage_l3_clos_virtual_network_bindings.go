@@ -54,8 +54,8 @@ func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context
 		i++
 	}
 
-	o.client.Lock(o.blueprintId.String() + "_" + req.VnId.String())
-	defer o.client.Unlock(o.blueprintId.String() + "_" + req.VnId.String())
+	o.client.lock(o.blueprintId.String() + "_" + req.VnId.String())
+	defer o.client.unlock(o.blueprintId.String() + "_" + req.VnId.String())
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPatch,
@@ -106,8 +106,8 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		}
 	}
 
-	o.client.Lock(o.blueprintId.String() + "_" + req.VnId.String())
-	defer o.client.Unlock(o.blueprintId.String() + "_" + req.VnId.String())
+	o.client.lock(o.blueprintId.String() + "_" + req.VnId.String())
+	defer o.client.unlock(o.blueprintId.String() + "_" + req.VnId.String())
 
 	// collect current VN info (bindings and SVI IPs)
 	vn, err := o.GetVirtualNetwork(ctx, req.VnId)

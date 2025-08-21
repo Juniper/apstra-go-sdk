@@ -68,8 +68,8 @@ func (o *FreeformClient) UpdateConfigTemplateAssignments(ctx context.Context, as
 
 func (o *FreeformClient) UpdateConfigTemplateAssignmentsByTemplate(ctx context.Context, ctID ObjectId, sysIDs []ObjectId) error {
 	// set a lock and defer the unlock until return
-	o.client.Lock("configTemplateAssignments")
-	defer o.client.Unlock("configTemplateAssignments")
+	o.client.lock("configTemplateAssignments")
+	defer o.client.unlock("configTemplateAssignments")
 
 	// read the current set of CT assignments from the api and load it into current.
 	current, err := o.GetConfigTemplateAssignments(ctx, ctID)

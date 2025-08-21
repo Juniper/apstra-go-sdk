@@ -210,8 +210,8 @@ func (o *TwoStageL3ClosClient) getPolicyRuleIdByLabel(ctx context.Context, polic
 func (o *TwoStageL3ClosClient) addPolicyRule(ctx context.Context, rule *rawPolicyRule, position int, policyId ObjectId) (ObjectId, error) {
 	// ensure exclusive access to the policy while we recalculate the rules
 	lockId := o.lockId(policyId)
-	o.client.Lock(lockId)
-	defer o.client.Unlock(lockId)
+	o.client.lock(lockId)
+	defer o.client.unlock(lockId)
 
 	policy, err := o.getPolicy(ctx, policyId)
 	if err != nil {
@@ -252,8 +252,8 @@ func (o *TwoStageL3ClosClient) addPolicyRule(ctx context.Context, rule *rawPolic
 func (o *TwoStageL3ClosClient) deletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
 	// ensure exclusive access to the policy while we recalculate the rules
 	lockId := o.lockId(policyId)
-	o.client.Lock(lockId)
-	defer o.client.Unlock(lockId)
+	o.client.lock(lockId)
+	defer o.client.unlock(lockId)
 
 	policy, err := o.getPolicy(ctx, policyId)
 	if err != nil {
