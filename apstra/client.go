@@ -14,9 +14,9 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
+	mutexmap "github.com/Juniper/apstra-go-sdk/mutex_map"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
@@ -163,8 +163,7 @@ type Client struct {
 	taskMonChan chan *taskMonitorMonReq  // send tasks for monitoring here
 	ctx         context.Context          // copied from ClientCfg, for async operations
 	logger      Logger                   // logs sent here
-	sync        map[string]*sync.Mutex   // some client operations are not concurrency safe. Their locks live here.
-	syncLock    sync.Mutex               // control access to the 'sync' map
+	mutexMap    mutexmap.MutexMap        // some client operations are not concurrency safe. Their mutexes live here.
 	features    map[enum.ApiFeature]bool // true/false indicate feature enabled/disabled status
 	skipGzip    bool                     // prevents setting 'Accept-Encoding: gzip' - only implemented for api-ops proxy
 }
@@ -173,8 +172,8 @@ type Client struct {
 // For un-configured parameters containing "TimeoutSec", "PollingIntervalMs" or "MaxRetries" a default
 // value is returned. Other un-configured values return zero.
 func (o *Client) GetTuningParam(name string) int {
-	o.lock(tuningParamLock)
-	defer o.unlock(tuningParamLock)
+	o.Lock(tuningParamLock)
+	defer o.Unlock(tuningParamLock)
 	result, ok := o.cfg.tuningParams[name]
 	if ok {
 		return result
@@ -196,8 +195,8 @@ func (o *Client) GetTuningParam(name string) int {
 
 // SetTuningParam configures a value in the client configuration. It's a simple map, so any name may be used.
 func (o *Client) SetTuningParam(name string, val int) {
-	o.lock(tuningParamLock)
-	defer o.unlock(tuningParamLock)
+	o.Lock(tuningParamLock)
+	defer o.Unlock(tuningParamLock)
 	if o.cfg.tuningParams == nil {
 		o.cfg.tuningParams = make(map[string]int)
 	}
@@ -337,7 +336,7 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		httpHeaders: httpHeaders,
 		logger:      logger,
 		taskMonChan: make(chan *taskMonitorMonReq),
-		sync:        make(map[string]*sync.Mutex),
+		mutexMap:    mutexmap.NewMutexMap(),
 		ctx:         context.Background(),
 	}
 
@@ -429,32 +428,16 @@ func (o *Client) apiVersionSupported() bool {
 	return compatibility.ServerVersionSupported.Check(o.apiVersion)
 }
 
-// lock creates (if necessary) a *sync.Mutex in Client.sync, and then locks it.
-func (o *Client) lock(id string) {
-	o.syncLock.Lock() // lock the map of locks - no defer unlock here, we unlock aggressively in the 'found' case below.
-	if mu, found := o.sync[id]; found {
-		o.syncLock.Unlock()
-
-		mu.Lock()
-	} else {
-		mu = new(sync.Mutex)
-		mu.Lock()
-		o.sync[id] = mu
-
-		o.syncLock.Unlock()
-	}
+// Lock secures a sync.Mutex specified by id. The sync.Mutex will be created
+// if it does not exist.
+func (o *Client) Lock(id string) {
+	o.mutexMap.Lock(id)
 }
 
-// unlock releases the named *sync.Mutex in Client.sync
-func (o *Client) unlock(id string) {
-	o.syncLock.Lock()
-	defer o.syncLock.Unlock()
-
-	if mu, ok := o.sync[id]; ok {
-		mu.Unlock()
-	} else {
-		panic("attempt to unlock unknown mutex: '" + id + "'")
-	}
+// Unlock releases the sync.Mutex specified by id. It is a run-time error if
+// the specified sync.Mutex does not exist or is not locked
+func (o *Client) Unlock(id string) {
+	o.mutexMap.Unlock(id)
 }
 
 // Login submits username and password from the ClientCfg (Client.cfg) to the

@@ -29,8 +29,8 @@ func (o *Client) getFeatures(ctx context.Context) error {
 		return convertTtaeToAceWherePossible(err)
 	}
 
-	o.lock(apiUrlFeatures)
-	defer o.unlock(apiUrlFeatures)
+	o.Lock(apiUrlFeatures)
+	defer o.Unlock(apiUrlFeatures)
 
 	o.features = make(map[enum.ApiFeature]bool, len(response))
 	for f, s := range response {
@@ -69,15 +69,15 @@ func (o *Client) getFeatures(ctx context.Context) error {
 }
 
 func (o *Client) FeatureEnabled(f enum.ApiFeature) bool {
-	o.lock(apiUrlFeatures)
-	defer o.unlock(apiUrlFeatures)
+	o.Lock(apiUrlFeatures)
+	defer o.Unlock(apiUrlFeatures)
 
 	return o.features[f]
 }
 
 func (o *Client) FeatureExists(f enum.ApiFeature) bool {
-	o.lock(apiUrlFeatures)
-	defer o.unlock(apiUrlFeatures)
+	o.Lock(apiUrlFeatures)
+	defer o.Unlock(apiUrlFeatures)
 
 	_, exists := o.features[f]
 

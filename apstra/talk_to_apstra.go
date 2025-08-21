@@ -248,11 +248,11 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 		req.Header.Set(CtxKeyTestID, testId)
 	}
 
-	o.lock(mutexKeyHttpHeaders)
+	o.Lock(mutexKeyHttpHeaders)
 	for k, v := range o.httpHeaders {
 		req.Header.Set(k, v)
 	}
-	o.unlock(mutexKeyHttpHeaders)
+	o.Unlock(mutexKeyHttpHeaders)
 
 	o.logFunc(2, o.dumpHttpRequest, req)
 

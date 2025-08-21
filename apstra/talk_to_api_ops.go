@@ -43,7 +43,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 		}
 	}
 
-	o.lock(mutexKeyHttpHeaders)
+	o.Lock(mutexKeyHttpHeaders)
 	headers := make(map[string]string, len(o.httpHeaders)+3)
 	for k, v := range o.httpHeaders {
 		headers[k] = v
@@ -55,7 +55,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 		headers["Content-Type"] = "application/json"
 	}
 	headers["X-Dest-Fallback"] = "s3"
-	o.unlock(mutexKeyHttpHeaders)
+	o.Unlock(mutexKeyHttpHeaders)
 
 	// this is the structure we send to the proxy
 	type proxyMessage struct {
