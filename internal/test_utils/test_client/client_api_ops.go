@@ -21,41 +21,41 @@ import (
 )
 
 const (
-	envAPIopsTopologyURLList = "API_OPS_URLS"
-	envAPIopsURLSep          = ";"
+	envAPIOpsTopologyURLList = "API_OPS_URLS"
+	envAPIOpsURLSep          = ";"
 )
 
-var _ testClientConfig = (*APIopsConfig)(nil)
+var _ testClientConfig = (*APIOpsConfig)(nil)
 
-type APIopsConfig struct {
+type APIOpsConfig struct {
 	dcID   string
 	config apstra.ClientCfg
 }
 
-func (a APIopsConfig) clientConfig() apstra.ClientCfg {
+func (a APIOpsConfig) clientConfig() apstra.ClientCfg {
 	return a.config
 }
 
-func (a APIopsConfig) clientType() ClientType {
-	return ClientTypeAPIops
+func (a APIOpsConfig) clientType() ClientType {
+	return ClientTypeAPIOps
 }
 
-func (a APIopsConfig) id() string {
+func (a APIOpsConfig) id() string {
 	return a.dcID
 }
 
-func getAPIopsClientCfg(t *testing.T, ctx context.Context, APIopsURL string) testClientConfig {
+func getAPIOpsClientCfg(t *testing.T, _ context.Context, APIOpsURL string) testClientConfig {
 	t.Helper()
 
-	u, err := url.Parse(APIopsURL)
-	require.NoErrorf(t, err, "parsing APIopsURL: %q", APIopsURL)
+	u, err := url.Parse(APIOpsURL)
+	require.NoErrorf(t, err, "parsing APIOpsURL: %q", APIOpsURL)
 
 	id := path.Base(u.Path)
 
-	return APIopsConfig{
+	return APIOpsConfig{
 		dcID: id,
 		config: apstra.ClientCfg{
-			APIopsDCID: &id,
+			APIOpsDCID: &id,
 			Url:        strings.TrimSuffix(u.String(), u.Path),
 			HttpClient: &http.Client{
 				Transport: &http.Transport{
@@ -69,19 +69,19 @@ func getAPIopsClientCfg(t *testing.T, ctx context.Context, APIopsURL string) tes
 	}
 }
 
-func getAPIopsClientCfgs(t *testing.T, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getAPIOpsClientCfgs(t *testing.T, ctx context.Context, testConfig TestConfig) []testClientConfig {
 	topologyIDs := testConfig.ApiOpsProxyUrls
 
 	if len(topologyIDs) == 0 {
-		list := os.Getenv(envAPIopsTopologyURLList)
+		list := os.Getenv(envAPIOpsTopologyURLList)
 		if len(list) != 0 {
-			topologyIDs = strings.Split(list, envAPIopsTopologyURLList)
+			topologyIDs = strings.Split(list, envAPIOpsTopologyURLList)
 		}
 	}
 
 	result := make([]testClientConfig, len(topologyIDs))
 	for i, id := range topologyIDs {
-		result[i] = getAWSClientCfg(t, ctx, id)
+		result[i] = getAPIOpsClientCfg(t, ctx, id)
 	}
 
 	return result

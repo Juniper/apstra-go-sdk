@@ -85,7 +85,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 		DcId         string       `json:"datacenter_edge_id"`
 		ProxyMessage proxyMessage `json:"payload"`
 	}{
-		DcId:         *o.cfg.APIopsDCID,
+		DcId:         *o.cfg.APIOpsDCID,
 		ProxyMessage: msg,
 	})
 	if err != nil {

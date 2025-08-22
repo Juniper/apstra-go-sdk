@@ -69,7 +69,7 @@ func getApiOpsTestClientCfgs(_ context.Context) (map[string]testClientCfg, error
 			cfgType: "api-ops",
 			cfg: &ClientCfg{
 				Url:        strings.TrimSuffix(u.String(), u.Path),
-				APIopsDCID: toPtr(path.Base(u.Path)),
+				APIOpsDCID: toPtr(path.Base(u.Path)),
 				HttpClient: &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}},
 			},
 		}

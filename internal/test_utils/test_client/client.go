@@ -32,6 +32,7 @@ type testClientConfig interface {
 func getTestClientCfgs(t *testing.T, ctx context.Context, testConfig TestConfig) []testClientConfig {
 	var result []testClientConfig
 
+	result = append(result, getAPIOpsClientCfgs(t, ctx, testConfig)...)
 	result = append(result, getAWSClientCfgs(t, ctx, testConfig)...)
 	result = append(result, getCloudLabsClientCfgs(t, ctx, testConfig)...)
 	result = append(result, getSlicerClientCfgs(t, ctx, testConfig)...)

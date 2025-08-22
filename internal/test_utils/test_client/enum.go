@@ -20,12 +20,12 @@ func (c ClientType) String() string {
 }
 
 var (
-	ClientTypeAPIops    = ClientType{"api-ops"}
+	ClientTypeAPIOps    = ClientType{"api-ops"}
 	ClientTypeAWS       = ClientType{"aws"}
 	ClientTypeCloudLabs = ClientType{"cloudlabs"}
 	ClientTypeSlicer    = ClientType{"slicer"}
 	ClientTypes         = enum.New(
-		ClientTypeAPIops,
+		ClientTypeAPIOps,
 		ClientTypeAWS,
 		ClientTypeCloudLabs,
 		ClientTypeSlicer,
