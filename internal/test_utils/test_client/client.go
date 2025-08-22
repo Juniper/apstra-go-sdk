@@ -49,8 +49,10 @@ func (t TestClient) Name() string {
 	return fmt.Sprintf("%s/%s/%s", t.config.clientType(), t.config.id(), t.Client.ApiVersion())
 }
 
-var testClients []TestClient
-var testClientsMutex sync.Mutex
+var (
+	testClients      []TestClient
+	testClientsMutex sync.Mutex
+)
 
 func GetTestClients(t *testing.T, ctx context.Context) []TestClient {
 	t.Helper()

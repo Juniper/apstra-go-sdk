@@ -11,14 +11,15 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra"
-	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/stretchr/testify/require"
 )
 
 const (

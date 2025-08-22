@@ -8,6 +8,7 @@ package testclient
 
 import (
 	"fmt"
+
 	"github.com/orsinium-labs/enum"
 )
 

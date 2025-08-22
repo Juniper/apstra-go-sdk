@@ -9,15 +9,16 @@ package testclient
 import (
 	"context"
 	"crypto/tls"
-	"github.com/Juniper/apstra-go-sdk/apstra"
-	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/stretchr/testify/require"
 )
 
 const (
