@@ -353,6 +353,7 @@ func TestImmediateTickerSecondTick(t *testing.T) {
 	log.Printf("start %s first tick %s second tick %s", start, firstTick, secondTick)
 }
 
+// Deprecated: Use testutils.TestBlueprintA
 func testBlueprintA(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
@@ -371,6 +372,7 @@ func testBlueprintA(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	return bpClient
 }
 
+// Deprecated: Use testutils.TestBlueprintB
 func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
@@ -389,6 +391,7 @@ func testBlueprintB(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	return bpClient
 }
 
+// Deprecated: Use testutils.TestBlueprintC
 func testBlueprintC(ctx context.Context, t testing.TB, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
@@ -406,6 +409,7 @@ func testBlueprintC(ctx context.Context, t testing.TB, client *Client) *TwoStage
 	return bpClient
 }
 
+// Deprecated: Use testutils.TestBlueprintD
 func testBlueprintD(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
@@ -451,6 +455,7 @@ func testBlueprintD(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	return bpClient
 }
 
+// Deprecated: Use testutils.TestBlueprintE
 func testBlueprintE(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &CreateBlueprintFromTemplateRequest{
 		RefDesign:  enum.RefDesignDatacenter,
@@ -526,6 +531,7 @@ func testBlueprintE(ctx context.Context, t *testing.T, client *Client) *TwoStage
 
 // testBlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient.
 // The blueprint will use a dual-stack fabric and have ipv6 enabled.
+// Deprecated: Use testutils.TestBlueprintH
 func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
@@ -570,6 +576,7 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStage
 }
 
 // testBlueprintI returns a collapsed fabric which has been committed and has no build errors
+// Deprecated: Use testutils.TestBlueprintI
 func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
@@ -708,6 +715,7 @@ func TestItemInSlice(t *testing.T) {
 	}
 }
 
+// Deprecated: Use testutils.TestRackA
 func testRackA(ctx context.Context, t *testing.T, client *Client) (ObjectId, func(context.Context) error) {
 	deleteFunc := func(context.Context) error { return nil }
 	request := RackTypeRequest{
@@ -734,6 +742,7 @@ func testRackA(ctx context.Context, t *testing.T, client *Client) (ObjectId, fun
 	return id, deleteFunc
 }
 
+// Deprecated: Use testutils.TestTemplateA
 func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId, func(context.Context) error) {
 	deleteFunc := func(context.Context) error { return nil }
 	rackId, rackDeleteFunc := testRackA(ctx, t, client)
@@ -773,6 +782,7 @@ func testTemplateA(ctx context.Context, t *testing.T, client *Client) (ObjectId,
 	return id, deleteFunc
 }
 
+// Deprecated: Use testutils.TestBlueprintF
 func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStageL3ClosClient, func(context.Context) error) {
 	deleteFunc := func(context.Context) error { return nil }
 	templateId, templateDeleteFunc := testTemplateA(ctx, t, client)
@@ -800,6 +810,7 @@ func testBlueprintF(ctx context.Context, t *testing.T, client *Client) (*TwoStag
 	return bpClient, deleteFunc
 }
 
+// Deprecated: Use testutils.TestBlueprintG
 func testBlueprintG(ctx context.Context, t *testing.T, client *Client) *TwoStageL3ClosClient {
 	t.Helper()
 
@@ -911,6 +922,7 @@ func compareDashboards(d1, d2 IbaDashboardData) bool {
 	return true
 }
 
+// Deprecated: Use testutils.TestTemplateB
 func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {
 	t.Helper()
 
@@ -944,6 +956,7 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {
 	return id
 }
 
+// Deprecated: Use testutils.TestSecurityZoneA
 func testSecurityZone(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClient) ObjectId {
 	t.Helper()
 
@@ -965,6 +978,7 @@ func testSecurityZone(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClien
 	return id
 }
 
+// Deprecated: Use testutils.TestVirtualNetworkA
 func testVirtualNetwork(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClient, szId ObjectId) ObjectId {
 	t.Helper()
 
