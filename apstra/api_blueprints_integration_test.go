@@ -414,11 +414,13 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
-			t.Parallel()
 			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
+					t.Parallel()
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
+
 					if tCase.constraint != nil && !tCase.constraint.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) {
 						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.Client.ApiVersion(), tCase.constraint)
 					}
