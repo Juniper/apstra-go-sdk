@@ -29,7 +29,9 @@ type testClientConfig interface {
 }
 
 // getTestClientCfgs returns []testClientConfig
-func getTestClientCfgs(t *testing.T, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getTestClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+	t.Helper()
+	
 	var result []testClientConfig
 
 	result = append(result, getAPIOpsClientCfgs(t, ctx, testConfig)...)
@@ -54,7 +56,7 @@ var (
 	testClientsMutex sync.Mutex
 )
 
-func GetTestClients(t *testing.T, ctx context.Context) []TestClient {
+func GetTestClients(t testing.TB, ctx context.Context) []TestClient {
 	t.Helper()
 
 	testClientsMutex.Lock()
