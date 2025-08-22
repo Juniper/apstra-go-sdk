@@ -12,8 +12,8 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/stretchr/testify/require"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 )
 
 // WrapCtxWithTestId produces contexts with the following values:
