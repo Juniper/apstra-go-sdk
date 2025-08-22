@@ -129,7 +129,7 @@ type ClientCfg struct {
 	Experimental bool           // used to enable experimental features
 	UserAgent    string         // may used to set a custom user-agent
 	tuningParams map[string]int // various tunable parameters keyed by name
-	apiOpsDcId   *string        // indicates that we should be talking to API-ops proxy using this DC ID
+	APIopsDCID   *string        // indicates that we should be talking to API-ops proxy using this DC ID
 }
 
 // TaskId represents outstanding tasks on an Apstra server
@@ -280,9 +280,9 @@ func (o ClientCfg) validate() error {
 	switch {
 	case o.Url == "":
 		return errors.New("error Url for Apstra Service cannot be empty")
-	case o.User == "" && o.apiOpsDcId == nil:
+	case o.User == "" && o.APIopsDCID == nil:
 		return errors.New("error username for Apstra service cannot be empty")
-	case o.Pass == "" && o.apiOpsDcId == nil:
+	case o.Pass == "" && o.APIopsDCID == nil:
 		return errors.New("error password for Apstra service cannot be empty")
 	}
 
@@ -295,7 +295,7 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		if proxyId == "" {
 			return nil, fmt.Errorf("environment variable %s must not be empty if set", envAosOpsEdgeId)
 		}
-		o.apiOpsDcId = &proxyId
+		o.APIopsDCID = &proxyId
 	}
 
 	err := o.validate()
@@ -344,7 +344,7 @@ func (o ClientCfg) NewClient(ctx context.Context) (*Client, error) {
 		c.skipGzip = true
 	}
 
-	if o.apiOpsDcId != nil {
+	if o.APIopsDCID != nil {
 		c.startTaskMonitor() // because this client will never "log in"
 	}
 
@@ -445,7 +445,7 @@ func (o *Client) unlock(id string) {
 // is not already logged in, Apstra will send HTTP 401. The client will log
 // itself in and resubmit the request.
 func (o *Client) Login(ctx context.Context) error {
-	if o.cfg.apiOpsDcId != nil {
+	if o.cfg.APIopsDCID != nil {
 		return nil // we never log in or out when configured to use the api-ops proxy
 	}
 
@@ -461,7 +461,7 @@ func (o *Client) Login(ctx context.Context) error {
 
 // Logout invalidates the Apstra API token held by Client
 func (o *Client) Logout(ctx context.Context) error {
-	if o.cfg.apiOpsDcId != nil {
+	if o.cfg.APIopsDCID != nil {
 		return nil // we never log in or out when configured to use the api-ops proxy
 	}
 
