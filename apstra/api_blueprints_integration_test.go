@@ -9,6 +9,11 @@ package apstra_test
 import (
 	"context"
 	"encoding/json"
+	"log"
+	"math/rand"
+	"os"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
@@ -17,10 +22,6 @@ import (
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
-	"log"
-	"math/rand"
-	"os"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 )
@@ -617,7 +618,6 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 	}
 
 	for tName, tCase := range testCases {
-
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.WrapCtxWithTestId(t, ctx)
