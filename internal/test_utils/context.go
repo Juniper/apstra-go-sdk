@@ -8,11 +8,11 @@ package testutils
 
 import (
 	"context"
-	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/stretchr/testify/require"
 	"github.com/google/uuid"
 )
 
