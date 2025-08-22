@@ -1,35 +1,35 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"testing"
 
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetBlueprintAnomalies(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			bpClient := testBlueprintB(ctx, t, client.client)
+			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
 
-			log.Printf("testing GetBlueprintAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			anomalies, err := client.client.GetBlueprintAnomalies(ctx, bpClient.Id())
+			anomalies, err := client.Client.GetBlueprintAnomalies(ctx, bpClient.Id())
 			require.NoError(t, err)
 
 			log.Printf("%d blueprint anomalies retrieved", len(anomalies))
@@ -38,20 +38,18 @@ func TestGetBlueprintAnomalies(t *testing.T) {
 }
 
 func TestGetBlueprintNodeAnomalyCounts(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			bpClient := testBlueprintB(ctx, t, client.client)
+			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
 
-			log.Printf("testing GetBlueprintAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			anomalies, err := client.client.GetBlueprintNodeAnomalyCounts(ctx, bpClient.Id())
+			anomalies, err := client.Client.GetBlueprintNodeAnomalyCounts(ctx, bpClient.Id())
 			require.NoError(t, err)
 
 			log.Printf("%d node anomaly counts retrieved", len(anomalies))
@@ -60,20 +58,18 @@ func TestGetBlueprintNodeAnomalyCounts(t *testing.T) {
 }
 
 func TestGetBlueprintServiceAnomalyCounts(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			bpClient := testBlueprintB(ctx, t, client.client)
+			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
 
-			log.Printf("testing GetBlueprintAnomalies() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			anomalies, err := client.client.GetBlueprintServiceAnomalyCounts(ctx, bpClient.Id())
+			anomalies, err := client.Client.GetBlueprintServiceAnomalyCounts(ctx, bpClient.Id())
 			require.NoError(t, err)
 
 			log.Printf("%d service anomaly counts retrieved", len(anomalies))
