@@ -31,7 +31,7 @@ type testClientConfig interface {
 // getTestClientCfgs returns []testClientConfig
 func getTestClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
 	t.Helper()
-	
+
 	var result []testClientConfig
 
 	result = append(result, getAPIOpsClientCfgs(t, ctx, testConfig)...)

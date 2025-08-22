@@ -45,7 +45,7 @@ func (a APIOpsConfig) id() string {
 	return a.dcID
 }
 
-func getAPIOpsClientCfg(t *testing.T, _ context.Context, APIOpsURL string) testClientConfig {
+func getAPIOpsClientCfg(t testing.TB, _ context.Context, APIOpsURL string) testClientConfig {
 	t.Helper()
 
 	u, err := url.Parse(APIOpsURL)
@@ -70,7 +70,9 @@ func getAPIOpsClientCfg(t *testing.T, _ context.Context, APIOpsURL string) testC
 	}
 }
 
-func getAPIOpsClientCfgs(t *testing.T, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getAPIOpsClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+	t.Helper()
+
 	topologyIDs := testConfig.ApiOpsProxyUrls
 
 	if len(topologyIDs) == 0 {

@@ -18,7 +18,7 @@ const keyLogFile = "SSLKEYLOGFILE"
 // that purpose, and the name of the logfile file.
 func KeyLogWriterFromEnv(t testing.TB) *os.File {
 	t.Helper()
-	
+
 	fileName, foundKeyLogFile := os.LookupEnv(keyLogFile)
 	if !foundKeyLogFile {
 		return nil

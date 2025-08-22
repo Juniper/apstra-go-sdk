@@ -50,7 +50,7 @@ func (a awsConfig) id() string {
 	return a.instanceID
 }
 
-func getAWSClientCfg(t *testing.T, ctx context.Context, id string) testClientConfig {
+func getAWSClientCfg(t testing.TB, ctx context.Context, id string) testClientConfig {
 	t.Helper()
 
 	awsCfg, err := config.LoadDefaultConfig(ctx)
@@ -90,7 +90,9 @@ func getAWSClientCfg(t *testing.T, ctx context.Context, id string) testClientCon
 	}
 }
 
-func getAWSClientCfgs(t *testing.T, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getAWSClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+	t.Helper()
+
 	topologyIDs := testConfig.AwsTopologyIds
 
 	if len(topologyIDs) == 0 {

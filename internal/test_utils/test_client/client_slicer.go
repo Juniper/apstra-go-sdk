@@ -48,7 +48,7 @@ func (s slicerConfig) id() string {
 	return s.topologyID
 }
 
-func getSlicerClientCfg(t *testing.T, ctx context.Context, id string) testClientConfig {
+func getSlicerClientCfg(t testing.TB, ctx context.Context, id string) testClientConfig {
 	t.Helper()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf(slicerTopologyUrlByID, id), nil)
@@ -94,7 +94,9 @@ func getSlicerClientCfg(t *testing.T, ctx context.Context, id string) testClient
 	}
 }
 
-func getSlicerClientCfgs(t *testing.T, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getSlicerClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+	t.Helper()
+
 	topologyIDs := testConfig.SlicerTopologyIds
 
 	if len(topologyIDs) == 0 {

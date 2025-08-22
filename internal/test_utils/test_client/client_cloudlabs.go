@@ -48,7 +48,7 @@ func (c cloudLabsConfig) id() string {
 	return c.topologyID
 }
 
-func getCloudLabsClientCfg(t *testing.T, ctx context.Context, id string) testClientConfig {
+func getCloudLabsClientCfg(t testing.TB, ctx context.Context, id string) testClientConfig {
 	t.Helper()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf(cloudlabsTopologyUrlByID, id), nil)
@@ -125,7 +125,9 @@ VMLOOP:
 	}
 }
 
-func getCloudLabsClientCfgs(t *testing.T, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getCloudLabsClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+	t.Helper()
+
 	topologyIDs := testConfig.CloudlabsTopologyIds
 
 	if len(topologyIDs) == 0 {

@@ -47,7 +47,7 @@ type TestConfig struct {
 	ApiOpsProxyUrls      []string `hcl:"api_ops_proxy_urls,optional"`
 }
 
-func getTestConfig(t *testing.T) TestConfig {
+func getTestConfig(t testing.TB) TestConfig {
 	t.Helper()
 
 	fileName := testConfigFilePath(t)
