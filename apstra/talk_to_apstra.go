@@ -194,7 +194,7 @@ func (o *Client) craftUrl(in *talkToApstraIn) (*url.URL, error) {
 // not nil, it JSON-encodes that data structure and sends it. In case the
 // in.apiResponse is not nil, the server response is extracted into it.
 func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
-	if o.cfg.apiOpsDcId != nil {
+	if o.cfg.APIOpsDCID != nil {
 		return o.talkToApiOps(ctx, in)
 	}
 
