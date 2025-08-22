@@ -8,11 +8,12 @@ package dctestobj
 
 import (
 	"context"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestVirtualNetworkA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient, szId apstra.ObjectId) apstra.ObjectId {

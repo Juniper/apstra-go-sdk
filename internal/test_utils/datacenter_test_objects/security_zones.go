@@ -8,10 +8,11 @@ package dctestobj
 
 import (
 	"context"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestSecurityZoneA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient) apstra.ObjectId {
