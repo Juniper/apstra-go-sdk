@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const envApstraExperimental = "APSTRA_EXPERIMENTAL"
+const EnvApstraExperimental = "APSTRA_EXPERIMENTAL"
 
 type testClientConfig interface {
 	clientConfig() apstra.ClientCfg
@@ -66,7 +66,7 @@ func GetTestClients(t testing.TB, ctx context.Context) []TestClient {
 		return testClients
 	}
 
-	experimental, err := strconv.ParseBool(os.Getenv(envApstraExperimental))
+	experimental, err := strconv.ParseBool(os.Getenv(EnvApstraExperimental))
 	require.NoError(t, err)
 
 	// create logfile
