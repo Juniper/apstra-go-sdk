@@ -5,14 +5,13 @@
 package apstra_test
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/Juniper/apstra-go-sdk/apstra"
 )
 
 func TestInterfaceSettingParam(t *testing.T) {
-
 	type testCase struct {
 		expected string
 		val      apstra.InterfaceSettingParam
