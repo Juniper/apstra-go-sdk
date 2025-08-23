@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Deprecated: Use compare.AntiAffinityPolicy
 func compareAntiAffinityPolicy(t testing.TB, set, get AntiAffinityPolicy) {
 	t.Helper()
 
@@ -44,6 +45,7 @@ func compareAntiAffinityPolicy(t testing.TB, set, get AntiAffinityPolicy) {
 	}
 }
 
+// Deprecated: Use compare.FabricSettings
 func compareFabricSettings(t testing.TB, set, get FabricSettings) {
 	t.Helper()
 
