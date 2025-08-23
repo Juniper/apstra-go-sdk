@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,13 +8,13 @@ package apstra_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
-	"testing"
-
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
