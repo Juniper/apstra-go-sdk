@@ -1,62 +1,53 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
 	"log"
 	"math/rand"
 	"testing"
+
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetInterfaceMapDigest(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	for clientName, client := range clients {
-		log.Printf("testing getInterfaceMapDigests() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		allImd, err := client.client.getInterfaceMapDigests(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
+	clients := testclient.GetTestClients(t, ctx)
+
+	for _, client := range clients {
+		allImd, err := client.Client.GetInterfaceMapDigests(context.Background())
+		require.NoError(t, err)
 
 		randId := allImd[rand.Intn(len(allImd))].Id
 
-		log.Printf("testing getInterfaceMapDigest('%s') against %s %s (%s)", randId, client.clientType, clientName, client.client.ApiVersion())
-		imd, err := client.client.getInterfaceMapDigest(context.Background(), randId)
-		if err != nil {
-			t.Fatal(err)
-		}
+		imd, err := client.Client.GetInterfaceMapDigest(context.Background(), randId)
+		require.NoError(t, err)
+
 		log.Printf("%s: %s -> %s", imd.Label, imd.LogicalDevice.Label, imd.DeviceProfile.Label)
 	}
 }
 
 func TestGetInterfaceMapDigestsByLogicalDevice(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	for clientName, client := range clients {
-		log.Printf("testing getAllLogicalDevices() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		allDp, err := client.client.getAllLogicalDevices(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
+	clients := testclient.GetTestClients(t, ctx)
 
-		randId := allDp[rand.Intn(len(allDp))].Id
-		log.Printf("testing getInterfaceMapDigestsByLogicalDevice(%s) against %s %s (%s)", randId, client.clientType, clientName, client.client.ApiVersion())
-		imds, err := client.client.getInterfaceMapDigestsByLogicalDevice(context.Background(), randId)
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, client := range clients {
+		ldIDs, err := client.Client.ListLogicalDeviceIds(ctx)
+		require.NoError(t, err)
+
+		randId := ldIDs[rand.Intn(len(ldIDs))]
+		imds, err := client.Client.GetInterfaceMapDigestsByLogicalDevice(ctx, randId)
+		require.NoError(t, err)
+
 		for _, imd := range imds {
 			log.Printf("%s: %s -> %s", imd.Label, imd.LogicalDevice.Label, imd.DeviceProfile.Label)
 		}
@@ -64,24 +55,18 @@ func TestGetInterfaceMapDigestsByLogicalDevice(t *testing.T) {
 }
 
 func TestGetInterfaceMapDigestsByDeviceProfile(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	for clientName, client := range clients {
-		log.Printf("testing getAllDeviceProfiles() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		allDp, err := client.client.getAllDeviceProfiles(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
+	clients := testclient.GetTestClients(t, ctx)
 
-		randId := allDp[rand.Intn(len(allDp))].Id
-		log.Printf("testing getInterfaceMapDigestsByDeviceProfile(%s) against %s %s (%s)", randId, client.clientType, clientName, client.client.ApiVersion())
-		imds, err := client.client.getInterfaceMapDigestsByDeviceProfile(context.Background(), randId)
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, client := range clients {
+		dpIDs, err := client.Client.GetAllDeviceProfiles(ctx)
+		require.NoError(t, err)
+
+		randId := dpIDs[rand.Intn(len(dpIDs))].Id
+		imds, err := client.Client.GetInterfaceMapDigestsByDeviceProfile(ctx, randId)
+		require.NoError(t, err)
+
 		for _, imd := range imds {
 			log.Printf("%s: %s -> %s", imd.Label, imd.LogicalDevice.Label, imd.DeviceProfile.Label)
 		}
