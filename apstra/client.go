@@ -1062,7 +1062,7 @@ func (o *Client) UpdateIp6Pool(ctx context.Context, poolId ObjectId, request *Ne
 
 // ListLogicalDeviceIds returns a list of logical device IDs configured in Apstra
 func (o *Client) ListLogicalDeviceIds(ctx context.Context) ([]ObjectId, error) {
-	return o.listRackTypeIds(ctx)
+	return o.listLogicalDeviceIds(ctx)
 }
 
 // GetLogicalDevice returns the requested *LogicalDevice
