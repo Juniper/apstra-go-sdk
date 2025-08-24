@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,6 +50,10 @@ type TestClient struct {
 
 func (t TestClient) Name() string {
 	return fmt.Sprintf("%s/%s/%s", t.config.clientType(), t.config.id(), t.Client.ApiVersion())
+}
+
+func (t TestClient) APIVersion() *version.Version {
+	return version.Must(version.NewVersion(t.Client.ApiVersion()))
 }
 
 var (

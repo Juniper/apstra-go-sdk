@@ -151,7 +151,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 				// change name to newName
 				req := metadataNode{Label: newName}
 				var resp metadataNode
-				if compatibility.PatchNodeSupportsUnsafeArg.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) {
+				if compatibility.PatchNodeSupportsUnsafeArg.Check(client.APIVersion()) {
 					var ace apstra.ClientErr
 					err := bpClient.PatchNode(ctx, nodeA.Id, req, &resp)
 					require.Error(t, err)
@@ -420,14 +420,14 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 					t.Parallel()
 					ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-					if tCase.constraint != nil && !tCase.constraint.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) {
+					if tCase.constraint != nil && !tCase.constraint.Check(client.APIVersion()) {
 						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.Client.ApiVersion(), tCase.constraint)
 					}
 
 					id, err := client.Client.CreateBlueprintFromTemplate(ctx, &tCase.req)
 					require.NoError(t, err)
 
-					if !compatibility.FabricSettingsApiOk.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) && tCase.req.FabricSettings != nil {
+					if !compatibility.FabricSettingsApiOk.Check(client.APIVersion()) && tCase.req.FabricSettings != nil {
 						// 4.2.0 cannot set fabric settings when creating blueprint, so we have to do it afterward
 						bp, err := client.Client.NewTwoStageL3ClosClient(ctx, id)
 						require.NoError(t, err)
@@ -625,14 +625,14 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
-					if tCase.compatibility != nil && !tCase.compatibility.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) {
+					if tCase.compatibility != nil && !tCase.compatibility.Check(client.APIVersion()) {
 						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.Client.ApiVersion(), tCase.compatibility)
 					}
 
 					id, err := client.Client.CreateBlueprintFromTemplate(ctx, &tCase.req)
 					require.NoError(t, err)
 
-					if !compatibility.FabricSettingsApiOk.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) && tCase.req.FabricSettings != nil {
+					if !compatibility.FabricSettingsApiOk.Check(client.APIVersion()) && tCase.req.FabricSettings != nil {
 						// 4.2.0 cannot set fabric settings when creating blueprint, so we have to do it afterward
 						bp, err := client.Client.NewTwoStageL3ClosClient(ctx, id)
 						require.NoError(t, err)
@@ -721,7 +721,7 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			if !compatibility.GeApstra421.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) {
+			if !compatibility.GeApstra421.Check(client.APIVersion()) {
 				t.Skipf("skipping Apstra %s client due to version constraint", client.Client.ApiVersion())
 			}
 
