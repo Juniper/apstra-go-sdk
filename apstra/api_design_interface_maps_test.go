@@ -7,8 +7,8 @@ package apstra_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInterfaceSettingParam(t *testing.T) {
