@@ -4,7 +4,7 @@
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
@@ -12,35 +12,34 @@ import (
 	"log"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
+	clients := testclient.GetTestClients(t, ctx)
 
-	ctx = wrapCtxWithTestId(t, ctx)
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(client.name(), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx = wrapCtxWithTestId(t, ctx)
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			log.Printf("testing listLogicalDeviceIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			ids, err := client.client.listLogicalDeviceIds(ctx)
+			ids, err := client.Client.ListLogicalDeviceIds(ctx)
 			require.NoError(t, err)
-			require.NotEqual(t, len(ids), 0)
+			require.NotZero(t, len(ids))
 
-			for _, i := range sampleIndexes(t, len(ids)) {
+			for _, i := range testutils.Range(len(ids)) {
 				id := ids[i]
 				t.Run(fmt.Sprintf("GET_%s", id), func(t *testing.T) {
 					t.Parallel()
-					ctx = wrapCtxWithTestId(t, ctx)
+					ctx = testutils.WrapCtxWithTestId(t, ctx)
 
-					ld, err := client.client.GetLogicalDevice(ctx, id)
+					ld, err := client.Client.GetLogicalDevice(ctx, id)
 					require.NoError(t, err)
 					require.Equal(t, id, ld.Id)
 				})
@@ -50,41 +49,40 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 }
 
 func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
+	clients := testclient.GetTestClients(t, ctx)
 
 	indexingTypes := []string{
-		PortIndexingVerticalFirst,
-		PortIndexingHorizontalFirst,
+		apstra.PortIndexingVerticalFirst,
+		apstra.PortIndexingHorizontalFirst,
 	}
 
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			deviceConfigs := make([]LogicalDeviceData, len(indexingTypes))
+			deviceConfigs := make([]apstra.LogicalDeviceData, len(indexingTypes))
 			for i, indexing := range indexingTypes {
-				deviceConfigs[i] = LogicalDeviceData{
-					DisplayName: randString(6, "hex"),
-					Panels: []LogicalDevicePanel{
+				deviceConfigs[i] = apstra.LogicalDeviceData{
+					DisplayName: testutils.RandString(6, "hex"),
+					Panels: []apstra.LogicalDevicePanel{
 						{
-							PanelLayout: LogicalDevicePanelLayout{
+							PanelLayout: apstra.LogicalDevicePanelLayout{
 								RowCount:    2,
 								ColumnCount: 2,
 							},
-							PortIndexing: LogicalDevicePortIndexing{
+							PortIndexing: apstra.LogicalDevicePortIndexing{
 								Order:      indexing,
 								StartIndex: 0,
 								Schema:     "absolute",
 							},
-							PortGroups: []LogicalDevicePortGroup{
+							PortGroups: []apstra.LogicalDevicePortGroup{
 								{
 									Count: 4,
 									Speed: "10G",
-									Roles: LogicalDevicePortRoles{enum.PortRoleUnused},
+									Roles: apstra.LogicalDevicePortRoles{enum.PortRoleUnused},
 								},
 							},
 						},
@@ -92,34 +90,29 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 				}
 			}
 
-			ids := make([]ObjectId, len(deviceConfigs))
+			ids := make([]apstra.ObjectId, len(deviceConfigs))
+			var err error
 			for i, devCfg := range deviceConfigs {
-				log.Printf("testing createLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				ids[i], err = client.client.createLogicalDevice(ctx, devCfg.raw())
+				ids[i], err = client.Client.CreateLogicalDevice(ctx, &devCfg)
 				require.NoError(t, err)
 
-				log.Printf("testing GetLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				d, err := client.client.GetLogicalDevice(ctx, ids[i])
+				d, err := client.Client.GetLogicalDevice(ctx, ids[i])
 				require.NoError(t, err)
 
 				log.Println(d.Id)
 				devCfg.Panels[0].PortIndexing.StartIndex = 1
-				log.Printf("testing updateLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				require.NoError(t, client.client.updateLogicalDevice(ctx, d.Id, devCfg.raw()))
+				require.NoError(t, client.Client.UpdateLogicalDevice(ctx, d.Id, &devCfg))
 
 				if i > 0 {
-					log.Printf("testing GetLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					previous, err := client.client.GetLogicalDevice(ctx, ids[i-1])
+					previous, err := client.Client.GetLogicalDevice(ctx, ids[i-1])
 					require.NoError(t, err)
 
 					previous.Data.DisplayName = d.Data.DisplayName
 
-					log.Printf("testing updateLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					require.NoError(t, client.client.updateLogicalDevice(ctx, ids[i], previous.Data.raw()))
+					require.NoError(t, client.Client.UpdateLogicalDevice(ctx, ids[i], previous.Data))
 				}
 
-				log.Printf("testing GetLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				_, err = client.client.GetLogicalDevice(ctx, ids[i])
+				_, err = client.Client.GetLogicalDevice(ctx, ids[i])
 				require.NoError(t, err)
 
 			}
@@ -127,7 +120,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 			for _, id := range ids {
 				t.Run(fmt.Sprintf("DELETE_logical_device_%s", id), func(t *testing.T) {
 					t.Parallel()
-					require.NoError(t, client.client.deleteLogicalDevice(ctx, id))
+					require.NoError(t, client.Client.DeleteLogicalDevice(ctx, id))
 				})
 			}
 		})
@@ -135,37 +128,33 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 }
 
 func TestGetLogicalDeviceByName(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			log.Printf("testing deleteLogicalDevice() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			logicalDevices, err := client.client.getAllLogicalDevices(context.TODO())
-			if err != nil {
-				t.Fatal(err)
-			}
+			ldIDs, err := client.Client.ListLogicalDeviceIds(ctx)
+			require.NoError(t, err)
 
-			for _, i := range sampleIndexes(t, len(logicalDevices)) {
-				test := logicalDevices[i]
-				t.Run(fmt.Sprintf("GET_LD_%s", test.Data.DisplayName), func(t *testing.T) {
+			for _, i := range testutils.SampleIndexes(t, len(ldIDs)) {
+				testLD, err := client.Client.GetLogicalDevice(ctx, ldIDs[i])
+				require.NoError(t, err)
+
+				t.Run(fmt.Sprintf("GET_LD_%s", testLD.Data.DisplayName), func(t *testing.T) {
 					t.Parallel()
 
-					logicalDevice, err := client.client.GetLogicalDeviceByName(context.TODO(), test.Data.DisplayName)
+					resultLD, err := client.Client.GetLogicalDeviceByName(ctx, testLD.Data.DisplayName)
 					if err != nil {
-						var ace ClientErr
+						var ace apstra.ClientErr
 						require.ErrorAs(t, err, ace)
-						require.Equal(t, ErrMultipleMatch, ace.Type())
+						require.Equal(t, apstra.ErrMultipleMatch, ace.Type())
 					} else {
-						require.Equal(t, test.Id, logicalDevice.Id)
-						require.Equal(t, test.Data.DisplayName, logicalDevice.Data.DisplayName)
+						require.Equal(t, testLD.Id, resultLD.Id)
+						require.Equal(t, testLD.Data.DisplayName, resultLD.Data.DisplayName)
 					}
 				})
 			}
