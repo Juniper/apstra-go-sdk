@@ -5,9 +5,10 @@
 package compare
 
 import (
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func RackType(t testing.TB, req apstra.RackTypeRequest, data apstra.RackTypeData) {
