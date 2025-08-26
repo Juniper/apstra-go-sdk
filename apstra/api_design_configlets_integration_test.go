@@ -101,7 +101,7 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 				t.Run(tName, func(t *testing.T) {
 					t.Parallel()
 
-					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) {
+					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(client.APIVersion()) {
 						t.Skipf("skipping %q due to version constraints: %q. API version: %q",
 							tName, tCase.versionConstraint, client.Client.ApiVersion())
 					}
