@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# Copyright (c) Juniper Networks, Inc., 2025-2025.
+# All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 set -euo pipefail
 
 TPC=Third_Party_Code
