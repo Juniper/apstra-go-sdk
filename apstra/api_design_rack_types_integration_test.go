@@ -134,19 +134,23 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 			t.Parallel()
 			ctx = testutils.WrapCtxWithTestId(t, ctx)
 
-			for _, tCase := range testCases {
-				id, err := client.Client.CreateRackType(ctx, &tCase)
-				require.NoError(t, err)
+			for tName, tCase := range testCases {
+				t.Run(tName, func(t *testing.T) {
+					ctx = testutils.WrapCtxWithTestId(t, ctx)
 
-				rt, err := client.Client.GetRackType(ctx, id)
-				require.NoError(t, err)
+					id, err := client.Client.CreateRackType(ctx, &tCase)
+					require.NoError(t, err)
 
-				require.Equal(t, rt.Id, id)
-				require.NotNil(t, rt.Data)
-				compare.RackType(t, tCase, *rt.Data)
+					rt, err := client.Client.GetRackType(ctx, id)
+					require.NoError(t, err)
 
-				err = client.Client.DeleteRackType(ctx, id)
-				require.NoError(t, err)
+					require.Equal(t, rt.Id, id)
+					require.NotNil(t, rt.Data)
+					compare.RackType(t, tCase, *rt.Data)
+
+					err = client.Client.DeleteRackType(ctx, id)
+					require.NoError(t, err)
+				})
 			}
 		})
 	}
