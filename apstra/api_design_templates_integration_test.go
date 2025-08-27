@@ -8,15 +8,12 @@ package apstra_test
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/stretchr/testify/require"
 	"log"
 	"math/rand"
-	"strings"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/stretchr/testify/require"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 )
@@ -87,7 +84,7 @@ func TestGetTemplateMethods(t *testing.T) {
 			log.Printf("  using randomly-selected index %d from the %d available\n", n, len(rackBasedTemplates))
 			rackBasedTemplate, err := client.Client.GetRackBasedTemplate(ctx, rackBasedTemplates[n].Id)
 			require.NoError(t, err)
-			log.Printf("    got template type '%s', ID '%s'\n", rackBasedTemplate.Type, rackBasedTemplate.Id)
+			log.Printf("    got template type '%s', ID '%s'\n", rackBasedTemplate.Type(), rackBasedTemplate.Id)
 
 			// pod-based templates
 			podBasedTemplates, err := client.Client.GetAllPodBasedTemplates(ctx)
@@ -98,7 +95,7 @@ func TestGetTemplateMethods(t *testing.T) {
 			log.Printf("  using randomly-selected index %d from the %d available\n", n, len(podBasedTemplates))
 			podBasedTemplate, err := client.Client.GetPodBasedTemplate(ctx, podBasedTemplates[n].Id)
 			require.NoError(t, err)
-			log.Printf("    got template type '%s', ID '%s'\n", podBasedTemplate.Type, podBasedTemplate.Id)
+			log.Printf("    got template type '%s', ID '%s'\n", podBasedTemplate.Type(), podBasedTemplate.Id)
 
 			// l3-collapsed templates
 			l3CollapsedTemplates, err := client.Client.GetAllL3CollapsedTemplates(ctx)
@@ -150,145 +147,128 @@ func TestGetTemplateType(t *testing.T) {
 	}
 }
 
-func TestGetTemplateIdsTypesByName(t *testing.T) {
+func TestCRUDTemplates(t *testing.T) {
 	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
-	templateName := testutils.RandString(10, "hex")
-	for _, client := range clients {
-		t.Run(client.Name(), func(t *testing.T) {
+	type testCase struct { // fill only one template type
+		rackBasedTemplate   *apstra.CreateRackBasedTemplateRequest
+		podBasedTemplate    *apstra.CreatePodBasedTemplateRequest
+		l3CollapsedTemplate *apstra.CreateL3CollapsedTemplateRequest
+	}
+
+	exactlyOneTemplate := func(tc testCase) bool {
+		count := 0
+		if tc.rackBasedTemplate != nil {
+			count++
+		}
+		if tc.podBasedTemplate != nil {
+			count++
+		}
+		if tc.l3CollapsedTemplate != nil {
+			count++
+		}
+		return count == 1
+	}
+
+	testCases := map[string]testCase{
+		"simple_rack_based": {
+			rackBasedTemplate: &apstra.CreateRackBasedTemplateRequest{
+				DisplayName: testutils.RandString(6, "hex"),
+				Spine: &apstra.TemplateElementSpineRequest{
+					Count:                  1,
+					LinkPerSuperspineSpeed: "10G",
+					LogicalDevice:          "AOS-7x10-Spine",
+					LinkPerSuperspineCount: 1,
+				},
+				RackInfos: map[apstra.ObjectId]apstra.TemplateRackBasedRackInfo{
+					"L2_Virtual_MLAG_2x_Links": {Count: 1},
+				},
+				DhcpServiceIntent:    nil,
+				AntiAffinityPolicy:   nil,
+				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeDistinct},
+				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{OverlayControlProtocol: apstra.OverlayControlProtocolEvpn},
+			},
+		},
+	}
+
+	for tName, tCase := range testCases {
+		require.True(t, exactlyOneTemplate(tCase))
+		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
 			ctx = testutils.WrapCtxWithTestId(t, ctx)
 
-			// fetch all template IDs
-			templateIds, err := client.Client.ListAllTemplateIds(ctx)
-			require.NoError(t, err)
+			for _, client := range clients {
+				t.Run(client.Name(), func(t *testing.T) {
+					t.Parallel()
+					ctx = testutils.WrapCtxWithTestId(t, ctx)
 
-			// choose a random template for cloning
-			cloneMeId := templateIds[rand.Intn(len(templateIds))]
-			cloneMeType, err := client.Client.GetTemplateType(ctx, cloneMeId)
-			require.NoError(t, err)
+					var id apstra.ObjectId
+					var err error
+					var expectedType apstra.TemplateType
+					var expectedName string
+					switch {
+					case tCase.rackBasedTemplate != nil:
+						id, err = client.Client.CreateRackBasedTemplate(ctx, tCase.rackBasedTemplate)
+						expectedType = apstra.TemplateTypeRackBased
+						expectedName = tCase.rackBasedTemplate.DisplayName
+					case tCase.podBasedTemplate != nil:
+						id, err = client.Client.CreatePodBasedTemplate(ctx, tCase.podBasedTemplate)
+						expectedType = apstra.TemplateTypePodBased
+						expectedName = tCase.podBasedTemplate.DisplayName
+					case tCase.l3CollapsedTemplate != nil:
+						id, err = client.Client.CreateL3CollapsedTemplate(ctx, tCase.l3CollapsedTemplate)
+						expectedType = apstra.TemplateTypeL3Collapsed
+						expectedName = tCase.l3CollapsedTemplate.DisplayName
+					default:
+						t.Fatal("we should never get here")
+					}
+					require.NoError(t, err)
 
-			log.Printf("cloning template '%s' (%s) for this test", cloneMeId, cloneMeType)
+					all, err := client.Client.GetAllTemplates(ctx)
+					require.NoError(t, err)
+					var template apstra.Template
+					for i := range all {
+						if all[i].ID() == id {
+							template = all[i]
+						}
+					}
+					require.NotNil(t, template)
+					require.Equal(t, expectedType, template.Type())
 
-			cloneCount := rand.Intn(5) + 2
-			cloneIds := make([]apstra.ObjectId, cloneCount)
-			for i := 0; i < cloneCount; i++ {
-				switch cloneMeType {
-				case apstra.TemplateTypeRackBased:
-					cloneMe, err := client.Client.GetRackBasedTemplate(ctx, cloneMeId)
-					if err != nil {
-						t.Fatal(err)
-					}
-					id, err := client.Client.CreateRackBasedTemplate(ctx, &apstra.CreateRackBasedTemplateRequest{
-						DisplayName: fmt.Sprintf("%s-%d", templateName, i),
-						Spine: &apstra.TemplateElementSpineRequest{
-							Count:                  cloneMe.Data.Spine.Count,
-							LinkPerSuperspineSpeed: cloneMe.Data.Spine.LinkPerSuperspineSpeed,
-							LogicalDevice:          cloneMe.Data.Spine.LogicalDevice,
-							LinkPerSuperspineCount: 0,
-							Tags:                   nil,
-						},
-						RackTypes:            cloneMe.Data.RackTypes,
-						RackTypeCounts:       cloneMe.Data.RackTypeCounts,
-						DhcpServiceIntent:    cloneMe.Data.DhcpServiceIntent,
-						AntiAffinityPolicy:   cloneMe.Data.AntiAffinityPolicy,
-						AsnAllocationPolicy:  cloneMe.Data.AsnAllocationPolicy,
-						VirtualNetworkPolicy: cloneMe.Data.VirtualNetworkPolicy,
-					})
-					if err != nil {
-						t.Fatal(err)
-					}
-					cloneIds[i] = id
-				case apstra.TemplateTypePodBased:
-					cloneMe, err := client.Client.GetPodBasedTemplate(ctx, cloneMeId)
-					if err != nil {
-						t.Fatal(err)
-					}
-					id, err := client.Client.CreatePodBasedTemplate(ctx, &apstra.CreatePodBasedTemplateRequest{
-						DisplayName:             fmt.Sprintf("%s-%d", templateName, i),
-						Superspine:              cloneMe.Superspine,
-						RackBasedTemplates:      cloneMe.RackBasedTemplates,
-						RackBasedTemplateCounts: cloneMe.RackBasedTemplateCounts,
-						AntiAffinityPolicy:      cloneMe.AntiAffinityPolicy,
-					})
-					if err != nil {
-						t.Fatal(err)
-					}
-					cloneIds[i] = id
-				case apstra.TemplateTypeL3Collapsed:
-					cloneMe, err := client.Client.GetL3CollapsedTemplate(ctx, cloneMeId)
-					if err != nil {
-						t.Fatal(err)
-					}
-					id, err := client.Client.CreateL3CollapsedTemplate(ctx, &apstra.CreateL3CollapsedTemplateRequest{
-						DisplayName:          fmt.Sprintf("%s-%d", templateName, i),
-						MeshLinkCount:        cloneMe.MeshLinkCount,
-						MeshLinkSpeed:        *cloneMe.MeshLinkSpeed,
-						RackTypes:            cloneMe.RackTypes,
-						RackTypeCounts:       cloneMe.RackTypeCounts,
-						DhcpServiceIntent:    cloneMe.DhcpServiceIntent,
-						AntiAffinityPolicy:   cloneMe.AntiAffinityPolicy,
-						VirtualNetworkPolicy: cloneMe.VirtualNetworkPolicy,
-					})
-					if err != nil {
-						t.Fatal(err)
-					}
-					cloneIds[i] = id
-				}
-			}
-			clones := make([]string, len(cloneIds))
-			for i, clone := range cloneIds {
-				clones[i] = string(clone)
-			}
-			log.Printf("clone IDs: '%s'", strings.Join(clones, ", "))
+					tType, err := client.Client.GetTemplateType(ctx, id)
+					require.NoError(t, err)
+					require.Equal(t, expectedType, tType)
 
-			templateIdsToType := make(map[ObjectId]TemplateType)
-			for i := 0; i < cloneCount; i++ {
-				log.Printf("testing getTemplateIdsTypesByName(%s) against %s %s (%s)", templateName, client.ClientType, clientName, client.Client.ApiVersion())
-				temp, err := client.Client.getTemplateIdsTypesByName(ctx, fmt.Sprintf("%s-%d", templateName, i))
-				if err != nil {
-					t.Fatal(err)
-				}
-				for k, v := range temp {
-					templateIdsToType[k] = v
-				}
-			}
+					idToType, err := client.Client.GetTemplateIdsTypesByName(ctx, expectedName)
+					require.NoError(t, err)
+					require.Contains(t, idToType, id)
+					require.Equal(t, expectedType, idToType[id])
 
-			if cloneCount != len(templateIdsToType) {
-				t.Fatalf("expected %d, got %d", cloneCount, len(templateIdsToType))
-			}
-			for _, v := range templateIdsToType {
-				parsed, err := cloneMeType.parse()
-				if err != nil {
-					t.Fatal(err)
-				}
-				if parsed != v.Int() {
-					t.Fatalf("expected %d, got %d", parsed, v.Int())
-				}
-			}
+					tId, tType, err := client.Client.GetTemplateIdTypeByName(ctx, expectedName)
+					require.NoError(t, err)
+					require.Equal(t, id, tId)
+					require.Equal(t, expectedType, tType)
 
-			for i, cloneId := range cloneIds {
-				name := fmt.Sprintf("%s-%d", templateName, i)
-				if i+1 == len(cloneIds) { // last one before they're all deleted
-					log.Printf("testing getTemplateIdTypeByName(%s) against %s %s (%s)", name, client.ClientType, clientName, client.Client.ApiVersion())
-					tId, tType, err := client.Client.getTemplateIdTypeByName(ctx, name)
-					if err != nil {
-						t.Fatal(err)
-					}
-					if cloneId != tId {
-						t.Fatalf("expected template id '%s', got '%s'", cloneIds, tId)
-					}
-					if cloneMeType != templateType(tType.String()) {
-						t.Fatalf("expected template type '%s', got '%s'", cloneMeType, tType.String())
-					}
+					tType, err = client.Client.GetTemplateType(ctx, id)
+					require.NoError(t, err)
+					require.Equal(t, expectedType, tType)
 
-				}
-				log.Printf("deleting clone '%s'", cloneId)
-				err = client.Client.DeleteTemplate(ctx, cloneId)
-				if err != nil {
-					t.Fatal(err)
-				}
+					switch expectedType {
+					case apstra.TemplateTypeRackBased:
+						template, err = client.Client.GetRackBasedTemplate(ctx, id)
+					case apstra.TemplateTypePodBased:
+						template, err = client.Client.GetPodBasedTemplate(ctx, id)
+					case apstra.TemplateTypeL3Collapsed:
+						template, err = client.Client.GetL3CollapsedTemplate(ctx, id)
+					}
+					require.NoError(t, err)
+					require.Equal(t, expectedType, template.Type())
+					require.Equal(t, id, template.ID())
+
+					err = client.Client.DeleteTemplate(ctx, id)
+					require.NoError(t, err)
+				})
 			}
 		})
 	}

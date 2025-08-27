@@ -1251,13 +1251,15 @@ func (o *Client) GetAllTemplates(ctx context.Context) ([]Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	result := make([]Template, len(templates))
-	for i, raw := range templates {
+	result := make([]Template, 0, len(templates))
+	for _, raw := range templates {
 		polished, err := raw.polish()
 		if err != nil {
 			return nil, err
 		}
-		result[i] = polished
+		if polished != nil { // todo: 'rail_collapsed' templates not currently supported
+			result = append(result, polished)
+		}
 	}
 	return result, nil
 }
