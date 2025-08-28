@@ -114,6 +114,7 @@ func mlagInfo(t testing.TB, a, b *apstra.LeafMlagInfo) {
 			require.Zero(t, b.LeafLeafLinkPortChannelId)
 			require.Zero(t, b.LeafLeafLinkSpeed)
 		}
+		require.Nil(t, b)
 		return
 	}
 
