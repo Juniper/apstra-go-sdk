@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 const (
@@ -26,7 +27,7 @@ const (
 )
 
 type IbaWidget struct {
-	AggregationPeriod  *DurationInSecs                `json:"aggregation_period,omitempty"`
+	AggregationPeriod  *timeutils.DurationInSecs      `json:"aggregation_period,omitempty"`
 	AggregationType    *enum.IbaWidgetAggregationType `json:"aggregation_type,omitempty"`
 	OrderBy            string                         `json:"orderby"`
 	StageName          string                         `json:"stage_name"`
@@ -37,7 +38,7 @@ type IbaWidget struct {
 	ProbeId            ObjectId                       `json:"probe_id"`
 	Label              string                         `json:"label"`
 	Filter             string                         `json:"filter"`
-	TimeSeriesDuration *DurationInSecs                `json:"time_series_duration,omitempty"`
+	TimeSeriesDuration *timeutils.DurationInSecs      `json:"time_series_duration,omitempty"`
 	DataSource         *enum.IbaWidgetDataSource      `json:"data_source"`
 	MaxItems           *int                           `json:"max_items"`
 	CombineGraphs      *enum.IbaWidgetCombineGraph    `json:"combine_graphs,omitempty"`
