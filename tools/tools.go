@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@ package tools
 
 import (
 	// license compliance
-	_ "github.com/chrismarget-j/go-licenses"
+	_ "github.com/google/go-licenses/v2"
 
 	// opinionated code formatting
 	_ "mvdan.cc/gofumpt"
