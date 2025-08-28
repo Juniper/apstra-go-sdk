@@ -8,9 +8,9 @@ package apstra_test
 
 import (
 	"context"
-	"github.com/Juniper/apstra-go-sdk/apstra"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
@@ -24,7 +24,6 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
-
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.WrapCtxWithTestId(t, ctx)
