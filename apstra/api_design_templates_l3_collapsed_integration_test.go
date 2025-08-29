@@ -4,71 +4,72 @@
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
-	"log"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	dn := testutils.RandString(5, "hex")
 
-	dn := randString(5, "hex")
-
-	req := &CreateL3CollapsedTemplateRequest{
+	req := &apstra.CreateL3CollapsedTemplateRequest{
 		DisplayName:   dn,
 		MeshLinkCount: 1,
 		MeshLinkSpeed: "10G",
-		RackTypeIds:   []ObjectId{"L3_collapsed_acs"},
-		RackTypeCounts: []RackTypeCount{{
+		RackTypeIds:   []apstra.ObjectId{"L3_collapsed_acs"},
+		RackTypeCounts: []apstra.RackTypeCount{{
 			RackTypeId: "L3_collapsed_acs",
 			Count:      1,
 		}},
-		VirtualNetworkPolicy: VirtualNetworkPolicy{OverlayControlProtocol: OverlayControlProtocolEvpn},
+		VirtualNetworkPolicy: apstra.VirtualNetworkPolicy{OverlayControlProtocol: apstra.OverlayControlProtocolEvpn},
 	}
 
-	for clientName, client := range clients {
-		log.Printf("testing CreateL3CollapsedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateL3CollapsedTemplate(ctx, req)
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteTemplate(ctx, id)
-		if err != nil {
-			t.Fatal(err)
-		}
+			id, err := client.Client.CreateL3CollapsedTemplate(ctx, req)
+			require.NoError(t, err)
+
+			template, err := client.Client.GetL3CollapsedTemplate(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, id, template.Id)
+
+			err = client.Client.DeleteTemplate(ctx, id)
+			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
 
 func TestGetL3CollapsedTemplateByName(t *testing.T) {
-	ctx := context.Background()
-
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
 	name := "Collapsed Fabric ESI"
 
 	for _, client := range clients {
-		l3ct, err := client.client.GetL3CollapsedTemplateByName(ctx, name)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if l3ct.templateType.String() != templateTypeL3Collapsed.string() {
-			t.Fatalf("expected '%s', got '%s'", l3ct.templateType.String(), templateTypeL3Collapsed)
-		}
-		if l3ct.Data.DisplayName != name {
-			t.Fatalf("expected '%s', got '%s'", name, l3ct.Data.DisplayName)
-		}
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx = testutils.WrapCtxWithTestId(t, ctx)
+
+			l3ct, err := client.Client.GetL3CollapsedTemplateByName(ctx, name)
+			require.NoError(t, err)
+			require.NotNil(t, l3ct.Data)
+			require.Equal(t, name, l3ct.Data.DisplayName)
+		})
 	}
 }

@@ -4,56 +4,54 @@
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	dn := randString(5, "hex")
-	req := CreateRackBasedTemplateRequest{
+	dn := testutils.RandString(5, "hex")
+	req := apstra.CreateRackBasedTemplateRequest{
 		DisplayName: dn,
-		Spine: &TemplateElementSpineRequest{
+		Spine: &apstra.TemplateElementSpineRequest{
 			Count:                  2,
 			LinkPerSuperspineSpeed: "10G",
 			LogicalDevice:          "AOS-7x10-Spine",
 			LinkPerSuperspineCount: 1,
-			Tags:                   []ObjectId{"firewall", "hypervisor"},
+			Tags:                   []apstra.ObjectId{"firewall", "hypervisor"},
 		},
-		RackInfos: map[ObjectId]TemplateRackBasedRackInfo{
+		RackInfos: map[apstra.ObjectId]apstra.TemplateRackBasedRackInfo{
 			"access_switch": {
 				Count: 1,
 			},
 		},
-		DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
-		AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-		AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-		VirtualNetworkPolicy: &VirtualNetworkPolicy{},
+		DhcpServiceIntent:    &apstra.DhcpServiceIntent{Active: true},
+		AntiAffinityPolicy:   &apstra.AntiAffinityPolicy{Algorithm: apstra.AlgorithmHeuristic},
+		AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeSingle},
+		VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{},
 	}
 
-	for clientName, client := range clients {
-		log.Printf("testing CreateRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateRackBasedTemplate(context.TODO(), &req)
+	for _, client := range clients {
+		id, err := client.Client.CreateRackBasedTemplate(context.TODO(), &req)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		rbt, err := client.client.GetRackBasedTemplate(context.TODO(), id)
+		rbt, err := client.Client.GetRackBasedTemplate(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -61,8 +59,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 			t.Fatalf("new template displayname mismatch: '%s' vs. '%s'", dn, rbt.Data.DisplayName)
 		}
 
-		log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteTemplate(context.TODO(), id)
+		err = client.Client.DeleteTemplate(context.TODO(), id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -70,149 +67,84 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 }
 
 func TestGetRackBasedTemplateByName(t *testing.T) {
-	ctx := context.Background()
-
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
 	name := "L2 Pod"
 
 	for _, client := range clients {
-		rbt, err := client.client.GetRackBasedTemplateByName(ctx, name)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if rbt.templateType.String() != templateTypeRackBased.string() {
-			t.Fatalf("expected '%s', got '%s'", rbt.templateType.String(), templateTypeRackBased)
-		}
-		if rbt.Data.DisplayName != name {
-			t.Fatalf("expected '%s', got '%s'", name, rbt.Data.DisplayName)
-		}
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
+
+			rbt, err := client.Client.GetRackBasedTemplateByName(ctx, name)
+			require.NoError(t, err)
+			require.Equal(t, name, rbt.Data.DisplayName)
+		})
 	}
 }
 
 func TestRackBasedTemplateMethods(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
+	compareSpine := func(t testing.TB, req apstra.TemplateElementSpineRequest, rbt apstra.Spine) {
+		t.Helper()
+
+		require.Equal(t, req.Count, rbt.Count)
+		require.Equal(t, req.LinkPerSuperspineCount, rbt.LinkPerSuperspineCount)
+		require.Equal(t, req.LinkPerSuperspineSpeed, rbt.LinkPerSuperspineSpeed)
+		require.Equal(t, len(req.Tags), len(rbt.Tags))
 	}
 
-	compareSpine := func(req TemplateElementSpineRequest, rbt Spine) error {
-		if rbt.Count != req.Count {
-			return fmt.Errorf("spine count mismatch: expected %d got %d", rbt.Count, req.Count)
-		}
+	compareRackInfo := func(t testing.TB, req, rbt apstra.TemplateRackBasedRackInfo) {
+		t.Helper()
 
-		if rbt.LinkPerSuperspineCount != req.LinkPerSuperspineCount {
-			return fmt.Errorf("spine link per superspine count mismatch: expected %d got %d", rbt.LinkPerSuperspineCount, req.LinkPerSuperspineCount)
-		}
-
-		if rbt.LinkPerSuperspineSpeed != req.LinkPerSuperspineSpeed {
-			return fmt.Errorf("spine link per superspine speed mismatch: expected %q got %q", rbt.LinkPerSuperspineSpeed, req.LinkPerSuperspineSpeed)
-		}
-
-		reqTags := make(map[string]bool, len(req.Tags))
-		for _, tag := range req.Tags {
-			reqTags[strings.ToLower(string(tag))] = true
-		}
-
-		rbtTags := make(map[string]bool, len(rbt.Tags))
-		for _, tag := range rbt.Tags {
-			rbtTags[strings.ToLower(tag.Label)] = true
-		}
-
-		if len(reqTags) != len(rbtTags) {
-			return fmt.Errorf("tag count mismatch: expected %d got %d", len(reqTags), len(rbtTags))
-		}
-
-		for reqTag := range reqTags {
-			if !rbtTags[reqTag] {
-				return fmt.Errorf("tag mismatch: expected tag %q not found", reqTag)
-			}
-		}
-
-		return nil
+		require.Equal(t, req.Count, rbt.Count)
 	}
 
-	compareRackInfo := func(req, rbt TemplateRackBasedRackInfo) error {
-		if req.Count != rbt.Count {
-			return fmt.Errorf("count mismatch: expected %d got %d", req.Count, rbt.Count)
-		}
+	compareRackInfos := func(t testing.TB, req, rbt map[apstra.ObjectId]apstra.TemplateRackBasedRackInfo) {
+		t.Helper()
 
-		return nil
-	}
-
-	compareRackInfos := func(req, rbt map[ObjectId]TemplateRackBasedRackInfo) error {
-		if len(req) != len(rbt) {
-			return fmt.Errorf("rack type length mismatch expected %d got %d", len(req), len(rbt))
-		}
+		require.Equal(t, len(req), len(rbt))
 
 		for k, reqRI := range req {
 			if rbtRI, ok := rbt[k]; ok {
-				err = compareRackInfo(reqRI, rbtRI)
-				if err != nil {
-					return fmt.Errorf("rack infos %q mismatch - %w", k, err)
-				}
+				compareRackInfo(t, reqRI, rbtRI)
 			} else {
-				return fmt.Errorf("rack type mismatch expected rack based info %q not found", k)
+				t.Fatalf("rack type mismatch expected rack based info %q not found", k)
 			}
 		}
-
-		return nil
 	}
 
-	compareRequestToTemplate := func(t testing.TB, req CreateRackBasedTemplateRequest, rbt TemplateRackBasedData) error {
+	compareRequestToTemplate := func(t testing.TB, req apstra.CreateRackBasedTemplateRequest, rbt apstra.TemplateRackBasedData) {
 		t.Helper()
 
-		if req.DisplayName != rbt.DisplayName {
-			return fmt.Errorf("displayname mismatch expected %q got %q", req.DisplayName, rbt.DisplayName)
-		}
-
-		err = compareSpine(*req.Spine, rbt.Spine)
-		if err != nil {
-			return err
-		}
-
-		err = compareRackInfos(req.RackInfos, rbt.RackInfo)
-		if err != nil {
-			return err
-		}
-
-		if req.DhcpServiceIntent.Active != rbt.DhcpServiceIntent.Active {
-			return fmt.Errorf("dhcp service intent mismatch expected %t got %t", req.DhcpServiceIntent.Active, rbt.DhcpServiceIntent.Active)
-		}
-
+		require.Equal(t, req.DisplayName, rbt.DisplayName)
+		compareSpine(t, *req.Spine, rbt.Spine)
+		compareRackInfos(t, req.RackInfos, rbt.RackInfo)
+		require.Equal(t, req.DhcpServiceIntent.Active, rbt.DhcpServiceIntent.Active)
 		if req.AntiAffinityPolicy != nil {
 			require.NotNilf(t, rbt.AntiAffinityPolicy, "rbt.AntiAffinityPolicy is nil")
-			compareAntiAffinityPolicy(t, *req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
+			compare.AntiAffinityPolicy(t, *req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
 		}
 
-		if req.AsnAllocationPolicy.SpineAsnScheme != rbt.AsnAllocationPolicy.SpineAsnScheme {
-			return fmt.Errorf("asn allocation policy spine asn scheme mismatch expected %q got %q", req.AsnAllocationPolicy.SpineAsnScheme, rbt.AsnAllocationPolicy.SpineAsnScheme)
-		}
-
-		if req.VirtualNetworkPolicy.OverlayControlProtocol != rbt.VirtualNetworkPolicy.OverlayControlProtocol {
-			return fmt.Errorf("virtual network policy overlay control policy mismatch expected %q got %q", req.VirtualNetworkPolicy.OverlayControlProtocol, rbt.VirtualNetworkPolicy.OverlayControlProtocol)
-		}
-
-		return nil
+		require.Equal(t, req.AsnAllocationPolicy.SpineAsnScheme, rbt.AsnAllocationPolicy.SpineAsnScheme)
+		require.Equal(t, req.VirtualNetworkPolicy.OverlayControlProtocol, rbt.VirtualNetworkPolicy.OverlayControlProtocol)
 	}
 
 	type testCase struct {
-		request            CreateRackBasedTemplateRequest
+		request            apstra.CreateRackBasedTemplateRequest
 		versionConstraints version.Constraints
 	}
 
-	spines := []TemplateElementSpineRequest{
+	spines := []apstra.TemplateElementSpineRequest{
 		{
 			Count:                  2,
 			LinkPerSuperspineSpeed: "10G",
 			LogicalDevice:          "AOS-7x10-Spine",
 			LinkPerSuperspineCount: 1,
-			Tags:                   []ObjectId{"firewall", "hypervisor"},
+			Tags:                   []apstra.ObjectId{"firewall", "hypervisor"},
 		},
 		{
 			Count:                  1,
@@ -222,7 +154,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 		},
 	}
 
-	rackInfos := []map[ObjectId]TemplateRackBasedRackInfo{
+	rackInfos := []map[apstra.ObjectId]apstra.TemplateRackBasedRackInfo{
 		{"access_switch": {Count: 1}},
 		{"access_switch": {Count: 2}},
 	}
@@ -230,120 +162,94 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 	testCases := []testCase{
 		{
 			versionConstraints: compatibility.EqApstra420,
-			request: CreateRackBasedTemplateRequest{
-				DisplayName:          randString(5, "hex"),
+			request: apstra.CreateRackBasedTemplateRequest{
+				DisplayName:          testutils.RandString(5, "hex"),
 				Spine:                &spines[0],
 				RackInfos:            rackInfos[0],
-				DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
-				AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic}, // 4.2.0 only?
-				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
+				DhcpServiceIntent:    &apstra.DhcpServiceIntent{Active: true},
+				AntiAffinityPolicy:   &apstra.AntiAffinityPolicy{Algorithm: apstra.AlgorithmHeuristic}, // 4.2.0 only?
+				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeSingle},
+				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{},
 			},
 		},
 		{
 			versionConstraints: compatibility.EqApstra420,
-			request: CreateRackBasedTemplateRequest{
-				DisplayName:          randString(5, "hex"),
+			request: apstra.CreateRackBasedTemplateRequest{
+				DisplayName:          testutils.RandString(5, "hex"),
 				Spine:                &spines[1],
 				RackInfos:            rackInfos[1],
-				DhcpServiceIntent:    &DhcpServiceIntent{Active: false},
-				AntiAffinityPolicy:   &AntiAffinityPolicy{Algorithm: AlgorithmHeuristic},
-				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
+				DhcpServiceIntent:    &apstra.DhcpServiceIntent{Active: false},
+				AntiAffinityPolicy:   &apstra.AntiAffinityPolicy{Algorithm: apstra.AlgorithmHeuristic},
+				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeSingle},
+				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{},
 			},
 		},
 		{
 			versionConstraints: compatibility.GeApstra421,
-			request: CreateRackBasedTemplateRequest{
-				DisplayName:          randString(5, "hex"),
+			request: apstra.CreateRackBasedTemplateRequest{
+				DisplayName:          testutils.RandString(5, "hex"),
 				Spine:                &spines[0],
 				RackInfos:            rackInfos[0],
-				DhcpServiceIntent:    &DhcpServiceIntent{Active: true},
-				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
+				DhcpServiceIntent:    &apstra.DhcpServiceIntent{Active: true},
+				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeSingle},
+				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{},
 			},
 		},
 		{
-			request: CreateRackBasedTemplateRequest{
-				DisplayName:          randString(5, "hex"),
+			request: apstra.CreateRackBasedTemplateRequest{
+				DisplayName:          testutils.RandString(5, "hex"),
 				Spine:                &spines[1],
 				RackInfos:            rackInfos[1],
-				DhcpServiceIntent:    &DhcpServiceIntent{Active: false},
-				AsnAllocationPolicy:  &AsnAllocationPolicy{SpineAsnScheme: AsnAllocationSchemeSingle},
-				VirtualNetworkPolicy: &VirtualNetworkPolicy{},
+				DhcpServiceIntent:    &apstra.DhcpServiceIntent{Active: false},
+				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeSingle},
+				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{},
 			},
 			versionConstraints: compatibility.GeApstra421,
 		},
 	}
 
 	for i, tc := range testCases {
-		i, tc := i, tc
-
 		t.Run(fmt.Sprintf("Test-%d", i), func(t *testing.T) {
-			for clientName, client := range clients {
-				clientName, client := clientName, client
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-				t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
-					if !tc.versionConstraints.Check(client.client.apiVersion) {
-						t.Skipf("skipping testcase %d because of versionConstraint %s, version %s", i, tc.versionConstraints, client.client.apiVersion)
+			for _, client := range clients {
+				t.Run(client.Name(), func(t *testing.T) {
+					t.Parallel()
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
+
+					if !tc.versionConstraints.Check(client.APIVersion()) {
+						t.Skipf("skipping testcase %d because of versionConstraint %s, version %s", i, tc.versionConstraints, client.APIVersion())
 					}
 
-					log.Printf("testing CreateRackBasedTemplate(testCase[%d]) against %s %s (%s)", i, client.clientType, clientName, client.client.ApiVersion())
-					id, err := client.client.CreateRackBasedTemplate(ctx, &tc.request)
-					if err != nil {
-						t.Fatal(err)
-					}
+					id, err := client.Client.CreateRackBasedTemplate(ctx, &tc.request)
+					require.NoError(t, err)
 
-					log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					rbt, err := client.client.GetRackBasedTemplate(ctx, id)
-					if err != nil {
-						t.Fatal(err)
-					}
+					rbt, err := client.Client.GetRackBasedTemplate(ctx, id)
+					require.NoError(t, err)
 
-					if id != rbt.Id {
-						t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
-					}
-
-					err = compareRequestToTemplate(t, tc.request, *rbt.Data)
-					if err != nil {
-						t.Fatalf("test case %d template differed from request: %s", i, err.Error())
-					}
+					require.Equal(t, id, rbt.ID())
+					compareRequestToTemplate(t, tc.request, *rbt.Data)
 
 					for j := i; j < i+len(testCases); j++ { // j counts up from i
 						k := j % len(testCases) // k counts up from i, but loops back to zero
 
-						if !testCases[k].versionConstraints.Check(client.client.apiVersion) {
+						if !testCases[k].versionConstraints.Check(client.APIVersion()) {
 							continue
 						}
 
 						req := testCases[k].request
-						log.Printf("testing UpdateRackBasedTemplate(testCase[%d]) against %s %s (%s)", k, client.clientType, clientName, client.client.ApiVersion())
-						err = client.client.UpdateRackBasedTemplate(ctx, id, &req)
-						if err != nil {
-							t.Fatal(err)
-						}
+						err = client.Client.UpdateRackBasedTemplate(ctx, id, &req)
+						require.NoError(t, err)
 
-						log.Printf("testing GetRackBasedTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-						rbt, err = client.client.GetRackBasedTemplate(ctx, id)
-						if err != nil {
-							t.Fatal(err)
-						}
+						rbt, err = client.Client.GetRackBasedTemplate(ctx, id)
+						require.NoError(t, err)
 
-						if id != rbt.Id {
-							t.Fatalf("test case %d template id mismatch expected %q got %q", i, id, rbt.Id)
-						}
-
-						err = compareRequestToTemplate(t, req, *rbt.Data)
-						if err != nil {
-							t.Fatalf("test case %d template differed from request: %s", i, err.Error())
-						}
+						require.Equal(t, id, rbt.ID())
+						compareRequestToTemplate(t, req, *rbt.Data)
 					}
 
-					log.Printf("testing DeleteTemplate() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					err = client.client.DeleteTemplate(ctx, id)
-					if err != nil {
-						t.Fatal(err)
-					}
+					err = client.Client.DeleteTemplate(ctx, id)
+					require.NoError(t, err)
 				})
 			}
 		})

@@ -65,14 +65,16 @@ const (
 	TemplateTypeRackBased = TemplateType(iota)
 	TemplateTypePodBased
 	TemplateTypeL3Collapsed
+	TemplateTypeRailCollapsed
 	TemplateTypeNone
 	TemplateTypeUnknown = "unknown template type '%s'"
 
-	templateTypeRackBased   = templateType("rack_based")
-	templateTypePodBased    = templateType("pod_based")
-	templateTypeL3Collapsed = templateType("l3_collapsed")
-	templateTypeNone        = templateType("")
-	templateTypeUnknown     = "unknown template type '%d'"
+	templateTypeRackBased     = templateType("rack_based")
+	templateTypePodBased      = templateType("pod_based")
+	templateTypeL3Collapsed   = templateType("l3_collapsed")
+	templateTypeRailCollapsed = templateType("rail_collapsed")
+	templateTypeNone          = templateType("")
+	templateTypeUnknown       = "unknown template type '%d'"
 )
 
 const (
@@ -539,6 +541,8 @@ func (o *template) polish() (Template, error) {
 			return nil, err
 		}
 		return t.polish()
+	case templateTypeRailCollapsed:
+		return nil, nil // todo: not currently supported
 	}
 	return nil, fmt.Errorf(TemplateTypeUnknown, t)
 }
