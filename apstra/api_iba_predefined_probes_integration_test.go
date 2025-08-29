@@ -9,12 +9,12 @@ package apstra_test
 import (
 	"context"
 	"encoding/json"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
-	"testing"
-
 	"github.com/stretchr/testify/require"
 )
 
@@ -65,9 +65,8 @@ func TestIbaPredefinedProbes(t *testing.T) {
 					t.Log(err)
 					t.Logf("%s was expected to fail", p.Name)
 					continue
-				} else {
-					require.NoError(t, err)
 				}
+				require.NoError(t, err)
 
 				t.Logf("Got back Probe Id %s \n Now Make a Widget with it.", probeId)
 			}
