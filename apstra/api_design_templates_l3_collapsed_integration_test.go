@@ -64,7 +64,7 @@ func TestGetL3CollapsedTemplateByName(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx = testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 			l3ct, err := client.Client.GetL3CollapsedTemplateByName(ctx, name)
 			require.NoError(t, err)

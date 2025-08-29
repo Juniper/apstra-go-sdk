@@ -37,7 +37,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 				id := ids[i]
 				t.Run(fmt.Sprintf("GET_%s", id), func(t *testing.T) {
 					t.Parallel()
-					ctx = testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 					ld, err := client.Client.GetLogicalDevice(ctx, id)
 					require.NoError(t, err)

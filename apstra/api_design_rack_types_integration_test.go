@@ -26,7 +26,7 @@ func TestListGetOneRackType(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx = testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 			rtIds, err := client.Client.ListRackTypeIds(ctx)
 			require.NoError(t, err)
@@ -49,7 +49,7 @@ func TestListGetAllGetRackType(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx = testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 			rackTypeIds, err := client.Client.ListRackTypeIds(ctx)
 			require.NoError(t, err)
@@ -132,11 +132,11 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx = testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 			for tName, tCase := range testCases {
 				t.Run(tName, func(t *testing.T) {
-					ctx = testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 					id, err := client.Client.CreateRackType(ctx, &tCase)
 					require.NoError(t, err)
