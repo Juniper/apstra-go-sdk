@@ -1602,6 +1602,11 @@ func (o *Client) GetDeviceProfile(ctx context.Context, id ObjectId) (*DeviceProf
 	return raw.polish(), nil
 }
 
+// ListDeviceProfileIds lists device profile IDs
+func (o *Client) ListDeviceProfileIds(ctx context.Context) ([]ObjectId, error) {
+	return o.listDeviceProfileIds(ctx)
+}
+
 // GetAllDeviceProfiles returns []DeviceProfile
 func (o *Client) GetAllDeviceProfiles(ctx context.Context) ([]DeviceProfile, error) {
 	raw, err := o.getAllDeviceProfiles(ctx)

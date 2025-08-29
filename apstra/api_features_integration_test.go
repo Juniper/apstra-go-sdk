@@ -1,27 +1,26 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetFeatures(t *testing.T) {
-	ctx := context.Background()
-
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
 		allowedVersions []version.Constraints
@@ -58,39 +57,39 @@ func TestGetFeatures(t *testing.T) {
 	}
 
 	for tName, tCase := range testCases {
-		tName, tCase := tName, tCase
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			for clientName, client := range clients {
-				clientName, client := clientName, client
-				t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+			for _, client := range clients {
+				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 					// true with no constraints present; defaults false when constraints exist
 					versionIsPermitted := len(tCase.allowedVersions) == 0
 
 					for _, allowedVersion := range tCase.allowedVersions {
-						if allowedVersion.Check(client.client.apiVersion) {
+						if allowedVersion.Check(client.APIVersion()) {
 							versionIsPermitted = true
 							break // because we've found a sign that it's okay to run
 						}
 					}
 
 					if !versionIsPermitted {
-						t.Skipf("skipping Apstra %s", client.client.apiVersion)
+						t.Skipf("skipping Apstra %s", client.APIVersion())
 					}
 
 					// test cached values
-					require.Equalf(t, tCase.expEnabled, client.client.FeatureEnabled(tCase.feature), "feature enabled")
-					require.Equalf(t, tCase.expExists, client.client.FeatureExists(tCase.feature), "feature exists")
+					require.Equalf(t, tCase.expEnabled, client.Client.FeatureEnabled(tCase.feature), "feature enabled")
+					require.Equalf(t, tCase.expExists, client.Client.FeatureExists(tCase.feature), "feature exists")
 
 					// refresh feature cache
-					require.NoError(t, client.client.getFeatures(ctx))
+					require.NoError(t, client.Client.GetFeatures(ctx))
 
 					// test refreshed values
-					require.Equalf(t, tCase.expEnabled, client.client.FeatureEnabled(tCase.feature), "feature enabled")
-					require.Equalf(t, tCase.expExists, client.client.FeatureExists(tCase.feature), "feature exists")
+					require.Equalf(t, tCase.expEnabled, client.Client.FeatureEnabled(tCase.feature), "feature enabled")
+					require.Equalf(t, tCase.expExists, client.Client.FeatureExists(tCase.feature), "feature exists")
 				})
 			}
 		})
