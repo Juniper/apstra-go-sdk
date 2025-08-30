@@ -1,10 +1,15 @@
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package compare
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func IntPool(t testing.TB, req apstra.IntPoolRequest, data apstra.IntPool) {
