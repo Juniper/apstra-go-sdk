@@ -272,6 +272,7 @@ func TestOurIpForPeer(t *testing.T) {
 	}
 }
 
+// Deprecated: use testutils.GetRandInts()
 func getRandInts(min, max, count int) ([]int, error) {
 	if max-min+1 < count {
 		return nil, fmt.Errorf("cannot generate %d random numbers between %d and %d inclusive", count, min, max)

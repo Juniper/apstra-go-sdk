@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+const (
+	VniMin = vniMin
+	VniMax = vniMax
+)
+
 // GetFeatures is in the export_test file because this private function needs to be exposed only for test code
 func (o *Client) GetFeatures(ctx context.Context) error {
 	return o.getFeatures(ctx)
