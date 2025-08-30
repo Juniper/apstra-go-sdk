@@ -1,228 +1,261 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	"log"
 	"testing"
+
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 )
 
 func TestListIp4Pools(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing ListIp4PoolIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		poolIds, err := client.client.ListIp4PoolIds(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(poolIds) <= 0 {
-			t.Fatalf("only got %d pools", len(poolIds))
-		}
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
+
+			poolIds, err := client.Client.ListIp4PoolIds(ctx)
+			require.NoError(t, err)
+			require.NotZero(t, len(poolIds))
+		})
 	}
 }
 
 func TestGetAllIp4Pools(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing GetIp4Pools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pools, err := client.client.GetIp4Pools(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(pools) <= 0 {
-			t.Fatalf("only got %d pools", len(pools))
-		}
-		log.Printf("pool count: %d", len(pools))
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
+
+			pools, err := client.Client.GetIp4Pools(ctx)
+			require.NoError(t, err)
+			require.NotZero(t, len(pools))
+		})
 	}
 }
 
 func TestGetIp4PoolByName(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing GetIp4Pools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pools, err := client.client.GetIp4Pools(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-		poolNames := make(map[string]struct{})
-		for _, p := range pools {
-			poolNames[p.DisplayName] = struct{}{}
-		}
+			pools, err := client.Client.GetIp4Pools(ctx)
+			require.NoError(t, err)
 
-		delete(poolNames, "")
-		for name := range poolNames {
-			log.Printf("testing GetIp4PoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			pool, err := client.client.GetIp4PoolByName(context.TODO(), name)
-			if err != nil {
-				t.Fatal(err)
+			poolNames := make([]string, len(pools))
+			for i, p := range pools {
+				poolNames[i] = p.DisplayName
 			}
 
-			if pool.Used.Cmp(&pool.Total) == 0 {
-				log.Fatal("every IP in the pool is in use? seems unlikely.")
-			}
+			for _, name := range poolNames {
+				t.Run(name, func(t *testing.T) {
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			for _, subnet := range pool.Subnets {
-				if subnet.Used.Cmp(&subnet.Total) == 0 {
-					log.Fatal("every IP in the subnet is in use? seems unlikely.")
-				}
+					pool, err := client.Client.GetIp4PoolByName(ctx, name)
+					require.NoError(t, err)
+
+					if pool.Used.Cmp(&pool.Total) == 0 {
+						log.Fatal("every IP in the pool is in use? seems unlikely.")
+					}
+
+					for _, subnet := range pool.Subnets {
+						if subnet.Used.Cmp(&subnet.Total) == 0 {
+							log.Fatal("every IP in the subnet is in use? seems unlikely.")
+						}
+					}
+				})
 			}
-		}
+		})
 	}
 }
 
 func TestCreateGetDeleteIp4Pool(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing CreateIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateIp4Pool(context.TODO(), &NewIpPoolRequest{
-			DisplayName: randString(10, "hex"),
-			Tags:        []string{"tag one", "tag two"},
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
+
+			req := apstra.NewIpPoolRequest{
+				DisplayName: testutils.RandString(10, "hex"),
+				Tags:        []string{"tag one", "tag two"},
+			}
+
+			id, err := client.Client.CreateIp4Pool(ctx, &req)
+			require.NoError(t, err)
+
+			pool, err := client.Client.GetIp4Pool(ctx, id)
+			require.NoError(t, err)
+			require.NotNil(t, pool)
+			compare.IpPool(t, req, *pool)
+
+			pool, err = client.Client.GetIp4PoolByName(ctx, req.DisplayName)
+			require.NoError(t, err)
+			require.NotNil(t, pool)
+			compare.IpPool(t, req, *pool)
+
+			err = client.Client.DeleteIp4Pool(ctx, id)
+			require.NoError(t, err)
+
+			var ace apstra.ClientErr
+
+			_, err = client.Client.GetIp4Pool(ctx, id)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, apstra.ErrNotfound, ace.Type())
+
+			_, err = client.Client.GetIp4PoolByName(ctx, req.DisplayName)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, apstra.ErrNotfound, ace.Type())
+
+			err = client.Client.DeleteIp4Pool(ctx, id)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, apstra.ErrNotfound, ace.Type())
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing GetIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pool, err := client.client.GetIp4Pool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(pool.Id, pool.Total)
-
-		log.Printf("testing DeleteIp4Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteIp4Pool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
 
 func TestListIp6Pools(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing ListIp6PoolIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		poolIds, err := client.client.ListIp6PoolIds(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(poolIds) <= 0 {
-			t.Fatalf("only got %d pools", len(poolIds))
-		}
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
+
+			poolIds, err := client.Client.ListIp6PoolIds(ctx)
+			require.NoError(t, err)
+			require.NotZero(t, len(poolIds))
+		})
 	}
 }
 
 func TestGetAllIp6Pools(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing GetIp6Pools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pools, err := client.client.GetIp6Pools(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(pools) <= 0 {
-			t.Fatalf("only got %d pools", len(pools))
-		}
-		log.Printf("pool count: %d", len(pools))
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
+
+			pools, err := client.Client.GetIp6Pools(ctx)
+			require.NoError(t, err)
+			require.NotZero(t, len(pools))
+		})
 	}
 }
 
 func TestGetIp6PoolByName(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing GetIp6Pools() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pools, err := client.client.GetIp6Pools(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-		poolNames := make(map[string]struct{})
-		for _, p := range pools {
-			poolNames[p.DisplayName] = struct{}{}
-		}
+			pools, err := client.Client.GetIp6Pools(ctx)
+			require.NoError(t, err)
 
-		delete(poolNames, "")
-		for name := range poolNames {
-			log.Printf("testing GetIp6PoolByName() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			pool, err := client.client.GetIp6PoolByName(context.TODO(), name)
-			if err != nil {
-				t.Fatal(err)
+			poolNames := make([]string, len(pools))
+			for i, p := range pools {
+				poolNames[i] = p.DisplayName
 			}
 
-			if pool.Used.Cmp(&pool.Total) == 0 {
-				log.Fatal("every IP in the pool is in use? seems unlikely.")
-			}
+			for _, name := range poolNames {
+				t.Run(name, func(t *testing.T) {
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			for _, subnet := range pool.Subnets {
-				if subnet.Used.Cmp(&subnet.Total) == 0 {
-					log.Fatal("every IP in the subnet is in use? seems unlikely.")
-				}
+					pool, err := client.Client.GetIp6PoolByName(ctx, name)
+					require.NoError(t, err)
+
+					if pool.Used.Cmp(&pool.Total) == 0 {
+						log.Fatal("every IP in the pool is in use? seems unlikely.")
+					}
+
+					for _, subnet := range pool.Subnets {
+						if subnet.Used.Cmp(&subnet.Total) == 0 {
+							log.Fatal("every IP in the subnet is in use? seems unlikely.")
+						}
+					}
+				})
 			}
-		}
+		})
 	}
 }
 
 func TestCreateGetDeleteIp6Pool(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing CreateIp6Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateIp6Pool(context.TODO(), &NewIpPoolRequest{
-			DisplayName: randString(10, "hex"),
-			Tags:        []string{"tag one", "tag two"},
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
+
+			req := apstra.NewIpPoolRequest{
+				DisplayName: testutils.RandString(10, "hex"),
+				Tags:        []string{"tag one", "tag two"},
+			}
+
+			id, err := client.Client.CreateIp6Pool(ctx, &req)
+			require.NoError(t, err)
+
+			pool, err := client.Client.GetIp6Pool(ctx, id)
+			require.NoError(t, err)
+			require.NotNil(t, pool)
+			compare.IpPool(t, req, *pool)
+
+			pool, err = client.Client.GetIp6PoolByName(ctx, req.DisplayName)
+			require.NoError(t, err)
+			require.NotNil(t, pool)
+			compare.IpPool(t, req, *pool)
+
+			err = client.Client.DeleteIp6Pool(ctx, id)
+			require.NoError(t, err)
+
+			var ace apstra.ClientErr
+
+			_, err = client.Client.GetIp6Pool(ctx, id)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, apstra.ErrNotfound, ace.Type())
+
+			_, err = client.Client.GetIp6PoolByName(ctx, req.DisplayName)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, apstra.ErrNotfound, ace.Type())
+
+			err = client.Client.DeleteIp6Pool(ctx, id)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, apstra.ErrNotfound, ace.Type())
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing GetIp6Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		pool, err := client.client.GetIp6Pool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Println(pool.Id, pool.Total)
-
-		log.Printf("testing DeleteIp6Pool() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteIp6Pool(context.TODO(), id)
-		if err != nil {
-			t.Fatal(err)
-		}
 	}
 }
