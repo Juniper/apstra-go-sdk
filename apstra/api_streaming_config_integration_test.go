@@ -1,38 +1,37 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
-	"log"
 	"testing"
+
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 )
 
 func TestClient_GetAllStreamingConfigs(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing GetAllStreamingConfigIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		ids, err := client.client.GetAllStreamingConfigIds(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-		for _, id := range ids {
-			log.Printf("testing GetStreamingConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			streamingConfig, err := client.client.GetStreamingConfig(context.TODO(), id)
-			if err != nil {
-				t.Fatal(err)
+			ids, err := client.Client.GetAllStreamingConfigIds(ctx)
+			require.NoError(t, err)
+
+			for _, id := range ids {
+				streamingConfig, err := client.Client.GetStreamingConfig(ctx, id)
+				require.NoError(t, err)
+				require.Equal(t, id, streamingConfig.Id)
 			}
-			log.Printf("streaming config: %s, %s, %s:%d", streamingConfig.Protocol, streamingConfig.StreamingType, streamingConfig.Hostname, streamingConfig.Port)
-		}
+		})
 	}
 }
