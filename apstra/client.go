@@ -840,6 +840,10 @@ func (o *Client) UpdateSystem(ctx context.Context, id SystemId, cfg *SystemUserC
 	return o.updateSystem(ctx, id, cfg)
 }
 
+func (o *Client) UpdateSystemByAgentId(ctx context.Context, agentId ObjectId, cfg *SystemUserConfig) error {
+	return o.updateSystemByAgentId(ctx, agentId, cfg)
+}
+
 // DeleteSystem deletes the specified SystemId
 func (o *Client) DeleteSystem(ctx context.Context, id SystemId) error {
 	return o.deleteSystem(ctx, id)

@@ -16,24 +16,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/hashicorp/go-version"
+	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/stretchr/testify/require"
 )
 
 const EnvApstraExperimental = "APSTRA_EXPERIMENTAL"
 
-type testClientConfig interface {
+type Config interface {
 	clientConfig() apstra.ClientCfg
 	clientType() ClientType
 	id() string
 }
 
-// getTestClientCfgs returns []testClientConfig
-func getTestClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+// getTestClientCfgs returns []Config
+func getTestClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []Config {
 	t.Helper()
 
-	var result []testClientConfig
+	var result []Config
 
 	result = append(result, getAPIOpsClientCfgs(t, ctx, testConfig)...)
 	result = append(result, getAWSClientCfgs(t, ctx, testConfig)...)
@@ -45,7 +45,7 @@ func getTestClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig)
 
 type TestClient struct {
 	Client *apstra.Client
-	config testClientConfig
+	config Config
 }
 
 func (t TestClient) Name() string {
@@ -54,6 +54,14 @@ func (t TestClient) Name() string {
 
 func (t TestClient) APIVersion() *version.Version {
 	return version.Must(version.NewVersion(t.Client.ApiVersion()))
+}
+
+func (t TestClient) Config() Config {
+	return t.config
+}
+
+func (t TestClient) Type() ClientType {
+	return t.config.clientType()
 }
 
 var (

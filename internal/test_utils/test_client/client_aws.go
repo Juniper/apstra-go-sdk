@@ -31,7 +31,7 @@ const (
 	awsToplogySecretPrefix = "apstra-info-"
 )
 
-var _ testClientConfig = (*awsConfig)(nil)
+var _ Config = (*awsConfig)(nil)
 
 type awsConfig struct {
 	instanceID string
@@ -50,7 +50,7 @@ func (a awsConfig) id() string {
 	return a.instanceID
 }
 
-func getAWSClientCfg(t testing.TB, ctx context.Context, id string) testClientConfig {
+func getAWSClientCfg(t testing.TB, ctx context.Context, id string) Config {
 	t.Helper()
 
 	awsCfg, err := config.LoadDefaultConfig(ctx)
@@ -90,7 +90,7 @@ func getAWSClientCfg(t testing.TB, ctx context.Context, id string) testClientCon
 	}
 }
 
-func getAWSClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getAWSClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []Config {
 	t.Helper()
 
 	topologyIDs := testConfig.AwsTopologyIds
@@ -102,7 +102,7 @@ func getAWSClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) 
 		}
 	}
 
-	result := make([]testClientConfig, len(topologyIDs))
+	result := make([]Config, len(topologyIDs))
 	for i, id := range topologyIDs {
 		result[i] = getAWSClientCfg(t, ctx, id)
 	}
