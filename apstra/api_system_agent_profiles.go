@@ -18,10 +18,6 @@ const (
 	apiUrlSystemAgentProfilesById       = apiUrlSystemAgentProfiles + apiUrlPathDelim + "%s"
 	apiUrlSystemAgentProfilesAssignById = apiUrlSystemAgentProfiles + apiUrlPathDelim + "%s" + "/assign"
 
-	apstraAgentPlatformJunos = "junos"
-	apstraAgentPlatformEOS   = "eos"
-	apstraAgentPlatformNXOS  = "nxos"
-
 	apstraSystemAgentPlatformStringSep = "=="
 
 	apstraErrAgentProfileInUse = "Profile is in use"

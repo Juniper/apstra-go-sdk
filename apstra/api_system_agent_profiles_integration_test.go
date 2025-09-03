@@ -1,167 +1,151 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"log"
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-		var cfgs []*AgentProfileConfig
-		for _, p := range []string{
-			apstraAgentPlatformEOS,
-			apstraAgentPlatformJunos,
-			apstraAgentPlatformNXOS,
-		} {
-			platform := p
-			cfgs = append(cfgs, &AgentProfileConfig{
-				Label:    randString(10, "hex"),
-				Username: toPtr(randString(10, "hex")),
-				Password: toPtr(randString(10, "hex")),
-				Platform: &platform,
-				Packages: map[string]string{
-					randString(10, "hex"): randString(10, "hex"),
-					randString(10, "hex"): randString(10, "hex"),
-				},
-				OpenOptions: map[string]string{
-					randString(10, "hex"): randString(10, "hex"),
-					randString(10, "hex"): randString(10, "hex"),
-				},
-			})
-		}
+			var cfgs []*apstra.AgentProfileConfig
+			for _, p := range []string{"eos", "junos", "nxos"} {
+				platform := p
+				cfgs = append(cfgs, &apstra.AgentProfileConfig{
+					Label:    testutils.RandString(10, "hex"),
+					Username: testutils.ToPtr(testutils.RandString(10, "hex")),
+					Password: testutils.ToPtr(testutils.RandString(10, "hex")),
+					Platform: &platform,
+					Packages: map[string]string{
+						testutils.RandString(10, "hex"): testutils.RandString(10, "hex"),
+						testutils.RandString(10, "hex"): testutils.RandString(10, "hex"),
+					},
+					OpenOptions: map[string]string{
+						testutils.RandString(10, "hex"): testutils.RandString(10, "hex"),
+						testutils.RandString(10, "hex"): testutils.RandString(10, "hex"),
+					},
+				})
+			}
 
-		var newIds []ObjectId
-		for _, c := range cfgs {
-			log.Printf("testing createAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			id, err := client.client.createAgentProfile(context.TODO(), c)
+			var newIds []apstra.ObjectId
+			for _, c := range cfgs {
+				id, err := client.Client.CreateAgentProfile(ctx, c)
+				if err != nil {
+					t.Fatal(err)
+				}
+				newIds = append(newIds, id)
+
+				sap, err := client.Client.GetAgentProfileByLabel(ctx, c.Label)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if id != sap.Id {
+					t.Fatalf("error fetching System Agent Profile by label - '%s' != '%s'", id, sap.Id)
+				}
+			}
+
+			apiIds, err := client.Client.ListAgentProfileIds(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
-			newIds = append(newIds, id)
 
-			log.Printf("testing GetAgentProfileByLabel() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			sap, err := client.client.GetAgentProfileByLabel(context.TODO(), c.Label)
+			allProfiles, err := client.Client.GetAllAgentProfiles(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if id != sap.Id {
-				t.Fatalf("error fetching System Agent Profile by label - '%s' != '%s'", id, sap.Id)
+
+			if len(allProfiles) != len(apiIds) {
+				t.Fatalf("found %d profiles and %d profile IDs", len(allProfiles), len(apiIds))
 			}
-		}
 
-		log.Printf("testing listAgentProfileIds() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		apiIds, err := client.client.listAgentProfileIds(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("testing GetAllAgentProfiles() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		allProfiles, err := client.client.GetAllAgentProfiles(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if len(allProfiles) != len(apiIds) {
-			t.Fatalf("found %d profiles and %d profile IDs", len(allProfiles), len(apiIds))
-		}
-
-		apiIdsMap := make(map[ObjectId]struct{})
-		for _, id := range apiIds {
-			apiIdsMap[id] = struct{}{}
-		}
-
-		for _, id := range newIds {
-			if _, found := apiIdsMap[id]; !found {
-				t.Fatal(fmt.Errorf("created id %s, but didn't find it in the list returned by the API", id))
+			apiIdsMap := make(map[apstra.ObjectId]struct{}, len(apiIds))
+			for _, id := range apiIds {
+				apiIdsMap[id] = struct{}{}
 			}
-		}
 
-		for _, id := range newIds {
-			log.Printf("testing deleteAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err := client.client.deleteAgentProfile(context.TODO(), id)
-			if err != nil {
-				t.Fatal(err)
+			for _, id := range newIds {
+				require.Contains(t, apiIdsMap, id)
 			}
-		}
+
+			for _, id := range newIds {
+				err := client.Client.DeleteAgentProfile(ctx, id)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+		})
 	}
 }
 
 func TestClient_UpdateAgentProfile_ClearStringFields(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing CreateAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		id, err := client.client.CreateAgentProfile(ctx, &AgentProfileConfig{
-			Label:    randString(5, "hex"),
-			Username: toPtr(randString(5, "hex")),
-			Password: toPtr(randString(5, "hex")),
-			Platform: toPtr("junos"),
+			id, err := client.Client.CreateAgentProfile(ctx, &apstra.AgentProfileConfig{
+				Label:    testutils.RandString(5, "hex"),
+				Username: testutils.ToPtr(testutils.RandString(5, "hex")),
+				Password: testutils.ToPtr(testutils.RandString(5, "hex")),
+				Platform: testutils.ToPtr("junos"),
+			})
+			require.NoError(t, err)
+
+			err = client.Client.UpdateAgentProfile(ctx, id, &apstra.AgentProfileConfig{
+				Username: testutils.ToPtr(""),
+				Password: testutils.ToPtr(""),
+				Platform: testutils.ToPtr(""),
+			})
+			require.NoError(t, err)
+
+			ap, err := client.Client.GetAgentProfile(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, false, ap.HasUsername)
+			require.Equal(t, false, ap.HasPassword)
+			require.Equal(t, "", ap.Platform)
+
+			err = client.Client.DeleteAgentProfile(ctx, id)
+			require.NoError(t, err)
 		})
-		require.NoError(t, err)
-
-		log.Printf("testing UpdateAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.UpdateAgentProfile(ctx, id, &AgentProfileConfig{
-			Username: toPtr(""),
-			Password: toPtr(""),
-			Platform: toPtr(""),
-		})
-		require.NoError(t, err)
-
-		ap, err := client.client.GetAgentProfile(ctx, id)
-		require.NoError(t, err)
-		require.Equal(t, false, ap.HasUsername)
-		require.Equal(t, false, ap.HasPassword)
-		require.Equal(t, "", ap.Platform)
-
-		log.Printf("testing DeleteAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = client.client.DeleteAgentProfile(ctx, id)
-		require.NoError(t, err)
 	}
 }
 
 func TestClient_UpdateAgentProfile(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(client.name(), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			t.Logf("testing GetAllSystemAgents() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			agents, err := client.client.GetAllSystemAgents(ctx)
+			agents, err := client.Client.GetAllSystemAgents(ctx)
 			require.NoError(t, err)
 
-			profiles, err := client.client.GetAllAgentProfiles(ctx)
+			profiles, err := client.Client.GetAllAgentProfiles(ctx)
 			require.NoError(t, err)
-			profileMap := make(map[ObjectId]AgentProfile, len(profiles))
+			profileMap := make(map[apstra.ObjectId]apstra.AgentProfile, len(profiles))
 			for _, profile := range profiles {
 				profileMap[profile.Id] = profile
 			}
@@ -187,7 +171,7 @@ func TestClient_UpdateAgentProfile(t *testing.T) {
 				}
 
 				// remove agents with un-acked systems
-				systemInfo, err := client.client.GetSystemInfo(ctx, agents[i].Status.SystemId)
+				systemInfo, err := client.Client.GetSystemInfo(ctx, agents[i].Status.SystemId)
 				require.NoError(t, err)
 				if !systemInfo.Status.IsAcknowledged {
 					agents[i] = agents[len(agents)-1] // copy last to index i
@@ -203,18 +187,16 @@ func TestClient_UpdateAgentProfile(t *testing.T) {
 			// At this point, agents is full of system agents which rely on their associated agent
 			// profile for platform info. We'll attempt to modify the agent profile to elicit an error.
 
+			var ace apstra.ClientErr
 			for _, agent := range agents {
 				profile := profileMap[agent.Config.Profile]
-				t.Logf("trying to provoke an error with UpdateAgentProfile() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				err = client.client.UpdateAgentProfile(ctx, profile.Id, &AgentProfileConfig{
+				err = client.Client.UpdateAgentProfile(ctx, profile.Id, &apstra.AgentProfileConfig{
 					Label:    profile.Label,
-					Platform: toPtr(""),
+					Platform: testutils.ToPtr(""),
 				})
 				require.Error(t, err)
-				var ace ClientErr
-				if !(errors.As(err, &ace) && ace.errType == ErrAgentProfilePlatformRequired) {
-					t.Fatalf("error should have been type %d, err is %q", ErrAgentProfilePlatformRequired, err.Error())
-				}
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, apstra.ErrAgentProfilePlatformRequired, ace.Type())
 			}
 		})
 	}
