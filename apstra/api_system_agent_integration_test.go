@@ -1,11 +1,10 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
@@ -13,48 +12,49 @@ import (
 	"math/rand/v2"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	require.NoError(t, err)
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		t.Run(client.name(), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(t.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 			// initial fetch
-			log.Printf("testing GetSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			mgrCfg, err := client.client.GetSystemAgentManagerConfig(context.Background())
+			mgrCfg, err := client.Client.GetSystemAgentManagerConfig(ctx)
 			require.NoError(t, err)
 
 			// new config with opposite values
-			testCfg := &SystemAgentManagerConfig{
+			testCfg := &apstra.SystemAgentManagerConfig{
 				SkipRevertToPristineOnUninstall: !mgrCfg.SkipRevertToPristineOnUninstall,
 				SkipPristineValidation:          !mgrCfg.SkipPristineValidation,
 				SkipInterfaceShutdownOnUpgrade:  !mgrCfg.SkipInterfaceShutdownOnUpgrade,
 			}
-			if compatibility.HasDeviceOsImageDownloadTimeout.Check(client.client.apiVersion) {
-				testCfg.DeviceOsImageDownloadTimeout = toPtr(rand.IntN(2700) + 1)
+			if compatibility.HasDeviceOsImageDownloadTimeout.Check(client.APIVersion()) {
+				testCfg.DeviceOsImageDownloadTimeout = testutils.ToPtr(rand.IntN(2700) + 1)
 			}
 
 			// set new config
-			log.Printf("testing SetSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.SetSystemAgentManagerConfig(context.Background(), testCfg)
-			if !compatibility.SystemManagerHasSkipInterfaceShutdownOnUpgrade.Check(client.client.apiVersion) {
+			err = client.Client.SetSystemAgentManagerConfig(ctx, testCfg)
+			if !compatibility.SystemManagerHasSkipInterfaceShutdownOnUpgrade.Check(client.APIVersion()) {
 				require.Error(t, err)
-				log.Printf("apstra %s refused to run with SkipInterfaceShutdownOnUpgrade set to %t", client.client.apiVersion, testCfg.SkipInterfaceShutdownOnUpgrade)
+				log.Printf("apstra %s refused to run with SkipInterfaceShutdownOnUpgrade set to %t", client.Client.ApiVersion(), testCfg.SkipInterfaceShutdownOnUpgrade)
 
 				testCfg.SkipInterfaceShutdownOnUpgrade = false
-				err = client.client.SetSystemAgentManagerConfig(context.Background(), testCfg)
+				err = client.Client.SetSystemAgentManagerConfig(ctx, testCfg)
 			}
 			require.NoError(t, err)
 
 			// fetch new config
-			log.Printf("testing GetSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			testCfgRetrieved, err := client.client.GetSystemAgentManagerConfig(context.Background())
+			testCfgRetrieved, err := client.Client.GetSystemAgentManagerConfig(ctx)
 			require.NoError(t, err)
 
 			// validate field as expected
@@ -63,8 +63,7 @@ func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
 			require.Equal(t, testCfg.SkipRevertToPristineOnUninstall, testCfgRetrieved.SkipRevertToPristineOnUninstall)
 
 			// reset to original configuration
-			log.Printf("testing SetSystemAgentManagerConfig() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.SetSystemAgentManagerConfig(context.Background(), mgrCfg)
+			err = client.Client.SetSystemAgentManagerConfig(ctx, mgrCfg)
 			require.NoError(t, err)
 		})
 	}
