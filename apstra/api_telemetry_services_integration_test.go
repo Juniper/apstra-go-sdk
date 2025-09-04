@@ -9,10 +9,10 @@ package apstra_test
 import (
 	"bytes"
 	"context"
-	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"log"
 	"testing"
 
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
 )
