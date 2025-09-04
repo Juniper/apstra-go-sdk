@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/go-version"
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
