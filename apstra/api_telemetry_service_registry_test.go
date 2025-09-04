@@ -1,40 +1,43 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
 	"log"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTelemetryServiceRegistry(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("Testing Telemetry Service Registry against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		log.Println("Test Get All Telemetry Service Registry Entries")
-		entries, err := client.client.GetAllTelemetryServiceRegistryEntries(ctx)
-		require.NoError(t, err)
+			log.Println("Test Get All Telemetry Service Registry Entries")
+			entries, err := client.Client.GetAllTelemetryServiceRegistryEntries(ctx)
+			require.NoError(t, err)
 
-		for _, e := range entries {
-			log.Print(e.ServiceName)
-		}
+			for _, e := range entries {
+				log.Print(e.ServiceName)
+			}
 
-		log.Println("Test Create Telemetry Service Registry Entries")
-		name := randString(10, "hex")
-		schema := `{
+			log.Println("Test Create Telemetry Service Registry Entries")
+			name := testutils.RandString(10, "hex")
+			schema := `{
         "required": ["key","value"],
         "type": "object",
         "properties": {
@@ -85,27 +88,27 @@ func TestTelemetryServiceRegistry(t *testing.T) {
 		}
 	}`
 
-		entry := TelemetryServiceRegistryEntry{
-			ServiceName:       name,
-			StorageSchemaPath: enum.StorageSchemaPathIbaIntegerData,
-			ApplicationSchema: []byte(schema),
-			Builtin:           false,
-			Description:       "Test Service",
-		}
+			entry := apstra.TelemetryServiceRegistryEntry{
+				ServiceName:       name,
+				StorageSchemaPath: enum.StorageSchemaPathIbaIntegerData,
+				ApplicationSchema: []byte(schema),
+				Builtin:           false,
+				Description:       "Test Service",
+			}
 
-		ServiceName, err := client.client.CreateTelemetryServiceRegistryEntry(ctx, &entry)
-		require.NoError(t, err)
+			ServiceName, err := client.Client.CreateTelemetryServiceRegistryEntry(ctx, &entry)
+			require.NoError(t, err)
 
-		log.Println(ServiceName)
-		require.Equal(t, name, ServiceName)
+			log.Println(ServiceName)
+			require.Equal(t, name, ServiceName)
 
-		pentry, err := client.client.GetTelemetryServiceRegistryEntry(ctx, name)
-		require.NoError(t, err)
+			pentry, err := client.Client.GetTelemetryServiceRegistryEntry(ctx, name)
+			require.NoError(t, err)
 
-		log.Println(pentry)
-		require.JSONEqf(t, string(pentry.ApplicationSchema), string(entry.ApplicationSchema), "expected: %s\nactual: %s", string(pentry.ApplicationSchema), string(entry.ApplicationSchema))
+			log.Println(pentry)
+			require.JSONEqf(t, string(pentry.ApplicationSchema), string(entry.ApplicationSchema), "expected: %s\nactual: %s", string(pentry.ApplicationSchema), string(entry.ApplicationSchema))
 
-		schema = `{
+			schema = `{
         "required": ["key","value"],
         "type": "object",
         "properties": {
@@ -151,36 +154,37 @@ func TestTelemetryServiceRegistry(t *testing.T) {
           }
 		}
 	}`
-		entry = TelemetryServiceRegistryEntry{
-			ServiceName:       name,
-			StorageSchemaPath: enum.StorageSchemaPathIbaIntegerData,
-			ApplicationSchema: []byte(schema),
-			Builtin:           false,
-			Description:       "Test Service",
-		}
-		log.Println("Test Update Telemetry Service Registry Entry")
+			entry = apstra.TelemetryServiceRegistryEntry{
+				ServiceName:       name,
+				StorageSchemaPath: enum.StorageSchemaPathIbaIntegerData,
+				ApplicationSchema: []byte(schema),
+				Builtin:           false,
+				Description:       "Test Service",
+			}
+			log.Println("Test Update Telemetry Service Registry Entry")
 
-		err = client.client.UpdateTelemetryServiceRegistryEntry(ctx, ServiceName, &entry)
-		require.NoError(t, err)
+			err = client.Client.UpdateTelemetryServiceRegistryEntry(ctx, ServiceName, &entry)
+			require.NoError(t, err)
 
-		pentry, err = client.client.GetTelemetryServiceRegistryEntry(ctx, name)
-		require.NoError(t, err)
-		require.JSONEq(t, string(pentry.ApplicationSchema), string(entry.ApplicationSchema))
+			pentry, err = client.Client.GetTelemetryServiceRegistryEntry(ctx, name)
+			require.NoError(t, err)
+			require.JSONEq(t, string(pentry.ApplicationSchema), string(entry.ApplicationSchema))
 
-		log.Println("Test Delete Telemetry Service Registry Entry")
-		err = client.client.DeleteTelemetryServiceRegistryEntry(ctx, pentry.ServiceName)
-		require.NoError(t, err)
+			log.Println("Test Delete Telemetry Service Registry Entry")
+			err = client.Client.DeleteTelemetryServiceRegistryEntry(ctx, pentry.ServiceName)
+			require.NoError(t, err)
 
-		var ace ClientErr
+			var ace apstra.ClientErr
 
-		_, err = client.client.GetTelemetryServiceRegistryEntry(ctx, name)
-		require.Error(t, err)
-		require.ErrorAs(t, err, &ace)
-		require.Equal(t, ErrNotfound, ace.Type())
+			_, err = client.Client.GetTelemetryServiceRegistryEntry(ctx, name)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, apstra.ErrNotfound, ace.Type())
 
-		err = client.client.DeleteTelemetryServiceRegistryEntry(ctx, name)
-		require.Error(t, err)
-		require.ErrorAs(t, err, &ace)
-		require.Equal(t, ErrNotfound, ace.Type())
+			err = client.Client.DeleteTelemetryServiceRegistryEntry(ctx, name)
+			require.Error(t, err)
+			require.ErrorAs(t, err, &ace)
+			require.Equal(t, apstra.ErrNotfound, ace.Type())
+		})
 	}
 }
