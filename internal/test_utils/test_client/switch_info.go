@@ -5,8 +5,9 @@
 package testclient
 
 import (
-	"github.com/Juniper/apstra-go-sdk/apstra"
 	"net/netip"
+
+	"github.com/Juniper/apstra-go-sdk/apstra"
 )
 
 type SwitchInfo struct {
