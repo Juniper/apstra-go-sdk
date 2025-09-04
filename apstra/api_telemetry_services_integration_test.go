@@ -12,8 +12,8 @@ import (
 	"log"
 	"testing"
 
-	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
 
