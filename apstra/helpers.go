@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Deprecated: use testutils.PrettyPrint()
 func pp(in interface{}, out io.Writer) error {
 	enc := json.NewEncoder(out)
 	enc.SetIndent("", "    ")
