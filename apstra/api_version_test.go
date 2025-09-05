@@ -1,35 +1,36 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra
+package apstra_test
 
 import (
-	"context"
 	"encoding/json"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
 )
 
 func TestGetVersion(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, t.Context())
+	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
-		ver, err := client.client.getVersion(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, t.Context())
 
-		result, err := json.Marshal(ver)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("%s %s", client.client.baseUrl.String(), string(result))
+			ver, err := client.Client.GetVersion(ctx)
+			require.NoError(t, err)
+
+			result, err := json.Marshal(ver)
+			require.NoError(t, err)
+
+			log.Println(string(result))
+		})
 	}
 }
