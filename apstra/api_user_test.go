@@ -4,51 +4,42 @@
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
-	"context"
-	"log"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 	"testing"
+
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 )
 
 func TestUserLogin(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, t.Context())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		t.Run(clientName, func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			if client.clientType == "api-ops" {
+			if client.Type() == testclient.ClientTypeAPIOps {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
 			}
 
-			log.Printf("testing Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.Login(context.Background())
-			if err != nil {
-				t.Fatal(err)
-			}
+			var err error
 
-			log.Printf("testing Logout() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.Logout(context.Background())
-			if err != nil {
-				t.Fatal(err)
-			}
+			err = client.Client.Login(ctx)
+			require.NoError(t, err)
 
-			log.Printf("testing redundant Logout() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.Logout(context.TODO())
-			if err != nil {
-				t.Fatal(err)
-			}
+			err = client.Client.Logout(ctx)
+			require.NoError(t, err)
 
-			log.Printf("testing Login() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = client.client.Login(context.Background())
-			if err != nil {
-				t.Fatal(err)
-			}
+			err = client.Client.Logout(ctx)
+			require.NoError(t, err)
+
+			err = client.Client.Login(ctx)
+			require.NoError(t, err)
 		})
 	}
 }
