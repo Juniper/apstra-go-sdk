@@ -5,10 +5,13 @@
 package testutils
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 const keyLogFile = "SSLKEYLOGFILE"
@@ -16,7 +19,7 @@ const keyLogFile = "SSLKEYLOGFILE"
 // KeyLogWriterFromEnv takes an environment variable which might name a logfile for
 // exporting TLS session keys. If so, it returns an io.Writer to be used for
 // that purpose, and the name of the logfile file.
-func KeyLogWriterFromEnv(t testing.TB) *os.File {
+func KeyLogWriterFromEnv(t testing.TB) io.Writer {
 	t.Helper()
 
 	fileName, foundKeyLogFile := os.LookupEnv(keyLogFile)
@@ -31,14 +34,10 @@ func KeyLogWriterFromEnv(t testing.TB) *os.File {
 	}
 
 	err := os.MkdirAll(filepath.Dir(fileName), os.FileMode(0o600))
-	if err != nil {
-		t.Fatalf("Error creating keylog dir: %v", err)
-	}
+	require.NoError(t, err, "failed to create keylog dir")
 
 	f, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
-	if err != nil {
-		t.Fatalf("Error opening keylog file: %v", err)
-	}
+	require.NoErrorf(t, err, "failed to open keylog file %v", err)
 
 	return f
 }
