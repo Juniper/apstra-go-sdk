@@ -7,6 +7,7 @@
 package apstra_test
 
 import (
+	"context"
 	"testing"
 
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
@@ -15,7 +16,7 @@ import (
 )
 
 func TestUserLogin(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, t.Context())
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

@@ -7,6 +7,7 @@
 package apstra_test
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"testing"
@@ -19,7 +20,7 @@ import (
 )
 
 func TestParsingQueryInfo(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, t.Context())
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -74,7 +75,7 @@ func TestParsingQueryInfo(t *testing.T) {
 }
 
 func TestRawQueryWithBlueprint(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, t.Context())
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

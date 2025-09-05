@@ -7,6 +7,7 @@
 package apstra_test
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"testing"
@@ -18,13 +19,13 @@ import (
 )
 
 func TestGetVersionsAll(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, t.Context())
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, t.Context())
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 			aosdi, err := client.Client.GetVersionsAosdi(ctx)
 			require.NoError(t, err)
