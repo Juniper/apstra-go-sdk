@@ -7,10 +7,10 @@
 package apstra_test
 
 import (
-	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
-	"github.com/stretchr/testify/require"
 	"testing"
 
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 )
 

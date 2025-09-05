@@ -8,11 +8,12 @@ package apstra_test
 
 import (
 	"encoding/json"
+	"log"
+	"testing"
+
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
-	"log"
-	"testing"
 )
 
 func TestGetVersion(t *testing.T) {
