@@ -1,41 +1,40 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetNodeRenderedConfig(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			bp := testBlueprintI(ctx, t, client.client)
-			leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
+			bp := dctestobj.TestBlueprintI(t, ctx, client.Client)
+			leafIds, err := testutils.GetSystemIdsByRole(ctx, bp, "leaf")
 			require.NoError(t, err)
 
 			for _, leafId := range leafIds {
 				t.Run("leaf_"+leafId.String()+"_staging", func(t *testing.T) {
-					t.Parallel()
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 					stagingConfig, err := bp.Client().GetNodeRenderedConfig(ctx, bp.Id(), leafId, enum.RenderedConfigTypeStaging)
 					require.NoError(t, err)
