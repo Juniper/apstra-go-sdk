@@ -12,9 +12,9 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/stretchr/testify/require"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetVersionsAll(t *testing.T) {
