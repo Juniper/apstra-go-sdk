@@ -11,11 +11,11 @@ import (
 	"log"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParsingQueryInfo(t *testing.T) {
