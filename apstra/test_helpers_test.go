@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,7 +37,7 @@ func TestNextInterface(t *testing.T) {
 }
 
 func testRaResourceIpv4(ctx context.Context, t testing.TB, cidrBlock string, bits int, client *FreeformClient) ObjectId {
-	prefix := randomPrefix(t, cidrBlock, bits)
+	prefix := testutils.RandomPrefix(t, cidrBlock, bits)
 	id, err := client.CreateRaResource(ctx, &FreeformRaResourceData{
 		ResourceType: enum.FFResourceTypeIpv4,
 		Label:        randString(6, "hex"),
@@ -49,7 +50,7 @@ func testRaResourceIpv4(ctx context.Context, t testing.TB, cidrBlock string, bit
 }
 
 func testRaResourceIpv6(ctx context.Context, t testing.TB, cidrBlock string, bits int, client *FreeformClient) ObjectId {
-	prefix := randomPrefix(t, cidrBlock, bits)
+	prefix := testutils.RandomPrefix(t, cidrBlock, bits)
 	id, err := client.CreateRaResource(ctx, &FreeformRaResourceData{
 		ResourceType: enum.FFResourceTypeIpv6,
 		Label:        randString(6, "hex"),

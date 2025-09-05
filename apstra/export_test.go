@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	VniMin = vniMin
-	VniMax = vniMax
+	VlanMin = vlanMin
+	VlanMax = vlanMax
+	VniMin  = vniMin
+	VniMax  = vniMax
 )
 
 // GetFeatures is in the export_test file because this private function needs to be exposed only for test code

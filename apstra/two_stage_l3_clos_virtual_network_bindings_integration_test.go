@@ -13,6 +13,7 @@ import (
 	"net"
 	"testing"
 
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
 	"github.com/stretchr/testify/require"
@@ -113,7 +114,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			vnPrefix := randomPrefix(t, "10.0.0.0/8", 24)
+			vnPrefix := testutils.RandomPrefix(t, "10.0.0.0/8", 24)
 			vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
 				Ipv4Enabled:    true,
 				Ipv4Subnet:     &vnPrefix,
@@ -273,7 +274,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			vnPrefix := randomPrefix(t, "10.0.0.0/8", 24)
+			vnPrefix := testutils.RandomPrefix(t, "10.0.0.0/8", 24)
 			vnBinding := VnBinding{
 				SystemId: fixedLeafId,
 				VlanId:   toPtr(Vlan(rand.Intn(97) + 2)),
