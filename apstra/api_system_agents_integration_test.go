@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -29,14 +28,14 @@ const (
 )
 
 func TestGetSystemAgent(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.WrapCtxWithTestId(t, t.Context())
 	clients := testclient.GetTestClients(t, ctx)
 
 	skipMsg := make(map[int]string)
 	for i, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.WrapCtxWithTestId(t, t.Context())
 
 			list, err := client.Client.ListSystemAgents(ctx)
 			require.NoError(t, err)
@@ -64,7 +63,7 @@ func TestGetSystemAgent(t *testing.T) {
 }
 
 func TestCreateDeleteSwitchAgent(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.WrapCtxWithTestId(t, t.Context())
 	clients := testclient.GetTestClients(t, ctx)
 
 	if s, ok := os.LookupEnv(envSkipSwitchAgentTest); ok {
@@ -81,23 +80,26 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 	}
 
 	skipMsg := make(map[int]string)
-	var switches []testclient.SwitchInfo
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.WrapCtxWithTestId(t, t.Context())
 
+			var switches []testclient.SwitchInfo
 			switch client.Type() {
 			case testclient.ClientTypeCloudLabs:
 				// get the switch info
 				switches = client.Config().(testclient.CloudLabsConfig).Switches()
 			}
 
-			var agentIds []apstra.ObjectId // do not make fixed length -- some switches might not be available
-			var labels []string            // do not make fixed length -- some switches might not be available
+			agentIds := make([]apstra.ObjectId, 0, len(switches))
+			labels := make([]string, 0, len(switches))
 			for _, testSwitch := range switches {
+				if strings.HasSuffix(testSwitch.ManagementIP.String(), ".15") {
+					continue
+				}
 				label := testutils.RandString(5, "hex")
-				id, err := client.Client.CreateSystemAgent(ctx, &apstra.SystemAgentRequest{
+				agentId, err := client.Client.CreateSystemAgent(ctx, &apstra.SystemAgentRequest{
 					ManagementIp:    testSwitch.ManagementIP.String(),
 					Username:        testSwitch.Username,
 					Password:        testSwitch.Password,
@@ -115,7 +117,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 						t.Fatal(err)
 					}
 				}
-				agentIds = append(agentIds, id)
+				agentIds = append(agentIds, agentId)
 				labels = append(labels, label)
 			}
 			if len(agentIds) == 0 {
@@ -137,7 +139,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 
 			installJobStatus := make([]apstra.AgentJobStatus, len(agentIds))
 			for i := range agentIds {
-				log.Printf("waiting for SystemAgentRunJob(install) result %d of %d", i+1, len(agentIds))
+				log.Printf("%s waiting for SystemAgentRunJob(install) result %d of %d", client.Name(), i+1, len(agentIds))
 				result := <-installRunJobResultChan
 				require.NoError(t, result.err)
 				installJobStatus[i] = *result.jobStatus
@@ -174,7 +176,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 				t.Skip(sb.String())
 			}
 
-			log.Println("uninstalling agents...")
+			log.Printf("%s uninstalling agents...", client.Name())
 			// run these jobs in parallel
 			type unInstallAgentResult struct {
 				jobStatus *apstra.AgentJobStatus
@@ -189,7 +191,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 			}
 			unInstallJobStatus := make([]apstra.AgentJobStatus, len(agentIds))
 			for i := range agentIds {
-				log.Printf("waiting for SystemAgentRunJob(unInstall) result %d of %d", i+1, len(agentIds))
+				log.Printf("%s waiting for SystemAgentRunJob(unInstall) result %d of %d", client.Name(), i+1, len(agentIds))
 				result := <-unInstallAgentResultChan
 				require.NoError(t, result.err)
 				require.NotNil(t, result.jobStatus)
