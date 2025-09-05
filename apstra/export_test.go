@@ -21,6 +21,16 @@ func (o *Client) GetFeatures(ctx context.Context) error {
 	return o.getFeatures(ctx)
 }
 
+// SetAuthtoken is in the export_test file because this private function needs to be exposed only for test code
+func (o *Client) SetAuthtoken(t string) {
+	o.httpHeaders[apstraAuthHeader] = t
+}
+
+// SetPassword is in the export_test file because this private function needs to be exposed only for test code
+func (o *Client) SetPassword(p string) {
+	o.cfg.Pass = p
+}
+
 // Metric is in the export_test file because this private struct element needed to be exposed for test code
 func (o *MetricDbQueryRequest) Metric() MetricdbMetric {
 	return o.metric

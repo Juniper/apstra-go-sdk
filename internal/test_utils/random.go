@@ -146,3 +146,9 @@ func RandomPrefix(t testing.TB, cidrBlock string, bits int) net.IPNet {
 
 	return *result
 }
+
+func RandJWT() string {
+	return RandString(36, "b64") + "." +
+		RandString(178, "b64") + "." +
+		RandString(86, "b64")
+}

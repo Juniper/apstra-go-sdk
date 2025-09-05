@@ -60,12 +60,6 @@ func randStrings(count, strLen int) []string {
 	return result
 }
 
-func randJwt() string {
-	return randString(36, "b64") + "." +
-		randString(178, "b64") + "." +
-		randString(86, "b64")
-}
-
 func randomIpv4() net.IP {
 	return []byte{
 		byte(rand.Intn(222) + 1),
