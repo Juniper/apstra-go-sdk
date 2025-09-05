@@ -1,62 +1,59 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra
+package apstra_test
 
 import (
-	"context"
 	"encoding/json"
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
+
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 )
 
 func TestGetVersionsAll(t *testing.T) {
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.WrapCtxWithTestId(t, t.Context())
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		log.Printf("testing getVersionsAosdi() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		aosdi, err := client.client.getVersionsAosdi(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing getVersionsApi() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		api, err := client.client.getVersionsApi(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing getVersionsBuild() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		build, err := client.client.getVersionsBuild(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Printf("testing getVersionsServer() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		server, err := client.client.getVersionsServer(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, t.Context())
 
-		body, err := json.Marshal(&struct {
-			Aosdi  *versionsAosdiResponse  `json:"aosdi"`
-			Api    *versionsApiResponse    `json:"api"`
-			Build  *versionsBuildResponse  `json:"build"`
-			Server *versionsServerResponse `json:"server"`
-		}{
-			Aosdi:  aosdi,
-			Api:    api,
-			Build:  build,
-			Server: server,
+			aosdi, err := client.Client.GetVersionsAosdi(ctx)
+			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
+			api, err := client.Client.GetVersionsApi(ctx)
+			require.NoError(t, err)
+
+			build, err := client.Client.GetVersionsBuild(ctx)
+			require.NoError(t, err)
+
+			server, err := client.Client.GetVersionsServer(ctx)
+			require.NoError(t, err)
+
+			body, err := json.Marshal(&struct {
+				Aosdi  *apstra.VersionsAosdiResponse  `json:"aosdi"`
+				Api    *apstra.VersionsApiResponse    `json:"api"`
+				Build  *apstra.VersionsBuildResponse  `json:"build"`
+				Server *apstra.VersionsServerResponse `json:"server"`
+			}{
+				Aosdi:  aosdi,
+				Api:    api,
+				Build:  build,
+				Server: server,
+			})
+			require.NoError(t, err)
+
+			log.Println(string(body))
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Println(string(body))
 	}
 }
