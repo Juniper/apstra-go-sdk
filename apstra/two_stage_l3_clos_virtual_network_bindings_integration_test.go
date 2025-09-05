@@ -13,9 +13,9 @@ import (
 	"net"
 	"testing"
 
-	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
 )
 
