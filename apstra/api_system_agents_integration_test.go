@@ -29,14 +29,14 @@ const (
 )
 
 func TestGetSystemAgent(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	skipMsg := make(map[int]string)
 	for i, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			list, err := client.Client.ListSystemAgents(ctx)
 			require.NoError(t, err)
@@ -64,7 +64,7 @@ func TestGetSystemAgent(t *testing.T) {
 }
 
 func TestCreateDeleteSwitchAgent(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	if s, ok := os.LookupEnv(envSkipSwitchAgentTest); ok {
@@ -84,7 +84,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			var switches []testclient.SwitchInfo
 			switch client.Type() {

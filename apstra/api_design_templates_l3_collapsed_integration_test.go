@@ -17,7 +17,7 @@ import (
 )
 
 func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	dn := testutils.RandString(5, "hex")
@@ -37,7 +37,7 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			id, err := client.Client.CreateL3CollapsedTemplate(ctx, req)
 			require.NoError(t, err)
@@ -56,7 +56,7 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 }
 
 func TestGetL3CollapsedTemplateByName(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	name := "Collapsed Fabric ESI"
@@ -64,7 +64,7 @@ func TestGetL3CollapsedTemplateByName(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			l3ct, err := client.Client.GetL3CollapsedTemplateByName(ctx, name)
 			require.NoError(t, err)

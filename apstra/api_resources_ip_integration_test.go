@@ -19,13 +19,13 @@ import (
 )
 
 func TestListIp4Pools(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			poolIds, err := client.Client.ListIp4PoolIds(ctx)
 			require.NoError(t, err)
@@ -35,13 +35,13 @@ func TestListIp4Pools(t *testing.T) {
 }
 
 func TestGetAllIp4Pools(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			pools, err := client.Client.GetIp4Pools(ctx)
 			require.NoError(t, err)
@@ -51,13 +51,13 @@ func TestGetAllIp4Pools(t *testing.T) {
 }
 
 func TestGetIp4PoolByName(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			pools, err := client.Client.GetIp4Pools(ctx)
 			require.NoError(t, err)
@@ -69,7 +69,7 @@ func TestGetIp4PoolByName(t *testing.T) {
 
 			for _, name := range poolNames {
 				t.Run(name, func(t *testing.T) {
-					ctx := testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					pool, err := client.Client.GetIp4PoolByName(ctx, name)
 					require.NoError(t, err)
@@ -90,13 +90,13 @@ func TestGetIp4PoolByName(t *testing.T) {
 }
 
 func TestCreateGetDeleteIp4Pool(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			req := apstra.NewIpPoolRequest{
 				DisplayName: testutils.RandString(10, "hex"),
@@ -140,13 +140,13 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 }
 
 func TestListIp6Pools(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			poolIds, err := client.Client.ListIp6PoolIds(ctx)
 			require.NoError(t, err)
@@ -156,13 +156,13 @@ func TestListIp6Pools(t *testing.T) {
 }
 
 func TestGetAllIp6Pools(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			pools, err := client.Client.GetIp6Pools(ctx)
 			require.NoError(t, err)
@@ -172,13 +172,13 @@ func TestGetAllIp6Pools(t *testing.T) {
 }
 
 func TestGetIp6PoolByName(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			pools, err := client.Client.GetIp6Pools(ctx)
 			require.NoError(t, err)
@@ -190,7 +190,7 @@ func TestGetIp6PoolByName(t *testing.T) {
 
 			for _, name := range poolNames {
 				t.Run(name, func(t *testing.T) {
-					ctx := testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					pool, err := client.Client.GetIp6PoolByName(ctx, name)
 					require.NoError(t, err)
@@ -211,13 +211,13 @@ func TestGetIp6PoolByName(t *testing.T) {
 }
 
 func TestCreateGetDeleteIp6Pool(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			req := apstra.NewIpPoolRequest{
 				DisplayName: testutils.RandString(10, "hex"),

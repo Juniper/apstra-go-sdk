@@ -25,7 +25,7 @@ import (
 )
 
 func TestClientLog(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -38,13 +38,13 @@ func TestClientLog(t *testing.T) {
 }
 
 func TestLoginEmptyPassword(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			if client.Type() == testclient.ClientTypeAPIOps {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
@@ -53,19 +53,19 @@ func TestLoginEmptyPassword(t *testing.T) {
 			c := *client.Client // don't use iterator variable because it points to the shared client object
 			c.SetPassword("")
 			err := c.Login(ctx)
-			require.NoError(t, err)
+			require.Error(t, err)
 		})
 	}
 }
 
 func TestLoginBadPassword(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			if client.Type() == testclient.ClientTypeAPIOps {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
@@ -81,13 +81,13 @@ func TestLoginBadPassword(t *testing.T) {
 }
 
 func TestLogoutAuthFail(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			if client.Type() == testclient.ClientTypeAPIOps {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
@@ -106,7 +106,7 @@ func TestLogoutAuthFail(t *testing.T) {
 }
 
 func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
@@ -122,13 +122,13 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			for i := range testCases {
 				i := i
 				t.Run(fmt.Sprintf("test_case_%d", i), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					bpClient := testCases[i].bpFunc(t, ctx, client.Client)
 
@@ -146,7 +146,7 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 }
 
 func TestCRUDIntegerPools(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	validate := func(req *apstra.IntPoolRequest, resp *apstra.IntPool) {
@@ -202,7 +202,7 @@ func TestCRUDIntegerPools(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			pools, err := client.Client.GetIntegerPools(ctx)
 			require.NoError(t, err)
@@ -286,7 +286,7 @@ func TestCRUDIntegerPools(t *testing.T) {
 }
 
 func TestBlueprintOverlayControlProtocol(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
@@ -323,11 +323,11 @@ func TestBlueprintOverlayControlProtocol(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			for tName, tCase := range testCases {
 				t.Run(tName, func(t *testing.T) {
-					ctx := testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					bpId := createBlueprint(t, tCase.templateId, client.Client)
 

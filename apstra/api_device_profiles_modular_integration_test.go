@@ -17,23 +17,23 @@ import (
 )
 
 func TestModularDeviceProfile(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
-
-	mdp1 := &apstra.ModularDeviceProfile{
-		Label:            testutils.RandString(5, "hex"),
-		ChassisProfileId: "Juniper_QFX10016",
-		SlotConfigurations: map[uint64]apstra.ModularDeviceSlotConfiguration{
-			0: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
-			2: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
-			4: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
-		},
-	}
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
+
+			mdp1 := &apstra.ModularDeviceProfile{
+				Label:            testutils.RandString(5, "hex"),
+				ChassisProfileId: "Juniper_QFX10016",
+				SlotConfigurations: map[uint64]apstra.ModularDeviceSlotConfiguration{
+					0: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
+					2: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
+					4: {LinecardProfileId: "Juniper_QFX10000_30C_M"},
+				},
+			}
 
 			id, err := client.Client.CreateModularDeviceProfile(ctx, mdp1)
 			require.NoError(t, err)

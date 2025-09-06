@@ -17,7 +17,7 @@ import (
 )
 
 func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	dn := testutils.RandString(5, "hex")
@@ -46,7 +46,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			rbtid, err := client.Client.CreateRackBasedTemplate(ctx, &rbtr)
 			require.NoError(t, err)
@@ -93,7 +93,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 }
 
 func TestGetPodBasedTemplateByName(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	name := "L2 superspine single plane"
@@ -101,7 +101,7 @@ func TestGetPodBasedTemplateByName(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			pbt, err := client.Client.GetPodBasedTemplateByName(ctx, name)
 			require.NoError(t, err)

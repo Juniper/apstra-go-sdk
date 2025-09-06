@@ -24,13 +24,13 @@ import (
 )
 
 func TestGetNodeRenderedDiff(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			bp := dctestobj.TestBlueprintI(t, ctx, client.Client)
 
@@ -42,7 +42,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 			for _, leafId := range leafIds {
 				t.Run("leaf_"+leafId.String()+"_without_diff", func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					// staging config should have no diffs at this point
 					diff, err := bp.Client().GetNodeRenderedConfigDiff(ctx, bp.Id(), leafId)
@@ -60,7 +60,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 			// make changes to the rendered config by deploying a virtual network to the switches
 			t.Run("leafs_with_diffs", func(t *testing.T) {
 				t.Parallel()
-				ctx := testutils.WrapCtxWithTestId(t, ctx)
+				ctx := testutils.ContextWithTestID(t, ctx)
 
 				leafWg.Wait() // wait for leafs to be verified diff-free
 
@@ -113,7 +113,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 				for _, leafId := range leafIds {
 					t.Run("leaf_"+leafId.String(), func(t *testing.T) {
 						t.Parallel()
-						ctx := testutils.WrapCtxWithTestId(t, ctx)
+						ctx := testutils.ContextWithTestID(t, ctx)
 
 						// staging config should have diffs at this point
 						diff, err := bp.Client().GetNodeRenderedConfigDiff(ctx, bp.Id(), leafId)
@@ -141,7 +141,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 
 				t.Run("test_config_withdrawal_diff", func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					leafWg.Wait()
 
