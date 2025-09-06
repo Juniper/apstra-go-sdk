@@ -32,8 +32,7 @@ func TestGetSystemAgent(t *testing.T) {
 	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
-	skipMsg := make(map[int]string)
-	for i, client := range clients {
+	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(t, ctx)
@@ -42,8 +41,7 @@ func TestGetSystemAgent(t *testing.T) {
 			require.NoError(t, err)
 
 			if len(list) <= 0 {
-				skipMsg[i] = fmt.Sprintf("cannot get system agents because none exist on '%s'", client.Name())
-				return
+				t.Skipf("no system agents exist on %q", client.Name())
 			}
 
 			for i := range len(list) {
@@ -52,14 +50,6 @@ func TestGetSystemAgent(t *testing.T) {
 				t.Log(info.Id, info.DeviceFacts.DeviceOsFamily, info.Config.ManagementIp, info.Config.AgentTypeOffBox)
 			}
 		})
-	}
-
-	if len(skipMsg) > 0 {
-		sb := strings.Builder{}
-		for _, m := range skipMsg {
-			sb.WriteString(m + ";")
-		}
-		t.Skip(sb.String())
 	}
 }
 
@@ -80,7 +70,6 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 		t.Skipf("skipping switch agent tests because %q exists", fileSkipSwitchAgentTest)
 	}
 
-	skipMsg := make(map[int]string)
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
@@ -148,33 +137,30 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 
 			agents := make([]apstra.SystemAgent, len(agentIds))
 			for i, agentId := range agentIds {
-				agent, err := client.Client.GetSystemAgent(ctx, agentId)
-				require.NoError(t, err)
-				require.NotNil(t, agent)
-				require.Equal(t, labels[i], agent.Config.Label)
-				agents[i] = *agent
+				t.Run(fmt.Sprintf("agent_%s", agentId), func(t *testing.T) {
+					ctx := testutils.ContextWithTestID(t, ctx)
 
-				jsonAgent, err := json.Marshal(agent)
-				require.NoError(t, err)
-				log.Println(string(jsonAgent))
+					agent, err := client.Client.GetSystemAgent(ctx, agentId)
+					require.NoError(t, err)
+					require.NotNil(t, agent)
+					require.Equal(t, labels[i], agent.Config.Label)
+					agents[i] = *agent
 
-				systemInfo, err := client.Client.GetSystemInfo(ctx, agent.Status.SystemId)
-				require.NoError(t, err)
+					jsonAgent, err := json.Marshal(agent)
+					require.NoError(t, err)
+					log.Println(string(jsonAgent))
 
-				err = client.Client.UpdateSystemByAgentId(ctx, agentId, &apstra.SystemUserConfig{
-					AdminState:  apstra.SystemAdminStateNormal,
-					AosHclModel: systemInfo.Facts.AosHclModel,
-					Location:    testutils.RandString(10, "hex"),
+					systemInfo, err := client.Client.GetSystemInfo(ctx, agent.Status.SystemId)
+					require.NoError(t, err)
+
+					err = client.Client.UpdateSystemByAgentId(ctx, agentId, &apstra.SystemUserConfig{
+						AdminState:  apstra.SystemAdminStateNormal,
+						AosHclModel: systemInfo.Facts.AosHclModel,
+						Location:    testutils.RandString(10, "hex"),
+					})
+					require.NoError(t, err)
+					log.Println("acknowledged!")
 				})
-				require.NoError(t, err)
-				log.Println("acknowledged!")
-			}
-			if len(skipMsg) > 0 {
-				sb := strings.Builder{}
-				for _, msg := range skipMsg {
-					sb.WriteString(msg + ";")
-				}
-				t.Skip(sb.String())
 			}
 
 			log.Printf("%s uninstalling agents...", client.Name())
