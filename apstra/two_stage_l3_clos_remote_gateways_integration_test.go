@@ -83,7 +83,7 @@ func TestCRUDRemoteGateway(t *testing.T) {
 			require.NoError(t, err)
 
 			evpnInterConnectGroupId, err := bp.CreateEvpnInterconnectGroup(ctx, &EvpnInterconnectGroupData{
-				Label:       randString(6, "hex"),
+				Label:       "a" + randString(6, "hex"),
 				RouteTarget: fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1),
 			})
 			require.NoError(t, err)
