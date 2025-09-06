@@ -184,8 +184,11 @@ func TestCRUDTemplates(t *testing.T) {
 				RackInfos: map[apstra.ObjectId]apstra.TemplateRackBasedRackInfo{
 					"L2_Virtual_MLAG_2x_Links": {Count: 1},
 				},
-				DhcpServiceIntent:    nil,
-				AntiAffinityPolicy:   nil,
+				DhcpServiceIntent: nil,
+				AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+					Algorithm: apstra.AlgorithmHeuristic,
+					Mode:      apstra.AntiAffinityModeDisabled,
+				},
 				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeDistinct},
 				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{OverlayControlProtocol: apstra.OverlayControlProtocolEvpn},
 			},
