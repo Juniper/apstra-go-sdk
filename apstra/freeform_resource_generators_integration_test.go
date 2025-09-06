@@ -17,7 +17,7 @@ import (
 )
 
 func TestCRUDResourceGenerators(t *testing.T) {
-	ctx := context.Background()
+	ctx := wrapCtxWithTestId(t, context.Background())
 	clients, err := getTestClients(ctx, t)
 	require.NoError(t, err)
 
@@ -58,9 +58,9 @@ func TestCRUDResourceGenerators(t *testing.T) {
 	}
 
 	for clientName, client := range clients {
-		clientName, client := clientName, client
 		t.Run(client.client.apiVersion.String()+"_"+client.clientType+"_"+clientName, func(t *testing.T) {
 			t.Parallel()
+			ctx := wrapCtxWithTestId(t, ctx)
 
 			// create a blueprint with 4 systems
 			systemCount := 4
@@ -203,10 +203,10 @@ func TestCRUDResourceGenerators(t *testing.T) {
 			}
 
 			for tName, tCase := range testCases {
-				tName, tCase := tName, tCase
 				t.Run(tName, func(t *testing.T) {
 					t.Parallel()
 
+					var err error
 					var id ObjectId
 					var resourceGenerator *FreeformResourceGenerator
 					for i, step := range tCase.steps {
@@ -252,7 +252,7 @@ func TestCRUDResourceGenerators(t *testing.T) {
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, ErrNotfound, ace.Type())
 
-					_, err := ffc.GetResourceGeneratorByName(ctx, resourceGenerator.Data.Label)
+					_, err = ffc.GetResourceGeneratorByName(ctx, resourceGenerator.Data.Label)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, ErrNotfound, ace.Type())
