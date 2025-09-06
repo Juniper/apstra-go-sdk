@@ -32,6 +32,9 @@ var (
 	PatchNodeSupportsUnsafeArg = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
+	RailCollapsedSupport = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra600)),
+	}
 	RoutingPolicyExportHasL3EdgeLinks = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
 	}

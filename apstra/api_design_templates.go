@@ -542,7 +542,7 @@ func (o *template) polish() (Template, error) {
 		}
 		return t.polish()
 	case templateTypeRailCollapsed:
-		return nil, nil // todo: not currently supported
+		return nil, nil // todo: not currently supported - fix TestGetTemplate() when support is added
 	}
 	return nil, fmt.Errorf(TemplateTypeUnknown, t)
 }
