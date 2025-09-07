@@ -29,7 +29,7 @@ const (
 	slicerTopologyUrlByID = "http://slicer-topology-management-ui.k8s-autobuild.dc1.apstra.com/v1_1/systest/%s"
 )
 
-var _ testClientConfig = (*slicerConfig)(nil)
+var _ Config = (*slicerConfig)(nil)
 
 type slicerConfig struct {
 	topologyID string
@@ -48,7 +48,7 @@ func (s slicerConfig) id() string {
 	return s.topologyID
 }
 
-func getSlicerClientCfg(t testing.TB, ctx context.Context, id string) testClientConfig {
+func getSlicerClientCfg(t testing.TB, ctx context.Context, id string) Config {
 	t.Helper()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf(slicerTopologyUrlByID, id), nil)
@@ -94,7 +94,7 @@ func getSlicerClientCfg(t testing.TB, ctx context.Context, id string) testClient
 	}
 }
 
-func getSlicerClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getSlicerClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []Config {
 	t.Helper()
 
 	topologyIDs := testConfig.SlicerTopologyIds
@@ -106,7 +106,7 @@ func getSlicerClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfi
 		}
 	}
 
-	result := make([]testClientConfig, len(topologyIDs))
+	result := make([]Config, len(topologyIDs))
 	for i, id := range topologyIDs {
 		result[i] = getSlicerClientCfg(t, ctx, id)
 	}

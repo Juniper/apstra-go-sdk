@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/netip"
 	"os"
 	"strings"
 	"testing"
@@ -29,26 +30,31 @@ const (
 	cloudlabsTopologyUrlByID = "https://cloudlabs.apstra.com/api/v1.0/topologies/%s"
 )
 
-var _ testClientConfig = (*cloudLabsConfig)(nil)
+var _ Config = (*CloudLabsConfig)(nil)
 
-type cloudLabsConfig struct {
+type CloudLabsConfig struct {
 	topologyID string
 	config     apstra.ClientCfg
+	switches   []SwitchInfo
 }
 
-func (c cloudLabsConfig) clientConfig() apstra.ClientCfg {
+func (c CloudLabsConfig) Switches() []SwitchInfo {
+	return c.switches
+}
+
+func (c CloudLabsConfig) clientConfig() apstra.ClientCfg {
 	return c.config
 }
 
-func (c cloudLabsConfig) clientType() ClientType {
+func (c CloudLabsConfig) clientType() ClientType {
 	return ClientTypeCloudLabs
 }
 
-func (c cloudLabsConfig) id() string {
+func (c CloudLabsConfig) id() string {
 	return c.topologyID
 }
 
-func getCloudLabsClientCfg(t testing.TB, ctx context.Context, id string) testClientConfig {
+func getCloudLabsClientCfg(t testing.TB, ctx context.Context, id string) Config {
 	t.Helper()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf(cloudlabsTopologyUrlByID, id), nil)
@@ -69,30 +75,58 @@ func getCloudLabsClientCfg(t testing.TB, ctx context.Context, id string) testCli
 	var topology struct {
 		Vms []struct {
 			Access []struct {
-				Username string `json:"username"`
-				Password string `json:"password"`
-				Protocol string `json:"protocol"`
-				Host     string `json:"host"`
-				Port     int    `json:"port"`
+				Username  string `json:"username"`
+				Password  string `json:"password"`
+				Protocol  string `json:"protocol"`
+				Host      string `json:"host"`
+				PrivateIp string `json:"privateIp"`
+				Port      int    `json:"port"`
 			} `json:"access"`
-			Name string `json:"name"`
+			DeviceType string `json:"deviceType"`
+			Role       string `json:"role"`
+			Name       string `json:"name"`
 		} `json:"vms"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&topology)
 	require.NoError(t, err, "decoding topology info")
 
 	var user, pass, url string
-VMLOOP:
+	var switches []SwitchInfo
 	for _, vm := range topology.Vms {
-		if vm.Name != "aos-vm1" {
-			continue
-		}
-		for _, a := range vm.Access {
-			if a.Protocol == "https" {
-				user = a.Username
-				pass = a.Password
-				url = fmt.Sprintf("%s://%s:%d", a.Protocol, a.Host, a.Port)
-				break VMLOOP
+		switch vm.Role {
+		case "aos":
+			for _, a := range vm.Access {
+				if a.Protocol == "https" {
+					user = a.Username
+					pass = a.Password
+					url = fmt.Sprintf("%s://%s:%d", a.Protocol, a.Host, a.Port)
+					break
+				}
+			}
+		case "spine", "leaf":
+			var platform apstra.AgentPlatform
+			switch vm.DeviceType {
+			case "veos":
+				platform = apstra.AgentPlatformEOS
+			case "nxosv":
+				platform = apstra.AgentPlatformNXOS
+			case "vqfx", "vmx":
+				platform = apstra.AgentPlatformJunos
+			case "sonic-vs":
+				platform = apstra.AgentPlatformNull
+			default:
+				t.Fatalf("unhandled platform %q for %q device", vm.DeviceType, vm.Role)
+			}
+			for _, a := range vm.Access {
+				if a.Protocol == "ssh" {
+					switches = append(switches, SwitchInfo{
+						ManagementIP: netip.MustParseAddr(a.PrivateIp),
+						Username:     a.Username,
+						Password:     a.Password,
+						Platform:     platform,
+					})
+					break
+				}
 			}
 		}
 	}
@@ -107,8 +141,9 @@ VMLOOP:
 		t.Fatalf("cloudlabs topology %q does not have an access url", id)
 	}
 
-	return cloudLabsConfig{
+	return CloudLabsConfig{
 		topologyID: id,
+		switches:   switches,
 		config: apstra.ClientCfg{
 			Url:  url,
 			User: user,
@@ -125,7 +160,7 @@ VMLOOP:
 	}
 }
 
-func getCloudLabsClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getCloudLabsClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []Config {
 	t.Helper()
 
 	topologyIDs := testConfig.CloudlabsTopologyIds
@@ -137,7 +172,7 @@ func getCloudLabsClientCfgs(t testing.TB, ctx context.Context, testConfig TestCo
 		}
 	}
 
-	result := make([]testClientConfig, len(topologyIDs))
+	result := make([]Config, len(topologyIDs))
 	for i, id := range topologyIDs {
 		result[i] = getCloudLabsClientCfg(t, ctx, id)
 	}

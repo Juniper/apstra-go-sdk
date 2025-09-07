@@ -75,12 +75,14 @@ const (
 	SystemManagementLevelUnmanaged = SystemManagementLevel(iota)
 	SystemManagementLevelTelemetryOnly
 	SystemManagementLevelFullControl
+	SystemManagementLevelNotInstalled
 	SystemManagementLevelNone
 	SystemManagementLevelUnknown = "unknown generic system management level '%s'"
 
 	systemManagementLevelUnmanaged     = systemManagementLevel("unmanaged")
 	systemManagementLevelTelemetryOnly = systemManagementLevel("telemetry_only")
 	systemManagementLevelFullControl   = systemManagementLevel("full_control")
+	systemManagementLevelNotInstalled  = systemManagementLevel("not_installed")
 	systemManagementLevelNone          = systemManagementLevel("")
 	systemManagementLevelUnknown       = "unknown generic system management level '%d'"
 )
@@ -268,6 +270,8 @@ func (o SystemManagementLevel) String() string {
 		return string(systemManagementLevelTelemetryOnly)
 	case SystemManagementLevelFullControl:
 		return string(systemManagementLevelFullControl)
+	case SystemManagementLevelNotInstalled:
+		return string(systemManagementLevelNotInstalled)
 	case SystemManagementLevelNone:
 		return string(systemManagementLevelNone)
 	default:
@@ -287,6 +291,8 @@ func (o systemManagementLevel) parse() (int, error) {
 		return int(SystemManagementLevelTelemetryOnly), nil
 	case systemManagementLevelFullControl:
 		return int(SystemManagementLevelFullControl), nil
+	case systemManagementLevelNotInstalled:
+		return int(SystemManagementLevelNotInstalled), nil
 	case systemManagementLevelNone:
 		return int(SystemManagementLevelNone), nil
 	default:

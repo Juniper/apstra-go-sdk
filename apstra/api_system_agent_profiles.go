@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,10 +17,6 @@ const (
 	apiUrlSystemAgentProfiles           = "/api/system-agent-profiles"
 	apiUrlSystemAgentProfilesById       = apiUrlSystemAgentProfiles + apiUrlPathDelim + "%s"
 	apiUrlSystemAgentProfilesAssignById = apiUrlSystemAgentProfiles + apiUrlPathDelim + "%s" + "/assign"
-
-	apstraAgentPlatformJunos = "junos"
-	apstraAgentPlatformEOS   = "eos"
-	apstraAgentPlatformNXOS  = "nxos"
 
 	apstraSystemAgentPlatformStringSep = "=="
 

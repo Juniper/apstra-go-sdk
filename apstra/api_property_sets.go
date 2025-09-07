@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -183,8 +183,12 @@ func (o *Client) updatePropertySet(ctx context.Context, id ObjectId, in *Propert
 }
 
 func (o *Client) deletePropertySet(ctx context.Context, id ObjectId) error {
-	return o.talkToApstra(ctx, &talkToApstraIn{
+	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlPropertySetById, id),
 	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+	return nil
 }

@@ -26,7 +26,7 @@ const (
 	envAPIOpsURLSep          = ";"
 )
 
-var _ testClientConfig = (*APIOpsConfig)(nil)
+var _ Config = (*APIOpsConfig)(nil)
 
 type APIOpsConfig struct {
 	dcID   string
@@ -45,7 +45,7 @@ func (a APIOpsConfig) id() string {
 	return a.dcID
 }
 
-func getAPIOpsClientCfg(t testing.TB, _ context.Context, APIOpsURL string) testClientConfig {
+func getAPIOpsClientCfg(t testing.TB, _ context.Context, APIOpsURL string) Config {
 	t.Helper()
 
 	u, err := url.Parse(APIOpsURL)
@@ -70,7 +70,7 @@ func getAPIOpsClientCfg(t testing.TB, _ context.Context, APIOpsURL string) testC
 	}
 }
 
-func getAPIOpsClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []testClientConfig {
+func getAPIOpsClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfig) []Config {
 	t.Helper()
 
 	topologyIDs := testConfig.ApiOpsProxyUrls
@@ -82,7 +82,7 @@ func getAPIOpsClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfi
 		}
 	}
 
-	result := make([]testClientConfig, len(topologyIDs))
+	result := make([]Config, len(topologyIDs))
 	for i, id := range topologyIDs {
 		result[i] = getAPIOpsClientCfg(t, ctx, id)
 	}

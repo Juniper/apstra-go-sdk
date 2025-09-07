@@ -1,25 +1,27 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
-package apstra //
+package apstra_test
 
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
 func TestIbaProbes(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
 	probeStr := `{
   "label": "Test Probe",
@@ -350,17 +352,12 @@ func TestIbaProbes(t *testing.T) {
   ]
 }`
 
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
-
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.WrapCtxWithTestId(t, ctx)
 
-			log.Printf("testing Predefined Probes against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-
-			bpClient := testBlueprintA(ctx, t, client.client)
+			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
 			predefinedProbes, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 			require.NoError(t, err)
 
@@ -374,15 +371,14 @@ func TestIbaProbes(t *testing.T) {
 				"specific_hotcold_ifcounter":         true,
 				"spine_superspine_hotcold_ifcounter": true,
 			}
-			if version.MustConstraints(version.NewConstraint("<5.1.0")).Check(client.client.apiVersion) {
+
+			if version.MustConstraints(version.NewConstraint("<5.1.0")).Check(client.APIVersion()) {
 				expectedToFail["specific_interface_flapping"] = true
 			}
 
 			for _, predefinedProbe := range predefinedProbes {
-				predefinedProbe := predefinedProbe
-
 				t.Run(predefinedProbe.Name, func(t *testing.T) {
-					t.Parallel()
+					ctx := testutils.WrapCtxWithTestId(t, ctx)
 
 					t.Logf("Get Predefined Probe By Name %s", predefinedProbe.Name)
 					_, err := bpClient.GetIbaPredefinedProbeByName(ctx, predefinedProbe.Name)
@@ -390,16 +386,16 @@ func TestIbaProbes(t *testing.T) {
 
 					t.Logf("Instantiating Probe %s", predefinedProbe.Name)
 
-					probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &IbaPredefinedProbeRequest{
+					probeId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &apstra.IbaPredefinedProbeRequest{
 						Name: predefinedProbe.Name,
-						Data: []byte(`{"label":"` + predefinedProbe.Name + `"}`),
+						Data: json.RawMessage(`{"label":"` + predefinedProbe.Name + `"}`),
 					})
 					if expectedToFail[predefinedProbe.Name] {
-						require.Error(t, err)
+						t.Log(err)
+						t.Logf("%s was expected to fail", predefinedProbe.Name)
 						return
-					} else {
-						require.NoError(t, err)
 					}
+					require.NoError(t, err)
 
 					_, err = bpClient.GetIbaProbe(ctx, probeId)
 					require.NoError(t, err)
@@ -411,12 +407,12 @@ func TestIbaProbes(t *testing.T) {
 					t.Logf("Delete probe")
 					require.NoError(t, bpClient.DeleteIbaProbe(ctx, probeId))
 
-					var ace ClientErr
+					var ace apstra.ClientErr
 					t.Logf("Delete Probe again, this should fail")
 					err = bpClient.DeleteIbaProbe(ctx, probeId)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
-					require.Equal(t, ErrNotfound, ace.Type())
+					require.Equal(t, apstra.ErrNotfound, ace.Type())
 				})
 			}
 			t.Log("Create Probe With Json")

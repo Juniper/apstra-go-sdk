@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -246,15 +246,6 @@ func (o AgentPlatform) String() string {
 		return string(agentPlatformNXOS)
 	default:
 		return fmt.Sprintf(agentPlatformUnknown, o)
-	}
-}
-
-func (o AgentPlatform) offbox() AgentTypeOffbox {
-	switch o {
-	case AgentPlatformJunos:
-		return true
-	default:
-		return false
 	}
 }
 
