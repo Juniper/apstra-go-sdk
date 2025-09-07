@@ -8,15 +8,15 @@ package apstra_test
 
 import (
 	"context"
+	"log"
 	"testing"
-	"time"
 
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClientReady(t *testing.T) {
+func TestListSystems(t *testing.T) {
 	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -25,13 +25,24 @@ func TestClientReady(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(t, ctx)
 
-			err := client.Client.Ready(ctx)
+			systems, err := client.Client.ListSystems(ctx)
 			require.NoError(t, err)
+
+			for _, system := range systems {
+				log.Println(system)
+			}
+
+			systemInfos, err := client.Client.GetAllSystemsInfo(ctx)
+			require.NoError(t, err)
+			require.Equal(t, len(systems), len(systemInfos))
+			for _, systemInfo := range systemInfos {
+				require.Contains(t, systems, systemInfo.Id)
+			}
 		})
 	}
 }
 
-func TestClientWaitUntilReady(t *testing.T) {
+func TestGetSystems(t *testing.T) {
 	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -39,11 +50,16 @@ func TestClientWaitUntilReady(t *testing.T) {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(t, ctx)
-			ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-			defer cancel()
 
-			err := client.Client.WaitUntilReady(ctx)
+			systems, err := client.Client.ListSystems(ctx)
 			require.NoError(t, err)
+
+			for _, s := range systems {
+				system, err := client.Client.GetSystemInfo(ctx, s)
+				require.NoError(t, err)
+
+				log.Println(system.Facts.HwModel)
+			}
 		})
 	}
 }

@@ -52,7 +52,11 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 
 		for ifId, loopbackInfo := range a {
 			if loopback, ok := loopbacks[ifId]; ok {
+				require.NotNil(t, loopback.Ipv4Addr)
+				require.NotNil(t, loopbackInfo.IPv4Addr)
 				require.Equal(t, loopbackInfo.IPv4Addr.String(), loopback.Ipv4Addr.String())
+				require.NotNil(t, loopback.Ipv6Addr)
+				require.NotNil(t, loopbackInfo.IPv6Addr)
 				require.Equal(t, loopbackInfo.IPv6Addr.String(), loopback.Ipv6Addr.String())
 			} else {
 				t.Fatalf("loopback not found for %s", ifId)

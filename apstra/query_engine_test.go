@@ -2,16 +2,10 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//go:build integration
-// +build integration
-
 package apstra
 
 import (
-	"context"
-	"encoding/json"
 	"log"
-	"reflect"
 	"testing"
 )
 
@@ -123,59 +117,6 @@ func TestQEEAttributeString(t *testing.T) {
 		result := testData.test.String()
 		if testData.expected != result {
 			t.Fatalf("expected '%s', got '%s'", testData.expected, result)
-		}
-	}
-}
-
-func TestParsingQueryInfo(t *testing.T) {
-	ctx := context.Background()
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		bpClient := testBlueprintA(ctx, t, client.client)
-
-		// the type of info we expect the query to return (a slice of these)
-		var qResponse struct {
-			Count int `json:"count"`
-			Items []struct {
-				LogicalDevice struct {
-					Id    string `json:"id"`
-					Label string `json:"label"`
-				} `json:"n_logical_device"`
-				System struct {
-					Id    string `json:"id"`
-					Label string `json:"label"`
-				} `json:"n_system"`
-			} `json:"items"`
-		}
-		log.Printf("testing PathQuery.Do() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err = new(PathQuery).
-			SetClient(bpClient.client).
-			SetBlueprintId(bpClient.Id()).
-			Node([]QEEAttribute{
-				{"type", QEStringVal("system")},
-				{"name", QEStringVal("n_system")},
-				{"role", QEStringValIsIn{"superspine", "spine", "leaf"}},
-				{"external", QEBoolVal(false)},
-			}).
-			Out([]QEEAttribute{
-				{"type", QEStringVal("logical_device")},
-			}).
-			Node([]QEEAttribute{
-				{"type", QEStringVal("logical_device")},
-				{"name", QEStringVal("n_logical_device")},
-			}).
-			Do(ctx, &qResponse)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		log.Printf("query produced %d results", qResponse.Count)
-		for i, item := range qResponse.Items {
-			log.Printf("  %d id: '%s', label: '%s', logical_device: '%s'", i, item.System.Id, item.System.Label, item.LogicalDevice.Label)
 		}
 	}
 }
@@ -538,52 +479,6 @@ func TestRawQuery(t *testing.T) {
 		qo := q.String()
 		if tc.expected != qs {
 			t.Fatalf("test %d with optional expected %q, got %q", i, tc.expectedWithOptional, qo)
-		}
-	}
-}
-
-func TestRawQueryWithBlueprint(t *testing.T) {
-	ctx := context.Background()
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		bpClient := testBlueprintA(ctx, t, client.client)
-
-		query := new(RawQuery).
-			SetBlueprintType(BlueprintTypeStaging).
-			SetClient(client.client).
-			SetBlueprintId(bpClient.Id()).
-			SetQuery("node(type='system', role='leaf', name='n_system')")
-
-		var queryResponse struct {
-			Count int `json:"count"`
-			Items []struct {
-				System struct {
-					Id    string `json:"id"`
-					Label string `json:"label"`
-				} `json:"n_system"`
-			} `json:"items"`
-		}
-
-		log.Printf("testing raw query against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-		err := query.Do(ctx, &queryResponse)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		qr1 := queryResponse
-
-		err = json.Unmarshal(query.RawResult(), &queryResponse)
-		if err != nil {
-			t.Fatal(err)
-		}
-		qr2 := queryResponse
-
-		if !reflect.DeepEqual(qr1, qr2) {
-			t.Fatalf("qr1 and qr2 should be equal, got:\n%q\n\nand:\n%q", qr1, qr2)
 		}
 	}
 }

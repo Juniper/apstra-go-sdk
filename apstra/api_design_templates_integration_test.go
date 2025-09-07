@@ -19,13 +19,13 @@ import (
 )
 
 func TestGetTemplate(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			templateIds, err := client.Client.ListAllTemplateIds(ctx)
 			require.NoError(t, err)
@@ -61,15 +61,15 @@ func TestGetTemplate(t *testing.T) {
 }
 
 func TestGetTemplateMethods(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
-
-	var n int
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
+
+			var n int
 
 			templates, err := client.Client.GetAllTemplates(ctx)
 			require.NoError(t, err)
@@ -108,13 +108,13 @@ func TestGetTemplateMethods(t *testing.T) {
 			require.NoError(t, err)
 			log.Printf("    got template type '%s', ID '%s'\n", l3CollapsedTemplate.Type(), l3CollapsedTemplate.Id)
 
-			require.Equal(t, len(templates), len(rackBasedTemplates), len(l3CollapsedTemplates)+len(podBasedTemplates)+len(l3CollapsedTemplates))
+			require.Equal(t, len(templates), len(rackBasedTemplates)+len(podBasedTemplates)+len(l3CollapsedTemplates))
 		})
 	}
 }
 
 func TestGetTemplateType(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testData struct {
@@ -131,12 +131,12 @@ func TestGetTemplateType(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			for _, d := range data {
 				t.Run(d.templateId.String(), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					ttype, err := client.Client.GetTemplateType(ctx, d.templateId)
 					require.NoError(t, err)
@@ -148,7 +148,7 @@ func TestGetTemplateType(t *testing.T) {
 }
 
 func TestCRUDTemplates(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct { // fill only one template type
@@ -184,8 +184,11 @@ func TestCRUDTemplates(t *testing.T) {
 				RackInfos: map[apstra.ObjectId]apstra.TemplateRackBasedRackInfo{
 					"L2_Virtual_MLAG_2x_Links": {Count: 1},
 				},
-				DhcpServiceIntent:    nil,
-				AntiAffinityPolicy:   nil,
+				DhcpServiceIntent: nil,
+				AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+					Algorithm: apstra.AlgorithmHeuristic,
+					Mode:      apstra.AntiAffinityModeDisabled,
+				},
 				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeDistinct},
 				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{OverlayControlProtocol: apstra.OverlayControlProtocolEvpn},
 			},
@@ -196,12 +199,12 @@ func TestCRUDTemplates(t *testing.T) {
 		require.True(t, exactlyOneTemplate(tCase))
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.WrapCtxWithTestId(t, ctx)
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					var id apstra.ObjectId
 					var err error

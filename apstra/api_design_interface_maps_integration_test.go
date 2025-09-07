@@ -20,13 +20,13 @@ import (
 )
 
 func TestListGetAllInterfaceMaps(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			iMapIds, err := client.Client.ListAllInterfaceMapIds(ctx)
 			require.NoError(t, err)
@@ -42,7 +42,7 @@ func TestListGetAllInterfaceMaps(t *testing.T) {
 }
 
 func TestCreateInterfaceMap(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	newMapInfo := apstra.InterfaceMapData{
@@ -71,7 +71,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			mapId, err := client.Client.CreateInterfaceMap(ctx, &newMapInfo)
 			require.NoError(t, err)
@@ -108,7 +108,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 }
 
 func TestGetInterfaceMapByName(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	desired := "Juniper_QFX5120-32C_Junos__AOS-32x100-1"
@@ -116,7 +116,7 @@ func TestGetInterfaceMapByName(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			interfaceMap, err := client.Client.GetInterfaceMapByName(ctx, desired)
 			require.NoError(t, err)

@@ -20,7 +20,7 @@ import (
 )
 
 func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	testData := apstra.PropertySetData{
@@ -41,7 +41,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 		psData := testData // start with clean copy of psData in each loop
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			id, err := client.Client.CreatePropertySet(ctx, &psData)
 			require.NoError(t, err)

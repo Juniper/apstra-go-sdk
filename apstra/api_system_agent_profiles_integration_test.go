@@ -18,13 +18,13 @@ import (
 )
 
 func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			var cfgs []*apstra.AgentProfileConfig
 			for _, p := range []string{"eos", "junos", "nxos"} {
@@ -96,13 +96,13 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 }
 
 func TestClient_UpdateAgentProfile_ClearStringFields(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			id, err := client.Client.CreateAgentProfile(ctx, &apstra.AgentProfileConfig{
 				Label:    testutils.RandString(5, "hex"),
@@ -132,13 +132,13 @@ func TestClient_UpdateAgentProfile_ClearStringFields(t *testing.T) {
 }
 
 func TestClient_UpdateAgentProfile(t *testing.T) {
-	ctx := testutils.WrapCtxWithTestId(t, context.Background())
+	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.WrapCtxWithTestId(t, ctx)
+			ctx := testutils.ContextWithTestID(t, ctx)
 
 			agents, err := client.Client.GetAllSystemAgents(ctx)
 			require.NoError(t, err)

@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// WrapCtxWithTestId produces contexts with the following values:
+// ContextWithTestID produces contexts with the following values:
 // - Test-UUID: a uuid.UUID representing this test and all sub-tests.
 // - Test-ID: a string of the form uuid/test/subtest/subsubtest...
 // the Test-UUID is generated only if not found.
@@ -24,7 +24,7 @@ import (
 // using filters like:
 // - http.request.line contains "843a754c-cc35-4383-807f-833ad991e554"
 // - http.request.line contains "843a754c-cc35-4383-807f-833ad991e554/test/subtest"
-func WrapCtxWithTestId(t testing.TB, ctx context.Context) context.Context {
+func ContextWithTestID(t testing.TB, ctx context.Context) context.Context {
 	var UUID *uuid.UUID
 
 	switch v := ctx.Value(apstra.CtxKeyTestUUID).(type) {

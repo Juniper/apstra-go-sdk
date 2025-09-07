@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_GetAllStreamingConfigs(t *testing.T) {
+func TestUserLogin(t *testing.T) {
 	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -24,14 +24,23 @@ func TestClient_GetAllStreamingConfigs(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(t, ctx)
 
-			ids, err := client.Client.GetAllStreamingConfigIds(ctx)
+			if client.Type() == testclient.ClientTypeAPIOps {
+				t.Skipf("skipping test - api-ops type clients do not log in or out")
+			}
+
+			var err error
+
+			err = client.Client.Login(ctx)
 			require.NoError(t, err)
 
-			for _, id := range ids {
-				streamingConfig, err := client.Client.GetStreamingConfig(ctx, id)
-				require.NoError(t, err)
-				require.Equal(t, id, streamingConfig.Id)
-			}
+			err = client.Client.Logout(ctx)
+			require.NoError(t, err)
+
+			err = client.Client.Logout(ctx)
+			require.NoError(t, err)
+
+			err = client.Client.Login(ctx)
+			require.NoError(t, err)
 		})
 	}
 }

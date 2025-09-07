@@ -7,7 +7,9 @@
 package apstra_test
 
 import (
+	"bytes"
 	"context"
+	"log"
 	"testing"
 
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
@@ -15,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_GetAllStreamingConfigs(t *testing.T) {
+func TestGetTelemetryServicesDeviceMapping(t *testing.T) {
 	ctx := testutils.ContextWithTestID(t, context.Background())
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -24,14 +26,14 @@ func TestClient_GetAllStreamingConfigs(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(t, ctx)
 
-			ids, err := client.Client.GetAllStreamingConfigIds(ctx)
+			result, err := client.Client.GetTelemetryServicesDeviceMapping(ctx)
 			require.NoError(t, err)
 
-			for _, id := range ids {
-				streamingConfig, err := client.Client.GetStreamingConfig(ctx, id)
-				require.NoError(t, err)
-				require.Equal(t, id, streamingConfig.Id)
-			}
+			buf := bytes.NewBuffer([]byte{})
+			err = testutils.PrettyPrint(result, buf)
+			require.NoError(t, err)
+
+			log.Print(buf.String())
 		})
 	}
 }

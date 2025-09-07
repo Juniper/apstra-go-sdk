@@ -4,7 +4,7 @@
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
@@ -14,14 +14,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient_DoRawJsonTransaction(t *testing.T) {
-	ctx := context.Background()
-
-	clients, err := getTestClients(ctx, t)
-	require.NoError(t, err)
+	ctx := testutils.ContextWithTestID(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
 	parseUrl := func(t *testing.T, urlStr string) *url.URL {
 		t.Helper()
@@ -33,28 +34,31 @@ func TestClient_DoRawJsonTransaction(t *testing.T) {
 	}
 
 	for _, client := range clients {
-		t.Run(client.name(), func(t *testing.T) {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.ContextWithTestID(t, ctx)
 
-			var idResponse objectIdResponse
+			var idResponse struct {
+				Id string `json:"id"`
+			}
 
 			// create an IP pool
-			err = client.client.DoRawJsonTransaction(ctx, RawJsonRequest{
+			err := client.Client.DoRawJsonTransaction(ctx, apstra.RawJsonRequest{
 				Method: http.MethodPost,
 				Url:    parseUrl(t, "/api/resources/ip-pools"),
-				Payload: NewIpPoolRequest{
-					DisplayName: randString(6, "hex"),
-					Subnets:     []NewIpSubnet{{Network: "10.0.0.0/24"}},
+				Payload: apstra.NewIpPoolRequest{
+					DisplayName: testutils.RandString(6, "hex"),
+					Subnets:     []apstra.NewIpSubnet{{Network: "10.0.0.0/24"}},
 				},
 			}, &idResponse)
 			require.NoError(t, err)
 
 			var itemsResponse struct {
-				Items []ObjectId `json:"items"`
+				Items []string `json:"items"`
 			}
 
 			// ensure the pool ID exists
-			err = client.client.DoRawJsonTransaction(ctx, RawJsonRequest{
+			err = client.Client.DoRawJsonTransaction(ctx, apstra.RawJsonRequest{
 				Method:  http.MethodOptions,
 				Url:     parseUrl(t, "/api/resources/ip-pools"),
 				Payload: nil,
@@ -63,7 +67,7 @@ func TestClient_DoRawJsonTransaction(t *testing.T) {
 			require.Contains(t, itemsResponse.Items, idResponse.Id)
 
 			// delete the pool
-			err = client.client.DoRawJsonTransaction(ctx, RawJsonRequest{
+			err = client.Client.DoRawJsonTransaction(ctx, apstra.RawJsonRequest{
 				Method: http.MethodDelete,
 				Url:    parseUrl(t, fmt.Sprintf("/api/resources/ip-pools/%s", idResponse.Id)),
 			}, nil)
@@ -73,7 +77,7 @@ func TestClient_DoRawJsonTransaction(t *testing.T) {
 			time.Sleep(time.Second)
 
 			// ensure the pool ID does not exist
-			err = client.client.DoRawJsonTransaction(ctx, RawJsonRequest{
+			err = client.Client.DoRawJsonTransaction(ctx, apstra.RawJsonRequest{
 				Method:  http.MethodOptions,
 				Url:     parseUrl(t, "/api/resources/ip-pools"),
 				Payload: nil,

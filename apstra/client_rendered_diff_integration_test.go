@@ -4,37 +4,37 @@
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"math/rand/v2"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetNodeRenderedDiff(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.ContextWithTestID(t, context.Background())
+	clients := testclient.GetTestClients(t, ctx)
 
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for clientName, client := range clients {
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
+			ctx := testutils.ContextWithTestID(t, ctx)
 
-			bp := testBlueprintI(ctx, t, client.client)
+			bp := dctestobj.TestBlueprintI(t, ctx, client.Client)
 
-			leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
+			leafIds, err := testutils.GetSystemIdsByRole(ctx, bp, "leaf")
 			require.NoError(t, err)
 
 			leafWg := new(sync.WaitGroup)
@@ -42,6 +42,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 			for _, leafId := range leafIds {
 				t.Run("leaf_"+leafId.String()+"_without_diff", func(t *testing.T) {
 					t.Parallel()
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					// staging config should have no diffs at this point
 					diff, err := bp.Client().GetNodeRenderedConfigDiff(ctx, bp.Id(), leafId)
@@ -59,44 +60,46 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 			// make changes to the rendered config by deploying a virtual network to the switches
 			t.Run("leafs_with_diffs", func(t *testing.T) {
 				t.Parallel()
+				ctx := testutils.ContextWithTestID(t, ctx)
+
 				leafWg.Wait() // wait for leafs to be verified diff-free
 
 				// create a security zone
-				szLabel := randString(6, "hex")
-				szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+				szLabel := testutils.RandString(6, "hex")
+				szId, err := bp.CreateSecurityZone(ctx, &apstra.SecurityZoneData{
 					Label:   szLabel,
-					SzType:  SecurityZoneTypeEVPN,
+					SzType:  apstra.SecurityZoneTypeEVPN,
 					VrfName: szLabel,
 				})
 				require.NoError(t, err)
 
-				err = bp.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-					ResourceGroup: ResourceGroup{
-						Type:           ResourceTypeIp4Pool,
-						Name:           ResourceGroupNameLeafIp4,
+				err = bp.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
+					ResourceGroup: apstra.ResourceGroup{
+						Type:           apstra.ResourceTypeIp4Pool,
+						Name:           apstra.ResourceGroupNameLeafIp4,
 						SecurityZoneId: &szId,
 					},
-					PoolIds: []ObjectId{"Private-10_0_0_0-8"},
+					PoolIds: []apstra.ObjectId{"Private-10_0_0_0-8"},
 				})
 				require.NoError(t, err)
 
 				// prep VN bindings
-				vlanId := Vlan(rand.IntN(vlanMax-2) + 2) // 2-4094
-				vnBindings := make([]VnBinding, len(leafIds))
+				vlanId := apstra.Vlan(rand.IntN(apstra.VlanMax-2) + 2) // 2-4094
+				vnBindings := make([]apstra.VnBinding, len(leafIds))
 				for i, leafId := range leafIds {
-					vnBindings[i] = VnBinding{
+					vnBindings[i] = apstra.VnBinding{
 						SystemId: leafId,
 						VlanId:   &vlanId,
 					}
 				}
 
 				// create a VN within the security zone
-				rip := randomPrefix(t, "172.16.0.0/12", 24)
-				vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+				rip := testutils.RandomPrefix(t, "172.16.0.0/12", 24)
+				vnId, err := bp.CreateVirtualNetwork(ctx, &apstra.VirtualNetworkData{
 					VirtualGatewayIpv4Enabled: true,
 					Ipv4Enabled:               true,
 					Ipv4Subnet:                &rip,
-					Label:                     randString(6, "hex"),
+					Label:                     testutils.RandString(6, "hex"),
 					SecurityZoneId:            szId,
 					VnBindings:                vnBindings,
 					VnType:                    enum.VnTypeVxlan,
@@ -110,6 +113,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 				for _, leafId := range leafIds {
 					t.Run("leaf_"+leafId.String(), func(t *testing.T) {
 						t.Parallel()
+						ctx := testutils.ContextWithTestID(t, ctx)
 
 						// staging config should have diffs at this point
 						diff, err := bp.Client().GetNodeRenderedConfigDiff(ctx, bp.Id(), leafId)
@@ -137,13 +141,14 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 
 				t.Run("test_config_withdrawal_diff", func(t *testing.T) {
 					t.Parallel()
+					ctx := testutils.ContextWithTestID(t, ctx)
 
 					leafWg.Wait()
 
 					// commit the blueprint so our new VN shows up in deployed config
 					status, err := bp.Client().GetBlueprintStatus(ctx, bp.Id())
 					require.NoError(t, err)
-					_, err = bp.Client().DeployBlueprint(ctx, &BlueprintDeployRequest{
+					_, err = bp.Client().DeployBlueprint(ctx, &apstra.BlueprintDeployRequest{
 						Id:          bp.Id(),
 						Description: `commit so that we can generate "delete" diffs`,
 						Version:     status.Version,
