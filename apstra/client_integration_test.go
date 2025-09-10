@@ -110,13 +110,18 @@ func TestLogoutAuthFail(t *testing.T) {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
 			}
 
-			c := *client.Client
-
-			err := c.Login(ctx)
+			// extract the configuration and create a new client based on it
+			cfg := client.Client.Config()
+			clone, err := cfg.NewClient(ctx)
 			require.NoError(t, err)
 
-			client.Client.SetAuthtoken(testutils.RandJWT())
-			err = c.Logout(ctx)
+			// login with the correct password must work
+			err = clone.Login(ctx)
+			require.NoError(t, err)
+
+			// logout with bad token must fail
+			clone.SetAuthtoken(testutils.RandJWT())
+			err = clone.Logout(ctx)
 			require.Error(t, err)
 		})
 	}
