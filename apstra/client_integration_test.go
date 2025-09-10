@@ -80,10 +80,18 @@ func TestLoginBadPassword(t *testing.T) {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
 			}
 
-			c := *client.Client
-			c.SetPassword(testutils.RandString(10, "hex"))
+			// extract the configuration and create a new client based on it
+			cfg := client.Client.Config()
+			clone, err := cfg.NewClient(ctx)
+			require.NoError(t, err)
 
-			err := c.Login(ctx)
+			// login with the correct password must work
+			err = clone.Login(ctx)
+			require.NoError(t, err)
+
+			// login with bad password must fail
+			clone.SetPassword(testutils.RandString(10, "hex"))
+			err = clone.Login(ctx)
 			require.Error(t, err)
 		})
 	}
