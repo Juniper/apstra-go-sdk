@@ -7,7 +7,7 @@ package apstra
 import (
 	"fmt"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 type LogicalDevicePortRoles []enum.PortRole

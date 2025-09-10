@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	mutexmap "github.com/Juniper/apstra-go-sdk/mutex_map"
 	"github.com/hashicorp/go-version"
 )

@@ -10,7 +10,7 @@ import (
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	oenum "github.com/orsinium-labs/enum"
 )
 

@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
