@@ -12,8 +12,8 @@ import oenum "github.com/orsinium-labs/enum"
 // Attention! This file must contain only `type` and `var()` declarations of the
 // sort included below. The `generated_enums.go` file is auto-generated based on
 // the contents of this file. After editing this file, run `go generate ./...`
-// or `go generate apstra/enum/enums.go` from the repository root directory to
-// refresh `generated_enums.go`.
+// or `go generate enum/enums.go` from the repository root directory to refresh
+// `generated_enums.go`.
 
 type DeployMode oenum.Member[string]
 

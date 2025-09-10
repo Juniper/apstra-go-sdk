@@ -25,7 +25,7 @@ const (
 	inFile          = "enums.go"
 	outFile         = "generated_" + inFile
 	outFileTemplate = `` +
-		`// Copyright (c) Juniper Networks, Inc., 2024-{{.Year}}.
+		`// Copyright (c) Juniper Networks, Inc., 2025-{{.Year}}.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
