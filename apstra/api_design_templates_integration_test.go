@@ -20,13 +20,13 @@ import (
 )
 
 func TestGetTemplate(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			templateIds, err := client.Client.ListAllTemplateIds(ctx)
 			require.NoError(t, err)
@@ -65,13 +65,13 @@ func TestGetTemplate(t *testing.T) {
 }
 
 func TestGetTemplateMethods(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			var n int
 
@@ -118,7 +118,7 @@ func TestGetTemplateMethods(t *testing.T) {
 }
 
 func TestGetTemplateType(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testData struct {
@@ -135,12 +135,12 @@ func TestGetTemplateType(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			for _, d := range data {
 				t.Run(d.templateId.String(), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					ttype, err := client.Client.GetTemplateType(ctx, d.templateId)
 					require.NoError(t, err)
@@ -152,7 +152,7 @@ func TestGetTemplateType(t *testing.T) {
 }
 
 func TestCRUDTemplates(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct { // fill only one template type
@@ -203,12 +203,12 @@ func TestCRUDTemplates(t *testing.T) {
 		require.True(t, exactlyOneTemplate(tCase))
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					var id apstra.ObjectId
 					var err error

@@ -17,13 +17,13 @@ import (
 )
 
 func TestModularDeviceProfile(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			mdp1 := &apstra.ModularDeviceProfile{
 				Label:            testutils.RandString(5, "hex"),

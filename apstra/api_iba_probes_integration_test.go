@@ -20,7 +20,7 @@ import (
 )
 
 func TestIbaProbes(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	probeStr := `{
@@ -355,7 +355,7 @@ func TestIbaProbes(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
 			predefinedProbes, err := bpClient.GetAllIbaPredefinedProbes(ctx)
@@ -378,7 +378,7 @@ func TestIbaProbes(t *testing.T) {
 
 			for _, predefinedProbe := range predefinedProbes {
 				t.Run(predefinedProbe.Name, func(t *testing.T) {
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					t.Logf("Get Predefined Probe By Name %s", predefinedProbe.Name)
 					_, err := bpClient.GetIbaPredefinedProbeByName(ctx, predefinedProbe.Name)

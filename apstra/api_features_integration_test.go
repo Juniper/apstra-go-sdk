@@ -19,7 +19,7 @@ import (
 )
 
 func TestGetFeatures(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
@@ -59,12 +59,12 @@ func TestGetFeatures(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					// true with no constraints present; defaults false when constraints exist
 					versionIsPermitted := len(tCase.allowedVersions) == 0

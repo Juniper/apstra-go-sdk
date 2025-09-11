@@ -21,7 +21,7 @@ import (
 )
 
 func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	dn := testutils.RandString(5, "hex")
@@ -67,7 +67,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 }
 
 func TestGetRackBasedTemplateByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	name := "L2 Pod"
@@ -75,7 +75,7 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			rbt, err := client.Client.GetRackBasedTemplateByName(ctx, name)
 			require.NoError(t, err)
@@ -85,7 +85,7 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 }
 
 func TestRackBasedTemplateMethods(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	compareSpine := func(t testing.TB, req apstra.TemplateElementSpineRequest, rbt apstra.Spine) {
@@ -210,12 +210,12 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("Test-%d", i), func(t *testing.T) {
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					if !tc.versionConstraints.Check(client.APIVersion()) {
 						t.Skipf("skipping testcase %d because of versionConstraint %s, version %s", i, tc.versionConstraints, client.APIVersion())

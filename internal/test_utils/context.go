@@ -24,19 +24,19 @@ import (
 // using filters like:
 // - http.request.line contains "843a754c-cc35-4383-807f-833ad991e554"
 // - http.request.line contains "843a754c-cc35-4383-807f-833ad991e554/test/subtest"
-func ContextWithTestID(t testing.TB, ctx context.Context) context.Context {
+func ContextWithTestID(parent context.Context, t testing.TB) context.Context {
 	var UUID *uuid.UUID
 
-	switch v := ctx.Value(apstra.CtxKeyTestUUID).(type) {
+	switch v := parent.Value(apstra.CtxKeyTestUUID).(type) {
 	case uuid.UUID:
 		UUID = &v
 	default:
 		UUID = ToPtr(newUUID(t))
-		ctx = context.WithValue(ctx, apstra.CtxKeyTestUUID, *UUID)
+		parent = context.WithValue(parent, apstra.CtxKeyTestUUID, *UUID)
 		log.Println("Test UUID: ", UUID.String())
 	}
 
-	return context.WithValue(ctx, apstra.CtxKeyTestID, UUID.String()+"/"+t.Name())
+	return context.WithValue(parent, apstra.CtxKeyTestID, UUID.String()+"/"+t.Name())
 }
 
 func newUUID(t testing.TB) uuid.UUID {
