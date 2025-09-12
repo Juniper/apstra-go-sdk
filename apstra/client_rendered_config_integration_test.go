@@ -34,12 +34,13 @@ func TestGetNodeRenderedConfig(t *testing.T) {
 
 			for _, leafId := range leafIds {
 				t.Run("leaf_"+leafId.String()+"_staging", func(t *testing.T) {
+					t.Parallel()
 					ctx := testutils.ContextWithTestID(t, ctx)
 
-					stagingConfig, err := bp.Client().GetNodeRenderedConfig(ctx, bp.Id(), leafId, enum.RenderedConfigTypeStaging)
+					config, err := bp.Client().GetNodeRenderedConfig(ctx, bp.Id(), leafId, enum.RenderedConfigTypeStaging)
 					require.NoError(t, err)
 					lineCount := 0
-					scanner := bufio.NewScanner(strings.NewReader(stagingConfig))
+					scanner := bufio.NewScanner(strings.NewReader(config))
 					for scanner.Scan() {
 						lineCount++
 					}
@@ -48,11 +49,12 @@ func TestGetNodeRenderedConfig(t *testing.T) {
 
 				t.Run("leaf_"+leafId.String()+"_deployed", func(t *testing.T) {
 					t.Parallel()
+					ctx := testutils.ContextWithTestID(t, ctx)
 
-					deployedConfig, err := bp.Client().GetNodeRenderedConfig(ctx, bp.Id(), leafId, enum.RenderedConfigTypeDeployed)
+					config, err := bp.Client().GetNodeRenderedConfig(ctx, bp.Id(), leafId, enum.RenderedConfigTypeDeployed)
 					require.NoError(t, err)
 					lineCount := 0
-					scanner := bufio.NewScanner(strings.NewReader(deployedConfig))
+					scanner := bufio.NewScanner(strings.NewReader(config))
 					for scanner.Scan() {
 						lineCount++
 					}
