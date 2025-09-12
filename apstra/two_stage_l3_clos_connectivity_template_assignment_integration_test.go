@@ -507,7 +507,7 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 }
 
 func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
-	ctx := context.Background()
+	ctx := wrapCtxWithTestId(t, context.Background())
 
 	ctCount := 8
 
@@ -593,6 +593,7 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 	for clientName, client := range clients {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
+			ctx = wrapCtxWithTestId(t, ctx)
 
 			bpClient := testBlueprintC(ctx, t, client.client)
 
@@ -669,6 +670,7 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 			for tName, tCase := range testCases {
 				t.Run(tName, func(t *testing.T) {
 					// t.Parallel() -- do not use -- all tests use the same interfaces
+					ctx := wrapCtxWithTestId(t, ctx)
 
 					var bogusApIds []ObjectId
 					var bogusCtIds []ObjectId
@@ -702,15 +704,13 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 					}
 
 					log.Printf("testing SetApplicationPointsConnectivityTemplates() error handling when setting with bogus values against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					setCtx := context.WithValue(ctx, CtxKeyTestID, tName+"(set)")
-					setErr := bpClient.SetApplicationPointsConnectivityTemplates(setCtx, setRequest)
+					setErr := bpClient.SetApplicationPointsConnectivityTemplates(ctx, setRequest)
 					if len(bogusApIds) == 0 && len(bogusCtIds) == 0 {
 						require.NoError(t, setErr)
 					}
 
 					log.Printf("testing SetApplicationPointsConnectivityTemplates() error handling when clearing with bogus values against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-					delCtx := context.WithValue(ctx, CtxKeyTestID, tName+"(del)")
-					delErr := bpClient.SetApplicationPointsConnectivityTemplates(delCtx, delRequest)
+					delErr := bpClient.SetApplicationPointsConnectivityTemplates(ctx, delRequest)
 					if len(bogusApIds) == 0 && len(bogusCtIds) == 0 {
 						require.NoError(t, setErr)
 						return
