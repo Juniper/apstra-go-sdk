@@ -29,13 +29,13 @@ const (
 )
 
 func TestGetSystemAgent(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			list, err := client.Client.ListSystemAgents(ctx)
 			require.NoError(t, err)
@@ -54,7 +54,7 @@ func TestGetSystemAgent(t *testing.T) {
 }
 
 func TestCreateDeleteSwitchAgent(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	if s, ok := os.LookupEnv(envSkipSwitchAgentTest); ok {
@@ -73,7 +73,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			var switches []testclient.SwitchInfo
 			switch client.Type() {
@@ -138,7 +138,7 @@ func TestCreateDeleteSwitchAgent(t *testing.T) {
 			agents := make([]apstra.SystemAgent, len(agentIds))
 			for i, agentId := range agentIds {
 				t.Run(fmt.Sprintf("agent_%s", agentId), func(t *testing.T) {
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					agent, err := client.Client.GetSystemAgent(ctx, agentId)
 					require.NoError(t, err)

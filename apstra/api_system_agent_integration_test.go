@@ -20,13 +20,13 @@ import (
 )
 
 func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(t.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			// initial fetch
 			mgrCfg, err := client.Client.GetSystemAgentManagerConfig(ctx)

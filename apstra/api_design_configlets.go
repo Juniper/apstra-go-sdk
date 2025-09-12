@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 const (

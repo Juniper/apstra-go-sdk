@@ -16,7 +16,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
@@ -26,14 +26,14 @@ import (
 )
 
 func TestListAllBlueprintIds(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			blueprints, err := client.Client.ListAllBlueprintIds(ctx)
 			require.NoError(t, err)
@@ -47,14 +47,14 @@ func TestListAllBlueprintIds(t *testing.T) {
 }
 
 func TestGetAllBlueprintStatus(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			bps, err := client.Client.GetAllBlueprintStatus(ctx)
 			require.NoError(t, err)
@@ -65,14 +65,14 @@ func TestGetAllBlueprintStatus(t *testing.T) {
 }
 
 func TestCreateDeleteBlueprint(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			req := apstra.CreateBlueprintFromTemplateRequest{
 				RefDesign:  enum.RefDesignDatacenter,
@@ -110,13 +110,13 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 }
 
 func TestGetPatchGetPatchNode(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
 
@@ -181,14 +181,14 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 }
 
 func TestGetDcNodes(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
 
@@ -216,14 +216,14 @@ func TestGetDcNodes(t *testing.T) {
 }
 
 func TestPatchNodes(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
 
@@ -261,7 +261,7 @@ func TestPatchNodes(t *testing.T) {
 }
 
 func TestCreateDeleteEvpnBlueprint(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -413,12 +413,12 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					if tCase.constraint != nil && !tCase.constraint.Check(client.APIVersion()) {
 						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.Client.ApiVersion(), tCase.constraint)
@@ -469,7 +469,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 }
 
 func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
@@ -620,12 +620,12 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					if tCase.compatibility != nil && !tCase.compatibility.Check(client.APIVersion()) {
 						t.Skipf("skipping test case %q with Apstra %s due to version constraint %q", tName, client.Client.ApiVersion(), tCase.compatibility)
@@ -676,7 +676,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 }
 
 func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -721,7 +721,7 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			if !compatibility.GeApstra421.Check(client.APIVersion()) {
 				t.Skipf("skipping Apstra %s client due to version constraint", client.Client.ApiVersion())
@@ -732,7 +732,7 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 				tCase := tCase
 
 				t.Run(tCase.name, func(t *testing.T) {
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					bpr := blueprintRequest()
 					bpr.FabricSettings = &tCase.fabricSettings
@@ -765,7 +765,7 @@ func TestDeleteAllBlueprints(t *testing.T) {
 		t.Skip("refusing to run without DELETE_ALL_BLUEPRINTS_WITH_A_TEST in environment")
 	}
 
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	require.NoError(t, os.Setenv(testclient.EnvApstraExperimental, "1"))
 
@@ -774,7 +774,7 @@ func TestDeleteAllBlueprints(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			ids, err := client.Client.ListAllBlueprintIds(ctx)
 			require.NoError(t, err)

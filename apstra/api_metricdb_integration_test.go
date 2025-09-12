@@ -20,13 +20,13 @@ import (
 )
 
 func TestGetMetricdbMetrics(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(t.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 			_, err := client.Client.GetMetricdbMetrics(ctx)
 			require.NoError(t, err)
 		})
@@ -34,7 +34,7 @@ func TestGetMetricdbMetrics(t *testing.T) {
 }
 
 func TestQueryMetricdb(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

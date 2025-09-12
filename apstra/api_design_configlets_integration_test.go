@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
@@ -20,7 +20,7 @@ import (
 )
 
 func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -95,7 +95,7 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			for tName, tCase := range testCases {
 				t.Run(tName, func(t *testing.T) {

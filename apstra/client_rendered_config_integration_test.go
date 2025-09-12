@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
@@ -20,13 +20,13 @@ import (
 )
 
 func TestGetNodeRenderedConfig(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			bp := dctestobj.TestBlueprintI(t, ctx, client.Client)
 			leafIds, err := testutils.GetSystemIdsByRole(ctx, bp, "leaf")
@@ -35,7 +35,7 @@ func TestGetNodeRenderedConfig(t *testing.T) {
 			for _, leafId := range leafIds {
 				t.Run("leaf_"+leafId.String()+"_staging", func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					config, err := bp.Client().GetNodeRenderedConfig(ctx, bp.Id(), leafId, enum.RenderedConfigTypeStaging)
 					require.NoError(t, err)

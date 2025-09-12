@@ -16,13 +16,13 @@ import (
 )
 
 func TestClient_GetAllStreamingConfigs(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			ids, err := client.Client.GetAllStreamingConfigIds(ctx)
 			require.NoError(t, err)

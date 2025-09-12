@@ -13,20 +13,20 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
 
 func TestListGetAllInterfaceMaps(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			iMapIds, err := client.Client.ListAllInterfaceMapIds(ctx)
 			require.NoError(t, err)
@@ -42,7 +42,7 @@ func TestListGetAllInterfaceMaps(t *testing.T) {
 }
 
 func TestCreateInterfaceMap(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	newMapInfo := apstra.InterfaceMapData{
@@ -71,7 +71,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			mapId, err := client.Client.CreateInterfaceMap(ctx, &newMapInfo)
 			require.NoError(t, err)
@@ -108,7 +108,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 }
 
 func TestGetInterfaceMapByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	desired := "Juniper_QFX5120-32C_Junos__AOS-32x100-1"
@@ -116,7 +116,7 @@ func TestGetInterfaceMapByName(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			interfaceMap, err := client.Client.GetInterfaceMapByName(ctx, desired)
 			require.NoError(t, err)

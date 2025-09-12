@@ -11,7 +11,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
