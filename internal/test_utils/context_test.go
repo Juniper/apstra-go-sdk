@@ -35,7 +35,7 @@ func ContextWithTestID(parent context.Context, t testing.TB) context.Context {
 	default:
 		UUID = ToPtr(newUUID(t))
 		parent = context.WithValue(parent, apstra.CtxKeyTestUUID, *UUID)
-		log.Println("Test UUID: ", UUID.String())
+		log.Println(apstra.CtxKeyTestUUID, ": ", UUID.String())
 	}
 
 	return context.WithValue(parent, apstra.CtxKeyTestID, UUID.String()+"/"+t.Name())
