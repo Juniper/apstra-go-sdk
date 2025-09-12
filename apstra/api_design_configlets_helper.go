@@ -5,7 +5,7 @@
 package apstra
 
 import (
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 func ValidConfigletSections(platform enum.ConfigletStyle) []enum.ConfigletSection {

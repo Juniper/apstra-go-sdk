@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/google/uuid"
 )
 

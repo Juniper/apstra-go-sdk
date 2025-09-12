@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
