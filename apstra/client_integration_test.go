@@ -149,7 +149,7 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 			for i := range testCases {
 				i := i
 				t.Run(fmt.Sprintf("test_case_%d", i), func(t *testing.T) {
-					t.Parallel()
+					// t.Parallel() // don't create lots of blueprints at once
 					ctx := testutils.ContextWithTestID(t, ctx)
 
 					bpClient := testCases[i].bpFunc(t, ctx, client.Client)
