@@ -11,7 +11,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 func TestGetLockInfo(t *testing.T) {

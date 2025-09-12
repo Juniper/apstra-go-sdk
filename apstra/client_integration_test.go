@@ -16,7 +16,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
@@ -50,9 +50,18 @@ func TestLoginEmptyPassword(t *testing.T) {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
 			}
 
-			c := *client.Client // don't use iterator variable because it points to the shared client object
-			c.SetPassword("")
-			err := c.Login(ctx)
+			// extract the configuration and create a new client based on it
+			cfg := client.Client.Config()
+			clone, err := cfg.NewClient(ctx)
+			require.NoError(t, err)
+
+			// login with the correct password must work
+			err = clone.Login(ctx)
+			require.NoError(t, err)
+
+			// login with empty password must fail
+			clone.SetPassword("")
+			err = clone.Login(ctx)
 			require.Error(t, err)
 		})
 	}
@@ -71,10 +80,18 @@ func TestLoginBadPassword(t *testing.T) {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
 			}
 
-			c := *client.Client
-			c.SetPassword(testutils.RandString(10, "hex"))
+			// extract the configuration and create a new client based on it
+			cfg := client.Client.Config()
+			clone, err := cfg.NewClient(ctx)
+			require.NoError(t, err)
 
-			err := c.Login(ctx)
+			// login with the correct password must work
+			err = clone.Login(ctx)
+			require.NoError(t, err)
+
+			// login with bad password must fail
+			clone.SetPassword(testutils.RandString(10, "hex"))
+			err = clone.Login(ctx)
 			require.Error(t, err)
 		})
 	}
@@ -93,13 +110,18 @@ func TestLogoutAuthFail(t *testing.T) {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")
 			}
 
-			c := *client.Client
-
-			err := c.Login(ctx)
+			// extract the configuration and create a new client based on it
+			cfg := client.Client.Config()
+			clone, err := cfg.NewClient(ctx)
 			require.NoError(t, err)
 
-			client.Client.SetAuthtoken(testutils.RandJWT())
-			err = c.Logout(ctx)
+			// login with the correct password must work
+			err = clone.Login(ctx)
+			require.NoError(t, err)
+
+			// logout with bad token must fail
+			clone.SetAuthtoken(testutils.RandJWT())
+			err = clone.Logout(ctx)
 			require.Error(t, err)
 		})
 	}
@@ -127,7 +149,7 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 			for i := range testCases {
 				i := i
 				t.Run(fmt.Sprintf("test_case_%d", i), func(t *testing.T) {
-					t.Parallel()
+					// t.Parallel() // don't create lots of blueprints at once
 					ctx := testutils.ContextWithTestID(ctx, t)
 
 					bpClient := testCases[i].bpFunc(t, ctx, client.Client)

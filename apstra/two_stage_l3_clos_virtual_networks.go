@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 const (

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"

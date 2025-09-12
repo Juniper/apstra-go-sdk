@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/Juniper/apstra-go-sdk/apstra/enum"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
