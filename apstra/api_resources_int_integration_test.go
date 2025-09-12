@@ -21,7 +21,7 @@ import (
 )
 
 func TestEmptyAsnPool(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	asnRangeCount := rand.Intn(5) + 2 // random number of ASN ranges to add to new pool
@@ -42,7 +42,7 @@ func TestEmptyAsnPool(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			newPoolId, err := client.Client.CreateAsnPool(ctx, &apstra.AsnPoolRequest{DisplayName: poolName})
 			require.NoError(t, err)
@@ -76,7 +76,7 @@ func TestEmptyAsnPool(t *testing.T) {
 }
 
 func TestGetAsnPoolByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	poolName := testutils.RandString(10, "hex")
@@ -84,7 +84,7 @@ func TestGetAsnPoolByName(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			_, err := client.Client.GetAsnPoolByName(ctx, poolName)
 			require.Error(t, err)
@@ -106,13 +106,13 @@ func TestGetAsnPoolByName(t *testing.T) {
 }
 
 func TestListAsnPoolIds(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			poolIds, err := client.Client.ListAsnPoolIds(ctx)
 			require.NoError(t, err)
@@ -122,7 +122,7 @@ func TestListAsnPoolIds(t *testing.T) {
 }
 
 func TestEmptyVniPool(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	vniRangeCount := rand.Intn(5) + 2 // random number of VNI ranges to add to new pool
@@ -143,7 +143,7 @@ func TestEmptyVniPool(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			newPoolId, err := client.Client.CreateVniPool(ctx, &apstra.VniPoolRequest{DisplayName: poolName})
 			require.NoError(t, err)
@@ -177,7 +177,7 @@ func TestEmptyVniPool(t *testing.T) {
 }
 
 func TestGetVniPoolByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	poolName := testutils.RandString(10, "hex")
@@ -185,7 +185,7 @@ func TestGetVniPoolByName(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			_, err := client.Client.GetVniPoolByName(ctx, poolName)
 			require.Error(t, err)
@@ -207,13 +207,13 @@ func TestGetVniPoolByName(t *testing.T) {
 }
 
 func TestListVniPoolIds(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			poolIds, err := client.Client.ListVniPoolIds(ctx)
 			require.NoError(t, err)

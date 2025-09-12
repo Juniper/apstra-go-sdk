@@ -20,14 +20,14 @@ import (
 )
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			ids, err := client.Client.ListLogicalDeviceIds(ctx)
 			require.NoError(t, err)
@@ -37,7 +37,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 				id := ids[i]
 				t.Run(fmt.Sprintf("GET_%s", id), func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					ld, err := client.Client.GetLogicalDevice(ctx, id)
 					require.NoError(t, err)
@@ -49,7 +49,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 }
 
 func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -61,7 +61,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			deviceConfigs := make([]apstra.LogicalDeviceData, len(indexingTypes))
 			for i, indexing := range indexingTypes {
@@ -128,14 +128,14 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 }
 
 func TestGetLogicalDeviceByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			ldIDs, err := client.Client.ListLogicalDeviceIds(ctx)
 			require.NoError(t, err)

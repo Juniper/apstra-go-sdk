@@ -16,13 +16,13 @@ import (
 )
 
 func TestUserLogin(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			if client.Type() == testclient.ClientTypeAPIOps {
 				t.Skipf("skipping test - api-ops type clients do not log in or out")

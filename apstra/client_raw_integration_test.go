@@ -21,7 +21,7 @@ import (
 )
 
 func TestClient_DoRawJsonTransaction(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	parseUrl := func(t *testing.T, urlStr string) *url.URL {
@@ -36,7 +36,7 @@ func TestClient_DoRawJsonTransaction(t *testing.T) {
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			var idResponse struct {
 				Id string `json:"id"`

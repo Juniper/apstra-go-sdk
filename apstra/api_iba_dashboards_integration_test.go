@@ -20,13 +20,13 @@ import (
 )
 
 func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t, context.Background())
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
-			ctx := testutils.ContextWithTestID(t, ctx)
+			ctx := testutils.ContextWithTestID(ctx, t)
 
 			if !compatibility.IbaDashboardSupported.Check(client.APIVersion()) {
 				t.Skipf("skipping test due to unsupported API changes in %s", client.APIVersion())
