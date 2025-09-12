@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"encoding/json"
 	"math/rand"
 	"testing"
@@ -20,7 +19,7 @@ import (
 )
 
 func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	testData := apstra.PropertySetData{

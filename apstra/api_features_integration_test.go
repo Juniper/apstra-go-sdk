@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
@@ -19,7 +18,7 @@ import (
 )
 
 func TestGetFeatures(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {

@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"testing"
 
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
@@ -16,7 +15,7 @@ import (
 )
 
 func TestClient_GetAllStreamingConfigs(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

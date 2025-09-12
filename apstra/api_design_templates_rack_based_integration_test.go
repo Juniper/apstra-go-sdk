@@ -21,7 +21,7 @@ import (
 )
 
 func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	dn := testutils.RandString(5, "hex")
@@ -67,7 +67,7 @@ func TestCreateGetDeleteRackBasedTemplate(t *testing.T) {
 }
 
 func TestGetRackBasedTemplateByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	name := "L2 Pod"
@@ -85,7 +85,7 @@ func TestGetRackBasedTemplateByName(t *testing.T) {
 }
 
 func TestRackBasedTemplateMethods(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	compareSpine := func(t testing.TB, req apstra.TemplateElementSpineRequest, rbt apstra.Spine) {

@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"testing"
@@ -20,8 +19,7 @@ import (
 )
 
 func TestListAndGetAllLogicalDevices(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -49,8 +47,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 }
 
 func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	indexingTypes := []string{
@@ -128,8 +125,7 @@ func TestCreateGetUpdateDeleteLogicalDevice(t *testing.T) {
 }
 
 func TestGetLogicalDeviceByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"log"
 	"testing"
 
@@ -20,7 +19,7 @@ import (
 )
 
 func TestListGetOneRackType(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -43,7 +42,7 @@ func TestListGetOneRackType(t *testing.T) {
 }
 
 func TestListGetAllGetRackType(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -76,7 +75,7 @@ func TestListGetAllGetRackType(t *testing.T) {
 }
 
 func TestCreateGetRackDeleteRackType(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	leafLabel := "ll-" + testutils.RandString(10, "hex")

@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"log"
 	"testing"
 
@@ -19,7 +18,7 @@ import (
 )
 
 func TestListIp4Pools(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -35,7 +34,7 @@ func TestListIp4Pools(t *testing.T) {
 }
 
 func TestGetAllIp4Pools(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -51,7 +50,7 @@ func TestGetAllIp4Pools(t *testing.T) {
 }
 
 func TestGetIp4PoolByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -90,7 +89,7 @@ func TestGetIp4PoolByName(t *testing.T) {
 }
 
 func TestCreateGetDeleteIp4Pool(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -140,7 +139,7 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 }
 
 func TestListIp6Pools(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -156,7 +155,7 @@ func TestListIp6Pools(t *testing.T) {
 }
 
 func TestGetAllIp6Pools(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -172,7 +171,7 @@ func TestGetAllIp6Pools(t *testing.T) {
 }
 
 func TestGetIp6PoolByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -211,7 +210,7 @@ func TestGetIp6PoolByName(t *testing.T) {
 }
 
 func TestCreateGetDeleteIp6Pool(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

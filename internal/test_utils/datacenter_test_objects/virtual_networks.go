@@ -9,6 +9,7 @@ package dctestobj
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -36,7 +37,9 @@ func TestVirtualNetworkA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL
 		VnType:                    enum.VnTypeVxlan,
 	})
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, bp.DeleteVirtualNetwork(ctx, id)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return bp.DeleteVirtualNetwork(ctx, id)
+	})
 
 	return id
 }

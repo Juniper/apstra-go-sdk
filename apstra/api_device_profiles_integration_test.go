@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -20,7 +19,7 @@ import (
 )
 
 func TestListAndGetSampleDeviceProfiles(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -67,7 +66,7 @@ func TestListAndGetSampleDeviceProfiles(t *testing.T) {
 }
 
 func TestGetDeviceProfile(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	desiredId := apstra.ObjectId("Cisco_3172PQ_NXOS")
@@ -86,7 +85,7 @@ func TestGetDeviceProfile(t *testing.T) {
 }
 
 func TestGetDeviceProfileByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	desiredLabel := "Cisco 3172PQ"
@@ -105,7 +104,7 @@ func TestGetDeviceProfileByName(t *testing.T) {
 }
 
 func TestGetTransformCandidates(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	dpId := apstra.ObjectId("Juniper_QFX5120-48T_Junos")

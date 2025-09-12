@@ -9,6 +9,7 @@ package dctestobj
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
@@ -43,8 +44,8 @@ func TestTemplateA(t testing.TB, ctx context.Context, client *apstra.Client) aps
 
 	id, err := client.CreateRackBasedTemplate(ctx, &request)
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, client.DeleteTemplate(ctx, id))
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteTemplate(ctx, id)
 	})
 
 	return id
@@ -77,7 +78,9 @@ func TestTemplateB(t testing.TB, ctx context.Context, client *apstra.Client) aps
 		VirtualNetworkPolicy: &rbt.Data.VirtualNetworkPolicy,
 	})
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, client.DeleteTemplate(ctx, id)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteTemplate(ctx, id)
+	})
 
 	return id
 }

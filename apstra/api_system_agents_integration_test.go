@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -29,7 +28,7 @@ const (
 )
 
 func TestGetSystemAgent(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -54,7 +53,7 @@ func TestGetSystemAgent(t *testing.T) {
 }
 
 func TestCreateDeleteSwitchAgent(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	if s, ok := os.LookupEnv(envSkipSwitchAgentTest); ok {

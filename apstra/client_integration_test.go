@@ -25,7 +25,7 @@ import (
 )
 
 func TestClientLog(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -38,7 +38,7 @@ func TestClientLog(t *testing.T) {
 }
 
 func TestLoginEmptyPassword(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -68,7 +68,7 @@ func TestLoginEmptyPassword(t *testing.T) {
 }
 
 func TestLoginBadPassword(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -98,7 +98,7 @@ func TestLoginBadPassword(t *testing.T) {
 }
 
 func TestLogoutAuthFail(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -128,7 +128,7 @@ func TestLogoutAuthFail(t *testing.T) {
 }
 
 func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
@@ -168,7 +168,7 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 }
 
 func TestCRUDIntegerPools(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	validate := func(req *apstra.IntPoolRequest, resp *apstra.IntPool) {
@@ -308,7 +308,7 @@ func TestCRUDIntegerPools(t *testing.T) {
 }
 
 func TestBlueprintOverlayControlProtocol(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
