@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,7 +15,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/stretchr/testify/require"
 )
 
