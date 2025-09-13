@@ -8,7 +8,6 @@ package apstra_test
 
 import (
 	"bytes"
-	"context"
 	"log"
 	"testing"
 
@@ -18,7 +17,7 @@ import (
 )
 
 func TestGetVirtualInfraMgrs(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"math/rand"
@@ -26,8 +25,7 @@ import (
 )
 
 func TestListAllBlueprintIds(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -47,8 +45,7 @@ func TestListAllBlueprintIds(t *testing.T) {
 }
 
 func TestGetAllBlueprintStatus(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -65,8 +62,7 @@ func TestGetAllBlueprintStatus(t *testing.T) {
 }
 
 func TestCreateDeleteBlueprint(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -110,7 +106,7 @@ func TestCreateDeleteBlueprint(t *testing.T) {
 }
 
 func TestGetPatchGetPatchNode(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -181,8 +177,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 }
 
 func TestGetDcNodes(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -216,8 +211,7 @@ func TestGetDcNodes(t *testing.T) {
 }
 
 func TestPatchNodes(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -261,8 +255,7 @@ func TestPatchNodes(t *testing.T) {
 }
 
 func TestCreateDeleteEvpnBlueprint(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
@@ -469,7 +462,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 }
 
 func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
@@ -676,8 +669,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 }
 
 func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	blueprintRequest := func() apstra.CreateBlueprintFromTemplateRequest {
@@ -761,11 +753,11 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 DELETE_ALL_BLUEPRINTS_WITH_A_TEST=1 go test -v -run=TestDeleteAllBlueprints -tags=integration $(git rev-parse --show-toplevel)/apstra
 */
 func TestDeleteAllBlueprints(t *testing.T) {
+	ctx := testutils.ContextWithTestID(t.Context(), t)
+
 	if _, ok := os.LookupEnv("DELETE_ALL_BLUEPRINTS_WITH_A_TEST"); !ok {
 		t.Skip("refusing to run without DELETE_ALL_BLUEPRINTS_WITH_A_TEST in environment")
 	}
-
-	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	require.NoError(t, os.Setenv(testclient.EnvApstraExperimental, "1"))
 

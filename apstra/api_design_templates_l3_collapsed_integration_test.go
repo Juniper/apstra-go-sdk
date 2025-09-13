@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
@@ -17,7 +16,7 @@ import (
 )
 
 func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	dn := testutils.RandString(5, "hex")
@@ -56,7 +55,7 @@ func TestCreateGetDeleteL3CollapsedTemplate(t *testing.T) {
 }
 
 func TestGetL3CollapsedTemplateByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	name := "Collapsed Fabric ESI"

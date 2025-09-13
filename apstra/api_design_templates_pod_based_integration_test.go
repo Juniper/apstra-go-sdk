@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
@@ -17,7 +16,7 @@ import (
 )
 
 func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	dn := testutils.RandString(5, "hex")
@@ -93,7 +92,7 @@ func TestCreateGetDeletePodBasedTemplate(t *testing.T) {
 }
 
 func TestGetPodBasedTemplateByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	name := "L2 superspine single plane"

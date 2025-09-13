@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"log"
 	"math/rand"
 	"testing"
@@ -20,7 +19,7 @@ import (
 )
 
 func TestGetTemplate(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -65,7 +64,7 @@ func TestGetTemplate(t *testing.T) {
 }
 
 func TestGetTemplateMethods(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -118,7 +117,7 @@ func TestGetTemplateMethods(t *testing.T) {
 }
 
 func TestGetTemplateType(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testData struct {
@@ -152,7 +151,7 @@ func TestGetTemplateType(t *testing.T) {
 }
 
 func TestCRUDTemplates(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct { // fill only one template type

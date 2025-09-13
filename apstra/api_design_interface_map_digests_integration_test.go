@@ -18,8 +18,7 @@ import (
 )
 
 func TestGetInterfaceMapDigest(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -36,8 +35,7 @@ func TestGetInterfaceMapDigest(t *testing.T) {
 }
 
 func TestGetInterfaceMapDigestsByLogicalDevice(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -55,8 +53,7 @@ func TestGetInterfaceMapDigestsByLogicalDevice(t *testing.T) {
 }
 
 func TestGetInterfaceMapDigestsByDeviceProfile(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
-
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

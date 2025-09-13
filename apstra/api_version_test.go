@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"testing"
@@ -18,7 +17,7 @@ import (
 )
 
 func TestGetVersion(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

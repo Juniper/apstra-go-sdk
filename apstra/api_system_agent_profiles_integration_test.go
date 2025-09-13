@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -18,7 +17,7 @@ import (
 )
 
 func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -96,7 +95,7 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 }
 
 func TestClient_UpdateAgentProfile_ClearStringFields(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -132,7 +131,7 @@ func TestClient_UpdateAgentProfile_ClearStringFields(t *testing.T) {
 }
 
 func TestClient_UpdateAgentProfile(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
