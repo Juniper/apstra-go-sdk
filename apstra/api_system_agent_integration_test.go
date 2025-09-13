@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"log"
 	"math/rand/v2"
 	"testing"
@@ -20,7 +19,7 @@ import (
 )
 
 func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

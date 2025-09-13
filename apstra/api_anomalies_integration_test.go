@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"log"
 	"testing"
 
@@ -18,7 +17,7 @@ import (
 )
 
 func TestGetBlueprintAnomalies(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -38,7 +37,7 @@ func TestGetBlueprintAnomalies(t *testing.T) {
 }
 
 func TestGetBlueprintNodeAnomalyCounts(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 
@@ -58,7 +57,7 @@ func TestGetBlueprintNodeAnomalyCounts(t *testing.T) {
 }
 
 func TestGetBlueprintServiceAnomalyCounts(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 
 	clients := testclient.GetTestClients(t, ctx)
 

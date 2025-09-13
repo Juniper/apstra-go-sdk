@@ -10,9 +10,11 @@ import (
 	"context"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +35,7 @@ func ContextWithTestID(parent context.Context, t testing.TB) context.Context {
 	default:
 		UUID = ToPtr(newUUID(t))
 		parent = context.WithValue(parent, apstra.CtxKeyTestUUID, *UUID)
-		log.Println("Test UUID: ", UUID.String())
+		log.Println(apstra.CtxKeyTestUUID, ": ", UUID.String())
 	}
 
 	return context.WithValue(parent, apstra.CtxKeyTestID, UUID.String()+"/"+t.Name())
@@ -45,4 +47,18 @@ func newUUID(t testing.TB) uuid.UUID {
 	result, err := uuid.NewRandom()
 	require.NoError(t, err)
 	return result
+}
+
+func CleanupWithFreshContext(t testing.TB, timeout time.Duration, f func(ctx context.Context) error) {
+	t.Helper()
+
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		err := f(ctx)
+		if !assert.NoError(t, err) {
+			t.Logf("Cleanup test %q: %v", t.Name(), err)
+		}
+	})
 }

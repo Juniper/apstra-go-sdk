@@ -8,7 +8,6 @@ package apstra_test
 
 import (
 	"bufio"
-	"context"
 	"strings"
 	"testing"
 
@@ -20,7 +19,7 @@ import (
 )
 
 func TestGetNodeRenderedConfig(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -49,7 +48,7 @@ func TestGetNodeRenderedConfig(t *testing.T) {
 
 				t.Run("leaf_"+leafId.String()+"_deployed", func(t *testing.T) {
 					t.Parallel()
-					ctx := testutils.ContextWithTestID(t, ctx)
+					ctx := testutils.ContextWithTestID(ctx, t)
 
 					config, err := bp.Client().GetNodeRenderedConfig(ctx, bp.Id(), leafId, enum.RenderedConfigTypeDeployed)
 					require.NoError(t, err)

@@ -1119,7 +1119,7 @@ func wrapCtxWithTestId(t testing.TB, ctx context.Context) context.Context {
 	default:
 		UUID = toPtr(newUUID(t))
 		ctx = context.WithValue(ctx, CtxKeyTestUUID, *UUID)
-		log.Println("Test UUID: ", UUID.String())
+		log.Println(CtxKeyTestUUID, ": ", UUID.String())
 	}
 
 	return context.WithValue(ctx, CtxKeyTestID, UUID.String()+"/"+t.Name())

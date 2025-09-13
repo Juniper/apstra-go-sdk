@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"log"
 	"math/rand"
 	"testing"
@@ -20,7 +19,7 @@ import (
 )
 
 func TestListGetAllInterfaceMaps(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -42,7 +41,7 @@ func TestListGetAllInterfaceMaps(t *testing.T) {
 }
 
 func TestCreateInterfaceMap(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	newMapInfo := apstra.InterfaceMapData{
@@ -108,7 +107,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 }
 
 func TestGetInterfaceMapByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	desired := "Juniper_QFX5120-32C_Junos__AOS-32x100-1"

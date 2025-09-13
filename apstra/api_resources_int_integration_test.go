@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"math/rand"
@@ -21,7 +20,7 @@ import (
 )
 
 func TestEmptyAsnPool(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	asnRangeCount := rand.Intn(5) + 2 // random number of ASN ranges to add to new pool
@@ -76,7 +75,7 @@ func TestEmptyAsnPool(t *testing.T) {
 }
 
 func TestGetAsnPoolByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	poolName := testutils.RandString(10, "hex")
@@ -106,7 +105,7 @@ func TestGetAsnPoolByName(t *testing.T) {
 }
 
 func TestListAsnPoolIds(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
@@ -122,7 +121,7 @@ func TestListAsnPoolIds(t *testing.T) {
 }
 
 func TestEmptyVniPool(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	vniRangeCount := rand.Intn(5) + 2 // random number of VNI ranges to add to new pool
@@ -177,7 +176,7 @@ func TestEmptyVniPool(t *testing.T) {
 }
 
 func TestGetVniPoolByName(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	poolName := testutils.RandString(10, "hex")
@@ -207,7 +206,7 @@ func TestGetVniPoolByName(t *testing.T) {
 }
 
 func TestListVniPoolIds(t *testing.T) {
-	ctx := testutils.ContextWithTestID(context.Background(), t)
+	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {

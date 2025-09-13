@@ -9,6 +9,7 @@ package dctestobj
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -28,8 +29,9 @@ func TestBlueprintA(t testing.TB, ctx context.Context, client *apstra.Client) *a
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
-
-	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
 
 	return bpClient
 }
@@ -44,7 +46,9 @@ func TestBlueprintB(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	})
 	require.NoError(t, err)
 
-	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
@@ -61,7 +65,9 @@ func TestBlueprintC(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		TemplateId: "L2_Virtual_EVPN",
 	})
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
@@ -78,8 +84,8 @@ func TestBlueprintD(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		TemplateId: "L2_Virtual_ESI_2x_Links",
 	})
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, client.DeleteBlueprint(ctx, bpId))
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
 	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
@@ -121,7 +127,9 @@ func TestBlueprintE(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		TemplateId: "L2_ESI_Access",
 	})
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
@@ -190,7 +198,9 @@ func TestBlueprintF(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		TemplateId: templateId,
 	})
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
@@ -213,7 +223,9 @@ func TestBlueprintG(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		},
 	})
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
@@ -240,7 +252,9 @@ func TestBlueprintH(t testing.TB, ctx context.Context, client *apstra.Client) *a
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &bpRequest)
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
@@ -261,7 +275,9 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		TemplateId: "L3_Collapsed_ESI",
 	})
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, client.DeleteBlueprint(ctx, bpId)) })
+	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
 
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
