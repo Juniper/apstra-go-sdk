@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"slices"
 	"strconv"
 	"testing"
 )
@@ -48,9 +49,18 @@ func SampleIndexes(t testing.TB, length int, count ...int) []int {
 		panic("count must only have a element")
 	}
 
+	// Range returns []int where each value matches the index of that value e.g. Range(3) -> []int{0, 1, 2}
+	Range := func(n int) []int {
+		r := make([]int, n)
+		for i := range n {
+			r[i] = i
+		}
+		return r
+	}
+
 	sampleSizeStr, envFound := os.LookupEnv(envSampleSize)
 	if !envFound && len(count) == 0 {
-		return Range(length)
+		return Range(length) // sample size not specified
 	}
 
 	var sampleSize int
@@ -69,11 +79,20 @@ func SampleIndexes(t testing.TB, length int, count ...int) []int {
 	}
 
 	if sampleSize > length {
-		return Range(length)
+		// requested sample size larger than available data
+		return Range(length) // return available indexes
 	}
 
 	if float64(sampleSize) > (float64(length) * .75) {
-		return Range(sampleSize)
+		// requested sample size is close to actual size -- use random deletions instead of selections
+		result := Range(length) // start with a too-big prototype
+
+		for range length - sampleSize { // delete extra elements
+			delIdx := rand.Intn(len(result))
+			result = slices.Delete(result, delIdx, delIdx+1)
+		}
+
+		return result
 	}
 
 	sampleMap := make(map[int]struct{}, sampleSize)
