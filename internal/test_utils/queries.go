@@ -19,8 +19,8 @@ func GetSystemIdsByRole(ctx context.Context, bp *apstra.TwoStageL3ClosClient, ro
 		SetBlueprintType(apstra.BlueprintTypeStaging).
 		Node([]apstra.QEEAttribute{
 			apstra.NodeTypeSystem.QEEAttribute(),
-			{"role", apstra.QEStringVal(role)},
-			{"name", apstra.QEStringVal("n_system")},
+			{Key: "role", Value: apstra.QEStringVal(role)},
+			{Key: "name", Value: apstra.QEStringVal("n_system")},
 		})
 
 	var leafQueryResult struct {

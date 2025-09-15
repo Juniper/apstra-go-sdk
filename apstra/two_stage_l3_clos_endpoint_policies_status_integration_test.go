@@ -55,7 +55,7 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 			Items []struct {
 				Interface struct {
 					Id ObjectId `json:"id"`
-				} `json:"server_interface""`
+				} `json:"server_interface"`
 			} `json:"items"`
 		}
 
