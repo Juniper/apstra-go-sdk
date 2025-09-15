@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,10 +7,9 @@ package compatibility_test
 import (
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
 )
 
 func TestConstraints(t *testing.T) {

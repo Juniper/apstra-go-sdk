@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	oenum "github.com/orsinium-labs/enum"
 )

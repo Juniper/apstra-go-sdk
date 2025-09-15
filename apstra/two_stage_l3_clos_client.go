@@ -14,7 +14,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 )
 

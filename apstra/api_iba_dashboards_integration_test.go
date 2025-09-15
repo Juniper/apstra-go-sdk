@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"

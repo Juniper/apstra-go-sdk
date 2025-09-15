@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,7 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/stretchr/testify/require"
 )
 

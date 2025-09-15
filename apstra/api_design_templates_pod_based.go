@@ -13,7 +13,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/apstra/compatibility"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 )
 
 var _ Template = &TemplatePodBased{}
