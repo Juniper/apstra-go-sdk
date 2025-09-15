@@ -13,6 +13,8 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
 )
@@ -218,8 +220,8 @@ func TestBlueprintG(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		Label:      testutils.RandString(5, "hex"),
 		TemplateId: templateId,
 		FabricSettings: &apstra.FabricSettings{
-			SpineSuperspineLinks: testutils.ToPtr(apstra.AddressingSchemeIp46),
-			SpineLeafLinks:       testutils.ToPtr(apstra.AddressingSchemeIp46),
+			SpineSuperspineLinks: pointer.To(apstra.AddressingSchemeIp46),
+			SpineLeafLinks:       pointer.To(apstra.AddressingSchemeIp46),
 		},
 	})
 	require.NoError(t, err)
@@ -230,7 +232,7 @@ func TestBlueprintG(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
 
-	require.NoError(t, bpClient.SetFabricSettings(ctx, &apstra.FabricSettings{Ipv6Enabled: testutils.ToPtr(true)}))
+	require.NoError(t, bpClient.SetFabricSettings(ctx, &apstra.FabricSettings{Ipv6Enabled: pointer.To(true)}))
 
 	return bpClient
 }
@@ -245,8 +247,8 @@ func TestBlueprintH(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		Label:      testutils.RandString(5, "hex"),
 		TemplateId: "L2_Virtual_EVPN",
 		FabricSettings: &apstra.FabricSettings{
-			SpineSuperspineLinks: testutils.ToPtr(apstra.AddressingSchemeIp46),
-			SpineLeafLinks:       testutils.ToPtr(apstra.AddressingSchemeIp46),
+			SpineSuperspineLinks: pointer.To(apstra.AddressingSchemeIp46),
+			SpineLeafLinks:       pointer.To(apstra.AddressingSchemeIp46),
 		},
 	}
 
@@ -260,7 +262,7 @@ func TestBlueprintH(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	require.NoError(t, err)
 
 	// enable IPv6
-	require.NoError(t, bpClient.SetFabricSettings(ctx, &apstra.FabricSettings{Ipv6Enabled: testutils.ToPtr(true)}))
+	require.NoError(t, bpClient.SetFabricSettings(ctx, &apstra.FabricSettings{Ipv6Enabled: pointer.To(true)}))
 
 	return bpClient
 }
@@ -283,7 +285,7 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	require.NoError(t, err)
 
 	// assign leaf interface maps
-	leafIds, err := testutils.GetSystemIdsByRole(ctx, bpClient, "leaf")
+	leafIds, err := query.SystemIdsByRole(ctx, bpClient, "leaf")
 	require.NoError(t, err)
 	mappings := make(apstra.SystemIdToInterfaceMapAssignment, len(leafIds))
 	for _, leafId := range leafIds {

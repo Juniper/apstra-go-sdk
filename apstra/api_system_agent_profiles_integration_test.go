@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
@@ -30,8 +31,8 @@ func TestCreateListGetDeleteSystemAgentProfile(t *testing.T) {
 				platform := p
 				cfgs = append(cfgs, &apstra.AgentProfileConfig{
 					Label:    testutils.RandString(10, "hex"),
-					Username: testutils.ToPtr(testutils.RandString(10, "hex")),
-					Password: testutils.ToPtr(testutils.RandString(10, "hex")),
+					Username: pointer.To(testutils.RandString(10, "hex")),
+					Password: pointer.To(testutils.RandString(10, "hex")),
 					Platform: &platform,
 					Packages: map[string]string{
 						testutils.RandString(10, "hex"): testutils.RandString(10, "hex"),
@@ -105,16 +106,16 @@ func TestClient_UpdateAgentProfile_ClearStringFields(t *testing.T) {
 
 			id, err := client.Client.CreateAgentProfile(ctx, &apstra.AgentProfileConfig{
 				Label:    testutils.RandString(5, "hex"),
-				Username: testutils.ToPtr(testutils.RandString(5, "hex")),
-				Password: testutils.ToPtr(testutils.RandString(5, "hex")),
-				Platform: testutils.ToPtr("junos"),
+				Username: pointer.To(testutils.RandString(5, "hex")),
+				Password: pointer.To(testutils.RandString(5, "hex")),
+				Platform: pointer.To("junos"),
 			})
 			require.NoError(t, err)
 
 			err = client.Client.UpdateAgentProfile(ctx, id, &apstra.AgentProfileConfig{
-				Username: testutils.ToPtr(""),
-				Password: testutils.ToPtr(""),
-				Platform: testutils.ToPtr(""),
+				Username: pointer.To(""),
+				Password: pointer.To(""),
+				Platform: pointer.To(""),
 			})
 			require.NoError(t, err)
 
@@ -191,7 +192,7 @@ func TestClient_UpdateAgentProfile(t *testing.T) {
 				profile := profileMap[agent.Config.Profile]
 				err = client.Client.UpdateAgentProfile(ctx, profile.Id, &apstra.AgentProfileConfig{
 					Label:    profile.Label,
-					Platform: testutils.ToPtr(""),
+					Platform: pointer.To(""),
 				})
 				require.Error(t, err)
 				require.ErrorAs(t, err, &ace)

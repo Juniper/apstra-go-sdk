@@ -2,8 +2,8 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package testutils
+package pointer
 
-func ToPtr[A any](a A) *A {
+func To[A any](a A) *A {
 	return &a
 }

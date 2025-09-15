@@ -13,6 +13,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +21,7 @@ import (
 func TestVirtualNetworkA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient, szId apstra.ObjectId) apstra.ObjectId {
 	t.Helper()
 
-	leafIds, err := testutils.GetSystemIdsByRole(ctx, bp, "leaf")
+	leafIds, err := query.SystemIdsByRole(ctx, bp, "leaf")
 	require.NoError(t, err)
 
 	vnBindings := make([]apstra.VnBinding, len(leafIds))

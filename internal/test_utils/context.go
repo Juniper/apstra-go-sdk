@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,7 +34,7 @@ func ContextWithTestID(parent context.Context, t testing.TB) context.Context {
 	case uuid.UUID:
 		UUID = &v
 	default:
-		UUID = ToPtr(newUUID(t))
+		UUID = pointer.To(newUUID(t))
 		parent = context.WithValue(parent, apstra.CtxKeyTestUUID, *UUID)
 		log.Println(apstra.CtxKeyTestUUID, ": ", UUID.String())
 	}

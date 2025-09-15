@@ -13,6 +13,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
@@ -38,7 +39,7 @@ func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
 				SkipInterfaceShutdownOnUpgrade:  !mgrCfg.SkipInterfaceShutdownOnUpgrade,
 			}
 			if compatibility.HasDeviceOsImageDownloadTimeout.Check(client.APIVersion()) {
-				testCfg.DeviceOsImageDownloadTimeout = testutils.ToPtr(rand.IntN(2700) + 1)
+				testCfg.DeviceOsImageDownloadTimeout = pointer.To(rand.IntN(2700) + 1)
 			}
 
 			// set new config
