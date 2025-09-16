@@ -4,7 +4,7 @@
 
 //go:build integration
 
-package testutils
+package query
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/apstra"
 )
 
-func GetSystemIdsByRole(ctx context.Context, bp *apstra.TwoStageL3ClosClient, role string) ([]apstra.ObjectId, error) {
+func SystemIdsByRole(ctx context.Context, bp *apstra.TwoStageL3ClosClient, role string) ([]apstra.ObjectId, error) {
 	leafQuery := new(apstra.PathQuery).
 		SetClient(bp.Client()).
 		SetBlueprintId(bp.Id()).

@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
@@ -28,7 +29,7 @@ func TestGetNodeRenderedConfig(t *testing.T) {
 			ctx := testutils.ContextWithTestID(ctx, t)
 
 			bp := dctestobj.TestBlueprintI(t, ctx, client.Client)
-			leafIds, err := testutils.GetSystemIdsByRole(ctx, bp, "leaf")
+			leafIds, err := query.SystemIdsByRole(ctx, bp, "leaf")
 			require.NoError(t, err)
 
 			for _, leafId := range leafIds {
