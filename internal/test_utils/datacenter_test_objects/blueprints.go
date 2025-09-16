@@ -97,9 +97,9 @@ func TestBlueprintD(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		SetClient(client).
 		Node([]apstra.QEEAttribute{
 			apstra.NodeTypeSystem.QEEAttribute(),
-			{"system_type", apstra.QEStringVal("switch")},
-			{"role", apstra.QEStringVal("leaf")},
-			{"name", apstra.QEStringVal("n_leaf")},
+			{Key: "system_type", Value: apstra.QEStringVal("switch")},
+			{Key: "role", Value: apstra.QEStringVal("leaf")},
+			{Key: "name", Value: apstra.QEStringVal("n_leaf")},
 		})
 	var response struct {
 		Items []struct {
@@ -140,9 +140,9 @@ func TestBlueprintE(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		SetClient(client).
 		Node([]apstra.QEEAttribute{
 			apstra.NodeTypeSystem.QEEAttribute(),
-			{"system_type", apstra.QEStringVal("switch")},
-			{"role", apstra.QEStringVal("leaf")},
-			{"name", apstra.QEStringVal("n_leaf")},
+			{Key: "system_type", Value: apstra.QEStringVal("switch")},
+			{Key: "role", Value: apstra.QEStringVal("leaf")},
+			{Key: "name", Value: apstra.QEStringVal("n_leaf")},
 		})
 	var leafResponse struct {
 		Items []struct {
@@ -167,9 +167,9 @@ func TestBlueprintE(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		SetClient(client).
 		Node([]apstra.QEEAttribute{
 			apstra.NodeTypeSystem.QEEAttribute(),
-			{"system_type", apstra.QEStringVal("switch")},
-			{"role", apstra.QEStringVal("access")},
-			{"name", apstra.QEStringVal("n_access")},
+			{Key: "system_type", Value: apstra.QEStringVal("switch")},
+			{Key: "role", Value: apstra.QEStringVal("access")},
+			{Key: "name", Value: apstra.QEStringVal("n_access")},
 		})
 	var accessResponse struct {
 		Items []struct {
