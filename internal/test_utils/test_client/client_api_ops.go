@@ -23,7 +23,7 @@ import (
 
 const (
 	envAPIOpsTopologyURLList = "API_OPS_URLS"
-	envAPIOpsURLSep          = ";"
+	envAPIOpsTopologyURLSep  = ";"
 )
 
 var _ Config = (*APIOpsConfig)(nil)
@@ -78,7 +78,7 @@ func getAPIOpsClientCfgs(t testing.TB, ctx context.Context, testConfig TestConfi
 	if len(topologyIDs) == 0 {
 		list := os.Getenv(envAPIOpsTopologyURLList)
 		if len(list) != 0 {
-			topologyIDs = strings.Split(list, envAPIOpsTopologyURLList)
+			topologyIDs = strings.Split(list, envAPIOpsTopologyURLSep)
 		}
 	}
 
