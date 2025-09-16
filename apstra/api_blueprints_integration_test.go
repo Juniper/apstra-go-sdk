@@ -754,14 +754,11 @@ DELETE_ALL_BLUEPRINTS_WITH_A_TEST=1 go test -v -run=TestDeleteAllBlueprints -tag
 */
 func TestDeleteAllBlueprints(t *testing.T) {
 	ctx := testutils.ContextWithTestID(t.Context(), t)
+	clients := testclient.GetTestClients(t, ctx)
 
 	if _, ok := os.LookupEnv("DELETE_ALL_BLUEPRINTS_WITH_A_TEST"); !ok {
 		t.Skip("refusing to run without DELETE_ALL_BLUEPRINTS_WITH_A_TEST in environment")
 	}
-
-	require.NoError(t, os.Setenv(testclient.EnvApstraExperimental, "1"))
-
-	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
