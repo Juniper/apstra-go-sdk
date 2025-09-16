@@ -31,7 +31,7 @@ func TestListAndGetAllLogicalDevices(t *testing.T) {
 			require.NoError(t, err)
 			require.NotZero(t, len(ids))
 
-			for _, i := range testutils.Range(len(ids)) {
+			for i := range len(ids) {
 				id := ids[i]
 				t.Run(fmt.Sprintf("GET_%s", id), func(t *testing.T) {
 					t.Parallel()
