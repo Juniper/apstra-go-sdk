@@ -137,10 +137,13 @@ func (s *Speed) UnmarshalJSON(bytes []byte) error {
 	var raw rawSpeed
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
-		// This code handles Freeform link speeds. Currently handling freeform speeds as enums
-		// because, while it's possible to unmarshal both styles, it's not obvious which format
-		// to use when marshaling for the API without using different types. Leaving this code
-		// around in case it's helpful in the future. /cmm September 2025
+		// This code handles Freeform link speeds and datacenter cabling map
+		// link speeds. We're currently handling those with `enum.LinkSpeed`
+		// because, while it's possible to unmarshal both styles into a Speed,
+		// it's not obvious which format to use when in the other direction
+		// (marshaling a Speed for consumption by the API). It may turn out
+		// that we never send the enum type, in which case this code may prove
+		// s helpful in the future. /cmm September 2025
 		//
 		//var jute *json.UnmarshalTypeError
 		//if errors.As(err, &jute) && jute.Value == "string" {
