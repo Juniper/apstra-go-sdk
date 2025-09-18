@@ -37,7 +37,7 @@ func TestSpeed_Bps(t *testing.T) {
 				t.Run(string(s), func(t *testing.T) {
 					t.Parallel()
 
-					require.Equal(t, tCase.e, s.Bps())
+					require.Equal(t, tCase.e, s.BitsPerSecond())
 				})
 			}
 		})

@@ -90,7 +90,7 @@ func TestCreateInterfaceMap(t *testing.T) {
 				require.Equal(t, newMapInfo.Interfaces[i].ActiveState, asCreated.Data.Interfaces[i].ActiveState)
 				require.Equal(t, newMapInfo.Interfaces[i].Setting.Param, asCreated.Data.Interfaces[i].Setting.Param)
 				require.Equal(t, newMapInfo.Interfaces[i].Position, asCreated.Data.Interfaces[i].Position)
-				require.Equal(t, newMapInfo.Interfaces[i].Speed.Bps(), asCreated.Data.Interfaces[i].Speed.Bps())
+				require.Equal(t, newMapInfo.Interfaces[i].Speed.BitsPerSecond(), asCreated.Data.Interfaces[i].Speed.BitsPerSecond())
 				require.Equal(t, newMapInfo.Interfaces[i].Mapping.DPInterfaceId, asCreated.Data.Interfaces[i].Mapping.DPInterfaceId)
 				require.Equal(t, newMapInfo.Interfaces[i].Mapping.DPPortId, asCreated.Data.Interfaces[i].Mapping.DPPortId)
 				require.Equal(t, newMapInfo.Interfaces[i].Mapping.DPTransformId, asCreated.Data.Interfaces[i].Mapping.DPTransformId)

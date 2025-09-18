@@ -53,7 +53,7 @@ var (
 // all represent 1Gb/s.
 type Speed string
 
-func (s Speed) Bps() int64 {
+func (s Speed) BitsPerSecond() int64 {
 	if s == "" {
 		return 0
 	}
@@ -93,11 +93,11 @@ func (s Speed) Bps() int64 {
 }
 
 func (s Speed) Equal(other Speed) bool {
-	return s.Bps() == other.Bps()
+	return s.BitsPerSecond() == other.BitsPerSecond()
 }
 
 func (s Speed) MarshalJSON() ([]byte, error) {
-	bps := s.Bps()
+	bps := s.BitsPerSecond()
 	if bps == 0 {
 		return []byte("null"), nil
 	}
