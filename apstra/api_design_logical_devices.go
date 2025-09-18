@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,9 +8,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 const (
@@ -67,28 +67,28 @@ type LogicalDevicePortIndexing struct {
 
 type LogicalDevicePortGroup struct {
 	Count int                    `json:"count"`
-	Speed LogicalDevicePortSpeed `json:"speed"`
+	Speed speed.Speed            `json:"speed"`
 	Roles LogicalDevicePortRoles `json:"roles"`
 }
 
 func (o LogicalDevicePortGroup) raw() *rawLogicalDevicePortGroup {
 	return &rawLogicalDevicePortGroup{
 		Count: o.Count,
-		Speed: *o.Speed.raw(),
+		Speed: o.Speed,
 		Roles: o.Roles.Strings(),
 	}
 }
 
 type rawLogicalDevicePortGroup struct {
-	Count int                       `json:"count"`
-	Speed rawLogicalDevicePortSpeed `json:"speed"`
-	Roles []string                  `json:"roles"`
+	Count int         `json:"count"`
+	Speed speed.Speed `json:"speed"`
+	Roles []string    `json:"roles"`
 }
 
 func (o *rawLogicalDevicePortGroup) parse() (*LogicalDevicePortGroup, error) {
 	result := LogicalDevicePortGroup{
 		Count: o.Count,
-		Speed: o.Speed.parse(),
+		Speed: o.Speed,
 	}
 
 	err := result.Roles.FromStrings(o.Roles)
@@ -97,85 +97,6 @@ func (o *rawLogicalDevicePortGroup) parse() (*LogicalDevicePortGroup, error) {
 	}
 
 	return &result, nil
-}
-
-type LogicalDevicePortSpeed string
-
-func (o LogicalDevicePortSpeed) raw() *rawLogicalDevicePortSpeed {
-	if o == "" {
-		return nil
-	}
-	defaultSpeed := rawLogicalDevicePortSpeed{
-		Unit:  "G",
-		Value: 1,
-	}
-	lower := strings.ToLower(string(o))
-	lower = strings.TrimSpace(lower)
-	lower = strings.TrimSuffix(lower, "bps")
-	lower = strings.TrimSuffix(lower, "b/s")
-	var factor int64
-	var trimmed string
-	switch {
-	case strings.HasSuffix(lower, "m"):
-		trimmed = strings.TrimSuffix(lower, "m")
-		factor = 1000 * 1000
-	case strings.HasSuffix(lower, "g"):
-		trimmed = strings.TrimSuffix(lower, "g")
-		factor = 1000 * 1000 * 1000
-	case strings.HasSuffix(lower, "t"):
-		trimmed = strings.TrimSuffix(lower, "t")
-		factor = 1000 * 1000 * 1000 * 1000
-	default:
-		trimmed = lower
-		factor = 1
-	}
-	trimmedInt, err := strconv.ParseInt(trimmed, 10, 64)
-	if err != nil {
-		return &defaultSpeed
-	}
-	bps := trimmedInt * factor
-	switch {
-	case bps >= 1000*1000*1000: // at least 1Gbps
-		return &rawLogicalDevicePortSpeed{
-			Unit:  "G",
-			Value: int(bps / 1000 / 1000 / 1000),
-		}
-	case bps >= 10*1000*1000: // at least 10Mbps
-		return &rawLogicalDevicePortSpeed{
-			Unit:  "M",
-			Value: int(bps / 1000 / 1000),
-		}
-	default:
-		return &defaultSpeed
-	}
-}
-
-func (o LogicalDevicePortSpeed) BitsPerSecond() int64 {
-	return o.raw().BitsPerSecond()
-}
-
-func (o LogicalDevicePortSpeed) IsEqual(in LogicalDevicePortSpeed) bool {
-	return o.BitsPerSecond() == in.BitsPerSecond()
-}
-
-type rawLogicalDevicePortSpeed struct {
-	Unit  string `json:"unit"`
-	Value int    `json:"value"`
-}
-
-func (o rawLogicalDevicePortSpeed) parse() LogicalDevicePortSpeed {
-	return LogicalDevicePortSpeed(fmt.Sprintf("%d%s", o.Value, o.Unit))
-}
-
-func (o *rawLogicalDevicePortSpeed) BitsPerSecond() int64 {
-	switch o.Unit {
-	case "M":
-		return int64(o.Value * 1000 * 1000)
-	case "G":
-		return int64(o.Value * 1000 * 1000 * 1000)
-	default:
-		return int64(0)
-	}
 }
 
 type LogicalDevicePanel struct {

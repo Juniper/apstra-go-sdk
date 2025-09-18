@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var _ Template = &TemplateRackBased{}
@@ -157,7 +158,7 @@ func (o *rawAsnAllocationPolicy) polish() (*AsnAllocationPolicy, error) {
 
 type Spine struct {
 	Count                  int
-	LinkPerSuperspineSpeed LogicalDevicePortSpeed
+	LinkPerSuperspineSpeed speed.Speed
 	LogicalDevice          LogicalDeviceData
 	LinkPerSuperspineCount int
 	Tags                   []DesignTagData
@@ -165,7 +166,7 @@ type Spine struct {
 
 type TemplateElementSpineRequest struct {
 	Count                  int
-	LinkPerSuperspineSpeed LogicalDevicePortSpeed
+	LinkPerSuperspineSpeed speed.Speed
 	LogicalDevice          ObjectId
 	LinkPerSuperspineCount int
 	Tags                   []ObjectId
@@ -188,7 +189,7 @@ func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (
 
 	return &rawSpine{
 		Count:                  o.Count,
-		LinkPerSuperspineSpeed: o.LinkPerSuperspineSpeed.raw(),
+		LinkPerSuperspineSpeed: o.LinkPerSuperspineSpeed,
 		LogicalDevice:          *logicalDevice,
 		LinkPerSuperspineCount: o.LinkPerSuperspineCount,
 		Tags:                   tags,
@@ -196,24 +197,19 @@ func (o *TemplateElementSpineRequest) raw(ctx context.Context, client *Client) (
 }
 
 type rawSpine struct {
-	Count                  int                        `json:"count"`
-	LinkPerSuperspineSpeed *rawLogicalDevicePortSpeed `json:"link_per_superspine_speed"`
-	LogicalDevice          rawLogicalDevice           `json:"logical_device"`
-	LinkPerSuperspineCount int                        `json:"link_per_superspine_count"`
-	Tags                   []DesignTagData            `json:"tags"`
+	Count                  int              `json:"count"`
+	LinkPerSuperspineSpeed speed.Speed      `json:"link_per_superspine_speed"`
+	LogicalDevice          rawLogicalDevice `json:"logical_device"`
+	LinkPerSuperspineCount int              `json:"link_per_superspine_count"`
+	Tags                   []DesignTagData  `json:"tags"`
 }
 
 func (o rawSpine) polish() (*Spine, error) {
 	ld, err := o.LogicalDevice.polish()
 
-	var linkPerSuperspineSpeed LogicalDevicePortSpeed
-	if o.LinkPerSuperspineSpeed != nil {
-		linkPerSuperspineSpeed = o.LinkPerSuperspineSpeed.parse()
-	}
-
 	return &Spine{
 		Count:                  o.Count,
-		LinkPerSuperspineSpeed: linkPerSuperspineSpeed,
+		LinkPerSuperspineSpeed: o.LinkPerSuperspineSpeed,
 		LogicalDevice: LogicalDeviceData{
 			DisplayName: ld.Data.DisplayName,
 			Panels:      ld.Data.Panels,

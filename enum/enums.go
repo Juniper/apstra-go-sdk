@@ -354,3 +354,44 @@ var (
 	EndpointPolicyStatusIncomplete = EndpointPolicyStatus{Value: "incomplete"}
 	EndpointPolicyStatusReady      = EndpointPolicyStatus{Value: "ready"}
 )
+
+type SpeedUnit oenum.Member[string]
+
+var (
+	SpeedUnitM = SpeedUnit{Value: "M"}
+	SpeedUnitG = SpeedUnit{Value: "G"}
+	//SpeedUnitT = SpeedUnit{Value: "T"}
+)
+
+type LinkSpeed oenum.Member[string]
+
+var (
+	LinkSpeed10M   = LinkSpeed{Value: "10M"}
+	LinkSpeed10m   = LinkSpeed{Value: "10m"}
+	LinkSpeed100M  = LinkSpeed{Value: "100M"}
+	LinkSpeed100m  = LinkSpeed{Value: "100m"}
+	LinkSpeed1G    = LinkSpeed{Value: "1G"}
+	LinkSpeed1g    = LinkSpeed{Value: "1g"}
+	LinkSpeed2500M = LinkSpeed{Value: "2500M"}
+	LinkSpeed2500m = LinkSpeed{Value: "2500m"}
+	LinkSpeed5G    = LinkSpeed{Value: "5G"}
+	LinkSpeed5g    = LinkSpeed{Value: "5g"}
+	LinkSpeed10G   = LinkSpeed{Value: "10G"}
+	LinkSpeed10g   = LinkSpeed{Value: "10g"}
+	LinkSpeed25G   = LinkSpeed{Value: "25G"}
+	LinkSpeed25g   = LinkSpeed{Value: "25g"}
+	LinkSpeed40G   = LinkSpeed{Value: "40G"}
+	LinkSpeed40g   = LinkSpeed{Value: "40g"}
+	LinkSpeed50G   = LinkSpeed{Value: "50G"}
+	LinkSpeed50g   = LinkSpeed{Value: "50g"}
+	LinkSpeed100G  = LinkSpeed{Value: "100G"}
+	LinkSpeed100g  = LinkSpeed{Value: "100g"}
+	LinkSpeed150G  = LinkSpeed{Value: "150G"}
+	LinkSpeed150g  = LinkSpeed{Value: "150g"}
+	LinkSpeed200G  = LinkSpeed{Value: "200G"}
+	LinkSpeed200g  = LinkSpeed{Value: "200g"}
+	LinkSpeed400G  = LinkSpeed{Value: "400G"}
+	LinkSpeed400g  = LinkSpeed{Value: "400g"}
+	LinkSpeed800G  = LinkSpeed{Value: "800G"}
+	LinkSpeed800g  = LinkSpeed{Value: "800g"}
+)

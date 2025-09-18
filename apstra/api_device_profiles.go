@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 const (
@@ -208,7 +210,7 @@ func (o *rawTransformation) polish() *Transformation {
 type TransformInterface struct {
 	State       string
 	Setting     string
-	Speed       LogicalDevicePortSpeed
+	Speed       speed.Speed
 	Name        string
 	InterfaceId int
 }
@@ -217,25 +219,25 @@ func (o *TransformInterface) raw() *rawTransformInterface {
 	return &rawTransformInterface{
 		State:       o.State,
 		Setting:     o.Setting,
-		Speed:       *o.Speed.raw(),
+		Speed:       o.Speed,
 		Name:        o.Name,
 		InterfaceId: o.InterfaceId,
 	}
 }
 
 type rawTransformInterface struct {
-	State       string                    `json:"state"`
-	Setting     string                    `json:"setting"`
-	Speed       rawLogicalDevicePortSpeed `json:"speed"`
-	Name        string                    `json:"name"`
-	InterfaceId int                       `json:"interface_id"`
+	State       string      `json:"state"`
+	Setting     string      `json:"setting"`
+	Speed       speed.Speed `json:"speed"`
+	Name        string      `json:"name"`
+	InterfaceId int         `json:"interface_id"`
 }
 
 func (o *rawTransformInterface) polish() *TransformInterface {
 	return &TransformInterface{
 		State:       o.State,
 		Setting:     o.Setting,
-		Speed:       o.Speed.parse(),
+		Speed:       o.Speed,
 		Name:        o.Name,
 		InterfaceId: o.InterfaceId,
 	}
@@ -417,13 +419,13 @@ func (o *rawDeviceProfile) polish() *DeviceProfile {
 // and returns a map[int]Transformation populated with candidate transformations
 // available according to the PortInfo and keyed by the transformation ID. Only
 // "active" transformations are returned.
-func (o *PortInfo) TransformationCandidates(intfName string, intfSpeed LogicalDevicePortSpeed) map[int]Transformation {
+func (o *PortInfo) TransformationCandidates(intfName string, intfSpeed speed.Speed) map[int]Transformation {
 	result := make(map[int]Transformation)
 	for _, transformation := range o.Transformations {
 		for _, intf := range transformation.Interfaces {
 			if intf.Name == intfName &&
 				intf.State == "active" &&
-				intf.Speed.IsEqual(intfSpeed) {
+				intf.Speed.Equal(intfSpeed) {
 				result[transformation.TransformationId] = transformation
 			}
 		}
