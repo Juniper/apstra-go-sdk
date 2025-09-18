@@ -17,7 +17,7 @@ import (
 const (
 	m = 1_000_000
 	g = 1_000_000_000
-	//t = 1_000_000_000_000 // todo: if Tbps is introduced revisit todos in this file and in enum/enums.go
+	// t = 1_000_000_000_000 // todo: if Tbps is introduced revisit todos in this file and in enum/enums.go
 )
 
 type speedValue oenum.Member[int]
@@ -42,8 +42,10 @@ var (
 	)
 )
 
-var _ json.Marshaler = (*Speed)(nil)
-var _ json.Unmarshaler = (*Speed)(nil)
+var (
+	_ json.Marshaler   = (*Speed)(nil)
+	_ json.Unmarshaler = (*Speed)(nil)
+)
 
 // Speed is a case-insensitive string value representing interface speed in bps.
 // Suffixes "M/m", and "G/g" are supported with an optional trailing "bps" or
@@ -75,7 +77,7 @@ func (s Speed) Bps() int64 {
 		wc = strings.TrimSuffix(wc, "g")
 		wc = strings.TrimSpace(wc)
 		multiplier = g
-		//case strings.HasSuffix(wc, "t"): // todo: if Tbps is introduced revisit todos in this file and in enum/enums.go
+		// case strings.HasSuffix(wc, "t"): // todo: if Tbps is introduced revisit todos in this file and in enum/enums.go
 		//	wc = strings.TrimSuffix(wc, "t")
 		//	wc = strings.TrimSpace(wc)
 		//	multiplier = t
@@ -103,7 +105,7 @@ func (s Speed) MarshalJSON() ([]byte, error) {
 	var unit enum.SpeedUnit
 	var value int
 	switch {
-	//case bps >= t: // at least 1Tbps // todo: if Tbps is introduced revisit todos in this file and in enum/enums.go
+	// case bps >= t: // at least 1Tbps // todo: if Tbps is introduced revisit todos in this file and in enum/enums.go
 	//	if bps%t != 0 {
 	//		return nil, fmt.Errorf("speed %q cannot be represented in Tbps", s)
 	//	}
