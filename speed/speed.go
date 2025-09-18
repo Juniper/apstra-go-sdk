@@ -143,7 +143,9 @@ func (s *Speed) UnmarshalJSON(bytes []byte) error {
 		// it's not obvious which format to use when in the other direction
 		// (marshaling a Speed for consumption by the API). It may turn out
 		// that we never send the enum type, in which case this code may prove
-		// s helpful in the future. /cmm September 2025
+		// s helpful in the future. Not doing that now because Speed can't
+		// express 2.5Gb/s (2500 isn't permitted by the API's value enum).
+		// /cmm September 2025
 		//
 		//var jute *json.UnmarshalTypeError
 		//if errors.As(err, &jute) && jute.Value == "string" {
