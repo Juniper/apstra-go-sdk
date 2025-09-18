@@ -360,7 +360,7 @@ type SpeedUnit oenum.Member[string]
 var (
 	SpeedUnitM = SpeedUnit{Value: "M"}
 	SpeedUnitG = SpeedUnit{Value: "G"}
-	//SpeedUnitT = SpeedUnit{Value: "T"}
+	// SpeedUnitT = SpeedUnit{Value: "T"}
 )
 
 type LinkSpeed oenum.Member[string]
