@@ -25,8 +25,10 @@ type LeafMlagInfo struct {
 	MlagVlanId                  int
 }
 
-var _ json.Marshaler = (*LeafSwitch)(nil)
-var _ json.Unmarshaler = (*LeafSwitch)(nil)
+var (
+	_ json.Marshaler   = (*LeafSwitch)(nil)
+	_ json.Unmarshaler = (*LeafSwitch)(nil)
+)
 
 type LeafSwitch struct {
 	Label              string

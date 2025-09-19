@@ -13,13 +13,17 @@ import (
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
-const TagUrl = urlPrefix + "tags"
-const TagUrlByID = TagUrl + "/%s"
+const (
+	TagUrl     = urlPrefix + "tags"
+	TagUrlByID = TagUrl + "/%s"
+)
 
-var _ json.Marshaler = (*Tag)(nil)
-var _ json.Unmarshaler = (*Tag)(nil)
-var _ slice.IDer = (*Tag)(nil)
-var _ timeutils.Stamper = (*Tag)(nil)
+var (
+	_ json.Marshaler    = (*Tag)(nil)
+	_ json.Unmarshaler  = (*Tag)(nil)
+	_ slice.IDer        = (*Tag)(nil)
+	_ timeutils.Stamper = (*Tag)(nil)
+)
 
 type Tag struct {
 	Label       string
