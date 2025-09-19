@@ -188,7 +188,7 @@ type PortRole oenum.Member[string]
 var (
 	PortRoleAccess     = PortRole{Value: "access"}
 	PortRoleGeneric    = PortRole{Value: "generic"}
-	PortRoleL3Server   = PortRole{Value: "l3_server"} // todo: remove this, LogicalDevicePortRoles.Validate and simplify LogicalDevicePortRoles.IncludeAllUses
+	PortRoleL3Server   = PortRole{Value: "l3_server"} // todo: remove this, LogicalDevicePortRoles.Validate and simplify LogicalDevicePortRoles.SetAllRoles
 	PortRoleLeaf       = PortRole{Value: "leaf"}
 	PortRolePeer       = PortRole{Value: "peer"}
 	PortRoleSpine      = PortRole{Value: "spine"}
@@ -369,6 +369,13 @@ var (
 	EndpointPolicyStatusReady      = EndpointPolicyStatus{Value: "ready"}
 )
 
+type DesignLogicalDevicePanelPortIndexing oenum.Member[string]
+
+var (
+	DesignLogicalDevicePanelPortIndexingLRTB = DesignLogicalDevicePanelPortIndexing{Value: "L-R, T-B"}
+	DesignLogicalDevicePanelPortIndexingTBLR = DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}
+)
+
 type SpeedUnit oenum.Member[string]
 
 var (
@@ -408,4 +415,18 @@ var (
 	LinkSpeed400g  = LinkSpeed{Value: "400g"}
 	LinkSpeed800G  = LinkSpeed{Value: "800G"}
 	LinkSpeed800g  = LinkSpeed{Value: "800g"}
+)
+
+type LeafRedundancyProtocol oenum.Member[string]
+
+var (
+	LeafRedundancyProtocolESI  = LeafRedundancyProtocol{Value: "esi"}
+	LeafRedundancyProtocolMLAG = LeafRedundancyProtocol{Value: "mlag"}
+)
+
+type FFEConsistencyStatus oenum.Member[string]
+
+var (
+	FFEConsistencyStatusOK           = FFEConsistencyStatus{Value: "ok"}
+	FFEConsistencyStatusInconsistent = FFEConsistencyStatus{Value: "inconsistent"}
 )

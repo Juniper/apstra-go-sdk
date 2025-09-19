@@ -137,6 +137,37 @@ func (o *DeployMode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*DesignLogicalDevicePanelPortIndexing)(nil)
+	_ json.Marshaler   = (*DesignLogicalDevicePanelPortIndexing)(nil)
+	_ json.Unmarshaler = (*DesignLogicalDevicePanelPortIndexing)(nil)
+)
+
+func (o DesignLogicalDevicePanelPortIndexing) String() string {
+	return o.Value
+}
+
+func (o *DesignLogicalDevicePanelPortIndexing) FromString(s string) error {
+	if DesignLogicalDevicePanelPortIndexings.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *DesignLogicalDevicePanelPortIndexing) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *DesignLogicalDevicePanelPortIndexing) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*DeviceProfileType)(nil)
 	_ json.Marshaler   = (*DeviceProfileType)(nil)
 	_ json.Unmarshaler = (*DeviceProfileType)(nil)
@@ -221,6 +252,37 @@ func (o EndpointPolicyStatus) MarshalJSON() ([]byte, error) {
 }
 
 func (o *EndpointPolicyStatus) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*FFEConsistencyStatus)(nil)
+	_ json.Marshaler   = (*FFEConsistencyStatus)(nil)
+	_ json.Unmarshaler = (*FFEConsistencyStatus)(nil)
+)
+
+func (o FFEConsistencyStatus) String() string {
+	return o.Value
+}
+
+func (o *FFEConsistencyStatus) FromString(s string) error {
+	if FFEConsistencyStatuses.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *FFEConsistencyStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *FFEConsistencyStatus) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -562,6 +624,37 @@ func (o JunosEvpnIrbMode) MarshalJSON() ([]byte, error) {
 }
 
 func (o *JunosEvpnIrbMode) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*LeafRedundancyProtocol)(nil)
+	_ json.Marshaler   = (*LeafRedundancyProtocol)(nil)
+	_ json.Unmarshaler = (*LeafRedundancyProtocol)(nil)
+)
+
+func (o LeafRedundancyProtocol) String() string {
+	return o.Value
+}
+
+func (o *LeafRedundancyProtocol) FromString(s string) error {
+	if LeafRedundancyProtocols.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *LeafRedundancyProtocol) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LeafRedundancyProtocol) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -1325,6 +1418,12 @@ var (
 		DeployModeUndeploy,
 	)
 
+	_                                     enum = new(DesignLogicalDevicePanelPortIndexing)
+	DesignLogicalDevicePanelPortIndexings      = oenum.New(
+		DesignLogicalDevicePanelPortIndexingLRTB,
+		DesignLogicalDevicePanelPortIndexingTBLR,
+	)
+
 	_                  enum = new(DeviceProfileType)
 	DeviceProfileTypes      = oenum.New(
 		DeviceProfileTypeModular,
@@ -1342,6 +1441,12 @@ var (
 		EndpointPolicyStatusAssigned,
 		EndpointPolicyStatusIncomplete,
 		EndpointPolicyStatusReady,
+	)
+
+	_                      enum = new(FFEConsistencyStatus)
+	FFEConsistencyStatuses      = oenum.New(
+		FFEConsistencyStatusOK,
+		FFEConsistencyStatusInconsistent,
 	)
 
 	_               enum = new(FFResourceType)
@@ -1423,6 +1528,12 @@ var (
 	JunosEvpnIrbModes      = oenum.New(
 		JunosEvpnIrbModeSymmetric,
 		JunosEvpnIrbModeAsymmetric,
+	)
+
+	_                       enum = new(LeafRedundancyProtocol)
+	LeafRedundancyProtocols      = oenum.New(
+		LeafRedundancyProtocolESI,
+		LeafRedundancyProtocolMLAG,
 	)
 
 	_          enum = new(LinkSpeed)
