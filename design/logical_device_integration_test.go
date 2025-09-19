@@ -88,7 +88,6 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
-
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()

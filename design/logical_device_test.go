@@ -1,10 +1,11 @@
 package design_test
 
 import (
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestLogicalDevicePanel_MarshalUnmarshal(t *testing.T) {

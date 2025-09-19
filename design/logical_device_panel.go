@@ -7,14 +7,17 @@ package design
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 const portIndexingSchema = "absolute"
 
-var _ json.Marshaler = (*LogicalDevicePanel)(nil)
-var _ json.Unmarshaler = (*LogicalDevicePanel)(nil)
+var (
+	_ json.Marshaler   = (*LogicalDevicePanel)(nil)
+	_ json.Unmarshaler = (*LogicalDevicePanel)(nil)
+)
 
 type LogicalDevicePanel struct {
 	PanelLayout  LogicalDevicePanelLayout
