@@ -72,20 +72,6 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 		},
 	}
 
-	prepareUpdatePayload := func(t testing.TB, original design.LogicalDevice, new design.LogicalDevice) design.LogicalDevice {
-		t.Helper()
-
-		id := original.ID()
-		require.NotNil(t, id)
-
-		require.NotEmpty(t, original.Label)
-		result := design.NewLogicalDevice(*id)
-		result.Label = new.Label
-		result.Panels = new.Panels
-
-		return result
-	}
-
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			for _, client := range clients {
@@ -145,7 +131,9 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 					var update design.LogicalDevice
 
 					t.Run("prepare_obj_update_payload", func(t *testing.T) {
-						update = prepareUpdatePayload(t, create, tCase.update)
+						update = design.NewLogicalDevice(id)
+						update.Label = tCase.update.Label
+						update.Panels = tCase.update.Panels
 						require.NotNil(t, update.ID())
 						require.Equal(t, id, *update.ID())
 					})
