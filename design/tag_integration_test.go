@@ -38,20 +38,6 @@ func TestTag_CRUD(t *testing.T) {
 		},
 	}
 
-	prepareUpdatePayload := func(t testing.TB, original design.Tag, new design.Tag) design.Tag {
-		t.Helper()
-
-		id := original.ID()
-		require.NotNil(t, id)
-
-		require.NotEmpty(t, original.Label)
-		result := design.NewTag(*id)
-		result.Label = original.Label // because for tags, label is immutable
-		result.Description = new.Description
-
-		return result
-	}
-
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			for _, client := range clients {
@@ -111,7 +97,9 @@ func TestTag_CRUD(t *testing.T) {
 					var update design.Tag
 
 					t.Run("prepare_obj_update_payload", func(t *testing.T) {
-						update = prepareUpdatePayload(t, create, tCase.update)
+						update = design.NewTag(id)
+						update.Label = create.Label // label is immutable on tags
+						update.Description = tCase.update.Description
 						require.NotNil(t, update.ID())
 						require.Equal(t, id, *update.ID())
 					})
