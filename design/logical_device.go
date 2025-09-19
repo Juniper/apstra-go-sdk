@@ -13,13 +13,17 @@ import (
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
-const LogicalDeviceUrl = urlPrefix + "logical-devices"
-const LogicalDeviceUrlByID = LogicalDeviceUrl + "/%s"
+const (
+	LogicalDeviceUrl     = urlPrefix + "logical-devices"
+	LogicalDeviceUrlByID = LogicalDeviceUrl + "/%s"
+)
 
-var _ json.Marshaler = (*LogicalDevice)(nil)
-var _ json.Unmarshaler = (*LogicalDevice)(nil)
-var _ slice.IDer = (*LogicalDevice)(nil)
-var _ timeutils.Stamper = (*LogicalDevice)(nil)
+var (
+	_ json.Marshaler    = (*LogicalDevice)(nil)
+	_ json.Unmarshaler  = (*LogicalDevice)(nil)
+	_ slice.IDer        = (*LogicalDevice)(nil)
+	_ timeutils.Stamper = (*LogicalDevice)(nil)
+)
 
 type LogicalDevice struct {
 	Label  string
