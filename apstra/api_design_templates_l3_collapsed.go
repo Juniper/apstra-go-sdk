@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var _ Template = &TemplateL3Collapsed{}
@@ -38,19 +40,19 @@ func (o *TemplateL3Collapsed) OverlayControlProtocol() OverlayControlProtocol {
 }
 
 type rawTemplateL3Collapsed struct {
-	Id                   ObjectId                   `json:"id"`
-	Type                 templateType               `json:"type"`
-	DisplayName          string                     `json:"display_name"`
-	AntiAffinityPolicy   *rawAntiAffinityPolicy     `json:"anti_affinity_policy,omitempty"`
-	CreatedAt            time.Time                  `json:"created_at"`
-	LastModifiedAt       time.Time                  `json:"last_modified_at"`
-	RackTypes            []rawRackType              `json:"rack_types"`
-	Capability           templateCapability         `json:"capability"`
-	MeshLinkSpeed        *rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
-	VirtualNetworkPolicy rawVirtualNetworkPolicy    `json:"virtual_network_policy"`
-	MeshLinkCount        int                        `json:"mesh_link_count"`
-	RackTypeCounts       []RackTypeCount            `json:"rack_type_counts"`
-	DhcpServiceIntent    DhcpServiceIntent          `json:"dhcp_service_intent"`
+	Id                   ObjectId                `json:"id"`
+	Type                 templateType            `json:"type"`
+	DisplayName          string                  `json:"display_name"`
+	AntiAffinityPolicy   *rawAntiAffinityPolicy  `json:"anti_affinity_policy,omitempty"`
+	CreatedAt            time.Time               `json:"created_at"`
+	LastModifiedAt       time.Time               `json:"last_modified_at"`
+	RackTypes            []rawRackType           `json:"rack_types"`
+	Capability           templateCapability      `json:"capability"`
+	MeshLinkSpeed        speed.Speed             `json:"mesh_link_speed"`
+	VirtualNetworkPolicy rawVirtualNetworkPolicy `json:"virtual_network_policy"`
+	MeshLinkCount        int                     `json:"mesh_link_count"`
+	RackTypeCounts       []RackTypeCount         `json:"rack_type_counts"`
+	DhcpServiceIntent    DhcpServiceIntent       `json:"dhcp_service_intent"`
 }
 
 func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
@@ -91,7 +93,7 @@ func (o rawTemplateL3Collapsed) polish() (*TemplateL3Collapsed, error) {
 			AntiAffinityPolicy:   aap,
 			RackTypes:            prt,
 			Capability:           TemplateCapability(capability),
-			MeshLinkSpeed:        o.MeshLinkSpeed.parse(),
+			MeshLinkSpeed:        o.MeshLinkSpeed,
 			VirtualNetworkPolicy: *vnp,
 			MeshLinkCount:        o.MeshLinkCount,
 			RackTypeCounts:       o.RackTypeCounts,
@@ -105,7 +107,7 @@ type TemplateL3CollapsedData struct {
 	AntiAffinityPolicy   *AntiAffinityPolicy
 	RackTypes            []RackType
 	Capability           TemplateCapability
-	MeshLinkSpeed        LogicalDevicePortSpeed
+	MeshLinkSpeed        speed.Speed
 	VirtualNetworkPolicy VirtualNetworkPolicy
 	MeshLinkCount        int
 	RackTypeCounts       []RackTypeCount
@@ -161,14 +163,14 @@ func (o *Client) getAllL3CollapsedTemplates(ctx context.Context) ([]rawTemplateL
 }
 
 type CreateL3CollapsedTemplateRequest struct {
-	DisplayName          string                 `json:"display_name"`
-	MeshLinkCount        int                    `json:"mesh_link_count"`
-	MeshLinkSpeed        LogicalDevicePortSpeed `json:"mesh_link_speed"`
-	RackTypeIds          []ObjectId             `json:"rack_types"`
-	RackTypeCounts       []RackTypeCount        `json:"rack_type_counts"`
-	DhcpServiceIntent    DhcpServiceIntent      `json:"dhcp_service_intent"`
-	AntiAffinityPolicy   *AntiAffinityPolicy    `json:"anti_affinity_policy,omitempty"`
-	VirtualNetworkPolicy VirtualNetworkPolicy   `json:"virtual_network_policy"`
+	DisplayName          string               `json:"display_name"`
+	MeshLinkCount        int                  `json:"mesh_link_count"`
+	MeshLinkSpeed        speed.Speed          `json:"mesh_link_speed"`
+	RackTypeIds          []ObjectId           `json:"rack_types"`
+	RackTypeCounts       []RackTypeCount      `json:"rack_type_counts"`
+	DhcpServiceIntent    DhcpServiceIntent    `json:"dhcp_service_intent"`
+	AntiAffinityPolicy   *AntiAffinityPolicy  `json:"anti_affinity_policy,omitempty"`
+	VirtualNetworkPolicy VirtualNetworkPolicy `json:"virtual_network_policy"`
 }
 
 func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Client) (*rawCreateL3CollapsedTemplateRequest, error) {
@@ -190,7 +192,7 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 		Type:                 templateTypeL3Collapsed,
 		DisplayName:          o.DisplayName,
 		MeshLinkCount:        o.MeshLinkCount,
-		MeshLinkSpeed:        *o.MeshLinkSpeed.raw(),
+		MeshLinkSpeed:        o.MeshLinkSpeed,
 		RackTypes:            rackTypes,
 		RackTypeCounts:       o.RackTypeCounts,
 		DhcpServiceIntent:    o.DhcpServiceIntent,
@@ -200,15 +202,15 @@ func (o *CreateL3CollapsedTemplateRequest) raw(ctx context.Context, client *Clie
 }
 
 type rawCreateL3CollapsedTemplateRequest struct {
-	Type                 templateType              `json:"type"`
-	DisplayName          string                    `json:"display_name"`
-	MeshLinkCount        int                       `json:"mesh_link_count"`
-	MeshLinkSpeed        rawLogicalDevicePortSpeed `json:"mesh_link_speed"`
-	RackTypes            []rawRackType             `json:"rack_types"`
-	RackTypeCounts       []RackTypeCount           `json:"rack_type_counts"`
-	DhcpServiceIntent    DhcpServiceIntent         `json:"dhcp_service_intent"`
-	AntiAffinityPolicy   *rawAntiAffinityPolicy    `json:"anti_affinity_policy,omitempty"`
-	VirtualNetworkPolicy rawVirtualNetworkPolicy   `json:"virtual_network_policy"`
+	Type                 templateType            `json:"type"`
+	DisplayName          string                  `json:"display_name"`
+	MeshLinkCount        int                     `json:"mesh_link_count"`
+	MeshLinkSpeed        speed.Speed             `json:"mesh_link_speed"`
+	RackTypes            []rawRackType           `json:"rack_types"`
+	RackTypeCounts       []RackTypeCount         `json:"rack_type_counts"`
+	DhcpServiceIntent    DhcpServiceIntent       `json:"dhcp_service_intent"`
+	AntiAffinityPolicy   *rawAntiAffinityPolicy  `json:"anti_affinity_policy,omitempty"`
+	VirtualNetworkPolicy rawVirtualNetworkPolicy `json:"virtual_network_policy"`
 }
 
 func (o *Client) createL3CollapsedTemplate(ctx context.Context, in *rawCreateL3CollapsedTemplateRequest) (ObjectId, error) {

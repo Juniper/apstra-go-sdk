@@ -540,6 +540,37 @@ func (o *JunosEvpnIrbMode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*LinkSpeed)(nil)
+	_ json.Marshaler   = (*LinkSpeed)(nil)
+	_ json.Unmarshaler = (*LinkSpeed)(nil)
+)
+
+func (o LinkSpeed) String() string {
+	return o.Value
+}
+
+func (o *LinkSpeed) FromString(s string) error {
+	if LinkSpeeds.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *LinkSpeed) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LinkSpeed) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*LockStatus)(nil)
 	_ json.Marshaler   = (*LockStatus)(nil)
 	_ json.Unmarshaler = (*LockStatus)(nil)
@@ -974,6 +1005,37 @@ func (o *SecurityZoneType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*SpeedUnit)(nil)
+	_ json.Marshaler   = (*SpeedUnit)(nil)
+	_ json.Unmarshaler = (*SpeedUnit)(nil)
+)
+
+func (o SpeedUnit) String() string {
+	return o.Value
+}
+
+func (o *SpeedUnit) FromString(s string) error {
+	if SpeedUnits.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *SpeedUnit) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *SpeedUnit) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*StorageSchemaPath)(nil)
 	_ json.Marshaler   = (*StorageSchemaPath)(nil)
 	_ json.Unmarshaler = (*StorageSchemaPath)(nil)
@@ -1295,6 +1357,38 @@ var (
 		JunosEvpnIrbModeAsymmetric,
 	)
 
+	_          enum = new(LinkSpeed)
+	LinkSpeeds      = oenum.New(
+		LinkSpeed10M,
+		LinkSpeed10m,
+		LinkSpeed100M,
+		LinkSpeed100m,
+		LinkSpeed1G,
+		LinkSpeed1g,
+		LinkSpeed2500M,
+		LinkSpeed2500m,
+		LinkSpeed5G,
+		LinkSpeed5g,
+		LinkSpeed10G,
+		LinkSpeed10g,
+		LinkSpeed25G,
+		LinkSpeed25g,
+		LinkSpeed40G,
+		LinkSpeed40g,
+		LinkSpeed50G,
+		LinkSpeed50g,
+		LinkSpeed100G,
+		LinkSpeed100g,
+		LinkSpeed150G,
+		LinkSpeed150g,
+		LinkSpeed200G,
+		LinkSpeed200g,
+		LinkSpeed400G,
+		LinkSpeed400g,
+		LinkSpeed800G,
+		LinkSpeed800g,
+	)
+
 	_            enum = new(LockStatus)
 	LockStatuses      = oenum.New(
 		LockStatusLocked,
@@ -1405,6 +1499,12 @@ var (
 		SecurityZoneTypeEvpn,
 		SecurityZoneTypeL3Fabric,
 		SecurityZoneTypeVirtualL3Fabric,
+	)
+
+	_          enum = new(SpeedUnit)
+	SpeedUnits      = oenum.New(
+		SpeedUnitM,
+		SpeedUnitG,
 	)
 
 	_                  enum = new(StorageSchemaPath)

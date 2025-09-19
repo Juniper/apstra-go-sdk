@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,8 @@ import (
 	"net"
 	"net/http"
 	"strings"
+
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 const (
@@ -27,10 +29,10 @@ type FreeformLink struct {
 
 func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id              ObjectId               `json:"id"`
-		Speed           LogicalDevicePortSpeed `json:"speed"`
-		Label           string                 `json:"label"`
-		AggregateLinkId *ObjectId              `json:"aggregate_link_id"`
+		Id              ObjectId        `json:"id"`
+		Speed           *enum.LinkSpeed `json:"speed"`
+		Label           string          `json:"label"`
+		AggregateLinkId *ObjectId       `json:"aggregate_link_id"`
 		Endpoints       []struct {
 			System struct {
 				Id         ObjectId   `json:"id"`
@@ -77,7 +79,7 @@ func (o *FreeformLink) UnmarshalJSON(bytes []byte) error {
 type FreeformLinkData struct {
 	AggregateLinkId *ObjectId
 	Label           string
-	Speed           LogicalDevicePortSpeed
+	Speed           *enum.LinkSpeed
 	Tags            []string
 	Endpoints       [2]FreeformEthernetEndpoint
 }

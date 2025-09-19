@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 const (
@@ -574,7 +576,7 @@ func (o *rawCablingMapLinkEndpointSystem) polish() (*CablingMapLinkEndpointSyste
 
 type CablingMapLink struct {
 	TagLabels       []string
-	Speed           LogicalDevicePortSpeed
+	Speed           *enum.LinkSpeed
 	AggregateLinkId ObjectId
 	GroupLabel      string
 	Label           string
@@ -629,7 +631,7 @@ func (o *CablingMapLink) OppositeEndpointBySystemId(systemId ObjectId) *CablingM
 
 type rawCablingMapLink struct {
 	TagLabels       []string                    `json:"tags"`
-	Speed           LogicalDevicePortSpeed      `json:"speed"`
+	Speed           *enum.LinkSpeed             `json:"speed"`
 	AggregateLinkId ObjectId                    `json:"aggregate_link_id"`
 	GroupLabel      string                      `json:"group_label"`
 	Label           string                      `json:"label"`

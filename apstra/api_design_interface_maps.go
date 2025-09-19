@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 const (
@@ -181,7 +183,7 @@ type InterfaceMapInterface struct {
 	Mapping     InterfaceMapMapping
 	ActiveState InterfaceStateActive
 	Position    int
-	Speed       LogicalDevicePortSpeed
+	Speed       speed.Speed
 	Setting     InterfaceMapInterfaceSetting
 }
 
@@ -193,7 +195,7 @@ func (o *InterfaceMapInterface) raw() *rawInterfaceMapInterface {
 		State:    o.ActiveState.raw(),
 		Setting:  o.Setting,
 		Position: o.Position,
-		Speed:    *o.Speed.raw(),
+		Speed:    o.Speed,
 	}
 }
 
@@ -204,7 +206,7 @@ type rawInterfaceMapInterface struct {
 	State    rawInterfaceState            `json:"state"`
 	Setting  InterfaceMapInterfaceSetting `json:"setting"`
 	Position int                          `json:"position"`
-	Speed    rawLogicalDevicePortSpeed    `json:"speed"`
+	Speed    speed.Speed                  `json:"speed"`
 }
 
 func (o *rawInterfaceMapInterface) polish() (*InterfaceMapInterface, error) {
@@ -225,7 +227,7 @@ func (o *rawInterfaceMapInterface) polish() (*InterfaceMapInterface, error) {
 		Mapping:     *o.Mapping.polish(),
 		ActiveState: state,
 		Position:    o.Position,
-		Speed:       o.Speed.parse(),
+		Speed:       o.Speed,
 		Setting:     o.Setting,
 	}, nil
 }

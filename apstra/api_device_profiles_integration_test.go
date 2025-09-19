@@ -15,6 +15,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
 )
 
@@ -109,7 +110,7 @@ func TestGetTransformCandidates(t *testing.T) {
 
 	dpId := apstra.ObjectId("Juniper_QFX5120-48T_Junos")
 	intfName := "et-0/0/48"
-	intfSpeed := apstra.LogicalDevicePortSpeed("40G")
+	intfSpeed := speed.Speed("40G")
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
