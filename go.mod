@@ -6,13 +6,14 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.17.8
 	github.com/aws/aws-sdk-go-v2/config v1.18.21
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.19.3
+	github.com/chrismarget/go-build-tag-required v0.0.3
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/google/go-licenses/v2 v2.0.0-alpha.1
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.7.0
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/orsinium-labs/enum v1.3.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/tools v0.34.0
 	google.golang.org/protobuf v1.33.0
 	mvdan.cc/gofumpt v0.6.0

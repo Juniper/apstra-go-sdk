@@ -2,7 +2,10 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-all: compliance-check license-header-check verify unit-tests integration-tests
+all: check-build-tags compliance-check license-header-check verify unit-tests integration-tests
+
+check-build-tags:
+	@sh -c "go run github.com/chrismarget/go-build-tag-required -recursive -dir internal/test_utils -tag requiretestutils"
 
 check-repo-clean:
 	git update-index --refresh && git diff-index --quiet HEAD --

@@ -36,3 +36,6 @@ jobs:
 
       - name: compliance
         run: make compliance-check
+
+      - name: build-tags
+        run: make check-build-tags

@@ -7,6 +7,9 @@
 package tools
 
 import (
+	// build constraint validation
+	_ "github.com/chrismarget/go-build-tag-required"
+
 	// license compliance
 	_ "github.com/google/go-licenses/v2"
 
