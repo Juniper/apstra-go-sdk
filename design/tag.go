@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
@@ -19,9 +18,9 @@ const (
 )
 
 var (
+	_ IDer              = (*Tag)(nil)
 	_ json.Marshaler    = (*Tag)(nil)
 	_ json.Unmarshaler  = (*Tag)(nil)
-	_ slice.IDer        = (*Tag)(nil)
 	_ timeutils.Stamper = (*Tag)(nil)
 )
 
@@ -32,6 +31,22 @@ type Tag struct {
 	id             string
 	createdAt      *time.Time
 	lastModifiedAt *time.Time
+}
+
+func (t *Tag) SetID(id string) error {
+	if t.id == "" {
+		t.id = id
+		return nil
+	}
+
+	return IDIsSet(fmt.Errorf("tag id alredy has value %q", id))
+}
+
+func (t *Tag) MustSetID(id string) {
+	err := t.SetID(id)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (t Tag) ID() *string {
