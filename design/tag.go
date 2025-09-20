@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
@@ -19,9 +18,9 @@ const (
 )
 
 var (
+	_ IDer              = (*Tag)(nil)
 	_ json.Marshaler    = (*Tag)(nil)
 	_ json.Unmarshaler  = (*Tag)(nil)
-	_ slice.IDer        = (*Tag)(nil)
 	_ timeutils.Stamper = (*Tag)(nil)
 )
 
@@ -39,6 +38,27 @@ func (t Tag) ID() *string {
 		return nil
 	}
 	return &t.id
+}
+
+// SetID sets a the value returned by ID only if it was previously un-set. An
+// error is returned If the value was previously set. Presence of an existing
+// value is the only reason SetID will return an error. If the value is known to
+// be empty, use MustSetID.
+func (t *Tag) SetID(id string) error {
+	if t.id != "" {
+		return IDIsSet(fmt.Errorf("tag id alredy has value %q", t.id))
+	}
+
+	t.id = id
+	return nil
+}
+
+// MustSetID invokes SetID and panics if an error is returned.
+func (t *Tag) MustSetID(id string) {
+	err := t.SetID(id)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (t Tag) CreatedAt() *time.Time {
