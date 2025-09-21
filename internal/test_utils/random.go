@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strconv"
 	"testing"
+	"time"
 )
 
 const envSampleSize = "APSTRA_TEST_SAMPLE_MAX"
@@ -172,4 +173,36 @@ func RandJWT() string {
 	return RandString(36, "b64") + "." +
 		RandString(178, "b64") + "." +
 		RandString(86, "b64")
+}
+
+// RandTime returns a random time.Time. Up to two bounds may be supplied,
+// representing the start and end times of the range from which the random
+// time.Time should be selected. By default, start is 1900-01-01-00:00 UTC and
+// end is the current time. Sub-second time bounds will cause a panic.
+func RandTime(bounds ...time.Time) time.Time {
+	var start, end time.Time
+	switch len(bounds) {
+	case 0:
+		start = time.Date(1900, time.January, 1, 0, 0, 0, 0, time.UTC)
+		end = time.Now()
+	case 1:
+		start = bounds[0]
+		end = time.Now()
+	case 2:
+		start = bounds[0]
+		end = bounds[1]
+	}
+
+	if start.After(end) {
+		start, end = end, start
+	}
+
+	// Get total seconds between the two
+	delta := end.Unix() - start.Unix() - 1
+
+	// Pick random number of seconds to add to start
+	randomSeconds := rand.Int63n(delta)
+	randomNanos := rand.Int63n(1e9) // Optional: randomize nanoseconds too
+
+	return time.Unix(start.Unix()+randomSeconds, randomNanos).UTC()
 }

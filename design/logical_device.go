@@ -9,20 +9,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
-const (
-	LogicalDeviceUrl     = urlPrefix + "logical-devices"
-	LogicalDeviceUrlByID = LogicalDeviceUrl + "/%s"
-)
-
 var (
-	_ json.Marshaler    = (*LogicalDevice)(nil)
-	_ json.Unmarshaler  = (*LogicalDevice)(nil)
-	_ slice.IDer        = (*LogicalDevice)(nil)
-	_ timeutils.Stamper = (*LogicalDevice)(nil)
+	_ ider                      = (*LogicalDevice)(nil)
+	_ replicator[LogicalDevice] = (*LogicalDevice)(nil)
+	_ json.Marshaler            = (*LogicalDevice)(nil)
+	_ json.Unmarshaler          = (*LogicalDevice)(nil)
+	_ timeutils.Stamper         = (*LogicalDevice)(nil)
 )
 
 type LogicalDevice struct {
@@ -41,6 +36,35 @@ func (l LogicalDevice) ID() *string {
 	return &l.id
 }
 
+// SetID sets a previously un-set id attribute. If the id attribute is found to
+// have an existing value, an error is returned. Presence of an existing value
+// is the only reason SetID will return an error. If the id attribute is known
+// to be empty, use MustSetID.
+func (l *LogicalDevice) SetID(id string) error {
+	if l.id != "" {
+		return IDIsSet(fmt.Errorf("tag id alredy has value %q", l.id))
+	}
+
+	l.id = id
+	return nil
+}
+
+// MustSetID invokes SetID and panics if an error is returned.
+func (l *LogicalDevice) MustSetID(id string) {
+	err := l.SetID(id)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// replicate returns a copy of t with zero values for metadata fields
+func (l LogicalDevice) replicate() LogicalDevice {
+	return LogicalDevice{
+		Label:  l.Label,
+		Panels: l.Panels,
+	}
+}
+
 func (l LogicalDevice) CreatedAt() *time.Time {
 	return l.createdAt
 }
@@ -51,7 +75,7 @@ func (l LogicalDevice) LastModifiedAt() *time.Time {
 
 func (l LogicalDevice) MarshalJSON() ([]byte, error) {
 	raw := struct {
-		ID     string               `json:"id,omitempty"`
+		ID     string               `json:"id,omitempty"` // ID must be marshaled when embedded in rack_type
 		Label  string               `json:"display_name"`
 		Panels []LogicalDevicePanel `json:"panels"`
 	}{

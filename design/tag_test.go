@@ -9,14 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
 )
 
-func TestLogicalDevice_ID(t *testing.T) {
-	var obj LogicalDevice
+func TestTagID(t *testing.T) {
+	var obj Tag
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
 
@@ -52,30 +51,10 @@ func TestLogicalDevice_ID(t *testing.T) {
 	})
 }
 
-func TestLogicalDevice_replicate(t *testing.T) {
-	original := LogicalDevice{
-		Label: testutils.RandString(6, "hex"),
-		Panels: []LogicalDevicePanel{
-			{
-				PanelLayout: LogicalDevicePanelLayout{
-					RowCount:    2,
-					ColumnCount: 4,
-				},
-				PortGroups: []LogicalDevicePanelPortGroup{
-					{
-						Count: 4,
-						Speed: "10G",
-						Roles: LogicalDevicePortRoles{enum.PortRoleSpine, enum.PortRoleGeneric},
-					},
-					{
-						Count: 4,
-						Speed: "1G",
-						Roles: LogicalDevicePortRoles{enum.PortRoleGeneric},
-					},
-				},
-				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
-			},
-		},
+func TestTag_replicate(t *testing.T) {
+	original := Tag{
+		Label:          testutils.RandString(6, "hex"),
+		Description:    testutils.RandString(6, "hex"),
 		id:             testutils.RandString(6, "hex"),
 		createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
 		lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
@@ -91,8 +70,8 @@ func TestLogicalDevice_replicate(t *testing.T) {
 	require.Equal(t, original, replicant)
 }
 
-func TestLogicalDevice_timestamps(t *testing.T) {
-	testCases := map[string]LogicalDevice{
+func TestTag_timestamps(t *testing.T) {
+	testCases := map[string]Tag{
 		"a": {
 			createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
 			lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
@@ -118,20 +97,16 @@ func TestLogicalDevice_timestamps(t *testing.T) {
 	}
 }
 
-func TestLogicalDevice_MarshalJSON(t *testing.T) {
+func TestTag_MarshalJSON(t *testing.T) {
 	type testCase struct {
-		v LogicalDevice
+		v Tag
 		e string
 	}
 
 	testCases := map[string]testCase{
-		"test-1x1": {
-			v: logicalDeviceTest1x1,
-			e: logicalDeviceTest1x1JSON,
-		},
-		"test-48x10+4x100": {
-			v: logicalDeviceTest48x10plus4x100,
-			e: logicalDeviceTest48x10plus4x100JSON,
+		"tagABC": {
+			v: tagABC,
+			e: tagABCJSON,
 		},
 	}
 
@@ -144,6 +119,7 @@ func TestLogicalDevice_MarshalJSON(t *testing.T) {
 			// get rid of extraneous fields in the expected string value
 			eMap := map[string]json.RawMessage{}
 			require.NoError(t, json.Unmarshal([]byte(tCase.e), &eMap))
+			delete(eMap, "id")
 			delete(eMap, "created_at")
 			delete(eMap, "last_modified_at")
 			e, err := json.Marshal(eMap)
@@ -154,27 +130,23 @@ func TestLogicalDevice_MarshalJSON(t *testing.T) {
 	}
 }
 
-func TestLogicalDevice_UnmarshalJSON(t *testing.T) {
+func TestTag_UnmarshalJSON(t *testing.T) {
 	type testCase struct {
-		e LogicalDevice
+		e Tag
 		v string
 	}
 
 	testCases := map[string]testCase{
-		"test-1x1": {
-			v: logicalDeviceTest1x1JSON,
-			e: logicalDeviceTest1x1,
-		},
-		"test-48x10+4x100": {
-			v: logicalDeviceTest48x10plus4x100JSON,
-			e: logicalDeviceTest48x10plus4x100,
+		"tagABC": {
+			v: tagABCJSON,
+			e: tagABC,
 		},
 	}
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
-			var r LogicalDevice
+			var r Tag
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
 			require.Equal(t, tCase.e, r)

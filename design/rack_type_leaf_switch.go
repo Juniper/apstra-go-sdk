@@ -8,26 +8,16 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
-	"github.com/Juniper/apstra-go-sdk/internal/hash"
-	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
-type LeafMlagInfo struct {
-	LeafLeafL3LinkCount         int
-	LeafLeafL3LinkSpeed         speed.Speed
-	LeafLeafL3LinkPortChannelId int
-	LeafLeafLinkCount           int
-	LeafLeafLinkSpeed           speed.Speed
-	LeafLeafLinkPortChannelId   int
-	MlagVlanId                  int
-}
-
 var (
-	_ json.Marshaler   = (*LeafSwitch)(nil)
-	_ json.Unmarshaler = (*LeafSwitch)(nil)
+	_ replicator[LeafSwitch] = (*LeafSwitch)(nil)
+	_ json.Marshaler         = (*LeafSwitch)(nil)
+	_ json.Unmarshaler       = (*LeafSwitch)(nil)
 )
 
 type LeafSwitch struct {
@@ -37,7 +27,37 @@ type LeafSwitch struct {
 	LogicalDevice      LogicalDevice
 	RedundancyProtocol *enum.LeafRedundancyProtocol
 	Tags               []Tag
-	MlagInfo           *LeafMlagInfo
+	MlagInfo           *RackTypeLeafSwitchMlagInfo
+}
+
+func (l LeafSwitch) replicate() LeafSwitch {
+	var linkPerSpineCount *int
+	if l.LinkPerSpineCount != nil {
+		linkPerSpineCount = pointer.To(*l.LinkPerSpineCount)
+	}
+
+	var linkPerSpineSpeed *speed.Speed
+	if l.LinkPerSpineSpeed != nil {
+		linkPerSpineSpeed = pointer.To(*l.LinkPerSpineSpeed)
+	}
+
+	var tags []Tag
+	if l.Tags != nil {
+		tags = make([]Tag, len(l.Tags))
+	}
+	for i, tag := range l.Tags {
+		tags[i] = tag.replicate()
+	}
+
+	return LeafSwitch{
+		Label:              l.Label,
+		LinkPerSpineCount:  linkPerSpineCount,
+		LinkPerSpineSpeed:  linkPerSpineSpeed,
+		LogicalDevice:      l.LogicalDevice.replicate(),
+		RedundancyProtocol: l.RedundancyProtocol,
+		Tags:               tags,
+		MlagInfo:           pointer.To(l.MlagInfo.replicate()),
+	}
 }
 
 func (l LeafSwitch) MarshalJSON() ([]byte, error) {
@@ -45,9 +65,9 @@ func (l LeafSwitch) MarshalJSON() ([]byte, error) {
 		Label:              l.Label,
 		LinkPerSpineCount:  l.LinkPerSpineCount,
 		LinkPerSpineSpeed:  l.LinkPerSpineSpeed,
-		LogicalDeviceID:    fmt.Sprintf("%x", hash.StructMust(l.LogicalDevice, sha256.New())),
+		LogicalDeviceID:    fmt.Sprintf("%x", mustDigestSkipID(l.LogicalDevice, sha256.New())),
 		RedundancyProtocol: l.RedundancyProtocol,
-		TagLabels:          slice.WithCapacityOrNil("", len(l.Tags)),
+		TagLabels:          make([]string, len(l.Tags)),
 	}
 
 	for _, tag := range l.Tags {
@@ -84,7 +104,7 @@ func (l *LeafSwitch) UnmarshalJSON(bytes []byte) error {
 		l.Tags[i].Label = rawTagLabel // tag description must be filled by the caller
 	}
 
-	// look for reasons to NOT save MLAG info
+	// look for reasons to return before adding MLAG info
 	if raw.RedundancyProtocol == nil ||
 		*raw.RedundancyProtocol != enum.LeafRedundancyProtocolMLAG ||
 		raw.LeafLeafL3LinkCount == nil ||
@@ -96,8 +116,8 @@ func (l *LeafSwitch) UnmarshalJSON(bytes []byte) error {
 		return nil
 	}
 
-	// having failed to find an excuse, save the MLAG info
-	l.MlagInfo = &LeafMlagInfo{
+	// having failed to find a reason to return early, save the MLAG info
+	l.MlagInfo = &RackTypeLeafSwitchMlagInfo{
 		LeafLeafL3LinkCount:         *raw.LeafLeafL3LinkCount,
 		LeafLeafL3LinkSpeed:         *raw.LeafLeafL3LinkSpeed,
 		LeafLeafL3LinkPortChannelId: *raw.LeafLeafL3LinkPortChannelId,
