@@ -12,13 +12,9 @@ import (
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
-const (
-	TagUrl     = urlPrefix + "tags"
-	TagUrlByID = TagUrl + "/%s"
-)
-
 var (
-	_ IDer              = (*Tag)(nil)
+	_ ider              = (*Tag)(nil)
+	_ replicator[Tag]   = (*Tag)(nil)
 	_ json.Marshaler    = (*Tag)(nil)
 	_ json.Unmarshaler  = (*Tag)(nil)
 	_ timeutils.Stamper = (*Tag)(nil)
@@ -61,6 +57,14 @@ func (t *Tag) MustSetID(id string) {
 	}
 }
 
+// replicate returns a copy of t with zero values for metadata fields
+func (t Tag) replicate() Tag {
+	return Tag{
+		Label:       t.Label,
+		Description: t.Description,
+	}
+}
+
 func (t Tag) CreatedAt() *time.Time {
 	return t.createdAt
 }
@@ -71,11 +75,9 @@ func (t Tag) LastModifiedAt() *time.Time {
 
 func (t Tag) MarshalJSON() ([]byte, error) {
 	raw := struct {
-		ID          string `json:"id,omitempty"`
-		Label       string `json:"label,omitempty"`
+		Label       string `json:"label"`
 		Description string `json:"description"`
 	}{
-		ID:          t.id,
 		Label:       t.Label,
 		Description: t.Description,
 	}
@@ -84,11 +86,11 @@ func (t Tag) MarshalJSON() ([]byte, error) {
 
 func (t *Tag) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		ID             string     `json:"id,omitempty"`
+		ID             string     `json:"id"`
 		Label          string     `json:"label"`
 		Description    string     `json:"description"`
-		CreatedAt      *time.Time `json:"created_at,omitempty"`
-		LastModifiedAt *time.Time `json:"last_modified_at,omitempty"`
+		CreatedAt      *time.Time `json:"created_at"`
+		LastModifiedAt *time.Time `json:"last_modified_at"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {

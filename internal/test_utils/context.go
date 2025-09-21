@@ -12,11 +12,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	CtxKeyTestUUID = "Test-UUID"
+	CtxKeyTestID   = "Test-ID"
 )
 
 // ContextWithTestID produces contexts with the following values:
@@ -30,16 +34,16 @@ import (
 func ContextWithTestID(parent context.Context, t testing.TB) context.Context {
 	var UUID *uuid.UUID
 
-	switch v := parent.Value(apstra.CtxKeyTestUUID).(type) {
+	switch v := parent.Value(CtxKeyTestUUID).(type) {
 	case uuid.UUID:
 		UUID = &v
 	default:
 		UUID = pointer.To(newUUID(t))
-		parent = context.WithValue(parent, apstra.CtxKeyTestUUID, *UUID)
-		log.Println(apstra.CtxKeyTestUUID, ": ", UUID.String())
+		parent = context.WithValue(parent, CtxKeyTestUUID, *UUID)
+		log.Println(CtxKeyTestUUID, ": ", UUID.String())
 	}
 
-	return context.WithValue(parent, apstra.CtxKeyTestID, UUID.String()+"/"+t.Name())
+	return context.WithValue(parent, CtxKeyTestID, UUID.String()+"/"+t.Name())
 }
 
 func newUUID(t testing.TB) uuid.UUID {
