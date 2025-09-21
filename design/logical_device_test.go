@@ -5,6 +5,7 @@
 package design
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"testing"
 	"time"
@@ -82,6 +83,8 @@ func TestLogicalDevice_replicate(t *testing.T) {
 	}
 
 	replicant := original.replicate()
+
+	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
 
 	// wipe out values which cannot be replicated before comparing values
 	original.id = ""
