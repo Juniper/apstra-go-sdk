@@ -4,12 +4,14 @@
 
 package design
 
-const urlPrefix = "/api/design/"
-
 type IDIsSet error
 
-type IDer interface {
+type ider interface {
 	ID() *string
 	SetID(string) error
 	MustSetID(string)
+}
+
+type replicator[T any] interface {
+	replicate() T
 }

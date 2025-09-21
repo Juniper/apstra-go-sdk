@@ -12,8 +12,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
-const portIndexingSchema = "absolute"
-
 var (
 	_ json.Marshaler   = (*LogicalDevicePanel)(nil)
 	_ json.Unmarshaler = (*LogicalDevicePanel)(nil)
@@ -30,7 +28,7 @@ func (l LogicalDevicePanel) MarshalJSON() ([]byte, error) {
 		PanelLayout: l.PanelLayout,
 		PortIndexing: rawLogicalDevicePanelPortIndexing{
 			Order:      &l.PortIndexing,
-			Schema:     portIndexingSchema,
+			Schema:     "absolute",
 			StartIndex: 1,
 		},
 		PortGroups: l.PortGroups,
