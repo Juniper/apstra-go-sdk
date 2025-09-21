@@ -49,6 +49,11 @@ func (l LeafSwitch) replicate() LeafSwitch {
 		tags[i] = tag.replicate()
 	}
 
+	var mlagInfo *RackTypeLeafSwitchMlagInfo
+	if l.MlagInfo != nil {
+		mlagInfo = pointer.To(*l.MlagInfo)
+	}
+
 	return LeafSwitch{
 		Label:              l.Label,
 		LinkPerSpineCount:  linkPerSpineCount,
@@ -56,7 +61,7 @@ func (l LeafSwitch) replicate() LeafSwitch {
 		LogicalDevice:      l.LogicalDevice.replicate(),
 		RedundancyProtocol: l.RedundancyProtocol,
 		Tags:               tags,
-		MlagInfo:           pointer.To(l.MlagInfo.replicate()),
+		MlagInfo:           mlagInfo,
 	}
 }
 
@@ -65,7 +70,7 @@ func (l LeafSwitch) MarshalJSON() ([]byte, error) {
 		Label:              l.Label,
 		LinkPerSpineCount:  l.LinkPerSpineCount,
 		LinkPerSpineSpeed:  l.LinkPerSpineSpeed,
-		LogicalDeviceID:    fmt.Sprintf("%x", mustDigestSkipID(l.LogicalDevice, sha256.New())),
+		LogicalDeviceID:    fmt.Sprintf("%x", mustHashForComparison(l.LogicalDevice, sha256.New())),
 		RedundancyProtocol: l.RedundancyProtocol,
 		TagLabels:          make([]string, len(l.Tags)),
 	}

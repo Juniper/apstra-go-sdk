@@ -65,12 +65,17 @@ func (r *RackType) MustSetID(id string) {
 }
 
 func (r RackType) replicate() RackType {
+	leafSwitches := make([]LeafSwitch, len(r.LeafSwitches))
+	for i, leafSwitch := range r.LeafSwitches {
+		leafSwitches[i] = leafSwitch.replicate()
+	}
+
 	return RackType{
 		Label:                    r.Label,
 		Description:              r.Description,
 		FabricConnectivityDesign: r.FabricConnectivityDesign,
 		Status:                   r.Status,
-		LeafSwitches:             nil,
+		LeafSwitches:             leafSwitches,
 	}
 }
 
@@ -107,7 +112,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 	idHash := md5.New()
 	logicalDeviceMap := make(map[string]LogicalDevice)
 	addLogicalDeviceToMap := func(ld LogicalDevice) {
-		id := fmt.Sprintf("%x", mustDigestSkipID(ld, idHash))
+		id := fmt.Sprintf("%x", mustHashForComparison(ld, idHash))
 		idHash.Reset()
 
 		ld = ld.replicate()
