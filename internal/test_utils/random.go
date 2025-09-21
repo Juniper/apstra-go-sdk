@@ -15,6 +15,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -169,21 +170,35 @@ func RandomPrefix(t testing.TB, cidrBlock string, bits int) net.IPNet {
 	return *result
 }
 
+// RandJWT returns a random string formatted like a JSON Web Token (JWT),
+// consisting of three base64url-like segments separated by dots.
 func RandJWT() string {
-	return RandString(36, "b64") + "." +
-		RandString(178, "b64") + "." +
-		RandString(86, "b64")
+	return strings.Join([]string{
+		RandString(36, "b64"),
+		RandString(178, "b64"),
+		RandString(86, "b64"),
+	}, ".")
 }
 
-// RandTime returns a random time.Time. Up to two bounds may be supplied,
-// representing the start and end times of the range from which the random
-// time.Time should be selected. By default, start is 1900-01-01-00:00 UTC and
-// end is the current time. Sub-second time bounds will cause a panic.
+// RandTime returns a random time.Time value within the specified range.
+//
+// The optional bounds parameters specify the start and end of the time range:
+//   - If no bounds are provided, the range defaults from January 1, 1900 UTC to the current time.
+//   - If one bound is provided, it is used as the start, with the end defaulting to the current time.
+//   - If two bounds are provided, they define the start and end of the range.
+//
+// The bounds are truncated to the nearest second to avoid sub-second precision issues.
+//
+// If the start is after the end, the function swaps them internally.
+//
+// If the range is less than or equal to one second, the function returns the start time.
+//
+// The returned time has randomized seconds and nanoseconds within the specified range, always in UTC.
 func RandTime(bounds ...time.Time) time.Time {
 	var start, end time.Time
 	switch len(bounds) {
 	case 0:
-		start = time.Date(1900, time.January, 1, 0, 0, 0, 0, time.UTC)
+		start = time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 		end = time.Now()
 	case 1:
 		start = bounds[0]
@@ -193,16 +208,22 @@ func RandTime(bounds ...time.Time) time.Time {
 		end = bounds[1]
 	}
 
-	if start.After(end) {
-		start, end = end, start
+	tStart := start.Truncate(time.Second)
+	tEnd := end.Truncate(time.Second)
+
+	if tStart.After(tEnd) {
+		tStart, tEnd = tEnd, tStart
 	}
 
 	// Get total seconds between the two
-	delta := end.Unix() - start.Unix() - 1
+	delta := tEnd.Unix() - tStart.Unix()
+	if delta == 0 {
+		return start
+	}
 
 	// Pick random number of seconds to add to start
 	randomSeconds := rand.Int63n(delta)
 	randomNanos := rand.Int63n(1e9) // Optional: randomize nanoseconds too
 
-	return time.Unix(start.Unix()+randomSeconds, randomNanos).UTC()
+	return time.Unix(tStart.Unix()+randomSeconds, randomNanos).UTC()
 }
