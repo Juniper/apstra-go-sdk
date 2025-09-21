@@ -7,6 +7,7 @@ package design
 import (
 	"crypto/md5"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"testing"
@@ -137,11 +138,11 @@ func TestDigest(t *testing.T) {
 
 			idBefore := tCase.v.ID()
 
-			b, err := digestSkipID(tCase.v, tCase.h)
+			b, err := hashForComparison(tCase.v, tCase.h)
 			require.NoError(t, err)
 			require.Equal(t, tCase.expHex, fmt.Sprintf("%x", b))
 
-			b = mustDigestSkipID(tCase.v, tCase.h)
+			b = mustHashForComparison(tCase.v, tCase.h)
 			require.Equal(t, tCase.expHex, fmt.Sprintf("%x", b))
 
 			// ensure we didn't change the ID
@@ -152,6 +153,62 @@ func TestDigest(t *testing.T) {
 				require.NotNil(t, idAfter)
 				require.Equal(t, *idBefore, *idAfter)
 			}
+		})
+	}
+}
+
+func TestOrderedMarshalJSON(t *testing.T) {
+	type testCase struct {
+		keys     []string
+		values   map[string]json.RawMessage
+		expJSON  string
+		expError bool
+	}
+
+	testCases := map[string]testCase{
+		"simple_ordered_keys": {
+			keys:    []string{"a", "b", "c"},
+			values:  map[string]json.RawMessage{"a": json.RawMessage(`1`), "b": json.RawMessage(`2`), "c": json.RawMessage(`3`)},
+			expJSON: `{"a":1,"b":2,"c":3}`,
+		},
+		"keys_values_length_mismatch": {
+			keys:     []string{"a", "b"},
+			values:   map[string]json.RawMessage{"a": json.RawMessage(`1`), "b": json.RawMessage(`2`), "c": json.RawMessage(`3`)},
+			expError: true,
+		},
+		"duplicate_keys": {
+			keys:     []string{"a", "b", "a"},
+			values:   map[string]json.RawMessage{"a": json.RawMessage(`1`), "b": json.RawMessage(`2`)},
+			expError: true,
+		},
+		"missing_value_for_key": {
+			keys:     []string{"a", "b", "c"},
+			values:   map[string]json.RawMessage{"a": json.RawMessage(`1`), "b": json.RawMessage(`2`), "d": json.RawMessage(`4`)},
+			expError: true,
+		},
+		"empty_keys_and_values": {
+			keys:    []string{},
+			values:  map[string]json.RawMessage{},
+			expJSON: `{}`,
+		},
+		"keys_with_escaped_chars": {
+			keys:    []string{"a\"", "b\n"},
+			values:  map[string]json.RawMessage{"a\"": json.RawMessage(`true`), "b\n": json.RawMessage(`false`)},
+			expJSON: `{"a\"":true,"b\n":false}`,
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := orderedMarshalJSON(tCase.keys, tCase.values)
+			if tCase.expError {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tCase.expJSON, string(result))
 		})
 	}
 }
