@@ -7,6 +7,7 @@ package design
 import (
 	"encoding/json"
 	"fmt"
+	"hash"
 	"time"
 
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
@@ -57,7 +58,7 @@ func (l *LogicalDevice) MustSetID(id string) {
 	}
 }
 
-// replicate returns a copy of t with zero values for metadata fields
+// replicate returns a copy of itself with zero values for metadata fields
 func (l LogicalDevice) replicate() LogicalDevice {
 	return LogicalDevice{
 		Label:  l.Label,
@@ -106,6 +107,19 @@ func (l *LogicalDevice) UnmarshalJSON(bytes []byte) error {
 	l.lastModifiedAt = raw.LastModifiedAt
 
 	return nil
+}
+
+func (l LogicalDevice) digest(h hash.Hash) []byte {
+	h.Reset()
+	return mustHashForComparison(l, h)
+}
+
+func (l *LogicalDevice) setHashID(h hash.Hash) error {
+	return l.SetID(fmt.Sprintf("%x", l.digest(h)))
+}
+
+func (l *LogicalDevice) mustSetHashID(h hash.Hash) {
+	l.SetID(fmt.Sprintf("%x", l.digest(h)))
 }
 
 func NewLogicalDevice(id string) LogicalDevice {

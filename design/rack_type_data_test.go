@@ -39,9 +39,8 @@ var rackTypeTestCollapsedOneOfEach = RackType{
 					},
 				},
 			},
-			RedundancyProtocol: nil,
-			Tags:               []Tag{{Label: "tag a", Description: "TAG A"}, {Label: "tag b", Description: "TAG B"}},
-			MLAGInfo:           nil,
+			Tags:     []Tag{{Label: "tag a", Description: "TAG A"}, {Label: "tag b", Description: "TAG B"}},
+			MLAGInfo: nil,
 		},
 	},
 	// AccessSwitches []AccessSwitch{}, // todo
@@ -73,5 +72,6 @@ const rackTypeTestCollapsedOneOfEachJSON = `{
   ],
   "leaf_switches": [
     { "label": "leafy", "logical_device": "a0e801da44420b1a0c915fc21f81d2d5", "tags": [ "tag a", "tag b" ] }
-  ]
+  ],
+  "access_switches": null
 }`
