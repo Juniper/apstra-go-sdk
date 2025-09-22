@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
-	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
 )
 
