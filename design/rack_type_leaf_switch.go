@@ -28,7 +28,7 @@ type LeafSwitch struct {
 	LogicalDevice      LogicalDevice
 	RedundancyProtocol *enum.LeafRedundancyProtocol
 	Tags               []Tag
-	MlagInfo           *RackTypeLeafSwitchMlagInfo
+	MLAGInfo           *RackTypeLeafSwitchMLAGInfo
 
 	id string
 }
@@ -80,9 +80,9 @@ func (l LeafSwitch) replicate() LeafSwitch {
 		tags[i] = tag.replicate()
 	}
 
-	var mlagInfo *RackTypeLeafSwitchMlagInfo
-	if l.MlagInfo != nil {
-		mlagInfo = pointer.To(*l.MlagInfo)
+	var mlagInfo *RackTypeLeafSwitchMLAGInfo
+	if l.MLAGInfo != nil {
+		mlagInfo = pointer.To(*l.MLAGInfo)
 	}
 
 	return LeafSwitch{
@@ -92,7 +92,7 @@ func (l LeafSwitch) replicate() LeafSwitch {
 		LogicalDevice:      l.LogicalDevice.replicate(),
 		RedundancyProtocol: l.RedundancyProtocol,
 		Tags:               tags,
-		MlagInfo:           mlagInfo,
+		MLAGInfo:           mlagInfo,
 	}
 }
 
@@ -111,14 +111,14 @@ func (l LeafSwitch) MarshalJSON() ([]byte, error) {
 	}
 	slices.Sort(raw.TagLabels)
 
-	if l.MlagInfo != nil {
+	if l.MLAGInfo != nil {
 		raw.LeafLeafL3LinkCount = nil
 		raw.LeafLeafL3LinkSpeed = nil
 		raw.LeafLeafL3LinkPortChannelId = nil
 		raw.LeafLeafLinkCount = nil
 		raw.LeafLeafLinkSpeed = nil
 		raw.LeafLeafLinkPortChannelId = nil
-		raw.MlagVlanId = nil
+		raw.MLAGVLANID = nil
 	}
 
 	return json.Marshal(raw)
@@ -154,14 +154,14 @@ func (l *LeafSwitch) UnmarshalJSON(bytes []byte) error {
 	}
 
 	// having failed to find a reason to return early, save the MLAG info
-	l.MlagInfo = &RackTypeLeafSwitchMlagInfo{
+	l.MLAGInfo = &RackTypeLeafSwitchMLAGInfo{
 		LeafLeafL3LinkCount:         *raw.LeafLeafL3LinkCount,
 		LeafLeafL3LinkSpeed:         *raw.LeafLeafL3LinkSpeed,
 		LeafLeafL3LinkPortChannelId: *raw.LeafLeafL3LinkPortChannelId,
 		LeafLeafLinkCount:           *raw.LeafLeafLinkCount,
 		LeafLeafLinkSpeed:           *raw.LeafLeafLinkSpeed,
 		LeafLeafLinkPortChannelId:   *raw.LeafLeafLinkPortChannelId,
-		MlagVlanId:                  *raw.MlagVlanId,
+		MLAGVLANID:                  *raw.MLAGVLANID,
 	}
 
 	return nil
@@ -184,5 +184,5 @@ type rawLeafSwitch struct {
 	LeafLeafLinkCount           *int         `json:"leaf_leaf_link_count,omitempty"`
 	LeafLeafLinkSpeed           *speed.Speed `json:"leaf_leaf_link_speed,omitempty"`
 	LeafLeafLinkPortChannelId   *int         `json:"leaf_leaf_link_port_channel_id,omitempty"`
-	MlagVlanId                  *int         `json:"mlag_vlan_id,omitempty"`
+	MLAGVLANID                  *int         `json:"mlagvlanid,omitempty"`
 }
