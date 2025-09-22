@@ -6,18 +6,18 @@ package design
 
 import "github.com/Juniper/apstra-go-sdk/speed"
 
-var _ replicator[RackTypeLeafSwitchMlagInfo] = (*RackTypeLeafSwitchMlagInfo)(nil)
+var _ replicator[RackTypeLeafSwitchMLAGInfo] = (*RackTypeLeafSwitchMLAGInfo)(nil)
 
-type RackTypeLeafSwitchMlagInfo struct {
+type RackTypeLeafSwitchMLAGInfo struct {
 	LeafLeafL3LinkCount         int
 	LeafLeafL3LinkSpeed         speed.Speed
 	LeafLeafL3LinkPortChannelId int
 	LeafLeafLinkCount           int
 	LeafLeafLinkSpeed           speed.Speed
 	LeafLeafLinkPortChannelId   int
-	MlagVlanId                  int
+	MLAGVLANID                  int
 }
 
-func (r RackTypeLeafSwitchMlagInfo) replicate() RackTypeLeafSwitchMlagInfo {
+func (r RackTypeLeafSwitchMLAGInfo) replicate() RackTypeLeafSwitchMLAGInfo {
 	return r
 }
