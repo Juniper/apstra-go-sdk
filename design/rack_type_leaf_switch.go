@@ -8,14 +8,15 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"slices"
+
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/speed"
-	"slices"
 )
 
 var (
-	_ ider                   = (*LeafSwitch)(nil)
+	_ logicalDeviceIDer      = (*LeafSwitch)(nil)
 	_ replicator[LeafSwitch] = (*LeafSwitch)(nil)
 	_ json.Marshaler         = (*LeafSwitch)(nil)
 	_ json.Unmarshaler       = (*LeafSwitch)(nil)
@@ -26,142 +27,123 @@ type LeafSwitch struct {
 	LinkPerSpineCount  *int
 	LinkPerSpineSpeed  *speed.Speed
 	LogicalDevice      LogicalDevice
-	RedundancyProtocol *enum.LeafRedundancyProtocol
+	RedundancyProtocol enum.LeafRedundancyProtocol
 	Tags               []Tag
 	MLAGInfo           *RackTypeLeafSwitchMLAGInfo
-
-	id string
 }
 
-func (l LeafSwitch) ID() *string {
-	if l.id == "" {
+// logicalDeviceID returns *string representing the ID of the embedded logical
+// device. If the LD ID is unset, nil is returned
+func (l LeafSwitch) logicalDeviceID() *string {
+	if l.LogicalDevice.id == "" {
 		return nil
 	}
-	return &l.id
+	return pointer.To(l.LogicalDevice.id)
 }
 
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (l LeafSwitch) SetID(id string) error {
-	if l.id != "" {
-		return IDIsSet(fmt.Errorf("id already has value %q", l.id))
-	}
-
-	l.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (l LeafSwitch) MustSetID(id string) {
-	err := l.SetID(id)
-	if err != nil {
-		panic(err)
-	}
-}
-
+// replicate returns a copy of itself with zero values for metadata fields
 func (l LeafSwitch) replicate() LeafSwitch {
-	var linkPerSpineCount *int
-	if l.LinkPerSpineCount != nil {
-		linkPerSpineCount = pointer.To(*l.LinkPerSpineCount)
-	}
-
-	var linkPerSpineSpeed *speed.Speed
-	if l.LinkPerSpineSpeed != nil {
-		linkPerSpineSpeed = pointer.To(*l.LinkPerSpineSpeed)
-	}
-
-	var tags []Tag
-	if l.Tags != nil {
-		tags = make([]Tag, len(l.Tags))
-	}
-	for i, tag := range l.Tags {
-		tags[i] = tag.replicate()
-	}
-
-	var mlagInfo *RackTypeLeafSwitchMLAGInfo
-	if l.MLAGInfo != nil {
-		mlagInfo = pointer.To(*l.MLAGInfo)
-	}
-
-	return LeafSwitch{
+	result := LeafSwitch{
 		Label:              l.Label,
-		LinkPerSpineCount:  linkPerSpineCount,
-		LinkPerSpineSpeed:  linkPerSpineSpeed,
 		LogicalDevice:      l.LogicalDevice.replicate(),
 		RedundancyProtocol: l.RedundancyProtocol,
-		Tags:               tags,
-		MLAGInfo:           mlagInfo,
+		Tags:               make([]Tag, len(l.Tags)),
+
+		// LinkPerSpineCount:  nil,
+		// LinkPerSpineSpeed:  nil,
+		// MLAGInfo:           nil,
 	}
+
+	for i, tag := range l.Tags {
+		result.Tags[i] = tag.replicate()
+	}
+
+	if l.LinkPerSpineCount != nil {
+		result.LinkPerSpineCount = pointer.To(*l.LinkPerSpineCount)
+	}
+
+	if l.LinkPerSpineSpeed != nil {
+		result.LinkPerSpineSpeed = pointer.To(*l.LinkPerSpineSpeed)
+	}
+
+	if l.MLAGInfo != nil {
+		result.MLAGInfo = pointer.To(l.MLAGInfo.replicate())
+	}
+
+	return result
 }
 
 func (l LeafSwitch) MarshalJSON() ([]byte, error) {
-	raw := rawLeafSwitch{
+	result := rawLeafSwitch{
 		Label:              l.Label,
 		LinkPerSpineCount:  l.LinkPerSpineCount,
 		LinkPerSpineSpeed:  l.LinkPerSpineSpeed,
 		LogicalDeviceID:    fmt.Sprintf("%x", mustHashForComparison(l.LogicalDevice, md5.New())),
-		RedundancyProtocol: l.RedundancyProtocol,
+		RedundancyProtocol: l.RedundancyProtocol.String(),
 		TagLabels:          make([]string, len(l.Tags)),
+
+		// LeafLeafL3LinkCount:         0,  // set by l.MLAGInfo below
+		// LeafLeafL3LinkSpeed:         "", // set by l.MLAGInfo below
+		// LeafLeafL3LinkPortChannelId: 0,  // set by l.MLAGInfo below
+		// LeafLeafLinkCount:           0,  // set by l.MLAGInfo below
+		// LeafLeafLinkSpeed:           "", // set by l.MLAGInfo below
+		// LeafLeafLinkPortChannelId:   0,  // set by l.MLAGInfo below
+		// MLAGVLAN:                    0,  // set by l.MLAGInfo below
+
 	}
 
 	for i, tag := range l.Tags {
-		raw.TagLabels[i] = tag.Label
+		result.TagLabels[i] = tag.Label
 	}
-	slices.Sort(raw.TagLabels)
+	slices.Sort(result.TagLabels)
 
 	if l.MLAGInfo != nil {
-		raw.LeafLeafL3LinkCount = nil
-		raw.LeafLeafL3LinkSpeed = nil
-		raw.LeafLeafL3LinkPortChannelId = nil
-		raw.LeafLeafLinkCount = nil
-		raw.LeafLeafLinkSpeed = nil
-		raw.LeafLeafLinkPortChannelId = nil
-		raw.MLAGVLANID = nil
+		result.LeafLeafL3LinkCount = l.MLAGInfo.LeafLeafL3LinkCount
+		result.LeafLeafL3LinkSpeed = l.MLAGInfo.LeafLeafL3LinkSpeed
+		result.LeafLeafL3LinkPortChannelId = l.MLAGInfo.LeafLeafL3LinkPortChannelId
+		result.LeafLeafLinkCount = l.MLAGInfo.LeafLeafLinkCount
+		result.LeafLeafLinkSpeed = l.MLAGInfo.LeafLeafLinkSpeed
+		result.LeafLeafLinkPortChannelId = l.MLAGInfo.LeafLeafLinkPortChannelId
+		result.MLAGVLAN = l.MLAGInfo.MLAGVLAN
 	}
 
-	return json.Marshal(raw)
+	return json.Marshal(result)
 }
 
 func (l *LeafSwitch) UnmarshalJSON(bytes []byte) error {
 	var raw rawLeafSwitch
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
-		return fmt.Errorf("unmarshaling rawLeafSwitch: %w", err)
+		return fmt.Errorf("unmarshaling leaf switch: %w", err)
 	}
 
 	l.Label = raw.Label
 	l.LinkPerSpineCount = raw.LinkPerSpineCount
 	l.LinkPerSpineSpeed = raw.LinkPerSpineSpeed
 	l.LogicalDevice = NewLogicalDevice(raw.LogicalDeviceID)
-	l.RedundancyProtocol = raw.RedundancyProtocol
+	err = l.RedundancyProtocol.FromString(raw.RedundancyProtocol)
+	if err != nil {
+		return fmt.Errorf("parsing field 'RedundancyProtocol': %w", err)
+	}
 	l.Tags = make([]Tag, len(raw.TagLabels))
 	for i, rawTagLabel := range raw.TagLabels {
 		l.Tags[i].Label = rawTagLabel // tag description must be filled by the caller
 	}
 
 	// look for reasons to return before adding MLAG info
-	if raw.RedundancyProtocol == nil ||
-		*raw.RedundancyProtocol != enum.LeafRedundancyProtocolMLAG ||
-		raw.LeafLeafL3LinkCount == nil ||
-		raw.LeafLeafL3LinkSpeed == nil ||
-		raw.LeafLeafL3LinkPortChannelId == nil ||
-		raw.LeafLeafLinkCount == nil ||
-		raw.LeafLeafLinkSpeed == nil ||
-		raw.LeafLeafLinkPortChannelId == nil {
+	if l.RedundancyProtocol == enum.LeafRedundancyProtocolNone {
 		return nil
 	}
 
 	// having failed to find a reason to return early, save the MLAG info
 	l.MLAGInfo = &RackTypeLeafSwitchMLAGInfo{
-		LeafLeafL3LinkCount:         *raw.LeafLeafL3LinkCount,
-		LeafLeafL3LinkSpeed:         *raw.LeafLeafL3LinkSpeed,
-		LeafLeafL3LinkPortChannelId: *raw.LeafLeafL3LinkPortChannelId,
-		LeafLeafLinkCount:           *raw.LeafLeafLinkCount,
-		LeafLeafLinkSpeed:           *raw.LeafLeafLinkSpeed,
-		LeafLeafLinkPortChannelId:   *raw.LeafLeafLinkPortChannelId,
-		MLAGVLANID:                  *raw.MLAGVLANID,
+		LeafLeafL3LinkCount:         raw.LeafLeafL3LinkCount,
+		LeafLeafL3LinkSpeed:         raw.LeafLeafL3LinkSpeed,
+		LeafLeafL3LinkPortChannelId: raw.LeafLeafL3LinkPortChannelId,
+		LeafLeafLinkCount:           raw.LeafLeafLinkCount,
+		LeafLeafLinkSpeed:           raw.LeafLeafLinkSpeed,
+		LeafLeafLinkPortChannelId:   raw.LeafLeafLinkPortChannelId,
+		MLAGVLAN:                    raw.MLAGVLAN,
 	}
 
 	return nil
@@ -169,20 +151,20 @@ func (l *LeafSwitch) UnmarshalJSON(bytes []byte) error {
 
 // it is safe and reasonable to have a "raw" type for objects which:
 // 1) are marshaled and unmarshaled symmetrically (have no metadata to suppress)
-// 2) have JSON layout which doesn't align with their struct layout
+// 2) have JSON layout which doesn't align with their public struct layout
 type rawLeafSwitch struct {
-	Label              string                       `json:"label"`
-	LinkPerSpineCount  *int                         `json:"link_per_spine_count,omitempty"`
-	LinkPerSpineSpeed  *speed.Speed                 `json:"link_per_spine_speed,omitempty"`
-	LogicalDeviceID    string                       `json:"logical_device"`
-	RedundancyProtocol *enum.LeafRedundancyProtocol `json:"redundancy_protocol,omitempty"`
-	TagLabels          []string                     `json:"tags"`
+	Label              string       `json:"label"`
+	LinkPerSpineCount  *int         `json:"link_per_spine_count,omitempty"`
+	LinkPerSpineSpeed  *speed.Speed `json:"link_per_spine_speed,omitempty"`
+	LogicalDeviceID    string       `json:"logical_device"`
+	RedundancyProtocol string       `json:"redundancy_protocol,omitempty"`
+	TagLabels          []string     `json:"tags"`
 
-	LeafLeafL3LinkCount         *int         `json:"leaf_leaf_l3_link_count,omitempty"`
-	LeafLeafL3LinkSpeed         *speed.Speed `json:"leaf_leaf_l3_link_speed,omitempty"`
-	LeafLeafL3LinkPortChannelId *int         `json:"leaf_leaf_l3_link_port_channel_id,omitempty"`
-	LeafLeafLinkCount           *int         `json:"leaf_leaf_link_count,omitempty"`
-	LeafLeafLinkSpeed           *speed.Speed `json:"leaf_leaf_link_speed,omitempty"`
-	LeafLeafLinkPortChannelId   *int         `json:"leaf_leaf_link_port_channel_id,omitempty"`
-	MLAGVLANID                  *int         `json:"mlagvlanid,omitempty"`
+	LeafLeafL3LinkCount         int         `json:"leaf_leaf_l3_link_count,omitempty"`
+	LeafLeafL3LinkSpeed         speed.Speed `json:"leaf_leaf_l3_link_speed,omitempty"`
+	LeafLeafL3LinkPortChannelId int         `json:"leaf_leaf_l3_link_port_channel_id,omitempty"`
+	LeafLeafLinkCount           int         `json:"leaf_leaf_link_count,omitempty"`
+	LeafLeafLinkSpeed           speed.Speed `json:"leaf_leaf_link_speed,omitempty"`
+	LeafLeafLinkPortChannelId   int         `json:"leaf_leaf_link_port_channel_id,omitempty"`
+	MLAGVLAN                    int         `json:"mlag_vlan_id,omitempty"`
 }

@@ -406,6 +406,7 @@ var (
 type LeafRedundancyProtocol oenum.Member[string]
 
 var (
+	LeafRedundancyProtocolNone = LeafRedundancyProtocol{Value: ""}
 	LeafRedundancyProtocolESI  = LeafRedundancyProtocol{Value: "esi"}
 	LeafRedundancyProtocolMLAG = LeafRedundancyProtocol{Value: "mlag"}
 )
@@ -415,4 +416,28 @@ type FFEConsistencyStatus oenum.Member[string]
 var (
 	FFEConsistencyStatusOK           = FFEConsistencyStatus{Value: "ok"}
 	FFEConsistencyStatusInconsistent = FFEConsistencyStatus{Value: "inconsistent"}
+)
+
+type LAGMode oenum.Member[string]
+
+var (
+	LAGModeNone        = LAGMode{Value: ""}
+	LAGModeActiveLACP  = LAGMode{Value: "lacp_active"}
+	LAGModePassiveLACP = LAGMode{Value: "lacp_passive"}
+	LAGModeStatic      = LAGMode{Value: "static_lag"}
+)
+
+type LinkAttachmentType oenum.Member[string]
+
+var (
+	LinkAttachmentTypeSingle = LinkAttachmentType{Value: "singleAttached"}
+	LinkAttachmentTypeDual   = LinkAttachmentType{Value: "dualAttached"}
+)
+
+type LinkSwitchPeer oenum.Member[string]
+
+var (
+	LinkSwitchPeerUnspecified = LinkSwitchPeer{Value: ""}
+	LinkSwitchPeerFirst       = LinkSwitchPeer{Value: "first"}
+	LinkSwitchPeerSecond      = LinkSwitchPeer{Value: "second"}
 )
