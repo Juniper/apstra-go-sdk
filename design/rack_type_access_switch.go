@@ -11,6 +11,7 @@ import (
 	"slices"
 
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
@@ -68,7 +69,7 @@ func (a AccessSwitch) replicate() AccessSwitch {
 
 func (a AccessSwitch) MarshalJSON() ([]byte, error) {
 	result := rawAccessSwitch{
-		Count:           defaultIfZero(a.Count, 1),
+		Count:           zero.PreferDefault(a.Count, 1),
 		Label:           a.Label,
 		Links:           nil, // set by a.ESILagInfo below
 		LogicalDeviceID: fmt.Sprintf("%x", mustHashForComparison(a.LogicalDevice, md5.New())),
