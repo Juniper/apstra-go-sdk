@@ -13,6 +13,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,7 +39,7 @@ func TestLogicalDevice_ID(t *testing.T) {
 	})
 
 	t.Run("must_set_id", func(t *testing.T) {
-		obj = testutils.ZeroOf(obj)
+		obj = zero.Of(obj)
 		obj.MustSetID(desiredId)
 	})
 
