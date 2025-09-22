@@ -1,10 +1,14 @@
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package slice_test
 
 import (
-	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"strconv"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	"github.com/stretchr/testify/require"
 )
