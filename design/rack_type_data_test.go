@@ -41,7 +41,7 @@ var rackTypeTestCollapsedOneOfEach = RackType{
 			},
 			RedundancyProtocol: nil,
 			Tags:               []Tag{{Label: "tag a", Description: "TAG A"}, {Label: "tag b", Description: "TAG B"}},
-			MlagInfo:           nil,
+			MLAGInfo:           nil,
 		},
 	},
 	// AccessSwitches []AccessSwitch{}, // todo
