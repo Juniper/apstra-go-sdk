@@ -1,3 +1,7 @@
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package testutils_test
 
 import (
@@ -30,14 +34,14 @@ func TestRandTime(t *testing.T) {
 		},
 		"reversed_bounds": {
 			bounds: []time.Time{
-				time.Date(2013, 10, 12, 0, 0, 0, 0, time.FixedZone("nashua", -4*60*60)),
-				time.Date(2013, 10, 12, 23, 59, 59, 1e9-1, time.FixedZone("nashua", -4*60*60)),
+				time.Date(2013, time.October, 12, 0, 0, 0, 0, time.FixedZone("nashua", -4*60*60)),
+				time.Date(2013, time.October, 12, 23, 59, 59, 1e9-1, time.FixedZone("nashua", -4*60*60)),
 			},
 		},
 		"range_too_small": {
 			bounds: []time.Time{
-				time.Date(1969, 07, 20, 15, 17, 40, 0, time.FixedZone("houston", -5*60*60)),
-				time.Date(1969, 07, 20, 15, 17, 40, 1e9-1, time.FixedZone("houston", -5*60*60)),
+				time.Date(1969, time.July, 20, 15, 17, 40, 0, time.FixedZone("houston", -5*60*60)),
+				time.Date(1969, time.July, 20, 15, 17, 40, 1e9-1, time.FixedZone("houston", -5*60*60)),
 			},
 		},
 	}
