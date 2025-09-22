@@ -185,10 +185,6 @@ func TestRackType_UnmarshalJSON(t *testing.T) {
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
 
-			//// clear test data which doesn't marshal
-			//tCase.e.createdAt = nil
-			//tCase.e.lastModifiedAt = nil
-
 			require.Equal(t, tCase.e, r)
 		})
 	}

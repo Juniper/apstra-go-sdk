@@ -51,7 +51,7 @@ func (l *LogicalDevicePanel) UnmarshalJSON(bytes []byte) error {
 
 // it is safe and reasonable to have a "raw" type for objects which:
 // 1) are marshaled and unmarshaled symmetrically (have no metadata to suppress)
-// 2) have JSON layout which doesn't align with their struct layout
+// 2) have JSON layout which doesn't align with their public struct layout
 type rawLogicalDevicePanelPortIndexing struct {
 	Order      *enum.DesignLogicalDevicePanelPortIndexing `json:"order"`
 	Schema     string                                     `json:"schema"`
@@ -60,7 +60,7 @@ type rawLogicalDevicePanelPortIndexing struct {
 
 // it is safe and reasonable to have a "raw" type for objects which:
 // 1) are marshaled and unmarshaled symmetrically (have no metadata to suppress)
-// 2) have JSON layout which doesn't align with their struct layout
+// 2) have JSON layout which doesn't align with their public struct layout
 type rawLogicalDevicePanel struct {
 	PanelLayout  LogicalDevicePanelLayout          `json:"panel_layout"`
 	PortIndexing rawLogicalDevicePanelPortIndexing `json:"port_indexing"`
