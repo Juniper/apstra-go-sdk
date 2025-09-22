@@ -42,7 +42,7 @@ func (t Tag) ID() *string {
 // be empty, use MustSetID.
 func (t *Tag) SetID(id string) error {
 	if t.id != "" {
-		return IDIsSet(fmt.Errorf("tag id alredy has value %q", t.id))
+		return IDIsSet(fmt.Errorf("id already has value %q", t.id))
 	}
 
 	t.id = id
