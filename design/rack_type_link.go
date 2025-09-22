@@ -11,6 +11,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
@@ -36,9 +37,9 @@ func (r RackTypeLink) MarshalJSON() ([]byte, error) {
 	result := rawRackTypeLink{
 		Label:              r.Label,
 		TargetSwitchLabel:  r.TargetSwitchLabel,
-		LinkPerSwitchCount: defaultIfZero(r.LinkPerSwitchCount, 1),
+		LinkPerSwitchCount: zero.PreferDefault(r.LinkPerSwitchCount, 1),
 		Speed:              r.Speed,
-		AttachmentType:     defaultIfZero(r.AttachmentType, enum.LinkAttachmentTypeSingle),
+		AttachmentType:     zero.PreferDefault(r.AttachmentType, enum.LinkAttachmentTypeSingle),
 		LAGMode:            r.LAGMode,
 		SwitchPeer:         r.SwitchPeer,
 		RailIndex:          r.RailIndex,

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
 )
@@ -37,7 +38,7 @@ func TestTagID(t *testing.T) {
 	})
 
 	t.Run("must_set_id", func(t *testing.T) {
-		obj = testutils.ZeroOf(obj)
+		obj = zero.Of(obj)
 		obj.MustSetID(desiredId)
 	})
 
