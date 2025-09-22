@@ -7,16 +7,18 @@ package design
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"sort"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
-var _ replicator[RackTypeLink] = (*RackTypeLink)(nil)
-var _ json.Marshaler = (*RackTypeLink)(nil)
-var _ json.Unmarshaler = (*RackTypeLink)(nil)
+var (
+	_ replicator[RackTypeLink] = (*RackTypeLink)(nil)
+	_ json.Marshaler           = (*RackTypeLink)(nil)
+	_ json.Unmarshaler         = (*RackTypeLink)(nil)
+)
 
 type RackTypeLink struct {
 	Label              string
