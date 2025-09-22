@@ -8,6 +8,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -28,8 +29,8 @@ type RackType struct {
 	FabricConnectivityDesign enum.FabricConnectivityDesign
 	Status                   *enum.FFEConsistencyStatus
 	LeafSwitches             []LeafSwitch
-	// AccessSwitches        []AccessSwitch  `json:"access_switches"`
-	// GenericSystems        []GenericSystem `json:"generic_systems"`
+	// AccessSwitches        []AccessSwitch  `json:"access_switches"` todo: AccessSwitches
+	// GenericSystems        []GenericSystem `json:"generic_systems"` todo: GenericSystems
 
 	id             string
 	createdAt      *time.Time
@@ -49,7 +50,7 @@ func (r RackType) ID() *string {
 // to be empty, use MustSetID.
 func (r *RackType) SetID(id string) error {
 	if r.id != "" {
-		return IDIsSet(fmt.Errorf("tag id alredy has value %q", r.id))
+		return IDIsSet(fmt.Errorf("id already has value %q", r.id))
 	}
 
 	r.id = id
@@ -81,15 +82,15 @@ func (r RackType) replicate() RackType {
 
 func (r RackType) MarshalJSON() ([]byte, error) {
 	raw := struct {
-		ID                       string                        `json:"id,omitempty"` // ID must be marshaled when embedded in template
+		ID                       string                        `json:"id,omitempty"` // ID must be marshaled for template embedding
 		Label                    string                        `json:"display_name"`
 		Description              string                        `json:"description"`
 		FabricConnectivityDesign enum.FabricConnectivityDesign `json:"fabric_connectivity_design"`
 		Tags                     []Tag                         `json:"tags"`
 		LogicalDevices           []LogicalDevice               `json:"logical_devices"`
 		LeafSwitches             []LeafSwitch                  `json:"leaf_switches"`
-		// AccessSwitches        []AccessSwitch                `json:"access_switches"`
-		// GenericSystems        []GenericSystem               `json:"generic_systems"`
+		// AccessSwitches        []AccessSwitch                `json:"access_switches"` todo: AccessSwitches
+		// GenericSystems        []GenericSystem               `json:"generic_systems"` todo: GenericSystems
 	}{
 		ID:                       r.id,
 		Label:                    r.Label,
@@ -98,8 +99,8 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		Tags:                     nil, // tags collected from various systems below
 		LogicalDevices:           nil, // logical devices collected from various systems below
 		LeafSwitches:             r.LeafSwitches,
-		// AccessSwitches:        r.AccessSwitches,
-		// GenericSystems:        r.GenericSystems
+		// AccessSwitches:        r.AccessSwitches,  todo: AccessSwitches
+		// GenericSystems:        r.GenericSystems   todo: GenericSystems
 	}
 
 	tagMap := make(map[string]Tag)
@@ -109,47 +110,122 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	idHash := md5.New()
+	hash := md5.New()
+	calculateLogicalDeviceID := func(ld any) string {
+		hash.Reset()
+		return fmt.Sprintf("%x", mustHashForComparison(ld, hash))
+	}
+
 	logicalDeviceMap := make(map[string]LogicalDevice)
-	addLogicalDeviceToMap := func(ld LogicalDevice) {
-		id := fmt.Sprintf("%x", mustHashForComparison(ld, idHash))
-		idHash.Reset()
 
-		ld = ld.replicate()
-		ld.MustSetID(id)
-		logicalDeviceMap[id] = ld
-	}
-
-	// populate the tags and logicalDevices maps
+	// populate the rack-level tags and logical devices maps for each system
+	// (all leaf switches, access switches and generic systems) in the rack.
 	for _, system := range r.LeafSwitches {
+		// collect the tags in the map which will populate the rack-level list
 		addTagsToMap(system.Tags)
-		addLogicalDeviceToMap(system.LogicalDevice)
+
+		// calculate and save the system's logical device ID, embed it,
+		// and save it to the map which will populate the rack-level list
+		system := system.replicate()
+		logicalDeviceID := calculateLogicalDeviceID(system.LogicalDevice)
+		system.LogicalDevice.MustSetID(logicalDeviceID)
+		logicalDeviceMap[logicalDeviceID] = system.LogicalDevice
 	}
-	//for _, system := range r.AccessSwitches {
+	//for _, system := range r.AccessSwitches { todo: AccessSwitches
 	//	addTagsToMap(system.Tags)
 	//	addLogicalDeviceToMap(system.LogicalDevice)
 	//}
-	//for _, system := range r.GenericSystems {
+	//for _, system := range r.GenericSystems { todo: GenericSystems
 	//	addTagsToMap(system.Tags)
 	//	addLogicalDeviceToMap(system.LogicalDevice)
 	//}
 
-	// having de-duped tags and logical devices via map, add the values to the raw slices
+	// having de-duped tags via map, convert them to sorted slice
 	raw.Tags = make([]Tag, 0, len(tagMap))
 	for _, tag := range tagMap {
 		raw.Tags = append(raw.Tags, tag)
 	}
+	sort.Slice(raw.Tags, func(i, j int) bool {
+		return raw.Tags[i].Label < raw.Tags[j].Label
+	})
+
+	// having de-duped logical devices via map, convert them to sorted slice
 	raw.LogicalDevices = make([]LogicalDevice, 0, len(logicalDeviceMap))
 	for _, logicalDevice := range logicalDeviceMap {
 		raw.LogicalDevices = append(raw.LogicalDevices, logicalDevice)
 	}
+	sort.Slice(raw.LogicalDevices, func(i, j int) bool {
+		return raw.LogicalDevices[i].id < raw.LogicalDevices[j].id
+	})
 
 	return json.Marshal(&raw)
 }
 
 func (r *RackType) UnmarshalJSON(bytes []byte) error {
-	// TODO implement me
-	panic("implement me")
+	var raw struct {
+		ID                       string                        `json:"id,omitempty"` // ID must be marshaled for template embedding
+		Label                    string                        `json:"display_name"`
+		Description              string                        `json:"description"`
+		FabricConnectivityDesign enum.FabricConnectivityDesign `json:"fabric_connectivity_design"`
+		Tags                     []Tag                         `json:"tags"`
+		LogicalDevices           []LogicalDevice               `json:"logical_devices"`
+		Status                   *enum.FFEConsistencyStatus    `json:"status"`
+		LeafSwitches             []LeafSwitch                  `json:"leaf_switches"`
+		// AccessSwitches        []AccessSwitch                `json:"access_switches"` todo: AccessSwitches
+		// GenericSystems        []GenericSystem               `json:"generic_systems"` todo: GenericSystems
+		CreatedAt      *time.Time `json:"created_at"`
+		LastModifiedAt *time.Time `json:"last_modified_at"`
+	}
+	err := json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return fmt.Errorf("unmarshaling rack_type: %w", err)
+	}
+
+	// convert rack-level tags and logical devices (slices with full detail) into maps for quick access
+	tagMap := make(map[string]Tag, len(raw.Tags))
+	for _, tag := range raw.Tags {
+		tagMap[tag.Label] = tag.replicate() // replicate drops metadata
+	}
+	logicalDeviceMap := make(map[string]LogicalDevice, len(raw.LogicalDevices))
+	for _, ld := range raw.LogicalDevices {
+		logicalDeviceMap[ld.id] = ld.replicate() // replicate drops metadata
+	}
+
+	r.id = raw.ID
+	r.Label = raw.Label
+	r.Description = raw.Description
+	r.FabricConnectivityDesign = raw.FabricConnectivityDesign
+	r.Status = raw.Status
+	r.LeafSwitches = make([]LeafSwitch, len(raw.LeafSwitches))
+	for i, system := range raw.LeafSwitches {
+		// find logical device with full detail in rack-level map
+		logicalDevice, ok := logicalDeviceMap[system.LogicalDevice.id]
+		if !ok {
+			return fmt.Errorf("leaf switch %d logical device (%q) not found", i, system.LogicalDevice.id)
+		}
+
+		r.LeafSwitches[i] = system.replicate() // replicate drops metadata
+		r.LeafSwitches[i].LogicalDevice = logicalDevice
+
+		r.LeafSwitches[i].Tags = make([]Tag, len(system.Tags))
+		for j, tag := range system.Tags {
+			tagLabel := tag.Label
+			// find tag with full detail in rack-level map
+			tag, ok = tagMap[tagLabel]
+			if !ok {
+				return fmt.Errorf("leaf switch %d tag (%q) not found", i, tagLabel)
+			}
+
+			r.LeafSwitches[i].Tags[j] = tag
+		}
+	}
+	// for i, system := range raw.AccessSwitches {} todo: AccessSwitches
+	// for i, system := range raw.GenericSystems {} todo: GenericSystems
+
+	r.createdAt = raw.CreatedAt
+	r.lastModifiedAt = raw.LastModifiedAt
+
+	return nil
 }
 
 func (r RackType) CreatedAt() *time.Time {

@@ -42,7 +42,7 @@ func (l LogicalDevice) ID() *string {
 // to be empty, use MustSetID.
 func (l *LogicalDevice) SetID(id string) error {
 	if l.id != "" {
-		return IDIsSet(fmt.Errorf("tag id alredy has value %q", l.id))
+		return IDIsSet(fmt.Errorf("id already has value %q", l.id))
 	}
 
 	l.id = id
@@ -75,7 +75,7 @@ func (l LogicalDevice) LastModifiedAt() *time.Time {
 
 func (l LogicalDevice) MarshalJSON() ([]byte, error) {
 	raw := struct {
-		ID     string               `json:"id,omitempty"` // ID must be marshaled when embedded in rack_type
+		ID     string               `json:"id,omitempty"` // ID must be marshaled for rack-type embedding
 		Label  string               `json:"display_name"`
 		Panels []LogicalDevicePanel `json:"panels"`
 	}{
