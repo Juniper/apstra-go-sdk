@@ -469,8 +469,8 @@ SOFTWARE.
 ## golang.org/x/mod/semver
 
 * Name: golang.org/x/mod/semver
-* Version: v0.25.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/mod/+/v0.25.0:LICENSE)
+* Version: v0.28.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/mod/+/v0.28.0:LICENSE)
 
 ```
 Copyright 2009 The Go Authors.
@@ -506,8 +506,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sync/errgroup
 
 * Name: golang.org/x/sync/errgroup
-* Version: v0.15.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sync/+/v0.15.0:LICENSE)
+* Version: v0.17.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sync/+/v0.17.0:LICENSE)
 
 ```
 Copyright 2009 The Go Authors.
@@ -543,8 +543,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/tools
 
 * Name: golang.org/x/tools
-* Version: v0.34.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/tools/+/v0.34.0:LICENSE)
+* Version: v0.37.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/tools/+/v0.37.0:LICENSE)
 
 ```
 Copyright 2009 The Go Authors.
