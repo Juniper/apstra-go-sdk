@@ -57,7 +57,7 @@ func (t *Tag) MustSetID(id string) {
 	}
 }
 
-// replicate returns a copy of t with zero values for metadata fields
+// replicate returns a copy of itself with zero values for metadata fields
 func (t Tag) replicate() Tag {
 	return Tag{
 		Label:       t.Label,
@@ -108,4 +108,18 @@ func (t *Tag) UnmarshalJSON(bytes []byte) error {
 
 func NewTag(id string) Tag {
 	return Tag{id: id}
+}
+
+func populateTagsByLabel(parentTags, childTags []Tag) error {
+CHILDTAG:
+	for i, childTag := range childTags {
+		for _, parentTag := range parentTags {
+			if childTag.Label == parentTag.Label {
+				childTags[i] = parentTag.replicate()
+				continue CHILDTAG
+			}
+		}
+		return fmt.Errorf("tag with label %q not found", childTag.Label)
+	}
+	return nil
 }

@@ -15,3 +15,7 @@ type ider interface {
 type replicator[T any] interface {
 	replicate() T
 }
+
+type logicalDeviceIDer interface {
+	logicalDeviceID() *string
+}

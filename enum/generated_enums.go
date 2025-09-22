@@ -602,6 +602,37 @@ func (o *JunosEvpnIrbMode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*LAGMode)(nil)
+	_ json.Marshaler   = (*LAGMode)(nil)
+	_ json.Unmarshaler = (*LAGMode)(nil)
+)
+
+func (o LAGMode) String() string {
+	return o.Value
+}
+
+func (o *LAGMode) FromString(s string) error {
+	if LAGModes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *LAGMode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LAGMode) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*LeafRedundancyProtocol)(nil)
 	_ json.Marshaler   = (*LeafRedundancyProtocol)(nil)
 	_ json.Unmarshaler = (*LeafRedundancyProtocol)(nil)
@@ -633,6 +664,37 @@ func (o *LeafRedundancyProtocol) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*LinkAttachmentType)(nil)
+	_ json.Marshaler   = (*LinkAttachmentType)(nil)
+	_ json.Unmarshaler = (*LinkAttachmentType)(nil)
+)
+
+func (o LinkAttachmentType) String() string {
+	return o.Value
+}
+
+func (o *LinkAttachmentType) FromString(s string) error {
+	if LinkAttachmentTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *LinkAttachmentType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LinkAttachmentType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*LinkSpeed)(nil)
 	_ json.Marshaler   = (*LinkSpeed)(nil)
 	_ json.Unmarshaler = (*LinkSpeed)(nil)
@@ -655,6 +717,37 @@ func (o *LinkSpeed) MarshalJSON() ([]byte, error) {
 }
 
 func (o *LinkSpeed) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*LinkSwitchPeer)(nil)
+	_ json.Marshaler   = (*LinkSwitchPeer)(nil)
+	_ json.Unmarshaler = (*LinkSwitchPeer)(nil)
+)
+
+func (o LinkSwitchPeer) String() string {
+	return o.Value
+}
+
+func (o *LinkSwitchPeer) FromString(s string) error {
+	if LinkSwitchPeers.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *LinkSwitchPeer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LinkSwitchPeer) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -1462,10 +1555,25 @@ var (
 		JunosEvpnIrbModeAsymmetric,
 	)
 
+	_        enum = new(LAGMode)
+	LAGModes      = oenum.New(
+		LAGModeNone,
+		LAGModeActiveLACP,
+		LAGModePassiveLACP,
+		LAGModeStatic,
+	)
+
 	_                       enum = new(LeafRedundancyProtocol)
 	LeafRedundancyProtocols      = oenum.New(
+		LeafRedundancyProtocolNone,
 		LeafRedundancyProtocolESI,
 		LeafRedundancyProtocolMLAG,
+	)
+
+	_                   enum = new(LinkAttachmentType)
+	LinkAttachmentTypes      = oenum.New(
+		LinkAttachmentTypeSingle,
+		LinkAttachmentTypeDual,
 	)
 
 	_          enum = new(LinkSpeed)
@@ -1498,6 +1606,13 @@ var (
 		LinkSpeed400g,
 		LinkSpeed800G,
 		LinkSpeed800g,
+	)
+
+	_               enum = new(LinkSwitchPeer)
+	LinkSwitchPeers      = oenum.New(
+		LinkSwitchPeerUnspecified,
+		LinkSwitchPeerFirst,
+		LinkSwitchPeerSecond,
 	)
 
 	_            enum = new(LockStatus)
