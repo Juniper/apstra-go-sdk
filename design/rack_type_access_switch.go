@@ -115,7 +115,7 @@ func (l *AccessSwitch) UnmarshalJSON(bytes []byte) error {
 		l.Tags[i].Label = rawTagLabel // tag description must be filled by the caller
 	}
 
-	// look for reasons to return before adding ESI LAG info
+	// we're done unless "the switch" is actually an ESI LAG pair
 	if raw.RedundancyProtocol == "" {
 		return nil
 	}
