@@ -24,7 +24,7 @@ func (c Client) CreateLogicalDevice2(ctx context.Context, v design.LogicalDevice
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      design.LogicalDeviceUrl,
+		urlStr:      design.LogicalDevicesUrl,
 		apiInput:    v,
 		apiResponse: &response,
 	})
@@ -85,7 +85,7 @@ func (c Client) ListLogicalDevices2(ctx context.Context) ([]string, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
-		urlStr:      design.LogicalDeviceUrl,
+		urlStr:      design.LogicalDevicesUrl,
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -102,7 +102,7 @@ func (c Client) GetLogicalDevices2(ctx context.Context) ([]design.LogicalDevice,
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      design.LogicalDeviceUrl,
+		urlStr:      design.LogicalDevicesUrl,
 		apiResponse: &response,
 	})
 	if err != nil {

@@ -24,7 +24,7 @@ func (c Client) CreateTag2(ctx context.Context, v design.Tag) (string, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      design.TagUrl,
+		urlStr:      design.TagsUrl,
 		apiInput:    v,
 		apiResponse: &response,
 	})
@@ -85,7 +85,7 @@ func (c Client) ListTags2(ctx context.Context) ([]string, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
-		urlStr:      design.TagUrl,
+		urlStr:      design.TagsUrl,
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -102,7 +102,7 @@ func (c Client) GetTags2(ctx context.Context) ([]design.Tag, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      design.TagUrl,
+		urlStr:      design.TagsUrl,
 		apiResponse: &response,
 	})
 	if err != nil {

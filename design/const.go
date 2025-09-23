@@ -6,8 +6,10 @@ package design
 
 const (
 	urlPrefix            = "/api/design/"
-	TagUrl               = urlPrefix + "tags"
-	TagUrlByID           = TagUrl + "/%s"
-	LogicalDeviceUrl     = urlPrefix + "logical-devices"
-	LogicalDeviceUrlByID = LogicalDeviceUrl + "/%s"
+	TagsUrl              = urlPrefix + "tags"
+	TagUrlByID           = TagsUrl + "/%s"
+	LogicalDevicesUrl    = urlPrefix + "logical-devices"
+	LogicalDeviceUrlByID = LogicalDevicesUrl + "/%s"
+	RackTypesUrl         = urlPrefix + "rack-types"
+	RackTypeUrlByID      = RackTypesUrl + "/%s"
 )
