@@ -89,8 +89,8 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		FabricConnectivityDesign enum.FabricConnectivityDesign `json:"fabric_connectivity_design"`
 		Tags                     []Tag                         `json:"tags"`
 		LogicalDevices           []LogicalDevice               `json:"logical_devices"`
-		LeafSwitches             []LeafSwitch                  `json:"leaf_switches"`
-		AccessSwitches           []AccessSwitch                `json:"access_switches"`
+		LeafSwitches             []LeafSwitch                  `json:"leafs"`
+		AccessSwitches           []AccessSwitch                `json:"access_switches,omitempty"`
 		// GenericSystems        []GenericSystem               `json:"generic_systems"` todo: GenericSystems
 	}{
 		ID:                       r.id,
@@ -180,7 +180,7 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 		AllTags                  []Tag                         `json:"tags"`
 		LogicalDevices           []LogicalDevice               `json:"logical_devices"`
 		Status                   *enum.FFEConsistencyStatus    `json:"status"`
-		LeafSwitches             []LeafSwitch                  `json:"leaf_switches"`
+		LeafSwitches             []LeafSwitch                  `json:"leafs"`
 		AccessSwitches           []AccessSwitch                `json:"access_switches"`
 		// GenericSystems        []GenericSystem               `json:"generic_systems"` todo: GenericSystems
 		CreatedAt      *time.Time `json:"created_at"`
