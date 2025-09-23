@@ -140,9 +140,13 @@ func TestRackType_MarshalJSON(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"collapsed_one_of_each": {
-			v: rackTypeTestCollapsedOneOfEach,
-			e: rackTypeTestCollapsedOneOfEachJSON,
+		"collapsed_simple": {
+			v: rackTypeTestCollapsedSimple,
+			e: rackTypeTestCollapsedSimpleJSON,
+		},
+		"collapsed_esi": {
+			v: rackTypeTestCollapsedESI,
+			e: rackTypeTestCollapsedESIJSON,
 		},
 	}
 
@@ -174,8 +178,8 @@ func TestRackType_UnmarshalJSON(t *testing.T) {
 
 	testCases := map[string]testCase{
 		"collapsed_one_of_each": {
-			v: rackTypeTestCollapsedOneOfEachJSON,
-			e: rackTypeTestCollapsedOneOfEach,
+			v: rackTypeTestCollapsedSimpleJSON,
+			e: rackTypeTestCollapsedSimple,
 		},
 	}
 
