@@ -130,8 +130,8 @@ func (l *LeafSwitch) UnmarshalJSON(bytes []byte) error {
 		l.Tags[i].Label = rawTagLabel // tag description must be filled by the caller
 	}
 
-	// look for reasons to return before adding MLAG info
-	if l.RedundancyProtocol == enum.LeafRedundancyProtocolNone {
+	// we're done unless "the switch" is actually an MLAG pair
+	if l.RedundancyProtocol != enum.LeafRedundancyProtocolMLAG {
 		return nil
 	}
 

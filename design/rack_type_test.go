@@ -177,9 +177,13 @@ func TestRackType_UnmarshalJSON(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"collapsed_one_of_each": {
+		"collapsed_simple": {
 			v: rackTypeTestCollapsedSimpleJSON,
 			e: rackTypeTestCollapsedSimple,
+		},
+		"collapsed_esi": {
+			v: rackTypeTestCollapsedESIJSON,
+			e: rackTypeTestCollapsedESI,
 		},
 	}
 

@@ -38,8 +38,8 @@ var rackTypeTestCollapsedSimple = RackType{
 				},
 			},
 			Tags: []Tag{
-				{Label: "tag b", Description: "TAG B"},
 				{Label: "tag a", Description: "TAG A"},
+				{Label: "tag b", Description: "TAG B"},
 			},
 		},
 	},
@@ -101,8 +101,8 @@ var rackTypeTestCollapsedESI = RackType{
 				},
 			},
 			Tags: []Tag{
-				{Label: "tag b", Description: "TAG B"},
 				{Label: "tag a", Description: "TAG A"},
+				{Label: "tag b", Description: "TAG B"},
 			},
 			RedundancyProtocol: enum.LeafRedundancyProtocolESI,
 		},
