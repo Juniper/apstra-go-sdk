@@ -7,6 +7,7 @@ package design
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
@@ -121,5 +122,8 @@ CHILDTAG:
 		}
 		return fmt.Errorf("tag with label %q not found", childTag.Label)
 	}
+	sort.Slice(childTags, func(i, j int) bool {
+		return childTags[i].Label < childTags[j].Label
+	})
 	return nil
 }
