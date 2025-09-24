@@ -71,7 +71,7 @@ func (a AccessSwitch) MarshalJSON() ([]byte, error) {
 	result := rawAccessSwitch{
 		Count:           zero.PreferDefault(a.Count, 1),
 		Label:           a.Label,
-		Links:           nil, // set by a.ESILagInfo below
+		Links:           a.Links,
 		LogicalDeviceID: fmt.Sprintf("%x", mustHashForComparison(a.LogicalDevice, md5.New())),
 		TagLabels:       make([]string, len(a.Tags)),
 
