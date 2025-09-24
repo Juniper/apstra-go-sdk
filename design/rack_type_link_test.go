@@ -7,8 +7,9 @@ package design
 import (
 	"crypto/sha256"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestRackTypeLink_replicate(t *testing.T) {
@@ -29,7 +30,6 @@ func TestRackTypeLink_replicate(t *testing.T) {
 			require.Equal(t, tCase.v, r)
 		})
 	}
-
 }
 
 func TestRackTypeLink_MarshalJSON(t *testing.T) {
