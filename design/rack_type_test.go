@@ -144,6 +144,10 @@ func TestRackType_MarshalJSON(t *testing.T) {
 			v: rackTypeTestCollapsedSimple,
 			e: rackTypeTestCollapsedSimpleJSON,
 		},
+		"collapsed_simple_with_access": {
+			v: rackTypeTestCollapsedSimpleWithAccess,
+			e: rackTypeTestCollapsedSimpleWithAccessJSON,
+		},
 		"collapsed_esi": {
 			v: rackTypeTestCollapsedESI,
 			e: rackTypeTestCollapsedESIJSON,
@@ -181,6 +185,10 @@ func TestRackType_UnmarshalJSON(t *testing.T) {
 			v: rackTypeTestCollapsedSimpleJSON,
 			e: rackTypeTestCollapsedSimple,
 		},
+		"collapsed_simple_with_access": {
+			v: rackTypeTestCollapsedSimpleWithAccessJSON,
+			e: rackTypeTestCollapsedSimpleWithAccess,
+		},
 		"collapsed_esi": {
 			v: rackTypeTestCollapsedESIJSON,
 			e: rackTypeTestCollapsedESI,
@@ -193,6 +201,15 @@ func TestRackType_UnmarshalJSON(t *testing.T) {
 			var r RackType
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
+
+			// set attributes known to marshal differently than the origin struct
+			for i, accessSwitch := range tCase.e.AccessSwitches {
+				for j, link := range accessSwitch.Links {
+					if link.AttachmentType.String() == "" {
+						tCase.e.AccessSwitches[i].Links[j].AttachmentType = enum.LinkAttachmentTypeSingle
+					}
+				}
+			}
 
 			require.Equal(t, tCase.e, r)
 		})
