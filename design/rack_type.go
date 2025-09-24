@@ -128,8 +128,13 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		logicalDeviceMap[*system.logicalDeviceID()] = system.LogicalDevice
 	}
 	for _, system := range r.AccessSwitches {
-		// collect the tags in the map which will populate the rack-level list
-		addTagsToMap(system.Tags)
+		// collect system and link tags in the map which will populate the rack-level list
+		var tags []Tag
+		tags = append(tags, system.Tags...)
+		for _, link := range system.Links {
+			tags = append(tags, link.Tags...)
+		}
+		addTagsToMap(tags)
 
 		// clone the system and set its LD ID to a hash of the LD payload
 		system := system.replicate()
@@ -202,6 +207,9 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 	r.FabricConnectivityDesign = raw.FabricConnectivityDesign
 	r.Status = raw.Status
 	r.LeafSwitches = make([]LeafSwitch, len(raw.LeafSwitches))
+	if len(raw.AccessSwitches) > 0 {
+		r.AccessSwitches = make([]AccessSwitch, len(raw.AccessSwitches))
+	}
 	for i, system := range raw.LeafSwitches {
 		// find logical device with full detail in rack-level map
 		logicalDevice, ok := logicalDeviceMap[system.LogicalDevice.id]
@@ -231,6 +239,12 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 		err = populateTagsByLabel(raw.AllTags, r.AccessSwitches[i].Tags)
 		if err != nil {
 			return fmt.Errorf("populating tags for access switch %d: %w", i, err)
+		}
+		for j := range r.AccessSwitches[i].Links {
+			err = populateTagsByLabel(raw.AllTags, r.AccessSwitches[i].Links[j].Tags)
+			if err != nil {
+				return fmt.Errorf("populating tags for access switch %d link %d: %w", i, j, err)
+			}
 		}
 
 	}
