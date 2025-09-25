@@ -228,10 +228,8 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 	r.Description = raw.Description
 	r.FabricConnectivityDesign = raw.FabricConnectivityDesign
 	r.Status = raw.Status
+
 	r.LeafSwitches = make([]LeafSwitch, len(raw.LeafSwitches))
-	if len(raw.AccessSwitches) > 0 {
-		r.AccessSwitches = make([]AccessSwitch, len(raw.AccessSwitches))
-	}
 	for i, system := range raw.LeafSwitches {
 		// find logical device with full detail in rack-level map
 		logicalDevice, ok := logicalDeviceMap[system.LogicalDevice.id]
@@ -246,6 +244,10 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 		if err != nil {
 			return fmt.Errorf("populating tags for leaf switch %d: %w", i, err)
 		}
+	}
+
+	if len(raw.AccessSwitches) > 0 {
+		r.AccessSwitches = make([]AccessSwitch, len(raw.AccessSwitches))
 	}
 	for i, system := range raw.AccessSwitches {
 		// find logical device with full detail in rack-level map
@@ -269,6 +271,10 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 			}
 		}
 
+	}
+
+	if len(raw.GenericSystems) > 0 {
+		r.GenericSystems = make([]GenericSystem, len(raw.GenericSystems))
 	}
 	for i, system := range raw.GenericSystems {
 		// find logical device with full detail in rack-level map
