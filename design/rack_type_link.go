@@ -39,7 +39,7 @@ func (r RackTypeLink) MarshalJSON() ([]byte, error) {
 		TargetSwitchLabel:  r.TargetSwitchLabel,
 		LinkPerSwitchCount: zero.PreferDefault(r.LinkPerSwitchCount, 1),
 		Speed:              r.Speed,
-		AttachmentType:     pointer.To(zero.PreferDefault(r.AttachmentType, enum.LinkAttachmentTypeSingle)),
+		AttachmentType:     zero.PreferDefault(r.AttachmentType, enum.LinkAttachmentTypeSingle),
 		LAGMode:            nil, // handled below
 		SwitchPeer:         nil, // handled below
 		RailIndex:          r.RailIndex,
@@ -77,11 +77,7 @@ func (r *RackTypeLink) UnmarshalJSON(bytes []byte) error {
 	r.TargetSwitchLabel = raw.TargetSwitchLabel
 	r.LinkPerSwitchCount = raw.LinkPerSwitchCount
 	r.Speed = raw.Speed
-	if raw.AttachmentType == nil {
-		r.AttachmentType = enum.LinkAttachmentTypeSingle
-	} else {
-		r.AttachmentType = *raw.AttachmentType
-	}
+	r.AttachmentType = raw.AttachmentType
 	if raw.LAGMode == nil {
 		r.LAGMode = enum.LAGModeNone
 	} else {
@@ -109,13 +105,13 @@ func (r RackTypeLink) replicate() RackTypeLink {
 }
 
 type rawRackTypeLink struct {
-	Label              string                   `json:"label"`
-	TargetSwitchLabel  string                   `json:"target_switch_label"`
-	LinkPerSwitchCount int                      `json:"link_per_switch_count"`
-	Speed              speed.Speed              `json:"speed"`
-	AttachmentType     *enum.LinkAttachmentType `json:"attachment_type"`
-	LAGMode            *enum.LAGMode            `json:"lag_mode,omitempty"`
-	SwitchPeer         *enum.LinkSwitchPeer     `json:"switch_peer,omitempty"`
-	RailIndex          *int                     `json:"rail_index,omitempty"`
-	Tags               []string                 `json:"tags"`
+	Label              string                  `json:"label"`
+	TargetSwitchLabel  string                  `json:"target_switch_label"`
+	LinkPerSwitchCount int                     `json:"link_per_switch_count"`
+	Speed              speed.Speed             `json:"speed"`
+	AttachmentType     enum.LinkAttachmentType `json:"attachment_type"`
+	LAGMode            *enum.LAGMode           `json:"lag_mode,omitempty"`
+	SwitchPeer         *enum.LinkSwitchPeer    `json:"switch_peer,omitempty"`
+	RailIndex          *int                    `json:"rail_index,omitempty"`
+	Tags               []string                `json:"tags"`
 }
