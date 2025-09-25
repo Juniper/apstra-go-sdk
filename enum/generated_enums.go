@@ -1377,6 +1377,37 @@ func (o *SviIpv6Mode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*SystemManagementLevel)(nil)
+	_ json.Marshaler   = (*SystemManagementLevel)(nil)
+	_ json.Unmarshaler = (*SystemManagementLevel)(nil)
+)
+
+func (o SystemManagementLevel) String() string {
+	return o.Value
+}
+
+func (o *SystemManagementLevel) FromString(s string) error {
+	if SystemManagementLevels.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o SystemManagementLevel) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *SystemManagementLevel) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*SystemType)(nil)
 	_ json.Marshaler   = (*SystemType)(nil)
 	_ json.Unmarshaler = (*SystemType)(nil)
@@ -1845,6 +1876,13 @@ var (
 		SviIpv6ModeEnabled,
 		SviIpv6ModeForced,
 		SviIpv6ModeLinkLocal,
+	)
+
+	_                      enum = new(SystemManagementLevel)
+	SystemManagementLevels      = oenum.New(
+		SystemManagementLevelFullControl,
+		SystemManagementLevelTelemetryOnly,
+		SystemManagementLevelUnmanaged,
 	)
 
 	_           enum = new(SystemType)

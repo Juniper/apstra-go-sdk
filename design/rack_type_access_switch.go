@@ -48,7 +48,6 @@ func (a AccessSwitch) replicate() AccessSwitch {
 		Links:         make([]RackTypeLink, len(a.Links)),
 		LogicalDevice: a.LogicalDevice.replicate(),
 		Tags:          make([]Tag, len(a.Tags)),
-
 		// ESILAGInfo: nil,
 	}
 
@@ -98,21 +97,21 @@ func (a AccessSwitch) MarshalJSON() ([]byte, error) {
 	return json.Marshal(result)
 }
 
-func (l *AccessSwitch) UnmarshalJSON(bytes []byte) error {
+func (a *AccessSwitch) UnmarshalJSON(bytes []byte) error {
 	var raw rawAccessSwitch
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return fmt.Errorf("unmarshaling access switch: %w", err)
 	}
 
-	l.Count = raw.Count
-	l.Label = raw.Label
-	l.LogicalDevice = NewLogicalDevice(raw.LogicalDeviceID)
-	l.Links = raw.Links
-	l.LogicalDevice = NewLogicalDevice(raw.LogicalDeviceID)
-	l.Tags = make([]Tag, len(raw.TagLabels))
+	a.Count = raw.Count
+	a.Label = raw.Label
+	a.LogicalDevice = NewLogicalDevice(raw.LogicalDeviceID)
+	a.Links = raw.Links
+	a.LogicalDevice = NewLogicalDevice(raw.LogicalDeviceID)
+	a.Tags = make([]Tag, len(raw.TagLabels))
 	for i, rawTagLabel := range raw.TagLabels {
-		l.Tags[i].Label = rawTagLabel // tag description must be filled by the caller
+		a.Tags[i].Label = rawTagLabel // tag description must be filled by the caller
 	}
 
 	// we're done unless "the switch" is actually an ESI LAG pair
@@ -121,7 +120,7 @@ func (l *AccessSwitch) UnmarshalJSON(bytes []byte) error {
 	}
 
 	// having failed to find a reason to return early, save the ESI LAG info
-	l.ESILAGInfo = &RackTypeAccessSwitchESILAGInfo{
+	a.ESILAGInfo = &RackTypeAccessSwitchESILAGInfo{
 		LinkCount:        raw.ESILinkCount,
 		LinkSpeed:        raw.ESILinkSpeed,
 		PortChannelIdMax: raw.ESIPortChannelIDMax,
