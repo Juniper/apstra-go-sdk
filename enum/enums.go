@@ -455,3 +455,11 @@ var (
 	LinkSwitchPeerFirst       = LinkSwitchPeer{Value: "first"}
 	LinkSwitchPeerSecond      = LinkSwitchPeer{Value: "second"}
 )
+
+type SystemManagementLevel oenum.Member[string]
+
+var ( // do not introduce "not_installed" - that's an agent parameter with similar enum values
+	SystemManagementLevelFullControl   = SystemManagementLevel{Value: "full_control"}
+	SystemManagementLevelTelemetryOnly = SystemManagementLevel{Value: "telemetry_only"}
+	SystemManagementLevelUnmanaged     = SystemManagementLevel{Value: "unmanaged"}
+)
