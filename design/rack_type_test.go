@@ -160,6 +160,10 @@ func TestRackType_MarshalJSON(t *testing.T) {
 			v: rackTypeTestRackBasedMLAGWithAccessPair,
 			e: rackTypeTestRackBasedMLAGWithAccessPairJSON,
 		},
+		"collapsed_esi_with_generic_systems": {
+			v: rackTypeTestCollapsedESIWithGenericSystems,
+			e: rackTypeTestCollapsedESIWithGenericSystemsJSON,
+		},
 	}
 
 	for tName, tCase := range testCases {
@@ -205,6 +209,10 @@ func TestRackType_UnmarshalJSON(t *testing.T) {
 		"collapsed_esi": {
 			v: rackTypeTestCollapsedESIJSON,
 			e: rackTypeTestCollapsedESI,
+		},
+		"collapsed_esi_with_generic_systems": {
+			e: rackTypeTestCollapsedESIWithGenericSystems,
+			v: rackTypeTestCollapsedESIWithGenericSystemsJSON,
 		},
 	}
 
