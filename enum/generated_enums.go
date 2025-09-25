@@ -154,7 +154,7 @@ func (o *DesignLogicalDevicePanelPortIndexing) FromString(s string) error {
 	return nil
 }
 
-func (o *DesignLogicalDevicePanelPortIndexing) MarshalJSON() ([]byte, error) {
+func (o DesignLogicalDevicePanelPortIndexing) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -278,7 +278,7 @@ func (o *FFEConsistencyStatus) FromString(s string) error {
 	return nil
 }
 
-func (o *FFEConsistencyStatus) MarshalJSON() ([]byte, error) {
+func (o FFEConsistencyStatus) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -650,7 +650,7 @@ func (o *LAGMode) FromString(s string) error {
 	return nil
 }
 
-func (o *LAGMode) MarshalJSON() ([]byte, error) {
+func (o LAGMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -681,7 +681,7 @@ func (o *LeafRedundancyProtocol) FromString(s string) error {
 	return nil
 }
 
-func (o *LeafRedundancyProtocol) MarshalJSON() ([]byte, error) {
+func (o LeafRedundancyProtocol) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -712,7 +712,7 @@ func (o *LinkAttachmentType) FromString(s string) error {
 	return nil
 }
 
-func (o *LinkAttachmentType) MarshalJSON() ([]byte, error) {
+func (o LinkAttachmentType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -774,7 +774,7 @@ func (o *LinkSwitchPeer) FromString(s string) error {
 	return nil
 }
 
-func (o *LinkSwitchPeer) MarshalJSON() ([]byte, error) {
+func (o LinkSwitchPeer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 

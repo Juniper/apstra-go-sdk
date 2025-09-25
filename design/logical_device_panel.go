@@ -27,7 +27,7 @@ func (l LogicalDevicePanel) MarshalJSON() ([]byte, error) {
 	return json.Marshal(rawLogicalDevicePanel{
 		PanelLayout: l.PanelLayout,
 		PortIndexing: rawLogicalDevicePanelPortIndexing{
-			Order:      &l.PortIndexing,
+			Order:      l.PortIndexing,
 			Schema:     "absolute",
 			StartIndex: 1,
 		},
@@ -43,7 +43,7 @@ func (l *LogicalDevicePanel) UnmarshalJSON(bytes []byte) error {
 	}
 
 	l.PanelLayout = raw.PanelLayout
-	l.PortIndexing = *raw.PortIndexing.Order
+	l.PortIndexing = raw.PortIndexing.Order
 	l.PortGroups = raw.PortGroups
 
 	return nil
@@ -53,9 +53,9 @@ func (l *LogicalDevicePanel) UnmarshalJSON(bytes []byte) error {
 // 1) are marshaled and unmarshaled symmetrically (have no metadata to suppress)
 // 2) have JSON layout which doesn't align with their public struct layout
 type rawLogicalDevicePanelPortIndexing struct {
-	Order      *enum.DesignLogicalDevicePanelPortIndexing `json:"order"`
-	Schema     string                                     `json:"schema"`
-	StartIndex int                                        `json:"start_index"`
+	Order      enum.DesignLogicalDevicePanelPortIndexing `json:"order"`
+	Schema     string                                    `json:"schema"`
+	StartIndex int                                       `json:"start_index"`
 }
 
 // it is safe and reasonable to have a "raw" type for objects which:
