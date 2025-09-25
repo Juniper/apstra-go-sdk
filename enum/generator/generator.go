@@ -57,7 +57,7 @@ func (o *{{ $key }}) FromString(s string) error {
 	return nil
 }
 
-func (o *{{ $key }}) MarshalJSON() ([]byte, error) {
+func (o {{ $key }}) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
