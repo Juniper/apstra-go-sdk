@@ -152,6 +152,14 @@ func TestRackType_MarshalJSON(t *testing.T) {
 			v: rackTypeTestCollapsedESI,
 			e: rackTypeTestCollapsedESIJSON,
 		},
+		"rack_based_esi_with_access_esi": {
+			v: rackTypeTestRackBasedESIWithAccessESI,
+			e: rackTypeTestRackBasedESIWithAccessESIJSON,
+		},
+		"rack_based_mlag_with_access_pair": {
+			v: rackTypeTestRackBasedMLAGWithAccessPair,
+			e: rackTypeTestRackBasedMLAGWithAccessPairJSON,
+		},
 	}
 
 	for tName, tCase := range testCases {
@@ -170,6 +178,11 @@ func TestRackType_MarshalJSON(t *testing.T) {
 			require.NoError(t, err)
 
 			require.JSONEq(t, string(e), string(r))
+
+			/*
+			   inspect raw json with this
+			   pbpaste | jq 'walk(if type == "object" then . | to_entries | sort_by(.key) | from_entries else . end)'
+			*/
 		})
 	}
 }
