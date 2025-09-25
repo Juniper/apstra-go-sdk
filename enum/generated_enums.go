@@ -30,7 +30,7 @@ func (o *ApiFeature) FromString(s string) error {
 	return nil
 }
 
-func (o *ApiFeature) MarshalJSON() ([]byte, error) {
+func (o ApiFeature) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -61,7 +61,7 @@ func (o *ConfigletSection) FromString(s string) error {
 	return nil
 }
 
-func (o *ConfigletSection) MarshalJSON() ([]byte, error) {
+func (o ConfigletSection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -92,7 +92,7 @@ func (o *ConfigletStyle) FromString(s string) error {
 	return nil
 }
 
-func (o *ConfigletStyle) MarshalJSON() ([]byte, error) {
+func (o ConfigletStyle) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -123,7 +123,7 @@ func (o *DeployMode) FromString(s string) error {
 	return nil
 }
 
-func (o *DeployMode) MarshalJSON() ([]byte, error) {
+func (o DeployMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -154,7 +154,7 @@ func (o *DeviceProfileType) FromString(s string) error {
 	return nil
 }
 
-func (o *DeviceProfileType) MarshalJSON() ([]byte, error) {
+func (o DeviceProfileType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -185,7 +185,7 @@ func (o *DhcpServiceMode) FromString(s string) error {
 	return nil
 }
 
-func (o *DhcpServiceMode) MarshalJSON() ([]byte, error) {
+func (o DhcpServiceMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -216,7 +216,7 @@ func (o *EndpointPolicyStatus) FromString(s string) error {
 	return nil
 }
 
-func (o *EndpointPolicyStatus) MarshalJSON() ([]byte, error) {
+func (o EndpointPolicyStatus) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -247,7 +247,7 @@ func (o *FFResourceType) FromString(s string) error {
 	return nil
 }
 
-func (o *FFResourceType) MarshalJSON() ([]byte, error) {
+func (o FFResourceType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -278,7 +278,7 @@ func (o *FabricConnectivityDesign) FromString(s string) error {
 	return nil
 }
 
-func (o *FabricConnectivityDesign) MarshalJSON() ([]byte, error) {
+func (o FabricConnectivityDesign) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -309,7 +309,7 @@ func (o *FeatureSwitch) FromString(s string) error {
 	return nil
 }
 
-func (o *FeatureSwitch) MarshalJSON() ([]byte, error) {
+func (o FeatureSwitch) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -340,7 +340,7 @@ func (o *IbaWidgetAggregationType) FromString(s string) error {
 	return nil
 }
 
-func (o *IbaWidgetAggregationType) MarshalJSON() ([]byte, error) {
+func (o IbaWidgetAggregationType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -371,7 +371,7 @@ func (o *IbaWidgetCombineGraph) FromString(s string) error {
 	return nil
 }
 
-func (o *IbaWidgetCombineGraph) MarshalJSON() ([]byte, error) {
+func (o IbaWidgetCombineGraph) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -402,7 +402,7 @@ func (o *IbaWidgetDataSource) FromString(s string) error {
 	return nil
 }
 
-func (o *IbaWidgetDataSource) MarshalJSON() ([]byte, error) {
+func (o IbaWidgetDataSource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -433,7 +433,7 @@ func (o *IbaWidgetType) FromString(s string) error {
 	return nil
 }
 
-func (o *IbaWidgetType) MarshalJSON() ([]byte, error) {
+func (o IbaWidgetType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -464,7 +464,7 @@ func (o *InterfaceNumberingIpv4Type) FromString(s string) error {
 	return nil
 }
 
-func (o *InterfaceNumberingIpv4Type) MarshalJSON() ([]byte, error) {
+func (o InterfaceNumberingIpv4Type) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -495,7 +495,7 @@ func (o *InterfaceNumberingIpv6Type) FromString(s string) error {
 	return nil
 }
 
-func (o *InterfaceNumberingIpv6Type) MarshalJSON() ([]byte, error) {
+func (o InterfaceNumberingIpv6Type) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -526,7 +526,7 @@ func (o *JunosEvpnIrbMode) FromString(s string) error {
 	return nil
 }
 
-func (o *JunosEvpnIrbMode) MarshalJSON() ([]byte, error) {
+func (o JunosEvpnIrbMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -557,7 +557,7 @@ func (o *LinkSpeed) FromString(s string) error {
 	return nil
 }
 
-func (o *LinkSpeed) MarshalJSON() ([]byte, error) {
+func (o LinkSpeed) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -588,7 +588,7 @@ func (o *LockStatus) FromString(s string) error {
 	return nil
 }
 
-func (o *LockStatus) MarshalJSON() ([]byte, error) {
+func (o LockStatus) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -619,7 +619,7 @@ func (o *LockType) FromString(s string) error {
 	return nil
 }
 
-func (o *LockType) MarshalJSON() ([]byte, error) {
+func (o LockType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -650,7 +650,7 @@ func (o *NodeRole) FromString(s string) error {
 	return nil
 }
 
-func (o *NodeRole) MarshalJSON() ([]byte, error) {
+func (o NodeRole) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -681,7 +681,7 @@ func (o *PolicyApplicationPointType) FromString(s string) error {
 	return nil
 }
 
-func (o *PolicyApplicationPointType) MarshalJSON() ([]byte, error) {
+func (o PolicyApplicationPointType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -712,7 +712,7 @@ func (o *PolicyRuleAction) FromString(s string) error {
 	return nil
 }
 
-func (o *PolicyRuleAction) MarshalJSON() ([]byte, error) {
+func (o PolicyRuleAction) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -743,7 +743,7 @@ func (o *PolicyRuleProtocol) FromString(s string) error {
 	return nil
 }
 
-func (o *PolicyRuleProtocol) MarshalJSON() ([]byte, error) {
+func (o PolicyRuleProtocol) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -774,7 +774,7 @@ func (o *PortRole) FromString(s string) error {
 	return nil
 }
 
-func (o *PortRole) MarshalJSON() ([]byte, error) {
+func (o PortRole) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -805,7 +805,7 @@ func (o *RedundancyGroupType) FromString(s string) error {
 	return nil
 }
 
-func (o *RedundancyGroupType) MarshalJSON() ([]byte, error) {
+func (o RedundancyGroupType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -836,7 +836,7 @@ func (o *RefDesign) FromString(s string) error {
 	return nil
 }
 
-func (o *RefDesign) MarshalJSON() ([]byte, error) {
+func (o RefDesign) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -867,7 +867,7 @@ func (o *RemoteGatewayRouteType) FromString(s string) error {
 	return nil
 }
 
-func (o *RemoteGatewayRouteType) MarshalJSON() ([]byte, error) {
+func (o RemoteGatewayRouteType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -898,7 +898,7 @@ func (o *RenderedConfigType) FromString(s string) error {
 	return nil
 }
 
-func (o *RenderedConfigType) MarshalJSON() ([]byte, error) {
+func (o RenderedConfigType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -929,7 +929,7 @@ func (o *ResourcePoolType) FromString(s string) error {
 	return nil
 }
 
-func (o *ResourcePoolType) MarshalJSON() ([]byte, error) {
+func (o ResourcePoolType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -960,7 +960,7 @@ func (o *RoutingZoneConstraintMode) FromString(s string) error {
 	return nil
 }
 
-func (o *RoutingZoneConstraintMode) MarshalJSON() ([]byte, error) {
+func (o RoutingZoneConstraintMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -991,7 +991,7 @@ func (o *SecurityZoneType) FromString(s string) error {
 	return nil
 }
 
-func (o *SecurityZoneType) MarshalJSON() ([]byte, error) {
+func (o SecurityZoneType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -1022,7 +1022,7 @@ func (o *SpeedUnit) FromString(s string) error {
 	return nil
 }
 
-func (o *SpeedUnit) MarshalJSON() ([]byte, error) {
+func (o SpeedUnit) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -1053,7 +1053,7 @@ func (o *StorageSchemaPath) FromString(s string) error {
 	return nil
 }
 
-func (o *StorageSchemaPath) MarshalJSON() ([]byte, error) {
+func (o StorageSchemaPath) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -1084,7 +1084,7 @@ func (o *SviIpv4Mode) FromString(s string) error {
 	return nil
 }
 
-func (o *SviIpv4Mode) MarshalJSON() ([]byte, error) {
+func (o SviIpv4Mode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -1115,7 +1115,7 @@ func (o *SviIpv6Mode) FromString(s string) error {
 	return nil
 }
 
-func (o *SviIpv6Mode) MarshalJSON() ([]byte, error) {
+func (o SviIpv6Mode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -1146,7 +1146,7 @@ func (o *SystemType) FromString(s string) error {
 	return nil
 }
 
-func (o *SystemType) MarshalJSON() ([]byte, error) {
+func (o SystemType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -1177,7 +1177,7 @@ func (o *TcpStateQualifier) FromString(s string) error {
 	return nil
 }
 
-func (o *TcpStateQualifier) MarshalJSON() ([]byte, error) {
+func (o TcpStateQualifier) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -1208,7 +1208,7 @@ func (o *VnType) FromString(s string) error {
 	return nil
 }
 
-func (o *VnType) MarshalJSON() ([]byte, error) {
+func (o VnType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
