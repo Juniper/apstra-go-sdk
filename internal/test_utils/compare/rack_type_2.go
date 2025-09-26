@@ -20,12 +20,12 @@ func RackType2(t testing.TB, req, resp design.RackType, msg ...string) {
 	require.Equal(t, req.Description, resp.Description, msg)
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, req.FabricConnectivityDesign, resp.FabricConnectivityDesign, msg)
-	if req.Status == nil {
-		require.Nil(t, resp.Status, msg)
-	} else {
-		require.NotNil(t, resp.Status, msg)
-		require.Equal(t, *req.Status, *resp.Status, msg)
-	}
+	// req.Status -- ignoring this attribute because it seems like it's intended for use within a blueprint:
+	//   As a result of flexible fabric expansion, a rack type of a blueprint rack may become inconsistent.
+	//   Such rack type will be marked with inconsistent status in the blueprint. This field is accepted for
+	//   global rack type as a guardrail against UI exporting inconsistent rack type from blueprint to the
+	//   global catalog. The field itself will not be stored in the rack type, as it is assumed that every
+	//   rack type in global catalog is consistent
 	require.Equal(t, len(req.LeafSwitches), len(resp.LeafSwitches), msg)
 	for i := range len(req.LeafSwitches) {
 		RackTypeLeafSwitch(t, req.LeafSwitches[i], resp.LeafSwitches[i], addMsg(msg, "Comparing Leaf Switch %d", i)...)
