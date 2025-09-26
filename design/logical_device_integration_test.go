@@ -54,19 +54,19 @@ var testLogicalDevices = map[string]design.LogicalDevice{
 					{
 						Count: 48,
 						Speed: "25G",
-						Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric},
+						Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric, enum.PortRoleAccess, enum.PortRoleLeaf},
 					},
 				},
 				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
 			},
 			{
 				PanelLayout: design.LogicalDevicePanelLayout{
-					RowCount:    1,
-					ColumnCount: 4,
+					RowCount:    2,
+					ColumnCount: 3,
 				},
 				PortGroups: []design.LogicalDevicePanelPortGroup{
 					{
-						Count: 4,
+						Count: 6,
 						Speed: "400G",
 						Roles: design.LogicalDevicePortRoles{enum.PortRoleAccess, enum.PortRoleGeneric, enum.PortRoleLeaf, enum.PortRolePeer, enum.PortRoleSpine},
 					},
