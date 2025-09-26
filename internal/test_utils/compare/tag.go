@@ -13,13 +13,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Tag(t testing.TB, a, b design.Tag) {
-	t.Helper()
+func Tag(t testing.TB, req, resp design.Tag, msg ...string) {
+	msg = addMsg(msg, "Comparing Tag")
 
-	if a.ID() != nil && b.ID() != nil {
-		require.Equal(t, *a.ID(), *b.ID(), "IDs do not match")
+	if req.ID() != nil && resp.ID() != nil {
+		require.Equal(t, *req.ID(), *resp.ID(), msg)
 	}
 
-	require.Equal(t, a.Label, b.Label, "Labels do not match")
-	require.Equal(t, a.Description, b.Description, "Descriptions do not match")
+	require.Equal(t, req.Label, resp.Label, msg)
+	require.Equal(t, req.Description, resp.Description, msg)
 }

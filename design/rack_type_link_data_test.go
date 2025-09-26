@@ -20,7 +20,7 @@ const linkSimpleJSON = `{
   "label": "Simple Link",
   "target_switch_label": "leafy",
   "link_per_switch_count": 2,
-  "speed": { "unit": "G", "value": 50 },
+  "link_speed": { "unit": "G", "value": 50 },
   "attachment_type": "singleAttached",
   "tags": []
 }`
@@ -41,7 +41,7 @@ const linkComplicatedJSON = `{
   "label": "Complicated Link",
   "target_switch_label": "leafy",
   "link_per_switch_count": 2,
-  "speed": { "unit": "G", "value": 50 },
+  "link_speed": { "unit": "G", "value": 50 },
   "attachment_type": "dualAttached",
   "tags": ["a", "b"],
   "rail_index": 3,

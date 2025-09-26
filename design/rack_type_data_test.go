@@ -281,7 +281,7 @@ const rackTypeTestCollapsedSimpleWithAccessJSON = `{
           "label" : "linky",
           "target_switch_label" : "leafy",
           "link_per_switch_count" : 1,
-          "speed" : { "unit" : "G", "value" : 100 },
+          "link_speed" : { "unit" : "G", "value" : 100 },
           "attachment_type" : "singleAttached",
           "tags" : [ "tag e", "tag f" ]
         }
@@ -451,7 +451,7 @@ const rackTypeTestRackBasedESIWithAccessESIJSON = `{
           "label" : "linky",
           "target_switch_label" : "leafy",
           "link_per_switch_count" : 2,
-          "speed" : { "unit" : "G", "value" : 100 },
+          "link_speed" : { "unit" : "G", "value" : 100 },
           "attachment_type" : "dualAttached",
           "tags" : [ "tag e", "tag f" ]
         }
@@ -687,7 +687,7 @@ const rackTypeTestRackBasedMLAGWithAccessPairJSON = `{
           "label" : "linky",
           "target_switch_label" : "leafy",
           "link_per_switch_count" : 2,
-          "speed" : { "unit" : "G", "value" : 100 },
+          "link_speed" : { "unit" : "G", "value" : 100 },
           "attachment_type" : "singleAttached",
           "switch_peer": "first",
           "tags" : [ "tag e", "tag f" ]
@@ -708,7 +708,7 @@ const rackTypeTestRackBasedMLAGWithAccessPairJSON = `{
           "label" : "linky",
           "target_switch_label" : "leafy",
           "link_per_switch_count" : 3,
-          "speed" : { "unit" : "G", "value" : 100 },
+          "link_speed" : { "unit" : "G", "value" : 100 },
           "attachment_type" : "singleAttached",
           "switch_peer": "second",
           "tags" : [ "tag i", "tag j" ]
@@ -931,14 +931,14 @@ const rackTypeTestCollapsedESIWithGenericSystemsJSON = `{
   "generic_systems": [
     {
       "asn_domain": "enabled",
-      "instance_count": 2,
+      "count": 2,
       "label": "lefty",
       "links": [
         {
           "label" : "left",
           "target_switch_label" : "leafy",
           "link_per_switch_count" : 2,
-          "speed" : { "unit" : "G", "value" : 100 },
+          "link_speed" : { "unit" : "G", "value" : 100 },
           "attachment_type" : "singleAttached",
           "switch_peer": "first",
           "tags" : [ "tag e", "tag f" ],
@@ -954,14 +954,14 @@ const rackTypeTestCollapsedESIWithGenericSystemsJSON = `{
     },
     {
       "asn_domain": "disabled",
-      "instance_count": 1,
+      "count": 1,
       "label": "dually",
       "links": [
         {
           "label" : "dually",
           "target_switch_label" : "leafy",
           "link_per_switch_count" : 1,
-          "speed" : { "unit" : "G", "value" : 100 },
+          "link_speed" : { "unit" : "G", "value" : 100 },
           "attachment_type" : "dualAttached",
           "tags" : [ "tag i", "tag j" ],
           "lag_mode": "static_lag"
@@ -975,14 +975,14 @@ const rackTypeTestCollapsedESIWithGenericSystemsJSON = `{
       "tags": [ "tag g", "tag h" ]
     },
     {
-      "instance_count": 3,
+      "count": 3,
       "label": "righty",
       "links": [
         {
           "label" : "right",
           "target_switch_label" : "leafy",
           "link_per_switch_count" : 3,
-          "speed" : { "unit" : "G", "value" : 100 },
+          "link_speed" : { "unit" : "G", "value" : 100 },
           "attachment_type" : "singleAttached",
           "switch_peer": "second",
           "tags" : [ "tag m", "tag n" ],
