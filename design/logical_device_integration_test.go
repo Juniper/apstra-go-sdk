@@ -20,6 +20,83 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var testLogicalDevices = map[string]design.LogicalDevice{
+	"spine_32x400": {
+		//Label: "spine_32x400", // todo delete me
+		Label: testutils.RandString(6, "hex"),
+		Panels: []design.LogicalDevicePanel{
+			{
+				PanelLayout: design.LogicalDevicePanelLayout{
+					RowCount:    2,
+					ColumnCount: 16,
+				},
+				PortGroups: []design.LogicalDevicePanelPortGroup{
+					{
+						Count: 32,
+						Speed: "400G",
+						Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine},
+					},
+				},
+				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
+			},
+		},
+	},
+	"leaf_48x25_4x400": {
+		//Label: "leaf_48x25_4x400",// todo delete me
+		Label: testutils.RandString(6, "hex"),
+		Panels: []design.LogicalDevicePanel{
+			{
+				PanelLayout: design.LogicalDevicePanelLayout{
+					RowCount:    2,
+					ColumnCount: 24,
+				},
+				PortGroups: []design.LogicalDevicePanelPortGroup{
+					{
+						Count: 48,
+						Speed: "25G",
+						Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric},
+					},
+				},
+				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+			},
+			{
+				PanelLayout: design.LogicalDevicePanelLayout{
+					RowCount:    1,
+					ColumnCount: 4,
+				},
+				PortGroups: []design.LogicalDevicePanelPortGroup{
+					{
+						Count: 4,
+						Speed: "400G",
+						Roles: design.LogicalDevicePortRoles{enum.PortRoleAccess, enum.PortRoleGeneric, enum.PortRoleLeaf, enum.PortRolePeer, enum.PortRoleSpine},
+					},
+				},
+				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
+			},
+		},
+	},
+	"generic_4x25": {
+		//Label: "generic_4x25", // todo delete me
+		Label: "leaf_48x25_4x400",
+		Panels: []design.LogicalDevicePanel{
+			{
+				PanelLayout: design.LogicalDevicePanelLayout{
+					RowCount:    2,
+					ColumnCount: 2,
+				},
+				PortGroups: []design.LogicalDevicePanelPortGroup{
+					{
+						Count: 4,
+						Speed: "25G",
+						Roles: design.LogicalDevicePortRoles{enum.PortRoleAccess, enum.PortRoleLeaf},
+					},
+				},
+				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
+			},
+		},
+	},
+}
+
 func TestLogicalDevice_CRUD(t *testing.T) {
 	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
@@ -30,45 +107,9 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"a": {
-			create: design.LogicalDevice{
-				Label: testutils.RandString(6, "hex"),
-				Panels: []design.LogicalDevicePanel{
-					{
-						PanelLayout: design.LogicalDevicePanelLayout{
-							RowCount:    2,
-							ColumnCount: 4,
-						},
-						PortGroups: []design.LogicalDevicePanelPortGroup{
-							{
-								Count: 8,
-								Speed: "10G",
-								Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf},
-							},
-						},
-						PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
-					},
-				},
-			},
-			update: design.LogicalDevice{
-				Label: testutils.RandString(6, "hex"),
-				Panels: []design.LogicalDevicePanel{
-					{
-						PanelLayout: design.LogicalDevicePanelLayout{
-							RowCount:    4,
-							ColumnCount: 8,
-						},
-						PortGroups: []design.LogicalDevicePanelPortGroup{
-							{
-								Count: 32,
-								Speed: "100G",
-								Roles: design.LogicalDevicePortRoles{enum.PortRoleSpine},
-							},
-						},
-						PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
-					},
-				},
-			},
+		"spine_to_leaf": {
+			create: testLogicalDevices["spine_32x400"],
+			update: testLogicalDevices["leaf_48x25_4x400"],
 		},
 	}
 
@@ -81,133 +122,121 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 
 					var id string
 					var err error
-					var create design.LogicalDevice
+					var obj design.LogicalDevice
 
-					t.Run("create_test_obj", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						id, err = client.Client.CreateLogicalDevice2(ctx, tCase.create)
-						require.NoError(t, err)
+					// create the object
+					id, err = client.Client.CreateLogicalDevice2(ctx, tCase.create)
+					require.NoError(t, err)
+
+					// ensure the object is deleted even if tests fail
+					testutils.CleanupWithFreshContext(t, 10, func(ctx context.Context) error {
+						_ = client.Client.DeleteLogicalDevice2(ctx, id)
+						return nil
 					})
 
-					t.Run("get_test_obj_by_id_and_compare", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						create, err = client.Client.GetLogicalDevice2(ctx, id)
-						require.NoError(t, err)
-						idPtr := create.ID()
-						require.NotNil(t, idPtr)
-						require.Equal(t, id, *idPtr)
-						compare.LogicalDevice(t, tCase.create, create)
-					})
+					// retrieve the object by ID and validate
+					obj, err = client.Client.GetLogicalDevice2(ctx, id)
+					require.NoError(t, err)
+					idPtr := obj.ID()
+					require.NotNil(t, idPtr)
+					require.Equal(t, id, *idPtr)
+					compare.LogicalDevice2(t, tCase.create, obj)
 
-					t.Run("get_test_obj_by_id_and_compare", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						create, err = client.Client.GetLogicalDeviceByLabel2(ctx, tCase.create.Label)
-						require.NoError(t, err)
-						idPtr := create.ID()
-						require.NotNil(t, idPtr)
-						require.Equal(t, id, *idPtr)
-						compare.LogicalDevice(t, tCase.create, create)
-					})
+					// retrieve the object by label and validate
+					obj, err = client.Client.GetLogicalDeviceByLabel2(ctx, tCase.create.Label)
+					require.NoError(t, err)
+					idPtr = obj.ID()
+					require.NotNil(t, idPtr)
+					require.Equal(t, id, *idPtr)
+					compare.LogicalDevice2(t, tCase.create, obj)
 
-					t.Run("find_id_in_list", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						ids, err := client.Client.ListLogicalDevices2(ctx)
-						require.NoError(t, err)
-						require.Contains(t, ids, id)
-					})
+					// retrieve the list of IDs - ours must be in there
+					ids, err := client.Client.ListLogicalDevices2(ctx)
+					require.NoError(t, err)
+					require.Contains(t, ids, id)
 
-					t.Run("find_obj_in_list", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						objs, err := client.Client.GetLogicalDevices2(ctx)
-						require.NoError(t, err)
-						objPtr := slice.ObjectWithID(objs, id)
-						require.NotNil(t, objPtr)
-						idPtr := objPtr.ID()
-						require.NotNil(t, idPtr)
-						require.Equal(t, id, *idPtr)
-						compare.LogicalDevice(t, tCase.create, *objPtr)
-					})
+					// retrieve the list of objects (ours must be in there) and validate
+					objs, err := client.Client.GetLogicalDevices2(ctx)
+					require.NoError(t, err)
+					objPtr := slice.ObjectWithID(objs, id)
+					require.NotNil(t, objPtr)
+					obj = *objPtr
+					idPtr = obj.ID()
+					require.NotNil(t, idPtr)
+					require.Equal(t, id, *idPtr)
+					compare.LogicalDevice2(t, tCase.create, obj)
 
-					var update design.LogicalDevice
+					// update the object and validate
+					require.NoError(t, tCase.update.SetID(id))
+					require.NotNil(t, tCase.update.ID())
+					require.Equal(t, id, *tCase.update.ID())
+					err = client.Client.UpdateLogicalDevice2(ctx, tCase.update)
+					require.NoError(t, err)
 
-					t.Run("prepare_obj_update_payload", func(t *testing.T) {
-						update = design.NewLogicalDevice(id)
-						update.Label = tCase.update.Label
-						update.Panels = tCase.update.Panels
-						require.NotNil(t, update.ID())
-						require.Equal(t, id, *update.ID())
-					})
+					// retrieve the updated object by ID and validate
+					obj, err = client.Client.GetLogicalDevice2(ctx, id)
+					require.NoError(t, err)
+					idPtr = obj.ID()
+					require.NotNil(t, idPtr)
+					require.Equal(t, id, *idPtr)
+					compare.LogicalDevice2(t, tCase.update, obj)
 
-					t.Run("update_test_obj", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						err = client.Client.UpdateLogicalDevice2(ctx, update)
-						require.NoError(t, err)
-					})
+					// restore the object to the original state
+					require.NoError(t, tCase.create.SetID(id))
+					require.NotNil(t, tCase.create.ID())
+					require.Equal(t, id, *tCase.update.ID())
+					err = client.Client.UpdateLogicalDevice2(ctx, tCase.create)
+					require.NoError(t, err)
 
-					t.Run("get_updated_obj_by_id_and_compare", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						obj, err := client.Client.GetLogicalDevice2(ctx, id)
-						require.NoError(t, err)
-						idPtr := obj.ID()
-						require.NotNil(t, idPtr)
-						require.Equal(t, id, *idPtr)
-						compare.LogicalDevice(t, update, obj)
-					})
+					// retrieve the object by ID and validate
+					obj, err = client.Client.GetLogicalDevice2(ctx, id)
+					require.NoError(t, err)
+					idPtr = obj.ID()
+					require.NotNil(t, idPtr)
+					require.Equal(t, id, *idPtr)
+					compare.LogicalDevice2(t, tCase.create, obj)
 
-					t.Run("delete_obj", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						err = client.Client.DeleteLogicalDevice2(ctx, id)
-						require.NoError(t, err)
-					})
+					// delete the object
+					err = client.Client.DeleteLogicalDevice2(ctx, id)
+					require.NoError(t, err)
 
+					// below this point we're expecting to *not* find the object
 					var ace apstra.ClientErr
 
-					t.Run("get_deleted_obj_by_id", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						_, err = client.Client.GetLogicalDevice2(ctx, id)
-						require.Error(t, err)
-						require.ErrorAs(t, err, &ace)
-						require.Equal(t, apstra.ErrNotfound, ace.Type())
-					})
+					// get the object by ID
+					_, err = client.Client.GetLogicalDevice2(ctx, id)
+					require.Error(t, err)
+					require.ErrorAs(t, err, &ace)
+					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
-					t.Run("get_deleted_obj_by_label", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						_, err = client.Client.GetLogicalDeviceByLabel2(ctx, tCase.create.Label)
-						require.Error(t, err)
-						require.ErrorAs(t, err, &ace)
-						require.Equal(t, apstra.ErrNotfound, ace.Type())
-					})
+					// get the object by label
+					_, err = client.Client.GetLogicalDeviceByLabel2(ctx, tCase.create.Label)
+					require.Error(t, err)
+					require.ErrorAs(t, err, &ace)
+					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
-					t.Run("fail_to_find_id_in_list", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						ids, err := client.Client.ListLogicalDevices2(ctx)
-						require.NoError(t, err)
-						require.NotContains(t, ids, id)
-					})
+					// retrieve the list of IDs (ours must *not* be in there)
+					ids, err = client.Client.ListLogicalDevices2(ctx)
+					require.NoError(t, err)
+					require.NotContains(t, ids, id)
 
-					t.Run("fail_to_find_obj_in_list", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						objs, err := client.Client.GetLogicalDevices2(ctx)
-						require.NoError(t, err)
-						objPtr := slice.ObjectWithID(objs, id)
-						require.Nil(t, objPtr)
-					})
+					// retrieve the list of objects (ours must *not* be in there)
+					objs, err = client.Client.GetLogicalDevices2(ctx)
+					require.NoError(t, err)
+					objPtr = slice.ObjectWithID(objs, id)
+					require.Nil(t, objPtr)
 
-					t.Run("fail_to_update_obj", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						err = client.Client.UpdateLogicalDevice2(ctx, update)
-						require.Error(t, err)
-						require.ErrorAs(t, err, &ace)
-						require.Equal(t, apstra.ErrNotfound, ace.Type())
-					})
+					// update the object
+					err = client.Client.UpdateLogicalDevice2(ctx, tCase.update)
+					require.Error(t, err)
+					require.ErrorAs(t, err, &ace)
+					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
-					t.Run("fail_to_delete_obj", func(t *testing.T) {
-						ctx := testutils.ContextWithTestID(ctx, t)
-						err = client.Client.DeleteLogicalDevice2(ctx, id)
-						require.Error(t, err)
-						require.ErrorAs(t, err, &ace)
-						require.Equal(t, apstra.ErrNotfound, ace.Type())
-					})
+					// delete the object
+					err = client.Client.DeleteLogicalDevice2(ctx, id)
+					require.Error(t, err)
+					require.ErrorAs(t, err, &ace)
+					require.Equal(t, apstra.ErrNotfound, ace.Type())
 				})
 			}
 		})

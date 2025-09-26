@@ -108,7 +108,7 @@ type rawRackTypeLink struct {
 	Label              string                  `json:"label"`
 	TargetSwitchLabel  string                  `json:"target_switch_label"`
 	LinkPerSwitchCount int                     `json:"link_per_switch_count"`
-	Speed              speed.Speed             `json:"speed"`
+	Speed              speed.Speed             `json:"link_speed"`
 	AttachmentType     enum.LinkAttachmentType `json:"attachment_type"`
 	LAGMode            *enum.LAGMode           `json:"lag_mode,omitempty"`
 	SwitchPeer         *enum.LinkSwitchPeer    `json:"switch_peer,omitempty"`
