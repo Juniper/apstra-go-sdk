@@ -102,10 +102,10 @@ func (o *LogicalDevicePortRoles) FromStrings(in []string) error {
 	return nil
 }
 
-// SetAllRoles ensures that the LogicalDevicePortRoles contains the entire
+// IncludeAllUses ensures that the LogicalDevicePortRoles contains the entire
 // set of "available for use" port roles: All roles excluding "l3_server"
 // (deprecated)
-func (o *LogicalDevicePortRoles) SetAllRoles() {
+func (o *LogicalDevicePortRoles) IncludeAllUses() {
 	// wipe out any existing values
 	*o = nil
 

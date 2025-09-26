@@ -188,7 +188,7 @@ type PortRole oenum.Member[string]
 var (
 	PortRoleAccess     = PortRole{Value: "access"}
 	PortRoleGeneric    = PortRole{Value: "generic"}
-	PortRoleL3Server   = PortRole{Value: "l3_server"} // todo: remove this, LogicalDevicePortRoles.Validate and simplify LogicalDevicePortRoles.SetAllRoles
+	PortRoleL3Server   = PortRole{Value: "l3_server"} // todo: remove this, LogicalDevicePortRoles.Validate and simplify LogicalDevicePortRoles.IncludeAllUses
 	PortRoleLeaf       = PortRole{Value: "leaf"}
 	PortRolePeer       = PortRole{Value: "peer"}
 	PortRoleSpine      = PortRole{Value: "spine"}
