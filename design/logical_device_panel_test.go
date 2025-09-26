@@ -19,7 +19,7 @@ func TestLogicalDevicePanel_MarshalUnmarshal(t *testing.T) {
 	}
 
 	var allRoles design.LogicalDevicePortRoles
-	allRoles.SetAllRoles()
+	allRoles.IncludeAllUses()
 
 	testCases := map[string]testCase{
 		"a": {
