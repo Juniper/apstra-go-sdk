@@ -7,8 +7,9 @@
 package compare
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestAddMsg(t *testing.T) {

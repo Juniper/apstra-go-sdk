@@ -7,11 +7,11 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 )
 
 func (c Client) CreateRackType2(ctx context.Context, v design.RackType) (string, error) {
