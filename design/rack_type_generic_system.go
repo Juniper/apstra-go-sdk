@@ -129,7 +129,7 @@ func (g *GenericSystem) UnmarshalJSON(bytes []byte) error {
 // 2) have JSON layout which doesn't align with their public struct layout
 type rawGenericSystem struct {
 	AsnDomain        *enum.FeatureSwitch        `json:"asn_domain,omitempty"`
-	Count            int                        `json:"instance_count"`
+	Count            int                        `json:"count"`
 	Label            string                     `json:"label"`
 	Links            []RackTypeLink             `json:"links"`
 	LogicalDeviceID  string                     `json:"logical_device"`
