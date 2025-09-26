@@ -213,83 +213,84 @@ var testRacks = map[string]design.RackType{
 			},
 		},
 	},
-	"collapsed_1xleaf_b": {
+	"leaf_mlag_2xaccess": {
 		Label:                    testutils.RandString(6, "hex"),
 		Description:              testutils.RandString(6, "hex"),
-		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
+		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
+		Status:                   pointer.To(enum.FFEConsistencyStatusOK),
 		LeafSwitches: []design.LeafSwitch{
 			{
-				Label: testutils.RandString(6, "hex"),
+				LinkPerSpineCount: pointer.To(2),
+				LinkPerSpineSpeed: pointer.To(speed.Speed("400G")),
+				Label:             "leaf",
 				Tags: []design.Tag{
 					{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")},
 					{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")},
 				},
-				LogicalDevice: design.LogicalDevice{
-					Label: testutils.RandString(6, "hex"),
-					Panels: []design.LogicalDevicePanel{
-						{
-							PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 24},
-							PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
-							PortGroups: []design.LogicalDevicePanelPortGroup{
-								{
-									Count: 48,
-									Speed: "25G",
-									Roles: []enum.PortRole{enum.PortRoleGeneric},
-								},
-							},
-						},
-						{
-							PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 4, ColumnCount: 1},
-							PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
-							PortGroups: []design.LogicalDevicePanelPortGroup{
-								{
-									Count: 4,
-									Speed: "100G",
-									Roles: []enum.PortRole{enum.PortRoleAccess, enum.PortRoleLeaf, enum.PortRolePeer, enum.PortRoleSpine},
-								},
-							},
-						},
+				MLAGInfo: pointer.To(design.RackTypeLeafSwitchMLAGInfo{
+					LeafLeafL3LinkCount:         1,
+					LeafLeafL3LinkSpeed:         "400G",
+					LeafLeafL3LinkPortChannelId: 3,
+					LeafLeafLinkCount:           1,
+					LeafLeafLinkSpeed:           "400G",
+					LeafLeafLinkPortChannelId:   2,
+					MLAGVLAN:                    100,
+				}),
+				RedundancyProtocol: enum.LeafRedundancyProtocolMLAG,
+				LogicalDevice:      testLogicalDevices["leaf_48x25_4x400"],
+			},
+		},
+		AccessSwitches: []design.AccessSwitch{
+			{
+				Count:         1,
+				Label:         "dual-homed-access",
+				LogicalDevice: testLogicalDevices["leaf_48x25_4x400"],
+				Tags:          []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
+				Links: []design.RackTypeLink{
+					{
+						Label:              testutils.RandString(6, "hex"),
+						TargetSwitchLabel:  "leaf",
+						LinkPerSwitchCount: 1,
+						Speed:              "400G",
+						AttachmentType:     enum.LinkAttachmentTypeDual,
+						LAGMode:            enum.LAGModeActiveLACP,
+						Tags:               []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
 					},
 				},
 			},
-		},
-	},
-	"esi_leaf_access_a": {
-		Label:                    testutils.RandString(6, "hex"),
-		Description:              testutils.RandString(6, "hex"),
-		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-		LeafSwitches: []design.LeafSwitch{
 			{
-				Label: testutils.RandString(6, "hex"),
-				Tags: []design.Tag{
-					{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")},
-					{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")},
+				Count:         1,
+				Label:         "lefty",
+				LogicalDevice: testLogicalDevices["leaf_48x25_4x400"],
+				Tags:          []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
+				Links: []design.RackTypeLink{
+					{
+						Label:              testutils.RandString(6, "hex"),
+						TargetSwitchLabel:  "leaf",
+						LinkPerSwitchCount: 1,
+						Speed:              "25G",
+						AttachmentType:     enum.LinkAttachmentTypeSingle,
+						SwitchPeer:         enum.LinkSwitchPeerFirst,
+						LAGMode:            enum.LAGModeActiveLACP,
+						Tags:               []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
+					},
 				},
-				LogicalDevice: design.LogicalDevice{
-					Label: testutils.RandString(6, "hex"),
-					Panels: []design.LogicalDevicePanel{
-						{
-							PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 24},
-							PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
-							PortGroups: []design.LogicalDevicePanelPortGroup{
-								{
-									Count: 48,
-									Speed: "25G",
-									Roles: []enum.PortRole{enum.PortRoleGeneric},
-								},
-							},
-						},
-						{
-							PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 4, ColumnCount: 1},
-							PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
-							PortGroups: []design.LogicalDevicePanelPortGroup{
-								{
-									Count: 4,
-									Speed: "100G",
-									Roles: []enum.PortRole{enum.PortRoleAccess, enum.PortRoleLeaf, enum.PortRolePeer, enum.PortRoleSpine},
-								},
-							},
-						},
+			},
+			{
+				Count:         1,
+				Label:         "righty",
+				LogicalDevice: testLogicalDevices["leaf_48x25_4x400"],
+				Tags:          []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
+				Links: []design.RackTypeLink{
+					{
+						Label:              testutils.RandString(6, "hex"),
+						TargetSwitchLabel:  "leaf",
+						LinkPerSwitchCount: 1,
+						Speed:              "25G",
+						AttachmentType:     enum.LinkAttachmentTypeSingle,
+						SwitchPeer:         enum.LinkSwitchPeerSecond,
+						LAGMode:            enum.LAGModeActiveLACP,
+						Tags:               []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
 					},
 				},
 			},
@@ -307,8 +308,12 @@ func TestRackType_CRUD(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"one": {
+		"collapsed_vs_esi": {
 			create: testRacks["collapsed_1xleaf"],
+			update: testRacks["leaf_esi_access_esi_servers"],
+		},
+		"mlag_vs_esi": {
+			create: testRacks["leaf_mlag_2xaccess"],
 			update: testRacks["leaf_esi_access_esi_servers"],
 		},
 	}
