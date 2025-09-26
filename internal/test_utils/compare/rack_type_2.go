@@ -7,9 +7,9 @@
 package compare
 
 import (
-	"github.com/Juniper/apstra-go-sdk/enum"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/stretchr/testify/require"
 )

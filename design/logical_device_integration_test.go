@@ -22,7 +22,6 @@ import (
 
 var testLogicalDevices = map[string]design.LogicalDevice{
 	"spine_32x400": {
-		//Label: "spine_32x400", // todo delete me
 		Label: testutils.RandString(6, "hex"),
 		Panels: []design.LogicalDevicePanel{
 			{
@@ -42,7 +41,6 @@ var testLogicalDevices = map[string]design.LogicalDevice{
 		},
 	},
 	"leaf_48x25_4x400": {
-		//Label: "leaf_48x25_4x400",// todo delete me
 		Label: testutils.RandString(6, "hex"),
 		Panels: []design.LogicalDevicePanel{
 			{
@@ -76,7 +74,6 @@ var testLogicalDevices = map[string]design.LogicalDevice{
 		},
 	},
 	"generic_4x25": {
-		//Label: "generic_4x25", // todo delete me
 		Label: "leaf_48x25_4x400",
 		Panels: []design.LogicalDevicePanel{
 			{
