@@ -12,7 +12,12 @@ func PreferDefault[T comparable](value, defaultValue T) T {
 	return value
 }
 
-func Of[T any](example T) T {
+func Of[T any](_ T) T {
+	var zero T
+	return zero
+}
+
+func SliceItem[T any](_ []T) T {
 	var zero T
 	return zero
 }
