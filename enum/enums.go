@@ -353,6 +353,13 @@ var (
 	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
 )
 
+type InterfaceMapInterfaceState oenum.Member[string]
+
+var (
+	InterfaceMapInterfaceStateActive   = InterfaceMapInterfaceState{Value: "active"}
+	InterfaceMapInterfaceStateInactive = InterfaceMapInterfaceState{Value: "inactive"}
+)
+
 type FabricConnectivityDesign oenum.Member[string]
 
 var (

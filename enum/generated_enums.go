@@ -509,6 +509,37 @@ func (o *IbaWidgetType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*InterfaceMapInterfaceState)(nil)
+	_ json.Marshaler   = (*InterfaceMapInterfaceState)(nil)
+	_ json.Unmarshaler = (*InterfaceMapInterfaceState)(nil)
+)
+
+func (o InterfaceMapInterfaceState) String() string {
+	return o.Value
+}
+
+func (o *InterfaceMapInterfaceState) FromString(s string) error {
+	if InterfaceMapInterfaceStates.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o InterfaceMapInterfaceState) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *InterfaceMapInterfaceState) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*InterfaceNumberingIpv4Type)(nil)
 	_ json.Marshaler   = (*InterfaceNumberingIpv4Type)(nil)
 	_ json.Unmarshaler = (*InterfaceNumberingIpv4Type)(nil)
@@ -1627,6 +1658,12 @@ var (
 	IbaWidgetTypes      = oenum.New(
 		IbaWidgetTypeStage,
 		IbaWidgetTypeAnomalyHeatmap,
+	)
+
+	_                           enum = new(InterfaceMapInterfaceState)
+	InterfaceMapInterfaceStates      = oenum.New(
+		InterfaceMapInterfaceStateActive,
+		InterfaceMapInterfaceStateInactive,
 	)
 
 	_                           enum = new(InterfaceNumberingIpv4Type)
