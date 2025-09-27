@@ -7,10 +7,11 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
-	"net/http"
 )
 
 func (c Client) CreateInterfaceMap2(ctx context.Context, v design.InterfaceMap) (string, error) {

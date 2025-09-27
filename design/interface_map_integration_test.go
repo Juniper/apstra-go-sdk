@@ -24,7 +24,8 @@ import (
 )
 
 var testInterfaceMaps = map[string]design.InterfaceMap{
-	"Juniper_vQFX__AOS-7x10-Leaf": {Label: testutils.RandString(6, "hex"),
+	"Juniper_vQFX__AOS-7x10-Leaf": {
+		Label:           testutils.RandString(6, "hex"),
 		DeviceProfileID: "Juniper_vQFX",
 		LogicalDeviceID: "AOS-7x10-Leaf",
 		Interfaces: []design.InterfaceMapInterface{
@@ -37,7 +38,8 @@ var testInterfaceMaps = map[string]design.InterfaceMap{
 			{Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric}},                      // port 7
 		},
 	},
-	"Generic_Server_1RU_2x10G__AOS-2x10-1": {Label: testutils.RandString(6, "hex"),
+	"Generic_Server_1RU_2x10G__AOS-2x10-1": {
+		Label:           testutils.RandString(6, "hex"),
 		DeviceProfileID: "Generic_Server_1RU_2x10G",
 		LogicalDeviceID: "AOS-2x10-1",
 		Interfaces: []design.InterfaceMapInterface{
