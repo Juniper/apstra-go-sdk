@@ -26,7 +26,6 @@ func InterfaceMap(t testing.TB, req, resp design.InterfaceMap, msg ...string) {
 	if req.ID() != nil && resp.ID() != nil {
 		require.Equal(t, *req.ID(), *resp.ID(), msg)
 	}
-
 }
 
 func InterfaceMapInterface(t testing.TB, req, resp design.InterfaceMapInterface, msg ...string) {
