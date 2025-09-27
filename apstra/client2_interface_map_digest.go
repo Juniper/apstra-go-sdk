@@ -7,8 +7,9 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/design"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/design"
 )
 
 func (c Client) GetInterfaceMapDigest2(ctx context.Context, id string) (design.InterfaceMapDigest, error) {

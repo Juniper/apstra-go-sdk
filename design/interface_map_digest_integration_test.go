@@ -6,13 +6,13 @@ package design_test
 
 import (
 	"context"
-	"github.com/Juniper/apstra-go-sdk/internal/slice"
-	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
-	"github.com/stretchr/testify/require"
 	"sort"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInterfaceMapDigest_Retrieval(t *testing.T) {
