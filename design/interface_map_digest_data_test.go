@@ -5,8 +5,9 @@
 package design
 
 import (
-	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"time"
+
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
 
 var interfaceMapDigestJuniper_QFX5120_32C__AOS_32x40_4 = InterfaceMapDigest{

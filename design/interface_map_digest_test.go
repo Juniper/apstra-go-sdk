@@ -6,11 +6,12 @@ package design
 
 import (
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestInterfaceMapDigest_ID(t *testing.T) {
