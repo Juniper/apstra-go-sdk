@@ -160,8 +160,8 @@ func TestLogicalDevice_MarshalJSON(t *testing.T) {
 
 func TestLogicalDevice_UnmarshalJSON(t *testing.T) {
 	type testCase struct {
-		e LogicalDevice
 		v string
+		e LogicalDevice
 	}
 
 	testCases := map[string]testCase{

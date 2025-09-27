@@ -1,23 +1,22 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2024.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 package design
 
 import (
-	"crypto/sha256"
 	"encoding/json"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"testing"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
 )
 
-func TestTag_ID(t *testing.T) {
-	var obj Tag
+func TestInterfaceMap_ID(t *testing.T) {
+	var obj InterfaceMap
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
 
@@ -53,29 +52,8 @@ func TestTag_ID(t *testing.T) {
 	})
 }
 
-func TestTag_replicate(t *testing.T) {
-	original := Tag{
-		Label:          testutils.RandString(6, "hex"),
-		Description:    testutils.RandString(6, "hex"),
-		id:             testutils.RandString(6, "hex"),
-		createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
-		lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
-	}
-
-	replicant := original.replicate()
-
-	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
-
-	// wipe out values which cannot be replicated before comparing values
-	original.id = ""
-	original.createdAt = nil
-	original.lastModifiedAt = nil
-
-	require.Equal(t, original, replicant)
-}
-
-func TestTag_timestamps(t *testing.T) {
-	testCases := map[string]Tag{
+func TestInterfaceMap_timestamps(t *testing.T) {
+	testCases := map[string]InterfaceMap{
 		"a": {
 			createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
 			lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
@@ -101,16 +79,16 @@ func TestTag_timestamps(t *testing.T) {
 	}
 }
 
-func TestTag_MarshalJSON(t *testing.T) {
+func TestInterfaceMap_MarshalJSON(t *testing.T) {
 	type testCase struct {
-		v Tag
+		v InterfaceMap
 		e string
 	}
 
 	testCases := map[string]testCase{
-		"tagABC": {
-			v: tagABC,
-			e: tagABCJSON,
+		"test-48x10+4x100": {
+			v: interfaceMapTestX,
+			e: interfaceMapTestXJSON,
 		},
 	}
 
@@ -123,7 +101,6 @@ func TestTag_MarshalJSON(t *testing.T) {
 			// get rid of extraneous fields in the expected string value
 			eMap := map[string]json.RawMessage{}
 			require.NoError(t, json.Unmarshal([]byte(tCase.e), &eMap))
-			delete(eMap, "id")
 			delete(eMap, "created_at")
 			delete(eMap, "last_modified_at")
 			e, err := json.Marshal(eMap)
@@ -134,23 +111,23 @@ func TestTag_MarshalJSON(t *testing.T) {
 	}
 }
 
-func TestTag_UnmarshalJSON(t *testing.T) {
+func TestInterfaceMap_UnmarshalJSON(t *testing.T) {
 	type testCase struct {
 		v string
-		e Tag
+		e InterfaceMap
 	}
 
 	testCases := map[string]testCase{
-		"tagABC": {
-			v: tagABCJSON,
-			e: tagABC,
+		"test-48x10+4x100": {
+			v: interfaceMapTestXJSON,
+			e: interfaceMapTestX,
 		},
 	}
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
-			var r Tag
+			var r LogicalDevice
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
 			require.Equal(t, tCase.e, r)

@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRackTypeID(t *testing.T) {
+func TestRackType_ID(t *testing.T) {
 	var obj RackType
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
