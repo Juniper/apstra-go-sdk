@@ -16,7 +16,7 @@ func (c Client) GetInterfaceMapDigest2(ctx context.Context, id string) (design.I
 	var response design.InterfaceMapDigest
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(design.InterfaceMapDigestUrlByID, id),
+		urlStr:      fmt.Sprintf(design.InterfaceMapDigestURLByID, id),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -33,7 +33,7 @@ func (c Client) ListInterfaceMapDigests2(ctx context.Context) ([]string, error) 
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
-		urlStr:      design.InterfaceMapDigestsUrl,
+		urlStr:      design.InterfaceMapDigestsURL,
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -50,7 +50,7 @@ func (c Client) GetInterfaceMapDigests2(ctx context.Context) ([]design.Interface
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      design.InterfaceMapDigestsUrl,
+		urlStr:      design.InterfaceMapDigestsURL,
 		apiResponse: &response,
 	})
 	if err != nil {

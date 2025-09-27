@@ -24,7 +24,7 @@ func (c Client) CreateTag2(ctx context.Context, v design.Tag) (string, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      design.TagsUrl,
+		urlStr:      design.TagsURL,
 		apiInput:    v,
 		apiResponse: &response,
 	})
@@ -39,7 +39,7 @@ func (c Client) GetTag2(ctx context.Context, id string) (design.Tag, error) {
 	var response design.Tag
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(design.TagUrlByID, id),
+		urlStr:      fmt.Sprintf(design.TagURLByID, id),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -56,7 +56,7 @@ func (c Client) UpdateTag2(ctx context.Context, v design.Tag) error {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(design.TagUrlByID, *v.ID()),
+		urlStr:   fmt.Sprintf(design.TagURLByID, *v.ID()),
 		apiInput: &v,
 	})
 	if err != nil {
@@ -69,7 +69,7 @@ func (c Client) UpdateTag2(ctx context.Context, v design.Tag) error {
 func (c Client) DeleteTag2(ctx context.Context, id string) error {
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(design.TagUrlByID, id),
+		urlStr: fmt.Sprintf(design.TagURLByID, id),
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
@@ -85,7 +85,7 @@ func (c Client) ListTags2(ctx context.Context) ([]string, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
-		urlStr:      design.TagsUrl,
+		urlStr:      design.TagsURL,
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -102,7 +102,7 @@ func (c Client) GetTags2(ctx context.Context) ([]design.Tag, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      design.TagsUrl,
+		urlStr:      design.TagsURL,
 		apiResponse: &response,
 	})
 	if err != nil {

@@ -30,11 +30,11 @@ var (
 )
 
 type InterfaceMapInterfaceMapping struct {
-	DeviceProfilePortID      int
-	DeviceProfileTransformID int
-	DeviceProfileInterfaceID int
-	LogicalDevicePanel       *int
-	LogicalDevicePort        *int
+	DeviceProfilePortID      int  // slice index 0
+	DeviceProfileTransformID int  // slice index 1
+	DeviceProfileInterfaceID int  // slice index 2
+	LogicalDevicePanel       *int // slice index 3
+	LogicalDevicePort        *int // slice index 4
 }
 
 func (i InterfaceMapInterfaceMapping) MarshalJSON() ([]byte, error) {

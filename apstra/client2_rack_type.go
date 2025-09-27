@@ -25,7 +25,7 @@ func (c Client) CreateRackType2(ctx context.Context, v design.RackType) (string,
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      design.RackTypesUrl,
+		urlStr:      design.RackTypesURL,
 		apiInput:    v,
 		apiResponse: &response,
 	})
@@ -40,7 +40,7 @@ func (c Client) GetRackType2(ctx context.Context, id string) (design.RackType, e
 	var response design.RackType
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(design.RackTypeUrlByID, id),
+		urlStr:      fmt.Sprintf(design.RackTypeURLByID, id),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -57,7 +57,7 @@ func (c Client) UpdateRackType2(ctx context.Context, v design.RackType) error {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(design.RackTypeUrlByID, *v.ID()),
+		urlStr:   fmt.Sprintf(design.RackTypeURLByID, *v.ID()),
 		apiInput: &v,
 	})
 	if err != nil {
@@ -70,7 +70,7 @@ func (c Client) UpdateRackType2(ctx context.Context, v design.RackType) error {
 func (c Client) DeleteRackType2(ctx context.Context, id string) error {
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(design.RackTypeUrlByID, id),
+		urlStr: fmt.Sprintf(design.RackTypeURLByID, id),
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
@@ -86,7 +86,7 @@ func (c Client) ListRackTypes2(ctx context.Context) ([]string, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
-		urlStr:      design.RackTypesUrl,
+		urlStr:      design.RackTypesURL,
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -103,7 +103,7 @@ func (c Client) GetRackTypes2(ctx context.Context) ([]design.RackType, error) {
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      design.RackTypesUrl,
+		urlStr:      design.RackTypesURL,
 		apiResponse: &response,
 	})
 	if err != nil {

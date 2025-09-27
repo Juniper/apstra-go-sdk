@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testRacks = map[string]design.RackType{
+var testRackTypes = map[string]design.RackType{
 	"collapsed_1xleaf": {
 		Label:                    testutils.RandString(6, "hex"),
 		Description:              testutils.RandString(6, "hex"),
@@ -309,12 +309,12 @@ func TestRackType_CRUD(t *testing.T) {
 
 	testCases := map[string]testCase{
 		"collapsed_vs_esi": {
-			create: testRacks["collapsed_1xleaf"],
-			update: testRacks["leaf_esi_access_esi_servers"],
+			create: testRackTypes["collapsed_1xleaf"],
+			update: testRackTypes["leaf_esi_access_esi_servers"],
 		},
 		"mlag_vs_esi": {
-			create: testRacks["leaf_mlag_2xaccess"],
-			update: testRacks["leaf_esi_access_esi_servers"],
+			create: testRackTypes["leaf_mlag_2xaccess"],
+			update: testRackTypes["leaf_esi_access_esi_servers"],
 		},
 	}
 
