@@ -7,8 +7,9 @@ package design
 import (
 	"encoding/json"
 	"fmt"
-	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 	"time"
+
+	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
