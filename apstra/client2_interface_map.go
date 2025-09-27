@@ -7,14 +7,13 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"net/http"
-
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
+	"net/http"
 )
 
-func (c Client) CreateLogicalDevice2(ctx context.Context, v design.LogicalDevice) (string, error) {
+func (c Client) CreateInterfaceMap2(ctx context.Context, v design.InterfaceMap) (string, error) {
 	if v.ID() != nil {
 		return "", fmt.Errorf("id must be nil in %s", str.FuncName())
 	}
@@ -25,7 +24,7 @@ func (c Client) CreateLogicalDevice2(ctx context.Context, v design.LogicalDevice
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      design.LogicalDevicesURL,
+		urlStr:      design.InterfaceMapsURL,
 		apiInput:    v,
 		apiResponse: &response,
 	})
@@ -36,11 +35,11 @@ func (c Client) CreateLogicalDevice2(ctx context.Context, v design.LogicalDevice
 	return response.ID, nil
 }
 
-func (c Client) GetLogicalDevice2(ctx context.Context, id string) (design.LogicalDevice, error) {
-	var response design.LogicalDevice
+func (c Client) GetInterfaceMap2(ctx context.Context, id string) (design.InterfaceMap, error) {
+	var response design.InterfaceMap
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(design.LogicalDeviceURLByID, id),
+		urlStr:      fmt.Sprintf(design.InterfaceMapURLByID, id),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -50,14 +49,14 @@ func (c Client) GetLogicalDevice2(ctx context.Context, id string) (design.Logica
 	return response, nil
 }
 
-func (c Client) UpdateLogicalDevice2(ctx context.Context, v design.LogicalDevice) error {
+func (c Client) UpdateInterfaceMap2(ctx context.Context, v design.InterfaceMap) error {
 	if v.ID() == nil {
 		return fmt.Errorf("id is required in %s", str.FuncName())
 	}
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(design.LogicalDeviceURLByID, *v.ID()),
+		urlStr:   fmt.Sprintf(design.InterfaceMapURLByID, *v.ID()),
 		apiInput: &v,
 	})
 	if err != nil {
@@ -67,10 +66,10 @@ func (c Client) UpdateLogicalDevice2(ctx context.Context, v design.LogicalDevice
 	return nil
 }
 
-func (c Client) DeleteLogicalDevice2(ctx context.Context, id string) error {
+func (c Client) DeleteInterfaceMap2(ctx context.Context, id string) error {
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(design.LogicalDeviceURLByID, id),
+		urlStr: fmt.Sprintf(design.InterfaceMapURLByID, id),
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
@@ -79,14 +78,14 @@ func (c Client) DeleteLogicalDevice2(ctx context.Context, id string) error {
 	return nil
 }
 
-func (c Client) ListLogicalDevices2(ctx context.Context) ([]string, error) {
+func (c Client) ListInterfaceMaps2(ctx context.Context) ([]string, error) {
 	var response struct {
 		Items []string `json:"items"`
 	}
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodOptions,
-		urlStr:      design.LogicalDevicesURL,
+		urlStr:      design.InterfaceMapsURL,
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -96,14 +95,14 @@ func (c Client) ListLogicalDevices2(ctx context.Context) ([]string, error) {
 	return response.Items, nil
 }
 
-func (c Client) GetLogicalDevices2(ctx context.Context) ([]design.LogicalDevice, error) {
+func (c Client) GetInterfaceMaps2(ctx context.Context) ([]design.InterfaceMap, error) {
 	var response struct {
-		Items []design.LogicalDevice `json:"items"`
+		Items []design.InterfaceMap `json:"items"`
 	}
 
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      design.LogicalDevicesURL,
+		urlStr:      design.InterfaceMapsURL,
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -113,10 +112,10 @@ func (c Client) GetLogicalDevices2(ctx context.Context) ([]design.LogicalDevice,
 	return response.Items, nil
 }
 
-func (c Client) GetLogicalDeviceByLabel2(ctx context.Context, label string) (design.LogicalDevice, error) {
-	var result []design.LogicalDevice
+func (c Client) GetInterfaceMapByLabel2(ctx context.Context, label string) (design.InterfaceMap, error) {
+	var result []design.InterfaceMap
 
-	all, err := c.GetLogicalDevices2(ctx)
+	all, err := c.GetInterfaceMaps2(ctx)
 	if err != nil {
 		return zero.SliceItem(result), fmt.Errorf("%s failed getting all %T candidates: %w", str.FuncName(), result, err)
 	}

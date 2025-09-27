@@ -7,12 +7,14 @@ package design
 const (
 	urlPrefix = "/api/design/"
 
-	InterfaceMapDigestsUrl    = urlPrefix + "interface-map-digests"
-	InterfaceMapDigestUrlByID = InterfaceMapDigestsUrl + "/%s"
-	LogicalDevicesUrl         = urlPrefix + "logical-devices"
-	LogicalDeviceUrlByID      = LogicalDevicesUrl + "/%s"
-	RackTypesUrl              = urlPrefix + "rack-types"
-	RackTypeUrlByID           = RackTypesUrl + "/%s"
-	TagsUrl                   = urlPrefix + "tags"
-	TagUrlByID                = TagsUrl + "/%s"
+	InterfaceMapDigestsURL    = urlPrefix + "interface-map-digests"
+	InterfaceMapDigestURLByID = InterfaceMapDigestsURL + "/%s"
+	InterfaceMapsURL          = urlPrefix + "interface-maps"
+	InterfaceMapURLByID       = InterfaceMapsURL + "/%s"
+	LogicalDevicesURL         = urlPrefix + "logical-devices"
+	LogicalDeviceURLByID      = LogicalDevicesURL + "/%s"
+	RackTypesURL              = urlPrefix + "rack-types"
+	RackTypeURLByID           = RackTypesURL + "/%s"
+	TagsURL                   = urlPrefix + "tags"
+	TagURLByID                = TagsURL + "/%s"
 )
