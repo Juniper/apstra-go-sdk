@@ -526,7 +526,7 @@ func (o *InterfaceState) FromString(s string) error {
 	return nil
 }
 
-func (o *InterfaceState) MarshalJSON() ([]byte, error) {
+func (o InterfaceState) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
@@ -898,7 +898,7 @@ func (o *RefDesignCapability) FromString(s string) error {
 	return nil
 }
 
-func (o *RefDesignCapability) MarshalJSON() ([]byte, error) {
+func (o RefDesignCapability) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
