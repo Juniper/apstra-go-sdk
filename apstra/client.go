@@ -1597,71 +1597,6 @@ func (o *Client) ApiVersion() string {
 	return o.apiVersion.String()
 }
 
-// GetDeviceProfile returns device profile
-func (o *Client) GetDeviceProfile(ctx context.Context, id ObjectId) (*DeviceProfile, error) {
-	raw, err := o.getDeviceProfile(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return raw.polish(), nil
-}
-
-// ListDeviceProfileIds lists device profile IDs
-func (o *Client) ListDeviceProfileIds(ctx context.Context) ([]ObjectId, error) {
-	return o.listDeviceProfileIds(ctx)
-}
-
-// GetAllDeviceProfiles returns []DeviceProfile
-func (o *Client) GetAllDeviceProfiles(ctx context.Context) ([]DeviceProfile, error) {
-	raw, err := o.getAllDeviceProfiles(ctx)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]DeviceProfile, len(raw))
-	for i := range raw {
-		result[i] = *raw[i].polish()
-	}
-	return result, nil
-}
-
-// GetDeviceProfilesByName returns []DeviceProfile including all profiles using the desired name
-func (o *Client) GetDeviceProfilesByName(ctx context.Context, desired string) ([]DeviceProfile, error) {
-	raw, err := o.getDeviceProfilesByName(ctx, desired)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]DeviceProfile, len(raw))
-	for i := range raw {
-		result[i] = *raw[i].polish()
-	}
-	return result, nil
-}
-
-// GetDeviceProfileByName returns *DeviceProfile indicating the device profile which uses the
-// desired name, or an error if 0 or > 1 device profiles match.
-func (o *Client) GetDeviceProfileByName(ctx context.Context, desired string) (*DeviceProfile, error) {
-	raw, err := o.getDeviceProfileByName(ctx, desired)
-	if err != nil {
-		return nil, err
-	}
-	return raw.polish(), nil
-}
-
-// CreateDeviceProfile creates device profile
-func (o *Client) CreateDeviceProfile(ctx context.Context, profile *DeviceProfileData) (ObjectId, error) {
-	return o.createDeviceProfile(ctx, profile.raw())
-}
-
-// UpdateDeviceProfile updates existing device profile
-func (o *Client) UpdateDeviceProfile(ctx context.Context, id ObjectId, profile *DeviceProfileData) error {
-	return o.updateDeviceProfile(ctx, id, profile.raw())
-}
-
-// DeleteDeviceProfile deletes existing device profile
-func (o *Client) DeleteDeviceProfile(ctx context.Context, id ObjectId) error {
-	return o.deleteDeviceProfile(ctx, id)
-}
-
 // ServerName returns the hostname (or IP address string) by which the client
 // knows the Apstra server. It's mostly useful when setting up streaming event
 // receivers.
@@ -1722,19 +1657,19 @@ func (o *Client) GetInterfaceMapDigests(ctx context.Context) (InterfaceMapDigest
 }
 
 // GetInterfaceMapDigestsByDeviceProfile returns InterfaceMapDigests
-// representing all interface maps which reference the desired DeviceProfile ID
+// representing all interface maps which reference the desired Device Profile ID
 func (o *Client) GetInterfaceMapDigestsByDeviceProfile(ctx context.Context, desired ObjectId) (InterfaceMapDigests, error) {
 	return o.getInterfaceMapDigestsByDeviceProfile(ctx, desired)
 }
 
 // GetInterfaceMapDigestsByLogicalDevice returns InterfaceMapDigests
-// representing all interface maps which reference the desired LogicalDevice ID
+// representing all interface maps which reference the desired Logical Device ID
 func (o *Client) GetInterfaceMapDigestsByLogicalDevice(ctx context.Context, desired ObjectId) (InterfaceMapDigests, error) {
 	return o.getInterfaceMapDigestsByLogicalDevice(ctx, desired)
 }
 
 // GetInterfaceMapDigestsLogicalDeviceAndDeviceProfile returns InterfaceMapDigests
-// representing all interface maps which reference the desired LogicalDevice ID and DeviceProfile ID
+// representing all interface maps which reference the desired Logical Device ID and Device Profile ID
 func (o *Client) GetInterfaceMapDigestsLogicalDeviceAndDeviceProfile(ctx context.Context, ldId ObjectId, dpId ObjectId) (InterfaceMapDigests, error) {
 	return o.getInterfaceMapDigestsLogicalDeviceAndDeviceProfile(ctx, ldId, dpId)
 }

@@ -2,6 +2,10 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package internal
+package apstra_go_sdk
 
-type IDIsSet error
+type ErrIDIsSet error
+
+type ErrNotFound error
+
+type ErrMultipleMatch error

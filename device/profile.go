@@ -7,14 +7,16 @@ package device
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/internal"
 	"time"
 
+	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var _ internal.IDer = (*Profile)(nil)
+var _ json.Marshaler = (*Profile)(nil)
 var _ json.Unmarshaler = (*Profile)(nil)
 
 type Profile struct {
@@ -53,7 +55,7 @@ func (p Profile) ID() *string {
 // to be empty, use MustSetID.
 func (p *Profile) SetID(id string) error {
 	if p.id != "" {
-		return internal.IDIsSet(fmt.Errorf("id already has value %q", p.id))
+		return sdk.ErrIDIsSet(fmt.Errorf("id already has value %q", p.id))
 	}
 
 	p.id = id
@@ -66,6 +68,44 @@ func (p *Profile) MustSetID(id string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (p Profile) MarshalJSON() ([]byte, error) {
+	raw := struct {
+		Selector                    Selector                     `json:"selector"`
+		DeviceProfileType           enum.DeviceProfileType       `json:"device_profile_type"`
+		DualRoutingEngine           bool                         `json:"dual_routing_engine"`
+		SoftwareCapabilities        SoftwareCapabilities         `json:"software_capabilities"`
+		ReferenceDesignCapabilities *ReferenceDesignCapabilities `json:"reference_design_capabilities"` // introduced between 4.2.0 and 6.0.0
+		ChassisProfileID            string                       `json:"chassis_profile_id,omitempty"`
+		HardwareCapabilities        HardwareCapabilities         `json:"hardware_capabilities"`
+		SlotCount                   *int                         `json:"slot_count,omitempty"`
+		ChassisCount                *int                         `json:"chassis_count,omitempty"`
+		Ports                       []Port                       `json:"ports"`
+		Label                       string                       `json:"label"`
+		ChassisInfo                 *ProfileChassisInfo          `json:"chassis_info,omitempty"`
+		LinecardsInfo               []ProfileLinecardInfo        `json:"linecards_info,omitempty"`
+		SlotConfiguration           []ProfileSlotConfiguration   `json:"slot_configuration,omitempty"`
+		PhysicalDevice              bool                         `json:"physical_device"`
+	}{
+		Selector:                    p.Selector,
+		DeviceProfileType:           p.DeviceProfileType,
+		DualRoutingEngine:           p.DualRoutingEngine,
+		SoftwareCapabilities:        p.SoftwareCapabilities,
+		ReferenceDesignCapabilities: p.ReferenceDesignCapabilities,
+		ChassisProfileID:            p.ChassisProfileID,
+		HardwareCapabilities:        p.HardwareCapabilities,
+		SlotCount:                   p.SlotCount,
+		ChassisCount:                p.ChassisCount,
+		Ports:                       p.Ports,
+		Label:                       p.Label,
+		ChassisInfo:                 p.ChassisInfo,
+		LinecardsInfo:               p.LinecardsInfo,
+		SlotConfiguration:           p.SlotConfiguration,
+		PhysicalDevice:              p.PhysicalDevice,
+	}
+
+	return json.Marshal(&raw)
 }
 
 func (p *Profile) UnmarshalJSON(bytes []byte) error {
@@ -87,7 +127,7 @@ func (p *Profile) UnmarshalJSON(bytes []byte) error {
 		SlotConfiguration           []ProfileSlotConfiguration   `json:"slot_configuration,omitempty"`
 		PhysicalDevice              bool                         `json:"physical_device"`
 
-		Id             string     `json:"id"`
+		ID             string     `json:"id"`
 		CreatedAt      *time.Time `json:"created_at,omitempty"`
 		LastModifiedAt *time.Time `json:"last_modified_at,omitempty"`
 	}
@@ -112,7 +152,7 @@ func (p *Profile) UnmarshalJSON(bytes []byte) error {
 	p.LinecardsInfo = raw.LinecardsInfo
 	p.SlotConfiguration = raw.SlotConfiguration
 	p.PhysicalDevice = raw.PhysicalDevice
-	p.id = raw.Id
+	p.id = raw.ID
 	p.createdAt = raw.CreatedAt
 	p.lastModifiedAt = raw.LastModifiedAt
 
@@ -128,33 +168,47 @@ func (p Profile) LastModifiedAt() *time.Time {
 }
 
 type HardwareCapabilities struct {
-	MaxL3Mtu          *int             `json:"max_l3_mtu,omitempty"`
-	MaxL2Mtu          *int             `json:"max_l2_mtu,omitempty"`
-	FormFactor        string           `json:"form_factor"`
-	VTEPLimit         *int             `json:"vtep_limit,omitempty"`
-	BFDSupported      bool             `json:"bfd_supported,omitempty"`
-	COPPStrict        []FeatureVersion `json:"copp_strict,omitempty"`
-	ECMPLimit         int              `json:"ecmp_limit"`
-	AsSeqNumSupported []FeatureVersion `json:"as_seq_num_supported,omitempty"`
-	Ram               int              `json:"ram"`
-	VTEPFloodLimit    *int             `json:"vtep_flood_limit,omitempty"`
-	BreakoutCapable   []struct {
+	MaxL3Mtu        *int            `json:"max_l3_mtu,omitempty"`
+	MaxL2Mtu        *int            `json:"max_l2_mtu,omitempty"`
+	FormFactor      string          `json:"form_factor"`
+	VTEPLimit       *int            `json:"vtep_limit,omitempty"`
+	BFDSupported    bool            `json:"bfd_supported,omitempty"`
+	COPPStrict      FeatureVersions `json:"copp_strict,omitempty"`
+	ECMPLimit       int             `json:"ecmp_limit"`
+	ASNSequencing   FeatureVersions `json:"as_seq_num_supported,omitempty"`
+	RAM             int             `json:"ram"`
+	VTEPFloodLimit  *int            `json:"vtep_flood_limit,omitempty"`
+	BreakoutCapable []struct {
 		Module  int    `json:"module"`
 		Value   bool   `json:"value"`
 		Version string `json:"version"` // introduced and became mandatory some time between 4.2.0 and 6.0.0
 	} `json:"breakout_capable,omitempty"`
-	Userland                 int              `json:"userland"`
-	Asic                     string           `json:"asic"`
-	VrfLimit                 *int             `json:"vrf_limit,omitempty"`
-	RoutingInstanceSupported []FeatureVersion `json:"routing_instance_supported,omitempty"`
-	VxlanSupported           bool             `json:"vxlan_supported,omitempty"`
-	CPU                      string           `json:"cpu"`
+	Userland        int             `json:"userland"`
+	ASIC            string          `json:"asic"`
+	VRFLimit        *int            `json:"vrf_limit,omitempty"`
+	RoutingInstance FeatureVersions `json:"routing_instance_supported,omitempty"`
+	VxlanSupported  bool            `json:"vxlan_supported,omitempty"`
+	CPU             string          `json:"cpu"`
 }
 
 // FeatureVersion details whether a feature is enabled on the given NOS version
 type FeatureVersion struct {
 	Version string `json:"version"`
 	Enabled bool   `json:"value"`
+}
+
+type FeatureVersions []FeatureVersion
+
+func (f FeatureVersions) Validate() error {
+	lenF := len(f)
+	versionMap := make(map[string]struct{}, lenF)
+	for _, v := range f {
+		if _, ok := versionMap[v.Version]; ok {
+			return fmt.Errorf("duplicate feature version: %s", v.Version)
+		}
+		versionMap[v.Version] = struct{}{}
+	}
+	return nil
 }
 
 type SoftwareCapabilities struct {
@@ -173,11 +227,32 @@ type Port struct {
 	Panel           int              `json:"panel_id"`
 	Transformations []Transformation `json:"transformations"`
 	Column          int              `json:"column_id"`
-	Port            int              `json:"port_id"`
+	ID              int              `json:"port_id"`
 	Row             int              `json:"row_id"`
 	FailureDomain   int              `json:"failure_domain_id"`
 	Display         *int             `json:"display_id"`
 	Slot            int              `json:"slot_id"`
+}
+
+// TransformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
+// and returns a map[int]Transformation populated with candidate transformations
+// available according to the PortInfo and keyed by the transformation ID. Only
+// "active" transformations are returned.
+func (p Port) TransformationCandidates(ifName string, ifSpeed speed.Speed) map[int]Transformation {
+	result := make(map[int]Transformation)
+	for _, transformation := range p.Transformations {
+		for _, intf := range transformation.Interfaces {
+			if intf.Name == ifName &&
+				intf.State == enum.InterfaceStateActive &&
+				intf.Speed.Equal(ifSpeed) {
+				result[transformation.ID] = transformation
+			}
+		}
+	}
+	if len(result) == 0 {
+		result = nil
+	}
+	return result
 }
 
 type Transformation struct {
@@ -221,4 +296,61 @@ type ProfileLinecardInfo struct {
 type ProfileSlotConfiguration struct {
 	LinecardProfileID string `json:"linecard_profile_id"`
 	SlotID            int    `json:"slot_id"`
+}
+
+// PortByID returns the Port with the given ID. If no port uses that ID, or if
+// mulitple ports use that ID (unlikely), an error is returned.
+func (p *Profile) PortByID(desired int) (Port, error) {
+	var result *Port
+
+	for _, port := range p.Ports {
+		if port.ID == desired {
+			if result != nil {
+				return Port{}, sdk.ErrMultipleMatch(fmt.Errorf("found multiple ports with ID %d", desired))
+			}
+			result = &port
+		}
+	}
+
+	if result != nil {
+		return Port{}, sdk.ErrNotFound(fmt.Errorf("found no ports with ID %d", desired))
+	}
+
+	return *result, nil
+}
+
+// PortsByInterfaceName returns []Port containing all Ports which contain a
+// Transformation which contains a TransformationInterface with the given name.
+func (p Profile) PortsByInterfaceName(desired string) []Port {
+	var result []Port
+
+portloop:
+	for _, port := range p.Ports {
+		for _, transformation := range port.Transformations {
+			for _, intf := range transformation.Interfaces {
+				if intf.Name == desired {
+					result = append(result, port)
+					continue portloop
+				}
+			}
+		}
+	}
+
+	return result
+}
+
+// PortByInterfaceName returns the Port which has at least one Transformation
+// which contains a TransformationInterface with the given name. If zero ports
+// or multiple ports use the desired name, an error is returned.
+func (p Profile) PortByInterfaceName(desired string) (Port, error) {
+	ports := p.PortsByInterfaceName(desired)
+
+	switch len(ports) {
+	case 0:
+		return Port{}, sdk.ErrNotFound(fmt.Errorf("found no ports with intinterface name %q", desired))
+	case 1:
+		return ports[0], nil
+	default:
+		return Port{}, sdk.ErrMultipleMatch(fmt.Errorf("found %d ports with intinterface name %q", len(ports), desired))
+	}
 }

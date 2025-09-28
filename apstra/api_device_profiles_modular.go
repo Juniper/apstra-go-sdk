@@ -12,6 +12,12 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
+const (
+	apiUrlDeviceProfiles       = "/api/device-profiles"
+	apiUrlDeviceProfilesPrefix = apiUrlDeviceProfiles + apiUrlPathDelim
+	apiUrlDeviceProfileById    = apiUrlDeviceProfilesPrefix + "%s"
+)
+
 type rawModularDeviceSlotConfiguration struct {
 	LinecardProfileId ObjectId `json:"linecard_profile_id"`
 	SlotId            uint64   `json:"slot_id"`

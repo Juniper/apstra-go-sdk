@@ -35,7 +35,7 @@ type InterfaceMapDigest struct {
 type InterfaceMapDigests []InterfaceMapDigest
 
 // SupportsDeviceProfile returns bool indicating whether any InterfaceMapDigest
-// in the slice indicates support for the given DeviceProfile ID
+// in the slice indicates support for the given Device Profile ID
 func (o *InterfaceMapDigests) SupportsDeviceProfile(id ObjectId) bool {
 	for _, imd := range *o {
 		if imd.DeviceProfile.Id == id {
