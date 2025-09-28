@@ -67,15 +67,14 @@ var testProfileGeneric1x10 = Profile{
 		},
 	},
 	Label:          "test_Generic_Server_1RU_1x10G",
-	ChassisInfo:    ProfileChassisInfo{},
 	PhysicalDevice: true,
-	id:             "test_Generic_Server_1RU_1x10G",
-	createdAt:      pointer.To(time.Date(2024, time.January, 1, 2, 3, 4, 5, time.UTC)),
-	lastModifiedAt: pointer.To(time.Date(2025, time.January, 1, 2, 3, 4, 5, time.UTC)),
+	id:             "_test_Generic_Server_1RU_1x10G",
+	createdAt:      pointer.To(time.Date(2024, time.January, 2, 3, 4, 5, 6000, time.UTC)),
+	lastModifiedAt: pointer.To(time.Date(2025, time.January, 2, 3, 4, 5, 6000, time.UTC)),
 }
 
 const testProfileGeneric1x10JSON = `{
-  "last_modified_at": "2025-05-15T18:10:47.154252Z",
+  "last_modified_at": "2025-01-02T03:04:05.000006Z",
   "selector": {
     "os": "Ubuntu GNU/Linux",
     "os_version": ".*",
@@ -133,8 +132,8 @@ const testProfileGeneric1x10JSON = `{
       "slot_id": 0
     }
   ],
-  "label": "Generic_Server_1RU_1x10G",
-  "id": "Generic_Server_1RU_1x10G",
-  "created_at": "2025-05-15T18:10:47.154252Z",
+  "label": "test_Generic_Server_1RU_1x10G",
+  "id": "_test_Generic_Server_1RU_1x10G",
+  "created_at": "2024-01-02T03:04:05.000006Z",
   "physical_device": true
 }`

@@ -5,18 +5,24 @@
 package device
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/Juniper/apstra-go-sdk/internal"
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
+var _ internal.IDer = (*Profile)(nil)
+var _ json.Unmarshaler = (*Profile)(nil)
+
 type Profile struct {
 	Selector                    Selector                     `json:"selector"`
 	DeviceProfileType           enum.DeviceProfileType       `json:"device_profile_type"`
 	DualRoutingEngine           bool                         `json:"dual_routing_engine"`
 	SoftwareCapabilities        SoftwareCapabilities         `json:"software_capabilities"`
-	ReferenceDesignCapabilities *ReferenceDesignCapabilities `json:"reference_design_capabilities"` // introduced between 4.2.0 and 6.0.0
+	ReferenceDesignCapabilities *ReferenceDesignCapabilities `json:"reference_design_capabilities,omitempty"` // introduced between 4.2.0 and 6.0.0
 	ChassisProfileID            string                       `json:"chassis_profile_id,omitempty"`
 	HardwareCapabilities        HardwareCapabilities         `json:"hardware_capabilities"`
 	Predefined                  bool                         `json:"predefined"`
@@ -24,14 +30,14 @@ type Profile struct {
 	ChassisCount                *int                         `json:"chassis_count,omitempty"`
 	Ports                       []Port                       `json:"ports"`
 	Label                       string                       `json:"label"`
-	ChassisInfo                 ProfileChassisInfo           `json:"chassis_info"`
-	LinecardsInfo               []ProfileLinecardInfo        `json:"linecards_info"`
-	SlotConfiguration           []ProfileSlotConfiguration   `json:"slot_configuration"`
+	ChassisInfo                 *ProfileChassisInfo          `json:"chassis_info,omitempty"`
+	LinecardsInfo               []ProfileLinecardInfo        `json:"linecards_info,omitempty"`
+	SlotConfiguration           []ProfileSlotConfiguration   `json:"slot_configuration,omitempty"`
 	PhysicalDevice              bool                         `json:"physical_device"`
 
-	id             string     `json:"id"`
-	createdAt      *time.Time `json:"created_at,omitempty"`
-	lastModifiedAt *time.Time `json:"last_modified_at,omitempty"`
+	id             string
+	createdAt      *time.Time
+	lastModifiedAt *time.Time
 }
 
 func (p Profile) ID() *string {
@@ -39,6 +45,78 @@ func (p Profile) ID() *string {
 		return nil
 	}
 	return &p.id
+}
+
+// SetID sets a previously un-set id attribute. If the id attribute is found to
+// have an existing value, an error is returned. Presence of an existing value
+// is the only reason SetID will return an error. If the id attribute is known
+// to be empty, use MustSetID.
+func (p *Profile) SetID(id string) error {
+	if p.id != "" {
+		return internal.IDIsSet(fmt.Errorf("id already has value %q", p.id))
+	}
+
+	p.id = id
+	return nil
+}
+
+// MustSetID invokes SetID and panics if an error is returned.
+func (p *Profile) MustSetID(id string) {
+	err := p.SetID(id)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (p *Profile) UnmarshalJSON(bytes []byte) error {
+	var raw struct {
+		Selector                    Selector                     `json:"selector"`
+		DeviceProfileType           enum.DeviceProfileType       `json:"device_profile_type"`
+		DualRoutingEngine           bool                         `json:"dual_routing_engine"`
+		SoftwareCapabilities        SoftwareCapabilities         `json:"software_capabilities"`
+		ReferenceDesignCapabilities *ReferenceDesignCapabilities `json:"reference_design_capabilities"` // introduced between 4.2.0 and 6.0.0
+		ChassisProfileID            string                       `json:"chassis_profile_id,omitempty"`
+		HardwareCapabilities        HardwareCapabilities         `json:"hardware_capabilities"`
+		Predefined                  bool                         `json:"predefined"`
+		SlotCount                   *int                         `json:"slot_count,omitempty"`
+		ChassisCount                *int                         `json:"chassis_count,omitempty"`
+		Ports                       []Port                       `json:"ports"`
+		Label                       string                       `json:"label"`
+		ChassisInfo                 *ProfileChassisInfo          `json:"chassis_info,omitempty"`
+		LinecardsInfo               []ProfileLinecardInfo        `json:"linecards_info,omitempty"`
+		SlotConfiguration           []ProfileSlotConfiguration   `json:"slot_configuration,omitempty"`
+		PhysicalDevice              bool                         `json:"physical_device"`
+
+		Id             string     `json:"id"`
+		CreatedAt      *time.Time `json:"created_at,omitempty"`
+		LastModifiedAt *time.Time `json:"last_modified_at,omitempty"`
+	}
+	err := json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return fmt.Errorf("unmarshaling profile: %w", err)
+	}
+
+	p.Selector = raw.Selector
+	p.DeviceProfileType = raw.DeviceProfileType
+	p.DualRoutingEngine = raw.DualRoutingEngine
+	p.SoftwareCapabilities = raw.SoftwareCapabilities
+	p.ReferenceDesignCapabilities = raw.ReferenceDesignCapabilities
+	p.ChassisProfileID = raw.ChassisProfileID
+	p.HardwareCapabilities = raw.HardwareCapabilities
+	p.Predefined = raw.Predefined
+	p.SlotCount = raw.SlotCount
+	p.ChassisCount = raw.ChassisCount
+	p.Ports = raw.Ports
+	p.Label = raw.Label
+	p.ChassisInfo = raw.ChassisInfo
+	p.LinecardsInfo = raw.LinecardsInfo
+	p.SlotConfiguration = raw.SlotConfiguration
+	p.PhysicalDevice = raw.PhysicalDevice
+	p.id = raw.Id
+	p.createdAt = raw.CreatedAt
+	p.lastModifiedAt = raw.LastModifiedAt
+
+	return nil
 }
 
 func (p Profile) CreatedAt() *time.Time {
@@ -50,26 +128,26 @@ func (p Profile) LastModifiedAt() *time.Time {
 }
 
 type HardwareCapabilities struct {
-	MaxL3Mtu          *int             `json:"max_l3_mtu"`
-	MaxL2Mtu          *int             `json:"max_l2_mtu"`
+	MaxL3Mtu          *int             `json:"max_l3_mtu,omitempty"`
+	MaxL2Mtu          *int             `json:"max_l2_mtu,omitempty"`
 	FormFactor        string           `json:"form_factor"`
-	VTEPLimit         *int             `json:"vtep_limit"`
-	BFDSupported      bool             `json:"bfd_supported"`
-	COPPStrict        []FeatureVersion `json:"copp_strict"`
+	VTEPLimit         *int             `json:"vtep_limit,omitempty"`
+	BFDSupported      bool             `json:"bfd_supported,omitempty"`
+	COPPStrict        []FeatureVersion `json:"copp_strict,omitempty"`
 	ECMPLimit         int              `json:"ecmp_limit"`
-	AsSeqNumSupported []FeatureVersion `json:"as_seq_num_supported"`
+	AsSeqNumSupported []FeatureVersion `json:"as_seq_num_supported,omitempty"`
 	Ram               int              `json:"ram"`
-	VTEPFloodLimit    *int             `json:"vtep_flood_limit"`
+	VTEPFloodLimit    *int             `json:"vtep_flood_limit,omitempty"`
 	BreakoutCapable   []struct {
 		Module  int    `json:"module"`
 		Value   bool   `json:"value"`
 		Version string `json:"version"` // introduced and became mandatory some time between 4.2.0 and 6.0.0
-	} `json:"breakout_capable"`
+	} `json:"breakout_capable,omitempty"`
 	Userland                 int              `json:"userland"`
 	Asic                     string           `json:"asic"`
-	VrfLimit                 *int             `json:"vrf_limit"`
-	RoutingInstanceSupported []FeatureVersion `json:"routing_instance_supported"`
-	VxlanSupported           bool             `json:"vxlan_supported"`
+	VrfLimit                 *int             `json:"vrf_limit,omitempty"`
+	RoutingInstanceSupported []FeatureVersion `json:"routing_instance_supported,omitempty"`
+	VxlanSupported           bool             `json:"vxlan_supported,omitempty"`
 	CPU                      string           `json:"cpu"`
 }
 

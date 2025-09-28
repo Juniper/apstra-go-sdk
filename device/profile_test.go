@@ -32,6 +32,7 @@ func TestProfile_MarshalJSON(t *testing.T) {
 			// get rid of extraneous fields in the expected string value
 			eMap := map[string]json.RawMessage{}
 			require.NoError(t, json.Unmarshal([]byte(tCase.e), &eMap))
+			delete(eMap, "id")
 			delete(eMap, "created_at")
 			delete(eMap, "last_modified_at")
 			e, err := json.Marshal(eMap)
