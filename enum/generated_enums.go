@@ -509,6 +509,37 @@ func (o *InterfaceNumberingIpv6Type) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*InterfaceState)(nil)
+	_ json.Marshaler   = (*InterfaceState)(nil)
+	_ json.Unmarshaler = (*InterfaceState)(nil)
+)
+
+func (o InterfaceState) String() string {
+	return o.Value
+}
+
+func (o *InterfaceState) FromString(s string) error {
+	if InterfaceStates.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *InterfaceState) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *InterfaceState) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*JunosEvpnIrbMode)(nil)
 	_ json.Marshaler   = (*JunosEvpnIrbMode)(nil)
 	_ json.Unmarshaler = (*JunosEvpnIrbMode)(nil)
@@ -841,6 +872,37 @@ func (o RefDesign) MarshalJSON() ([]byte, error) {
 }
 
 func (o *RefDesign) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*RefDesignCapability)(nil)
+	_ json.Marshaler   = (*RefDesignCapability)(nil)
+	_ json.Unmarshaler = (*RefDesignCapability)(nil)
+)
+
+func (o RefDesignCapability) String() string {
+	return o.Value
+}
+
+func (o *RefDesignCapability) FromString(s string) error {
+	if RefDesignCapabilities.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o *RefDesignCapability) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *RefDesignCapability) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -1351,6 +1413,12 @@ var (
 		InterfaceNumberingIpv6TypeLinkLocal,
 	)
 
+	_               enum = new(InterfaceState)
+	InterfaceStates      = oenum.New(
+		InterfaceStateActive,
+		InterfaceStateInactive,
+	)
+
 	_                 enum = new(JunosEvpnIrbMode)
 	JunosEvpnIrbModes      = oenum.New(
 		JunosEvpnIrbModeSymmetric,
@@ -1463,6 +1531,12 @@ var (
 		RefDesignDatacenter,
 		RefDesignFreeform,
 		RefDesignRailCollapsed,
+	)
+
+	_                     enum = new(RefDesignCapability)
+	RefDesignCapabilities      = oenum.New(
+		RefDesignCapabilityDisabled,
+		RefDesignCapabilityFullSupport,
 	)
 
 	_                       enum = new(RemoteGatewayRouteType)

@@ -46,6 +46,13 @@ var (
 	IbaWidgetTypeAnomalyHeatmap = IbaWidgetType{Value: "anomaly_heatmap"}
 )
 
+type InterfaceState oenum.Member[string]
+
+var (
+	InterfaceStateActive   = InterfaceState{Value: "active"}
+	InterfaceStateInactive = InterfaceState{Value: "inactive"}
+)
+
 type JunosEvpnIrbMode oenum.Member[string]
 
 var (
@@ -233,6 +240,13 @@ type RedundancyGroupType oenum.Member[string]
 var (
 	RedundancyGroupTypeEsi  = RedundancyGroupType{Value: "esi"}
 	RedundancyGroupTypeMlag = RedundancyGroupType{Value: "mlag"}
+)
+
+type RefDesignCapability oenum.Member[string]
+
+var (
+	RefDesignCapabilityDisabled    = RefDesignCapability{Value: "disabled"}
+	RefDesignCapabilityFullSupport = RefDesignCapability{Value: "full_support"}
 )
 
 type SystemType oenum.Member[string]
