@@ -5,10 +5,10 @@
 package slice_test
 
 import (
-	"github.com/Juniper/apstra-go-sdk/internal"
 	"strconv"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	"github.com/stretchr/testify/require"
@@ -114,52 +114,52 @@ func TestRemove(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"ints_from_beginning": testCase{
+		"ints_from_beginning": {
 			d: []any{1, 2, 3, 4, 5},
 			i: 0,
 			e: []any{2, 3, 4, 5},
 		},
-		"ints_from_middle": testCase{
+		"ints_from_middle": {
 			d: []any{1, 2, 3, 4, 5},
 			i: 2,
 			e: []any{1, 2, 4, 5},
 		},
-		"ints_from_end": testCase{
+		"ints_from_end": {
 			d: []any{1, 2, 3, 4, 5},
 			i: 4,
 			e: []any{1, 2, 3, 4},
 		},
-		"ints_invalid_too_big": testCase{
+		"ints_invalid_too_big": {
 			d:        []any{1, 2, 3, 4, 5},
 			i:        5,
 			expPanic: true,
 		},
-		"ints_invalid_negative": testCase{
+		"ints_invalid_negative": {
 			d:        []any{1, 2, 3, 4, 5},
 			i:        -1,
 			expPanic: true,
 		},
-		"strings_from_beginning": testCase{
+		"strings_from_beginning": {
 			d: []any{"a", "b", "c", "d", "e"},
 			i: 0,
 			e: []any{"b", "c", "d", "e"},
 		},
-		"strings_from_middle": testCase{
+		"strings_from_middle": {
 			d: []any{"a", "b", "c", "d", "e"},
 			i: 2,
 			e: []any{"a", "b", "d", "e"},
 		},
-		"strings_from_end": testCase{
+		"strings_from_end": {
 			d: []any{"a", "b", "c", "d", "e"},
 			i: 4,
 			e: []any{"a", "b", "c", "d"},
 		},
-		"strings_invalid_too_big": testCase{
+		"strings_invalid_too_big": {
 			d:        []any{"a", "b", "c", "d", "e"},
 			i:        5,
 			expPanic: true,
 		},
-		"strings_invalid_negative": testCase{
+		"strings_invalid_negative": {
 			d:        []any{"a", "b", "c", "d", "e"},
 			i:        -1,
 			expPanic: true,

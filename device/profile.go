@@ -15,9 +15,11 @@ import (
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
-var _ internal.IDer = (*Profile)(nil)
-var _ json.Marshaler = (*Profile)(nil)
-var _ json.Unmarshaler = (*Profile)(nil)
+var (
+	_ internal.IDer    = (*Profile)(nil)
+	_ json.Marshaler   = (*Profile)(nil)
+	_ json.Unmarshaler = (*Profile)(nil)
+)
 
 type Profile struct {
 	Selector                    Selector                     `json:"selector"`

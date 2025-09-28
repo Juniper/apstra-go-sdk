@@ -6,8 +6,9 @@ package device
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestProfile_MarshalJSON(t *testing.T) {

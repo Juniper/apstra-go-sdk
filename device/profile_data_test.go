@@ -5,9 +5,10 @@
 package device
 
 import (
+	"time"
+
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
-	"time"
 )
 
 var testProfileGeneric1x10 = Profile{

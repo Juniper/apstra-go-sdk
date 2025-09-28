@@ -9,11 +9,11 @@ package device_test
 import (
 	"context"
 	"encoding/json"
-	"github.com/Juniper/apstra-go-sdk/device"
 	"testing"
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/device"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"

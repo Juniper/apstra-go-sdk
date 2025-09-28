@@ -7,9 +7,10 @@
 package compare
 
 import (
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/device"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func DeviceProfile(t testing.TB, req, resp device.Profile, msg ...string) {

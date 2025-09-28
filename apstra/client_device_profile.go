@@ -7,10 +7,10 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/device"
+	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 )
