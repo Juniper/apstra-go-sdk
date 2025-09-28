@@ -36,6 +36,7 @@ func TestProfile_MarshalJSON(t *testing.T) {
 			delete(eMap, "id")
 			delete(eMap, "created_at")
 			delete(eMap, "last_modified_at")
+			delete(eMap, "predefined")
 			e, err := json.Marshal(eMap)
 			require.NoError(t, err)
 
