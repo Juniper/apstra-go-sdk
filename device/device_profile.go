@@ -1,13 +1,14 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 package device
 
 import (
+	"time"
+
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/speed"
-	"time"
 )
 
 type Profile struct {
