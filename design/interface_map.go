@@ -9,11 +9,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
-	_ ider              = (*InterfaceMap)(nil)
+	_ internal.IDer     = (*InterfaceMap)(nil)
 	_ json.Marshaler    = (*InterfaceMap)(nil)
 	_ json.Unmarshaler  = (*InterfaceMap)(nil)
 	_ timeutils.Stamper = (*InterfaceMap)(nil)
@@ -43,7 +44,7 @@ func (i InterfaceMap) ID() *string {
 // be empty, use MustSetID.
 func (i *InterfaceMap) SetID(id string) error {
 	if i.id != "" {
-		return IDIsSet(fmt.Errorf("id already has value %q", i.id))
+		return internal.IDIsSet(fmt.Errorf("id already has value %q", i.id))
 	}
 
 	i.id = id

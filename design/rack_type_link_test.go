@@ -25,7 +25,7 @@ func TestRackTypeLink_replicate(t *testing.T) {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
 
-			r := tCase.v.replicate()
+			r := tCase.v.Replicate()
 			require.Equal(t, mustHashForComparison(tCase.v, sha256.New()), mustHashForComparison(r, sha256.New()))
 			require.Equal(t, tCase.v, r)
 		})

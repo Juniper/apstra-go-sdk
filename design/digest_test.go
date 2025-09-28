@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,7 @@ import (
 
 func TestDigest(t *testing.T) {
 	type testCase struct {
-		v      ider
+		v      internal.IDer
 		h      hash.Hash
 		expHex string
 	}
