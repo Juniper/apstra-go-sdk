@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2024.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -35,7 +35,7 @@ type InterfaceMapDigest struct {
 type InterfaceMapDigests []InterfaceMapDigest
 
 // SupportsDeviceProfile returns bool indicating whether any InterfaceMapDigest
-// in the slice indicates support for the given Device Profile ID
+// in the slice indicates support for the given DeviceProfile ID
 func (o *InterfaceMapDigests) SupportsDeviceProfile(id ObjectId) bool {
 	for _, imd := range *o {
 		if imd.DeviceProfile.Id == id {
