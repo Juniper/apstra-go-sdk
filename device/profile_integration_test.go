@@ -3782,8 +3782,10 @@ func TestProfile_CRUD(t *testing.T) {
 
 	for tName, tCase := range testCases {
 		var create, update device.Profile
-		require.NoError(t, json.Unmarshal([]byte(tCase.create), &create))
-		require.NoError(t, json.Unmarshal([]byte(tCase.update), &update))
+		require.NoError(t, json.Unmarshal([]byte(tCase.create), &create)) // extract test object from JSON sample from API
+		require.NoError(t, json.Unmarshal([]byte(tCase.update), &update)) // extract test object from JSON sample from API
+		create.Label = testutils.RandString(6, "hex")                     // randomize test object name to avoid collisions
+		update.Label = testutils.RandString(6, "hex")                     // randomize test object name to avoid collisions
 
 		t.Run(tName, func(t *testing.T) {
 			for _, client := range clients {
