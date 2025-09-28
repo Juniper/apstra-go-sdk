@@ -34,6 +34,21 @@ type Profile struct {
 	lastModifiedAt *time.Time `json:"last_modified_at,omitempty"`
 }
 
+func (p Profile) ID() *string {
+	if p.id == "" {
+		return nil
+	}
+	return &p.id
+}
+
+func (p Profile) CreatedAt() *time.Time {
+	return p.createdAt
+}
+
+func (p Profile) LastModifiedAt() *time.Time {
+	return p.lastModifiedAt
+}
+
 type HardwareCapabilities struct {
 	MaxL3Mtu          *int             `json:"max_l3_mtu"`
 	MaxL2Mtu          *int             `json:"max_l2_mtu"`
@@ -55,7 +70,7 @@ type HardwareCapabilities struct {
 	VrfLimit                 *int             `json:"vrf_limit"`
 	RoutingInstanceSupported []FeatureVersion `json:"routing_instance_supported"`
 	VxlanSupported           bool             `json:"vxlan_supported"`
-	Cpu                      string           `json:"cpu"`
+	CPU                      string           `json:"cpu"`
 }
 
 // FeatureVersion details whether a feature is enabled on the given NOS version
