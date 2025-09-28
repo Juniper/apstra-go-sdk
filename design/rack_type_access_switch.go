@@ -10,16 +10,17 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var (
-	_ logicalDeviceIDer        = (*AccessSwitch)(nil)
-	_ replicator[AccessSwitch] = (*AccessSwitch)(nil)
-	_ json.Marshaler           = (*AccessSwitch)(nil)
-	_ json.Unmarshaler         = (*AccessSwitch)(nil)
+	_ logicalDeviceIDer                 = (*AccessSwitch)(nil)
+	_ internal.Replicator[AccessSwitch] = (*AccessSwitch)(nil)
+	_ json.Marshaler                    = (*AccessSwitch)(nil)
+	_ json.Unmarshaler                  = (*AccessSwitch)(nil)
 )
 
 type AccessSwitch struct {
@@ -40,27 +41,27 @@ func (a AccessSwitch) logicalDeviceID() *string {
 	return pointer.To(a.LogicalDevice.id)
 }
 
-// replicate returns a copy of itself with zero values for metadata fields
-func (a AccessSwitch) replicate() AccessSwitch {
+// Replicate returns a copy of itself with zero values for metadata fields
+func (a AccessSwitch) Replicate() AccessSwitch {
 	result := AccessSwitch{
 		Count:         a.Count,
 		Label:         a.Label,
 		Links:         make([]RackTypeLink, len(a.Links)),
-		LogicalDevice: a.LogicalDevice.replicate(),
+		LogicalDevice: a.LogicalDevice.Replicate(),
 		Tags:          make([]Tag, len(a.Tags)),
 		// ESILAGInfo: nil,
 	}
 
 	if a.ESILAGInfo != nil {
-		result.ESILAGInfo = pointer.To(a.ESILAGInfo.replicate())
+		result.ESILAGInfo = pointer.To(a.ESILAGInfo.Replicate())
 	}
 
 	for i, link := range a.Links {
-		result.Links[i] = link.replicate()
+		result.Links[i] = link.Replicate()
 	}
 
 	for i, tag := range a.Tags {
-		result.Tags[i] = tag.replicate()
+		result.Tags[i] = tag.Replicate()
 	}
 
 	return result

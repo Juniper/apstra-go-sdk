@@ -62,7 +62,7 @@ func TestTag_replicate(t *testing.T) {
 		lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
 	}
 
-	replicant := original.replicate()
+	replicant := original.Replicate()
 
 	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
 

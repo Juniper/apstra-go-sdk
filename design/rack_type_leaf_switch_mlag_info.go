@@ -4,9 +4,12 @@
 
 package design
 
-import "github.com/Juniper/apstra-go-sdk/speed"
+import (
+	"github.com/Juniper/apstra-go-sdk/internal"
+	"github.com/Juniper/apstra-go-sdk/speed"
+)
 
-var _ replicator[RackTypeLeafSwitchMLAGInfo] = (*RackTypeLeafSwitchMLAGInfo)(nil)
+var _ internal.Replicator[RackTypeLeafSwitchMLAGInfo] = (*RackTypeLeafSwitchMLAGInfo)(nil)
 
 type RackTypeLeafSwitchMLAGInfo struct {
 	LeafLeafL3LinkCount         int         `json:"leaf_leaf_l3_link_count"`
@@ -18,7 +21,7 @@ type RackTypeLeafSwitchMLAGInfo struct {
 	MLAGVLAN                    int         `json:"mlagvlan"`
 }
 
-// replicate returns a copy of itself with zero values for metadata fields
-func (r RackTypeLeafSwitchMLAGInfo) replicate() RackTypeLeafSwitchMLAGInfo {
+// Replicate returns a copy of itself with zero values for metadata fields
+func (r RackTypeLeafSwitchMLAGInfo) Replicate() RackTypeLeafSwitchMLAGInfo {
 	return r
 }

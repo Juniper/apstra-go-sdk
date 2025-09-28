@@ -11,15 +11,16 @@ import (
 	"slices"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 )
 
 var (
-	_ logicalDeviceIDer         = (*GenericSystem)(nil)
-	_ replicator[GenericSystem] = (*GenericSystem)(nil)
-	_ json.Marshaler            = (*GenericSystem)(nil)
-	_ json.Unmarshaler          = (*GenericSystem)(nil)
+	_ logicalDeviceIDer                  = (*GenericSystem)(nil)
+	_ internal.Replicator[GenericSystem] = (*GenericSystem)(nil)
+	_ json.Marshaler                     = (*GenericSystem)(nil)
+	_ json.Unmarshaler                   = (*GenericSystem)(nil)
 )
 
 type GenericSystem struct {
@@ -44,13 +45,13 @@ func (g GenericSystem) logicalDeviceID() *string {
 	return pointer.To(g.LogicalDevice.id)
 }
 
-// replicate returns a copy of itself with zero values for metadata fields
-func (g GenericSystem) replicate() GenericSystem {
+// Replicate returns a copy of itself with zero values for metadata fields
+func (g GenericSystem) Replicate() GenericSystem {
 	result := GenericSystem{
 		Count:            g.Count,
 		Label:            g.Label,
 		Links:            make([]RackTypeLink, len(g.Links)),
-		LogicalDevice:    g.LogicalDevice.replicate(),
+		LogicalDevice:    g.LogicalDevice.Replicate(),
 		ManagementLevel:  g.ManagementLevel,
 		PortChannelIDMax: g.PortChannelIDMax,
 		PortChannelIDMin: g.PortChannelIDMin,
@@ -60,11 +61,11 @@ func (g GenericSystem) replicate() GenericSystem {
 	}
 
 	for i, link := range g.Links {
-		result.Links[i] = link.replicate()
+		result.Links[i] = link.Replicate()
 	}
 
 	for i, tag := range g.Tags {
-		result.Tags[i] = tag.replicate()
+		result.Tags[i] = tag.Replicate()
 	}
 
 	if g.AsnDomain != nil {

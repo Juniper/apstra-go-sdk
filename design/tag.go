@@ -10,15 +10,16 @@ import (
 	"sort"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
-	_ ider              = (*Tag)(nil)
-	_ replicator[Tag]   = (*Tag)(nil)
-	_ json.Marshaler    = (*Tag)(nil)
-	_ json.Unmarshaler  = (*Tag)(nil)
-	_ timeutils.Stamper = (*Tag)(nil)
+	_ internal.IDer            = (*Tag)(nil)
+	_ internal.Replicator[Tag] = (*Tag)(nil)
+	_ json.Marshaler           = (*Tag)(nil)
+	_ json.Unmarshaler         = (*Tag)(nil)
+	_ timeutils.Stamper        = (*Tag)(nil)
 )
 
 type Tag struct {
@@ -43,7 +44,7 @@ func (t Tag) ID() *string {
 // be empty, use MustSetID.
 func (t *Tag) SetID(id string) error {
 	if t.id != "" {
-		return IDIsSet(fmt.Errorf("id already has value %q", t.id))
+		return internal.IDIsSet(fmt.Errorf("id already has value %q", t.id))
 	}
 
 	t.id = id
@@ -58,8 +59,8 @@ func (t *Tag) MustSetID(id string) {
 	}
 }
 
-// replicate returns a copy of itself with zero values for metadata fields
-func (t Tag) replicate() Tag {
+// Replicate returns a copy of itself with zero values for metadata fields
+func (t Tag) Replicate() Tag {
 	return Tag{
 		Label:       t.Label,
 		Description: t.Description,
@@ -116,7 +117,7 @@ CHILDTAG:
 	for i, childTag := range childTags {
 		for _, parentTag := range parentTags {
 			if childTag.Label == parentTag.Label {
-				childTags[i] = parentTag.replicate()
+				childTags[i] = parentTag.Replicate()
 				continue CHILDTAG
 			}
 		}

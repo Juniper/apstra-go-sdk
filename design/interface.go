@@ -4,18 +4,6 @@
 
 package design
 
-type IDIsSet error
-
-type ider interface {
-	ID() *string
-	SetID(string) error
-	MustSetID(string)
-}
-
-type replicator[T any] interface {
-	replicate() T
-}
-
 type logicalDeviceIDer interface {
 	logicalDeviceID() *string
 }

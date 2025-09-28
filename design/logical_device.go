@@ -10,15 +10,16 @@ import (
 	"hash"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
-	_ ider                      = (*LogicalDevice)(nil)
-	_ replicator[LogicalDevice] = (*LogicalDevice)(nil)
-	_ json.Marshaler            = (*LogicalDevice)(nil)
-	_ json.Unmarshaler          = (*LogicalDevice)(nil)
-	_ timeutils.Stamper         = (*LogicalDevice)(nil)
+	_ internal.IDer                      = (*LogicalDevice)(nil)
+	_ internal.Replicator[LogicalDevice] = (*LogicalDevice)(nil)
+	_ json.Marshaler                     = (*LogicalDevice)(nil)
+	_ json.Unmarshaler                   = (*LogicalDevice)(nil)
+	_ timeutils.Stamper                  = (*LogicalDevice)(nil)
 )
 
 type LogicalDevice struct {
@@ -43,7 +44,7 @@ func (l LogicalDevice) ID() *string {
 // to be empty, use MustSetID.
 func (l *LogicalDevice) SetID(id string) error {
 	if l.id != "" {
-		return IDIsSet(fmt.Errorf("id already has value %q", l.id))
+		return internal.IDIsSet(fmt.Errorf("id already has value %q", l.id))
 	}
 
 	l.id = id
@@ -58,8 +59,8 @@ func (l *LogicalDevice) MustSetID(id string) {
 	}
 }
 
-// replicate returns a copy of itself with zero values for metadata fields
-func (l LogicalDevice) replicate() LogicalDevice {
+// Replicate returns a copy of itself with zero values for metadata fields
+func (l LogicalDevice) Replicate() LogicalDevice {
 	return LogicalDevice{
 		Label:  l.Label,
 		Panels: l.Panels,

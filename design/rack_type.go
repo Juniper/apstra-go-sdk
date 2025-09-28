@@ -12,15 +12,16 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
-	_ ider                 = (*RackType)(nil)
-	_ replicator[RackType] = (*RackType)(nil)
-	_ json.Marshaler       = (*RackType)(nil)
-	_ json.Unmarshaler     = (*RackType)(nil)
-	_ timeutils.Stamper    = (*RackType)(nil)
+	_ internal.IDer                 = (*RackType)(nil)
+	_ internal.Replicator[RackType] = (*RackType)(nil)
+	_ json.Marshaler                = (*RackType)(nil)
+	_ json.Unmarshaler              = (*RackType)(nil)
+	_ timeutils.Stamper             = (*RackType)(nil)
 )
 
 type RackType struct {
@@ -50,7 +51,7 @@ func (r RackType) ID() *string {
 // to be empty, use MustSetID.
 func (r *RackType) SetID(id string) error {
 	if r.id != "" {
-		return IDIsSet(fmt.Errorf("id already has value %q", r.id))
+		return internal.IDIsSet(fmt.Errorf("id already has value %q", r.id))
 	}
 
 	r.id = id
@@ -65,8 +66,8 @@ func (r *RackType) MustSetID(id string) {
 	}
 }
 
-// replicate returns a copy of itself with zero values for metadata fields
-func (r RackType) replicate() RackType {
+// Replicate returns a copy of itself with zero values for metadata fields
+func (r RackType) Replicate() RackType {
 	result := RackType{
 		Label:                    r.Label,
 		Description:              r.Description,
@@ -78,20 +79,20 @@ func (r RackType) replicate() RackType {
 	}
 
 	for i, leafSwitch := range r.LeafSwitches {
-		result.LeafSwitches[i] = leafSwitch.replicate()
+		result.LeafSwitches[i] = leafSwitch.Replicate()
 	}
 
 	if r.AccessSwitches != nil {
 		result.AccessSwitches = make([]AccessSwitch, len(r.AccessSwitches))
 		for i, accessSwitch := range r.AccessSwitches {
-			result.AccessSwitches[i] = accessSwitch.replicate()
+			result.AccessSwitches[i] = accessSwitch.Replicate()
 		}
 	}
 
 	if r.GenericSystems != nil {
 		result.GenericSystems = make([]GenericSystem, len(r.GenericSystems))
 		for i, genericSystem := range r.GenericSystems {
-			result.GenericSystems[i] = genericSystem.replicate()
+			result.GenericSystems[i] = genericSystem.Replicate()
 		}
 	}
 
@@ -124,7 +125,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 	tagMap := make(map[string]Tag)
 	addTagsToMap := func(tags []Tag) {
 		for _, tag := range tags {
-			tagMap[tag.Label] = tag.replicate()
+			tagMap[tag.Label] = tag.Replicate()
 		}
 	}
 
@@ -138,7 +139,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		addTagsToMap(system.Tags)
 
 		// clone the system and set its LD ID to a hash of the LD payload
-		system := system.replicate()
+		system := system.Replicate()
 		system.LogicalDevice.mustSetHashID(hash)
 
 		// add the LD to the rack-wide LD map
@@ -154,7 +155,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		addTagsToMap(tags)
 
 		// clone the system and set its LD ID to a hash of the LD payload
-		system := system.replicate()
+		system := system.Replicate()
 		system.LogicalDevice.mustSetHashID(hash)
 
 		// add the LD to the rack-wide LD map
@@ -170,7 +171,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		addTagsToMap(tags)
 
 		// clone the system and set its LD ID to a hash of the LD payload
-		system := system.replicate()
+		system := system.Replicate()
 		system.LogicalDevice.mustSetHashID(hash)
 
 		// add the LD to the rack-wide LD map
@@ -220,7 +221,7 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 
 	logicalDeviceMap := make(map[string]LogicalDevice, len(raw.LogicalDevices))
 	for _, ld := range raw.LogicalDevices {
-		logicalDeviceMap[ld.id] = ld.replicate() // replicate drops metadata
+		logicalDeviceMap[ld.id] = ld.Replicate() // Replicate drops metadata
 	}
 
 	r.id = raw.ID
@@ -237,8 +238,8 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 			return fmt.Errorf("leaf switch %d logical device (%q) not found", i, system.LogicalDevice.id)
 		}
 
-		r.LeafSwitches[i] = system.replicate() // replicate drops metadata
-		r.LeafSwitches[i].LogicalDevice = logicalDevice.replicate()
+		r.LeafSwitches[i] = system.Replicate() // Replicate drops metadata
+		r.LeafSwitches[i].LogicalDevice = logicalDevice.Replicate()
 		r.LeafSwitches[i].Tags = system.Tags // half-baked tags filled in next
 		err = populateTagsByLabel(raw.AllTags, r.LeafSwitches[i].Tags)
 		if err != nil {
@@ -256,8 +257,8 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 			return fmt.Errorf("access switch %d logical device (%q) not found", i, system.LogicalDevice.id)
 		}
 
-		r.AccessSwitches[i] = system.replicate() // replicate drops metadata
-		r.AccessSwitches[i].LogicalDevice = logicalDevice.replicate()
+		r.AccessSwitches[i] = system.Replicate() // Replicate drops metadata
+		r.AccessSwitches[i].LogicalDevice = logicalDevice.Replicate()
 
 		r.AccessSwitches[i].Tags = system.Tags // half-baked tags filled in next
 		err = populateTagsByLabel(raw.AllTags, r.AccessSwitches[i].Tags)
@@ -283,8 +284,8 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 			return fmt.Errorf("generic system %d logical device (%q) not found", i, system.LogicalDevice.id)
 		}
 
-		r.GenericSystems[i] = system.replicate() // replicate drops metadata
-		r.GenericSystems[i].LogicalDevice = logicalDevice.replicate()
+		r.GenericSystems[i] = system.Replicate() // Replicate drops metadata
+		r.GenericSystems[i].LogicalDevice = logicalDevice.Replicate()
 
 		r.GenericSystems[i].Tags = system.Tags // half-baked tags filled in next
 		err = populateTagsByLabel(raw.AllTags, r.GenericSystems[i].Tags)

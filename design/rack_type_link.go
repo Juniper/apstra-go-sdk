@@ -10,15 +10,16 @@ import (
 	"sort"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var (
-	_ replicator[RackTypeLink] = (*RackTypeLink)(nil)
-	_ json.Marshaler           = (*RackTypeLink)(nil)
-	_ json.Unmarshaler         = (*RackTypeLink)(nil)
+	_ internal.Replicator[RackTypeLink] = (*RackTypeLink)(nil)
+	_ json.Marshaler                    = (*RackTypeLink)(nil)
+	_ json.Unmarshaler                  = (*RackTypeLink)(nil)
 )
 
 type RackTypeLink struct {
@@ -97,7 +98,7 @@ func (r *RackTypeLink) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-func (r RackTypeLink) replicate() RackTypeLink {
+func (r RackTypeLink) Replicate() RackTypeLink {
 	if r.RailIndex != nil {
 		r.RailIndex = pointer.To(*r.RailIndex)
 	}

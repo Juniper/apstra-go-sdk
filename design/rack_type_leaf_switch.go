@@ -11,15 +11,16 @@ import (
 	"slices"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var (
-	_ logicalDeviceIDer      = (*LeafSwitch)(nil)
-	_ replicator[LeafSwitch] = (*LeafSwitch)(nil)
-	_ json.Marshaler         = (*LeafSwitch)(nil)
-	_ json.Unmarshaler       = (*LeafSwitch)(nil)
+	_ logicalDeviceIDer               = (*LeafSwitch)(nil)
+	_ internal.Replicator[LeafSwitch] = (*LeafSwitch)(nil)
+	_ json.Marshaler                  = (*LeafSwitch)(nil)
+	_ json.Unmarshaler                = (*LeafSwitch)(nil)
 )
 
 type LeafSwitch struct {
@@ -41,11 +42,11 @@ func (l LeafSwitch) logicalDeviceID() *string {
 	return pointer.To(l.LogicalDevice.id)
 }
 
-// replicate returns a copy of itself with zero values for metadata fields
-func (l LeafSwitch) replicate() LeafSwitch {
+// Replicate returns a copy of itself with zero values for metadata fields
+func (l LeafSwitch) Replicate() LeafSwitch {
 	result := LeafSwitch{
 		Label:              l.Label,
-		LogicalDevice:      l.LogicalDevice.replicate(),
+		LogicalDevice:      l.LogicalDevice.Replicate(),
 		RedundancyProtocol: l.RedundancyProtocol,
 		Tags:               make([]Tag, len(l.Tags)),
 
@@ -55,7 +56,7 @@ func (l LeafSwitch) replicate() LeafSwitch {
 	}
 
 	for i, tag := range l.Tags {
-		result.Tags[i] = tag.replicate()
+		result.Tags[i] = tag.Replicate()
 	}
 
 	if l.LinkPerSpineCount != nil {
@@ -67,7 +68,7 @@ func (l LeafSwitch) replicate() LeafSwitch {
 	}
 
 	if l.MLAGInfo != nil {
-		result.MLAGInfo = pointer.To(l.MLAGInfo.replicate())
+		result.MLAGInfo = pointer.To(l.MLAGInfo.Replicate())
 	}
 
 	return result
