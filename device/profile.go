@@ -26,7 +26,7 @@ type Profile struct {
 	DeviceProfileType           enum.DeviceProfileType       `json:"device_profile_type"`
 	DualRoutingEngine           bool                         `json:"dual_routing_engine"`
 	SoftwareCapabilities        SoftwareCapabilities         `json:"software_capabilities"`
-	ReferenceDesignCapabilities *ReferenceDesignCapabilities `json:"reference_design_capabilities,omitempty"` // introduced between 4.2.0 and 6.0.0
+	ReferenceDesignCapabilities *ReferenceDesignCapabilities `json:"reference_design_capabilities,omitempty"` // introduced between 5.0.0
 	ChassisProfileID            string                       `json:"chassis_profile_id,omitempty"`
 	HardwareCapabilities        HardwareCapabilities         `json:"hardware_capabilities"`
 	Predefined                  bool                         `json:"predefined"`
