@@ -6,6 +6,9 @@ package internal
 
 type IDer interface {
 	ID() *string
+}
+
+type IDSetter interface {
 	SetID(id string) error
 	MustSetID(id string)
 }

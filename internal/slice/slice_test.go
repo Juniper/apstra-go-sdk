@@ -26,14 +26,6 @@ func (s stringIDer) ID() *string {
 	return (*string)(&s)
 }
 
-func (s *stringIDer) SetID(_ string) error {
-	panic("implement me")
-}
-
-func (s *stringIDer) MustSetID(_ string) {
-	panic("implement me")
-}
-
 func newStringIDer(s string) *stringIDer {
 	result := stringIDer(s)
 	return &result
@@ -49,14 +41,6 @@ func (i intIDer) ID() *string {
 		return nil
 	}
 	return pointer.To(strconv.Itoa(int(i)))
-}
-
-func (i *intIDer) SetID(_ string) error {
-	panic("implement me")
-}
-
-func (i *intIDer) MustSetID(_ string) {
-	panic("implement me")
 }
 
 func newIntIDer(i int) *intIDer {

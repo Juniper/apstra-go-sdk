@@ -16,9 +16,10 @@ import (
 )
 
 var (
-	_ internal.IDer    = (*Profile)(nil)
-	_ json.Marshaler   = (*Profile)(nil)
-	_ json.Unmarshaler = (*Profile)(nil)
+	_ internal.IDer     = (*Profile)(nil)
+	_ internal.IDSetter = (*Profile)(nil)
+	_ json.Marshaler    = (*Profile)(nil)
+	_ json.Unmarshaler  = (*Profile)(nil)
 )
 
 type Profile struct {
@@ -258,6 +259,7 @@ type FeatureVersion struct {
 
 type FeatureVersions []FeatureVersion
 
+// Validate ensures that there are no Version string collisions within a FeatureVersions
 func (f FeatureVersions) Validate() error {
 	versionMap := make(map[string]struct{}, len(f))
 	for _, v := range f {
