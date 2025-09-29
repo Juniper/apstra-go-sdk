@@ -2,7 +2,7 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package apstra_go_sdk
+package sdk
 
 type ErrIDIsSet string
 
