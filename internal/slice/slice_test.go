@@ -34,6 +34,11 @@ func (s *stringIDer) MustSetID(_ string) {
 	panic("implement me")
 }
 
+func newStringIDer(s string) *stringIDer {
+	result := stringIDer(s)
+	return &result
+}
+
 var _ internal.IDer = (*intIDer)(nil)
 
 // intIDer is used in TestObjectWithID
@@ -54,6 +59,11 @@ func (i *intIDer) MustSetID(_ string) {
 	panic("implement me")
 }
 
+func newIntIDer(i int) *intIDer {
+	result := intIDer(i)
+	return &result
+}
+
 func TestObjectWithID(t *testing.T) {
 	type testCase struct {
 		iders     []internal.IDer
@@ -64,32 +74,32 @@ func TestObjectWithID(t *testing.T) {
 
 	testCases := map[string]testCase{
 		"found_first": {
-			iders:     []internal.IDer{stringIDer("a"), intIDer(2), stringIDer("c")},
+			iders:     []internal.IDer{newStringIDer("a"), newIntIDer(2), newStringIDer("c")},
 			wantID:    "a",
 			expectIdx: pointer.To(0),
 		},
 		"found_middle": {
-			iders:     []internal.IDer{stringIDer("a"), intIDer(2), stringIDer("c")},
+			iders:     []internal.IDer{newStringIDer("a"), newIntIDer(2), newStringIDer("c")},
 			wantID:    "2",
 			expectIdx: pointer.To(1),
 		},
 		"found_last": {
-			iders:     []internal.IDer{stringIDer("a"), intIDer(2), stringIDer("c")},
+			iders:     []internal.IDer{newStringIDer("a"), newIntIDer(2), newStringIDer("c")},
 			wantID:    "c",
 			expectIdx: pointer.To(2),
 		},
 		"not_found": {
-			iders:     []internal.IDer{stringIDer("a"), intIDer(2), stringIDer("c")},
+			iders:     []internal.IDer{newStringIDer("a"), newIntIDer(2), newStringIDer("c")},
 			wantID:    "d",
 			expectIdx: nil,
 		},
 		"found_among_nil": {
-			iders:     []internal.IDer{stringIDer("nil"), intIDer(-1), stringIDer("x")},
+			iders:     []internal.IDer{newStringIDer("nil"), newIntIDer(-1), newStringIDer("x")},
 			wantID:    "x",
 			expectIdx: pointer.To(2),
 		},
 		"multiple_match": {
-			iders:     []internal.IDer{stringIDer("a"), intIDer(1), stringIDer("a")},
+			iders:     []internal.IDer{newStringIDer("a"), newIntIDer(1), newStringIDer("a")},
 			wantID:    "a",
 			expectErr: true,
 		},
