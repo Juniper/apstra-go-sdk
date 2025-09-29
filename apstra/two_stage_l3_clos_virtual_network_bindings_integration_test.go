@@ -276,7 +276,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 			vnPrefix := randomPrefix(t, "10.0.0.0/8", 24)
 			vnBinding := VnBinding{
 				SystemId: fixedLeafId,
-				VlanId:   toPtr(Vlan(rand.Intn(97) + 2)),
+				VlanId:   toPtr(Vlan(rand.Intn(89) + 11)),
 			}
 			sviIp := SviIp{
 				SystemId: fixedLeafId,
