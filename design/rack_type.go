@@ -11,6 +11,7 @@ import (
 	"sort"
 	"time"
 
+	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
@@ -51,7 +52,7 @@ func (r RackType) ID() *string {
 // to be empty, use MustSetID.
 func (r *RackType) SetID(id string) error {
 	if r.id != "" {
-		return internal.IDIsSet(fmt.Errorf("id already has value %q", r.id))
+		return sdk.ErrIDIsSet(fmt.Errorf("id already has value %q", r.id))
 	}
 
 	r.id = id

@@ -10,6 +10,7 @@ import (
 	"sort"
 	"time"
 
+	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
@@ -44,7 +45,7 @@ func (t Tag) ID() *string {
 // be empty, use MustSetID.
 func (t *Tag) SetID(id string) error {
 	if t.id != "" {
-		return internal.IDIsSet(fmt.Errorf("id already has value %q", t.id))
+		return sdk.ErrIDIsSet(fmt.Errorf("id already has value %q", t.id))
 	}
 
 	t.id = id
