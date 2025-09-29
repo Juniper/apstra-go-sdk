@@ -169,6 +169,63 @@ func (p Profile) LastModifiedAt() *time.Time {
 	return p.lastModifiedAt
 }
 
+// PortByID returns the Port with the given ID. If no port uses that ID, or if
+// mulitple ports use that ID (unlikely), an error is returned.
+func (p *Profile) PortByID(desired int) (Port, error) {
+	var result *Port
+
+	for _, port := range p.Ports {
+		if port.ID == desired {
+			if result != nil {
+				return Port{}, sdk.ErrMultipleMatch(fmt.Errorf("found multiple ports with ID %d", desired))
+			}
+			result = &port
+		}
+	}
+
+	if result != nil {
+		return Port{}, sdk.ErrNotFound(fmt.Errorf("found no ports with ID %d", desired))
+	}
+
+	return *result, nil
+}
+
+// PortsByInterfaceName returns []Port containing all Ports which contain a
+// Transformation which contains a TransformationInterface with the given name.
+func (p Profile) PortsByInterfaceName(desired string) []Port {
+	var result []Port
+
+portloop:
+	for _, port := range p.Ports {
+		for _, transformation := range port.Transformations {
+			for _, intf := range transformation.Interfaces {
+				if intf.Name == desired {
+					result = append(result, port)
+					continue portloop
+				}
+			}
+		}
+	}
+
+	return result
+}
+
+// PortByInterfaceName returns the Port which has at least one Transformation
+// which contains a TransformationInterface with the given name. If zero ports
+// or multiple ports use the desired name, an error is returned.
+func (p Profile) PortByInterfaceName(desired string) (Port, error) {
+	ports := p.PortsByInterfaceName(desired)
+
+	switch len(ports) {
+	case 0:
+		return Port{}, sdk.ErrNotFound(fmt.Errorf("found no ports with intinterface name %q", desired))
+	case 1:
+		return ports[0], nil
+	default:
+		return Port{}, sdk.ErrMultipleMatch(fmt.Errorf("found %d ports with intinterface name %q", len(ports), desired))
+	}
+}
+
 type HardwareCapabilities struct {
 	MaxL3Mtu        *int            `json:"max_l3_mtu,omitempty"`
 	MaxL2Mtu        *int            `json:"max_l2_mtu,omitempty"`
@@ -202,8 +259,7 @@ type FeatureVersion struct {
 type FeatureVersions []FeatureVersion
 
 func (f FeatureVersions) Validate() error {
-	lenF := len(f)
-	versionMap := make(map[string]struct{}, lenF)
+	versionMap := make(map[string]struct{}, len(f))
 	for _, v := range f {
 		if _, ok := versionMap[v.Version]; ok {
 			return fmt.Errorf("duplicate feature version: %s", v.Version)
@@ -298,61 +354,4 @@ type ProfileLinecardInfo struct {
 type ProfileSlotConfiguration struct {
 	LinecardProfileID string `json:"linecard_profile_id"`
 	SlotID            int    `json:"slot_id"`
-}
-
-// PortByID returns the Port with the given ID. If no port uses that ID, or if
-// mulitple ports use that ID (unlikely), an error is returned.
-func (p *Profile) PortByID(desired int) (Port, error) {
-	var result *Port
-
-	for _, port := range p.Ports {
-		if port.ID == desired {
-			if result != nil {
-				return Port{}, sdk.ErrMultipleMatch(fmt.Errorf("found multiple ports with ID %d", desired))
-			}
-			result = &port
-		}
-	}
-
-	if result != nil {
-		return Port{}, sdk.ErrNotFound(fmt.Errorf("found no ports with ID %d", desired))
-	}
-
-	return *result, nil
-}
-
-// PortsByInterfaceName returns []Port containing all Ports which contain a
-// Transformation which contains a TransformationInterface with the given name.
-func (p Profile) PortsByInterfaceName(desired string) []Port {
-	var result []Port
-
-portloop:
-	for _, port := range p.Ports {
-		for _, transformation := range port.Transformations {
-			for _, intf := range transformation.Interfaces {
-				if intf.Name == desired {
-					result = append(result, port)
-					continue portloop
-				}
-			}
-		}
-	}
-
-	return result
-}
-
-// PortByInterfaceName returns the Port which has at least one Transformation
-// which contains a TransformationInterface with the given name. If zero ports
-// or multiple ports use the desired name, an error is returned.
-func (p Profile) PortByInterfaceName(desired string) (Port, error) {
-	ports := p.PortsByInterfaceName(desired)
-
-	switch len(ports) {
-	case 0:
-		return Port{}, sdk.ErrNotFound(fmt.Errorf("found no ports with intinterface name %q", desired))
-	case 1:
-		return ports[0], nil
-	default:
-		return Port{}, sdk.ErrMultipleMatch(fmt.Errorf("found %d ports with intinterface name %q", len(ports), desired))
-	}
 }
