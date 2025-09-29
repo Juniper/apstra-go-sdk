@@ -127,7 +127,7 @@ func TestInterfaceMap_UnmarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
-			var r LogicalDevice
+			var r InterfaceMap
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
 			require.Equal(t, tCase.e, r)
