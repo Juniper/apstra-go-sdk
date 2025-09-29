@@ -57,8 +57,8 @@ var interfaceMapTestX = InterfaceMap{
 		},
 	},
 	id:             "id_Juniper_QFX5120-32C__AOS-2x10-1",
-	createdAt:      pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "2006-01-02T15:04:00.000000Z")),
-	lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "2016-01-02T15:04:00.000000Z")),
+	createdAt:      pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "2006-01-02T15:04:05.000000Z")),
+	lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "2016-01-02T15:04:05.000000Z")),
 }
 
 func init() {
