@@ -59,6 +59,7 @@ func TestObjectWithID(t *testing.T) {
 		iders     []internal.IDer
 		wantID    string
 		expectIdx *int
+		expectErr bool
 	}
 
 	testCases := map[string]testCase{
@@ -87,13 +88,48 @@ func TestObjectWithID(t *testing.T) {
 			wantID:    "x",
 			expectIdx: pointer.To(2),
 		},
+		"multiple_match": {
+			iders:     []internal.IDer{stringIDer("a"), intIDer(1), stringIDer("a")},
+			wantID:    "a",
+			expectErr: true,
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run("must_"+tName, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := slice.FindByID(tCase.iders, tCase.wantID)
+			if tCase.expectErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			if tCase.expectIdx == nil {
+				require.Nil(t, result)
+				return
+			}
+
+			require.NotNil(t, result)
+			require.Same(t, &tCase.iders[*tCase.expectIdx], result)
+		})
 	}
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
 
-			result := slice.ObjectWithID(tCase.iders, tCase.wantID)
+			var result *internal.IDer
+			if tCase.expectErr {
+				require.Panics(t, func() {
+					_ = slice.MustFindByID(tCase.iders, tCase.wantID)
+				})
+				return
+			} else {
+				result = slice.MustFindByID(tCase.iders, tCase.wantID)
+			}
+
 			if tCase.expectIdx == nil {
 				require.Nil(t, result)
 				return
