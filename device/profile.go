@@ -22,22 +22,22 @@ var (
 )
 
 type Profile struct {
-	Selector                    Selector                     `json:"selector"`
-	DeviceProfileType           enum.DeviceProfileType       `json:"device_profile_type"`
-	DualRoutingEngine           bool                         `json:"dual_routing_engine"`
-	SoftwareCapabilities        SoftwareCapabilities         `json:"software_capabilities"`
-	ReferenceDesignCapabilities *ReferenceDesignCapabilities `json:"reference_design_capabilities,omitempty"` // introduced between 5.0.0
-	ChassisProfileID            string                       `json:"chassis_profile_id,omitempty"`
-	HardwareCapabilities        HardwareCapabilities         `json:"hardware_capabilities"`
-	Predefined                  bool                         `json:"predefined"`
-	SlotCount                   *int                         `json:"slot_count,omitempty"`
-	ChassisCount                *int                         `json:"chassis_count,omitempty"`
-	Ports                       []Port                       `json:"ports"`
-	Label                       string                       `json:"label"`
-	ChassisInfo                 *ProfileChassisInfo          `json:"chassis_info,omitempty"`
-	LinecardsInfo               []ProfileLinecardInfo        `json:"linecards_info,omitempty"`
-	SlotConfiguration           []ProfileSlotConfiguration   `json:"slot_configuration,omitempty"`
-	PhysicalDevice              bool                         `json:"physical_device"`
+	Selector                    Selector
+	DeviceProfileType           enum.DeviceProfileType
+	DualRoutingEngine           bool
+	SoftwareCapabilities        SoftwareCapabilities
+	ReferenceDesignCapabilities *ReferenceDesignCapabilities // introduced between 5.0.0
+	ChassisProfileID            string
+	HardwareCapabilities        HardwareCapabilities
+	Predefined                  bool
+	SlotCount                   *int
+	ChassisCount                *int
+	Ports                       []Port
+	Label                       string
+	ChassisInfo                 *ProfileChassisInfo
+	LinecardsInfo               []ProfileLinecardInfo
+	SlotConfiguration           []ProfileSlotConfiguration
+	PhysicalDevice              bool
 
 	id             string
 	createdAt      *time.Time
