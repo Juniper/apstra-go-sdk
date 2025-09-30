@@ -45,7 +45,7 @@ func (i InterfaceMap) ID() *string {
 // be empty, use MustSetID.
 func (i *InterfaceMap) SetID(id string) error {
 	if i.id != "" {
-		return sdk.ErrIDIsSet(fmt.Errorf("id already has value %q", i.id))
+		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", i.id))
 	}
 
 	i.id = id

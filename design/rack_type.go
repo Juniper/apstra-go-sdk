@@ -52,7 +52,7 @@ func (r RackType) ID() *string {
 // to be empty, use MustSetID.
 func (r *RackType) SetID(id string) error {
 	if r.id != "" {
-		return sdk.ErrIDIsSet(fmt.Errorf("id already has value %q", r.id))
+		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", r.id))
 	}
 
 	r.id = id
