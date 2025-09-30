@@ -6,6 +6,7 @@ package device
 
 import (
 	"fmt"
+
 	sdk "github.com/Juniper/apstra-go-sdk"
 )
 

@@ -5,11 +5,12 @@
 package device
 
 import (
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestPort_TransformationCandidates(t *testing.T) {
