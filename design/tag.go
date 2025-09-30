@@ -45,7 +45,7 @@ func (t Tag) ID() *string {
 // be empty, use MustSetID.
 func (t *Tag) SetID(id string) error {
 	if t.id != "" {
-		return sdk.ErrIDIsSet(fmt.Errorf("id already has value %q", t.id))
+		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", t.id))
 	}
 
 	t.id = id

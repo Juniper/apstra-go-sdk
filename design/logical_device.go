@@ -45,7 +45,7 @@ func (l LogicalDevice) ID() *string {
 // to be empty, use MustSetID.
 func (l *LogicalDevice) SetID(id string) error {
 	if l.id != "" {
-		return sdk.ErrIDIsSet(fmt.Errorf("id already has value %q", l.id))
+		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", l.id))
 	}
 
 	l.id = id
