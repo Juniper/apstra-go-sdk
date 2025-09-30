@@ -58,7 +58,7 @@ func (p Profile) ID() *string {
 // to be empty, use MustSetID.
 func (p *Profile) SetID(id string) error {
 	if p.id != "" {
-		return sdk.ErrIDIsSet(fmt.Errorf("id already has value %q", p.id))
+		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", p.id))
 	}
 
 	p.id = id
@@ -172,20 +172,20 @@ func (p Profile) LastModifiedAt() *time.Time {
 
 // PortByID returns the Port with the given ID. If no port uses that ID, or if
 // mulitple ports use that ID (unlikely), an error is returned.
-func (p *Profile) PortByID(desired int) (Port, error) {
+func (p *Profile) PortByID(id int) (Port, error) {
 	var result *Port
 
 	for _, port := range p.Ports {
-		if port.ID == desired {
+		if port.ID == id {
 			if result != nil {
-				return Port{}, sdk.ErrMultipleMatch(fmt.Errorf("found multiple ports with ID %d", desired))
+				return Port{}, sdk.ErrMultipleMatch(fmt.Sprintf("found multiple ports with ID %d", id))
 			}
 			result = &port
 		}
 	}
 
-	if result != nil {
-		return Port{}, sdk.ErrNotFound(fmt.Errorf("found no ports with ID %d", desired))
+	if result == nil {
+		return Port{}, sdk.ErrNotFound(fmt.Sprintf("found no ports with ID %d", id))
 	}
 
 	return *result, nil
@@ -219,11 +219,11 @@ func (p Profile) PortByInterfaceName(desired string) (Port, error) {
 
 	switch len(ports) {
 	case 0:
-		return Port{}, sdk.ErrNotFound(fmt.Errorf("found no ports with intinterface name %q", desired))
+		return Port{}, sdk.ErrNotFound(fmt.Sprintf("found no ports with intinterface name %q", desired))
 	case 1:
 		return ports[0], nil
 	default:
-		return Port{}, sdk.ErrMultipleMatch(fmt.Errorf("found %d ports with intinterface name %q", len(ports), desired))
+		return Port{}, sdk.ErrMultipleMatch(fmt.Sprintf("found %d ports with intinterface name %q", len(ports), desired))
 	}
 }
 

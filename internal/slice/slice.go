@@ -25,7 +25,7 @@ func FindByID[T internal.IDer](elements []T, id string) (*T, error) {
 			if result == nil {
 				result = &elements[i]
 			} else {
-				return nil, sdk.ErrMultipleMatch(fmt.Errorf("found multiple elements with ID: %s", id))
+				return nil, sdk.ErrMultipleMatch(fmt.Sprintf("found multiple elements with ID: %s", id))
 			}
 		}
 	}

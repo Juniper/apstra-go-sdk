@@ -4,8 +4,20 @@
 
 package apstra_go_sdk
 
-type ErrIDIsSet error
+type ErrIDIsSet string
 
-type ErrNotFound error
+func (e ErrIDIsSet) Error() string {
+	return string(e)
+}
 
-type ErrMultipleMatch error
+type ErrNotFound string
+
+func (e ErrNotFound) Error() string {
+	return string(e)
+}
+
+type ErrMultipleMatch string
+
+func (e ErrMultipleMatch) Error() string {
+	return string(e)
+}
