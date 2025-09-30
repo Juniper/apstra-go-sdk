@@ -251,26 +251,6 @@ type HardwareCapabilities struct {
 	CPU             string          `json:"cpu"`
 }
 
-// FeatureVersion details whether a feature is enabled on the given NOS version
-type FeatureVersion struct {
-	Version string `json:"version"`
-	Enabled bool   `json:"value"`
-}
-
-type FeatureVersions []FeatureVersion
-
-// Validate ensures that there are no Version string collisions within a FeatureVersions
-func (f FeatureVersions) Validate() error {
-	versionMap := make(map[string]struct{}, len(f))
-	for _, v := range f {
-		if _, ok := versionMap[v.Version]; ok {
-			return fmt.Errorf("duplicate feature version: %s", v.Version)
-		}
-		versionMap[v.Version] = struct{}{}
-	}
-	return nil
-}
-
 type SoftwareCapabilities struct {
 	Onie               bool   `json:"onie"`
 	ConfigApplySupport string `json:"config_apply_support"`
