@@ -108,19 +108,16 @@ func TestProfile_PortByID(t *testing.T) {
 			profile: testProfileGeneric1x10,
 			id:      1,
 			exp:     Port{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "eth0", State: enum.InterfaceStateActive, Setting: pointer.To(""), Speed: "10G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(1)},
-			expErr:  nil,
 		},
 		"Juniper_vEX": {
 			profile: testProfileJunipervEX,
 			id:      6,
 			exp:     Port{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/5", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/5", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 6, ID: 6, Row: 1, FailureDomain: 1, Display: pointer.To(5), Slot: 0},
-			expErr:  nil,
 		},
 		"Juniper_EX4400-48F": {
 			profile: testProfileJuniperEX440048F,
 			id:      50,
 			exp:     Port{ConnectorType: "qsfp28", Panel: 3, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "et-0/1/1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "100G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "et-0/1/1:0", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 2, Name: "et-0/1/1:1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 3, Name: "et-0/1/1:2", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 4, Name: "et-0/1/1:3", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}}}, {ID: 3, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "xe-0/1/1:0", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 2, Name: "xe-0/1/1:1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 3, Name: "xe-0/1/1:2", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 4, Name: "xe-0/1/1:3", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}}}}, Column: 1, ID: 50, Row: 2, FailureDomain: 1, Display: pointer.To(49), Slot: 0},
-			expErr:  nil,
 		},
 		"generic_1x10_not_found": {
 			profile: testProfileGeneric1x10,
@@ -134,12 +131,11 @@ func TestProfile_PortByID(t *testing.T) {
 					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(0), Slot: 0},
 					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/1", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/1", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 2, ID: 2, Row: 1, FailureDomain: 1, Display: pointer.To(1), Slot: 0},
 					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/2", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/2", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 3, ID: 3, Row: 1, FailureDomain: 1, Display: pointer.To(2), Slot: 0},
-					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/3", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/3", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 4, ID: 2, Row: 1, FailureDomain: 1, Display: pointer.To(3), Slot: 0}, // <- duplicate ID: 2 in here
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/3", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/3", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 4, ID: 2, Row: 1, FailureDomain: 1, Display: pointer.To(3), Slot: 0}, // <- duplicate ID 2 in here
 					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/4", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/4", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 5, ID: 5, Row: 1, FailureDomain: 1, Display: pointer.To(4), Slot: 0},
 				},
 			},
 			id:     2,
-			exp:    Port{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/5", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/5", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 6, ID: 6, Row: 1, FailureDomain: 1, Display: pointer.To(5), Slot: 0},
 			expErr: new(sdk.ErrMultipleMatch),
 		},
 	}
@@ -150,7 +146,6 @@ func TestProfile_PortByID(t *testing.T) {
 
 			result, err := tCase.profile.PortByID(tCase.id)
 			if tCase.expErr != nil {
-				// create an error of the expected type
 				target := reflect.New(reflect.TypeOf(tCase.expErr).Elem()).Interface()
 				require.ErrorAs(t, err, target)
 				return
@@ -158,6 +153,122 @@ func TestProfile_PortByID(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(t, tCase.exp, result)
+		})
+	}
+}
+
+func TestProfile_PortByInterfaceName(t *testing.T) {
+	type testCase struct {
+		profile Profile
+		name    string
+		exp     Port
+		expErr  any
+	}
+
+	testCases := map[string]testCase{
+		"generic_1x10": {
+			profile: testProfileGeneric1x10,
+			name:    "eth0",
+			exp:     Port{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "eth0", State: enum.InterfaceStateActive, Setting: pointer.To(""), Speed: "10G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(1)},
+		},
+		"Juniper_vEX": {
+			profile: testProfileJunipervEX,
+			name:    "ge-0/0/5",
+			exp:     Port{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/5", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/5", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 6, ID: 6, Row: 1, FailureDomain: 1, Display: pointer.To(5), Slot: 0},
+		},
+		"Juniper_EX4400-48F": {
+			profile: testProfileJuniperEX440048F,
+			name:    "et-0/1/1",
+			exp:     Port{ConnectorType: "qsfp28", Panel: 3, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "et-0/1/1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "100G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "et-0/1/1:0", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 2, Name: "et-0/1/1:1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 3, Name: "et-0/1/1:2", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 4, Name: "et-0/1/1:3", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}}}, {ID: 3, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "xe-0/1/1:0", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 2, Name: "xe-0/1/1:1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 3, Name: "xe-0/1/1:2", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 4, Name: "xe-0/1/1:3", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}}}}, Column: 1, ID: 50, Row: 2, FailureDomain: 1, Display: pointer.To(49), Slot: 0},
+		},
+		"generic_1x10_not_found": {
+			profile: testProfileGeneric1x10,
+			name:    "eth99999",
+			expErr:  new(sdk.ErrNotFound),
+		},
+		"bogus_multiple_match": {
+			profile: Profile{
+				Ports: []Port{
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(0), Slot: 0},
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/1", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/1", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 2, ID: 2, Row: 1, FailureDomain: 1, Display: pointer.To(1), Slot: 0},
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/2", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/2", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 3, ID: 3, Row: 1, FailureDomain: 1, Display: pointer.To(2), Slot: 0},
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/3", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 4, ID: 4, Row: 1, FailureDomain: 1, Display: pointer.To(3), Slot: 0}, // <- duplicate name ge-0/0/3 in here
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/4", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/4", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 5, ID: 5, Row: 1, FailureDomain: 1, Display: pointer.To(4), Slot: 0},
+				},
+			},
+			name:   "ge-0/0/0",
+			expErr: new(sdk.ErrMultipleMatch),
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := tCase.profile.PortByInterfaceName(tCase.name)
+			if tCase.expErr != nil {
+				target := reflect.New(reflect.TypeOf(tCase.expErr).Elem()).Interface()
+				require.ErrorAs(t, err, target)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tCase.exp, result)
+		})
+	}
+}
+
+func TestProfile_PortsByInterfaceName(t *testing.T) {
+	type testCase struct {
+		profile Profile
+		name    string
+		exp     []Port
+	}
+
+	testCases := map[string]testCase{
+		"generic_1x10": {
+			profile: testProfileGeneric1x10,
+			name:    "eth0",
+			exp:     []Port{{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "eth0", State: enum.InterfaceStateActive, Setting: pointer.To(""), Speed: "10G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(1)}},
+		},
+		"Juniper_vEX": {
+			profile: testProfileJunipervEX,
+			name:    "ge-0/0/5",
+			exp:     []Port{{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/5", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/5", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 6, ID: 6, Row: 1, FailureDomain: 1, Display: pointer.To(5), Slot: 0}},
+		},
+		"Juniper_EX4400-48F": {
+			profile: testProfileJuniperEX440048F,
+			name:    "et-0/1/1",
+			exp:     []Port{{ConnectorType: "qsfp28", Panel: 3, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "et-0/1/1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "100G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "et-0/1/1:0", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 2, Name: "et-0/1/1:1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 3, Name: "et-0/1/1:2", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 4, Name: "et-0/1/1:3", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}}}, {ID: 3, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "xe-0/1/1:0", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 2, Name: "xe-0/1/1:1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 3, Name: "xe-0/1/1:2", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}, {ID: 4, Name: "xe-0/1/1:3", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 1, "speed": "10g"}, "interface": {"speed": ""}}`), Speed: "10G"}}}}, Column: 1, ID: 50, Row: 2, FailureDomain: 1, Display: pointer.To(49), Slot: 0}},
+		},
+		"generic_1x10_not_found": {
+			profile: testProfileGeneric1x10,
+			name:    "eth99999",
+		},
+		"bogus_multiple_match": {
+			profile: Profile{
+				Ports: []Port{
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(0), Slot: 0},
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/1", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/1", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 2, ID: 2, Row: 1, FailureDomain: 1, Display: pointer.To(1), Slot: 0},
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/2", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/2", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 3, ID: 3, Row: 1, FailureDomain: 1, Display: pointer.To(2), Slot: 0},
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/3", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 4, ID: 4, Row: 1, FailureDomain: 1, Display: pointer.To(3), Slot: 0}, // <- duplicate name ge-0/0/3 in here
+					{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/4", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/4", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 5, ID: 5, Row: 1, FailureDomain: 1, Display: pointer.To(4), Slot: 0},
+				},
+			},
+			name: "ge-0/0/0",
+			exp: []Port{
+				{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(0), Slot: 0},
+				{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/3", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 4, ID: 4, Row: 1, FailureDomain: 1, Display: pointer.To(3), Slot: 0}, // <- duplicate name ge-0/0/3 in here
+			},
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			result := tCase.profile.PortsByInterfaceName(tCase.name)
+			require.ElementsMatch(t, tCase.exp, result)
 		})
 	}
 }

@@ -193,14 +193,14 @@ func (p *Profile) PortByID(id int) (Port, error) {
 
 // PortsByInterfaceName returns []Port containing all Ports which contain a
 // Transformation which contains a TransformationInterface with the given name.
-func (p Profile) PortsByInterfaceName(desired string) []Port {
+func (p Profile) PortsByInterfaceName(name string) []Port {
 	var result []Port
 
 portloop:
 	for _, port := range p.Ports {
 		for _, transformation := range port.Transformations {
 			for _, intf := range transformation.Interfaces {
-				if intf.Name == desired {
+				if intf.Name == name {
 					result = append(result, port)
 					continue portloop
 				}
@@ -214,16 +214,16 @@ portloop:
 // PortByInterfaceName returns the Port which has at least one Transformation
 // which contains a TransformationInterface with the given name. If zero ports
 // or multiple ports use the desired name, an error is returned.
-func (p Profile) PortByInterfaceName(desired string) (Port, error) {
-	ports := p.PortsByInterfaceName(desired)
+func (p Profile) PortByInterfaceName(name string) (Port, error) {
+	ports := p.PortsByInterfaceName(name)
 
 	switch len(ports) {
 	case 0:
-		return Port{}, sdk.ErrNotFound(fmt.Sprintf("found no ports with intinterface name %q", desired))
+		return Port{}, sdk.ErrNotFound(fmt.Sprintf("found no ports with intinterface name %q", name))
 	case 1:
 		return ports[0], nil
 	default:
-		return Port{}, sdk.ErrMultipleMatch(fmt.Sprintf("found %d ports with intinterface name %q", len(ports), desired))
+		return Port{}, sdk.ErrMultipleMatch(fmt.Sprintf("found %d ports with intinterface name %q", len(ports), name))
 	}
 }
 
