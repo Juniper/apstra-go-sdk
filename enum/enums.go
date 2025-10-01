@@ -353,6 +353,13 @@ var (
 	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
 )
 
+type InterfaceMapInterfaceState oenum.Member[string]
+
+var (
+	InterfaceMapInterfaceStateActive   = InterfaceMapInterfaceState{Value: "active"}
+	InterfaceMapInterfaceStateInactive = InterfaceMapInterfaceState{Value: "inactive"}
+)
+
 type FabricConnectivityDesign oenum.Member[string]
 
 var (
@@ -367,6 +374,13 @@ var (
 	EndpointPolicyStatusAssigned   = EndpointPolicyStatus{Value: "assigned"}
 	EndpointPolicyStatusIncomplete = EndpointPolicyStatus{Value: "incomplete"}
 	EndpointPolicyStatusReady      = EndpointPolicyStatus{Value: "ready"}
+)
+
+type DesignLogicalDevicePanelPortIndexing oenum.Member[string]
+
+var (
+	DesignLogicalDevicePanelPortIndexingLRTB = DesignLogicalDevicePanelPortIndexing{Value: "L-R, T-B"}
+	DesignLogicalDevicePanelPortIndexingTBLR = DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}
 )
 
 type SpeedUnit oenum.Member[string]
@@ -408,4 +422,51 @@ var (
 	LinkSpeed400g  = LinkSpeed{Value: "400g"}
 	LinkSpeed800G  = LinkSpeed{Value: "800G"}
 	LinkSpeed800g  = LinkSpeed{Value: "800g"}
+)
+
+type LeafRedundancyProtocol oenum.Member[string]
+
+var (
+	LeafRedundancyProtocolNone = LeafRedundancyProtocol{Value: ""}
+	LeafRedundancyProtocolESI  = LeafRedundancyProtocol{Value: "esi"}
+	LeafRedundancyProtocolMLAG = LeafRedundancyProtocol{Value: "mlag"}
+)
+
+type FFEConsistencyStatus oenum.Member[string]
+
+var (
+	FFEConsistencyStatusOK           = FFEConsistencyStatus{Value: "ok"}
+	FFEConsistencyStatusInconsistent = FFEConsistencyStatus{Value: "inconsistent"}
+)
+
+type LAGMode oenum.Member[string]
+
+var (
+	LAGModeNone        = LAGMode{Value: ""}
+	LAGModeActiveLACP  = LAGMode{Value: "lacp_active"}
+	LAGModePassiveLACP = LAGMode{Value: "lacp_passive"}
+	LAGModeStatic      = LAGMode{Value: "static_lag"}
+)
+
+type LinkAttachmentType oenum.Member[string]
+
+var (
+	LinkAttachmentTypeSingle = LinkAttachmentType{Value: "singleAttached"}
+	LinkAttachmentTypeDual   = LinkAttachmentType{Value: "dualAttached"}
+)
+
+type LinkSwitchPeer oenum.Member[string]
+
+var (
+	LinkSwitchPeerUnspecified = LinkSwitchPeer{Value: ""}
+	LinkSwitchPeerFirst       = LinkSwitchPeer{Value: "first"}
+	LinkSwitchPeerSecond      = LinkSwitchPeer{Value: "second"}
+)
+
+type SystemManagementLevel oenum.Member[string]
+
+var ( // do not introduce "not_installed" - that's an agent parameter with similar enum values
+	SystemManagementLevelFullControl   = SystemManagementLevel{Value: "full_control"}
+	SystemManagementLevelTelemetryOnly = SystemManagementLevel{Value: "telemetry_only"}
+	SystemManagementLevelUnmanaged     = SystemManagementLevel{Value: "unmanaged"}
 )
