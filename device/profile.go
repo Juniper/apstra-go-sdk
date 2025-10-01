@@ -251,6 +251,33 @@ type HardwareCapabilities struct {
 	CPU             string          `json:"cpu"`
 }
 
+// PortWithMatchingTransforms searches its ports and transforms based on the
+// supplied ifName (e.g. "xe-0/0/0:1") and speed. It returns the lone matching
+// Port with that Port's Transformation slice filtered to contain only matching
+// entries. For example, if we specified "ge-0/0/37" and "1G" with the
+// Juniper_EX4400-48F device profile from Apstra 5.1.0, only one Port (id 38,
+// panel 2, column 1, row 2) could match. That Port has 3 transforms, but only
+// two match:
+// - #2 with name "ge-0/0/37", speed "1G" and a setting which permits autonegotation
+// - #3 with name "ge-0/0/37", speed "1G" and a setting which forbids autonegotation
+// Transform #1 would be omitted from the returned Port both for its ifName
+// ("xe-0/0/37") and its speed ("10G")
+func (p Profile) PortWithMatchingTransforms(ifName string, ifSpeed speed.Speed) (Port, error) {
+	port, err := p.PortByInterfaceName(ifName)
+	if err != nil {
+		return Port{}, fmt.Errorf("finding port known by %q in device profile %q: %w", ifName, p.id, err)
+	}
+
+	transformations := port.transformationCandidates(ifName, ifSpeed)
+	if len(transformations) == 0 {
+		return Port{}, sdk.ErrNotFound(fmt.Sprintf("port %d in device profile %q has no transformations named %s which operate at %s", port.ID, p.id, ifName, ifSpeed))
+	}
+
+	port.Transformations = transformations // replace the transform slice with the set of matching values
+
+	return port, nil
+}
+
 type SoftwareCapabilities struct {
 	Onie               bool   `json:"onie"`
 	ConfigApplySupport string `json:"config_apply_support"`

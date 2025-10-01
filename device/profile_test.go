@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/speed"
 	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
@@ -269,6 +270,65 @@ func TestProfile_PortsByInterfaceName(t *testing.T) {
 
 			result := tCase.profile.PortsByInterfaceName(tCase.name)
 			require.ElementsMatch(t, tCase.exp, result)
+		})
+	}
+}
+
+func TestProfile_PortWithMatchingTransforms(t *testing.T) {
+	type testCase struct {
+		profile  Profile
+		ifName   string
+		ifSpeed  speed.Speed
+		expected Port
+		expErr   any
+	}
+
+	testCases := map[string]testCase{
+		"simple": {
+			profile:  testProfileGeneric1x10,
+			ifName:   "eth0",
+			ifSpeed:  "10G",
+			expected: testProfileGeneric1x10.Ports[0],
+		},
+		"bogus_name": {
+			profile: testProfileGeneric1x10,
+			ifName:  "bogus",
+			ifSpeed: "10G",
+			expErr:  new(sdk.ErrNotFound),
+		},
+		"bogus_speed": {
+			profile: testProfileGeneric1x10,
+			ifName:  "eth0",
+			ifSpeed: "100G",
+			expErr:  new(sdk.ErrNotFound),
+		},
+		"breakout": {
+			profile:  testProfileJuniperEX440048F,
+			ifName:   "et-0/1/0:2",
+			ifSpeed:  "25G",
+			expected: Port{ConnectorType: "qsfp28", Panel: 3, Transformations: []Transformation{{ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "et-0/1/0:0", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 0, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 2, Name: "et-0/1/0:1", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 0, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 3, Name: "et-0/1/0:2", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 0, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}, {ID: 4, Name: "et-0/1/0:3", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"breakout": true, "fpc": 0, "pic": 1, "port": 0, "speed": "25g"}, "interface": {"speed": ""}}`), Speed: "25G"}}}}, Column: 1, ID: 49, Row: 1, FailureDomain: 1, Display: pointer.To(48), Slot: 0},
+		},
+		"two_of_three_transforms": {
+			profile:  testProfileJuniperEX440048F,
+			ifName:   "ge-0/0/38",
+			ifSpeed:  "1G",
+			expected: Port{ConnectorType: "sfp+", Panel: 2, Transformations: []Transformation{{ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/38", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "1g"}}`), Speed: "1G"}}}, {ID: 3, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/38", State: enum.InterfaceState{Value: "active"}, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"auto_negotiation": false, "link_mode": "full-duplex", "speed": "1g"}}`), Speed: "1G"}}}}, Column: 2, ID: 39, Row: 1, FailureDomain: 1, Display: pointer.To(38), Slot: 0},
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := tCase.profile.PortWithMatchingTransforms(tCase.ifName, tCase.ifSpeed)
+			if tCase.expErr != nil {
+				target := reflect.New(reflect.TypeOf(tCase.expErr).Elem()).Interface()
+				require.ErrorAs(t, err, target)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tCase.expected, result)
 		})
 	}
 }

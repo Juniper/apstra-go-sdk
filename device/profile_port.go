@@ -21,23 +21,41 @@ type Port struct {
 	Slot            int              `json:"slot_id"`
 }
 
-// TransformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
-// and returns a map[int]Transformation populated with candidate transformations
+// transformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
+// and returns a []Transformation populated with candidate transformations
 // available according to the PortInfo and keyed by the transformation ID. Only
 // "active" transformations are returned.
-func (p Port) TransformationCandidates(ifName string, ifSpeed speed.Speed) map[int]Transformation {
-	result := make(map[int]Transformation)
+func (p Port) transformationCandidates(ifName string, ifSpeed speed.Speed) []Transformation {
+	var result []Transformation
 	for _, transformation := range p.Transformations {
 		for _, intf := range transformation.Interfaces {
 			if intf.Name == ifName &&
 				intf.State == enum.InterfaceStateActive &&
 				intf.Speed.Equal(ifSpeed) {
-				result[transformation.ID] = transformation
+				result = append(result, transformation)
 			}
 		}
 	}
-	if len(result) == 0 {
-		result = nil
+
+	return result
+}
+
+// TransformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
+// and returns a map[int]Transformation populated with candidate transformations
+// available according to the PortInfo and keyed by the transformation ID. Only
+// "active" transformations are returned.
+//
+// Deprecated: Use the PortWithMatchingTransforms() device profile method instead
+func (p Port) TransformationCandidates(ifName string, ifSpeed speed.Speed) map[int]Transformation {
+	transforms := p.transformationCandidates(ifName, ifSpeed)
+	if len(transforms) == 0 {
+		return nil
 	}
+
+	result := make(map[int]Transformation, len(transforms))
+	for _, transformation := range transforms {
+		result[transformation.ID] = transformation
+	}
+
 	return result
 }
