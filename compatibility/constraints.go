@@ -17,6 +17,9 @@ var (
 	BpHasVirtualNetworkPolicyNode = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
 	}
+	DeviceProfileHasRefdesignCapabilities = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	}
 	EmptyVnBindingsOk = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}

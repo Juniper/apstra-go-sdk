@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
@@ -57,11 +58,13 @@ func TestGetInterfaceMapDigestsByDeviceProfile(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
-		dpIDs, err := client.Client.GetAllDeviceProfiles(ctx)
+		dpIDs, err := client.Client.GetDeviceProfiles(ctx)
 		require.NoError(t, err)
 
-		randId := dpIDs[rand.Intn(len(dpIDs))].Id
-		imds, err := client.Client.GetInterfaceMapDigestsByDeviceProfile(ctx, randId)
+		randId := dpIDs[rand.Intn(len(dpIDs))].ID()
+		require.NotNil(t, randId)
+
+		imds, err := client.Client.GetInterfaceMapDigestsByDeviceProfile(ctx, apstra.ObjectId(*randId))
 		require.NoError(t, err)
 
 		for _, imd := range imds {
