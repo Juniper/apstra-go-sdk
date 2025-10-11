@@ -342,20 +342,20 @@ func TestTransformation_Interface(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"Juniper_EX4400-48F_p0_t0": {
+		"Juniper_EX4400-48F_p1_t1_i1": {
 			transformation: testProfileJuniperEX440048F.Ports[0].Transformations[0],
 			id:             1,
 			expect:         testProfileJuniperEX440048F.Ports[0].Transformations[0].Interfaces[0],
 		},
-		"notfound_Juniper_EX4400-48F_p0_t1": {
+		"notfound_Juniper_EX4400-48F_p1_t1_i2": {
 			transformation: testProfileJuniperEX440048F.Ports[0].Transformations[0],
 			id:             2,
 			expErr:         new(sdk.ErrNotFound),
 		},
-		"Juniper_EX4400-48F_p49_t1": {
-			transformation: testProfileJuniperEX440048F.Ports[49].Transformations[1],
+		"Juniper_EX4400-48F_p49_t2_i2": {
+			transformation: testProfileJuniperEX440048F.Ports[48].Transformations[1],
 			id:             2,
-			expect:         testProfileJuniperEX440048F.Ports[49].Transformations[1].Interfaces[1],
+			expect:         testProfileJuniperEX440048F.Ports[48].Transformations[1].Interfaces[1],
 		},
 	}
 
@@ -383,12 +383,12 @@ func TestTransformation_InterfaceIDs(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"Juniper_EX4400-48F_p0_t0": {
+		"Juniper_EX4400-48F_p1_t1": {
 			transformation: testProfileJuniperEX440048F.Ports[0].Transformations[0],
 			expect:         []int{1},
 		},
-		"Juniper_EX4400-48F_p49_t1": {
-			transformation: testProfileJuniperEX440048F.Ports[49].Transformations[1],
+		"Juniper_EX4400-48F_p49_t2": {
+			transformation: testProfileJuniperEX440048F.Ports[48].Transformations[1],
 			expect:         []int{1, 2, 3, 4},
 		},
 	}
