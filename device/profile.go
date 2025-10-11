@@ -297,9 +297,9 @@ type Transformation struct {
 
 // InterfaceIDs returns []int representing all interface IDs associated
 // with the Transformation.
-func (o Transformation) InterfaceIDs() []int {
-	result := make([]int, len(o.Interfaces))
-	for i, intf := range o.Interfaces {
+func (t Transformation) InterfaceIDs() []int {
+	result := make([]int, len(t.Interfaces))
+	for i, intf := range t.Interfaces {
 		result[i] = intf.ID
 	}
 
@@ -308,8 +308,8 @@ func (o Transformation) InterfaceIDs() []int {
 
 // Interface returns the Interface with the specified ID. If no
 // such Interface exists, an error is returned.
-func (o Transformation) Interface(id int) (TransformationInterface, error) {
-	for _, intf := range o.Interfaces {
+func (t Transformation) Interface(id int) (TransformationInterface, error) {
+	for _, intf := range t.Interfaces {
 		if intf.ID == id {
 			return intf, nil
 		}
