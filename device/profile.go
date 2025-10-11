@@ -295,6 +295,29 @@ type Transformation struct {
 	Interfaces []TransformationInterface `json:"interfaces"`
 }
 
+// InterfaceIDs returns []int representing all interface IDs associated
+// with the Transformation.
+func (o Transformation) InterfaceIDs() []int {
+	result := make([]int, len(o.Interfaces))
+	for i, intf := range o.Interfaces {
+		result[i] = intf.ID
+	}
+
+	return result
+}
+
+// Interface returns the Interface with the specified ID. If no
+// such Interface exists, an error is returned.
+func (o Transformation) Interface(id int) (TransformationInterface, error) {
+	for _, intf := range o.Interfaces {
+		if intf.ID == id {
+			return intf, nil
+		}
+	}
+
+	return TransformationInterface{}, sdk.ErrNotFound(fmt.Sprintf("interface %d not found in transformation", id))
+}
+
 type TransformationInterface struct {
 	ID      int                 `json:"interface_id"`
 	Name    string              `json:"name"`
