@@ -332,3 +332,73 @@ func TestProfile_PortWithMatchingTransforms(t *testing.T) {
 		})
 	}
 }
+
+func TestTransformation_Interface(t *testing.T) {
+	type testCase struct {
+		transformation Transformation
+		id             int
+		expect         TransformationInterface
+		expErr         any
+	}
+
+	testCases := map[string]testCase{
+		"Juniper_EX4400-48F_p0_t0": {
+			transformation: testProfileJuniperEX440048F.Ports[0].Transformations[0],
+			id:             1,
+			expect:         testProfileJuniperEX440048F.Ports[0].Transformations[0].Interfaces[0],
+		},
+		"notfound_Juniper_EX4400-48F_p0_t1": {
+			transformation: testProfileJuniperEX440048F.Ports[0].Transformations[0],
+			id:             2,
+			expErr:         new(sdk.ErrNotFound),
+		},
+		"Juniper_EX4400-48F_p49_t1": {
+			transformation: testProfileJuniperEX440048F.Ports[49].Transformations[1],
+			id:             2,
+			expect:         testProfileJuniperEX440048F.Ports[49].Transformations[1].Interfaces[1],
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := tCase.transformation.Interface(tCase.id)
+			if tCase.expErr != nil {
+				target := reflect.New(reflect.TypeOf(tCase.expErr).Elem()).Interface()
+				require.ErrorAs(t, err, target)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tCase.expect, result)
+		})
+	}
+}
+
+func TestTransformation_InterfaceIDs(t *testing.T) {
+	type testCase struct {
+		transformation Transformation
+		expect         []int
+	}
+
+	testCases := map[string]testCase{
+		"Juniper_EX4400-48F_p0_t0": {
+			transformation: testProfileJuniperEX440048F.Ports[0].Transformations[0],
+			expect:         []int{1},
+		},
+		"Juniper_EX4400-48F_p49_t1": {
+			transformation: testProfileJuniperEX440048F.Ports[49].Transformations[1],
+			expect:         []int{1, 2, 3, 4},
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			result := tCase.transformation.InterfaceIDs()
+			require.Equal(t, tCase.expect, result)
+		})
+	}
+}
