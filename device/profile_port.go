@@ -5,6 +5,9 @@
 package device
 
 import (
+	"fmt"
+
+	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
@@ -19,6 +22,18 @@ type Port struct {
 	FailureDomain   int              `json:"failure_domain_id"`
 	Display         *int             `json:"display_id"`
 	Slot            int              `json:"slot_id"`
+}
+
+// DefaultTransform returns the Transformation flagged as default.
+// If none are default, an error is returned.
+func (p Port) DefaultTransform() (Transformation, error) {
+	for _, t := range p.Transformations {
+		if t.IsDefault {
+			return t, nil
+		}
+	}
+
+	return Transformation{}, sdk.ErrNotFound(fmt.Sprintf("Port %d has no default transformation", p.ID))
 }
 
 // transformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
@@ -58,4 +73,16 @@ func (p Port) TransformationCandidates(ifName string, ifSpeed speed.Speed) map[i
 	}
 
 	return result
+}
+
+// Transformation returns the Transformation with the specified ID. If no
+// such Transformation exists, an error is returned.
+func (p Port) Transformation(id int) (Transformation, error) {
+	for _, t := range p.Transformations {
+		if t.ID == id {
+			return t, nil
+		}
+	}
+
+	return Transformation{}, sdk.ErrNotFound(fmt.Sprintf("transformation id %d not found", id))
 }
