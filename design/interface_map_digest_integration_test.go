@@ -35,7 +35,7 @@ func TestInterfaceMapDigest_Retrieval(t *testing.T) {
 
 			for _, id := range ids {
 				t.Run("check_"+id, func(t *testing.T) {
-					objPtr := slice.ObjectWithID(objs, id)
+					objPtr := slice.MustFindByID(objs, id)
 					require.NotNil(t, objPtr)
 					require.NotNil(t, objPtr.ID())
 					require.Equal(t, id, *objPtr.ID())
@@ -49,7 +49,7 @@ func TestInterfaceMapDigest_Retrieval(t *testing.T) {
 					obj, err := client.Client.GetInterfaceMapDigest2(ctx, id)
 					require.NoError(t, err)
 
-					objPtr := slice.ObjectWithID(objs, id)
+					objPtr := slice.MustFindByID(objs, id)
 					require.NotNil(t, objPtr)
 
 					require.Equal(t, *objPtr, obj)

@@ -177,7 +177,7 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					// retrieve the list of objects (ours must be in there) and validate
 					objs, err := client.Client.GetInterfaceMaps2(ctx)
 					require.NoError(t, err)
-					objPtr := slice.ObjectWithID(objs, id)
+					objPtr := slice.MustFindByID(objs, id)
 					require.NotNil(t, objPtr)
 					obj = *objPtr
 					idPtr = obj.ID()
@@ -242,7 +242,7 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					// retrieve the list of objects (ours must *not* be in there)
 					objs, err = client.Client.GetInterfaceMaps2(ctx)
 					require.NoError(t, err)
-					objPtr = slice.ObjectWithID(objs, id)
+					objPtr = slice.MustFindByID(objs, id)
 					require.Nil(t, objPtr)
 
 					// update the object
