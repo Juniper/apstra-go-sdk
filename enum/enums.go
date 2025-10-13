@@ -470,3 +470,12 @@ var ( // do not introduce "not_installed" - that's an agent parameter with simil
 	SystemManagementLevelTelemetryOnly = SystemManagementLevel{Value: "telemetry_only"}
 	SystemManagementLevelUnmanaged     = SystemManagementLevel{Value: "unmanaged"}
 )
+
+type TemplateType oenum.Member[string]
+
+var (
+	TemplateTypeRackBased     = TemplateType{Value: "rack_based"}
+	TemplateTypePodBased      = TemplateType{Value: "pod_based"}
+	TemplateTypeL3Collapsed   = TemplateType{Value: "l3_collapsed"}
+	TemplateTypeRailCollapsed = TemplateType{Value: "rail_collapsed"}
+)

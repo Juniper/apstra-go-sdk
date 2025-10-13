@@ -12,14 +12,15 @@ import (
 	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
+	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var (
-	_ internal.IDer     = (*Profile)(nil)
 	_ internal.IDSetter = (*Profile)(nil)
 	_ json.Marshaler    = (*Profile)(nil)
 	_ json.Unmarshaler  = (*Profile)(nil)
+	_ timeutils.Stamper = (*Profile)(nil)
 )
 
 type Profile struct {

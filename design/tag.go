@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	_ internal.IDer            = (*Tag)(nil)
+	_ internal.IDSetter        = (*Tag)(nil)
 	_ internal.Replicator[Tag] = (*Tag)(nil)
 	_ json.Marshaler           = (*Tag)(nil)
 	_ json.Unmarshaler         = (*Tag)(nil)

@@ -9,6 +9,7 @@ type IDer interface {
 }
 
 type IDSetter interface {
+	IDer
 	SetID(string) error
 	MustSetID(string)
 }

@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	_ internal.IDer     = (*InterfaceMap)(nil)
+	_ internal.IDSetter = (*InterfaceMap)(nil)
 	_ json.Marshaler    = (*InterfaceMap)(nil)
 	_ json.Unmarshaler  = (*InterfaceMap)(nil)
 	_ timeutils.Stamper = (*InterfaceMap)(nil)

@@ -1501,6 +1501,37 @@ func (o *TcpStateQualifier) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*TemplateType)(nil)
+	_ json.Marshaler   = (*TemplateType)(nil)
+	_ json.Unmarshaler = (*TemplateType)(nil)
+)
+
+func (o TemplateType) String() string {
+	return o.Value
+}
+
+func (o *TemplateType) FromString(s string) error {
+	if TemplateTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o TemplateType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *TemplateType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*VnType)(nil)
 	_ json.Marshaler   = (*VnType)(nil)
 	_ json.Unmarshaler = (*VnType)(nil)
@@ -1931,6 +1962,14 @@ var (
 	_                  enum = new(TcpStateQualifier)
 	TcpStateQualifiers      = oenum.New(
 		TcpStateQualifierEstablished,
+	)
+
+	_             enum = new(TemplateType)
+	TemplateTypes      = oenum.New(
+		TemplateTypeRackBased,
+		TemplateTypePodBased,
+		TemplateTypeL3Collapsed,
+		TemplateTypeRailCollapsed,
 	)
 
 	_       enum = new(VnType)

@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	_ internal.IDer                      = (*LogicalDevice)(nil)
+	_ internal.IDSetter                  = (*LogicalDevice)(nil)
 	_ internal.Replicator[LogicalDevice] = (*LogicalDevice)(nil)
 	_ json.Marshaler                     = (*LogicalDevice)(nil)
 	_ json.Unmarshaler                   = (*LogicalDevice)(nil)

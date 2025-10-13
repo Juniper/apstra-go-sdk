@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	_ internal.IDer     = (*ConfigTemplate)(nil)
+	_ internal.IDSetter = (*ConfigTemplate)(nil)
 	_ json.Unmarshaler  = (*ConfigTemplate)(nil)
 	_ timeutils.Stamper = (*ConfigTemplate)(nil)
 )

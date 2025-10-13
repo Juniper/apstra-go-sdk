@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	_ internal.IDer                 = (*RackType)(nil)
+	_ internal.IDSetter             = (*RackType)(nil)
 	_ internal.Replicator[RackType] = (*RackType)(nil)
 	_ json.Marshaler                = (*RackType)(nil)
 	_ json.Unmarshaler              = (*RackType)(nil)
