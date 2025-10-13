@@ -19,7 +19,7 @@ func InterfaceMap(t testing.TB, req, resp design.InterfaceMap, msg ...string) {
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, req.DeviceProfileID, resp.DeviceProfileID, msg)
 	require.Equal(t, len(req.Interfaces), len(resp.Interfaces), msg)
-	for i := range req.Interfaces {
+	for i := range len(req.Interfaces) {
 		InterfaceMapInterface(t, req.Interfaces[i], resp.Interfaces[i], addMsg(msg, "Comparing Interface %d", i)...)
 	}
 

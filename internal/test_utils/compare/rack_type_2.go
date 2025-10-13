@@ -84,7 +84,7 @@ func RackTypeAccessSwitch(t testing.TB, req, resp design.AccessSwitch, msg ...st
 	}
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, len(req.Links), len(resp.Links), msg)
-	for i := range req.Links {
+	for i := range len(req.Links) {
 		RackTypeLink(t, req.Links[i], resp.Links[i], addMsg(msg, "Comparing Link %d", i)...)
 	}
 	LogicalDevice2(t, req.LogicalDevice, resp.LogicalDevice, msg...)
@@ -108,7 +108,7 @@ func RackTypeGenericSystem(t testing.TB, req, resp design.GenericSystem, msg ...
 	}
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, len(req.Links), len(resp.Links), msg)
-	for i := range req.Links {
+	for i := range len(req.Links) {
 		RackTypeLink(t, req.Links[i], resp.Links[i], addMsg(msg, "Comparing Link %d", i)...)
 	}
 	LogicalDevice2(t, req.LogicalDevice, resp.LogicalDevice, msg...)

@@ -138,7 +138,7 @@ func (c Client) GetInterfaceMapByLabel2(ctx context.Context, label string) (desi
 	default: // len(result) > 1
 		return zero.SliceItem(result), ClientErr{
 			errType: ErrMultipleMatch,
-			err:     fmt.Errorf("found multiple candidate %T with label %s", result, label),
+			err:     fmt.Errorf("found multiple candidate %T with label %s", zero.SliceItem(result), label),
 		}
 	}
 }
