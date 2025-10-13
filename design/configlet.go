@@ -7,11 +7,12 @@ package design
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
-	"time"
 )
 
 var (

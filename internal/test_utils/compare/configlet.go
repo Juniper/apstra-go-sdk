@@ -46,7 +46,6 @@ func Configlet(t testing.TB, req, resp design.Configlet, msg ...string) {
 	for i := range len(req.Generators) {
 		ConfigletGenerator(t, req.Generators[i], resp.Generators[i], addMsg(msg, "Comparing Configlet Generator %d", i)...)
 	}
-
 }
 
 func ConfigletGenerator(t testing.TB, req, resp design.ConfigletGenerator, msg ...string) {

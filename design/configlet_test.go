@@ -6,12 +6,13 @@ package design
 
 import (
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestConfiglet_ID(t *testing.T) {

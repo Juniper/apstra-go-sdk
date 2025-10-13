@@ -1,12 +1,17 @@
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package apstra
 
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
-	"net/http"
 )
 
 func (c Client) CreateConfiglet2(ctx context.Context, v design.Configlet) (string, error) {
