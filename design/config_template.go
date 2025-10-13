@@ -10,28 +10,27 @@ import (
 	"time"
 
 	sdk "github.com/Juniper/apstra-go-sdk"
-	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
-	_ internal.IDer     = (*Configlet)(nil)
-	_ json.Unmarshaler  = (*Configlet)(nil)
-	_ timeutils.Stamper = (*Configlet)(nil)
+	_ internal.IDer     = (*ConfigTemplate)(nil)
+	_ json.Unmarshaler  = (*ConfigTemplate)(nil)
+	_ timeutils.Stamper = (*ConfigTemplate)(nil)
 )
 
-type Configlet struct {
-	Label      string               `json:"display_name"`
-	Generators []ConfigletGenerator `json:"generators"`
-	RefArchs   []enum.RefDesign     `json:"ref_archs"`
+type ConfigTemplate struct {
+	Label      string `json:"label"`
+	Predefined bool   `json:"predefined"`
+	Text       string `json:"text"`
 
 	id             string
 	createdAt      *time.Time
 	lastModifiedAt *time.Time
 }
 
-func (c Configlet) ID() *string {
+func (c ConfigTemplate) ID() *string {
 	if c.id == "" {
 		return nil
 	}
@@ -42,7 +41,7 @@ func (c Configlet) ID() *string {
 // have an existing value, an error is returned. Presence of an existing value
 // is the only reason SetID will return an error. If the id attribute is known
 // to be empty, use MustSetID.
-func (c *Configlet) SetID(id string) error {
+func (c *ConfigTemplate) SetID(id string) error {
 	if c.id != "" {
 		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", c.id))
 	}
@@ -52,40 +51,39 @@ func (c *Configlet) SetID(id string) error {
 }
 
 // MustSetID invokes SetID and panics if an error is returned.
-func (c *Configlet) MustSetID(id string) {
+func (c *ConfigTemplate) MustSetID(id string) {
 	err := c.SetID(id)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (c Configlet) CreatedAt() *time.Time {
+func (c ConfigTemplate) CreatedAt() *time.Time {
 	return c.createdAt
 }
 
-func (c Configlet) LastModifiedAt() *time.Time {
+func (c ConfigTemplate) LastModifiedAt() *time.Time {
 	return c.lastModifiedAt
 }
 
-func (c *Configlet) UnmarshalJSON(bytes []byte) error {
+func (c *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		ID             string               `json:"id"`
-		DisplayName    string               `json:"display_name"`
-		Generators     []ConfigletGenerator `json:"generators"`
-		RefArchs       []enum.RefDesign     `json:"ref_archs"`
-		CreatedAt      *time.Time           `json:"created_at"`
-		LastModifiedAt *time.Time           `json:"last_modified_at"`
+		ID             string     `json:"id"`
+		Label          string     `json:"label"`
+		Predefined     bool       `json:"predefined"`
+		Text           string     `json:"text"`
+		CreatedAt      *time.Time `json:"created_at"`
+		LastModifiedAt *time.Time `json:"last_modified_at"`
 	}
-
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
-		return err
+		return fmt.Errorf("unmarshaling logical device: %w", err)
 	}
 
 	c.id = raw.ID
-	c.Label = raw.DisplayName
-	c.Generators = raw.Generators
-	c.RefArchs = raw.RefArchs
+	c.Label = raw.Label
+	c.Predefined = raw.Predefined
+	c.Text = raw.Text
 	c.createdAt = raw.CreatedAt
 	c.lastModifiedAt = raw.LastModifiedAt
 

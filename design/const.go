@@ -7,6 +7,8 @@ package design
 const (
 	urlPrefix = "/api/design/"
 
+	ConfigTemplatesURL        = urlPrefix + "config-templates"
+	ConfigTemplateURLByID     = ConfigTemplatesURL + "/%s"
 	ConfigletsURL             = urlPrefix + "configlets"
 	ConfigletURLByID          = ConfigletsURL + "/%s"
 	InterfaceMapDigestsURL    = urlPrefix + "interface-map-digests"
