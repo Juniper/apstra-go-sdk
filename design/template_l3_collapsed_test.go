@@ -6,12 +6,13 @@ package design
 
 import (
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestTemplateL3Collapsed_ID(t *testing.T) {
@@ -101,11 +102,6 @@ func TestTemplateL3Collapsed_MarshalJSON(t *testing.T) {
 
 			r, err := json.Marshal(tCase.v)
 			require.NoError(t, err)
-
-			//var r2 TemplateL3Collapsed
-			//err = json.Unmarshal([]byte(tCase.e), &r2)
-			//require.NoError(t, err)
-			//log.Printf("%#v", r2)
 
 			// get rid of extraneous fields in the expected string value
 			eMap := map[string]json.RawMessage{}

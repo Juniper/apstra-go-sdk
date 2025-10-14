@@ -60,12 +60,12 @@ func (t TemplatePodBased) MustSetID(id string) {
 }
 
 func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (t TemplatePodBased) UnmarshalJSON(bytes []byte) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

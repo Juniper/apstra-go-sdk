@@ -6,12 +6,13 @@ package policy_test
 
 import (
 	"encoding/json"
+	"reflect"
+	"testing"
+
 	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/stretchr/testify/require"
-	"reflect"
-	"testing"
 )
 
 func TestAntiAffinity_MarshalJSON(t *testing.T) {

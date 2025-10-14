@@ -61,17 +61,17 @@ func (t TemplateRackBased) MustSetID(id string) {
 }
 
 func (t TemplateRackBased) Replicate() TemplateRackBased {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (t TemplateRackBased) UnmarshalJSON(bytes []byte) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

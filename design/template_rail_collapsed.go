@@ -60,12 +60,12 @@ func (t TemplateRailCollapsed) MustSetID(id string) {
 }
 
 func (t TemplateRailCollapsed) MarshalJSON() ([]byte, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (t TemplateRailCollapsed) UnmarshalJSON(bytes []byte) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

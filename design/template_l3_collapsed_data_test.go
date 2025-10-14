@@ -36,7 +36,8 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 									{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}, enum.PortRole{Value: "access"}}},
 									{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}}},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}},
+								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+							},
 						},
 					},
 				},
@@ -63,7 +64,8 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 								PortGroups: []LogicalDevicePanelPortGroup{
 									{Count: 8, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "generic"}, enum.PortRole{Value: "peer"}, enum.PortRole{Value: "access"}}},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}},
+								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+							},
 						},
 					},
 				},
@@ -73,7 +75,15 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 					AsnDomain: &enum.FeatureSwitchDisabled,
 					Count:     2,
 					Label:     "generic",
-					Links:     []RackTypeLink{{Label: "link", TargetSwitchLabel: "access", LinkPerSwitchCount: 1, Speed: "10G", AttachmentType: enum.LinkAttachmentType{Value: "singleAttached"}, LAGMode: enum.LAGMode{Value: ""}, SwitchPeer: enum.LinkSwitchPeer{Value: ""}}},
+					Links: []RackTypeLink{
+						{
+							Label:              "link",
+							TargetSwitchLabel:  "access",
+							LinkPerSwitchCount: 1,
+							Speed:              "10G",
+							AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
+						},
+					},
 					LogicalDevice: LogicalDevice{
 						Label: "AOS-1x10-1",
 						Panels: []LogicalDevicePanel{
@@ -82,7 +92,8 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 								PortGroups: []LogicalDevicePanelPortGroup{
 									{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "access"}}},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}},
+								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+							},
 						},
 					},
 					Loopback:        &enum.FeatureSwitchDisabled,
@@ -94,7 +105,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 			lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
 		},
 	},
-	RackTypeCounts:       []RackTypeCount{RackTypeCount{RackTypeId: "L3_collapsed_acs", Count: 1}},
+	RackTypeCounts:       []RackTypeCount{{RackTypeId: "L3_collapsed_acs", Count: 1}},
 	DHCPServiceIntent:    policy.DHCPServiceIntent{Active: true},
 	VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
 }
@@ -343,7 +354,8 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 									{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}, enum.PortRole{Value: "access"}}},
 									{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}}},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}},
+								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+							},
 						},
 					},
 				},
@@ -370,7 +382,8 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 								PortGroups: []LogicalDevicePanelPortGroup{
 									{Count: 8, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "generic"}, enum.PortRole{Value: "peer"}, enum.PortRole{Value: "access"}}},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}},
+								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+							},
 						},
 					},
 				},
@@ -380,7 +393,15 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 					AsnDomain: &enum.FeatureSwitchDisabled,
 					Count:     2,
 					Label:     "generic",
-					Links:     []RackTypeLink{RackTypeLink{Label: "link", TargetSwitchLabel: "access", LinkPerSwitchCount: 1, Speed: "10G", AttachmentType: enum.LinkAttachmentType{Value: "singleAttached"}, LAGMode: enum.LAGMode{Value: ""}, SwitchPeer: enum.LinkSwitchPeer{Value: ""}}},
+					Links: []RackTypeLink{
+						{
+							Label:              "link",
+							TargetSwitchLabel:  "access",
+							LinkPerSwitchCount: 1,
+							Speed:              "10G",
+							AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
+						},
+					},
 					LogicalDevice: LogicalDevice{
 						Label: "AOS-1x10-1",
 						Panels: []LogicalDevicePanel{
@@ -389,7 +410,8 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 								PortGroups: []LogicalDevicePanelPortGroup{
 									{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "access"}}},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}},
+								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+							},
 						},
 					},
 					Loopback:        &enum.FeatureSwitchDisabled,
@@ -401,7 +423,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 			lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
 		},
 	},
-	RackTypeCounts:       []RackTypeCount{RackTypeCount{RackTypeId: "L3_collapsed_acs", Count: 1}},
+	RackTypeCounts:       []RackTypeCount{{RackTypeId: "L3_collapsed_acs", Count: 1}},
 	DHCPServiceIntent:    policy.DHCPServiceIntent{Active: true},
 	VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
 	AntiAffinityPolicy: &policy.AntiAffinity{
