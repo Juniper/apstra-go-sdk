@@ -5,20 +5,17 @@
 package design
 
 import (
-	"crypto/sha256"
 	"encoding/json"
-	"testing"
-	"time"
-
-	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
+	"testing"
+	"time"
 )
 
-func TestLogicalDevice_ID(t *testing.T) {
-	var obj LogicalDevice
+func TestTemplateL3Collapsed_ID(t *testing.T) {
+	var obj TemplateL3Collapsed
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
 
@@ -54,49 +51,8 @@ func TestLogicalDevice_ID(t *testing.T) {
 	})
 }
 
-func TestLogicalDevice_replicate(t *testing.T) {
-	original := LogicalDevice{
-		Label: testutils.RandString(6, "hex"),
-		Panels: []LogicalDevicePanel{
-			{
-				PanelLayout: LogicalDevicePanelLayout{
-					RowCount:    2,
-					ColumnCount: 4,
-				},
-				PortGroups: []LogicalDevicePanelPortGroup{
-					{
-						Count: 4,
-						Speed: "10G",
-						Roles: LogicalDevicePortRoles{enum.PortRoleSpine, enum.PortRoleGeneric},
-					},
-					{
-						Count: 4,
-						Speed: "1G",
-						Roles: LogicalDevicePortRoles{enum.PortRoleGeneric},
-					},
-				},
-				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
-			},
-		},
-		id:             testutils.RandString(6, "hex"),
-		createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
-		lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
-	}
-
-	replicant := original.Replicate()
-
-	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
-
-	// wipe out values which cannot be replicated before comparing values
-	original.id = ""
-	original.createdAt = nil
-	original.lastModifiedAt = nil
-
-	require.Equal(t, original, replicant)
-}
-
-func TestLogicalDevice_timestamps(t *testing.T) {
-	testCases := map[string]LogicalDevice{
+func TestTemplateL3Collapsed_timestamps(t *testing.T) {
+	testCases := map[string]TemplateL3Collapsed{
 		"a": {
 			createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
 			lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
@@ -122,20 +78,20 @@ func TestLogicalDevice_timestamps(t *testing.T) {
 	}
 }
 
-func TestLogicalDevice_MarshalJSON(t *testing.T) {
+func TestTemplateL3Collapsed_MarshalJSON(t *testing.T) {
 	type testCase struct {
-		v LogicalDevice
+		v TemplateL3Collapsed
 		e string
 	}
 
 	testCases := map[string]testCase{
-		"test-1x1": {
-			v: logicalDeviceTest1x1,
-			e: logicalDeviceTest1x1JSON,
+		"templateL3CollapsedACS": {
+			v: templateL3CollapsedACS,
+			e: templateL3CollapsedACSJSON,
 		},
-		"test-48x10+4x100": {
-			v: logicalDeviceTest48x10plus4x100,
-			e: logicalDeviceTest48x10plus4x100JSON,
+		"templateL3CollapsedACS420": {
+			v: templateL3CollapsedACS420,
+			e: templateL3CollapsedACS420JSON,
 		},
 	}
 
@@ -146,9 +102,15 @@ func TestLogicalDevice_MarshalJSON(t *testing.T) {
 			r, err := json.Marshal(tCase.v)
 			require.NoError(t, err)
 
+			//var r2 TemplateL3Collapsed
+			//err = json.Unmarshal([]byte(tCase.e), &r2)
+			//require.NoError(t, err)
+			//log.Printf("%#v", r2)
+
 			// get rid of extraneous fields in the expected string value
 			eMap := map[string]json.RawMessage{}
 			require.NoError(t, json.Unmarshal([]byte(tCase.e), &eMap))
+			delete(eMap, "id")
 			delete(eMap, "created_at")
 			delete(eMap, "last_modified_at")
 			e, err := json.Marshal(eMap)
@@ -159,30 +121,30 @@ func TestLogicalDevice_MarshalJSON(t *testing.T) {
 	}
 }
 
-func TestLogicalDevice_UnmarshalJSON(t *testing.T) {
-	type testCase struct {
-		v string
-		e LogicalDevice
-	}
-
-	testCases := map[string]testCase{
-		"test-1x1": {
-			v: logicalDeviceTest1x1JSON,
-			e: logicalDeviceTest1x1,
-		},
-		"test-48x10+4x100": {
-			v: logicalDeviceTest48x10plus4x100JSON,
-			e: logicalDeviceTest48x10plus4x100,
-		},
-	}
-
-	for tName, tCase := range testCases {
-		t.Run(tName, func(t *testing.T) {
-			t.Parallel()
-			var r LogicalDevice
-			err := json.Unmarshal([]byte(tCase.v), &r)
-			require.NoError(t, err)
-			require.Equal(t, tCase.e, r)
-		})
-	}
-}
+//func TestTemplateL3Collapsed_UnmarshalJSON(t *testing.T) {
+//	type testCase struct {
+//		v string
+//		e TemplateL3Collapsed
+//	}
+//
+//	testCases := map[string]testCase{
+//		"test-1x1": {
+//			v: logicalDeviceTest1x1JSON,
+//			e: logicalDeviceTest1x1,
+//		},
+//		"test-48x10+4x100": {
+//			v: logicalDeviceTest48x10plus4x100JSON,
+//			e: logicalDeviceTest48x10plus4x100,
+//		},
+//	}
+//
+//	for tName, tCase := range testCases {
+//		t.Run(tName, func(t *testing.T) {
+//			t.Parallel()
+//			var r TemplateL3Collapsed
+//			err := json.Unmarshal([]byte(tCase.v), &r)
+//			require.NoError(t, err)
+//			require.Equal(t, tCase.e, r)
+//		})
+//	}
+//}

@@ -217,7 +217,6 @@ var testRackTypes = map[string]design.RackType{
 		Label:                    testutils.RandString(6, "hex"),
 		Description:              testutils.RandString(6, "hex"),
 		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-		Status:                   pointer.To(enum.FFEConsistencyStatusOK),
 		LeafSwitches: []design.LeafSwitch{
 			{
 				LinkPerSpineCount: pointer.To(2),

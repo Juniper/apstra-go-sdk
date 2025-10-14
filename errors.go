@@ -21,3 +21,9 @@ type ErrMultipleMatch string
 func (e ErrMultipleMatch) Error() string {
 	return string(e)
 }
+
+type ErrAPIResponseInvalid string
+
+func (e ErrAPIResponseInvalid) Error() string {
+	return string(e)
+}

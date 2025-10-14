@@ -29,7 +29,6 @@ type RackType struct {
 	Label                    string
 	Description              string
 	FabricConnectivityDesign enum.FabricConnectivityDesign
-	Status                   *enum.FFEConsistencyStatus
 	LeafSwitches             []LeafSwitch
 	AccessSwitches           []AccessSwitch  `json:"access_switches"`
 	GenericSystems           []GenericSystem `json:"generic_systems"`
@@ -73,7 +72,6 @@ func (r RackType) Replicate() RackType {
 		Label:                    r.Label,
 		Description:              r.Description,
 		FabricConnectivityDesign: r.FabricConnectivityDesign,
-		Status:                   r.Status,
 		LeafSwitches:             make([]LeafSwitch, len(r.LeafSwitches)),
 		AccessSwitches:           nil, // don't create an empty slice
 		GenericSystems:           nil, // don't create an empty slice
@@ -208,7 +206,6 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 		FabricConnectivityDesign enum.FabricConnectivityDesign `json:"fabric_connectivity_design"`
 		AllTags                  []Tag                         `json:"tags"`
 		LogicalDevices           []LogicalDevice               `json:"logical_devices"`
-		Status                   *enum.FFEConsistencyStatus    `json:"status"`
 		LeafSwitches             []LeafSwitch                  `json:"leafs"`
 		AccessSwitches           []AccessSwitch                `json:"access_switches"`
 		GenericSystems           []GenericSystem               `json:"generic_systems"`
@@ -229,7 +226,6 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 	r.Label = raw.Label
 	r.Description = raw.Description
 	r.FabricConnectivityDesign = raw.FabricConnectivityDesign
-	r.Status = raw.Status
 
 	r.LeafSwitches = make([]LeafSwitch, len(raw.LeafSwitches))
 	for i, system := range raw.LeafSwitches {

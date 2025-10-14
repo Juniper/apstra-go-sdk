@@ -17,7 +17,6 @@ var rackTypeTestCollapsedSimple = RackType{
 	Label:                    "Collapsed Simple",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	Status:                   pointer.To(enum.FFEConsistencyStatusInconsistent),
 	LeafSwitches: []LeafSwitch{
 		{
 			Label: "leafy",
@@ -79,7 +78,6 @@ var rackTypeTestCollapsedESI = RackType{
 	Label:                    "Collapsed ESI",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	Status:                   pointer.To(enum.FFEConsistencyStatusInconsistent),
 	LeafSwitches: []LeafSwitch{
 		{
 			Label: "leafy",
@@ -142,7 +140,6 @@ var rackTypeTestCollapsedSimpleWithAccess = RackType{
 	Label:                    "Collapsed Simple With Access",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	Status:                   pointer.To(enum.FFEConsistencyStatusInconsistent),
 	LeafSwitches: []LeafSwitch{
 		{
 			Label: "leafy",
@@ -303,7 +300,6 @@ var rackTypeTestRackBasedESIWithAccessESI = RackType{
 	Label:                    "Collapsed Simple With Access",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	Status:                   pointer.To(enum.FFEConsistencyStatusInconsistent),
 	LeafSwitches: []LeafSwitch{
 		{
 			Label:              "leafy",
@@ -476,7 +472,6 @@ var rackTypeTestRackBasedMLAGWithAccessPair = RackType{
 	Label:                    "Collapsed Simple With Access",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	Status:                   pointer.To(enum.FFEConsistencyStatusInconsistent),
 	LeafSwitches: []LeafSwitch{
 		{
 			Label:              "leafy",
@@ -731,7 +726,6 @@ var rackTypeTestCollapsedESIWithGenericSystems = RackType{
 	Label:                    "Collapsed ESI",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	Status:                   pointer.To(enum.FFEConsistencyStatusInconsistent),
 	LeafSwitches: []LeafSwitch{
 		{
 			Label: "leafy",

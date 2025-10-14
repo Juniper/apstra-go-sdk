@@ -15,6 +15,14 @@ import oenum "github.com/orsinium-labs/enum"
 // or `go generate enum/enums.go` from the repository root directory to refresh
 // `generated_enums.go`.
 
+type AntiAffinityMode oenum.Member[string]
+
+var (
+	AntiAffinityModeDisabled = AntiAffinityMode{Value: "disabled"}
+	AntiAffinityModeLoose    = AntiAffinityMode{Value: "enabled_loose"}
+	AntiAffinityModeStrict   = AntiAffinityMode{Value: "enabled_strict"}
+)
+
 type DeployMode oenum.Member[string]
 
 var (
@@ -299,6 +307,13 @@ var (
 	ConfigletSectionSystemTop            = ConfigletSection{Value: "system_top"}
 )
 
+type OverlayControlProtocol oenum.Member[string]
+
+var (
+	OverlayControlProtocolNone = OverlayControlProtocol{Value: ""}
+	OverlayControlProtocolEVPN = OverlayControlProtocol{Value: "evpn"}
+)
+
 type SecurityZoneType oenum.Member[string]
 
 var (
@@ -432,13 +447,6 @@ var (
 	LeafRedundancyProtocolMLAG = LeafRedundancyProtocol{Value: "mlag"}
 )
 
-type FFEConsistencyStatus oenum.Member[string]
-
-var (
-	FFEConsistencyStatusOK           = FFEConsistencyStatus{Value: "ok"}
-	FFEConsistencyStatusInconsistent = FFEConsistencyStatus{Value: "inconsistent"}
-)
-
 type LAGMode oenum.Member[string]
 
 var (
@@ -469,6 +477,13 @@ var ( // do not introduce "not_installed" - that's an agent parameter with simil
 	SystemManagementLevelFullControl   = SystemManagementLevel{Value: "full_control"}
 	SystemManagementLevelTelemetryOnly = SystemManagementLevel{Value: "telemetry_only"}
 	SystemManagementLevelUnmanaged     = SystemManagementLevel{Value: "unmanaged"}
+)
+
+type TemplateCapability oenum.Member[string]
+
+var (
+	TemplateCapabilityBlueprint = TemplateCapability{Value: "blueprint"}
+	TemplateCapabilityPod       = TemplateCapability{Value: "pod"}
 )
 
 type TemplateType oenum.Member[string]

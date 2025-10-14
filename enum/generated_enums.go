@@ -13,6 +13,37 @@ import (
 )
 
 var (
+	_ enum             = (*AntiAffinityMode)(nil)
+	_ json.Marshaler   = (*AntiAffinityMode)(nil)
+	_ json.Unmarshaler = (*AntiAffinityMode)(nil)
+)
+
+func (o AntiAffinityMode) String() string {
+	return o.Value
+}
+
+func (o *AntiAffinityMode) FromString(s string) error {
+	if AntiAffinityModes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o AntiAffinityMode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *AntiAffinityMode) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*ApiFeature)(nil)
 	_ json.Marshaler   = (*ApiFeature)(nil)
 	_ json.Unmarshaler = (*ApiFeature)(nil)
@@ -252,37 +283,6 @@ func (o EndpointPolicyStatus) MarshalJSON() ([]byte, error) {
 }
 
 func (o *EndpointPolicyStatus) UnmarshalJSON(bytes []byte) error {
-	var s string
-	err := json.Unmarshal(bytes, &s)
-	if err != nil {
-		return err
-	}
-	return o.FromString(s)
-}
-
-var (
-	_ enum             = (*FFEConsistencyStatus)(nil)
-	_ json.Marshaler   = (*FFEConsistencyStatus)(nil)
-	_ json.Unmarshaler = (*FFEConsistencyStatus)(nil)
-)
-
-func (o FFEConsistencyStatus) String() string {
-	return o.Value
-}
-
-func (o *FFEConsistencyStatus) FromString(s string) error {
-	if FFEConsistencyStatuses.Parse(s) == nil {
-		return newEnumParseError(o, s)
-	}
-	o.Value = s
-	return nil
-}
-
-func (o FFEConsistencyStatus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.String())
-}
-
-func (o *FFEConsistencyStatus) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -912,6 +912,37 @@ func (o *NodeRole) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*OverlayControlProtocol)(nil)
+	_ json.Marshaler   = (*OverlayControlProtocol)(nil)
+	_ json.Unmarshaler = (*OverlayControlProtocol)(nil)
+)
+
+func (o OverlayControlProtocol) String() string {
+	return o.Value
+}
+
+func (o *OverlayControlProtocol) FromString(s string) error {
+	if OverlayControlProtocols.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o OverlayControlProtocol) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *OverlayControlProtocol) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*PolicyApplicationPointType)(nil)
 	_ json.Marshaler   = (*PolicyApplicationPointType)(nil)
 	_ json.Unmarshaler = (*PolicyApplicationPointType)(nil)
@@ -1501,6 +1532,37 @@ func (o *TcpStateQualifier) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*TemplateCapability)(nil)
+	_ json.Marshaler   = (*TemplateCapability)(nil)
+	_ json.Unmarshaler = (*TemplateCapability)(nil)
+)
+
+func (o TemplateCapability) String() string {
+	return o.Value
+}
+
+func (o *TemplateCapability) FromString(s string) error {
+	if TemplateCapabilities.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o TemplateCapability) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *TemplateCapability) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*TemplateType)(nil)
 	_ json.Marshaler   = (*TemplateType)(nil)
 	_ json.Unmarshaler = (*TemplateType)(nil)
@@ -1563,6 +1625,13 @@ func (o *VnType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_                 enum = new(AntiAffinityMode)
+	AntiAffinityModes      = oenum.New(
+		AntiAffinityModeDisabled,
+		AntiAffinityModeLoose,
+		AntiAffinityModeStrict,
+	)
+
 	_           enum = new(ApiFeature)
 	ApiFeatures      = oenum.New(
 		ApiFeatureAiFabric,
@@ -1627,12 +1696,6 @@ var (
 		EndpointPolicyStatusAssigned,
 		EndpointPolicyStatusIncomplete,
 		EndpointPolicyStatusReady,
-	)
-
-	_                      enum = new(FFEConsistencyStatus)
-	FFEConsistencyStatuses      = oenum.New(
-		FFEConsistencyStatusOK,
-		FFEConsistencyStatusInconsistent,
 	)
 
 	_               enum = new(FFResourceType)
@@ -1808,6 +1871,12 @@ var (
 		NodeRoleSuperspine,
 	)
 
+	_                       enum = new(OverlayControlProtocol)
+	OverlayControlProtocols      = oenum.New(
+		OverlayControlProtocolNone,
+		OverlayControlProtocolEVPN,
+	)
+
 	_                           enum = new(PolicyApplicationPointType)
 	PolicyApplicationPointTypes      = oenum.New(
 		PolicyApplicationPointTypeGroup,
@@ -1962,6 +2031,12 @@ var (
 	_                  enum = new(TcpStateQualifier)
 	TcpStateQualifiers      = oenum.New(
 		TcpStateQualifierEstablished,
+	)
+
+	_                    enum = new(TemplateCapability)
+	TemplateCapabilities      = oenum.New(
+		TemplateCapabilityBlueprint,
+		TemplateCapabilityPod,
 	)
 
 	_             enum = new(TemplateType)

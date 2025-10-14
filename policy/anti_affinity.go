@@ -1,8 +1,8 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package antiaffinity
+package policy
 
 import (
 	"encoding/json"
@@ -15,11 +15,11 @@ import (
 const heuristic = "heuristic"
 
 var (
-	_ json.Marshaler   = (*Policy)(nil)
-	_ json.Unmarshaler = (*Policy)(nil)
+	_ json.Marshaler   = (*AntiAffinity)(nil)
+	_ json.Unmarshaler = (*AntiAffinity)(nil)
 )
 
-type Policy struct {
+type AntiAffinity struct {
 	MaxLinksPerPort          int
 	MaxLinksPerSlot          int
 	MaxPerSystemLinksPerPort int
@@ -27,8 +27,8 @@ type Policy struct {
 	Mode                     enum.AntiAffinityMode
 }
 
-func (a Policy) MarshalJSON() ([]byte, error) {
-	raw := rawPolicy{
+func (a AntiAffinity) MarshalJSON() ([]byte, error) {
+	raw := rawAntiAffinity{
 		Algorithm:                heuristic,
 		MaxLinksPerPort:          a.MaxLinksPerPort,
 		MaxLinksPerSlot:          a.MaxLinksPerSlot,
@@ -40,8 +40,8 @@ func (a Policy) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 
-func (a *Policy) UnmarshalJSON(bytes []byte) error {
-	var raw rawPolicy
+func (a *AntiAffinity) UnmarshalJSON(bytes []byte) error {
+	var raw rawAntiAffinity
 
 	if err := json.Unmarshal(bytes, &raw); err != nil {
 		return err
@@ -60,7 +60,7 @@ func (a *Policy) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-type rawPolicy struct {
+type rawAntiAffinity struct {
 	Algorithm                string                `json:"algorithm"` // must be 'heuristic'
 	MaxLinksPerPort          int                   `json:"max_links_per_port"`
 	MaxLinksPerSlot          int                   `json:"max_links_per_slot"`
