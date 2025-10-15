@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
@@ -117,30 +118,35 @@ func TestTemplateL3Collapsed_MarshalJSON(t *testing.T) {
 	}
 }
 
-//func TestTemplateL3Collapsed_UnmarshalJSON(t *testing.T) {
-//	type testCase struct {
-//		v string
-//		e TemplateL3Collapsed
-//	}
-//
-//	testCases := map[string]testCase{
-//		"test-1x1": {
-//			v: logicalDeviceTest1x1JSON,
-//			e: logicalDeviceTest1x1,
-//		},
-//		"test-48x10+4x100": {
-//			v: logicalDeviceTest48x10plus4x100JSON,
-//			e: logicalDeviceTest48x10plus4x100,
-//		},
-//	}
-//
-//	for tName, tCase := range testCases {
-//		t.Run(tName, func(t *testing.T) {
-//			t.Parallel()
-//			var r TemplateL3Collapsed
-//			err := json.Unmarshal([]byte(tCase.v), &r)
-//			require.NoError(t, err)
-//			require.Equal(t, tCase.e, r)
-//		})
-//	}
-//}
+func TestTemplateL3Collapsed_UnmarshalJSON(t *testing.T) {
+	type testCase struct {
+		v string
+		e TemplateL3Collapsed
+	}
+
+	testCases := map[string]testCase{
+		"templateL3CollapsedACS": {
+			v: templateL3CollapsedACSJSON,
+			e: templateL3CollapsedACS,
+		},
+		"templateL3CollapsedACS420": {
+			v: templateL3CollapsedACS420JSON,
+			e: templateL3CollapsedACS420,
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+			var r TemplateL3Collapsed
+			err := json.Unmarshal([]byte(tCase.v), &r)
+			require.NoError(t, err)
+			require.Equal(t, tCase.e, r)
+		})
+	}
+}
+
+func TestTemplateL3Collapsed_TemplateType(t *testing.T) {
+	r := TemplateL3Collapsed{}.TemplateType()
+	require.Equal(t, enum.TemplateTypeL3Collapsed, r)
+}

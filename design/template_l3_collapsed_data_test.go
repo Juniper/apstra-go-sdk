@@ -42,6 +42,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 								},
 							},
 						},
+						Tags: []Tag{},
 					},
 				},
 				AccessSwitches: []AccessSwitch{
@@ -56,6 +57,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 								Speed:              "10G",
 								AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
 								LAGMode:            enum.LAGMode{Value: "lacp_active"},
+								Tags:               []Tag{},
 							},
 						},
 						LogicalDevice: LogicalDevice{
@@ -70,6 +72,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 								},
 							},
 						},
+						Tags: []Tag{},
 					},
 				},
 				GenericSystems: []GenericSystem{
@@ -84,6 +87,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 								LinkPerSwitchCount: 1,
 								Speed:              "10G",
 								AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
+								Tags:               []Tag{},
 							},
 						},
 						LogicalDevice: LogicalDevice{
@@ -100,11 +104,10 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 						},
 						Loopback:        &enum.FeatureSwitchDisabled,
 						ManagementLevel: enum.SystemManagementLevel{Value: "unmanaged"},
+						Tags:            []Tag{},
 					},
 				},
-				id:             "7423322458cb07c0f948023d39a2e8bf",
-				createdAt:      pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
-				lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
+				id: "7423322458cb07c0f948023d39a2e8bf",
 			},
 		},
 	},
@@ -362,6 +365,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 								},
 							},
 						},
+						Tags: []Tag{},
 					},
 				},
 				AccessSwitches: []AccessSwitch{
@@ -376,6 +380,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 								Speed:              "10G",
 								AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
 								LAGMode:            enum.LAGMode{Value: "lacp_active"},
+								Tags:               []Tag{},
 							},
 						},
 						LogicalDevice: LogicalDevice{
@@ -390,6 +395,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 								},
 							},
 						},
+						Tags: []Tag{},
 					},
 				},
 				GenericSystems: []GenericSystem{
@@ -404,6 +410,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 								LinkPerSwitchCount: 1,
 								Speed:              "10G",
 								AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
+								Tags:               []Tag{},
 							},
 						},
 						LogicalDevice: LogicalDevice{
@@ -420,11 +427,10 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 						},
 						Loopback:        &enum.FeatureSwitchDisabled,
 						ManagementLevel: enum.SystemManagementLevel{Value: "unmanaged"},
+						Tags:            []Tag{},
 					},
 				},
-				id:             "7423322458cb07c0f948023d39a2e8bf",
-				createdAt:      pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
-				lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
+				id: "7423322458cb07c0f948023d39a2e8bf",
 			},
 		},
 	},
