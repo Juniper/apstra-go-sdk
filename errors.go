@@ -4,15 +4,21 @@
 
 package sdk
 
+type ErrAPIResponseInvalid string
+
+func (e ErrAPIResponseInvalid) Error() string {
+	return string(e)
+}
+
 type ErrIDIsSet string
 
 func (e ErrIDIsSet) Error() string {
 	return string(e)
 }
 
-type ErrNotFound string
+type ErrInternal string
 
-func (e ErrNotFound) Error() string {
+func (e ErrInternal) Error() string {
 	return string(e)
 }
 
@@ -22,8 +28,14 @@ func (e ErrMultipleMatch) Error() string {
 	return string(e)
 }
 
-type ErrAPIResponseInvalid string
+type ErrNotFound string
 
-func (e ErrAPIResponseInvalid) Error() string {
+func (e ErrNotFound) Error() string {
+	return string(e)
+}
+
+type ErrWrongType string
+
+func (e ErrWrongType) Error() string {
 	return string(e)
 }
