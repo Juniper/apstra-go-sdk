@@ -18,94 +18,96 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 	Label:          "templateL3CollapsedACS",
 	MeshLinkCount:  1,
 	MeshLinkSpeed:  "10G",
-	RackTypes: []RackType{
+	Racks: []RackTypeWithCount{
 		{
-			Label:                    "Collapsed 1xleaf",
-			FabricConnectivityDesign: enum.FabricConnectivityDesign{Value: "l3collapsed"},
-			LeafSwitches: []LeafSwitch{
-				{
-					Label: "leaf",
-					LogicalDevice: LogicalDevice{
-						Label: "AOS-7x10-Leaf",
-						Panels: []LogicalDevicePanel{
-							{
-								PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
-								PortGroups: []LogicalDevicePanelPortGroup{
-									{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "spine"}}},
-									{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "peer"}}},
-									{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}, enum.PortRole{Value: "access"}}},
-									{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}}},
+			Count: 1,
+			RackType: RackType{
+				Label:                    "Collapsed 1xleaf",
+				FabricConnectivityDesign: enum.FabricConnectivityDesign{Value: "l3collapsed"},
+				LeafSwitches: []LeafSwitch{
+					{
+						Label: "leaf",
+						LogicalDevice: LogicalDevice{
+							Label: "AOS-7x10-Leaf",
+							Panels: []LogicalDevicePanel{
+								{
+									PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
+									PortGroups: []LogicalDevicePanelPortGroup{
+										{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "spine"}}},
+										{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "peer"}}},
+										{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}, enum.PortRole{Value: "access"}}},
+										{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}}},
+									},
+									PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 							},
 						},
 					},
 				},
-			},
-			AccessSwitches: []AccessSwitch{
-				{
-					Count: 1,
-					Label: "access",
-					Links: []RackTypeLink{
-						{
-							Label:              "leaf_link",
-							TargetSwitchLabel:  "leaf",
-							LinkPerSwitchCount: 1,
-							Speed:              "10G",
-							AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
-							LAGMode:            enum.LAGMode{Value: "lacp_active"},
-						},
-					},
-					LogicalDevice: LogicalDevice{
-						Label: "AOS-8x10-1",
-						Panels: []LogicalDevicePanel{
+				AccessSwitches: []AccessSwitch{
+					{
+						Count: 1,
+						Label: "access",
+						Links: []RackTypeLink{
 							{
-								PanelLayout: LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 4},
-								PortGroups: []LogicalDevicePanelPortGroup{
-									{Count: 8, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "generic"}, enum.PortRole{Value: "peer"}, enum.PortRole{Value: "access"}}},
+								Label:              "leaf_link",
+								TargetSwitchLabel:  "leaf",
+								LinkPerSwitchCount: 1,
+								Speed:              "10G",
+								AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
+								LAGMode:            enum.LAGMode{Value: "lacp_active"},
+							},
+						},
+						LogicalDevice: LogicalDevice{
+							Label: "AOS-8x10-1",
+							Panels: []LogicalDevicePanel{
+								{
+									PanelLayout: LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 4},
+									PortGroups: []LogicalDevicePanelPortGroup{
+										{Count: 8, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "generic"}, enum.PortRole{Value: "peer"}, enum.PortRole{Value: "access"}}},
+									},
+									PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 							},
 						},
 					},
 				},
-			},
-			GenericSystems: []GenericSystem{
-				{
-					AsnDomain: &enum.FeatureSwitchDisabled,
-					Count:     2,
-					Label:     "generic",
-					Links: []RackTypeLink{
-						{
-							Label:              "link",
-							TargetSwitchLabel:  "access",
-							LinkPerSwitchCount: 1,
-							Speed:              "10G",
-							AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
-						},
-					},
-					LogicalDevice: LogicalDevice{
-						Label: "AOS-1x10-1",
-						Panels: []LogicalDevicePanel{
+				GenericSystems: []GenericSystem{
+					{
+						AsnDomain: &enum.FeatureSwitchDisabled,
+						Count:     2,
+						Label:     "generic",
+						Links: []RackTypeLink{
 							{
-								PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
-								PortGroups: []LogicalDevicePanelPortGroup{
-									{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "access"}}},
-								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+								Label:              "link",
+								TargetSwitchLabel:  "access",
+								LinkPerSwitchCount: 1,
+								Speed:              "10G",
+								AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
 							},
 						},
+						LogicalDevice: LogicalDevice{
+							Label: "AOS-1x10-1",
+							Panels: []LogicalDevicePanel{
+								{
+									PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
+									PortGroups: []LogicalDevicePanelPortGroup{
+										{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "access"}}},
+									},
+									PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+								},
+							},
+						},
+						Loopback:        &enum.FeatureSwitchDisabled,
+						ManagementLevel: enum.SystemManagementLevel{Value: "unmanaged"},
 					},
-					Loopback:        &enum.FeatureSwitchDisabled,
-					ManagementLevel: enum.SystemManagementLevel{Value: "unmanaged"},
 				},
+				id:             "7423322458cb07c0f948023d39a2e8bf",
+				createdAt:      pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
+				lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
 			},
-			id:             "L3_collapsed_acs",
-			createdAt:      pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
-			lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
 		},
 	},
-	RackTypeCounts:       []RackTypeCount{{RackTypeId: "L3_collapsed_acs", Count: 1}},
 	DHCPServiceIntent:    policy.DHCPServiceIntent{Active: true},
 	VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
 }
@@ -117,7 +119,7 @@ const templateL3CollapsedACSJSON = `{
   "last_modified_at": "2016-01-02T15:04:00.000000Z",
   "rack_type_counts": [
     {
-      "rack_type_id": "L3_collapsed_acs",
+      "rack_type_id": "7423322458cb07c0f948023d39a2e8bf",
       "count": 1
     }
   ],
@@ -296,7 +298,7 @@ const templateL3CollapsedACSJSON = `{
         }
       ],
       "fabric_connectivity_design": "l3collapsed",
-      "id": "L3_collapsed_acs",
+      "id": "7423322458cb07c0f948023d39a2e8bf",
       "generic_systems": [
         {
           "tags": [],
@@ -336,94 +338,96 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 	Label:          "templateL3CollapsedACS",
 	MeshLinkCount:  1,
 	MeshLinkSpeed:  "10G",
-	RackTypes: []RackType{
+	Racks: []RackTypeWithCount{
 		{
-			Label:                    "Collapsed 1xleaf",
-			FabricConnectivityDesign: enum.FabricConnectivityDesign{Value: "l3collapsed"},
-			LeafSwitches: []LeafSwitch{
-				{
-					Label: "leaf",
-					LogicalDevice: LogicalDevice{
-						Label: "AOS-7x10-Leaf",
-						Panels: []LogicalDevicePanel{
-							{
-								PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
-								PortGroups: []LogicalDevicePanelPortGroup{
-									{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "spine"}}},
-									{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "peer"}}},
-									{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}, enum.PortRole{Value: "access"}}},
-									{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}}},
+			Count: 1,
+			RackType: RackType{
+				Label:                    "Collapsed 1xleaf",
+				FabricConnectivityDesign: enum.FabricConnectivityDesign{Value: "l3collapsed"},
+				LeafSwitches: []LeafSwitch{
+					{
+						Label: "leaf",
+						LogicalDevice: LogicalDevice{
+							Label: "AOS-7x10-Leaf",
+							Panels: []LogicalDevicePanel{
+								{
+									PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
+									PortGroups: []LogicalDevicePanelPortGroup{
+										{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "spine"}}},
+										{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "peer"}}},
+										{Count: 2, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}, enum.PortRole{Value: "access"}}},
+										{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "generic"}}},
+									},
+									PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 							},
 						},
 					},
 				},
-			},
-			AccessSwitches: []AccessSwitch{
-				{
-					Count: 1,
-					Label: "access",
-					Links: []RackTypeLink{
-						{
-							Label:              "leaf_link",
-							TargetSwitchLabel:  "leaf",
-							LinkPerSwitchCount: 1,
-							Speed:              "10G",
-							AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
-							LAGMode:            enum.LAGMode{Value: "lacp_active"},
-						},
-					},
-					LogicalDevice: LogicalDevice{
-						Label: "AOS-8x10-1",
-						Panels: []LogicalDevicePanel{
+				AccessSwitches: []AccessSwitch{
+					{
+						Count: 1,
+						Label: "access",
+						Links: []RackTypeLink{
 							{
-								PanelLayout: LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 4},
-								PortGroups: []LogicalDevicePanelPortGroup{
-									{Count: 8, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "generic"}, enum.PortRole{Value: "peer"}, enum.PortRole{Value: "access"}}},
+								Label:              "leaf_link",
+								TargetSwitchLabel:  "leaf",
+								LinkPerSwitchCount: 1,
+								Speed:              "10G",
+								AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
+								LAGMode:            enum.LAGMode{Value: "lacp_active"},
+							},
+						},
+						LogicalDevice: LogicalDevice{
+							Label: "AOS-8x10-1",
+							Panels: []LogicalDevicePanel{
+								{
+									PanelLayout: LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 4},
+									PortGroups: []LogicalDevicePanelPortGroup{
+										{Count: 8, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "generic"}, enum.PortRole{Value: "peer"}, enum.PortRole{Value: "access"}}},
+									},
+									PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 							},
 						},
 					},
 				},
-			},
-			GenericSystems: []GenericSystem{
-				{
-					AsnDomain: &enum.FeatureSwitchDisabled,
-					Count:     2,
-					Label:     "generic",
-					Links: []RackTypeLink{
-						{
-							Label:              "link",
-							TargetSwitchLabel:  "access",
-							LinkPerSwitchCount: 1,
-							Speed:              "10G",
-							AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
-						},
-					},
-					LogicalDevice: LogicalDevice{
-						Label: "AOS-1x10-1",
-						Panels: []LogicalDevicePanel{
+				GenericSystems: []GenericSystem{
+					{
+						AsnDomain: &enum.FeatureSwitchDisabled,
+						Count:     2,
+						Label:     "generic",
+						Links: []RackTypeLink{
 							{
-								PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
-								PortGroups: []LogicalDevicePanelPortGroup{
-									{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "access"}}},
-								},
-								PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+								Label:              "link",
+								TargetSwitchLabel:  "access",
+								LinkPerSwitchCount: 1,
+								Speed:              "10G",
+								AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
 							},
 						},
+						LogicalDevice: LogicalDevice{
+							Label: "AOS-1x10-1",
+							Panels: []LogicalDevicePanel{
+								{
+									PanelLayout: LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
+									PortGroups: []LogicalDevicePanelPortGroup{
+										{Count: 1, Speed: "10G", Roles: LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "access"}}},
+									},
+									PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+								},
+							},
+						},
+						Loopback:        &enum.FeatureSwitchDisabled,
+						ManagementLevel: enum.SystemManagementLevel{Value: "unmanaged"},
 					},
-					Loopback:        &enum.FeatureSwitchDisabled,
-					ManagementLevel: enum.SystemManagementLevel{Value: "unmanaged"},
 				},
+				id:             "7423322458cb07c0f948023d39a2e8bf",
+				createdAt:      pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
+				lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
 			},
-			id:             "L3_collapsed_acs",
-			createdAt:      pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
-			lastModifiedAt: pointer.To(timeutils.TimeParseMust("2006-01-02T15:04:05.000000Z", "1970-01-01T00:00:00.000000Z")),
 		},
 	},
-	RackTypeCounts:       []RackTypeCount{{RackTypeId: "L3_collapsed_acs", Count: 1}},
 	DHCPServiceIntent:    policy.DHCPServiceIntent{Active: true},
 	VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
 	AntiAffinityPolicy: &policy.AntiAffinity{
@@ -442,7 +446,7 @@ const templateL3CollapsedACS420JSON = `{
   "last_modified_at": "2016-01-02T15:04:00.000000Z",
   "rack_type_counts": [
     {
-      "rack_type_id": "L3_collapsed_acs",
+      "rack_type_id": "7423322458cb07c0f948023d39a2e8bf",
       "count": 1
     }
   ],
@@ -621,7 +625,7 @@ const templateL3CollapsedACS420JSON = `{
         }
       ],
       "fabric_connectivity_design": "l3collapsed",
-      "id": "L3_collapsed_acs",
+      "id": "7423322458cb07c0f948023d39a2e8bf",
       "generic_systems": [
         {
           "tags": [],

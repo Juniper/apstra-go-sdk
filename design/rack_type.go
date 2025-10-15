@@ -8,6 +8,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"hash"
 	"sort"
 	"time"
 
@@ -314,4 +315,17 @@ func (r RackType) LastModifiedAt() *time.Time {
 
 func NewRackType(id string) RackType {
 	return RackType{id: id}
+}
+
+func (r RackType) digest(h hash.Hash) []byte {
+	h.Reset()
+	return mustHashForComparison(r, h)
+}
+
+func (r *RackType) setHashID(h hash.Hash) error {
+	return r.SetID(fmt.Sprintf("%x", r.digest(h)))
+}
+
+func (r *RackType) mustSetHashID(h hash.Hash) {
+	r.SetID(fmt.Sprintf("%x", r.digest(h)))
 }

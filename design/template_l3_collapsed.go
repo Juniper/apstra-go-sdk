@@ -5,6 +5,7 @@
 package design
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -25,8 +26,7 @@ var (
 
 type TemplateL3Collapsed struct {
 	Label                string
-	RackTypes            []RackType
-	RackTypeCounts       []RackTypeCount
+	Racks                []RackTypeWithCount
 	MeshLinkCount        int
 	MeshLinkSpeed        speed.Speed
 	AntiAffinityPolicy   *policy.AntiAffinity // required for 4.2.0 only
@@ -71,12 +71,17 @@ func (t *TemplateL3Collapsed) MustSetID(id string) {
 }
 
 func (t TemplateL3Collapsed) MarshalJSON() ([]byte, error) {
+	type rawRackTypeCount struct {
+		RackTypeId string `json:"rack_type_id"`
+		Count      int    `json:"count"`
+	}
+
 	raw := struct {
 		Type                 enum.TemplateType        `json:"type"`
 		Capability           enum.TemplateCapability  `json:"capability"`
 		DisplayName          string                   `json:"display_name"`
 		RackTypes            []RackType               `json:"rack_types"`
-		RackTypeCounts       []RackTypeCount          `json:"rack_type_counts"`
+		RackTypeCounts       []rawRackTypeCount       `json:"rack_type_counts"`
 		MeshLinkCount        int                      `json:"mesh_link_count"`
 		MeshLinkSpeed        speed.Speed              `json:"mesh_link_speed"`
 		AntiAffinityPolicy   *policy.AntiAffinity     `json:"anti_affinity_policy,omitempty"`
@@ -86,8 +91,6 @@ func (t TemplateL3Collapsed) MarshalJSON() ([]byte, error) {
 		Type:                 t.TemplateType(),
 		Capability:           enum.TemplateCapabilityBlueprint,
 		DisplayName:          t.Label,
-		RackTypes:            t.RackTypes,
-		RackTypeCounts:       t.RackTypeCounts,
 		MeshLinkCount:        t.MeshLinkCount,
 		MeshLinkSpeed:        t.MeshLinkSpeed,
 		AntiAffinityPolicy:   t.AntiAffinityPolicy,
@@ -95,15 +98,45 @@ func (t TemplateL3Collapsed) MarshalJSON() ([]byte, error) {
 		VirtualNetworkPolicy: t.VirtualNetworkPolicy,
 	}
 
+	// used to generate rack type IDs within the template
+	hash := md5.New()
+
+	// used to keep track of rack type quantity by ID in case we have identical racks
+	rackTypeIDToCount := make(map[string]int, len(t.Racks))
+
+	// initialize raw.RackTypeCounts so we can append to it without shuffling memory around
+	raw.RackTypeCounts = make([]rawRackTypeCount, 0, len(t.Racks))
+
+	// loop over racks, calculate a fresh ID, count the type of each
+	for _, rack := range t.Racks {
+		rackType := rack.RackType.Replicate() // fresh copy without metadata
+		rackType.mustSetHashID(hash)          // assign the ID
+		if _, ok := rackTypeIDToCount[rackType.id]; !ok {
+			raw.RackTypes = append(raw.RackTypes, rackType) // previously unseen rack type - append it to the slice
+		}
+		rackTypeIDToCount[rackType.id] += rack.Count // adjust the quantity for this rack type
+	}
+
+	// prepare raw.RackTypeCounts from rackTypeIDToCount
+	raw.RackTypeCounts = make([]rawRackTypeCount, 0, len(rackTypeIDToCount))
+	for id, count := range rackTypeIDToCount {
+		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{RackTypeId: id, Count: count})
+	}
+
 	return json.Marshal(&raw)
 }
 
 func (t *TemplateL3Collapsed) UnmarshalJSON(bytes []byte) error {
+	type rawRackTypeCount struct {
+		RackTypeId string `json:"rack_type_id"`
+		Count      int    `json:"count"`
+	}
+
 	var raw struct {
 		Type                 enum.TemplateType        `json:"type"`
 		DisplayName          string                   `json:"display_name"`
 		RackTypes            []RackType               `json:"rack_types"`
-		RackTypeCounts       []RackTypeCount          `json:"rack_type_counts"`
+		RackTypeCounts       []rawRackTypeCount       `json:"rack_type_counts"`
 		MeshLinkCount        int                      `json:"mesh_link_count"`
 		MeshLinkSpeed        speed.Speed              `json:"mesh_link_speed"`
 		AntiAffinityPolicy   *policy.AntiAffinity     `json:"anti_affinity_policy,omitempty"`
@@ -124,8 +157,6 @@ func (t *TemplateL3Collapsed) UnmarshalJSON(bytes []byte) error {
 	}
 
 	t.Label = raw.DisplayName
-	t.RackTypes = raw.RackTypes
-	t.RackTypeCounts = raw.RackTypeCounts
 	t.MeshLinkCount = raw.MeshLinkCount
 	t.MeshLinkSpeed = raw.MeshLinkSpeed
 	t.AntiAffinityPolicy = raw.AntiAffinityPolicy
@@ -134,6 +165,22 @@ func (t *TemplateL3Collapsed) UnmarshalJSON(bytes []byte) error {
 	t.id = raw.ID
 	t.createdAt = raw.CreatedAt
 	t.lastModifiedAt = raw.LastModifiedAt
+
+	idToRackType := make(map[string]RackType, len(raw.RackTypes))
+	for _, rackType := range raw.RackTypes {
+		idToRackType[rackType.id] = rackType
+	}
+
+	t.Racks = make([]RackTypeWithCount, len(raw.RackTypeCounts))
+	for i, rackTypeCount := range raw.RackTypeCounts {
+		if rackType, ok := idToRackType[rackTypeCount.RackTypeId]; ok {
+			t.Racks[i] = RackTypeWithCount{RackType: rackType, Count: rackTypeCount.Count}
+			continue
+		}
+
+		// we should not get here
+		return sdk.ErrAPIResponseInvalid(fmt.Sprintf("payload specifies %d instances of rack type %q which does not exist", rackTypeCount.Count, rackTypeCount.RackTypeId))
+	}
 
 	return nil
 }
