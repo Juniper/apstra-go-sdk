@@ -19,6 +19,8 @@ const (
 	LogicalDeviceURLByID      = LogicalDevicesURL + "/%s"
 	RackTypesURL              = urlPrefix + "rack-types"
 	RackTypeURLByID           = RackTypesURL + "/%s"
+	TemplatesURL              = urlPrefix + "templates"
+	TemplateURLByID           = TemplatesURL + "/%s"
 	TagsURL                   = urlPrefix + "tags"
 	TagURLByID                = TagsURL + "/%s"
 )
