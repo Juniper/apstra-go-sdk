@@ -7,13 +7,13 @@ package apstra
 import (
 	"context"
 	"fmt"
-	sdk "github.com/Juniper/apstra-go-sdk"
-	"github.com/Juniper/apstra-go-sdk/enum"
-	commontemplate "github.com/Juniper/apstra-go-sdk/internal/template"
 	"net/http"
 
+	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/design"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
+	commontemplate "github.com/Juniper/apstra-go-sdk/internal/template"
 )
 
 func (c Client) CreateTemplate2(ctx context.Context, v design.Template) (string, error) {
