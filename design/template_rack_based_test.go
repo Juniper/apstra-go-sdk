@@ -5,14 +5,16 @@
 package design
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestTemplateRackBased_ID(t *testing.T) {
@@ -53,7 +55,41 @@ func TestTemplateRackBased_ID(t *testing.T) {
 }
 
 func TestTemplateRackBased_Replicate(t *testing.T) {
+	original := templateRackBasedL2VirtualEVPN
 
+	replicant := original.Replicate()
+
+	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
+
+	// wipe out values which cannot be replicated before comparing values
+	original.id = ""
+	original.createdAt = nil
+	original.lastModifiedAt = nil
+	original.Spine.LogicalDevice.id = ""
+	original.Spine.LogicalDevice.createdAt = nil
+	original.Spine.LogicalDevice.lastModifiedAt = nil
+	for i := range original.Racks {
+		original.Racks[i].RackType.id = ""
+		original.Racks[i].RackType.createdAt = nil
+		original.Racks[i].RackType.lastModifiedAt = nil
+		for j := range original.Racks[i].RackType.LeafSwitches {
+			original.Racks[i].RackType.LeafSwitches[j].LogicalDevice.id = ""
+			original.Racks[i].RackType.LeafSwitches[j].LogicalDevice.createdAt = nil
+			original.Racks[i].RackType.LeafSwitches[j].LogicalDevice.lastModifiedAt = nil
+		}
+		for j := range original.Racks[i].RackType.AccessSwitches {
+			original.Racks[i].RackType.AccessSwitches[j].LogicalDevice.id = ""
+			original.Racks[i].RackType.AccessSwitches[j].LogicalDevice.createdAt = nil
+			original.Racks[i].RackType.AccessSwitches[j].LogicalDevice.lastModifiedAt = nil
+		}
+		for j := range original.Racks[i].RackType.GenericSystems {
+			original.Racks[i].RackType.GenericSystems[j].LogicalDevice.id = ""
+			original.Racks[i].RackType.GenericSystems[j].LogicalDevice.createdAt = nil
+			original.Racks[i].RackType.GenericSystems[j].LogicalDevice.lastModifiedAt = nil
+		}
+	}
+
+	require.Equal(t, original, replicant)
 }
 
 func TestTemplateRackBased_timestamps(t *testing.T) {

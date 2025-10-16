@@ -4,8 +4,27 @@
 
 package policy
 
-import "github.com/Juniper/apstra-go-sdk/enum"
+import (
+	"encoding/json"
+	"github.com/Juniper/apstra-go-sdk/enum"
+)
+
+var _ json.Marshaler = (*VirtualNetwork)(nil)
 
 type VirtualNetwork struct {
-	OverlayControlProtocol enum.OverlayControlProtocol `json:"overlay_control_protocol,omitempty"`
+	OverlayControlProtocol enum.OverlayControlProtocol `json:"overlay_control_protocol"`
+}
+
+func (v VirtualNetwork) MarshalJSON() ([]byte, error) {
+	// we want to send `"overlay_control_protocol": null` when OverlayControlProtocolNone
+
+	var raw struct {
+		OverlayControlProtocol *string `json:"overlay_control_protocol"`
+	}
+
+	if v.OverlayControlProtocol != enum.OverlayControlProtocolNone {
+		raw.OverlayControlProtocol = &v.OverlayControlProtocol.Value
+	}
+
+	return json.Marshal(raw)
 }

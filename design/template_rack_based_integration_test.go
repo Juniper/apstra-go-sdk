@@ -8,30 +8,34 @@ package design_test
 
 import (
 	"context"
-	"testing"
-
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/policy"
+	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
-var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
-	"L3_Collapsed_ACS": {
+var testTemplatesRackBased = map[string]design.TemplateRackBased{
+	"L2_Virtual_EVPN": {
 		Label: testutils.RandString(6, "hex"),
 		Racks: []design.RackTypeWithCount{
 			{
+				Count: 4,
 				RackType: design.RackType{
-					Label:                    "Collapsed 1xleaf",
-					FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
+					Label:                    "L2 Virtual",
+					FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 					LeafSwitches: []design.LeafSwitch{
 						{
-							Label: "leaf",
+							Label:             "leaf",
+							LinkPerSpineCount: pointer.To(1),
+							LinkPerSpineSpeed: pointer.To(speed.Speed("10G")),
 							LogicalDevice: design.LogicalDevice{
 								Label: "AOS-7x10-Leaf",
 								Panels: []design.LogicalDevicePanel{
@@ -39,13 +43,132 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
 										PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
 										PortGroups: []design.LogicalDevicePanelPortGroup{
-											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSpine}},
-											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRolePeer}},
-											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric, enum.PortRoleAccess}},
-											{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric}},
+											{
+												Count: 2,
+												Speed: "10G",
+												Roles: []enum.PortRole{enum.PortRoleLeaf, enum.PortRoleSpine},
+											},
+											{
+												Count: 2,
+												Speed: "10G",
+												Roles: []enum.PortRole{enum.PortRolePeer},
+											},
+											{
+												Count: 2,
+												Speed: "10G",
+												Roles: []enum.PortRole{enum.PortRoleGeneric, enum.PortRoleAccess},
+											},
+											{
+												Count: 1,
+												Speed: "10G",
+												Roles: []enum.PortRole{enum.PortRoleGeneric},
+											},
 										},
 									},
 								},
+							},
+						},
+					},
+					GenericSystems: []design.GenericSystem{
+						{
+							Count:     2,
+							Label:     "generic",
+							AsnDomain: &enum.FeatureSwitchDisabled,
+							Links: []design.RackTypeLink{
+								{
+									Label:              "link",
+									TargetSwitchLabel:  "leaf",
+									LinkPerSwitchCount: 1,
+									Speed:              "10G",
+									AttachmentType:     enum.LinkAttachmentTypeSingle,
+									LAGMode:            enum.LAGModeNone,
+								},
+							},
+							LogicalDevice: design.LogicalDevice{
+								Label: "AOS-1x10-1",
+								Panels: []design.LogicalDevicePanel{
+									{
+										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
+										PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+										PortGroups: []design.LogicalDevicePanelPortGroup{
+											{
+												Count: 1,
+												Speed: "10G",
+												Roles: []enum.PortRole{enum.PortRoleLeaf, enum.PortRoleAccess},
+											},
+										},
+									},
+								},
+							},
+							Loopback:        &enum.FeatureSwitchDisabled,
+							ManagementLevel: enum.SystemManagementLevelUnmanaged,
+						},
+					},
+				},
+			},
+		},
+		AsnAllocationPolicy: &design.AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeDistinct},
+		Capability:          &enum.TemplateCapabilityBlueprint,
+		DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
+		Spine: design.Spine{
+			Count: 2,
+			LogicalDevice: design.LogicalDevice{
+				Label: "AOS-7x10-Spine",
+				Panels: []design.LogicalDevicePanel{
+					{
+						PanelLayout: design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
+						PortGroups: []design.LogicalDevicePanelPortGroup{
+							{
+								Count: 5,
+								Speed: "10G",
+								Roles: []enum.PortRole{enum.PortRoleSuperspine, enum.PortRoleLeaf},
+							},
+							{
+								Count: 2,
+								Speed: "10G",
+								Roles: []enum.PortRole{enum.PortRoleGeneric},
+							},
+						},
+						PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+					},
+				},
+			},
+		},
+		VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
+	},
+	"pod_mlag": {
+		Label: testutils.RandString(6, "hex"),
+		Racks: []design.RackTypeWithCount{
+			{
+				Count: 1,
+				RackType: design.RackType{
+					Label:                    "L2 MLAG 1x access",
+					FabricConnectivityDesign: enum.FabricConnectivityDesign{Value: "l3clos"},
+					LeafSwitches: []design.LeafSwitch{
+						{
+							Label:             "leaf",
+							LinkPerSpineCount: pointer.To(1),
+							LinkPerSpineSpeed: pointer.To(speed.Speed("10G")),
+							LogicalDevice: design.LogicalDevice{Label: "AOS-7x10-Leaf",
+								Panels: []design.LogicalDevicePanel{
+									{
+										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
+										PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+										PortGroups: []design.LogicalDevicePanelPortGroup{
+											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "spine"}}},
+											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRole{Value: "peer"}}},
+											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRole{Value: "generic"}, enum.PortRole{Value: "access"}}},
+											{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRole{Value: "generic"}}},
+										},
+									},
+								},
+							},
+							RedundancyProtocol: enum.LeafRedundancyProtocol{Value: "mlag"},
+							Tags:               []design.Tag{},
+							MLAGInfo: &design.RackTypeLeafSwitchMLAGInfo{
+								LeafLeafLinkCount: 2,
+								LeafLeafLinkSpeed: "10G",
+								MLAGVLAN:          2999,
 							},
 						},
 					},
@@ -57,10 +180,10 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 								{
 									Label:              "leaf_link",
 									TargetSwitchLabel:  "leaf",
-									LinkPerSwitchCount: 1,
+									LinkPerSwitchCount: 2,
 									Speed:              "10G",
-									AttachmentType:     enum.LinkAttachmentTypeSingle,
-									LAGMode:            enum.LAGModeActiveLACP,
+									AttachmentType:     enum.LinkAttachmentType{Value: "dualAttached"},
+									LAGMode:            enum.LAGMode{Value: "lacp_active"},
 								},
 							},
 							LogicalDevice: design.LogicalDevice{
@@ -68,9 +191,9 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 								Panels: []design.LogicalDevicePanel{
 									{
 										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 4},
-										PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+										PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 										PortGroups: []design.LogicalDevicePanelPortGroup{
-											{Count: 8, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleGeneric, enum.PortRolePeer, enum.PortRoleAccess}},
+											{Count: 8, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "generic"}, enum.PortRole{Value: "peer"}, enum.PortRole{Value: "access"}}},
 										},
 									},
 								},
@@ -79,82 +202,16 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 					},
 					GenericSystems: []design.GenericSystem{
 						{
-							Count: 2,
-							Label: "generic",
+							AsnDomain: &enum.FeatureSwitchDisabled,
+							Count:     2,
+							Label:     "generic",
 							Links: []design.RackTypeLink{
 								{
 									Label:              "link",
 									TargetSwitchLabel:  "access",
 									LinkPerSwitchCount: 1,
 									Speed:              "10G",
-									AttachmentType:     enum.LinkAttachmentTypeSingle,
-								},
-							},
-							LogicalDevice: design.LogicalDevice{
-								Label: "AOS-1x10-1",
-								Panels: []design.LogicalDevicePanel{
-									{
-										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
-										PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
-										PortGroups: []design.LogicalDevicePanelPortGroup{
-											{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleAccess}},
-										},
-									},
-								},
-							},
-							ManagementLevel: enum.SystemManagementLevelUnmanaged,
-						},
-					},
-				},
-				Count: 1,
-			},
-		},
-		MeshLinkCount:        1,
-		MeshLinkSpeed:        "10G",
-		DHCPServiceIntent:    policy.DHCPServiceIntent{Active: true},
-		VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
-	},
-	"L3_Collapsed_ESI": {
-		Label: testutils.RandString(6, "hex"),
-		Racks: []design.RackTypeWithCount{
-			{
-				Count: 1,
-				RackType: design.RackType{
-					Label:                    "Collapsed 2xleafs",
-					FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-					LeafSwitches: []design.LeafSwitch{
-						{
-							Label: "esi_leaf",
-							LogicalDevice: design.LogicalDevice{
-								Label: "AOS-7x10-Leaf",
-								Panels: []design.LogicalDevicePanel{
-									{
-										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
-										PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
-										PortGroups: []design.LogicalDevicePanelPortGroup{
-											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSpine}},
-											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRolePeer}},
-											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric, enum.PortRoleAccess}},
-											{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric}},
-										},
-									},
-								},
-							},
-							RedundancyProtocol: enum.LeafRedundancyProtocolESI,
-						},
-					},
-					GenericSystems: []design.GenericSystem{
-						{
-							Count: 2,
-							Label: "generic",
-							Links: []design.RackTypeLink{
-								{
-									Label:              "link",
-									TargetSwitchLabel:  "esi_leaf",
-									LinkPerSwitchCount: 1,
-									Speed:              "10G",
-									AttachmentType:     enum.LinkAttachmentTypeDual,
-									LAGMode:            enum.LAGModeActiveLACP,
+									AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
 								},
 							},
 							LogicalDevice: design.LogicalDevice{
@@ -162,39 +219,58 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 								Panels: []design.LogicalDevicePanel{
 									{
 										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 2},
-										PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+										PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
 										PortGroups: []design.LogicalDevicePanelPortGroup{
-											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleAccess}},
+											{Count: 2, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRole{Value: "leaf"}, enum.PortRole{Value: "access"}}},
 										},
 									},
 								},
 							},
-							ManagementLevel: enum.SystemManagementLevelUnmanaged,
+							Loopback:        &enum.FeatureSwitchDisabled,
+							ManagementLevel: enum.SystemManagementLevel{Value: "unmanaged"},
 						},
 					},
 				},
 			},
 		},
-		MeshLinkCount:        1,
-		MeshLinkSpeed:        "10G",
-		DHCPServiceIntent:    policy.DHCPServiceIntent{Active: true},
-		VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
+		AsnAllocationPolicy: &design.AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
+		Capability:          &enum.TemplateCapabilityPod,
+		DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
+		Spine: design.Spine{
+			Count:                  2,
+			LinkPerSuperspineCount: 1,
+			LinkPerSuperspineSpeed: "10G",
+			LogicalDevice: design.LogicalDevice{
+				Label: "AOS-32x10-Spine",
+				Panels: []design.LogicalDevicePanel{
+					{
+						PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 16},
+						PortIndexing: enum.DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"},
+						PortGroups: []design.LogicalDevicePanelPortGroup{
+							{Count: 24, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRole{Value: "superspine"}, enum.PortRole{Value: "leaf"}}},
+							{Count: 8, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRole{Value: "generic"}}},
+						},
+					},
+				},
+			},
+		},
+		VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolNone},
 	},
 }
 
-func TestTemplateL3Collapsed_CRUD(t *testing.T) {
+func TestTemplateRackBased_CRUD(t *testing.T) {
 	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
-		create design.TemplateL3Collapsed
-		update design.TemplateL3Collapsed
+		create design.TemplateRackBased
+		update design.TemplateRackBased
 	}
 
 	testCases := map[string]testCase{
-		"L3_Collapsed_ACS_to_L3_Collapsed_ESI": {
-			create: testTemplatesL3Collapsed["L3_Collapsed_ACS"],
-			update: testTemplatesL3Collapsed["L3_Collapsed_ESI"],
+		"L2_Virtual_EVPN_to_pod_mlag": {
+			create: testTemplatesRackBased["L2_Virtual_EVPN"],
+			update: testTemplatesRackBased["pod_mlag"],
 		},
 	}
 
@@ -208,10 +284,10 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 
 					var id string
 					var err error
-					var obj design.TemplateL3Collapsed
+					var obj design.TemplateRackBased
 
 					// create the object (by type)
-					id, err = client.Client.CreateTemplateL3Collapsed2(ctx, tCase.create)
+					id, err = client.Client.CreateTemplateRackBased2(ctx, tCase.create)
 					require.NoError(t, err)
 
 					// ensure the object is deleted even if tests fail
@@ -223,38 +299,38 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					// retrieve the object by ID then validate
 					template, err := client.Client.GetTemplate2(ctx, id)
 					require.NoError(t, err)
-					objPtr, ok := template.(*design.TemplateL3Collapsed)
+					objPtr, ok := template.(*design.TemplateRackBased)
 					require.True(t, ok)
 					idPtr := objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.create, *objPtr)
+					comparedesign.TemplateRackBased(t, tCase.create, *objPtr)
 
 					// retrieve the object by ID (by type) then validate
-					obj, err = client.Client.GetTemplateL3Collapsed2(ctx, id)
+					obj, err = client.Client.GetTemplateRackBased2(ctx, id)
 					require.NoError(t, err)
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.create, obj)
+					comparedesign.TemplateRackBased(t, tCase.create, obj)
 
 					// retrieve the object by label then validate
 					template, err = client.Client.GetTemplateByLabel2(ctx, tCase.create.Label)
 					require.NoError(t, err)
-					objPtr, ok = template.(*design.TemplateL3Collapsed)
+					objPtr, ok = template.(*design.TemplateRackBased)
 					require.True(t, ok)
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.create, *objPtr)
+					comparedesign.TemplateRackBased(t, tCase.create, *objPtr)
 
 					// retrieve the object by label (by type) then validate
-					obj, err = client.Client.GetTemplateL3CollapsedByLabel2(ctx, tCase.create.Label)
+					obj, err = client.Client.GetTemplateRackBasedByLabel2(ctx, tCase.create.Label)
 					require.NoError(t, err)
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.create, obj)
+					comparedesign.TemplateRackBased(t, tCase.create, obj)
 
 					// retrieve the list of IDs (ours must be in there)
 					ids, err := client.Client.ListTemplates2(ctx)
@@ -262,7 +338,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					require.Contains(t, ids, id)
 
 					// retrieve the list of IDs (by type) (ours must be in there)
-					ids, err = client.Client.ListTemplatesL3Collapsed2(ctx)
+					ids, err = client.Client.ListTemplatesRackBased2(ctx)
 					require.NoError(t, err)
 					require.Contains(t, ids, id)
 
@@ -271,15 +347,15 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					require.NoError(t, err)
 					templatePtr := slice.MustFindByID(templates, id)
 					require.NotNil(t, templatePtr)
-					objPtr, ok = (*templatePtr).(*design.TemplateL3Collapsed)
+					objPtr, ok = (*templatePtr).(*design.TemplateRackBased)
 					require.True(t, ok)
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.create, *objPtr)
+					comparedesign.TemplateRackBased(t, tCase.create, *objPtr)
 
 					// retrieve the list of objects (by type) (ours must be in there) then validate
-					objs, err := client.Client.GetTemplatesL3Collapsed2(ctx)
+					objs, err := client.Client.GetTemplatesRackBased2(ctx)
 					require.NoError(t, err)
 					objPtr = slice.MustFindByID(objs, id)
 					require.NotNil(t, objPtr)
@@ -287,7 +363,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.create, obj)
+					comparedesign.TemplateRackBased(t, tCase.create, obj)
 
 					// update the object then validate
 					require.NoError(t, tCase.update.SetID(id))
@@ -299,45 +375,45 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					// retrieve the updated object by ID then validate
 					template, err = client.Client.GetTemplate2(ctx, id)
 					require.NoError(t, err)
-					objPtr, ok = template.(*design.TemplateL3Collapsed)
+					objPtr, ok = template.(*design.TemplateRackBased)
 					require.True(t, ok)
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.update, *objPtr)
+					comparedesign.TemplateRackBased(t, tCase.update, *objPtr)
 
 					// retrieve the updated object by ID (by type) type then validate
-					update, err := client.Client.GetTemplateL3Collapsed2(ctx, id)
+					update, err := client.Client.GetTemplateRackBased2(ctx, id)
 					require.NoError(t, err)
 					idPtr = update.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.update, update)
+					comparedesign.TemplateRackBased(t, tCase.update, update)
 
 					// restore the object (by type)
 					require.NoError(t, tCase.create.SetID(id))
 					require.NotNil(t, tCase.create.ID())
 					require.Equal(t, id, *tCase.update.ID())
-					err = client.Client.UpdateTemplateL3Collapsed2(ctx, tCase.create)
+					err = client.Client.UpdateTemplateRackBased2(ctx, tCase.create)
 					require.NoError(t, err)
 
 					// retrieve the restored object by ID then validate
 					template, err = client.Client.GetTemplate2(ctx, id)
 					require.NoError(t, err)
-					objPtr, ok = template.(*design.TemplateL3Collapsed)
+					objPtr, ok = template.(*design.TemplateRackBased)
 					require.True(t, ok)
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.create, *objPtr)
+					comparedesign.TemplateRackBased(t, tCase.create, *objPtr)
 
 					// retrieve the restored object by ID (by type) then validate
-					obj, err = client.Client.GetTemplateL3Collapsed2(ctx, id)
+					obj, err = client.Client.GetTemplateRackBased2(ctx, id)
 					require.NoError(t, err)
 					idPtr = update.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplateL3Collapsed(t, tCase.create, obj)
+					comparedesign.TemplateRackBased(t, tCase.create, obj)
 
 					// delete the object
 					err = client.Client.DeleteTemplate2(ctx, id)
@@ -353,7 +429,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// get the object by ID (by type)
-					_, err = client.Client.GetTemplateL3Collapsed2(ctx, id)
+					_, err = client.Client.GetTemplateRackBased2(ctx, id)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
@@ -365,7 +441,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// get the object by label (by type)
-					_, err = client.Client.GetTemplateL3CollapsedByLabel2(ctx, tCase.create.Label)
+					_, err = client.Client.GetTemplateRackBasedByLabel2(ctx, tCase.create.Label)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
@@ -376,7 +452,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					require.NotContains(t, ids, id)
 
 					// retrieve the list of IDs (by type) (ours must *not* be in there)
-					ids, err = client.Client.ListTemplatesL3Collapsed2(ctx)
+					ids, err = client.Client.ListTemplatesRackBased2(ctx)
 					require.NoError(t, err)
 					require.NotContains(t, ids, id)
 
@@ -387,7 +463,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					require.Nil(t, templatePtr)
 
 					// retrieve the list of objects (by type) (ours must *not* be in there)
-					objs, err = client.Client.GetTemplatesL3Collapsed2(ctx)
+					objs, err = client.Client.GetTemplatesRackBased2(ctx)
 					require.NoError(t, err)
 					objPtr = slice.MustFindByID(objs, id)
 					require.Nil(t, objPtr)
@@ -399,7 +475,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// update the object (by type)
-					err = client.Client.UpdateTemplateL3Collapsed2(ctx, tCase.update)
+					err = client.Client.UpdateTemplateRackBased2(ctx, tCase.update)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
