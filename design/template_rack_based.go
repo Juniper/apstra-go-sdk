@@ -128,7 +128,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 
 	// set the spine ID if necessary
 	if raw.Spine.LogicalDevice.ID() == nil {
-		raw.Spine.LogicalDevice.MustSetID()
+		raw.Spine.LogicalDevice.mustSetHashID(hash)
 	}
 
 	// used to keep track of rack type quantity by ID in case we have identical racks
