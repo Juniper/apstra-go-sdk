@@ -7,9 +7,10 @@
 package comparedesign
 
 import (
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Configlet(t testing.TB, req, resp design.Configlet, msg ...string) {
