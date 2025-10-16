@@ -4,7 +4,7 @@
 
 //go:build requiretestutils
 
-package compare
+package comparedesign
 
 import (
 	"testing"
@@ -17,5 +17,5 @@ func RackTypeWithCount(t testing.TB, req, resp design.RackTypeWithCount, msg ...
 	msg = addMsg(msg, "Comparing Rack Type With Count")
 
 	require.Equal(t, req.Count, resp.Count, msg)
-	RackType2(t, req.RackType, resp.RackType, msg...)
+	RackType(t, req.RackType, resp.RackType, msg...)
 }

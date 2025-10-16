@@ -15,7 +15,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
@@ -137,7 +137,7 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 					idPtr := obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.LogicalDevice2(t, tCase.create, obj)
+					comparedesign.LogicalDevice(t, tCase.create, obj)
 
 					// retrieve the object by label and validate
 					obj, err = client.Client.GetLogicalDeviceByLabel2(ctx, tCase.create.Label)
@@ -145,7 +145,7 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.LogicalDevice2(t, tCase.create, obj)
+					comparedesign.LogicalDevice(t, tCase.create, obj)
 
 					// retrieve the list of IDs - ours must be in there
 					ids, err := client.Client.ListLogicalDevices2(ctx)
@@ -161,7 +161,7 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.LogicalDevice2(t, tCase.create, obj)
+					comparedesign.LogicalDevice(t, tCase.create, obj)
 
 					// update the object and validate
 					require.NoError(t, tCase.update.SetID(id))
@@ -176,7 +176,7 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.LogicalDevice2(t, tCase.update, obj)
+					comparedesign.LogicalDevice(t, tCase.update, obj)
 
 					// restore the object to the original state
 					require.NoError(t, tCase.create.SetID(id))
@@ -191,7 +191,7 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.LogicalDevice2(t, tCase.create, obj)
+					comparedesign.LogicalDevice(t, tCase.create, obj)
 
 					// delete the object
 					err = client.Client.DeleteLogicalDevice2(ctx, id)

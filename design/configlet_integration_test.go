@@ -15,7 +15,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	comparedesign "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
@@ -129,7 +129,7 @@ func TestConfiglet_CRUD(t *testing.T) {
 					idPtr := obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.Configlet(t, tCase.create, obj)
+					comparedesign.Configlet(t, tCase.create, obj)
 
 					// retrieve the object by label and validate
 					obj, err = client.Client.GetConfigletByLabel2(ctx, tCase.create.Label)
@@ -137,7 +137,7 @@ func TestConfiglet_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.Configlet(t, tCase.create, obj)
+					comparedesign.Configlet(t, tCase.create, obj)
 
 					// retrieve the list of IDs - ours must be in there
 					ids, err := client.Client.ListConfiglets2(ctx)
@@ -153,7 +153,7 @@ func TestConfiglet_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.Configlet(t, tCase.create, obj)
+					comparedesign.Configlet(t, tCase.create, obj)
 
 					// update the object and validate
 					require.NoError(t, tCase.update.SetID(id))
@@ -168,7 +168,7 @@ func TestConfiglet_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.Configlet(t, tCase.update, obj)
+					comparedesign.Configlet(t, tCase.update, obj)
 
 					// restore the object to the original state
 					require.NoError(t, tCase.create.SetID(id))
@@ -183,7 +183,7 @@ func TestConfiglet_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.Configlet(t, tCase.create, obj)
+					comparedesign.Configlet(t, tCase.create, obj)
 
 					// delete the object
 					err = client.Client.DeleteConfiglet2(ctx, id)

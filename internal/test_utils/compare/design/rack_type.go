@@ -4,7 +4,7 @@
 
 //go:build requiretestutils
 
-package compare
+package comparedesign
 
 import (
 	"testing"
@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func RackType2(t testing.TB, req, resp design.RackType, msg ...string) {
+func RackType(t testing.TB, req, resp design.RackType, msg ...string) {
 	msg = addMsg(msg, "Comparing Rack Type")
 
 	require.Equal(t, req.Description, resp.Description, msg)
@@ -66,7 +66,7 @@ func RackTypeLeafSwitch(t testing.TB, req, resp design.LeafSwitch, msg ...string
 		require.NotNil(t, resp.LinkPerSpineSpeed, msg)
 		require.Equal(t, *req.LinkPerSpineSpeed, *resp.LinkPerSpineSpeed, msg)
 	}
-	LogicalDevice2(t, req.LogicalDevice, resp.LogicalDevice, msg...)
+	LogicalDevice(t, req.LogicalDevice, resp.LogicalDevice, msg...)
 	require.Equal(t, req.RedundancyProtocol, resp.RedundancyProtocol, msg)
 	require.ElementsMatch(t, req.Tags, resp.Tags, msg)
 	require.Equal(t, req.MLAGInfo, resp.MLAGInfo, msg)
@@ -87,7 +87,7 @@ func RackTypeAccessSwitch(t testing.TB, req, resp design.AccessSwitch, msg ...st
 	for i := range len(req.Links) {
 		RackTypeLink(t, req.Links[i], resp.Links[i], addMsg(msg, "Comparing Link %d", i)...)
 	}
-	LogicalDevice2(t, req.LogicalDevice, resp.LogicalDevice, msg...)
+	LogicalDevice(t, req.LogicalDevice, resp.LogicalDevice, msg...)
 	require.ElementsMatch(t, req.Tags, resp.Tags, msg)
 }
 
@@ -111,7 +111,7 @@ func RackTypeGenericSystem(t testing.TB, req, resp design.GenericSystem, msg ...
 	for i := range len(req.Links) {
 		RackTypeLink(t, req.Links[i], resp.Links[i], addMsg(msg, "Comparing Link %d", i)...)
 	}
-	LogicalDevice2(t, req.LogicalDevice, resp.LogicalDevice, msg...)
+	LogicalDevice(t, req.LogicalDevice, resp.LogicalDevice, msg...)
 	if req.Loopback == nil {
 		require.NotNil(t, resp.Loopback, msg)
 		require.Equal(t, enum.FeatureSwitchDisabled, *resp.Loopback, msg)

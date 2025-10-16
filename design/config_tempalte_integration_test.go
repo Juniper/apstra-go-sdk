@@ -14,7 +14,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
@@ -77,7 +77,7 @@ func TestConfigTemplate_CRUD(t *testing.T) {
 					idPtr := obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.ConfigTemplate(t, tCase.create, obj)
+					comparedesign.ConfigTemplate(t, tCase.create, obj)
 
 					// retrieve the object by label and validate
 					obj, err = client.Client.GetConfigTemplateByLabel2(ctx, tCase.create.Label)
@@ -85,7 +85,7 @@ func TestConfigTemplate_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.ConfigTemplate(t, tCase.create, obj)
+					comparedesign.ConfigTemplate(t, tCase.create, obj)
 
 					// retrieve the list of IDs - ours must be in there
 					ids, err := client.Client.ListConfigTemplates2(ctx)
@@ -101,7 +101,7 @@ func TestConfigTemplate_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.ConfigTemplate(t, tCase.create, obj)
+					comparedesign.ConfigTemplate(t, tCase.create, obj)
 
 					// update the object and validate
 					require.NoError(t, tCase.update.SetID(id))
@@ -116,7 +116,7 @@ func TestConfigTemplate_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.ConfigTemplate(t, tCase.update, obj)
+					comparedesign.ConfigTemplate(t, tCase.update, obj)
 
 					// restore the object to the original state
 					require.NoError(t, tCase.create.SetID(id))
@@ -131,7 +131,7 @@ func TestConfigTemplate_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.ConfigTemplate(t, tCase.create, obj)
+					comparedesign.ConfigTemplate(t, tCase.create, obj)
 
 					// delete the object
 					err = client.Client.DeleteConfigTemplate2(ctx, id)

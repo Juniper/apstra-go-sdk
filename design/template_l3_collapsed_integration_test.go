@@ -15,7 +15,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/stretchr/testify/require"
@@ -235,7 +235,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr := objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.create, *objPtr)
+					comparedesign.TemplateL3Collapsed(t, tCase.create, *objPtr)
 
 					// retrieve the object by ID (by type) then validate
 					obj, err = client.Client.GetTemplateL3Collapsed2(ctx, id)
@@ -243,7 +243,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.create, obj)
+					comparedesign.TemplateL3Collapsed(t, tCase.create, obj)
 
 					// retrieve the object by label then validate
 					template, err = client.Client.GetTemplateByLabel2(ctx, tCase.create.Label)
@@ -253,7 +253,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.create, *objPtr)
+					comparedesign.TemplateL3Collapsed(t, tCase.create, *objPtr)
 
 					// retrieve the object by label (by type) then validate
 					obj, err = client.Client.GetTemplateL3CollapsedByLabel2(ctx, tCase.create.Label)
@@ -261,7 +261,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.create, obj)
+					comparedesign.TemplateL3Collapsed(t, tCase.create, obj)
 
 					// retrieve the list of IDs (ours must be in there)
 					ids, err := client.Client.ListTemplates2(ctx)
@@ -283,7 +283,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.create, *objPtr)
+					comparedesign.TemplateL3Collapsed(t, tCase.create, *objPtr)
 
 					// retrieve the list of objects (by type) (ours must be in there) then validate
 					objs, err := client.Client.GetTemplatesL3Collapsed2(ctx)
@@ -294,7 +294,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.create, obj)
+					comparedesign.TemplateL3Collapsed(t, tCase.create, obj)
 
 					// update the object then validate
 					require.NoError(t, tCase.update.SetID(id))
@@ -311,7 +311,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.update, *objPtr)
+					comparedesign.TemplateL3Collapsed(t, tCase.update, *objPtr)
 
 					// retrieve the updated object by ID (by type) type then validate
 					update, err := client.Client.GetTemplateL3Collapsed2(ctx, id)
@@ -319,7 +319,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = update.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.update, update)
+					comparedesign.TemplateL3Collapsed(t, tCase.update, update)
 
 					// restore the object (by type)
 					require.NoError(t, tCase.create.SetID(id))
@@ -336,7 +336,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.create, *objPtr)
+					comparedesign.TemplateL3Collapsed(t, tCase.create, *objPtr)
 
 					// retrieve the restored object by ID (by type) then validate
 					obj, err = client.Client.GetTemplateL3Collapsed2(ctx, id)
@@ -344,7 +344,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					idPtr = update.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.TemplateL3Collapsed(t, tCase.create, obj)
+					comparedesign.TemplateL3Collapsed(t, tCase.create, obj)
 
 					// delete the object
 					err = client.Client.DeleteTemplate2(ctx, id)

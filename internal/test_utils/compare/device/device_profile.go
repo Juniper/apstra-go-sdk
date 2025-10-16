@@ -4,7 +4,7 @@
 
 //go:build requiretestutils
 
-package compare
+package comparedevice
 
 import (
 	"testing"

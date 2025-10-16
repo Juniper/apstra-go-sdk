@@ -17,7 +17,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
@@ -159,7 +159,7 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					idPtr := obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.InterfaceMap(t, tCase.create, obj)
+					comparedesign.InterfaceMap(t, tCase.create, obj)
 
 					// retrieve the object by label and validate
 					obj, err = client.Client.GetInterfaceMapByLabel2(ctx, tCase.create.Label)
@@ -167,7 +167,7 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.InterfaceMap(t, tCase.create, obj)
+					comparedesign.InterfaceMap(t, tCase.create, obj)
 
 					// retrieve the list of IDs - ours must be in there
 					ids, err := client.Client.ListInterfaceMaps2(ctx)
@@ -183,7 +183,7 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.InterfaceMap(t, tCase.create, obj)
+					comparedesign.InterfaceMap(t, tCase.create, obj)
 
 					// update the object and validate
 					require.NoError(t, tCase.update.SetID(id))
@@ -198,7 +198,7 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.InterfaceMap(t, tCase.update, obj)
+					comparedesign.InterfaceMap(t, tCase.update, obj)
 
 					// restore the object to the original state
 					require.NoError(t, tCase.create.SetID(id))
@@ -213,7 +213,7 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.InterfaceMap(t, tCase.create, obj)
+					comparedesign.InterfaceMap(t, tCase.create, obj)
 
 					// delete the object
 					err = client.Client.DeleteInterfaceMap2(ctx, id)

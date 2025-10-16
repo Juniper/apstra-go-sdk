@@ -16,7 +16,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
@@ -345,7 +345,7 @@ func TestRackType_CRUD(t *testing.T) {
 					idPtr := obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.RackType2(t, tCase.create, obj)
+					comparedesign.RackType(t, tCase.create, obj)
 
 					// retrieve the object by label and validate
 					obj, err = client.Client.GetRackTypeByLabel2(ctx, tCase.create.Label)
@@ -353,7 +353,7 @@ func TestRackType_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.RackType2(t, tCase.create, obj)
+					comparedesign.RackType(t, tCase.create, obj)
 
 					// retrieve the list of IDs (ours must be in there)
 					ids, err := client.Client.ListRackTypes2(ctx)
@@ -369,7 +369,7 @@ func TestRackType_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.RackType2(t, tCase.create, obj)
+					comparedesign.RackType(t, tCase.create, obj)
 
 					// update the object and validate
 					require.NoError(t, tCase.update.SetID(id))
@@ -384,7 +384,7 @@ func TestRackType_CRUD(t *testing.T) {
 					idPtr = update.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.RackType2(t, tCase.update, update)
+					comparedesign.RackType(t, tCase.update, update)
 
 					// restore the object to the original state
 					require.NoError(t, tCase.create.SetID(id))
@@ -399,7 +399,7 @@ func TestRackType_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.RackType2(t, tCase.create, obj)
+					comparedesign.RackType(t, tCase.create, obj)
 
 					// delete the object
 					err = client.Client.DeleteRackType2(ctx, id)
