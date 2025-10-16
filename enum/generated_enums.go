@@ -75,6 +75,37 @@ func (o *ApiFeature) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*AsnAllocationScheme)(nil)
+	_ json.Marshaler   = (*AsnAllocationScheme)(nil)
+	_ json.Unmarshaler = (*AsnAllocationScheme)(nil)
+)
+
+func (o AsnAllocationScheme) String() string {
+	return o.Value
+}
+
+func (o *AsnAllocationScheme) FromString(s string) error {
+	if AsnAllocationSchemes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o AsnAllocationScheme) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *AsnAllocationScheme) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*ConfigletSection)(nil)
 	_ json.Marshaler   = (*ConfigletSection)(nil)
 	_ json.Unmarshaler = (*ConfigletSection)(nil)
@@ -1640,6 +1671,12 @@ var (
 		ApiFeatureFreeform,
 		ApiFeatureFullAccess,
 		ApiFeatureTaskApi,
+	)
+
+	_                    enum = new(AsnAllocationScheme)
+	AsnAllocationSchemes      = oenum.New(
+		AsnAllocationSchemeDistinct,
+		AsnAllocationSchemeSingle,
 	)
 
 	_                 enum = new(ConfigletSection)

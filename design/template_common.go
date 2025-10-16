@@ -4,7 +4,38 @@
 
 package design
 
+import (
+	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal"
+	"github.com/Juniper/apstra-go-sdk/speed"
+)
+
+type AsnAllocationPolicy struct {
+	SpineAsnScheme enum.AsnAllocationScheme `json:"spine_asn_scheme"`
+}
+
 type RackTypeWithCount struct {
 	RackType RackType
 	Count    int
+}
+
+var _ internal.Replicator[Spine] = (*Spine)(nil)
+
+type Spine struct {
+	Count                  int           `json:"count"`
+	LinkPerSuperspineCount int           `json:"link_per_superspine_count"`
+	LinkPerSuperspineSpeed speed.Speed   `json:"link_per_superspine_speed"`
+	LogicalDevice          LogicalDevice `json:"logical_device"`
+	Tags                   []Tag         `json:"tags"`
+}
+
+// Replicate returns a copy of itself with zero values for metadata fields
+func (s Spine) Replicate() Spine {
+	return Spine{
+		Count:                  s.Count,
+		LinkPerSuperspineCount: s.LinkPerSuperspineCount,
+		LinkPerSuperspineSpeed: s.LinkPerSuperspineSpeed,
+		LogicalDevice:          s.LogicalDevice.Replicate(),
+		Tags:                   s.Tags,
+	}
 }
