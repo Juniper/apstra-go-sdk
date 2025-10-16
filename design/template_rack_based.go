@@ -102,6 +102,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 	}
 
 	raw := struct {
+		ID                   string                   `json:"id,omitempty"` // ID must be marshaled for pod-based template embedding
 		DisplayName          string                   `json:"display_name"`
 		Type                 enum.TemplateType        `json:"type"`
 		RackTypes            []RackType               `json:"rack_types"`
@@ -113,6 +114,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 		Spine                Spine                    `json:"spine"`
 		VirtualNetworkPolicy *policy.VirtualNetwork   `json:"virtual_network_policy,omitempty"`
 	}{
+		ID:                   t.id,
 		DisplayName:          t.Label,
 		Type:                 t.TemplateType(),
 		AntiAffinityPolicy:   t.AntiAffinityPolicy,

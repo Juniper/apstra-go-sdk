@@ -107,7 +107,6 @@ func (t *Common) UnmarshalJSON(bytes []byte) error {
 		t.PodBased = new(design.TemplatePodBased)
 		return json.Unmarshal(bytes, t.PodBased)
 	case enum.TemplateTypeRackBased.String():
-		return nil // todo remove when rack based templates are fully implemented
 		t.RackBased = new(design.TemplateRackBased)
 		return json.Unmarshal(bytes, t.RackBased)
 	case enum.TemplateTypeRailCollapsed.String():
