@@ -7,9 +7,10 @@
 package compare
 
 import (
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func RackTypeWithCount(t testing.TB, req, resp design.RackTypeWithCount, msg ...string) {

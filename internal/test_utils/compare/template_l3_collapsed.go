@@ -7,10 +7,11 @@
 package compare
 
 import (
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/design"
 	comparepolicy "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/policy"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TemplateL3Collapsed(t testing.TB, req, resp design.TemplateL3Collapsed, msg ...string) {

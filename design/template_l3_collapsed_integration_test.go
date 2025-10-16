@@ -8,6 +8,8 @@ package design_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -17,7 +19,6 @@ import (
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
@@ -124,7 +125,8 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 					LeafSwitches: []design.LeafSwitch{
 						{
 							Label: "esi_leaf",
-							LogicalDevice: design.LogicalDevice{Label: "AOS-7x10-Leaf",
+							LogicalDevice: design.LogicalDevice{
+								Label: "AOS-7x10-Leaf",
 								Panels: []design.LogicalDevicePanel{
 									{
 										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},
