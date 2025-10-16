@@ -38,7 +38,7 @@ func (c Client) CreateTemplate2(ctx context.Context, v design.Template) (string,
 	return response.ID, nil
 }
 
-func (c Client) getTemplate2(ctx context.Context, id string) (design.Template, error) {
+func (c Client) GetTemplate2(ctx context.Context, id string) (design.Template, error) {
 	var response commontemplate.Common
 	err := c.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -135,17 +135,17 @@ func (c Client) GetTemplates2(ctx context.Context) ([]design.Template, error) {
 		return nil, convertTtaeToAceWherePossible(err)
 	}
 
-	result := make([]design.Template, len(response.Items))
-	for i, item := range response.Items {
+	result := make([]design.Template, 0, len(response.Items))
+	for _, item := range response.Items {
 		switch item.TemplateType().String() {
 		case enum.TemplateTypeL3Collapsed.String():
-			result[i] = item.L3Collapsed
+			result = append(result, item.L3Collapsed)
 		case enum.TemplateTypePodBased.String():
-			result[i] = item.PodBased
+			// result = append(result, item.PodBased)
 		case enum.TemplateTypeRackBased.String():
-			result[i] = item.RackBased
+			// result = append(result, item.RackBased)
 		case enum.TemplateTypeRailCollapsed.String():
-			result[i] = item.RailCollapsed
+			// result = append(result, item.RailCollapsed)
 		default:
 			var id string
 			if item.ID() != nil {

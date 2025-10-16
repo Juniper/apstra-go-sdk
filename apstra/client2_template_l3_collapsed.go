@@ -18,7 +18,7 @@ func (c Client) CreateTemplateL3Collapsed2(ctx context.Context, v design.Templat
 }
 
 func (c Client) GetTemplateL3Collapsed2(ctx context.Context, id string) (design.TemplateL3Collapsed, error) {
-	response, err := c.getTemplate2(ctx, id)
+	response, err := c.GetTemplate2(ctx, id)
 	if err != nil {
 		return design.TemplateL3Collapsed{}, err
 	}
@@ -50,9 +50,9 @@ func (c Client) ListTemplatesL3Collapsed2(ctx context.Context) ([]string, error)
 
 	var result []string
 	for i, t := range templates {
-		if t.TemplateType() != enum.TemplateTypeL3Collapsed {
+		if t.TemplateType() == enum.TemplateTypeL3Collapsed {
 			if t.ID() == nil {
-				return nil, sdk.ErrInternal(fmt.Sprintf("template at index %d has nil id", i))
+				return nil, sdk.ErrAPIResponseInvalid(fmt.Sprintf("template at index %d has nil id", i))
 			}
 			result = append(result, *t.ID())
 		}
