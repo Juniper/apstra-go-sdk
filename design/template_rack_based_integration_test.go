@@ -8,6 +8,8 @@ package design_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -19,7 +21,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 var testTemplatesRackBased = map[string]design.TemplateRackBased{
@@ -149,7 +150,8 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 							Label:             "leaf",
 							LinkPerSpineCount: pointer.To(1),
 							LinkPerSpineSpeed: pointer.To(speed.Speed("10G")),
-							LogicalDevice: design.LogicalDevice{Label: "AOS-7x10-Leaf",
+							LogicalDevice: design.LogicalDevice{
+								Label: "AOS-7x10-Leaf",
 								Panels: []design.LogicalDevicePanel{
 									{
 										PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 7},

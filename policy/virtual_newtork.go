@@ -6,6 +6,7 @@ package policy
 
 import (
 	"encoding/json"
+
 	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
