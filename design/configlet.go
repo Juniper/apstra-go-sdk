@@ -91,3 +91,7 @@ func (c *Configlet) UnmarshalJSON(bytes []byte) error {
 
 	return nil
 }
+
+func NewConfiglet(id string) Configlet {
+	return Configlet{id: id}
+}

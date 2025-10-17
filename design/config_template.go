@@ -89,3 +89,7 @@ func (c *ConfigTemplate) UnmarshalJSON(bytes []byte) error {
 
 	return nil
 }
+
+func NewConfigTemplate(id string) ConfigTemplate {
+	return ConfigTemplate{id: id}
+}

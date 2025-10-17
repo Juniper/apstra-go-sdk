@@ -8,6 +8,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"hash"
 	"time"
 
 	sdk "github.com/Juniper/apstra-go-sdk"
@@ -95,10 +96,9 @@ func (t TemplateRackBased) Replicate() TemplateRackBased {
 }
 
 func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
-	// todo: set hash id for spine logical device
 	type rawRackTypeCount struct {
-		RackTypeId string `json:"rack_type_id"`
 		Count      int    `json:"count"`
+		RackTypeId string `json:"rack_type_id"`
 	}
 
 	raw := struct {
@@ -128,7 +128,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 	// used to generate IDs within the template
 	hash := md5.New()
 
-	// set the spine ID if necessary
+	// set the spine logical device ID if necessary
 	if raw.Spine.LogicalDevice.ID() == nil {
 		raw.Spine.LogicalDevice.mustSetHashID(hash)
 	}
@@ -160,8 +160,8 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 
 func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 	type rawRackTypeCount struct {
-		RackTypeId string `json:"rack_type_id"`
 		Count      int    `json:"count"`
+		RackTypeId string `json:"rack_type_id"`
 	}
 
 	var raw struct {
@@ -225,4 +225,24 @@ func (t TemplateRackBased) CreatedAt() *time.Time {
 
 func (t TemplateRackBased) LastModifiedAt() *time.Time {
 	return t.lastModifiedAt
+}
+
+func (t TemplateRackBased) digest(h hash.Hash) []byte {
+	h.Reset()
+	return mustHashForComparison(t, h)
+}
+
+func (t *TemplateRackBased) setHashID(h hash.Hash) error {
+	return t.SetID(fmt.Sprintf("%x", t.digest(h)))
+}
+
+func (t *TemplateRackBased) mustSetHashID(h hash.Hash) {
+	err := t.SetID(fmt.Sprintf("%x", t.digest(h)))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func NewTemplateRackBased(id string) TemplateRackBased {
+	return TemplateRackBased{id: id}
 }

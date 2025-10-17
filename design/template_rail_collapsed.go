@@ -76,3 +76,7 @@ func (t TemplateRailCollapsed) CreatedAt() *time.Time {
 func (t TemplateRailCollapsed) LastModifiedAt() *time.Time {
 	return t.lastModifiedAt
 }
+
+func NewTemplateRailCollapsed(id string) TemplateRailCollapsed {
+	return TemplateRailCollapsed{id: id}
+}

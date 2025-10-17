@@ -141,7 +141,7 @@ func (c Client) GetTemplates2(ctx context.Context) ([]design.Template, error) {
 		case enum.TemplateTypeL3Collapsed.String():
 			result = append(result, item.L3Collapsed)
 		case enum.TemplateTypePodBased.String():
-			// result = append(result, item.PodBased) // todo: restore this when pod-based templates are supported
+			result = append(result, item.PodBased)
 		case enum.TemplateTypeRackBased.String():
 			result = append(result, item.RackBased)
 		case enum.TemplateTypeRailCollapsed.String():

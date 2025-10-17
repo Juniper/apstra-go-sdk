@@ -15,8 +15,13 @@ type AsnAllocationPolicy struct {
 }
 
 type RackTypeWithCount struct {
-	RackType RackType
 	Count    int
+	RackType RackType
+}
+
+type PodWithCount struct {
+	Count int
+	Pod   TemplateRackBased
 }
 
 var _ internal.Replicator[Spine] = (*Spine)(nil)
@@ -38,4 +43,11 @@ func (s Spine) Replicate() Spine {
 		LogicalDevice:          s.LogicalDevice.Replicate(),
 		Tags:                   s.Tags,
 	}
+}
+
+type Superspine struct {
+	PlaneCount         int           `json:"plane_count"`
+	SuperspinePerPlane int           `json:"superspine_per_plane"`
+	LogicalDevice      LogicalDevice `json:"logical_device"`
+	Tags               []Tag         `json:"tags"`
 }

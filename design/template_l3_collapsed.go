@@ -192,3 +192,7 @@ func (t TemplateL3Collapsed) CreatedAt() *time.Time {
 func (t TemplateL3Collapsed) LastModifiedAt() *time.Time {
 	return t.lastModifiedAt
 }
+
+func NewTemplateL3Collapsed(id string) TemplateL3Collapsed {
+	return TemplateL3Collapsed{id: id}
+}

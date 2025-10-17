@@ -121,7 +121,10 @@ func (l *LogicalDevice) setHashID(h hash.Hash) error {
 }
 
 func (l *LogicalDevice) mustSetHashID(h hash.Hash) {
-	l.SetID(fmt.Sprintf("%x", l.digest(h)))
+	err := l.SetID(fmt.Sprintf("%x", l.digest(h)))
+	if err != nil {
+		panic(err)
+	}
 }
 
 func NewLogicalDevice(id string) LogicalDevice {

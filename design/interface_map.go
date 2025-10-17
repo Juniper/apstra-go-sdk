@@ -107,3 +107,7 @@ type rawInterfaceMap struct {
 	CreatedAt      *time.Time `json:"created_at,omitempty"`
 	LastModifiedAt *time.Time `json:"last_modified_at,omitempty"`
 }
+
+func NewInterfaceMap(id string) InterfaceMap {
+	return InterfaceMap{id: id}
+}

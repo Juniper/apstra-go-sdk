@@ -355,3 +355,7 @@ type ProfileSlotConfiguration struct {
 	LinecardProfileID string `json:"linecard_profile_id"`
 	SlotID            int    `json:"slot_id"`
 }
+
+func NewProfile(id string) Profile {
+	return Profile{id: id}
+}
