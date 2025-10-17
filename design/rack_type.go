@@ -129,7 +129,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	hash := md5.New()
+	hasher := md5.New()
 	logicalDeviceMap := make(map[string]LogicalDevice)
 
 	// populate the rack-level tags and logical devices maps for each system
@@ -140,7 +140,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 
 		// clone the system and set its LD ID to a hash of the LD payload
 		system := system.Replicate()
-		system.LogicalDevice.mustSetHashID(hash)
+		system.LogicalDevice.mustSetHashID(hasher)
 
 		// add the LD to the rack-wide LD map
 		logicalDeviceMap[*system.logicalDeviceID()] = system.LogicalDevice
@@ -156,7 +156,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 
 		// clone the system and set its LD ID to a hash of the LD payload
 		system := system.Replicate()
-		system.LogicalDevice.mustSetHashID(hash)
+		system.LogicalDevice.mustSetHashID(hasher)
 
 		// add the LD to the rack-wide LD map
 		logicalDeviceMap[*system.logicalDeviceID()] = system.LogicalDevice
@@ -172,7 +172,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 
 		// clone the system and set its LD ID to a hash of the LD payload
 		system := system.Replicate()
-		system.LogicalDevice.mustSetHashID(hash)
+		system.LogicalDevice.mustSetHashID(hasher)
 
 		// add the LD to the rack-wide LD map
 		logicalDeviceMap[*system.logicalDeviceID()] = system.LogicalDevice

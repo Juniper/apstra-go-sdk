@@ -24,7 +24,7 @@ var (
 )
 
 type GenericSystem struct {
-	AsnDomain        *enum.FeatureSwitch
+	ASNDomain        *enum.FeatureSwitch
 	Count            int
 	Label            string
 	Links            []RackTypeLink
@@ -56,7 +56,7 @@ func (g GenericSystem) Replicate() GenericSystem {
 		PortChannelIDMax: g.PortChannelIDMax,
 		PortChannelIDMin: g.PortChannelIDMin,
 		Tags:             make([]Tag, len(g.Tags)),
-		// AsnDomain:     nil,
+		// ASNDomain:     nil,
 		// Loopback:      nil,
 	}
 
@@ -68,8 +68,8 @@ func (g GenericSystem) Replicate() GenericSystem {
 		result.Tags[i] = tag.Replicate()
 	}
 
-	if g.AsnDomain != nil {
-		result.AsnDomain = pointer.To(*g.AsnDomain)
+	if g.ASNDomain != nil {
+		result.ASNDomain = pointer.To(*g.ASNDomain)
 	}
 
 	if g.Loopback != nil {
@@ -81,7 +81,7 @@ func (g GenericSystem) Replicate() GenericSystem {
 
 func (g GenericSystem) MarshalJSON() ([]byte, error) {
 	result := rawGenericSystem{
-		AsnDomain:        g.AsnDomain,
+		AsnDomain:        g.ASNDomain,
 		Count:            zero.PreferDefault(g.Count, 1),
 		Label:            g.Label,
 		Links:            g.Links,
@@ -108,7 +108,7 @@ func (g *GenericSystem) UnmarshalJSON(bytes []byte) error {
 		return fmt.Errorf("unmarshaling access switch: %w", err)
 	}
 
-	g.AsnDomain = raw.AsnDomain
+	g.ASNDomain = raw.AsnDomain
 	g.Count = raw.Count
 	g.Label = raw.Label
 	g.Links = raw.Links

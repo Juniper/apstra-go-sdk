@@ -751,7 +751,7 @@ var rackTypeTestCollapsedESIWithGenericSystems = RackType{
 	},
 	GenericSystems: []GenericSystem{
 		{
-			AsnDomain: &enum.FeatureSwitchEnabled,
+			ASNDomain: &enum.FeatureSwitchEnabled,
 			Count:     2,
 			Label:     "lefty",
 			Links: []RackTypeLink{
@@ -791,7 +791,7 @@ var rackTypeTestCollapsedESIWithGenericSystems = RackType{
 			Tags:             []Tag{{Label: "tag c", Description: "TAG C"}, {Label: "tag d", Description: "TAG D"}},
 		},
 		{
-			AsnDomain: &enum.FeatureSwitchDisabled,
+			ASNDomain: &enum.FeatureSwitchDisabled,
 			Count:     1,
 			Label:     "dually",
 			Links: []RackTypeLink{
@@ -828,7 +828,7 @@ var rackTypeTestCollapsedESIWithGenericSystems = RackType{
 			Tags:             []Tag{{Label: "tag g", Description: "TAG G"}, {Label: "tag h", Description: "TAG H"}},
 		},
 		{
-			AsnDomain: nil,
+			ASNDomain: nil,
 			Count:     3,
 			Label:     "righty",
 			Links: []RackTypeLink{

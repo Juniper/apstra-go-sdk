@@ -76,7 +76,7 @@ var testRackTypes = map[string]design.RackType{
 		},
 		GenericSystems: []design.GenericSystem{
 			{
-				AsnDomain: nil,
+				ASNDomain: nil,
 				Count:     1,
 				Label:     testutils.RandString(6, "hex"),
 				Links: []design.RackTypeLink{
@@ -99,7 +99,7 @@ var testRackTypes = map[string]design.RackType{
 				Tags:             []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
 			},
 			{
-				AsnDomain: pointer.To(enum.FeatureSwitchEnabled),
+				ASNDomain: pointer.To(enum.FeatureSwitchEnabled),
 				Count:     2,
 				Label:     testutils.RandString(6, "hex"),
 				Links: []design.RackTypeLink{
@@ -122,7 +122,7 @@ var testRackTypes = map[string]design.RackType{
 				Tags:             []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
 			},
 			{
-				AsnDomain: nil,
+				ASNDomain: nil,
 				Count:     1,
 				Label:     testutils.RandString(6, "hex"),
 				Links: []design.RackTypeLink{
@@ -145,7 +145,7 @@ var testRackTypes = map[string]design.RackType{
 				Tags:             []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
 			},
 			{
-				AsnDomain: pointer.To(enum.FeatureSwitchEnabled),
+				ASNDomain: pointer.To(enum.FeatureSwitchEnabled),
 				Count:     2,
 				Label:     testutils.RandString(6, "hex"),
 				Links: []design.RackTypeLink{
@@ -168,7 +168,7 @@ var testRackTypes = map[string]design.RackType{
 				Tags:             []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
 			},
 			{
-				AsnDomain: pointer.To(enum.FeatureSwitchEnabled),
+				ASNDomain: pointer.To(enum.FeatureSwitchEnabled),
 				Count:     2,
 				Label:     testutils.RandString(6, "hex"),
 				Links: []design.RackTypeLink{
@@ -190,7 +190,7 @@ var testRackTypes = map[string]design.RackType{
 				Tags:             []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
 			},
 			{
-				AsnDomain: nil,
+				ASNDomain: nil,
 				Count:     1,
 				Label:     testutils.RandString(6, "hex"),
 				Links: []design.RackTypeLink{
