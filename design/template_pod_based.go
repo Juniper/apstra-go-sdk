@@ -104,8 +104,9 @@ func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
 
 	// loop over pods, calculate a fresh ID, count the type of each
 	for _, podWithCount := range t.Pods {
-		pod := podWithCount.Pod.Replicate() // fresh copy without metadata
-		pod.mustSetHashID(hasher)           // assign the ID
+		pod := podWithCount.Pod.Replicate()  // fresh copy without metadata
+		pod.mustSetHashID(hasher)            // assign the ID
+		pod.skipTypeDuringMarshalJSON = true // don't marshal the nested template's type
 
 		// add an entry to raw.RackTypeCounts without regard to twins
 		raw.RackBasedTemplateCounts = append(raw.RackBasedTemplateCounts, rawRackBasedTemplateCount{Count: podWithCount.Count, RackBasedTemplateId: pod.id})

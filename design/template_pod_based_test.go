@@ -91,6 +91,10 @@ func TestTemplatePodBased_MarshalJSON(t *testing.T) {
 			v: l2SuperspineMultiPlane,
 			e: l2SuperspineMultiPlaneJSON,
 		},
+		"id__L2_superspine_single_plane_with_acs": {
+			v: L2SuperspineSinglePlaneWithAccess,
+			e: L2SuperspineSinglePlaneWithAccessJSON,
+		},
 	}
 
 	for tName, tCase := range testCases {
@@ -125,12 +129,16 @@ func TestTemplatePodBased_UnmarshalJSON(t *testing.T) {
 			v: l2SuperspineMultiPlaneJSON,
 			e: l2SuperspineMultiPlane,
 		},
+		"id__L2_superspine_single_plane_with_acs": {
+			v: L2SuperspineSinglePlaneWithAccessJSON,
+			e: L2SuperspineSinglePlaneWithAccess,
+		},
 	}
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
-			var r TemplateRackBased
+			var r TemplatePodBased
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
 			require.Equal(t, tCase.e, r)

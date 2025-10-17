@@ -11,6 +11,7 @@ import (
 	"hash"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
@@ -38,6 +39,8 @@ type TemplateRackBased struct {
 	id             string
 	createdAt      *time.Time
 	lastModifiedAt *time.Time
+
+	skipTypeDuringMarshalJSON bool
 }
 
 func (t TemplateRackBased) TemplateType() enum.TemplateType {
@@ -104,7 +107,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 	raw := struct {
 		ID                   string                   `json:"id,omitempty"` // ID must be marshaled for pod-based template embedding
 		DisplayName          string                   `json:"display_name"`
-		Type                 enum.TemplateType        `json:"type"`
+		Type                 *enum.TemplateType       `json:"type,omitempty"`
 		RackTypes            []RackType               `json:"rack_types"`
 		RackTypeCounts       []rawRackTypeCount       `json:"rack_type_counts"`
 		AntiAffinityPolicy   *policy.AntiAffinity     `json:"anti_affinity_policy,omitempty"`
@@ -116,7 +119,6 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 	}{
 		ID:                   t.id,
 		DisplayName:          t.Label,
-		Type:                 t.TemplateType(),
 		RackTypes:            make([]RackType, 0, len(t.Racks)),
 		RackTypeCounts:       make([]rawRackTypeCount, 0, len(t.Racks)),
 		AntiAffinityPolicy:   t.AntiAffinityPolicy,
@@ -125,6 +127,10 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 		DHCPServiceIntent:    t.DHCPServiceIntent,
 		Spine:                t.Spine,
 		VirtualNetworkPolicy: t.VirtualNetworkPolicy,
+	}
+
+	if !t.skipTypeDuringMarshalJSON {
+		raw.Type = pointer.To(t.TemplateType())
 	}
 
 	// used to generate IDs within the template
