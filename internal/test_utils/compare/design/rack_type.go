@@ -94,12 +94,12 @@ func RackTypeAccessSwitch(t testing.TB, req, resp design.AccessSwitch, msg ...st
 func RackTypeGenericSystem(t testing.TB, req, resp design.GenericSystem, msg ...string) {
 	msg = addMsg(msg, "Comparing Generic System")
 
-	if req.AsnDomain == nil {
-		require.NotNil(t, resp.AsnDomain, msg)
-		require.Equal(t, enum.FeatureSwitchDisabled, *resp.AsnDomain, msg)
+	if req.ASNDomain == nil {
+		require.NotNil(t, resp.ASNDomain, msg)
+		require.Equal(t, enum.FeatureSwitchDisabled, *resp.ASNDomain, msg)
 	} else {
-		require.NotNil(t, resp.AsnDomain, msg)
-		require.Equal(t, *req.AsnDomain, *resp.AsnDomain, msg)
+		require.NotNil(t, resp.ASNDomain, msg)
+		require.Equal(t, *req.ASNDomain, *resp.ASNDomain, msg)
 	}
 	if req.Count == 0 {
 		require.Equal(t, 1, req.Count, msg)

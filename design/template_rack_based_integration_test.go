@@ -74,7 +74,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 						{
 							Count:     2,
 							Label:     "generic",
-							AsnDomain: &enum.FeatureSwitchDisabled,
+							ASNDomain: &enum.FeatureSwitchDisabled,
 							Links: []design.RackTypeLink{
 								{
 									Label:              "link",
@@ -204,7 +204,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 					},
 					GenericSystems: []design.GenericSystem{
 						{
-							AsnDomain: &enum.FeatureSwitchDisabled,
+							ASNDomain: &enum.FeatureSwitchDisabled,
 							Count:     2,
 							Label:     "generic",
 							Links: []design.RackTypeLink{
@@ -483,7 +483,7 @@ func TestTemplateRackBased_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// delete the object
-					err = client.Client.DeleteRackType2(ctx, id)
+					err = client.Client.DeleteTemplate2(ctx, id)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())

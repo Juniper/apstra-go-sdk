@@ -77,7 +77,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 				},
 				GenericSystems: []GenericSystem{
 					{
-						AsnDomain: &enum.FeatureSwitchDisabled,
+						ASNDomain: &enum.FeatureSwitchDisabled,
 						Count:     2,
 						Label:     "generic",
 						Links: []RackTypeLink{
@@ -400,7 +400,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 				},
 				GenericSystems: []GenericSystem{
 					{
-						AsnDomain: &enum.FeatureSwitchDisabled,
+						ASNDomain: &enum.FeatureSwitchDisabled,
 						Count:     2,
 						Label:     "generic",
 						Links: []RackTypeLink{

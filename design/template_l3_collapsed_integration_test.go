@@ -405,7 +405,7 @@ func TestTemplateL3Collapsed_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// delete the object
-					err = client.Client.DeleteRackType2(ctx, id)
+					err = client.Client.DeleteTemplate2(ctx, id)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())

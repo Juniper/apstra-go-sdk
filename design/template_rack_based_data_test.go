@@ -60,12 +60,11 @@ var templateRackBasedL2VirtualEVPN = TemplateRackBased{
 						Tags:               []Tag{},
 					},
 				},
-				AccessSwitches: nil,
 				GenericSystems: []GenericSystem{
 					{
 						Count:     2,
 						Label:     "generic",
-						AsnDomain: &enum.FeatureSwitchDisabled,
+						ASNDomain: &enum.FeatureSwitchDisabled,
 						Links: []RackTypeLink{
 							{
 								Label:              "link",

@@ -99,28 +99,33 @@ func (t TemplateL3Collapsed) MarshalJSON() ([]byte, error) {
 	}
 
 	// used to generate rack type IDs within the template
-	hash := md5.New()
+	hasher := md5.New()
 
-	// used to keep track of rack type quantity by ID in case we have identical racks
-	rackTypeIDToCount := make(map[string]int, len(t.Racks))
+	// Note that the looping over and duplicate handling of raw.RackTypes and
+	// raw.RackTypeCounts shouldn't be necessary for a collapsed template which
+	// only allows one rack. This strategy is required for the other template
+	// types and who knows, a future L3 collapsed template may support more than
+	// one rack, so maybe it'll be helpful.
 
-	// initialize raw.RackTypeCounts so we can append to it without shuffling memory around
-	raw.RackTypeCounts = make([]rawRackTypeCount, 0, len(t.Racks))
+	// keep track of rack type IDs (hashes of rack data). if two rack types are
+	// identical twins (have the same contents) we don't want to add them to
+	// raw.RackTypes twice. we will add them to raw.RackTypeCounts twice, and
+	// the Apstra API will amend the totals as needed.
+	rackTypeIDs := make(map[string]struct{}, len(t.Racks))
 
 	// loop over racks, calculate a fresh ID, count the type of each
-	for _, rack := range t.Racks {
-		rackType := rack.RackType.Replicate() // fresh copy without metadata
-		rackType.mustSetHashID(hash)          // assign the ID
-		if _, ok := rackTypeIDToCount[rackType.id]; !ok {
-			raw.RackTypes = append(raw.RackTypes, rackType) // previously unseen rack type - append it to the slice
-		}
-		rackTypeIDToCount[rackType.id] += rack.Count // adjust the quantity for this rack type
-	}
+	for _, rackTypeWithCount := range t.Racks {
+		rackType := rackTypeWithCount.RackType.Replicate() // fresh copy without metadata
+		rackType.mustSetHashID(hasher)                     // assign the ID
 
-	// prepare raw.RackTypeCounts from rackTypeIDToCount
-	raw.RackTypeCounts = make([]rawRackTypeCount, 0, len(rackTypeIDToCount))
-	for id, count := range rackTypeIDToCount {
-		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{RackTypeId: id, Count: count})
+		// add an entry to raw.RackTypeCounts without regard to twins
+		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{Count: rackTypeWithCount.Count, RackTypeId: rackType.id})
+
+		// add an entry to raw.RackTypes only if it's not a twin
+		if _, ok := rackTypeIDs[rackType.id]; !ok {
+			rackTypeIDs[rackType.id] = struct{}{}
+			raw.RackTypes = append(raw.RackTypes, rackType)
+		}
 	}
 
 	return json.Marshal(&raw)
