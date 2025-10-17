@@ -11,10 +11,10 @@ import (
 	"hash"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/policy"
 )
 
