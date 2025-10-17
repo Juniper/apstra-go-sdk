@@ -208,6 +208,7 @@ func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 	t.Racks = make([]RackTypeWithCount, len(raw.RackTypeCounts))
 	for i, rackTypeCount := range raw.RackTypeCounts {
 		if rackType, ok := idToRackType[rackTypeCount.RackTypeId]; ok {
+			rackType.id = "" // we don't want the ID of the embedded rack type
 			t.Racks[i] = RackTypeWithCount{RackType: rackType, Count: rackTypeCount.Count}
 			continue
 		}

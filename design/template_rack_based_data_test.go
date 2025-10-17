@@ -18,7 +18,6 @@ var templateRackBasedL2VirtualEVPN = TemplateRackBased{
 		{
 			Count: 4,
 			RackType: RackType{
-				id:                       "1a976a730bf7dbc1e1e4f134820e28e8",
 				Label:                    "L2 Virtual",
 				FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 				LeafSwitches: []LeafSwitch{
