@@ -73,13 +73,15 @@ func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
 	}
 
 	raw := struct {
+		Capability              enum.TemplateCapability     `json:"capability"`
 		DisplayName             string                      `json:"display_name"`
-		AntiAffinityPolicy      *policy.AntiAffinity        `json:"anti_affinity_policy"`
+		AntiAffinityPolicy      *policy.AntiAffinity        `json:"anti_affinity_policy,omitempty"`
 		RackBasedTemplateCounts []rawRackBasedTemplateCount `json:"rack_based_template_counts"`
 		RackBasedTemplates      []TemplateRackBased         `json:"rack_based_templates"`
 		Superspine              Superspine                  `json:"superspine"`
 		Type                    enum.TemplateType           `json:"type"`
 	}{
+		Capability:         enum.TemplateCapabilityBlueprint,
 		DisplayName:        t.Label,
 		AntiAffinityPolicy: t.AntiAffinityPolicy,
 		Superspine:         t.Superspine,
@@ -87,34 +89,55 @@ func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
 	}
 
 	// used to generate IDs within the template
-	hash := md5.New()
+	hasher := md5.New()
 
 	// set the superspine logical device ID if necessary
 	if raw.Superspine.LogicalDevice.ID() == nil {
-		raw.Superspine.LogicalDevice.mustSetHashID(hash)
+		raw.Superspine.LogicalDevice.mustSetHashID(hasher)
 	}
 
-	// used to keep track of pod type quantity by ID in case we have identical racks
-	podIDToCount := make(map[string]int, len(t.Pods))
-
-	// initialize raw.RackBasedTemplateCounts so we can append to it without shuffling memory around
-	raw.RackBasedTemplateCounts = make([]rawRackBasedTemplateCount, 0, len(t.Pods))
+	// keep track of rack type IDs (hashes of rack data). if two rack types are
+	// identical twins (have the same contents) we don't want to add them to
+	// raw.RackTypes twice. we will add them to raw.RackTypeCounts twice, and
+	// the Apstra API will amend the totals as needed.
+	podIDs := make(map[string]struct{}, len(t.Pods))
 
 	// loop over pods, calculate a fresh ID, count the type of each
-	for _, pod := range t.Pods {
-		rackBasedTemplate := pod.Pod.Replicate() // fresh copy without metadata
-		rackBasedTemplate.mustSetHashID(hash)    // assign the ID
-		if _, ok := podIDToCount[rackBasedTemplate.id]; !ok {
-			raw.RackBasedTemplates = append(raw.RackBasedTemplates, rackBasedTemplate) // previously unseen pod type - append it to the slice
+	for _, podWithCount := range t.Pods {
+		pod := podWithCount.Pod.Replicate() // fresh copy without metadata
+		pod.mustSetHashID(hasher)           // assign the ID
+
+		// add an entry to raw.RackTypeCounts without regard to twins
+		raw.RackBasedTemplateCounts = append(raw.RackBasedTemplateCounts, rawRackBasedTemplateCount{Count: podWithCount.Count, RackBasedTemplateId: pod.id})
+
+		// add an entry to raw.RackTypes only if it's not a twin
+		if _, ok := podIDs[pod.id]; !ok {
+			podIDs[pod.id] = struct{}{}
+			raw.RackBasedTemplates = append(raw.RackBasedTemplates, pod)
 		}
-		podIDToCount[rackBasedTemplate.id] += pod.Count // adjust the quantity for this pod type
 	}
 
-	// prepare raw.RackTypeCounts from rackTypeIDToCount
-	raw.RackBasedTemplateCounts = make([]rawRackBasedTemplateCount, 0, len(podIDToCount))
-	for id, count := range podIDToCount {
-		raw.RackBasedTemplateCounts = append(raw.RackBasedTemplateCounts, rawRackBasedTemplateCount{RackBasedTemplateId: id, Count: count})
-	}
+	//// used to keep track of pod type quantity by ID in case we have identical racks
+	//podIDToCount := make(map[string]int, len(t.Pods))
+	//
+	//// initialize raw.RackBasedTemplateCounts so we can append to it without shuffling memory around
+	//raw.RackBasedTemplateCounts = make([]rawRackBasedTemplateCount, 0, len(t.Pods))
+	//
+	//// loop over pods, calculate a fresh ID, count the type of each
+	//for _, pod := range t.Pods {
+	//	rackBasedTemplate := pod.Pod.Replicate() // fresh copy without metadata
+	//	rackBasedTemplate.mustSetHashID(hash)    // assign the ID
+	//	if _, ok := podIDToCount[rackBasedTemplate.id]; !ok {
+	//		raw.RackBasedTemplates = append(raw.RackBasedTemplates, rackBasedTemplate) // previously unseen pod type - append it to the slice
+	//	}
+	//	podIDToCount[rackBasedTemplate.id] += pod.Count // adjust the quantity for this pod type
+	//}
+	//
+	//// prepare raw.RackTypeCounts from rackTypeIDToCount
+	//raw.RackBasedTemplateCounts = make([]rawRackBasedTemplateCount, 0, len(podIDToCount))
+	//for id, count := range podIDToCount {
+	//	raw.RackBasedTemplateCounts = append(raw.RackBasedTemplateCounts, rawRackBasedTemplateCount{RackBasedTemplateId: id, Count: count})
+	//}
 
 	return json.Marshal(&raw)
 }
