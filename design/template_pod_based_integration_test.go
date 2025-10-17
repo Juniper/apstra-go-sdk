@@ -25,10 +25,10 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
-	//template, err := clients[0].Client.GetTemplatePodBased2(ctx, "L2_superspine_multi_plane")
-	//require.NoError(t, err)
-	//log.Printf("\n%#v\n", template)
-	//return
+	// template, err := clients[0].Client.GetTemplatePodBased2(ctx, "L2_superspine_multi_plane")
+	// require.NoError(t, err)
+	// log.Printf("\n%#v\n", template)
+	// return
 
 	type testCase struct {
 		create design.TemplatePodBased
