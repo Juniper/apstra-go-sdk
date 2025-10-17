@@ -126,12 +126,12 @@ func (t *TemplatePodBased) UnmarshalJSON(bytes []byte) error {
 	}
 
 	var raw struct {
-		DisplayName             string                       `json:"display_name"`
-		AntiAffinityPolicy      *policy.AntiAffinity         `json:"anti_affinity_policy"`
-		RackBasedTemplateCounts []rawRackBasedTemplateCount  `json:"rack_based_template_counts"`
-		RackBasedTemplates      []map[string]json.RawMessage `json:"rack_based_templates"`
-		Superspine              Superspine                   `json:"superspine"`
-		Type                    enum.TemplateType            `json:"type"`
+		DisplayName             string                      `json:"display_name"`
+		AntiAffinityPolicy      *policy.AntiAffinity        `json:"anti_affinity_policy"`
+		RackBasedTemplateCounts []rawRackBasedTemplateCount `json:"rack_based_template_counts"`
+		RackBasedTemplates      []TemplateRackBased         `json:"rack_based_templates"`
+		Superspine              Superspine                  `json:"superspine"`
+		Type                    enum.TemplateType           `json:"type"`
 
 		ID             string     `json:"id"`
 		CreatedAt      *time.Time `json:"created_at"`
@@ -142,36 +142,6 @@ func (t *TemplatePodBased) UnmarshalJSON(bytes []byte) error {
 		return fmt.Errorf("unmarshaling pod based template: %w", err)
 	}
 
-	if raw.Type != enum.TemplateTypePodBased {
-		return fmt.Errorf("pod based templates must have type %q, got %q", enum.TemplateTypePodBased, raw.Type)
-	}
-
-	// When a rack-based template is embedded in a pod-based template, it doesn't feature a `type` field.
-	// But our TemplateRackBased.UnmarshalJSON() function checks for it, just like the lines immediately above
-	// this comment. Rather than delete the check, we jam in the type field in before unmarshaling nested
-	// rack-based templates.
-	RackBasedTemplates := make([]TemplateRackBased, len(raw.RackBasedTemplates))
-	for i, rawMap := range raw.RackBasedTemplates {
-		// set the type element in the map[string]json.RawMessage
-		typeVal, err := json.Marshal(enum.TemplateTypeRackBased)
-		if err != nil {
-			return fmt.Errorf("marshaling type field for embedded rack based template at index %d: %w", i, err)
-		}
-		rawMap["type"] = typeVal
-
-		// re-marshal the embedded rack type from map[string]json.RawMessage to []byte
-		rawJson, err := json.Marshal(rawMap)
-		if err != nil {
-			return fmt.Errorf("modifying embedded rack-based template at index %d: %s", i, err)
-		}
-
-		// unmarshal the rack based template with the type field included.
-		err = json.Unmarshal(rawJson, &RackBasedTemplates[i])
-		if err != nil {
-			return fmt.Errorf("unpacking embedded rack-based template at index %d: %s", i, err)
-		}
-	}
-
 	t.Label = raw.DisplayName
 	t.AntiAffinityPolicy = raw.AntiAffinityPolicy
 	t.Superspine = raw.Superspine
@@ -179,8 +149,8 @@ func (t *TemplatePodBased) UnmarshalJSON(bytes []byte) error {
 	t.createdAt = raw.CreatedAt
 	t.lastModifiedAt = raw.LastModifiedAt
 
-	idToPodType := make(map[string]TemplateRackBased, len(RackBasedTemplates))
-	for _, podType := range RackBasedTemplates {
+	idToPodType := make(map[string]TemplateRackBased, len(raw.RackBasedTemplates))
+	for _, podType := range raw.RackBasedTemplates {
 		idToPodType[podType.id] = podType
 	}
 

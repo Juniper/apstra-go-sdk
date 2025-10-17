@@ -152,10 +152,6 @@ func (t *TemplateL3Collapsed) UnmarshalJSON(bytes []byte) error {
 		return fmt.Errorf("unmarshaling l3 collapsed template: %w", err)
 	}
 
-	if raw.Type != enum.TemplateTypeL3Collapsed {
-		return fmt.Errorf("l3 collapsed templates must have type %q, got %q", enum.TemplateTypeL3Collapsed, raw.Type)
-	}
-
 	t.Label = raw.DisplayName
 	t.MeshLinkCount = raw.MeshLinkCount
 	t.MeshLinkSpeed = raw.MeshLinkSpeed

@@ -185,10 +185,6 @@ func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 		return fmt.Errorf("unmarshaling rack based template: %w", err)
 	}
 
-	if raw.Type != enum.TemplateTypeRackBased {
-		return fmt.Errorf("rack based templates must have type %q, got %q", enum.TemplateTypeRackBased, raw.Type)
-	}
-
 	t.Label = raw.DisplayName
 	t.AntiAffinityPolicy = raw.AntiAffinityPolicy
 	t.AsnAllocationPolicy = raw.AsnAllocationPolicy
