@@ -109,9 +109,8 @@ func (t *Common) UnmarshalJSON(bytes []byte) error {
 		t.RackBased = new(design.TemplateRackBased)
 		return json.Unmarshal(bytes, t.RackBased)
 	case enum.TemplateTypeRailCollapsed.String():
-		return nil // todo remove and uncomment below when rail collapsed templates are fully implemented
-		// t.RailCollapsed = new(design.TemplateRailCollapsed)
-		// return json.Unmarshal(bytes, t.RailCollapsed)
+		t.RailCollapsed = new(design.TemplateRailCollapsed)
+		return json.Unmarshal(bytes, t.RailCollapsed)
 	}
 
 	return sdk.ErrAPIResponseInvalid(fmt.Sprintf("unhandled template type: %q", t.templateType))

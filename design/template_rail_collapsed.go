@@ -49,7 +49,7 @@ func (t TemplateRailCollapsed) ID() *string {
 // have an existing value, an error is returned. Presence of an existing value
 // is the only reason SetID will return an error. If the id attribute is known
 // to be empty, use MustSetID.
-func (t TemplateRailCollapsed) SetID(id string) error {
+func (t *TemplateRailCollapsed) SetID(id string) error {
 	if t.id != "" {
 		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", t.id))
 	}
@@ -59,7 +59,7 @@ func (t TemplateRailCollapsed) SetID(id string) error {
 }
 
 // MustSetID invokes SetID and panics if an error is returned.
-func (t TemplateRailCollapsed) MustSetID(id string) {
+func (t *TemplateRailCollapsed) MustSetID(id string) {
 	err := t.SetID(id)
 	if err != nil {
 		panic(err)

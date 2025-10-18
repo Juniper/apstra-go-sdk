@@ -145,7 +145,7 @@ func (c Client) GetTemplates2(ctx context.Context) ([]design.Template, error) {
 		case enum.TemplateTypeRackBased.String():
 			result = append(result, item.RackBased)
 		case enum.TemplateTypeRailCollapsed.String():
-			// result = append(result, item.RailCollapsed) // todo: restore this when rail collapsed templates are supported
+			result = append(result, item.RailCollapsed)
 		default:
 			var id string
 			if item.ID() != nil {
