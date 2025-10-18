@@ -10,6 +10,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -116,6 +117,9 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
 					ctx := testutils.ContextWithTestID(ctx, t)
+
+					require.NotEqual(t, tCase.create, zero.Of(tCase.create)) // make sure we didn't use a bogus map key
+					require.NotEqual(t, tCase.update, zero.Of(tCase.update)) // make sure we didn't use a bogus map key
 
 					var id string
 					var err error

@@ -18,6 +18,7 @@ import (
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
@@ -772,6 +773,9 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
 					ctx := testutils.ContextWithTestID(ctx, t)
+
+					require.NotEqual(t, tCase.create, zero.Of(tCase.create)) // make sure we didn't use a bogus map key
+					require.NotEqual(t, tCase.update, zero.Of(tCase.update)) // make sure we didn't use a bogus map key
 
 					var id string
 					var err error
