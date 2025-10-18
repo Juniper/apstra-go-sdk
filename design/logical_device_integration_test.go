@@ -10,7 +10,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -18,6 +17,7 @@ import (
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/design"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
 )
 
