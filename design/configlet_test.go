@@ -16,6 +16,8 @@ import (
 )
 
 func TestConfiglet_ID(t *testing.T) {
+	t.Parallel()
+
 	var obj Configlet
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
@@ -63,6 +65,7 @@ func TestConfiglet_timestamps(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			t.Run("created_at", func(t *testing.T) {
 				t.Parallel()
 				createdAt := tCase.CreatedAt()
@@ -95,6 +98,7 @@ func TestConfiglet_UnmarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			var r Configlet
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)

@@ -17,6 +17,8 @@ import (
 )
 
 func TestTag_ID(t *testing.T) {
+	t.Parallel()
+
 	var obj Tag
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
@@ -54,6 +56,8 @@ func TestTag_ID(t *testing.T) {
 }
 
 func TestTag_replicate(t *testing.T) {
+	t.Parallel()
+
 	original := Tag{
 		Label:          testutils.RandString(6, "hex"),
 		Description:    testutils.RandString(6, "hex"),
@@ -85,6 +89,7 @@ func TestTag_timestamps(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			t.Run("created_at", func(t *testing.T) {
 				t.Parallel()
 				createdAt := tCase.CreatedAt()
@@ -117,6 +122,7 @@ func TestTag_MarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			r, err := json.Marshal(tCase.v)
 			require.NoError(t, err)
 
@@ -150,6 +156,7 @@ func TestTag_UnmarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			var r Tag
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)

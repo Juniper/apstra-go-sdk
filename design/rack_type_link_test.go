@@ -52,6 +52,7 @@ func TestRackTypeLink_MarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			r, err := json.Marshal(tCase.v)
 			require.NoError(t, err)
 

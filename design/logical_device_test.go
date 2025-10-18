@@ -18,6 +18,8 @@ import (
 )
 
 func TestLogicalDevice_ID(t *testing.T) {
+	t.Parallel()
+
 	var obj LogicalDevice
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
@@ -55,6 +57,8 @@ func TestLogicalDevice_ID(t *testing.T) {
 }
 
 func TestLogicalDevice_replicate(t *testing.T) {
+	t.Parallel()
+
 	original := LogicalDevice{
 		Label: testutils.RandString(6, "hex"),
 		Panels: []LogicalDevicePanel{
@@ -106,6 +110,7 @@ func TestLogicalDevice_timestamps(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			t.Run("created_at", func(t *testing.T) {
 				t.Parallel()
 				createdAt := tCase.CreatedAt()
@@ -179,6 +184,7 @@ func TestLogicalDevice_UnmarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			var r LogicalDevice
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)

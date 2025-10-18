@@ -19,6 +19,8 @@ import (
 )
 
 func TestRackType_ID(t *testing.T) {
+	t.Parallel()
+
 	var obj RackType
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
@@ -56,6 +58,8 @@ func TestRackType_ID(t *testing.T) {
 }
 
 func TestRackType_replicate(t *testing.T) {
+	t.Parallel()
+
 	original := RackType{
 		Label:                    testutils.RandString(6, "hex"),
 		Description:              testutils.RandString(6, "hex"),
@@ -117,6 +121,7 @@ func TestRackType_timestamps(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			t.Run("created_at", func(t *testing.T) {
 				t.Parallel()
 				createdAt := tCase.CreatedAt()
@@ -169,6 +174,7 @@ func TestRackType_MarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			r, err := json.Marshal(tCase.v)
 			require.NoError(t, err)
 
@@ -219,6 +225,7 @@ func TestRackType_UnmarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			var r RackType
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
