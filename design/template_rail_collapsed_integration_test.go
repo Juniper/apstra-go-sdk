@@ -8,6 +8,8 @@ package design_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -18,7 +20,6 @@ import (
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 var testTemplatesRailCollapsed = map[string]design.TemplateRailCollapsed{
