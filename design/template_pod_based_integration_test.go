@@ -8,6 +8,8 @@ package design_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
@@ -19,7 +21,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 var testTemplatesPodBased = map[string]design.TemplatePodBased{
