@@ -219,7 +219,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							},
 						},
 					},
-					ASNAllocationPolicy: &design.ASNAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
+					ASNAllocationPolicy: &design.ASNAllocationPolicy{SpineASNScheme: enum.ASNAllocationSchemeSingle},
 					DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 					Spine: design.Spine{
 						Count:                  4,
@@ -307,8 +307,8 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 												TargetSwitchLabel:  "leaf",
 												LinkPerSwitchCount: 2,
 												Speed:              "10G",
-												AttachmentType:     enum.LinkAttachmentType{Value: "singleAttached"},
-												LAGMode:            enum.LAGMode{Value: "lacp_active"},
+												AttachmentType:     enum.LinkAttachmentTypeSingle,
+												LAGMode:            enum.LAGModeActiveLACP,
 												Tags:               []design.Tag{},
 											},
 										},
@@ -362,7 +362,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							},
 						},
 					},
-					ASNAllocationPolicy: &design.ASNAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
+					ASNAllocationPolicy: &design.ASNAllocationPolicy{SpineASNScheme: enum.ASNAllocationSchemeSingle},
 					DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 					Spine: design.Spine{
 						Count:                  2,
@@ -435,8 +435,8 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 												TargetSwitchLabel:  "leaf",
 												LinkPerSwitchCount: 2,
 												Speed:              "10G",
-												AttachmentType:     enum.LinkAttachmentType{Value: "dualAttached"},
-												LAGMode:            enum.LAGMode{Value: "lacp_active"},
+												AttachmentType:     enum.LinkAttachmentTypeDual,
+												LAGMode:            enum.LAGModeActiveLACP,
 												Tags:               []design.Tag{},
 											},
 										},
@@ -490,7 +490,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							},
 						},
 					},
-					ASNAllocationPolicy: &design.ASNAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
+					ASNAllocationPolicy: &design.ASNAllocationPolicy{SpineASNScheme: enum.ASNAllocationSchemeSingle},
 					Capability:          (*enum.TemplateCapability)(nil),
 					DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 					Spine: design.Spine{
@@ -517,6 +517,225 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 			},
 		},
 	},
+	"L2_superspine_single_plane": {
+		Label: testutils.RandString(6, "hex"),
+		Superspine: design.Superspine{
+			PlaneCount:         1,
+			SuperspinePerPlane: 4,
+			LogicalDevice: design.LogicalDevice{
+				Label: "AOS-32x40-3",
+				Panels: []design.LogicalDevicePanel{
+					{
+						PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 16},
+						PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+						PortGroups: []design.LogicalDevicePanelPortGroup{
+							{Count: 32, Speed: "40G", Roles: design.LogicalDevicePortRoles{enum.PortRoleSuperspine, enum.PortRoleLeaf, enum.PortRoleGeneric, enum.PortRoleSpine}},
+						},
+					},
+				},
+			},
+			Tags: []design.Tag{},
+		},
+		Pods: []design.PodWithCount{
+			{
+				Count: 2,
+				Pod: design.TemplateRackBased{
+					Label: "L2 Pod",
+					Racks: []design.RackTypeWithCount{
+						{
+							Count: 1,
+							RackType: design.RackType{
+								Label:                    "L2 One Leaf",
+								FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
+								LeafSwitches: []design.LeafSwitch{
+									{
+										Label:             "leaf",
+										LinkPerSpineCount: pointer.To(1),
+										LinkPerSpineSpeed: pointer.To(speed.Speed("40G")),
+										LogicalDevice: design.LogicalDevice{
+											Label: "AOS-64x10+16x40-2",
+											Panels: []design.LogicalDevicePanel{
+												{
+													PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 32},
+													PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+													PortGroups: []design.LogicalDevicePanelPortGroup{
+														{Count: 64, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric, enum.PortRoleAccess}},
+													},
+												},
+												{
+													PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 8},
+													PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+													PortGroups: []design.LogicalDevicePanelPortGroup{
+														{Count: 16, Speed: "40G", Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric, enum.PortRolePeer, enum.PortRoleSpine}},
+													},
+												},
+											},
+										},
+										Tags: []design.Tag{},
+									},
+								},
+								GenericSystems: []design.GenericSystem{
+									{
+										ASNDomain: &enum.FeatureSwitchDisabled,
+										Count:     48,
+										Label:     "generic",
+										Links: []design.RackTypeLink{
+											{
+												Label:              "link",
+												TargetSwitchLabel:  "leaf",
+												LinkPerSwitchCount: 1,
+												Speed:              "10G",
+												AttachmentType:     enum.LinkAttachmentTypeSingle,
+												Tags:               []design.Tag{},
+											},
+										},
+										LogicalDevice: design.LogicalDevice{
+											Label: "AOS-1x10-1",
+											Panels: []design.LogicalDevicePanel{
+												{
+													PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
+													PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+													PortGroups: []design.LogicalDevicePanelPortGroup{
+														{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleAccess}},
+													},
+												},
+											},
+										},
+										Loopback:        &enum.FeatureSwitchDisabled,
+										ManagementLevel: enum.SystemManagementLevelUnmanaged,
+										Tags:            []design.Tag{},
+									},
+								},
+							},
+						},
+						{
+							Count: 1, RackType: design.RackType{
+							Label:                    "L2 Mlag Leaf",
+							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
+							LeafSwitches: []design.LeafSwitch{
+								{
+									Label:             "leaf",
+									LinkPerSpineCount: pointer.To(1),
+									LinkPerSpineSpeed: pointer.To(speed.Speed("40G")),
+									LogicalDevice: design.LogicalDevice{
+										Label: "AOS-64x10+16x40-2",
+										Panels: []design.LogicalDevicePanel{
+											{
+												PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 32},
+												PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+												PortGroups: []design.LogicalDevicePanelPortGroup{
+													{Count: 64, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric, enum.PortRoleAccess}},
+												},
+											},
+											{
+												PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 8},
+												PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+												PortGroups: []design.LogicalDevicePanelPortGroup{
+													{Count: 16, Speed: "40G", Roles: design.LogicalDevicePortRoles{enum.PortRoleGeneric, enum.PortRolePeer, enum.PortRoleSpine}},
+												},
+											},
+										},
+									},
+									RedundancyProtocol: enum.LeafRedundancyProtocolMLAG,
+									Tags:               []design.Tag{},
+									MLAGInfo: &design.RackTypeLeafSwitchMLAGInfo{
+										LeafLeafLinkCount: 4,
+										LeafLeafLinkSpeed: "40G",
+										MLAGVLAN:          2999,
+									},
+								},
+							},
+							GenericSystems: []design.GenericSystem{
+								{
+									ASNDomain: &enum.FeatureSwitchDisabled,
+									Count:     24,
+									Label:     "generic(1)",
+									Links: []design.RackTypeLink{
+										{
+											Label:              "link",
+											TargetSwitchLabel:  "leaf",
+											LinkPerSwitchCount: 1,
+											Speed:              "10G",
+											AttachmentType:     enum.LinkAttachmentTypeSingle,
+											SwitchPeer:         enum.LinkSwitchPeerFirst,
+											Tags:               []design.Tag{},
+										},
+									},
+									LogicalDevice: design.LogicalDevice{
+										Label: "AOS-1x10-1",
+										Panels: []design.LogicalDevicePanel{
+											{
+												PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
+												PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+												PortGroups: []design.LogicalDevicePanelPortGroup{
+													{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleAccess}},
+												},
+											},
+										},
+									},
+									Loopback:        &enum.FeatureSwitchDisabled,
+									ManagementLevel: enum.SystemManagementLevelUnmanaged,
+									Tags:            []design.Tag{},
+								},
+								{
+									ASNDomain: &enum.FeatureSwitchDisabled,
+									Count:     24,
+									Label:     "generic(2)",
+									Links: []design.RackTypeLink{
+										{
+											Label:              "link",
+											TargetSwitchLabel:  "leaf",
+											LinkPerSwitchCount: 1,
+											Speed:              "10G",
+											AttachmentType:     enum.LinkAttachmentTypeSingle,
+											SwitchPeer:         enum.LinkSwitchPeerSecond,
+											Tags:               []design.Tag{}}},
+									LogicalDevice: design.LogicalDevice{
+										Label: "AOS-1x10-1",
+										Panels: []design.LogicalDevicePanel{
+											{
+												PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 1, ColumnCount: 1},
+												PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+												PortGroups: []design.LogicalDevicePanelPortGroup{
+													{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleAccess}},
+												},
+											},
+										},
+									},
+									Loopback:        &enum.FeatureSwitchDisabled,
+									ManagementLevel: enum.SystemManagementLevelUnmanaged,
+									Tags:            []design.Tag{},
+								},
+							},
+						},
+						},
+					},
+					ASNAllocationPolicy: &design.ASNAllocationPolicy{
+						SpineASNScheme: enum.ASNAllocationSchemeSingle,
+					},
+					DHCPServiceIntent: policy.DHCPServiceIntent{Active: true},
+					Spine: design.Spine{
+						Count:                  4,
+						LinkPerSuperspineCount: 1,
+						LinkPerSuperspineSpeed: "40G",
+						LogicalDevice: design.LogicalDevice{
+							Label: "AOS-32x40-3",
+							Panels: []design.LogicalDevicePanel{
+								{
+									PanelLayout:  design.LogicalDevicePanelLayout{RowCount: 2, ColumnCount: 16},
+									PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
+									PortGroups: []design.LogicalDevicePanelPortGroup{
+										{Count: 32, Speed: "40G", Roles: design.LogicalDevicePortRoles{enum.PortRoleSuperspine, enum.PortRoleLeaf, enum.PortRoleGeneric, enum.PortRoleSpine}},
+									},
+								},
+							},
+						},
+						Tags: []design.Tag{}},
+					VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolNone},
+				},
+			},
+		},
+	},
 }
 
 func TestTemplatePodBased_CRUD(t *testing.T) {
@@ -532,6 +751,14 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 		"L2_superspine_multi_plane_to_L2_superspine_single_plane_with_acs": {
 			create: testTemplatesPodBased["L2_superspine_multi_plane"],
 			update: testTemplatesPodBased["L2_superspine_single_plane_with_acs"],
+		},
+		"L2_superspine_single_plane_with_acs_to_L2_superspine_single_plane": {
+			create: testTemplatesPodBased["L2_superspine_single_plane_with_acs"],
+			update: testTemplatesPodBased["L2_superspine_single_plane"],
+		},
+		"L2_superspine_single_plane_to_L2_superspine_multi_plane": {
+			create: testTemplatesPodBased["L2_superspine_single_plane"],
+			update: testTemplatesPodBased["L2_superspine_multi_plane"],
 		},
 	}
 

@@ -23,11 +23,11 @@ var (
 	AntiAffinityModeStrict   = AntiAffinityMode{Value: "enabled_strict"}
 )
 
-type AsnAllocationScheme oenum.Member[string]
+type ASNAllocationScheme oenum.Member[string]
 
 var (
-	AsnAllocationSchemeDistinct = AsnAllocationScheme{Value: "distinct"}
-	AsnAllocationSchemeSingle   = AsnAllocationScheme{Value: "single"}
+	ASNAllocationSchemeDistinct = ASNAllocationScheme{Value: "distinct"}
+	ASNAllocationSchemeSingle   = ASNAllocationScheme{Value: "single"}
 )
 
 type DeployMode oenum.Member[string]

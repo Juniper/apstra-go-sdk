@@ -13,6 +13,37 @@ import (
 )
 
 var (
+	_ enum             = (*ASNAllocationScheme)(nil)
+	_ json.Marshaler   = (*ASNAllocationScheme)(nil)
+	_ json.Unmarshaler = (*ASNAllocationScheme)(nil)
+)
+
+func (o ASNAllocationScheme) String() string {
+	return o.Value
+}
+
+func (o *ASNAllocationScheme) FromString(s string) error {
+	if ASNAllocationSchemes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o ASNAllocationScheme) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *ASNAllocationScheme) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*AntiAffinityMode)(nil)
 	_ json.Marshaler   = (*AntiAffinityMode)(nil)
 	_ json.Unmarshaler = (*AntiAffinityMode)(nil)
@@ -66,37 +97,6 @@ func (o ApiFeature) MarshalJSON() ([]byte, error) {
 }
 
 func (o *ApiFeature) UnmarshalJSON(bytes []byte) error {
-	var s string
-	err := json.Unmarshal(bytes, &s)
-	if err != nil {
-		return err
-	}
-	return o.FromString(s)
-}
-
-var (
-	_ enum             = (*AsnAllocationScheme)(nil)
-	_ json.Marshaler   = (*AsnAllocationScheme)(nil)
-	_ json.Unmarshaler = (*AsnAllocationScheme)(nil)
-)
-
-func (o AsnAllocationScheme) String() string {
-	return o.Value
-}
-
-func (o *AsnAllocationScheme) FromString(s string) error {
-	if AsnAllocationSchemes.Parse(s) == nil {
-		return newEnumParseError(o, s)
-	}
-	o.Value = s
-	return nil
-}
-
-func (o AsnAllocationScheme) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.String())
-}
-
-func (o *AsnAllocationScheme) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -1656,6 +1656,12 @@ func (o *VnType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_                    enum = new(ASNAllocationScheme)
+	ASNAllocationSchemes      = oenum.New(
+		ASNAllocationSchemeDistinct,
+		ASNAllocationSchemeSingle,
+	)
+
 	_                 enum = new(AntiAffinityMode)
 	AntiAffinityModes      = oenum.New(
 		AntiAffinityModeDisabled,
@@ -1671,12 +1677,6 @@ var (
 		ApiFeatureFreeform,
 		ApiFeatureFullAccess,
 		ApiFeatureTaskApi,
-	)
-
-	_                    enum = new(AsnAllocationScheme)
-	AsnAllocationSchemes      = oenum.New(
-		AsnAllocationSchemeDistinct,
-		AsnAllocationSchemeSingle,
 	)
 
 	_                 enum = new(ConfigletSection)

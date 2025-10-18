@@ -11,7 +11,7 @@ import (
 )
 
 type ASNAllocationPolicy struct {
-	SpineAsnScheme enum.AsnAllocationScheme `json:"spine_asn_scheme"`
+	SpineASNScheme enum.ASNAllocationScheme `json:"spine_asn_scheme"`
 }
 
 type RackTypeWithCount struct {
