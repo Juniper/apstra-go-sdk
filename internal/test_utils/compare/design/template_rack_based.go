@@ -27,7 +27,7 @@ func TemplateRackBased(t testing.TB, req, resp design.TemplateRackBased, msg ...
 		require.NotNil(t, req.AntiAffinityPolicy)
 		comparepolicy.AntiAffinity(t, *req.AntiAffinityPolicy, *resp.AntiAffinityPolicy, msg...)
 	}
-	require.Equal(t, req.AsnAllocationPolicy, resp.AsnAllocationPolicy, msg)
+	require.Equal(t, req.ASNAllocationPolicy, resp.ASNAllocationPolicy, msg)
 	require.Equal(t, req.Capability, resp.Capability, msg)
 	comparepolicy.DHCPServiceIntent(t, req.DHCPServiceIntent, resp.DHCPServiceIntent, msg...)
 	Spine(t, req.Spine, resp.Spine, msg...)

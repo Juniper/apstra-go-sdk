@@ -68,8 +68,8 @@ func (t *TemplatePodBased) MustSetID(id string) {
 
 func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
 	type rawRackBasedTemplateCount struct {
-		Count               int    `json:"count"`
-		RackBasedTemplateId string `json:"rack_based_template_id"`
+		Count int    `json:"count"`
+		ID    string `json:"rack_based_template_id"`
 	}
 
 	raw := struct {
@@ -109,7 +109,7 @@ func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
 		pod.skipTypeDuringMarshalJSON = true // don't marshal the nested template's type
 
 		// add an entry to raw.RackTypeCounts without regard to twins
-		raw.RackBasedTemplateCounts = append(raw.RackBasedTemplateCounts, rawRackBasedTemplateCount{Count: podWithCount.Count, RackBasedTemplateId: pod.id})
+		raw.RackBasedTemplateCounts = append(raw.RackBasedTemplateCounts, rawRackBasedTemplateCount{Count: podWithCount.Count, ID: pod.id})
 
 		// add an entry to raw.RackTypes only if it's not a twin
 		if _, ok := podIDs[pod.id]; !ok {
@@ -118,35 +118,13 @@ func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	//// used to keep track of pod type quantity by ID in case we have identical racks
-	//podIDToCount := make(map[string]int, len(t.Pods))
-	//
-	//// initialize raw.RackBasedTemplateCounts so we can append to it without shuffling memory around
-	//raw.RackBasedTemplateCounts = make([]rawRackBasedTemplateCount, 0, len(t.Pods))
-	//
-	//// loop over pods, calculate a fresh ID, count the type of each
-	//for _, pod := range t.Pods {
-	//	rackBasedTemplate := pod.Pod.Replicate() // fresh copy without metadata
-	//	rackBasedTemplate.mustSetHashID(hash)    // assign the ID
-	//	if _, ok := podIDToCount[rackBasedTemplate.id]; !ok {
-	//		raw.RackBasedTemplates = append(raw.RackBasedTemplates, rackBasedTemplate) // previously unseen pod type - append it to the slice
-	//	}
-	//	podIDToCount[rackBasedTemplate.id] += pod.Count // adjust the quantity for this pod type
-	//}
-	//
-	//// prepare raw.RackTypeCounts from rackTypeIDToCount
-	//raw.RackBasedTemplateCounts = make([]rawRackBasedTemplateCount, 0, len(podIDToCount))
-	//for id, count := range podIDToCount {
-	//	raw.RackBasedTemplateCounts = append(raw.RackBasedTemplateCounts, rawRackBasedTemplateCount{RackBasedTemplateId: id, Count: count})
-	//}
-
 	return json.Marshal(&raw)
 }
 
 func (t *TemplatePodBased) UnmarshalJSON(bytes []byte) error {
 	type rawRackBasedTemplateCount struct {
-		Count               int    `json:"count"`
-		RackBasedTemplateId string `json:"rack_based_template_id"`
+		Count int    `json:"count"`
+		ID    string `json:"rack_based_template_id"`
 	}
 
 	var raw struct {
@@ -169,24 +147,23 @@ func (t *TemplatePodBased) UnmarshalJSON(bytes []byte) error {
 	t.Label = raw.DisplayName
 	t.AntiAffinityPolicy = raw.AntiAffinityPolicy
 	t.Superspine = raw.Superspine
+	t.Pods = make([]PodWithCount, 0, len(raw.RackBasedTemplateCounts))
 	t.id = raw.ID
 	t.createdAt = raw.CreatedAt
 	t.lastModifiedAt = raw.LastModifiedAt
 
-	idToPodType := make(map[string]TemplateRackBased, len(raw.RackBasedTemplates))
-	for _, podType := range raw.RackBasedTemplates {
-		idToPodType[podType.id] = podType
+	idToCount := make(map[string]int, len(raw.RackBasedTemplateCounts))
+	for _, v := range raw.RackBasedTemplateCounts {
+		idToCount[v.ID] = v.Count
 	}
 
-	t.Pods = make([]PodWithCount, len(raw.RackBasedTemplates))
-	for i, rackBasedTemplateCount := range raw.RackBasedTemplateCounts {
-		if rackBasedTemplate, ok := idToPodType[rackBasedTemplateCount.RackBasedTemplateId]; ok {
-			t.Pods[i] = PodWithCount{Pod: rackBasedTemplate, Count: rackBasedTemplateCount.Count}
-			continue
+	for _, v := range raw.RackBasedTemplates {
+		count, ok := idToCount[v.id]
+		if !ok {
+			return sdk.ErrAPIResponseInvalid(fmt.Sprintf("pod id %q has no associated count", v.id))
 		}
 
-		// we should not get here
-		return sdk.ErrAPIResponseInvalid(fmt.Sprintf("payload specifies %d instances of pod type %q which does not exist", rackBasedTemplateCount.Count, rackBasedTemplateCount.RackBasedTemplateId))
+		t.Pods = append(t.Pods, PodWithCount{Count: count, Pod: v})
 	}
 
 	return nil

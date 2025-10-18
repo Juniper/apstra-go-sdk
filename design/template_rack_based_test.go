@@ -18,6 +18,8 @@ import (
 )
 
 func TestTemplateRackBased_ID(t *testing.T) {
+	t.Parallel()
+
 	var obj TemplateRackBased
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
@@ -55,6 +57,8 @@ func TestTemplateRackBased_ID(t *testing.T) {
 }
 
 func TestTemplateRackBased_Replicate(t *testing.T) {
+	t.Parallel()
+
 	original := templateRackBasedL2VirtualEVPN
 
 	replicant := original.Replicate()
@@ -103,6 +107,7 @@ func TestTemplateRackBased_timestamps(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			t.Run("created_at", func(t *testing.T) {
 				t.Parallel()
 				createdAt := tCase.CreatedAt()
@@ -168,6 +173,7 @@ func TestTemplateRackBased_UnmarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			var r TemplateRackBased
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
@@ -177,6 +183,8 @@ func TestTemplateRackBased_UnmarshalJSON(t *testing.T) {
 }
 
 func TestTemplateRackBased_TemplateType(t *testing.T) {
+	t.Parallel()
+
 	r := TemplateRackBased{}.TemplateType()
 	require.Equal(t, enum.TemplateTypeRackBased, r)
 }

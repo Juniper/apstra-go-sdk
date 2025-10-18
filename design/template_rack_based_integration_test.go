@@ -108,7 +108,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 				},
 			},
 		},
-		AsnAllocationPolicy: &design.AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeDistinct},
+		ASNAllocationPolicy: &design.ASNAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeDistinct},
 		Capability:          &enum.TemplateCapabilityBlueprint,
 		DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 		Spine: design.Spine{
@@ -235,7 +235,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 				},
 			},
 		},
-		AsnAllocationPolicy: &design.AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
+		ASNAllocationPolicy: &design.ASNAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 		Capability:          &enum.TemplateCapabilityPod,
 		DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 		Spine: design.Spine{

@@ -17,6 +17,8 @@ import (
 )
 
 func TestTemplateL3Collapsed_ID(t *testing.T) {
+	t.Parallel()
+
 	var obj TemplateL3Collapsed
 	var id *string
 	desiredId := testutils.RandString(6, "hex")
@@ -64,6 +66,7 @@ func TestTemplateL3Collapsed_timestamps(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			t.Run("created_at", func(t *testing.T) {
 				t.Parallel()
 				createdAt := tCase.CreatedAt()
@@ -138,6 +141,7 @@ func TestTemplateL3Collapsed_UnmarshalJSON(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
+
 			var r TemplateL3Collapsed
 			err := json.Unmarshal([]byte(tCase.v), &r)
 			require.NoError(t, err)
@@ -147,6 +151,8 @@ func TestTemplateL3Collapsed_UnmarshalJSON(t *testing.T) {
 }
 
 func TestTemplateL3Collapsed_TemplateType(t *testing.T) {
+	t.Parallel()
+
 	r := TemplateL3Collapsed{}.TemplateType()
 	require.Equal(t, enum.TemplateTypeL3Collapsed, r)
 }

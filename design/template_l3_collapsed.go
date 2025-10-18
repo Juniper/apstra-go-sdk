@@ -72,8 +72,8 @@ func (t *TemplateL3Collapsed) MustSetID(id string) {
 
 func (t TemplateL3Collapsed) MarshalJSON() ([]byte, error) {
 	type rawRackTypeCount struct {
-		RackTypeId string `json:"rack_type_id"`
-		Count      int    `json:"count"`
+		Count int    `json:"count"`
+		ID    string `json:"rack_type_id"`
 	}
 
 	raw := struct {
@@ -119,7 +119,7 @@ func (t TemplateL3Collapsed) MarshalJSON() ([]byte, error) {
 		rackType.mustSetHashID(hasher)                     // assign the ID
 
 		// add an entry to raw.RackTypeCounts without regard to twins
-		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{Count: rackTypeWithCount.Count, RackTypeId: rackType.id})
+		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{Count: rackTypeWithCount.Count, ID: rackType.id})
 
 		// add an entry to raw.RackTypes only if it's not a twin
 		if _, ok := rackTypeIDs[rackType.id]; !ok {
@@ -133,8 +133,8 @@ func (t TemplateL3Collapsed) MarshalJSON() ([]byte, error) {
 
 func (t *TemplateL3Collapsed) UnmarshalJSON(bytes []byte) error {
 	type rawRackTypeCount struct {
-		RackTypeId string `json:"rack_type_id"`
-		Count      int    `json:"count"`
+		Count int    `json:"count"`
+		ID    string `json:"rack_type_id"`
 	}
 
 	var raw struct {
@@ -158,6 +158,7 @@ func (t *TemplateL3Collapsed) UnmarshalJSON(bytes []byte) error {
 	}
 
 	t.Label = raw.DisplayName
+	t.Racks = make([]RackTypeWithCount, 0, len(raw.RackTypes))
 	t.MeshLinkCount = raw.MeshLinkCount
 	t.MeshLinkSpeed = raw.MeshLinkSpeed
 	t.AntiAffinityPolicy = raw.AntiAffinityPolicy
@@ -167,20 +168,18 @@ func (t *TemplateL3Collapsed) UnmarshalJSON(bytes []byte) error {
 	t.createdAt = raw.CreatedAt
 	t.lastModifiedAt = raw.LastModifiedAt
 
-	idToRackType := make(map[string]RackType, len(raw.RackTypes))
-	for _, rackType := range raw.RackTypes {
-		idToRackType[rackType.id] = rackType
+	idToCount := make(map[string]int, len(raw.RackTypeCounts))
+	for _, v := range raw.RackTypeCounts {
+		idToCount[v.ID] = v.Count
 	}
 
-	t.Racks = make([]RackTypeWithCount, len(raw.RackTypeCounts))
-	for i, rackTypeCount := range raw.RackTypeCounts {
-		if rackType, ok := idToRackType[rackTypeCount.RackTypeId]; ok {
-			t.Racks[i] = RackTypeWithCount{RackType: rackType, Count: rackTypeCount.Count}
-			continue
+	for _, v := range raw.RackTypes {
+		count, ok := idToCount[v.id]
+		if !ok {
+			return sdk.ErrAPIResponseInvalid(fmt.Sprintf("rack type id %q has no associated count", v.id))
 		}
 
-		// we should not get here
-		return sdk.ErrAPIResponseInvalid(fmt.Sprintf("payload specifies %d instances of rack type %q which does not exist", rackTypeCount.Count, rackTypeCount.RackTypeId))
+		t.Racks = append(t.Racks, RackTypeWithCount{Count: count, RackType: v})
 	}
 
 	return nil

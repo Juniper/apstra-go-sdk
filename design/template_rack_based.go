@@ -30,7 +30,7 @@ type TemplateRackBased struct {
 	Label                string
 	Racks                []RackTypeWithCount
 	AntiAffinityPolicy   *policy.AntiAffinity // required for 4.2.0 only
-	AsnAllocationPolicy  *AsnAllocationPolicy
+	ASNAllocationPolicy  *ASNAllocationPolicy
 	Capability           *enum.TemplateCapability
 	DHCPServiceIntent    policy.DHCPServiceIntent
 	Spine                Spine
@@ -81,7 +81,7 @@ func (t TemplateRackBased) Replicate() TemplateRackBased {
 		Label:                t.Label,
 		Racks:                make([]RackTypeWithCount, len(t.Racks)),
 		AntiAffinityPolicy:   t.AntiAffinityPolicy,
-		AsnAllocationPolicy:  t.AsnAllocationPolicy,
+		ASNAllocationPolicy:  t.ASNAllocationPolicy,
 		Capability:           t.Capability,
 		DHCPServiceIntent:    t.DHCPServiceIntent,
 		Spine:                t.Spine.Replicate(),
@@ -100,8 +100,8 @@ func (t TemplateRackBased) Replicate() TemplateRackBased {
 
 func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 	type rawRackTypeCount struct {
-		Count      int    `json:"count"`
-		RackTypeId string `json:"rack_type_id"`
+		ID    string `json:"rack_type_id"`
+		Count int    `json:"count"`
 	}
 
 	raw := struct {
@@ -111,7 +111,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 		RackTypes            []RackType               `json:"rack_types"`
 		RackTypeCounts       []rawRackTypeCount       `json:"rack_type_counts"`
 		AntiAffinityPolicy   *policy.AntiAffinity     `json:"anti_affinity_policy,omitempty"`
-		AsnAllocationPolicy  *AsnAllocationPolicy     `json:"asn_allocation_policy,omitempty"`
+		AsnAllocationPolicy  *ASNAllocationPolicy     `json:"asn_allocation_policy,omitempty"`
 		Capability           *enum.TemplateCapability `json:"capability,omitempty"`
 		DHCPServiceIntent    policy.DHCPServiceIntent `json:"dhcp_service_intent"`
 		Spine                Spine                    `json:"spine"`
@@ -122,7 +122,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 		RackTypes:            make([]RackType, 0, len(t.Racks)),
 		RackTypeCounts:       make([]rawRackTypeCount, 0, len(t.Racks)),
 		AntiAffinityPolicy:   t.AntiAffinityPolicy,
-		AsnAllocationPolicy:  t.AsnAllocationPolicy,
+		AsnAllocationPolicy:  t.ASNAllocationPolicy,
 		Capability:           t.Capability,
 		DHCPServiceIntent:    t.DHCPServiceIntent,
 		Spine:                t.Spine,
@@ -153,7 +153,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 		rackType.mustSetHashID(hasher)                     // assign the ID
 
 		// add an entry to raw.RackTypeCounts without regard to twins
-		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{Count: rackTypeWithCount.Count, RackTypeId: rackType.id})
+		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{Count: rackTypeWithCount.Count, ID: rackType.id})
 
 		// add an entry to raw.RackTypes only if it's not a twin
 		if _, ok := rackTypeIDs[rackType.id]; !ok {
@@ -167,8 +167,8 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 
 func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 	type rawRackTypeCount struct {
-		Count      int    `json:"count"`
-		RackTypeId string `json:"rack_type_id"`
+		Count int    `json:"count"`
+		ID    string `json:"rack_type_id"`
 	}
 
 	var raw struct {
@@ -177,7 +177,7 @@ func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 		RackTypes            []RackType               `json:"rack_types"`
 		RackTypeCounts       []rawRackTypeCount       `json:"rack_type_counts"`
 		AntiAffinityPolicy   *policy.AntiAffinity     `json:"anti_affinity_policy"`
-		AsnAllocationPolicy  *AsnAllocationPolicy     `json:"asn_allocation_policy"`
+		AsnAllocationPolicy  *ASNAllocationPolicy     `json:"asn_allocation_policy"`
 		Capability           *enum.TemplateCapability `json:"capability"`
 		DHCPServiceIntent    policy.DHCPServiceIntent `json:"dhcp_service_intent"`
 		Spine                Spine                    `json:"spine"`
@@ -193,8 +193,9 @@ func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 	}
 
 	t.Label = raw.DisplayName
+	t.Racks = make([]RackTypeWithCount, 0, len(raw.RackTypes))
 	t.AntiAffinityPolicy = raw.AntiAffinityPolicy
-	t.AsnAllocationPolicy = raw.AsnAllocationPolicy
+	t.ASNAllocationPolicy = raw.AsnAllocationPolicy
 	t.Capability = raw.Capability
 	t.DHCPServiceIntent = raw.DHCPServiceIntent
 	t.Spine = raw.Spine
@@ -203,21 +204,18 @@ func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 	t.createdAt = raw.CreatedAt
 	t.lastModifiedAt = raw.LastModifiedAt
 
-	idToRackType := make(map[string]RackType, len(raw.RackTypes))
-	for _, rackType := range raw.RackTypes {
-		idToRackType[rackType.id] = rackType
+	idToCount := make(map[string]int, len(raw.RackTypeCounts))
+	for _, v := range raw.RackTypeCounts {
+		idToCount[v.ID] = v.Count
 	}
 
-	t.Racks = make([]RackTypeWithCount, len(raw.RackTypeCounts))
-	for i, rackTypeCount := range raw.RackTypeCounts {
-		if rackType, ok := idToRackType[rackTypeCount.RackTypeId]; ok {
-			rackType.id = "" // we don't want the ID of the embedded rack type
-			t.Racks[i] = RackTypeWithCount{RackType: rackType, Count: rackTypeCount.Count}
-			continue
+	for _, v := range raw.RackTypes {
+		count, ok := idToCount[v.id]
+		if !ok {
+			return sdk.ErrAPIResponseInvalid(fmt.Sprintf("rack type id %q has no associated count", v.id))
 		}
 
-		// we should not get here
-		return sdk.ErrAPIResponseInvalid(fmt.Sprintf("payload specifies %d instances of rack type %q which does not exist", rackTypeCount.Count, rackTypeCount.RackTypeId))
+		t.Racks = append(t.Racks, RackTypeWithCount{Count: count, RackType: v})
 	}
 
 	return nil

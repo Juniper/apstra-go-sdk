@@ -10,7 +10,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
-type AsnAllocationPolicy struct {
+type ASNAllocationPolicy struct {
 	SpineAsnScheme enum.AsnAllocationScheme `json:"spine_asn_scheme"`
 }
 
