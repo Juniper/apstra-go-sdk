@@ -41,12 +41,13 @@ var l2SuperspineMultiPlane = TemplatePodBased{
 		{
 			Count: 2,
 			Pod: TemplateRackBased{
-				id:    "6728b6cd95d37e89807cd18988f3c3e7",
+				id:    "2e7fb9832060ef65f857fd13c36b52ea",
 				Label: "L2 Pod",
 				Racks: []RackTypeWithCount{
 					{
 						Count: 1,
 						RackType: RackType{
+							id:                       "8b4d80a049caf462d174640282014198",
 							Label:                    "L2 One Leaf",
 							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 							LeafSwitches: []LeafSwitch{
@@ -113,6 +114,7 @@ var l2SuperspineMultiPlane = TemplatePodBased{
 					{
 						Count: 1,
 						RackType: RackType{
+							id:                       "80677cb9f0d4c35bf036a0701f8f5111",
 							Label:                    "L2 Mlag Leaf",
 							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 							LeafSwitches: []LeafSwitch{
@@ -214,7 +216,7 @@ var l2SuperspineMultiPlane = TemplatePodBased{
 						},
 					},
 				},
-				AsnAllocationPolicy: &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
+				ASNAllocationPolicy: &ASNAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 				DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 				Spine: Spine{
 					Count:                  4,
@@ -287,7 +289,7 @@ const l2SuperspineMultiPlaneJSON = `{
   "capability": "blueprint",
   "rack_based_templates": [
     {
-      "id": "6728b6cd95d37e89807cd18988f3c3e7",
+      "id": "2e7fb9832060ef65f857fd13c36b52ea",
       "display_name": "L2 Pod",
       "rack_type_counts": [
         {
@@ -652,7 +654,7 @@ const l2SuperspineMultiPlaneJSON = `{
   ],
   "rack_based_template_counts": [
     {
-      "rack_based_template_id": "6728b6cd95d37e89807cd18988f3c3e7",
+      "rack_based_template_id": "2e7fb9832060ef65f857fd13c36b52ea",
       "count": 2
     }
   ]
@@ -685,12 +687,13 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 		{
 			Count: 1,
 			Pod: TemplateRackBased{
-				id:    "88759cd0fd478a78c903107890b7f98c",
+				id:    "c6d845c054c3ebf20bdf08833d562d89",
 				Label: "L2 Pod Single",
 				Racks: []RackTypeWithCount{
 					{
 						Count: 1,
 						RackType: RackType{
+							id:                       "45daacee3a955679a56ec980d252ab9b",
 							Label:                    "L2 One Access",
 							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 							LeafSwitches: []LeafSwitch{
@@ -781,7 +784,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 						},
 					},
 				},
-				AsnAllocationPolicy: &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
+				ASNAllocationPolicy: &ASNAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 				DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 				Spine: Spine{
 					Count:                  2,
@@ -809,12 +812,13 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 		{
 			Count: 1,
 			Pod: TemplateRackBased{
-				id:    "6cb8addb2150b5fd5c2bb4ee702c9ab7",
+				id:    "6a642cd429ccbdb8b2f60a857bf5b1ea",
 				Label: "L2 Pod Mlag",
 				Racks: []RackTypeWithCount{
 					{
 						Count: 1,
 						RackType: RackType{
+							id:                       "78c8bbcac95d38bc83d09d3050ff197b",
 							Label:                    "L2 MLAG 1x access",
 							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
 							LeafSwitches: []LeafSwitch{
@@ -912,7 +916,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 						},
 					},
 				},
-				AsnAllocationPolicy: &AsnAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
+				ASNAllocationPolicy: &ASNAllocationPolicy{SpineAsnScheme: enum.AsnAllocationSchemeSingle},
 				Capability:          (*enum.TemplateCapability)(nil),
 				DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 				Spine: Spine{
@@ -987,7 +991,7 @@ const L2SuperspineSinglePlaneWithAccessJSON = `{
   "capability": "blueprint",
   "rack_based_templates": [
     {
-      "id": "88759cd0fd478a78c903107890b7f98c",
+      "id": "c6d845c054c3ebf20bdf08833d562d89",
       "display_name": "L2 Pod Single",
       "rack_type_counts": [
         {
@@ -1253,7 +1257,7 @@ const L2SuperspineSinglePlaneWithAccessJSON = `{
       }
     },
     {
-      "id": "6cb8addb2150b5fd5c2bb4ee702c9ab7",
+      "id": "6a642cd429ccbdb8b2f60a857bf5b1ea",
       "display_name": "L2 Pod Mlag",
       "rack_type_counts": [
         {
@@ -1528,11 +1532,11 @@ const L2SuperspineSinglePlaneWithAccessJSON = `{
   ],
   "rack_based_template_counts": [
     {
-      "rack_based_template_id": "88759cd0fd478a78c903107890b7f98c",
+      "rack_based_template_id": "c6d845c054c3ebf20bdf08833d562d89",
       "count": 1
     },
     {
-      "rack_based_template_id": "6cb8addb2150b5fd5c2bb4ee702c9ab7",
+      "rack_based_template_id": "6a642cd429ccbdb8b2f60a857bf5b1ea",
       "count": 1
     }
   ]
