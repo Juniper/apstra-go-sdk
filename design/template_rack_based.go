@@ -30,7 +30,7 @@ type TemplateRackBased struct {
 	Label                string
 	Racks                []RackTypeWithCount
 	AntiAffinityPolicy   *policy.AntiAffinity // required for 4.2.0 only
-	ASNAllocationPolicy  *ASNAllocationPolicy
+	ASNAllocationPolicy  *policy.ASNAllocation
 	Capability           *enum.TemplateCapability
 	DHCPServiceIntent    policy.DHCPServiceIntent
 	Spine                Spine
@@ -111,7 +111,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 		RackTypes            []RackType               `json:"rack_types"`
 		RackTypeCounts       []rawRackTypeCount       `json:"rack_type_counts"`
 		AntiAffinityPolicy   *policy.AntiAffinity     `json:"anti_affinity_policy,omitempty"`
-		AsnAllocationPolicy  *ASNAllocationPolicy     `json:"asn_allocation_policy,omitempty"`
+		AsnAllocationPolicy  *policy.ASNAllocation    `json:"asn_allocation_policy,omitempty"`
 		Capability           *enum.TemplateCapability `json:"capability,omitempty"`
 		DHCPServiceIntent    policy.DHCPServiceIntent `json:"dhcp_service_intent"`
 		Spine                Spine                    `json:"spine"`
@@ -177,7 +177,7 @@ func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 		RackTypes            []RackType               `json:"rack_types"`
 		RackTypeCounts       []rawRackTypeCount       `json:"rack_type_counts"`
 		AntiAffinityPolicy   *policy.AntiAffinity     `json:"anti_affinity_policy"`
-		AsnAllocationPolicy  *ASNAllocationPolicy     `json:"asn_allocation_policy"`
+		AsnAllocationPolicy  *policy.ASNAllocation    `json:"asn_allocation_policy"`
 		Capability           *enum.TemplateCapability `json:"capability"`
 		DHCPServiceIntent    policy.DHCPServiceIntent `json:"dhcp_service_intent"`
 		Spine                Spine                    `json:"spine"`

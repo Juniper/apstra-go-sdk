@@ -101,7 +101,7 @@ var templateRackBasedL2VirtualEVPN = TemplateRackBased{
 			},
 		},
 	},
-	ASNAllocationPolicy: &ASNAllocationPolicy{SpineASNScheme: enum.ASNAllocationSchemeDistinct},
+	ASNAllocationPolicy: &policy.ASNAllocation{SpineASNScheme: enum.ASNAllocationSchemeDistinct},
 	Capability:          &enum.TemplateCapabilityBlueprint,
 	DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 	Spine: Spine{

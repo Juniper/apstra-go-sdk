@@ -216,7 +216,7 @@ var l2SuperspineMultiPlane = TemplatePodBased{
 						},
 					},
 				},
-				ASNAllocationPolicy: &ASNAllocationPolicy{SpineASNScheme: enum.ASNAllocationSchemeSingle},
+				ASNAllocationPolicy: &policy.ASNAllocation{SpineASNScheme: enum.ASNAllocationSchemeSingle},
 				DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 				Spine: Spine{
 					Count:                  4,
@@ -784,7 +784,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 						},
 					},
 				},
-				ASNAllocationPolicy: &ASNAllocationPolicy{SpineASNScheme: enum.ASNAllocationSchemeSingle},
+				ASNAllocationPolicy: &policy.ASNAllocation{SpineASNScheme: enum.ASNAllocationSchemeSingle},
 				DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 				Spine: Spine{
 					Count:                  2,
@@ -916,7 +916,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 						},
 					},
 				},
-				ASNAllocationPolicy: &ASNAllocationPolicy{SpineASNScheme: enum.ASNAllocationSchemeSingle},
+				ASNAllocationPolicy: &policy.ASNAllocation{SpineASNScheme: enum.ASNAllocationSchemeSingle},
 				Capability:          (*enum.TemplateCapability)(nil),
 				DHCPServiceIntent:   policy.DHCPServiceIntent{Active: true},
 				Spine: Spine{

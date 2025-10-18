@@ -5,14 +5,9 @@
 package design
 
 import (
-	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
-
-type ASNAllocationPolicy struct {
-	SpineASNScheme enum.ASNAllocationScheme `json:"spine_asn_scheme"`
-}
 
 type RackTypeWithCount struct {
 	Count    int
