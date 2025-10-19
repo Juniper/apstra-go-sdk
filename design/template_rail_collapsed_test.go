@@ -161,6 +161,6 @@ func TestTemplateRailCollapsed_UnmarshalJSON(t *testing.T) {
 func TestTemplateRailCollapsed_TemplateType(t *testing.T) {
 	t.Parallel()
 
-	r := TemplateL3Collapsed{}.TemplateType()
+	r := TemplateRailCollapsed{}.TemplateType()
 	require.Equal(t, enum.TemplateTypeRailCollapsed, r)
 }
