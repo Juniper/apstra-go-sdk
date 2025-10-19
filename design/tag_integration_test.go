@@ -54,20 +54,22 @@ func TestTag_CRUD(t *testing.T) {
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
+			require.NotEqual(t, tCase.create, zero.Of(tCase.create)) // make sure we didn't use a bogus map key
+			require.NotEqual(t, tCase.update, zero.Of(tCase.update)) // make sure we didn't use a bogus map key
+
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
 					ctx := testutils.ContextWithTestID(ctx, t)
 
-					require.NotEqual(t, tCase.create, zero.Of(tCase.create)) // make sure we didn't use a bogus map key
-					require.NotEqual(t, tCase.update, zero.Of(tCase.update)) // make sure we didn't use a bogus map key
+					create, update := tCase.create, tCase.update // because we modify these values below
 
 					var id string
 					var err error
 					var obj design.Tag
 
 					// create the object
-					id, err = client.Client.CreateTag2(ctx, tCase.create)
+					id, err = client.Client.CreateTag2(ctx, create)
 					require.NoError(t, err)
 
 					// ensure the object is deleted even if tests fail
@@ -82,15 +84,15 @@ func TestTag_CRUD(t *testing.T) {
 					idPtr := obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.Tag(t, tCase.create, obj)
+					comparedesign.Tag(t, create, obj)
 
 					// retrieve the object by label and validate
-					obj, err = client.Client.GetTagByLabel2(ctx, tCase.create.Label)
+					obj, err = client.Client.GetTagByLabel2(ctx, create.Label)
 					require.NoError(t, err)
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.Tag(t, tCase.create, obj)
+					comparedesign.Tag(t, create, obj)
 
 					// retrieve the list of IDs - ours must be in there
 					ids, err := client.Client.ListTags2(ctx)
@@ -106,13 +108,13 @@ func TestTag_CRUD(t *testing.T) {
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.Tag(t, tCase.create, *objPtr)
+					comparedesign.Tag(t, create, *objPtr)
 
 					// update the object and validate
-					require.NoError(t, tCase.update.SetID(id))
-					require.NotNil(t, tCase.update.ID())
-					require.Equal(t, id, *tCase.update.ID())
-					err = client.Client.UpdateTag2(ctx, tCase.update)
+					require.NoError(t, update.SetID(id))
+					require.NotNil(t, update.ID())
+					require.Equal(t, id, *update.ID())
+					err = client.Client.UpdateTag2(ctx, update)
 					require.NoError(t, err)
 
 					// retrieve the updated object by ID and validate
@@ -121,13 +123,13 @@ func TestTag_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.Tag(t, tCase.update, obj)
+					comparedesign.Tag(t, update, obj)
 
 					// restore the object to the original state
-					require.NoError(t, tCase.create.SetID(id))
-					require.NotNil(t, tCase.create.ID())
-					require.Equal(t, id, *tCase.update.ID())
-					err = client.Client.UpdateTag2(ctx, tCase.create)
+					require.NoError(t, create.SetID(id))
+					require.NotNil(t, create.ID())
+					require.Equal(t, id, *update.ID())
+					err = client.Client.UpdateTag2(ctx, create)
 					require.NoError(t, err)
 
 					// retrieve the object by ID and validate
@@ -136,7 +138,7 @@ func TestTag_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.Tag(t, tCase.create, obj)
+					comparedesign.Tag(t, create, obj)
 
 					// delete the object
 					err = client.Client.DeleteTag2(ctx, id)
@@ -152,7 +154,7 @@ func TestTag_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// get the object by label
-					_, err = client.Client.GetTagByLabel2(ctx, tCase.create.Label)
+					_, err = client.Client.GetTagByLabel2(ctx, create.Label)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
@@ -169,7 +171,7 @@ func TestTag_CRUD(t *testing.T) {
 					require.Nil(t, objPtr)
 
 					// update the object
-					err = client.Client.UpdateTag2(ctx, tCase.update)
+					err = client.Client.UpdateTag2(ctx, update)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())

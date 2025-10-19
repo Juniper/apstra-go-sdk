@@ -768,21 +768,22 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
-			ctx := testutils.ContextWithTestID(ctx, t)
+			require.NotEqual(t, tCase.create, zero.Of(tCase.create)) // make sure we didn't use a bogus map key
+			require.NotEqual(t, tCase.update, zero.Of(tCase.update)) // make sure we didn't use a bogus map key
+
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
 					ctx := testutils.ContextWithTestID(ctx, t)
 
-					require.NotEqual(t, tCase.create, zero.Of(tCase.create)) // make sure we didn't use a bogus map key
-					require.NotEqual(t, tCase.update, zero.Of(tCase.update)) // make sure we didn't use a bogus map key
+					create, update := tCase.create, tCase.update // because we modify these values below
 
 					var id string
 					var err error
 					var obj design.TemplatePodBased
 
 					// create the object (by type)
-					id, err = client.Client.CreateTemplatePodBased2(ctx, tCase.create)
+					id, err = client.Client.CreateTemplatePodBased2(ctx, create)
 					require.NoError(t, err)
 
 					// ensure the object is deleted even if tests fail
@@ -799,7 +800,7 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 					idPtr := objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.create, *objPtr)
+					comparedesign.TemplatePodBased(t, create, *objPtr)
 
 					// retrieve the object by ID (by type) then validate
 					obj, err = client.Client.GetTemplatePodBased2(ctx, id)
@@ -807,25 +808,25 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.create, obj)
+					comparedesign.TemplatePodBased(t, create, obj)
 
 					// retrieve the object by label then validate
-					template, err = client.Client.GetTemplateByLabel2(ctx, tCase.create.Label)
+					template, err = client.Client.GetTemplateByLabel2(ctx, create.Label)
 					require.NoError(t, err)
 					objPtr, ok = template.(*design.TemplatePodBased)
 					require.True(t, ok)
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.create, *objPtr)
+					comparedesign.TemplatePodBased(t, create, *objPtr)
 
 					// retrieve the object by label (by type) then validate
-					obj, err = client.Client.GetTemplatePodBasedByLabel2(ctx, tCase.create.Label)
+					obj, err = client.Client.GetTemplatePodBasedByLabel2(ctx, create.Label)
 					require.NoError(t, err)
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.create, obj)
+					comparedesign.TemplatePodBased(t, create, obj)
 
 					// retrieve the list of IDs (ours must be in there)
 					ids, err := client.Client.ListTemplates2(ctx)
@@ -847,7 +848,7 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.create, *objPtr)
+					comparedesign.TemplatePodBased(t, create, *objPtr)
 
 					// retrieve the list of objects (by type) (ours must be in there) then validate
 					objs, err := client.Client.GetTemplatesPodBased2(ctx)
@@ -858,13 +859,13 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.create, obj)
+					comparedesign.TemplatePodBased(t, create, obj)
 
 					// update the object then validate
-					require.NoError(t, tCase.update.SetID(id))
-					require.NotNil(t, tCase.update.ID())
-					require.Equal(t, id, *tCase.update.ID())
-					err = client.Client.UpdateTemplate2(ctx, &tCase.update)
+					require.NoError(t, update.SetID(id))
+					require.NotNil(t, update.ID())
+					require.Equal(t, id, *update.ID())
+					err = client.Client.UpdateTemplate2(ctx, &update)
 					require.NoError(t, err)
 
 					// retrieve the updated object by ID then validate
@@ -875,21 +876,21 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.update, *objPtr)
+					comparedesign.TemplatePodBased(t, update, *objPtr)
 
 					// retrieve the updated object by ID (by type) type then validate
-					update, err := client.Client.GetTemplatePodBased2(ctx, id)
+					obj, err = client.Client.GetTemplatePodBased2(ctx, id)
 					require.NoError(t, err)
-					idPtr = update.ID()
+					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.update, update)
+					comparedesign.TemplatePodBased(t, update, obj)
 
 					// restore the object (by type)
-					require.NoError(t, tCase.create.SetID(id))
-					require.NotNil(t, tCase.create.ID())
-					require.Equal(t, id, *tCase.update.ID())
-					err = client.Client.UpdateTemplatePodBased2(ctx, tCase.create)
+					require.NoError(t, create.SetID(id))
+					require.NotNil(t, create.ID())
+					require.Equal(t, id, *update.ID())
+					err = client.Client.UpdateTemplatePodBased2(ctx, create)
 					require.NoError(t, err)
 
 					// retrieve the restored object by ID then validate
@@ -900,15 +901,15 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 					idPtr = objPtr.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.create, *objPtr)
+					comparedesign.TemplatePodBased(t, create, *objPtr)
 
 					// retrieve the restored object by ID (by type) then validate
 					obj, err = client.Client.GetTemplatePodBased2(ctx, id)
 					require.NoError(t, err)
-					idPtr = update.ID()
+					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					comparedesign.TemplatePodBased(t, tCase.create, obj)
+					comparedesign.TemplatePodBased(t, create, obj)
 
 					// delete the object
 					err = client.Client.DeleteTemplate2(ctx, id)
@@ -930,13 +931,13 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// get the object by label
-					_, err = client.Client.GetTemplateByLabel2(ctx, tCase.create.Label)
+					_, err = client.Client.GetTemplateByLabel2(ctx, create.Label)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// get the object by label (by type)
-					_, err = client.Client.GetTemplatePodBasedByLabel2(ctx, tCase.create.Label)
+					_, err = client.Client.GetTemplatePodBasedByLabel2(ctx, create.Label)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
@@ -964,13 +965,13 @@ func TestTemplatePodBased_CRUD(t *testing.T) {
 					require.Nil(t, objPtr)
 
 					// update the object
-					err = client.Client.UpdateTemplate2(ctx, &tCase.update)
+					err = client.Client.UpdateTemplate2(ctx, &update)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// update the object (by type)
-					err = client.Client.UpdateTemplatePodBased2(ctx, tCase.update)
+					err = client.Client.UpdateTemplatePodBased2(ctx, update)
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
