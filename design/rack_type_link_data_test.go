@@ -14,6 +14,8 @@ var linkSimple = RackTypeLink{
 	TargetSwitchLabel:  "leafy",
 	LinkPerSwitchCount: 2,
 	Speed:              "50G",
+	AttachmentType:     enum.LinkAttachmentTypeSingle,
+	Tags:               []Tag{},
 }
 
 const linkSimpleJSON = `{
@@ -34,7 +36,7 @@ var linkComplicated = RackTypeLink{
 	LAGMode:            enum.LAGModePassiveLACP,
 	SwitchPeer:         enum.LinkSwitchPeerSecond,
 	RailIndex:          pointer.To(3),
-	Tags:               []Tag{{Label: "b", Description: "B"}, {Label: "a", Description: "A"}},
+	Tags:               []Tag{{Label: "a", Description: ""}, {Label: "b", Description: ""}},
 }
 
 const linkComplicatedJSON = `{

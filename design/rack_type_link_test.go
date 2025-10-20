@@ -61,35 +61,31 @@ func TestRackTypeLink_MarshalJSON(t *testing.T) {
 	}
 }
 
-//func TestRackType_UnmarshalJSON(t *testing.T) {
-//	type testCase struct {
-//		e RackType
-//		v string
-//	}
-//
-//	testCases := map[string]testCase{
-//		"collapsed_simple": {
-//			v: rackTypeTestCollapsedSimpleJSON,
-//			e: rackTypeTestCollapsedSimple,
-//		},
-//		"collapsed_simple_with_access": {
-//			v: rackTypeTestCollapsedSimpleWithAccessJSON,
-//			e: rackTypeTestCollapsedSimpleWithAccess,
-//		},
-//		"collapsed_esi": {
-//			v: rackTypeTestCollapsedESIJSON,
-//			e: rackTypeTestCollapsedESI,
-//		},
-//	}
-//
-//	for tName, tCase := range testCases {
-//		t.Run(tName, func(t *testing.T) {
-//			t.Parallel()
-//			var r RackType
-//			err := json.Unmarshal([]byte(tCase.v), &r)
-//			require.NoError(t, err)
-//
-//			require.Equal(t, tCase.e, r)
-//		})
-//	}
-//}
+func TestRackTypeLink_UnmarshalJSON(t *testing.T) {
+	type testCase struct {
+		e RackTypeLink
+		v string
+	}
+
+	testCases := map[string]testCase{
+		"simple": {
+			v: linkSimpleJSON,
+			e: linkSimple,
+		},
+		"complicated": {
+			v: linkComplicatedJSON,
+			e: linkComplicated,
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+			var r RackTypeLink
+			err := json.Unmarshal([]byte(tCase.v), &r)
+			require.NoError(t, err)
+
+			require.Equal(t, tCase.e, r)
+		})
+	}
+}
