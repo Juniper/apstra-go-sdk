@@ -11,6 +11,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 )
 
 func (c Client) CreateTag2(ctx context.Context, v design.Tag) (string, error) {
@@ -113,21 +114,31 @@ func (c Client) GetTags2(ctx context.Context) ([]design.Tag, error) {
 }
 
 func (c Client) GetTagByLabel2(ctx context.Context, label string) (design.Tag, error) {
-	var result design.Tag
+	var result []design.Tag
 
 	all, err := c.GetTags2(ctx)
 	if err != nil {
-		return result, fmt.Errorf("%s failed getting all %T candidates: %w", str.FuncName(), result, err)
+		return zero.SliceItem(result), fmt.Errorf("%s failed getting all %T candidates: %w", str.FuncName(), zero.SliceItem(result), err)
 	}
 
-	for _, result = range all {
-		if result.Label == label {
-			return result, nil
+	for _, item := range all {
+		if item.Label == label {
+			result = append(result, item)
 		}
 	}
 
-	return result, ClientErr{
-		errType: ErrNotfound,
-		err:     fmt.Errorf("%T with label %s not found", result, label),
+	switch len(result) {
+	case 0:
+		return zero.SliceItem(result), ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("%T with label %s not found", zero.SliceItem(result), label),
+		}
+	case 1:
+		return result[0], nil
+	default: // len(result) > 1
+		return zero.SliceItem(result), ClientErr{
+			errType: ErrMultipleMatch,
+			err:     fmt.Errorf("found multiple candidate %T with label %s", zero.SliceItem(result), label),
+		}
 	}
 }

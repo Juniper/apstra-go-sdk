@@ -118,7 +118,7 @@ func (c Client) GetRackTypeByLabel2(ctx context.Context, label string) (design.R
 
 	all, err := c.GetRackTypes2(ctx)
 	if err != nil {
-		return zero.SliceItem(result), fmt.Errorf("%s failed getting all %T candidates: %w", str.FuncName(), result, err)
+		return zero.SliceItem(result), fmt.Errorf("%s failed getting all %T candidates: %w", str.FuncName(), zero.SliceItem(result), err)
 	}
 
 	for _, item := range all {
