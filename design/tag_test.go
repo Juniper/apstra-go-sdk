@@ -7,6 +7,7 @@ package design
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -58,24 +59,26 @@ func TestTag_ID(t *testing.T) {
 func TestTag_replicate(t *testing.T) {
 	t.Parallel()
 
-	original := Tag{
-		Label:          testutils.RandString(6, "hex"),
-		Description:    testutils.RandString(6, "hex"),
-		id:             testutils.RandString(6, "hex"),
-		createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
-		lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
+	testCases := []Tag{
+		tagABC,
 	}
 
-	replicant := original.Replicate()
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case_%d", i), func(t *testing.T) {
+			t.Parallel()
 
-	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
+			result := tc.Replicate()
 
-	// wipe out values which cannot be replicated before comparing values
-	original.id = ""
-	original.createdAt = nil
-	original.lastModifiedAt = nil
+			require.Equal(t, mustHashForComparison(tc, sha256.New()), mustHashForComparison(result, sha256.New()))
 
-	require.Equal(t, original, replicant)
+			// wipe out values which cannot be replicated before comparing values
+			tc.id = ""
+			tc.createdAt = nil
+			tc.lastModifiedAt = nil
+
+			require.Equal(t, tc, result)
+		})
+	}
 }
 
 func TestTag_timestamps(t *testing.T) {

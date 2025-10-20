@@ -7,6 +7,7 @@ package design
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
-	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
 )
 
@@ -57,57 +57,34 @@ func TestRackType_ID(t *testing.T) {
 	})
 }
 
-func TestRackType_replicate(t *testing.T) {
+func TestRackType_Replicate(t *testing.T) {
 	t.Parallel()
 
-	original := RackType{
-		Label:                    testutils.RandString(6, "hex"),
-		Description:              testutils.RandString(6, "hex"),
-		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-		LeafSwitches: []LeafSwitch{
-			{
-				Label:             testutils.RandString(6, "hex"),
-				LinkPerSpineCount: pointer.To(3),
-				LinkPerSpineSpeed: pointer.To(speed.Speed("10G")),
-				LogicalDevice: LogicalDevice{
-					Label: testutils.RandString(6, "hex"),
-					Panels: []LogicalDevicePanel{
-						{
-							PanelLayout: LogicalDevicePanelLayout{RowCount: 8, ColumnCount: 8},
-							PortGroups: []LogicalDevicePanelPortGroup{
-								{
-									Count: 64,
-									Speed: "10G",
-									Roles: LogicalDevicePortRoles{enum.PortRoleSpine, enum.PortRoleGeneric},
-								},
-							},
-							PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
-						},
-					},
-				},
-				Tags: []Tag{
-					{
-						Label:       testutils.RandString(6, "hex"),
-						Description: testutils.RandString(10, "hex"),
-					},
-				},
-			},
-		},
-		id:             testutils.RandString(6, "hex"),
-		createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
-		lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
+	testCases := []RackType{
+		rackTypeTestCollapsedSimple,
+		rackTypeTestCollapsedESI,
+		rackTypeTestCollapsedSimpleWithAccess,
+		rackTypeTestRackBasedESIWithAccessESI,
+		rackTypeTestRackBasedMLAGWithAccessPair,
+		rackTypeTestCollapsedESIWithGenericSystems,
 	}
 
-	replicant := original.Replicate()
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case_%d", i), func(t *testing.T) {
+			t.Parallel()
 
-	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
+			result := tc.Replicate()
 
-	// wipe out values which cannot be replicated before comparing values
-	original.id = ""
-	original.createdAt = nil
-	original.lastModifiedAt = nil
+			require.Equal(t, mustHashForComparison(tc, sha256.New()), mustHashForComparison(result, sha256.New()))
 
-	require.Equal(t, original, replicant)
+			// wipe out values which cannot be replicated before comparing values
+			tc.id = ""
+			tc.createdAt = nil
+			tc.lastModifiedAt = nil
+
+			require.Equal(t, tc, result)
+		})
+	}
 }
 
 func TestRackType_timestamps(t *testing.T) {

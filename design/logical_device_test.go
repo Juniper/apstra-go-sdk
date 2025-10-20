@@ -7,10 +7,10 @@ package design
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
@@ -56,47 +56,30 @@ func TestLogicalDevice_ID(t *testing.T) {
 	})
 }
 
-func TestLogicalDevice_replicate(t *testing.T) {
+func TestLogicalDevice_Replicate(t *testing.T) {
 	t.Parallel()
 
-	original := LogicalDevice{
-		Label: testutils.RandString(6, "hex"),
-		Panels: []LogicalDevicePanel{
-			{
-				PanelLayout: LogicalDevicePanelLayout{
-					RowCount:    2,
-					ColumnCount: 4,
-				},
-				PortGroups: []LogicalDevicePanelPortGroup{
-					{
-						Count: 4,
-						Speed: "10G",
-						Roles: LogicalDevicePortRoles{enum.PortRoleSpine, enum.PortRoleGeneric},
-					},
-					{
-						Count: 4,
-						Speed: "1G",
-						Roles: LogicalDevicePortRoles{enum.PortRoleGeneric},
-					},
-				},
-				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
-			},
-		},
-		id:             testutils.RandString(6, "hex"),
-		createdAt:      pointer.To(testutils.RandTime(time.Now().Add(-2 * time.Minute))),
-		lastModifiedAt: pointer.To(testutils.RandTime(time.Now().Add(-1 * time.Minute))),
+	testCases := []LogicalDevice{
+		logicalDeviceTest1x1,
+		logicalDeviceTest48x10plus4x100,
 	}
 
-	replicant := original.Replicate()
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case_%d", i), func(t *testing.T) {
+			t.Parallel()
 
-	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
+			result := tc.Replicate()
 
-	// wipe out values which cannot be replicated before comparing values
-	original.id = ""
-	original.createdAt = nil
-	original.lastModifiedAt = nil
+			require.Equal(t, mustHashForComparison(tc, sha256.New()), mustHashForComparison(result, sha256.New()))
 
-	require.Equal(t, original, replicant)
+			// wipe out values which cannot be replicated before comparing values
+			tc.id = ""
+			tc.createdAt = nil
+			tc.lastModifiedAt = nil
+
+			require.Equal(t, tc, result)
+		})
+	}
 }
 
 func TestLogicalDevice_timestamps(t *testing.T) {

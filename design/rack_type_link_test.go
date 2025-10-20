@@ -7,27 +7,29 @@ package design
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestRackTypeLink_replicate(t *testing.T) {
-	type testCase struct {
-		v RackTypeLink
+func TestRackTypeLink_Replicate(t *testing.T) {
+	t.Parallel()
+
+	testCases := []RackTypeLink{
+		linkSimple,
+		linkComplicated,
 	}
 
-	testCases := map[string]testCase{
-		"simple": {v: linkSimple},
-	}
-
-	for tName, tCase := range testCases {
-		t.Run(tName, func(t *testing.T) {
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case_%d", i), func(t *testing.T) {
 			t.Parallel()
 
-			r := tCase.v.Replicate()
-			require.Equal(t, mustHashForComparison(tCase.v, sha256.New()), mustHashForComparison(r, sha256.New()))
-			require.Equal(t, tCase.v, r)
+			result := tc.Replicate()
+
+			require.Equal(t, mustHashForComparison(tc, sha256.New()), mustHashForComparison(result, sha256.New()))
+
+			require.Equal(t, tc, result)
 		})
 	}
 }

@@ -7,6 +7,7 @@ package design
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -59,41 +60,49 @@ func TestTemplateRackBased_ID(t *testing.T) {
 func TestTemplateRackBased_Replicate(t *testing.T) {
 	t.Parallel()
 
-	original := templateRackBasedL2VirtualEVPN
-
-	replicant := original.Replicate()
-
-	require.Equal(t, mustHashForComparison(original, sha256.New()), mustHashForComparison(replicant, sha256.New()))
-
-	// wipe out values which cannot be replicated before comparing values
-	original.id = ""
-	original.createdAt = nil
-	original.lastModifiedAt = nil
-	original.Spine.LogicalDevice.id = ""
-	original.Spine.LogicalDevice.createdAt = nil
-	original.Spine.LogicalDevice.lastModifiedAt = nil
-	for i := range original.Racks {
-		original.Racks[i].RackType.id = ""
-		original.Racks[i].RackType.createdAt = nil
-		original.Racks[i].RackType.lastModifiedAt = nil
-		for j := range original.Racks[i].RackType.LeafSwitches {
-			original.Racks[i].RackType.LeafSwitches[j].LogicalDevice.id = ""
-			original.Racks[i].RackType.LeafSwitches[j].LogicalDevice.createdAt = nil
-			original.Racks[i].RackType.LeafSwitches[j].LogicalDevice.lastModifiedAt = nil
-		}
-		for j := range original.Racks[i].RackType.AccessSwitches {
-			original.Racks[i].RackType.AccessSwitches[j].LogicalDevice.id = ""
-			original.Racks[i].RackType.AccessSwitches[j].LogicalDevice.createdAt = nil
-			original.Racks[i].RackType.AccessSwitches[j].LogicalDevice.lastModifiedAt = nil
-		}
-		for j := range original.Racks[i].RackType.GenericSystems {
-			original.Racks[i].RackType.GenericSystems[j].LogicalDevice.id = ""
-			original.Racks[i].RackType.GenericSystems[j].LogicalDevice.createdAt = nil
-			original.Racks[i].RackType.GenericSystems[j].LogicalDevice.lastModifiedAt = nil
-		}
+	testCases := []TemplateRackBased{
+		templateRackBasedL2VirtualEVPN,
 	}
 
-	require.Equal(t, original, replicant)
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case_%d", i), func(t *testing.T) {
+			t.Parallel()
+
+			result := tc.Replicate()
+
+			require.Equal(t, mustHashForComparison(tc, sha256.New()), mustHashForComparison(result, sha256.New()))
+
+			// wipe out values which cannot be replicated before comparing values
+			tc.id = ""
+			tc.createdAt = nil
+			tc.lastModifiedAt = nil
+			tc.Spine.LogicalDevice.id = ""
+			tc.Spine.LogicalDevice.createdAt = nil
+			tc.Spine.LogicalDevice.lastModifiedAt = nil
+			for i := range tc.Racks {
+				tc.Racks[i].RackType.id = ""
+				tc.Racks[i].RackType.createdAt = nil
+				tc.Racks[i].RackType.lastModifiedAt = nil
+				for j := range tc.Racks[i].RackType.LeafSwitches {
+					tc.Racks[i].RackType.LeafSwitches[j].LogicalDevice.id = ""
+					tc.Racks[i].RackType.LeafSwitches[j].LogicalDevice.createdAt = nil
+					tc.Racks[i].RackType.LeafSwitches[j].LogicalDevice.lastModifiedAt = nil
+				}
+				for j := range tc.Racks[i].RackType.AccessSwitches {
+					tc.Racks[i].RackType.AccessSwitches[j].LogicalDevice.id = ""
+					tc.Racks[i].RackType.AccessSwitches[j].LogicalDevice.createdAt = nil
+					tc.Racks[i].RackType.AccessSwitches[j].LogicalDevice.lastModifiedAt = nil
+				}
+				for j := range tc.Racks[i].RackType.GenericSystems {
+					tc.Racks[i].RackType.GenericSystems[j].LogicalDevice.id = ""
+					tc.Racks[i].RackType.GenericSystems[j].LogicalDevice.createdAt = nil
+					tc.Racks[i].RackType.GenericSystems[j].LogicalDevice.lastModifiedAt = nil
+				}
+			}
+
+			require.Equal(t, tc, result)
+		})
+	}
 }
 
 func TestTemplateRackBased_timestamps(t *testing.T) {
