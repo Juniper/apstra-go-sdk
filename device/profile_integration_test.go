@@ -18,7 +18,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/device"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
@@ -193,7 +193,7 @@ func TestProfile_CRUD(t *testing.T) {
 					idPtr := obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.DeviceProfile(t, create, obj)
+					comparedevice.DeviceProfile(t, create, obj)
 
 					t.Log("retrieve the object by label and validate")
 					obj, err = client.Client.GetDeviceProfileByLabel(ctx, create.Label)
@@ -201,7 +201,7 @@ func TestProfile_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.DeviceProfile(t, create, obj)
+					comparedevice.DeviceProfile(t, create, obj)
 
 					t.Log("retrieve the list of IDs (ours must be in there)")
 					ids, err := client.Client.ListDeviceProfiles(ctx)
@@ -217,7 +217,7 @@ func TestProfile_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.DeviceProfile(t, create, obj)
+					comparedevice.DeviceProfile(t, create, obj)
 
 					t.Log("update the object and validate")
 					require.NoError(t, update.SetID(id))
@@ -232,7 +232,7 @@ func TestProfile_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.DeviceProfile(t, update, obj)
+					comparedevice.DeviceProfile(t, update, obj)
 
 					t.Log("restore the object to the original state")
 					require.NoError(t, create.SetID(id))
@@ -247,7 +247,7 @@ func TestProfile_CRUD(t *testing.T) {
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
 					require.Equal(t, id, *idPtr)
-					compare.DeviceProfile(t, create, obj)
+					comparedevice.DeviceProfile(t, create, obj)
 
 					t.Log("delete the object")
 					err = client.Client.DeleteDeviceProfile(ctx, id)
