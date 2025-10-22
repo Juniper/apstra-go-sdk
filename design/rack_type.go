@@ -31,8 +31,8 @@ type RackType struct {
 	Description              string
 	FabricConnectivityDesign enum.FabricConnectivityDesign
 	LeafSwitches             []LeafSwitch
-	AccessSwitches           []AccessSwitch  `json:"access_switches"`
-	GenericSystems           []GenericSystem `json:"generic_systems"`
+	AccessSwitches           []AccessSwitch
+	GenericSystems           []GenericSystem
 
 	id             string
 	createdAt      *time.Time
