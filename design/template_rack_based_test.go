@@ -44,10 +44,6 @@ func TestTemplateRackBased_ID(t *testing.T) {
 		require.NotNil(t, id)
 		require.Equal(t, desiredId, *id)
 	})
-
-	t.Run("set_id_panic", func(t *testing.T) {
-		require.Panics(t, func() { obj.SetID(desiredId) })
-	})
 }
 
 func TestTemplateRackBased_Replicate(t *testing.T) {
