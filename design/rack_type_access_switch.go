@@ -16,9 +16,8 @@ import (
 )
 
 var (
-	_ logicalDeviceIDer = (*AccessSwitch)(nil)
-	_ json.Marshaler    = (*AccessSwitch)(nil)
-	_ json.Unmarshaler  = (*AccessSwitch)(nil)
+	_ json.Marshaler   = (*AccessSwitch)(nil)
+	_ json.Unmarshaler = (*AccessSwitch)(nil)
 )
 
 type AccessSwitch struct {
