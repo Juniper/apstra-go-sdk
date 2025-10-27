@@ -17,10 +17,10 @@ import (
 )
 
 var (
-	_ Template          = (*TemplateRailCollapsed)(nil)
-	_ internal.IDSetter = (*TemplateRailCollapsed)(nil)
-	_ json.Marshaler    = (*TemplateRailCollapsed)(nil)
-	_ json.Unmarshaler  = (*TemplateRailCollapsed)(nil)
+	_ Template         = (*TemplateRailCollapsed)(nil)
+	_ internal.IDer    = (*TemplateRailCollapsed)(nil)
+	_ json.Marshaler   = (*TemplateRailCollapsed)(nil)
+	_ json.Unmarshaler = (*TemplateRailCollapsed)(nil)
 )
 
 type TemplateRailCollapsed struct {
@@ -43,27 +43,6 @@ func (t TemplateRailCollapsed) ID() *string {
 		return nil
 	}
 	return &t.id
-}
-
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (t *TemplateRailCollapsed) SetID(id string) error {
-	if t.id != "" {
-		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", t.id))
-	}
-
-	t.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (t *TemplateRailCollapsed) MustSetID(id string) {
-	err := t.SetID(id)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func (t TemplateRailCollapsed) MarshalJSON() ([]byte, error) {
@@ -106,7 +85,7 @@ func (t TemplateRailCollapsed) MarshalJSON() ([]byte, error) {
 	// loop over racks, calculate a fresh ID, count the type of each
 	for _, rackTypeWithCount := range t.Racks {
 		rackType := rackTypeWithCount.RackType.Replicate() // fresh copy without metadata
-		rackType.mustSetHashID(hasher)                     // assign the ID
+		rackType.setHashID(hasher)                         // assign the ID
 
 		// add an entry to raw.RackTypeCounts without regard to twins
 		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{Count: rackTypeWithCount.Count, ID: rackType.id})

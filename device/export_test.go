@@ -2,8 +2,8 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package internal
+package device
 
-type IDer interface {
-	ID() *string
+func (p *Profile) SetID(id string) {
+	p.setID(id)
 }

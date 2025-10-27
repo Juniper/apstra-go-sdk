@@ -17,10 +17,10 @@ import (
 )
 
 var (
-	_ Template          = (*TemplatePodBased)(nil)
-	_ internal.IDSetter = (*TemplatePodBased)(nil)
-	_ json.Marshaler    = (*TemplatePodBased)(nil)
-	_ json.Unmarshaler  = (*TemplatePodBased)(nil)
+	_ internal.IDer    = (*TemplatePodBased)(nil)
+	_ Template         = (*TemplatePodBased)(nil)
+	_ json.Marshaler   = (*TemplatePodBased)(nil)
+	_ json.Unmarshaler = (*TemplatePodBased)(nil)
 )
 
 type TemplatePodBased struct {
@@ -43,27 +43,6 @@ func (t TemplatePodBased) ID() *string {
 		return nil
 	}
 	return &t.id
-}
-
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (t *TemplatePodBased) SetID(id string) error {
-	if t.id != "" {
-		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", t.id))
-	}
-
-	t.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (t *TemplatePodBased) MustSetID(id string) {
-	err := t.SetID(id)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
@@ -93,7 +72,7 @@ func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
 
 	// set the superspine logical device ID if necessary
 	if raw.Superspine.LogicalDevice.ID() == nil {
-		raw.Superspine.LogicalDevice.mustSetHashID(hasher)
+		raw.Superspine.LogicalDevice.setHashID(hasher)
 	}
 
 	// keep track of rack type IDs (hashes of rack data). if two rack types are
@@ -105,7 +84,7 @@ func (t TemplatePodBased) MarshalJSON() ([]byte, error) {
 	// loop over pods, calculate a fresh ID, count the type of each
 	for _, podWithCount := range t.Pods {
 		pod := podWithCount.Pod.Replicate()  // fresh copy without metadata
-		pod.mustSetHashID(hasher)            // assign the ID
+		pod.setHashID(hasher)                // assign the ID
 		pod.skipTypeDuringMarshalJSON = true // don't marshal the nested template's type
 
 		// add an entry to raw.RackTypeCounts without regard to twins

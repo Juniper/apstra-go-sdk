@@ -10,13 +10,12 @@ import (
 	"hash"
 	"time"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
-	_ internal.IDSetter = (*LogicalDevice)(nil)
+	_ internal.IDer     = (*LogicalDevice)(nil)
 	_ json.Marshaler    = (*LogicalDevice)(nil)
 	_ json.Unmarshaler  = (*LogicalDevice)(nil)
 	_ timeutils.Stamper = (*LogicalDevice)(nil)
@@ -38,25 +37,13 @@ func (l LogicalDevice) ID() *string {
 	return &l.id
 }
 
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (l *LogicalDevice) SetID(id string) error {
+func (l *LogicalDevice) setID(id string) {
 	if l.id != "" {
-		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", l.id))
+		panic(fmt.Sprintf("id already has value %q", l.id))
 	}
 
 	l.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (l *LogicalDevice) MustSetID(id string) {
-	err := l.SetID(id)
-	if err != nil {
-		panic(err)
-	}
+	return
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields
@@ -115,15 +102,8 @@ func (l LogicalDevice) digest(h hash.Hash) []byte {
 	return mustHashForComparison(l, h)
 }
 
-func (l *LogicalDevice) setHashID(h hash.Hash) error {
-	return l.SetID(fmt.Sprintf("%x", l.digest(h)))
-}
-
-func (l *LogicalDevice) mustSetHashID(h hash.Hash) {
-	err := l.SetID(fmt.Sprintf("%x", l.digest(h)))
-	if err != nil {
-		panic(err)
-	}
+func (l *LogicalDevice) setHashID(h hash.Hash) {
+	l.setID(fmt.Sprintf("%x", l.digest(h)))
 }
 
 func NewLogicalDevice(id string) LogicalDevice {

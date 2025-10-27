@@ -6,17 +6,15 @@ package design
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
-	_ internal.IDSetter = (*Configlet)(nil)
+	_ internal.IDer     = (*Configlet)(nil)
 	_ json.Unmarshaler  = (*Configlet)(nil)
 	_ timeutils.Stamper = (*Configlet)(nil)
 )
@@ -36,27 +34,6 @@ func (c Configlet) ID() *string {
 		return nil
 	}
 	return &c.id
-}
-
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (c *Configlet) SetID(id string) error {
-	if c.id != "" {
-		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", c.id))
-	}
-
-	c.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (c *Configlet) MustSetID(id string) {
-	err := c.SetID(id)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func (c Configlet) CreatedAt() *time.Time {

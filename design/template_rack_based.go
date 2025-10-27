@@ -19,10 +19,10 @@ import (
 )
 
 var (
-	_ Template          = (*TemplateRackBased)(nil)
-	_ internal.IDSetter = (*TemplateRackBased)(nil)
-	_ json.Marshaler    = (*TemplateRackBased)(nil)
-	_ json.Unmarshaler  = (*TemplateRackBased)(nil)
+	_ Template         = (*TemplateRackBased)(nil)
+	_ internal.IDer    = (*TemplateRackBased)(nil)
+	_ json.Marshaler   = (*TemplateRackBased)(nil)
+	_ json.Unmarshaler = (*TemplateRackBased)(nil)
 )
 
 type TemplateRackBased struct {
@@ -53,25 +53,13 @@ func (t TemplateRackBased) ID() *string {
 	return &t.id
 }
 
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (t *TemplateRackBased) SetID(id string) error {
+func (t *TemplateRackBased) setID(id string) {
 	if t.id != "" {
-		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", t.id))
+		panic(fmt.Sprintf("id already has value %q", t.id))
 	}
 
 	t.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (t *TemplateRackBased) MustSetID(id string) {
-	err := t.SetID(id)
-	if err != nil {
-		panic(err)
-	}
+	return
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields
@@ -137,7 +125,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 
 	// set the spine logical device ID if necessary
 	if raw.Spine.LogicalDevice.ID() == nil {
-		raw.Spine.LogicalDevice.mustSetHashID(hasher)
+		raw.Spine.LogicalDevice.setHashID(hasher)
 	}
 
 	// keep track of rack type IDs (hashes of rack data). if two rack types are
@@ -149,7 +137,7 @@ func (t TemplateRackBased) MarshalJSON() ([]byte, error) {
 	// loop over racks, calculate a fresh ID, count the type of each
 	for _, rackTypeWithCount := range t.Racks {
 		rackType := rackTypeWithCount.RackType.Replicate() // fresh copy without metadata
-		rackType.mustSetHashID(hasher)                     // assign the ID
+		rackType.setHashID(hasher)                         // assign the ID
 
 		// add an entry to raw.RackTypeCounts without regard to twins
 		raw.RackTypeCounts = append(raw.RackTypeCounts, rawRackTypeCount{Count: rackTypeWithCount.Count, ID: rackType.id})
@@ -233,15 +221,8 @@ func (t TemplateRackBased) digest(h hash.Hash) []byte {
 	return mustHashForComparison(t, h)
 }
 
-func (t *TemplateRackBased) setHashID(h hash.Hash) error {
-	return t.SetID(fmt.Sprintf("%x", t.digest(h)))
-}
-
-func (t *TemplateRackBased) mustSetHashID(h hash.Hash) {
-	err := t.SetID(fmt.Sprintf("%x", t.digest(h)))
-	if err != nil {
-		panic(err)
-	}
+func (t *TemplateRackBased) setHashID(h hash.Hash) {
+	t.setID(fmt.Sprintf("%x", t.digest(h)))
 }
 
 func NewTemplateRackBased(id string) TemplateRackBased {

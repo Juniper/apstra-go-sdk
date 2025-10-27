@@ -16,6 +16,6 @@ type logicalDeviceIDer interface {
 
 type Template interface {
 	timeutils.Stamper
-	internal.IDSetter
+	internal.IDer
 	TemplateType() enum.TemplateType
 }
