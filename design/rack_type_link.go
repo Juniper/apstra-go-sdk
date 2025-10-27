@@ -1,0 +1,118 @@
+// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+package design
+
+import (
+	"encoding/json"
+	"fmt"
+	"sort"
+
+	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
+	"github.com/Juniper/apstra-go-sdk/speed"
+)
+
+var (
+	_ internal.Replicator[RackTypeLink] = (*RackTypeLink)(nil)
+	_ json.Marshaler                    = (*RackTypeLink)(nil)
+	_ json.Unmarshaler                  = (*RackTypeLink)(nil)
+)
+
+type RackTypeLink struct {
+	Label              string
+	TargetSwitchLabel  string
+	LinkPerSwitchCount int
+	Speed              speed.Speed
+	AttachmentType     enum.LinkAttachmentType
+	LAGMode            enum.LAGMode
+	SwitchPeer         enum.LinkSwitchPeer
+	RailIndex          *int
+	Tags               []Tag
+}
+
+func (r RackTypeLink) MarshalJSON() ([]byte, error) {
+	result := rawRackTypeLink{
+		Label:              r.Label,
+		TargetSwitchLabel:  r.TargetSwitchLabel,
+		LinkPerSwitchCount: zero.PreferDefault(r.LinkPerSwitchCount, 1),
+		Speed:              r.Speed,
+		AttachmentType:     zero.PreferDefault(r.AttachmentType, enum.LinkAttachmentTypeSingle),
+		LAGMode:            nil, // handled below
+		SwitchPeer:         nil, // handled below
+		RailIndex:          r.RailIndex,
+		Tags:               make([]string, len(r.Tags)),
+	}
+
+	if r.LAGMode == enum.LAGModeNone {
+		result.LAGMode = nil
+	} else {
+		result.LAGMode = &r.LAGMode
+	}
+
+	if r.SwitchPeer == enum.LinkSwitchPeerUnspecified {
+		result.SwitchPeer = nil
+	} else {
+		result.SwitchPeer = &r.SwitchPeer
+	}
+
+	for i, tag := range r.Tags {
+		result.Tags[i] = tag.Label
+	}
+	sort.Strings(result.Tags)
+
+	return json.Marshal(result)
+}
+
+func (r *RackTypeLink) UnmarshalJSON(bytes []byte) error {
+	var raw rawRackTypeLink
+	err := json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return fmt.Errorf("unmarshalling link: %w", err)
+	}
+
+	r.Label = raw.Label
+	r.TargetSwitchLabel = raw.TargetSwitchLabel
+	r.LinkPerSwitchCount = raw.LinkPerSwitchCount
+	r.Speed = raw.Speed
+	r.AttachmentType = raw.AttachmentType
+	if raw.LAGMode == nil {
+		r.LAGMode = enum.LAGModeNone
+	} else {
+		r.LAGMode = *raw.LAGMode
+	}
+	if raw.SwitchPeer == nil {
+		r.SwitchPeer = enum.LinkSwitchPeerUnspecified
+	} else {
+		r.SwitchPeer = *raw.SwitchPeer
+	}
+	r.RailIndex = raw.RailIndex
+	r.Tags = make([]Tag, len(raw.Tags))
+	for i, tag := range raw.Tags {
+		r.Tags[i] = Tag{Label: tag}
+	}
+
+	return nil
+}
+
+func (r RackTypeLink) Replicate() RackTypeLink {
+	if r.RailIndex != nil {
+		r.RailIndex = pointer.To(*r.RailIndex)
+	}
+	return r
+}
+
+type rawRackTypeLink struct {
+	Label              string                  `json:"label"`
+	TargetSwitchLabel  string                  `json:"target_switch_label"`
+	LinkPerSwitchCount int                     `json:"link_per_switch_count"`
+	Speed              speed.Speed             `json:"link_speed"`
+	AttachmentType     enum.LinkAttachmentType `json:"attachment_type"`
+	LAGMode            *enum.LAGMode           `json:"lag_mode,omitempty"`
+	SwitchPeer         *enum.LinkSwitchPeer    `json:"switch_peer,omitempty"`
+	RailIndex          *int                    `json:"rail_index,omitempty"`
+	Tags               []string                `json:"tags"`
+}

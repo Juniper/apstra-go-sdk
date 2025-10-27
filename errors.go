@@ -2,11 +2,29 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package apstra_go_sdk
+package sdk
+
+type ErrAPIResponseInvalid string
+
+func (e ErrAPIResponseInvalid) Error() string {
+	return string(e)
+}
 
 type ErrIDIsSet string
 
 func (e ErrIDIsSet) Error() string {
+	return string(e)
+}
+
+type ErrInternal string
+
+func (e ErrInternal) Error() string {
+	return string(e)
+}
+
+type ErrMultipleMatch string
+
+func (e ErrMultipleMatch) Error() string {
 	return string(e)
 }
 
@@ -16,8 +34,8 @@ func (e ErrNotFound) Error() string {
 	return string(e)
 }
 
-type ErrMultipleMatch string
+type ErrWrongType string
 
-func (e ErrMultipleMatch) Error() string {
+func (e ErrWrongType) Error() string {
 	return string(e)
 }

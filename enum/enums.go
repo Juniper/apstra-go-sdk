@@ -15,6 +15,21 @@ import oenum "github.com/orsinium-labs/enum"
 // or `go generate enum/enums.go` from the repository root directory to refresh
 // `generated_enums.go`.
 
+type AntiAffinityMode oenum.Member[string]
+
+var (
+	AntiAffinityModeDisabled = AntiAffinityMode{Value: "disabled"}
+	AntiAffinityModeLoose    = AntiAffinityMode{Value: "enabled_loose"}
+	AntiAffinityModeStrict   = AntiAffinityMode{Value: "enabled_strict"}
+)
+
+type ASNAllocationScheme oenum.Member[string]
+
+var (
+	ASNAllocationSchemeDistinct = ASNAllocationScheme{Value: "distinct"}
+	ASNAllocationSchemeSingle   = ASNAllocationScheme{Value: "single"}
+)
+
 type DeployMode oenum.Member[string]
 
 var (
@@ -299,6 +314,13 @@ var (
 	ConfigletSectionSystemTop            = ConfigletSection{Value: "system_top"}
 )
 
+type OverlayControlProtocol oenum.Member[string]
+
+var (
+	OverlayControlProtocolNone = OverlayControlProtocol{Value: ""}
+	OverlayControlProtocolEVPN = OverlayControlProtocol{Value: "evpn"}
+)
+
 type SecurityZoneType oenum.Member[string]
 
 var (
@@ -353,6 +375,13 @@ var (
 	IbaWidgetCombineGraphStacked = IbaWidgetCombineGraph{Value: "stacked"}
 )
 
+type InterfaceMapInterfaceState oenum.Member[string]
+
+var (
+	InterfaceMapInterfaceStateActive   = InterfaceMapInterfaceState{Value: "active"}
+	InterfaceMapInterfaceStateInactive = InterfaceMapInterfaceState{Value: "inactive"}
+)
+
 type FabricConnectivityDesign oenum.Member[string]
 
 var (
@@ -367,6 +396,13 @@ var (
 	EndpointPolicyStatusAssigned   = EndpointPolicyStatus{Value: "assigned"}
 	EndpointPolicyStatusIncomplete = EndpointPolicyStatus{Value: "incomplete"}
 	EndpointPolicyStatusReady      = EndpointPolicyStatus{Value: "ready"}
+)
+
+type DesignLogicalDevicePanelPortIndexing oenum.Member[string]
+
+var (
+	DesignLogicalDevicePanelPortIndexingLRTB = DesignLogicalDevicePanelPortIndexing{Value: "L-R, T-B"}
+	DesignLogicalDevicePanelPortIndexingTBLR = DesignLogicalDevicePanelPortIndexing{Value: "T-B, L-R"}
 )
 
 type SpeedUnit oenum.Member[string]
@@ -408,4 +444,60 @@ var (
 	LinkSpeed400g  = LinkSpeed{Value: "400g"}
 	LinkSpeed800G  = LinkSpeed{Value: "800G"}
 	LinkSpeed800g  = LinkSpeed{Value: "800g"}
+)
+
+type LeafRedundancyProtocol oenum.Member[string]
+
+var (
+	LeafRedundancyProtocolNone = LeafRedundancyProtocol{Value: ""}
+	LeafRedundancyProtocolESI  = LeafRedundancyProtocol{Value: "esi"}
+	LeafRedundancyProtocolMLAG = LeafRedundancyProtocol{Value: "mlag"}
+)
+
+type LAGMode oenum.Member[string]
+
+var (
+	LAGModeNone        = LAGMode{Value: ""}
+	LAGModeActiveLACP  = LAGMode{Value: "lacp_active"}
+	LAGModePassiveLACP = LAGMode{Value: "lacp_passive"}
+	LAGModeStatic      = LAGMode{Value: "static_lag"}
+)
+
+type LinkAttachmentType oenum.Member[string]
+
+var (
+	LinkAttachmentTypeSingle = LinkAttachmentType{Value: "singleAttached"}
+	LinkAttachmentTypeDual   = LinkAttachmentType{Value: "dualAttached"}
+)
+
+type LinkSwitchPeer oenum.Member[string]
+
+var (
+	LinkSwitchPeerUnspecified = LinkSwitchPeer{Value: ""}
+	LinkSwitchPeerFirst       = LinkSwitchPeer{Value: "first"}
+	LinkSwitchPeerSecond      = LinkSwitchPeer{Value: "second"}
+)
+
+type SystemManagementLevel oenum.Member[string]
+
+var ( // do not introduce "not_installed" - that's an agent parameter with similar enum values
+	SystemManagementLevelFullControl   = SystemManagementLevel{Value: "full_control"}
+	SystemManagementLevelTelemetryOnly = SystemManagementLevel{Value: "telemetry_only"}
+	SystemManagementLevelUnmanaged     = SystemManagementLevel{Value: "unmanaged"}
+)
+
+type TemplateCapability oenum.Member[string]
+
+var (
+	TemplateCapabilityBlueprint = TemplateCapability{Value: "blueprint"}
+	TemplateCapabilityPod       = TemplateCapability{Value: "pod"}
+)
+
+type TemplateType oenum.Member[string]
+
+var (
+	TemplateTypeRackBased     = TemplateType{Value: "rack_based"}
+	TemplateTypePodBased      = TemplateType{Value: "pod_based"}
+	TemplateTypeL3Collapsed   = TemplateType{Value: "l3_collapsed"}
+	TemplateTypeRailCollapsed = TemplateType{Value: "rail_collapsed"}
 )

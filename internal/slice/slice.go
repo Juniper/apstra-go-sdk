@@ -52,3 +52,34 @@ func Remove[T any](s []T, i int) []T {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
 }
+
+// Uniq returns a new slice containing only the unique elements of the input
+// slice `in`, preserving the order of their first appearance.
+//
+// The input elements must be of a comparable type.
+func Uniq[T comparable](in []T) []T {
+	if len(in) == 0 {
+		if in == nil {
+			return ([]T)(nil)
+		}
+		return make([]T, 0)
+	}
+
+	seen := make(map[T]struct{}, len(in))
+	var result []T
+	for _, v := range in {
+		if _, ok := seen[v]; ok {
+			continue
+		}
+		seen[v] = struct{}{}
+		result = append(result, v)
+	}
+	return result
+}
+
+// IsUniq reports whether all elements in the input slice `in` are unique.
+//
+// The input elements must be of a comparable type.
+func IsUniq[T comparable](in []T) bool {
+	return len(Uniq(in)) == len(in)
+}
