@@ -11,16 +11,14 @@ import (
 	"slices"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
-	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var (
-	_ logicalDeviceIDer               = (*LeafSwitch)(nil)
-	_ internal.Replicator[LeafSwitch] = (*LeafSwitch)(nil)
-	_ json.Marshaler                  = (*LeafSwitch)(nil)
-	_ json.Unmarshaler                = (*LeafSwitch)(nil)
+	_ logicalDeviceIDer = (*LeafSwitch)(nil)
+	_ json.Marshaler    = (*LeafSwitch)(nil)
+	_ json.Unmarshaler  = (*LeafSwitch)(nil)
 )
 
 type LeafSwitch struct {

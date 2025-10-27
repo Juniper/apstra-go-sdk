@@ -10,17 +10,15 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var (
-	_ logicalDeviceIDer                 = (*AccessSwitch)(nil)
-	_ internal.Replicator[AccessSwitch] = (*AccessSwitch)(nil)
-	_ json.Marshaler                    = (*AccessSwitch)(nil)
-	_ json.Unmarshaler                  = (*AccessSwitch)(nil)
+	_ logicalDeviceIDer = (*AccessSwitch)(nil)
+	_ json.Marshaler    = (*AccessSwitch)(nil)
+	_ json.Unmarshaler  = (*AccessSwitch)(nil)
 )
 
 type AccessSwitch struct {

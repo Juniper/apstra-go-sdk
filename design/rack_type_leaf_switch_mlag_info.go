@@ -5,11 +5,8 @@
 package design
 
 import (
-	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
-
-var _ internal.Replicator[RackTypeLeafSwitchMLAGInfo] = (*RackTypeLeafSwitchMLAGInfo)(nil)
 
 type RackTypeLeafSwitchMLAGInfo struct {
 	LeafLeafL3LinkCount         int         `json:"leaf_leaf_l3_link_count"`

@@ -13,7 +13,3 @@ type IDSetter interface {
 	SetID(string) error
 	MustSetID(string)
 }
-
-type Replicator[T any] interface {
-	Replicate() T
-}

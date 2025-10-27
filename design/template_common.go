@@ -5,7 +5,6 @@
 package design
 
 import (
-	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
@@ -18,8 +17,6 @@ type PodWithCount struct {
 	Count int
 	Pod   TemplateRackBased
 }
-
-var _ internal.Replicator[Spine] = (*Spine)(nil)
 
 type Spine struct {
 	Count                  int           `json:"count"`

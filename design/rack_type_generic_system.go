@@ -11,16 +11,14 @@ import (
 	"slices"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
-	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 )
 
 var (
-	_ logicalDeviceIDer                  = (*GenericSystem)(nil)
-	_ internal.Replicator[GenericSystem] = (*GenericSystem)(nil)
-	_ json.Marshaler                     = (*GenericSystem)(nil)
-	_ json.Unmarshaler                   = (*GenericSystem)(nil)
+	_ logicalDeviceIDer = (*GenericSystem)(nil)
+	_ json.Marshaler    = (*GenericSystem)(nil)
+	_ json.Unmarshaler  = (*GenericSystem)(nil)
 )
 
 type GenericSystem struct {

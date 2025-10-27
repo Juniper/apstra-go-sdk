@@ -19,11 +19,10 @@ import (
 )
 
 var (
-	_ internal.IDSetter             = (*RackType)(nil)
-	_ internal.Replicator[RackType] = (*RackType)(nil)
-	_ json.Marshaler                = (*RackType)(nil)
-	_ json.Unmarshaler              = (*RackType)(nil)
-	_ timeutils.Stamper             = (*RackType)(nil)
+	_ internal.IDSetter = (*RackType)(nil)
+	_ json.Marshaler    = (*RackType)(nil)
+	_ json.Unmarshaler  = (*RackType)(nil)
+	_ timeutils.Stamper = (*RackType)(nil)
 )
 
 type RackType struct {
