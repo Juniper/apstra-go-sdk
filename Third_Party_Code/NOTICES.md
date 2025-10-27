@@ -35,8 +35,8 @@ SOFTWARE.
 ## github.com/google/uuid
 
 * Name: github.com/google/uuid
-* Version: v1.3.0
-* License: [BSD-3-Clause](https://github.com/google/uuid/blob/v1.3.0/LICENSE)
+* Version: v1.6.0
+* License: [BSD-3-Clause](https://github.com/google/uuid/blob/v1.6.0/LICENSE)
 
 ```
 Copyright (c) 2009,2014 Google Inc. All rights reserved.
@@ -438,8 +438,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 ## github.com/orsinium-labs/enum
 
 * Name: github.com/orsinium-labs/enum
-* Version: v1.3.0
-* License: [MIT](https://github.com/orsinium-labs/enum/blob/v1.3.0/LICENSE)
+* Version: v1.5.0
+* License: [MIT](https://github.com/orsinium-labs/enum/blob/v1.5.0/LICENSE)
 
 ```
 MIT License
@@ -469,8 +469,8 @@ SOFTWARE.
 ## golang.org/x/mod/semver
 
 * Name: golang.org/x/mod/semver
-* Version: v0.28.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/mod/+/v0.28.0:LICENSE)
+* Version: v0.29.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/mod/+/v0.29.0:LICENSE)
 
 ```
 Copyright 2009 The Go Authors.
@@ -543,8 +543,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/tools
 
 * Name: golang.org/x/tools
-* Version: v0.37.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/tools/+/v0.37.0:LICENSE)
+* Version: v0.38.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/tools/+/v0.38.0:LICENSE)
 
 ```
 Copyright 2009 The Go Authors.
