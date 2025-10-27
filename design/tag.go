@@ -16,11 +16,10 @@ import (
 )
 
 var (
-	_ internal.IDSetter        = (*Tag)(nil)
-	_ internal.Replicator[Tag] = (*Tag)(nil)
-	_ json.Marshaler           = (*Tag)(nil)
-	_ json.Unmarshaler         = (*Tag)(nil)
-	_ timeutils.Stamper        = (*Tag)(nil)
+	_ internal.IDSetter = (*Tag)(nil)
+	_ json.Marshaler    = (*Tag)(nil)
+	_ json.Unmarshaler  = (*Tag)(nil)
+	_ timeutils.Stamper = (*Tag)(nil)
 )
 
 type Tag struct {

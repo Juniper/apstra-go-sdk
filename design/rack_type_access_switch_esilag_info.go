@@ -5,11 +5,8 @@
 package design
 
 import (
-	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
-
-var _ internal.Replicator[RackTypeAccessSwitchESILAGInfo] = (*RackTypeAccessSwitchESILAGInfo)(nil)
 
 type RackTypeAccessSwitchESILAGInfo struct {
 	LinkCount        int         `json:"access_access_link_count"`

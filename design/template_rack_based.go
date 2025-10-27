@@ -19,11 +19,10 @@ import (
 )
 
 var (
-	_ Template                               = (*TemplateRackBased)(nil)
-	_ internal.IDSetter                      = (*TemplateRackBased)(nil)
-	_ internal.Replicator[TemplateRackBased] = (*TemplateRackBased)(nil)
-	_ json.Marshaler                         = (*TemplateRackBased)(nil)
-	_ json.Unmarshaler                       = (*TemplateRackBased)(nil)
+	_ Template          = (*TemplateRackBased)(nil)
+	_ internal.IDSetter = (*TemplateRackBased)(nil)
+	_ json.Marshaler    = (*TemplateRackBased)(nil)
+	_ json.Unmarshaler  = (*TemplateRackBased)(nil)
 )
 
 type TemplateRackBased struct {
