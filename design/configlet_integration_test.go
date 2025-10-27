@@ -162,7 +162,7 @@ func TestConfiglet_CRUD(t *testing.T) {
 					comparedesign.Configlet(t, create, obj)
 
 					// update the object and validate
-					require.NoError(t, update.SetID(id))
+					update.SetID(id)
 					require.NotNil(t, update.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateConfiglet2(ctx, update)
@@ -177,7 +177,7 @@ func TestConfiglet_CRUD(t *testing.T) {
 					comparedesign.Configlet(t, update, obj)
 
 					// restore the object to the original state
-					require.NoError(t, create.SetID(id))
+					create.SetID(id)
 					require.NotNil(t, create.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateConfiglet2(ctx, create)

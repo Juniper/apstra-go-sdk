@@ -878,7 +878,7 @@ func TestTemplateRailCollapsed_CRUD(t *testing.T) {
 					comparedesign.TemplateRailCollapsed(t, create, obj)
 
 					// update the object then validate
-					require.NoError(t, update.SetID(id))
+					update.SetID(id)
 					require.NotNil(t, update.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateTemplate2(ctx, &update)
@@ -903,7 +903,7 @@ func TestTemplateRailCollapsed_CRUD(t *testing.T) {
 					comparedesign.TemplateRailCollapsed(t, update, obj)
 
 					// restore the object (by type)
-					require.NoError(t, create.SetID(id))
+					create.SetID(id)
 					require.NotNil(t, create.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateTemplateRailCollapsed2(ctx, create)

@@ -111,7 +111,7 @@ func TestTag_CRUD(t *testing.T) {
 					comparedesign.Tag(t, create, *objPtr)
 
 					// update the object and validate
-					require.NoError(t, update.SetID(id))
+					update.SetID(id)
 					require.NotNil(t, update.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateTag2(ctx, update)
@@ -126,7 +126,7 @@ func TestTag_CRUD(t *testing.T) {
 					comparedesign.Tag(t, update, obj)
 
 					// restore the object to the original state
-					require.NoError(t, create.SetID(id))
+					create.SetID(id)
 					require.NotNil(t, create.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateTag2(ctx, create)
