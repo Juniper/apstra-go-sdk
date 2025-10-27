@@ -11,13 +11,11 @@ import (
 
 	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
-	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
 var (
-	_ internal.IDSetter = (*Profile)(nil)
 	_ json.Marshaler    = (*Profile)(nil)
 	_ json.Unmarshaler  = (*Profile)(nil)
 	_ timeutils.Stamper = (*Profile)(nil)
@@ -51,27 +49,6 @@ func (p Profile) ID() *string {
 		return nil
 	}
 	return &p.id
-}
-
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (p *Profile) SetID(id string) error {
-	if p.id != "" {
-		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", p.id))
-	}
-
-	p.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (p *Profile) MustSetID(id string) {
-	err := p.SetID(id)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func (p Profile) MarshalJSON() ([]byte, error) {

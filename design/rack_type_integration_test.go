@@ -379,7 +379,7 @@ func TestRackType_CRUD(t *testing.T) {
 					comparedesign.RackType(t, create, obj)
 
 					// update the object and validate
-					require.NoError(t, update.SetID(id))
+					update.SetID(id)
 					require.NotNil(t, update.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateRackType2(ctx, update)
@@ -394,7 +394,7 @@ func TestRackType_CRUD(t *testing.T) {
 					comparedesign.RackType(t, update, obj)
 
 					// restore the object to the original state
-					require.NoError(t, create.SetID(id))
+					create.SetID(id)
 					require.NotNil(t, create.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateRackType2(ctx, create)

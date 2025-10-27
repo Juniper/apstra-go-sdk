@@ -50,27 +50,6 @@ func (t Common) ID() *string {
 	return &t.id
 }
 
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (t *Common) SetID(id string) error {
-	if t.id != "" {
-		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", t.id))
-	}
-
-	t.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (t *Common) MustSetID(id string) {
-	err := t.SetID(id)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func (t *Common) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		ID             string             `json:"id"`

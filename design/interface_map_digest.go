@@ -9,10 +9,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
+	_ internal.IDer     = (*InterfaceMapDigest)(nil)
 	_ json.Unmarshaler  = (*InterfaceMapDigest)(nil)
 	_ timeutils.Stamper = (*InterfaceMapDigest)(nil)
 )

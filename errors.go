@@ -10,12 +10,6 @@ func (e ErrAPIResponseInvalid) Error() string {
 	return string(e)
 }
 
-type ErrIDIsSet string
-
-func (e ErrIDIsSet) Error() string {
-	return string(e)
-}
-
 type ErrInternal string
 
 func (e ErrInternal) Error() string {

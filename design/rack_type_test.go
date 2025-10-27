@@ -14,7 +14,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,8 +30,7 @@ func TestRackType_ID(t *testing.T) {
 	})
 
 	t.Run("set_id", func(t *testing.T) {
-		err := obj.SetID(desiredId)
-		require.NoError(t, err)
+		obj.SetID(desiredId)
 	})
 
 	t.Run("check_id_after_set", func(t *testing.T) {
@@ -41,19 +39,10 @@ func TestRackType_ID(t *testing.T) {
 		require.Equal(t, desiredId, *id)
 	})
 
-	t.Run("must_set_id", func(t *testing.T) {
-		obj = zero.Of(obj)
-		obj.MustSetID(desiredId)
-	})
-
 	t.Run("check_id_after_must_set", func(t *testing.T) {
 		id = obj.ID()
 		require.NotNil(t, id)
 		require.Equal(t, desiredId, *id)
-	})
-
-	t.Run("must_set_id_panic", func(t *testing.T) {
-		require.Panics(t, func() { obj.MustSetID(desiredId) })
 	})
 }
 

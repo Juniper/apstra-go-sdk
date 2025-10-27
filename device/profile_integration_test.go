@@ -220,7 +220,7 @@ func TestProfile_CRUD(t *testing.T) {
 					comparedevice.DeviceProfile(t, create, obj)
 
 					t.Log("update the object and validate")
-					require.NoError(t, update.SetID(id))
+					update.SetID(id)
 					require.NotNil(t, update.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateDeviceProfile(ctx, update)
@@ -235,7 +235,7 @@ func TestProfile_CRUD(t *testing.T) {
 					comparedevice.DeviceProfile(t, update, obj)
 
 					t.Log("restore the object to the original state")
-					require.NoError(t, create.SetID(id))
+					create.SetID(id)
 					require.NotNil(t, create.ID())
 					require.Equal(t, id, *update.ID())
 					err = client.Client.UpdateDeviceProfile(ctx, create)

@@ -12,14 +12,13 @@ import (
 	"sort"
 	"time"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
 var (
-	_ internal.IDSetter = (*RackType)(nil)
+	_ internal.IDer     = (*RackType)(nil)
 	_ json.Marshaler    = (*RackType)(nil)
 	_ json.Unmarshaler  = (*RackType)(nil)
 	_ timeutils.Stamper = (*RackType)(nil)
@@ -43,27 +42,6 @@ func (r RackType) ID() *string {
 		return nil
 	}
 	return &r.id
-}
-
-// SetID sets a previously un-set id attribute. If the id attribute is found to
-// have an existing value, an error is returned. Presence of an existing value
-// is the only reason SetID will return an error. If the id attribute is known
-// to be empty, use MustSetID.
-func (r *RackType) SetID(id string) error {
-	if r.id != "" {
-		return sdk.ErrIDIsSet(fmt.Sprintf("id already has value %q", r.id))
-	}
-
-	r.id = id
-	return nil
-}
-
-// MustSetID invokes SetID and panics if an error is returned.
-func (r *RackType) MustSetID(id string) {
-	err := r.SetID(id)
-	if err != nil {
-		panic(err)
-	}
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields
@@ -139,7 +117,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 
 		// clone the system and set its LD ID to a hash of the LD payload
 		system := system.Replicate()
-		system.LogicalDevice.mustSetHashID(hasher)
+		system.LogicalDevice.setHashID(hasher)
 
 		// add the LD to the rack-wide LD map
 		logicalDeviceMap[*system.logicalDeviceID()] = system.LogicalDevice
@@ -155,7 +133,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 
 		// clone the system and set its LD ID to a hash of the LD payload
 		system := system.Replicate()
-		system.LogicalDevice.mustSetHashID(hasher)
+		system.LogicalDevice.setHashID(hasher)
 
 		// add the LD to the rack-wide LD map
 		logicalDeviceMap[*system.logicalDeviceID()] = system.LogicalDevice
@@ -171,7 +149,7 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 
 		// clone the system and set its LD ID to a hash of the LD payload
 		system := system.Replicate()
-		system.LogicalDevice.mustSetHashID(hasher)
+		system.LogicalDevice.setHashID(hasher)
 
 		// add the LD to the rack-wide LD map
 		logicalDeviceMap[*system.logicalDeviceID()] = system.LogicalDevice
@@ -317,15 +295,13 @@ func (r RackType) digest(h hash.Hash) []byte {
 	return mustHashForComparison(r, h)
 }
 
-func (r *RackType) setHashID(h hash.Hash) error {
-	return r.SetID(fmt.Sprintf("%x", r.digest(h)))
-}
-
-func (r *RackType) mustSetHashID(h hash.Hash) {
-	err := r.SetID(fmt.Sprintf("%x", r.digest(h)))
-	if err != nil {
-		panic(err)
+func (r *RackType) setHashID(h hash.Hash) {
+	if r.id != "" {
+		panic(fmt.Sprintf("id already has value %q", r.id))
 	}
+
+	r.id = fmt.Sprintf("%x", r.digest(h))
+	return
 }
 
 func NewRackType(id string) RackType {
