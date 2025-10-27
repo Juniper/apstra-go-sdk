@@ -16,9 +16,8 @@ import (
 )
 
 var (
-	_ logicalDeviceIDer = (*GenericSystem)(nil)
-	_ json.Marshaler    = (*GenericSystem)(nil)
-	_ json.Unmarshaler  = (*GenericSystem)(nil)
+	_ json.Marshaler   = (*GenericSystem)(nil)
+	_ json.Unmarshaler = (*GenericSystem)(nil)
 )
 
 type GenericSystem struct {

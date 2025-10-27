@@ -16,9 +16,8 @@ import (
 )
 
 var (
-	_ logicalDeviceIDer = (*LeafSwitch)(nil)
-	_ json.Marshaler    = (*LeafSwitch)(nil)
-	_ json.Unmarshaler  = (*LeafSwitch)(nil)
+	_ json.Marshaler   = (*LeafSwitch)(nil)
+	_ json.Unmarshaler = (*LeafSwitch)(nil)
 )
 
 type LeafSwitch struct {
