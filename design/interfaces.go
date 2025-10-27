@@ -10,10 +10,6 @@ import (
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
 
-type logicalDeviceIDer interface {
-	logicalDeviceID() *string
-}
-
 type Template interface {
 	timeutils.Stamper
 	internal.IDer
