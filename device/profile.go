@@ -51,14 +51,6 @@ func (p Profile) ID() *string {
 	return &p.id
 }
 
-func (p *Profile) setID(id string) {
-	if p.id != "" {
-		panic(fmt.Sprintf("id already has value %q", p.id))
-	}
-
-	p.id = id
-}
-
 func (p Profile) MarshalJSON() ([]byte, error) {
 	raw := struct {
 		Selector                    Selector                     `json:"selector"`

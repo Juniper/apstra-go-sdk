@@ -37,15 +37,6 @@ func (l LogicalDevice) ID() *string {
 	return &l.id
 }
 
-func (l *LogicalDevice) setID(id string) {
-	if l.id != "" {
-		panic(fmt.Sprintf("id already has value %q", l.id))
-	}
-
-	l.id = id
-	return
-}
-
 // Replicate returns a copy of itself with zero values for metadata fields
 func (l LogicalDevice) Replicate() LogicalDevice {
 	return LogicalDevice{
@@ -103,7 +94,13 @@ func (l LogicalDevice) digest(h hash.Hash) []byte {
 }
 
 func (l *LogicalDevice) setHashID(h hash.Hash) {
-	l.setID(fmt.Sprintf("%x", l.digest(h)))
+	if l.id != "" {
+		panic(fmt.Sprintf("id already has value %q", l.id))
+	}
+
+	l.id = fmt.Sprintf("%x", l.digest(h))
+	return
+
 }
 
 func NewLogicalDevice(id string) LogicalDevice {

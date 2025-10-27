@@ -44,15 +44,6 @@ func (r RackType) ID() *string {
 	return &r.id
 }
 
-func (r *RackType) setID(id string) {
-	if r.id != "" {
-		panic(fmt.Sprintf("id already has value %q", r.id))
-	}
-
-	r.id = id
-	return
-}
-
 // Replicate returns a copy of itself with zero values for metadata fields
 func (r RackType) Replicate() RackType {
 	result := RackType{
@@ -305,7 +296,12 @@ func (r RackType) digest(h hash.Hash) []byte {
 }
 
 func (r *RackType) setHashID(h hash.Hash) {
-	r.setID(fmt.Sprintf("%x", r.digest(h)))
+	if r.id != "" {
+		panic(fmt.Sprintf("id already has value %q", r.id))
+	}
+
+	r.id = fmt.Sprintf("%x", r.digest(h))
+	return
 }
 
 func NewRackType(id string) RackType {

@@ -39,11 +39,21 @@ func (i *InterfaceMap) SetID(id string) {
 }
 
 func (l *LogicalDevice) SetID(id string) {
-	l.setID(id)
+	if l.id != "" {
+		panic(fmt.Sprintf("id already has value %q", l.id))
+	}
+
+	l.id = id
+	return
 }
 
 func (r *RackType) SetID(id string) {
-	r.setID(id)
+	if r.id != "" {
+		panic(fmt.Sprintf("id already has value %q", r.id))
+	}
+
+	r.id = id
+	return
 }
 
 func (t *Tag) SetID(id string) {
@@ -74,7 +84,12 @@ func (t *TemplatePodBased) SetID(id string) {
 }
 
 func (t *TemplateRackBased) SetID(id string) {
-	t.setID(id)
+	if t.id != "" {
+		panic(fmt.Sprintf("id already has value %q", t.id))
+	}
+
+	t.id = id
+	return
 }
 
 func (t *TemplateRailCollapsed) SetID(id string) {

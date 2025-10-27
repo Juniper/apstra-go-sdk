@@ -53,15 +53,6 @@ func (t TemplateRackBased) ID() *string {
 	return &t.id
 }
 
-func (t *TemplateRackBased) setID(id string) {
-	if t.id != "" {
-		panic(fmt.Sprintf("id already has value %q", t.id))
-	}
-
-	t.id = id
-	return
-}
-
 // Replicate returns a copy of itself with zero values for metadata fields
 func (t TemplateRackBased) Replicate() TemplateRackBased {
 	result := TemplateRackBased{
@@ -222,7 +213,12 @@ func (t TemplateRackBased) digest(h hash.Hash) []byte {
 }
 
 func (t *TemplateRackBased) setHashID(h hash.Hash) {
-	t.setID(fmt.Sprintf("%x", t.digest(h)))
+	if t.id != "" {
+		panic(fmt.Sprintf("id already has value %q", t.id))
+	}
+
+	t.id = fmt.Sprintf("%x", t.digest(h))
+	return
 }
 
 func NewTemplateRackBased(id string) TemplateRackBased {

@@ -4,6 +4,12 @@
 
 package device
 
+import "fmt"
+
 func (p *Profile) SetID(id string) {
-	p.setID(id)
+	if p.id != "" {
+		panic(fmt.Sprintf("id already has value %q", p.id))
+	}
+
+	p.id = id
 }

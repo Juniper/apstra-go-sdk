@@ -45,7 +45,6 @@ func TestLogicalDevice_ID(t *testing.T) {
 	})
 
 	t.Run("set_id_panic", func(t *testing.T) {
-		require.Panics(t, func() { obj.setID(desiredId) })
 		require.Panics(t, func() { obj.SetID(desiredId) })
 	})
 }
