@@ -100,7 +100,6 @@ func (l *LogicalDevice) setHashID(h hash.Hash) {
 
 	l.id = fmt.Sprintf("%x", l.digest(h))
 	return
-
 }
 
 func NewLogicalDevice(id string) LogicalDevice {
