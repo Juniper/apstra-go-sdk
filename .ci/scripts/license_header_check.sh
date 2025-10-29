@@ -16,6 +16,7 @@ skip_regexes+=("^\.gitignore$")
 skip_regexes+=("^\.notices.tpl$")
 skip_regexes+=("^go.mod$")
 skip_regexes+=("^go.sum$")
+skip_regexes+=("^kb/.*md$")
 
 copyright_template="Copyright \\(c\\) Juniper Networks, Inc\\., %s-%s\\."
 arr_line="All rights reserved\."
