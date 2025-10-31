@@ -33,7 +33,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 				RackType: design.RackType{
 					Label:                    "L2 Virtual",
 					FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-					LeafSwitches: []design.LeafSwitch{
+					LeafSwitches: []design.RackTypeLeafSwitch{
 						{
 							Label:             "leaf",
 							LinkPerSpineCount: pointer.To(1),
@@ -71,7 +71,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 							},
 						},
 					},
-					GenericSystems: []design.GenericSystem{
+					GenericSystems: []design.RackTypeGenericSystem{
 						{
 							Count:     2,
 							Label:     "generic",
@@ -146,7 +146,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 				RackType: design.RackType{
 					Label:                    "L2 MLAG 1x access",
 					FabricConnectivityDesign: enum.FabricConnectivityDesign{Value: "l3clos"},
-					LeafSwitches: []design.LeafSwitch{
+					LeafSwitches: []design.RackTypeLeafSwitch{
 						{
 							Label:             "leaf",
 							LinkPerSpineCount: pointer.To(1),
@@ -175,7 +175,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 							},
 						},
 					},
-					AccessSwitches: []design.AccessSwitch{
+					AccessSwitches: []design.RackTypeAccessSwitch{
 						{
 							Count: 1,
 							Label: "access",
@@ -203,7 +203,7 @@ var testTemplatesRackBased = map[string]design.TemplateRackBased{
 							},
 						},
 					},
-					GenericSystems: []design.GenericSystem{
+					GenericSystems: []design.RackTypeGenericSystem{
 						{
 							ASNDomain: &enum.FeatureSwitchDisabled,
 							Count:     2,

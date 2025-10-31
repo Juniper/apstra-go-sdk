@@ -16,11 +16,11 @@ import (
 )
 
 var (
-	_ json.Marshaler   = (*GenericSystem)(nil)
-	_ json.Unmarshaler = (*GenericSystem)(nil)
+	_ json.Marshaler   = (*RackTypeGenericSystem)(nil)
+	_ json.Unmarshaler = (*RackTypeGenericSystem)(nil)
 )
 
-type GenericSystem struct {
+type RackTypeGenericSystem struct {
 	ASNDomain        *enum.FeatureSwitch
 	Count            int
 	Label            string
@@ -35,7 +35,7 @@ type GenericSystem struct {
 
 // logicalDeviceID returns *string representing the ID of the embedded logical
 // device. If the LD ID is unset, nil is returned
-func (g GenericSystem) logicalDeviceID() *string {
+func (g RackTypeGenericSystem) logicalDeviceID() *string {
 	if g.LogicalDevice.id == "" {
 		return nil
 	}
@@ -43,8 +43,8 @@ func (g GenericSystem) logicalDeviceID() *string {
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields
-func (g GenericSystem) Replicate() GenericSystem {
-	result := GenericSystem{
+func (g RackTypeGenericSystem) Replicate() RackTypeGenericSystem {
+	result := RackTypeGenericSystem{
 		Count:            g.Count,
 		Label:            g.Label,
 		Links:            make([]RackTypeLink, len(g.Links)),
@@ -76,7 +76,7 @@ func (g GenericSystem) Replicate() GenericSystem {
 	return result
 }
 
-func (g GenericSystem) MarshalJSON() ([]byte, error) {
+func (g RackTypeGenericSystem) MarshalJSON() ([]byte, error) {
 	result := rawGenericSystem{
 		AsnDomain:        g.ASNDomain,
 		Count:            zero.PreferDefault(g.Count, 1),
@@ -98,7 +98,7 @@ func (g GenericSystem) MarshalJSON() ([]byte, error) {
 	return json.Marshal(result)
 }
 
-func (g *GenericSystem) UnmarshalJSON(bytes []byte) error {
+func (g *RackTypeGenericSystem) UnmarshalJSON(bytes []byte) error {
 	var raw rawGenericSystem
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {

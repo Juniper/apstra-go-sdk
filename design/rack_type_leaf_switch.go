@@ -16,11 +16,11 @@ import (
 )
 
 var (
-	_ json.Marshaler   = (*LeafSwitch)(nil)
-	_ json.Unmarshaler = (*LeafSwitch)(nil)
+	_ json.Marshaler   = (*RackTypeLeafSwitch)(nil)
+	_ json.Unmarshaler = (*RackTypeLeafSwitch)(nil)
 )
 
-type LeafSwitch struct {
+type RackTypeLeafSwitch struct {
 	Label              string
 	LinkPerSpineCount  *int
 	LinkPerSpineSpeed  *speed.Speed
@@ -32,7 +32,7 @@ type LeafSwitch struct {
 
 // logicalDeviceID returns *string representing the ID of the embedded logical
 // device. If the LD ID is unset, nil is returned
-func (l LeafSwitch) logicalDeviceID() *string {
+func (l RackTypeLeafSwitch) logicalDeviceID() *string {
 	if l.LogicalDevice.id == "" {
 		return nil
 	}
@@ -40,8 +40,8 @@ func (l LeafSwitch) logicalDeviceID() *string {
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields
-func (l LeafSwitch) Replicate() LeafSwitch {
-	result := LeafSwitch{
+func (l RackTypeLeafSwitch) Replicate() RackTypeLeafSwitch {
+	result := RackTypeLeafSwitch{
 		Label:              l.Label,
 		LogicalDevice:      l.LogicalDevice.Replicate(),
 		RedundancyProtocol: l.RedundancyProtocol,
@@ -71,7 +71,7 @@ func (l LeafSwitch) Replicate() LeafSwitch {
 	return result
 }
 
-func (l LeafSwitch) MarshalJSON() ([]byte, error) {
+func (l RackTypeLeafSwitch) MarshalJSON() ([]byte, error) {
 	result := rawLeafSwitch{
 		Label:              l.Label,
 		LinkPerSpineCount:  l.LinkPerSpineCount,
@@ -108,7 +108,7 @@ func (l LeafSwitch) MarshalJSON() ([]byte, error) {
 	return json.Marshal(result)
 }
 
-func (l *LeafSwitch) UnmarshalJSON(bytes []byte) error {
+func (l *RackTypeLeafSwitch) UnmarshalJSON(bytes []byte) error {
 	var raw rawLeafSwitch
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {

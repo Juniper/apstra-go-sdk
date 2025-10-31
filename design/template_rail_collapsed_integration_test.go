@@ -33,7 +33,7 @@ var testTemplatesRailCollapsed = map[string]design.TemplateRailCollapsed{
 				RackType: design.RackType{
 					Label:                    "Collapsed 128GPU",
 					FabricConnectivityDesign: enum.FabricConnectivityDesignRailCollapsed,
-					LeafSwitches: []design.LeafSwitch{
+					LeafSwitches: []design.RackTypeLeafSwitch{
 						{
 							Label: "leaf_1",
 							LogicalDevice: design.LogicalDevice{
@@ -65,7 +65,7 @@ var testTemplatesRailCollapsed = map[string]design.TemplateRailCollapsed{
 							},
 						},
 					},
-					GenericSystems: []design.GenericSystem{
+					GenericSystems: []design.RackTypeGenericSystem{
 						{
 							ASNDomain: &enum.FeatureSwitchDisabled,
 							Count:     16,
@@ -202,7 +202,7 @@ var testTemplatesRailCollapsed = map[string]design.TemplateRailCollapsed{
 				RackType: design.RackType{
 					Label:                    "Collapsed 512GPU",
 					FabricConnectivityDesign: enum.FabricConnectivityDesignRailCollapsed,
-					LeafSwitches: []design.LeafSwitch{
+					LeafSwitches: []design.RackTypeLeafSwitch{
 						{
 							Label: "leaf_1",
 							LogicalDevice: design.LogicalDevice{
@@ -300,7 +300,7 @@ var testTemplatesRailCollapsed = map[string]design.TemplateRailCollapsed{
 							},
 						},
 					},
-					GenericSystems: []design.GenericSystem{
+					GenericSystems: []design.RackTypeGenericSystem{
 						{
 							ASNDomain: &enum.FeatureSwitchDisabled,
 							Count:     64,
@@ -437,7 +437,7 @@ var testTemplatesRailCollapsed = map[string]design.TemplateRailCollapsed{
 				RackType: design.RackType{
 					Label:                    "Collapsed 512GPU",
 					FabricConnectivityDesign: enum.FabricConnectivityDesignRailCollapsed,
-					LeafSwitches: []design.LeafSwitch{
+					LeafSwitches: []design.RackTypeLeafSwitch{
 						{
 							Label: "leaf_1",
 							LogicalDevice: design.LogicalDevice{
@@ -623,7 +623,7 @@ var testTemplatesRailCollapsed = map[string]design.TemplateRailCollapsed{
 							},
 						},
 					},
-					GenericSystems: []design.GenericSystem{
+					GenericSystems: []design.RackTypeGenericSystem{
 						{
 							ASNDomain: &enum.FeatureSwitchDisabled,
 							Count:     128,

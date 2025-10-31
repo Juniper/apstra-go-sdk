@@ -17,9 +17,6 @@ func TestLogicalDevicePanel_MarshalUnmarshal(t *testing.T) {
 		json  string
 	}
 
-	var allRoles LogicalDevicePortRoles
-	allRoles.IncludeAllUses()
-
 	testCases := map[string]testCase{
 		"a": {
 			panel: LogicalDevicePanel{
@@ -70,7 +67,7 @@ func TestLogicalDevicePanel_MarshalUnmarshal(t *testing.T) {
 					{
 						Count: 1,
 						Speed: "10M",
-						Roles: allRoles,
+						Roles: AllLogicalDevicePortRoles(),
 					},
 				},
 				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,

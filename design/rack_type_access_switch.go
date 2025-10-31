@@ -16,11 +16,11 @@ import (
 )
 
 var (
-	_ json.Marshaler   = (*AccessSwitch)(nil)
-	_ json.Unmarshaler = (*AccessSwitch)(nil)
+	_ json.Marshaler   = (*RackTypeAccessSwitch)(nil)
+	_ json.Unmarshaler = (*RackTypeAccessSwitch)(nil)
 )
 
-type AccessSwitch struct {
+type RackTypeAccessSwitch struct {
 	Count         int
 	ESILAGInfo    *RackTypeAccessSwitchESILAGInfo
 	Label         string
@@ -31,7 +31,7 @@ type AccessSwitch struct {
 
 // logicalDeviceID returns *string representing the ID of the embedded logical
 // device. If the LD ID is unset, nil is returned
-func (a AccessSwitch) logicalDeviceID() *string {
+func (a RackTypeAccessSwitch) logicalDeviceID() *string {
 	if a.LogicalDevice.id == "" {
 		return nil
 	}
@@ -39,8 +39,8 @@ func (a AccessSwitch) logicalDeviceID() *string {
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields
-func (a AccessSwitch) Replicate() AccessSwitch {
-	result := AccessSwitch{
+func (a RackTypeAccessSwitch) Replicate() RackTypeAccessSwitch {
+	result := RackTypeAccessSwitch{
 		Count:         a.Count,
 		Label:         a.Label,
 		Links:         make([]RackTypeLink, len(a.Links)),
@@ -64,7 +64,7 @@ func (a AccessSwitch) Replicate() AccessSwitch {
 	return result
 }
 
-func (a AccessSwitch) MarshalJSON() ([]byte, error) {
+func (a RackTypeAccessSwitch) MarshalJSON() ([]byte, error) {
 	result := rawAccessSwitch{
 		Count:           zero.PreferDefault(a.Count, 1),
 		Label:           a.Label,
@@ -95,7 +95,7 @@ func (a AccessSwitch) MarshalJSON() ([]byte, error) {
 	return json.Marshal(result)
 }
 
-func (a *AccessSwitch) UnmarshalJSON(bytes []byte) error {
+func (a *RackTypeAccessSwitch) UnmarshalJSON(bytes []byte) error {
 	var raw rawAccessSwitch
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {

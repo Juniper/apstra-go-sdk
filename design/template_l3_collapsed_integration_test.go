@@ -30,7 +30,7 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 				RackType: design.RackType{
 					Label:                    "Collapsed 1xleaf",
 					FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-					LeafSwitches: []design.LeafSwitch{
+					LeafSwitches: []design.RackTypeLeafSwitch{
 						{
 							Label: "leaf",
 							LogicalDevice: design.LogicalDevice{
@@ -50,7 +50,7 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 							},
 						},
 					},
-					AccessSwitches: []design.AccessSwitch{
+					AccessSwitches: []design.RackTypeAccessSwitch{
 						{
 							Count: 1,
 							Label: "access",
@@ -78,7 +78,7 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 							},
 						},
 					},
-					GenericSystems: []design.GenericSystem{
+					GenericSystems: []design.RackTypeGenericSystem{
 						{
 							Count: 2,
 							Label: "generic",
@@ -123,7 +123,7 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 				RackType: design.RackType{
 					Label:                    "Collapsed 2xleafs",
 					FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-					LeafSwitches: []design.LeafSwitch{
+					LeafSwitches: []design.RackTypeLeafSwitch{
 						{
 							Label: "esi_leaf",
 							LogicalDevice: design.LogicalDevice{
@@ -144,7 +144,7 @@ var testTemplatesL3Collapsed = map[string]design.TemplateL3Collapsed{
 							RedundancyProtocol: enum.LeafRedundancyProtocolESI,
 						},
 					},
-					GenericSystems: []design.GenericSystem{
+					GenericSystems: []design.RackTypeGenericSystem{
 						{
 							Count: 2,
 							Label: "generic",

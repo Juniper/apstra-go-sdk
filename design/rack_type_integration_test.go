@@ -28,7 +28,7 @@ var testRackTypes = map[string]design.RackType{
 		Label:                    testutils.RandString(6, "hex"),
 		Description:              testutils.RandString(6, "hex"),
 		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-		LeafSwitches: []design.LeafSwitch{
+		LeafSwitches: []design.RackTypeLeafSwitch{
 			{
 				Label:         testutils.RandString(6, "hex"),
 				Tags:          []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
@@ -40,7 +40,7 @@ var testRackTypes = map[string]design.RackType{
 		Label:                    testutils.RandString(6, "hex"),
 		Description:              testutils.RandString(6, "hex"),
 		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-		LeafSwitches: []design.LeafSwitch{
+		LeafSwitches: []design.RackTypeLeafSwitch{
 			{
 				Label:              "leaf",
 				LinkPerSpineCount:  pointer.To(1),
@@ -50,7 +50,7 @@ var testRackTypes = map[string]design.RackType{
 				Tags:               []design.Tag{{Label: testutils.RandString(6, "hex"), Description: testutils.RandString(6, "hex")}},
 			},
 		},
-		AccessSwitches: []design.AccessSwitch{
+		AccessSwitches: []design.RackTypeAccessSwitch{
 			{
 				Count: 1,
 				ESILAGInfo: pointer.To(design.RackTypeAccessSwitchESILAGInfo{
@@ -75,7 +75,7 @@ var testRackTypes = map[string]design.RackType{
 				},
 			},
 		},
-		GenericSystems: []design.GenericSystem{
+		GenericSystems: []design.RackTypeGenericSystem{
 			{
 				ASNDomain: nil,
 				Count:     1,
@@ -218,7 +218,7 @@ var testRackTypes = map[string]design.RackType{
 		Label:                    testutils.RandString(6, "hex"),
 		Description:              testutils.RandString(6, "hex"),
 		FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-		LeafSwitches: []design.LeafSwitch{
+		LeafSwitches: []design.RackTypeLeafSwitch{
 			{
 				LinkPerSpineCount: pointer.To(2),
 				LinkPerSpineSpeed: pointer.To(speed.Speed("400G")),
@@ -240,7 +240,7 @@ var testRackTypes = map[string]design.RackType{
 				LogicalDevice:      testLogicalDevices["leaf_48x25_4x400"],
 			},
 		},
-		AccessSwitches: []design.AccessSwitch{
+		AccessSwitches: []design.RackTypeAccessSwitch{
 			{
 				Count:         1,
 				Label:         "dual-homed-access",

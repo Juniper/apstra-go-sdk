@@ -23,7 +23,7 @@ var railCollapsedSmall = TemplateRailCollapsed{
 				id:                       "305fc185294f6e42d24ccf2acedb7164",
 				Label:                    "Collapsed 128GPU",
 				FabricConnectivityDesign: enum.FabricConnectivityDesignRailCollapsed,
-				LeafSwitches: []LeafSwitch{
+				LeafSwitches: []RackTypeLeafSwitch{
 					{
 						Label: "leaf_1",
 						LogicalDevice: LogicalDevice{
@@ -45,7 +45,7 @@ var railCollapsedSmall = TemplateRailCollapsed{
 						Tags: []Tag{},
 					},
 				},
-				GenericSystems: []GenericSystem{
+				GenericSystems: []RackTypeGenericSystem{
 					{
 						ASNDomain: &enum.FeatureSwitchDisabled,
 						Count:     16,
@@ -381,7 +381,7 @@ var railCollapsedMedium = TemplateRailCollapsed{
 				id:                       "e14f2a94565c92f9a99e9d7bcf3e1dec",
 				Label:                    "Collapsed 512GPU",
 				FabricConnectivityDesign: enum.FabricConnectivityDesignRailCollapsed,
-				LeafSwitches: []LeafSwitch{
+				LeafSwitches: []RackTypeLeafSwitch{
 					{
 						Label: "leaf_1",
 						LogicalDevice: LogicalDevice{
@@ -467,7 +467,7 @@ var railCollapsedMedium = TemplateRailCollapsed{
 						Tags: []Tag{},
 					},
 				},
-				GenericSystems: []GenericSystem{
+				GenericSystems: []RackTypeGenericSystem{
 					{
 						ASNDomain: &enum.FeatureSwitchDisabled,
 						Count:     64,
@@ -819,7 +819,7 @@ var railCollapsedLarge = TemplateRailCollapsed{
 				id:                       "4296e45fff3d84e0b13943d42d6ae390",
 				Label:                    "Collapsed 1024GPU",
 				FabricConnectivityDesign: enum.FabricConnectivityDesignRailCollapsed,
-				LeafSwitches: []LeafSwitch{
+				LeafSwitches: []RackTypeLeafSwitch{
 					{
 						Label: "leaf_1",
 						LogicalDevice: LogicalDevice{
@@ -989,7 +989,7 @@ var railCollapsedLarge = TemplateRailCollapsed{
 						Tags: []Tag{},
 					},
 				},
-				GenericSystems: []GenericSystem{
+				GenericSystems: []RackTypeGenericSystem{
 					{
 						ASNDomain: &enum.FeatureSwitchDisabled,
 						Count:     128,
