@@ -128,8 +128,12 @@ func (o LogicalDevicePortRoles) Validate() error {
 	return nil
 }
 
-func AllLogicalDevicePortRoles() LogicalDevicePortRoles {
+func NewLogicalDevicePortRoles(setAll ...bool) LogicalDevicePortRoles {
 	var result LogicalDevicePortRoles
-	result.enableAll()
+
+	if len(setAll) > 0 && setAll[0] {
+		result.enableAll()
+	}
+
 	return result
 }

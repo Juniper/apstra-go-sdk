@@ -67,7 +67,7 @@ func TestLogicalDevicePanel_MarshalUnmarshal(t *testing.T) {
 					{
 						Count: 1,
 						Speed: "10M",
-						Roles: AllLogicalDevicePortRoles(),
+						Roles: NewLogicalDevicePortRoles(true),
 					},
 				},
 				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingTBLR,
