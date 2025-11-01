@@ -24,7 +24,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 			RackType: RackType{
 				Label:                    "Collapsed 1xleaf",
 				FabricConnectivityDesign: enum.FabricConnectivityDesign{Value: "l3collapsed"},
-				LeafSwitches: []LeafSwitch{
+				LeafSwitches: []RackTypeLeafSwitch{
 					{
 						Label: "leaf",
 						LogicalDevice: LogicalDevice{
@@ -45,7 +45,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 						Tags: []Tag{},
 					},
 				},
-				AccessSwitches: []AccessSwitch{
+				AccessSwitches: []RackTypeAccessSwitch{
 					{
 						Count: 1,
 						Label: "access",
@@ -75,7 +75,7 @@ var templateL3CollapsedACS = TemplateL3Collapsed{
 						Tags: []Tag{},
 					},
 				},
-				GenericSystems: []GenericSystem{
+				GenericSystems: []RackTypeGenericSystem{
 					{
 						ASNDomain: &enum.FeatureSwitchDisabled,
 						Count:     2,
@@ -347,7 +347,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 			RackType: RackType{
 				Label:                    "Collapsed 1xleaf",
 				FabricConnectivityDesign: enum.FabricConnectivityDesign{Value: "l3collapsed"},
-				LeafSwitches: []LeafSwitch{
+				LeafSwitches: []RackTypeLeafSwitch{
 					{
 						Label: "leaf",
 						LogicalDevice: LogicalDevice{
@@ -368,7 +368,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 						Tags: []Tag{},
 					},
 				},
-				AccessSwitches: []AccessSwitch{
+				AccessSwitches: []RackTypeAccessSwitch{
 					{
 						Count: 1,
 						Label: "access",
@@ -398,7 +398,7 @@ var templateL3CollapsedACS420 = TemplateL3Collapsed{
 						Tags: []Tag{},
 					},
 				},
-				GenericSystems: []GenericSystem{
+				GenericSystems: []RackTypeGenericSystem{
 					{
 						ASNDomain: &enum.FeatureSwitchDisabled,
 						Count:     2,

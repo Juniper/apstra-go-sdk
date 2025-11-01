@@ -17,7 +17,7 @@ var rackTypeTestCollapsedSimple = RackType{
 	Label:                    "Collapsed Simple",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	LeafSwitches: []LeafSwitch{
+	LeafSwitches: []RackTypeLeafSwitch{
 		{
 			Label: "leafy",
 			LogicalDevice: LogicalDevice{
@@ -78,7 +78,7 @@ var rackTypeTestCollapsedESI = RackType{
 	Label:                    "Collapsed ESI",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	LeafSwitches: []LeafSwitch{
+	LeafSwitches: []RackTypeLeafSwitch{
 		{
 			Label: "leafy",
 			LogicalDevice: LogicalDevice{
@@ -140,7 +140,7 @@ var rackTypeTestCollapsedSimpleWithAccess = RackType{
 	Label:                    "Collapsed Simple With Access",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	LeafSwitches: []LeafSwitch{
+	LeafSwitches: []RackTypeLeafSwitch{
 		{
 			Label: "leafy",
 			LogicalDevice: LogicalDevice{
@@ -165,7 +165,7 @@ var rackTypeTestCollapsedSimpleWithAccess = RackType{
 			},
 		},
 	},
-	AccessSwitches: []AccessSwitch{
+	AccessSwitches: []RackTypeAccessSwitch{
 		{
 			Count: 1,
 			Label: "accessy",
@@ -300,7 +300,7 @@ var rackTypeTestRackBasedESIWithAccessESI = RackType{
 	Label:                    "Collapsed Simple With Access",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	LeafSwitches: []LeafSwitch{
+	LeafSwitches: []RackTypeLeafSwitch{
 		{
 			Label:              "leafy",
 			RedundancyProtocol: enum.LeafRedundancyProtocolESI,
@@ -326,7 +326,7 @@ var rackTypeTestRackBasedESIWithAccessESI = RackType{
 			},
 		},
 	},
-	AccessSwitches: []AccessSwitch{
+	AccessSwitches: []RackTypeAccessSwitch{
 		{
 			Count: 1,
 			Label: "accessy",
@@ -472,7 +472,7 @@ var rackTypeTestRackBasedMLAGWithAccessPair = RackType{
 	Label:                    "Collapsed Simple With Access",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	LeafSwitches: []LeafSwitch{
+	LeafSwitches: []RackTypeLeafSwitch{
 		{
 			Label:              "leafy",
 			RedundancyProtocol: enum.LeafRedundancyProtocolMLAG,
@@ -507,7 +507,7 @@ var rackTypeTestRackBasedMLAGWithAccessPair = RackType{
 			},
 		},
 	},
-	AccessSwitches: []AccessSwitch{
+	AccessSwitches: []RackTypeAccessSwitch{
 		{
 			Count: 1,
 			Label: "accessa",
@@ -726,7 +726,7 @@ var rackTypeTestCollapsedESIWithGenericSystems = RackType{
 	Label:                    "Collapsed ESI",
 	Description:              "DESCRIPTION",
 	FabricConnectivityDesign: enum.FabricConnectivityDesignL3Collapsed,
-	LeafSwitches: []LeafSwitch{
+	LeafSwitches: []RackTypeLeafSwitch{
 		{
 			Label: "leafy",
 			LogicalDevice: LogicalDevice{
@@ -749,7 +749,7 @@ var rackTypeTestCollapsedESIWithGenericSystems = RackType{
 			RedundancyProtocol: enum.LeafRedundancyProtocolESI,
 		},
 	},
-	GenericSystems: []GenericSystem{
+	GenericSystems: []RackTypeGenericSystem{
 		{
 			ASNDomain: &enum.FeatureSwitchEnabled,
 			Count:     2,

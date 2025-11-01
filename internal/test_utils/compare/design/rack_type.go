@@ -49,7 +49,7 @@ func RackType(t testing.TB, req, resp design.RackType, msg ...string) {
 	}
 }
 
-func RackTypeLeafSwitch(t testing.TB, req, resp design.LeafSwitch, msg ...string) {
+func RackTypeLeafSwitch(t testing.TB, req, resp design.RackTypeLeafSwitch, msg ...string) {
 	msg = addMsg(msg, "Comparing Leaf Switch")
 
 	require.Equal(t, req.Label, resp.Label, msg)
@@ -72,7 +72,7 @@ func RackTypeLeafSwitch(t testing.TB, req, resp design.LeafSwitch, msg ...string
 	require.Equal(t, req.MLAGInfo, resp.MLAGInfo, msg)
 }
 
-func RackTypeAccessSwitch(t testing.TB, req, resp design.AccessSwitch, msg ...string) {
+func RackTypeAccessSwitch(t testing.TB, req, resp design.RackTypeAccessSwitch, msg ...string) {
 	msg = addMsg(msg, "Comparing Access Switch")
 
 	require.Equal(t, req.Count, resp.Count, msg)
@@ -91,7 +91,7 @@ func RackTypeAccessSwitch(t testing.TB, req, resp design.AccessSwitch, msg ...st
 	require.ElementsMatch(t, req.Tags, resp.Tags, msg)
 }
 
-func RackTypeGenericSystem(t testing.TB, req, resp design.GenericSystem, msg ...string) {
+func RackTypeGenericSystem(t testing.TB, req, resp design.RackTypeGenericSystem, msg ...string) {
 	msg = addMsg(msg, "Comparing Generic System")
 
 	if req.ASNDomain == nil {

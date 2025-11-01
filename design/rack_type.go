@@ -28,9 +28,9 @@ type RackType struct {
 	Label                    string
 	Description              string
 	FabricConnectivityDesign enum.FabricConnectivityDesign
-	LeafSwitches             []LeafSwitch
-	AccessSwitches           []AccessSwitch
-	GenericSystems           []GenericSystem
+	LeafSwitches             []RackTypeLeafSwitch
+	AccessSwitches           []RackTypeAccessSwitch
+	GenericSystems           []RackTypeGenericSystem
 
 	id             string
 	createdAt      *time.Time
@@ -50,7 +50,7 @@ func (r RackType) Replicate() RackType {
 		Label:                    r.Label,
 		Description:              r.Description,
 		FabricConnectivityDesign: r.FabricConnectivityDesign,
-		LeafSwitches:             make([]LeafSwitch, len(r.LeafSwitches)),
+		LeafSwitches:             make([]RackTypeLeafSwitch, len(r.LeafSwitches)),
 		AccessSwitches:           nil, // don't create an empty slice
 		GenericSystems:           nil, // don't create an empty slice
 	}
@@ -60,14 +60,14 @@ func (r RackType) Replicate() RackType {
 	}
 
 	if r.AccessSwitches != nil {
-		result.AccessSwitches = make([]AccessSwitch, len(r.AccessSwitches))
+		result.AccessSwitches = make([]RackTypeAccessSwitch, len(r.AccessSwitches))
 		for i, accessSwitch := range r.AccessSwitches {
 			result.AccessSwitches[i] = accessSwitch.Replicate()
 		}
 	}
 
 	if r.GenericSystems != nil {
-		result.GenericSystems = make([]GenericSystem, len(r.GenericSystems))
+		result.GenericSystems = make([]RackTypeGenericSystem, len(r.GenericSystems))
 		for i, genericSystem := range r.GenericSystems {
 			result.GenericSystems[i] = genericSystem.Replicate()
 		}
@@ -84,9 +84,9 @@ func (r RackType) MarshalJSON() ([]byte, error) {
 		FabricConnectivityDesign enum.FabricConnectivityDesign `json:"fabric_connectivity_design"`
 		Tags                     []Tag                         `json:"tags"`
 		LogicalDevices           []LogicalDevice               `json:"logical_devices"`
-		LeafSwitches             []LeafSwitch                  `json:"leafs"`
-		AccessSwitches           []AccessSwitch                `json:"access_switches,omitempty"`
-		GenericSystems           []GenericSystem               `json:"generic_systems,omitempty"`
+		LeafSwitches             []RackTypeLeafSwitch          `json:"leafs"`
+		AccessSwitches           []RackTypeAccessSwitch        `json:"access_switches,omitempty"`
+		GenericSystems           []RackTypeGenericSystem       `json:"generic_systems,omitempty"`
 	}{
 		ID:                       r.id,
 		Label:                    r.Label,
@@ -184,9 +184,9 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 		FabricConnectivityDesign enum.FabricConnectivityDesign `json:"fabric_connectivity_design"`
 		AllTags                  []Tag                         `json:"tags"`
 		LogicalDevices           []LogicalDevice               `json:"logical_devices"`
-		LeafSwitches             []LeafSwitch                  `json:"leafs"`
-		AccessSwitches           []AccessSwitch                `json:"access_switches"`
-		GenericSystems           []GenericSystem               `json:"generic_systems"`
+		LeafSwitches             []RackTypeLeafSwitch          `json:"leafs"`
+		AccessSwitches           []RackTypeAccessSwitch        `json:"access_switches"`
+		GenericSystems           []RackTypeGenericSystem       `json:"generic_systems"`
 		CreatedAt                *time.Time                    `json:"created_at"`
 		LastModifiedAt           *time.Time                    `json:"last_modified_at"`
 	}
@@ -205,7 +205,7 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 	r.Description = raw.Description
 	r.FabricConnectivityDesign = raw.FabricConnectivityDesign
 
-	r.LeafSwitches = make([]LeafSwitch, len(raw.LeafSwitches))
+	r.LeafSwitches = make([]RackTypeLeafSwitch, len(raw.LeafSwitches))
 	for i, system := range raw.LeafSwitches {
 		// find logical device with full detail in rack-level map
 		logicalDevice, ok := logicalDeviceMap[system.LogicalDevice.id]
@@ -223,7 +223,7 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 	}
 
 	if len(raw.AccessSwitches) > 0 {
-		r.AccessSwitches = make([]AccessSwitch, len(raw.AccessSwitches))
+		r.AccessSwitches = make([]RackTypeAccessSwitch, len(raw.AccessSwitches))
 	}
 	for i, system := range raw.AccessSwitches {
 		// find logical device with full detail in rack-level map
@@ -250,7 +250,7 @@ func (r *RackType) UnmarshalJSON(bytes []byte) error {
 	}
 
 	if len(raw.GenericSystems) > 0 {
-		r.GenericSystems = make([]GenericSystem, len(raw.GenericSystems))
+		r.GenericSystems = make([]RackTypeGenericSystem, len(raw.GenericSystems))
 	}
 	for i, system := range raw.GenericSystems {
 		// find logical device with full detail in rack-level map
