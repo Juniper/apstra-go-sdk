@@ -73,11 +73,11 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 		//  "errors": {
 		//    "application_points": {
 		//      "LKbJ0lJjsTmaPucko48": { <<<=================== Application point ID is string, not int
-		//        "71d0aeaf-b686-11f0-8849-617073747261": { <<==== CT ID
+		//        "71d0aeaf-b686-11f0-8849-617073747261": { <<==== CT ID to assign
 		//          "71d0af10-b686-11f0-8849-617073747261": { <<== primitive ID (possibly nested deeper in some cases?)
 		//            "conflicts": [
 		//              {
-		//                "policy": "d1bfe22e-2f5e-11ef-ac36-617073747261", <<<== conflicting CT ID
+		//                "policy": "d1bfe22e-2f5e-11ef-ac36-617073747261", <<<== existing CT ID which blocks assignment
 		//                "error": "Unable to apply Virtual Network template. VN my_VN is already configured on interface of system my_server"
 		//              }
 		//            ]
