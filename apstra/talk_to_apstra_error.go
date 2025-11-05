@@ -53,10 +53,11 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 	}
 	err = json.NewDecoder(o.Request.Body).Decode(&rawReq)
 	if err != nil {
-		return fmt.Errorf("reading request body: %w parent error: %w", err, o)
+		// not expected to error, so the returned error is wrapped
+		return fmt.Errorf("reading/decoding request body: %w parent error: %w", err, o)
 	}
 
-	// unpack the response we received
+	// unpack the response we received, if possible
 	var rawResp struct {
 		ApplicationPoints map[int]struct {
 			Policies map[int]json.RawMessage `json:"policies"` // these might be strings or a structs
@@ -64,7 +65,29 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 	}
 	err = json.NewDecoder(o.Response.Body).Decode(&rawResp)
 	if err != nil {
-		return fmt.Errorf("reading response body: %w parent error: %w", err, o)
+		// Do not wrap the error. Wrapping is not a value-add when we know
+		// there are error types which we do not handle. For example:
+		//
+		// {
+		//  "error_code": 422,
+		//  "errors": {
+		//    "application_points": {
+		//      "LKbJ0lJjsTmaPucko48": { <<<=================== Application point ID is string, not int
+		//        "71d0aeaf-b686-11f0-8849-617073747261": { <<==== CT ID to assign
+		//          "71d0af10-b686-11f0-8849-617073747261": { <<== primitive ID (possibly nested deeper in some cases?)
+		//            "conflicts": [
+		//              {
+		//                "policy": "d1bfe22e-2f5e-11ef-ac36-617073747261", <<<== existing CT ID which blocks assignment
+		//                "error": "Unable to apply Virtual Network template. VN my_VN is already configured on interface of system my_server"
+		//              }
+		//            ]
+		//          }
+		//        }
+		//      }
+		//    }
+		//  }
+		//}
+		return o // return the raw error since we're not going to parse it
 	}
 
 	var rawPolicyStruct struct { // we attempt to unpack each policy element here
