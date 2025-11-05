@@ -50,7 +50,7 @@ var l2SuperspineMultiPlane = TemplatePodBased{
 							id:                       "8b4d80a049caf462d174640282014198",
 							Label:                    "L2 One Leaf",
 							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-							LeafSwitches: []LeafSwitch{
+							LeafSwitches: []RackTypeLeafSwitch{
 								{
 									Label:             "leaf",
 									LinkPerSpineCount: pointer.To(1),
@@ -77,7 +77,7 @@ var l2SuperspineMultiPlane = TemplatePodBased{
 									Tags: []Tag{},
 								},
 							},
-							GenericSystems: []GenericSystem{
+							GenericSystems: []RackTypeGenericSystem{
 								{
 									ASNDomain: &enum.FeatureSwitchDisabled,
 									Count:     48,
@@ -117,7 +117,7 @@ var l2SuperspineMultiPlane = TemplatePodBased{
 							id:                       "80677cb9f0d4c35bf036a0701f8f5111",
 							Label:                    "L2 Mlag Leaf",
 							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-							LeafSwitches: []LeafSwitch{
+							LeafSwitches: []RackTypeLeafSwitch{
 								{
 									Label:             "leaf",
 									LinkPerSpineCount: pointer.To(1),
@@ -150,7 +150,7 @@ var l2SuperspineMultiPlane = TemplatePodBased{
 									},
 								},
 							},
-							GenericSystems: []GenericSystem{
+							GenericSystems: []RackTypeGenericSystem{
 								{
 									ASNDomain: &enum.FeatureSwitchDisabled,
 									Count:     24,
@@ -696,7 +696,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 							id:                       "45daacee3a955679a56ec980d252ab9b",
 							Label:                    "L2 One Access",
 							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-							LeafSwitches: []LeafSwitch{
+							LeafSwitches: []RackTypeLeafSwitch{
 								{
 									Label:             "leaf",
 									LinkPerSpineCount: pointer.To(1),
@@ -719,7 +719,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 									Tags: []Tag{},
 								},
 							},
-							AccessSwitches: []AccessSwitch{
+							AccessSwitches: []RackTypeAccessSwitch{
 								{
 									Count: 1,
 									Label: "access",
@@ -749,7 +749,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 									Tags: []Tag{},
 								},
 							},
-							GenericSystems: []GenericSystem{
+							GenericSystems: []RackTypeGenericSystem{
 								{
 									ASNDomain: &enum.FeatureSwitchDisabled,
 									Count:     4,
@@ -821,7 +821,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 							id:                       "78c8bbcac95d38bc83d09d3050ff197b",
 							Label:                    "L2 MLAG 1x access",
 							FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-							LeafSwitches: []LeafSwitch{
+							LeafSwitches: []RackTypeLeafSwitch{
 								{
 									Label:             "leaf",
 									LinkPerSpineCount: pointer.To(1),
@@ -850,7 +850,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 									},
 								},
 							},
-							AccessSwitches: []AccessSwitch{
+							AccessSwitches: []RackTypeAccessSwitch{
 								{
 									Count: 1,
 									Label: "access",
@@ -880,7 +880,7 @@ var L2SuperspineSinglePlaneWithAccess = TemplatePodBased{
 									Tags: []Tag{},
 								},
 							},
-							GenericSystems: []GenericSystem{
+							GenericSystems: []RackTypeGenericSystem{
 								{
 									ASNDomain: &enum.FeatureSwitchDisabled,
 									Count:     2,

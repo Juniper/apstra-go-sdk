@@ -102,10 +102,10 @@ func (o *LogicalDevicePortRoles) FromStrings(in []string) error {
 	return nil
 }
 
-// IncludeAllUses ensures that the LogicalDevicePortRoles contains the entire
+// enableAll ensures that the LogicalDevicePortRoles contains the entire
 // set of "available for use" port roles: All roles excluding "l3_server"
 // (deprecated)
-func (o *LogicalDevicePortRoles) IncludeAllUses() {
+func (o *LogicalDevicePortRoles) enableAll() {
 	// wipe out any existing values
 	*o = nil
 
@@ -126,4 +126,14 @@ func (o LogicalDevicePortRoles) Validate() error {
 	}
 
 	return nil
+}
+
+func NewLogicalDevicePortRoles(setAll ...bool) LogicalDevicePortRoles {
+	var result LogicalDevicePortRoles
+
+	if len(setAll) > 0 && setAll[0] {
+		result.enableAll()
+	}
+
+	return result
 }

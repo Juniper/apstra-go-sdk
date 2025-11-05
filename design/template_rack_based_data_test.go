@@ -21,7 +21,7 @@ var templateRackBasedL2VirtualEVPN = TemplateRackBased{
 				id:                       "1a976a730bf7dbc1e1e4f134820e28e8",
 				Label:                    "L2 Virtual",
 				FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-				LeafSwitches: []LeafSwitch{
+				LeafSwitches: []RackTypeLeafSwitch{
 					{
 						Label:             "leaf",
 						LinkPerSpineCount: pointer.To(1),
@@ -61,7 +61,7 @@ var templateRackBasedL2VirtualEVPN = TemplateRackBased{
 						Tags:               []Tag{},
 					},
 				},
-				GenericSystems: []GenericSystem{
+				GenericSystems: []RackTypeGenericSystem{
 					{
 						Count:     2,
 						Label:     "generic",

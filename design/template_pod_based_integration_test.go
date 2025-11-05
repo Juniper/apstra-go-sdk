@@ -55,7 +55,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							RackType: design.RackType{
 								Label:                    "L2 One Leaf",
 								FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-								LeafSwitches: []design.LeafSwitch{
+								LeafSwitches: []design.RackTypeLeafSwitch{
 									{
 										Label:             "leaf",
 										LinkPerSpineCount: pointer.To(1),
@@ -82,7 +82,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 										Tags: []design.Tag{},
 									},
 								},
-								GenericSystems: []design.GenericSystem{
+								GenericSystems: []design.RackTypeGenericSystem{
 									{
 										ASNDomain: &enum.FeatureSwitchDisabled,
 										Count:     48,
@@ -121,7 +121,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							RackType: design.RackType{
 								Label:                    "L2 Mlag Leaf",
 								FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-								LeafSwitches: []design.LeafSwitch{
+								LeafSwitches: []design.RackTypeLeafSwitch{
 									{
 										Label:             "leaf",
 										LinkPerSpineCount: pointer.To(1),
@@ -154,7 +154,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 										},
 									},
 								},
-								GenericSystems: []design.GenericSystem{
+								GenericSystems: []design.RackTypeGenericSystem{
 									{
 										ASNDomain: &enum.FeatureSwitchDisabled,
 										Count:     24,
@@ -275,7 +275,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							RackType: design.RackType{
 								Label:                    "L2 One Access",
 								FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-								LeafSwitches: []design.LeafSwitch{
+								LeafSwitches: []design.RackTypeLeafSwitch{
 									{
 										Label:             "leaf",
 										LinkPerSpineCount: pointer.To(1),
@@ -298,7 +298,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 										Tags: []design.Tag{},
 									},
 								},
-								AccessSwitches: []design.AccessSwitch{
+								AccessSwitches: []design.RackTypeAccessSwitch{
 									{
 										Count: 1,
 										Label: "access",
@@ -328,7 +328,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 										Tags: []design.Tag{},
 									},
 								},
-								GenericSystems: []design.GenericSystem{
+								GenericSystems: []design.RackTypeGenericSystem{
 									{
 										ASNDomain: &enum.FeatureSwitchDisabled,
 										Count:     4,
@@ -397,7 +397,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							RackType: design.RackType{
 								Label:                    "L2 MLAG 1x access",
 								FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-								LeafSwitches: []design.LeafSwitch{
+								LeafSwitches: []design.RackTypeLeafSwitch{
 									{
 										Label:             "leaf",
 										LinkPerSpineCount: pointer.To(1),
@@ -426,7 +426,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 										},
 									},
 								},
-								AccessSwitches: []design.AccessSwitch{
+								AccessSwitches: []design.RackTypeAccessSwitch{
 									{
 										Count: 1,
 										Label: "access",
@@ -456,7 +456,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 										Tags: []design.Tag{},
 									},
 								},
-								GenericSystems: []design.GenericSystem{
+								GenericSystems: []design.RackTypeGenericSystem{
 									{
 										ASNDomain: &enum.FeatureSwitchDisabled,
 										Count:     2,
@@ -548,7 +548,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							RackType: design.RackType{
 								Label:                    "L2 One Leaf",
 								FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-								LeafSwitches: []design.LeafSwitch{
+								LeafSwitches: []design.RackTypeLeafSwitch{
 									{
 										Label:             "leaf",
 										LinkPerSpineCount: pointer.To(1),
@@ -575,7 +575,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 										Tags: []design.Tag{},
 									},
 								},
-								GenericSystems: []design.GenericSystem{
+								GenericSystems: []design.RackTypeGenericSystem{
 									{
 										ASNDomain: &enum.FeatureSwitchDisabled,
 										Count:     48,
@@ -613,7 +613,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 							Count: 1, RackType: design.RackType{
 								Label:                    "L2 Mlag Leaf",
 								FabricConnectivityDesign: enum.FabricConnectivityDesignL3Clos,
-								LeafSwitches: []design.LeafSwitch{
+								LeafSwitches: []design.RackTypeLeafSwitch{
 									{
 										Label:             "leaf",
 										LinkPerSpineCount: pointer.To(1),
@@ -646,7 +646,7 @@ var testTemplatesPodBased = map[string]design.TemplatePodBased{
 										},
 									},
 								},
-								GenericSystems: []design.GenericSystem{
+								GenericSystems: []design.RackTypeGenericSystem{
 									{
 										ASNDomain: &enum.FeatureSwitchDisabled,
 										Count:     24,
