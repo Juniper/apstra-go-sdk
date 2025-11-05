@@ -2,13 +2,8 @@
 
 This project aims to be a simple-to-consume client library for Apstra.
 
-It was initially developed to collect metric/event/anomaly/statistics kinds of
-things, but could eventually support the whole Apstra API.
-
-It's only ever been tested against AOS 4.1.0, and 4.1.1, and will complain when
-asked to connect to unsupported versions of AOS.
-
-It has three major features: Client, TwoStageL3ClosClient, and StreamTarget.
+Currently supports Apstra 4.2.0 - 6.0.0. It will complain when
+asked to connect to unsupported versions of Apstra.
 
 ### Client
 The `Client{}` object has methods closely related to Apstra platform API
@@ -28,27 +23,19 @@ The `TwoStageL3ClosClient{}` object is intended for interaction with a single
 *blueprint* of the **Datacenter** reference design type. `TwoStageL3ClosClient`
 has both a `Client` and a single blueprint ID embedded within.
 
-### StreamTarget
+### FreeformClient
+The `FreeformClient{}` object is intended for interaction with a single
+*blueprint* of the **Freeform** reference design type. `FreeformClient`
+has both a `Client` and a single blueprint ID embedded within.
 
+
+### StreamTarget
 `StreamTarget` is a listener/decoder for Apstra's "Streaming Receiver" feature.
 
 It has Start/Stop (listening) methods and Register/Unregister methods which
 add Streaming Receiver configurations via the Apstra API.
 
 Messages and Errors are returned to the consuming code via channels.
-
-The proto file `streaming-telemetry.proto` came from an AOS server. The easiest way to grab
-one is probably via the web UI:
-
-Click `platform -> developers` then `Rest API Documentation`.
-
-Scroll down to `streaming-telemetry-schema-proto`, click `GET`, `Try it out` and `Execute`
-
-Render the go code by running the following in the main project directory
-```shell
-protoc --go_out=.      --go_opt=Mapstra/streaming-telemetry.proto=./apstra \
-       apstra/streaming-telemetry.proto
-```
 
 ### Using this library
 
@@ -66,13 +53,3 @@ func main() {
   blueprintIds, _ := client.GetAllBlueprintIds(context.TODO()) //error ignored
 }
 ```
-
-There's an example program at `cmd/example_streaming/main.go` which implements
-the streaming capability.
-
-### Development
-
-1. Copy `pre-push` script to `.git/hooks` to run fast validations on `git push`;
-2. Use `make` targets to build, run tests or static analysis. This requires that
-   your environment has all the necessary tools, if not - use `ci.Dockerfile`
-   docker image.
