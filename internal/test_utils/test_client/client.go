@@ -98,7 +98,7 @@ func GetTestClients(t testing.TB, ctx context.Context) []TestClient {
 		clientCfg.Experimental = experimental
 		clientCfg.Logger = log.New(logFile, "", log.LstdFlags)
 
-		client, err := testClientCfg.clientConfig().NewClient(ctx)
+		client, err := clientCfg.NewClient(ctx)
 		require.NoError(t, err)
 
 		testClients[i] = TestClient{
