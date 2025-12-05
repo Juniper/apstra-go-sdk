@@ -819,22 +819,14 @@ func (o *TwoStageL3ClosClient) RefreshNodeIdsByType(ctx context.Context, nt Node
 
 // GetFabricSettings gets the fabric settings
 func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
-	var raw *rawFabricSettings
-	var err error
-
 	switch {
 	case compatibility.FabricSettingsApiOk.Check(o.client.apiVersion):
-		raw, err = o.getFabricSettings(ctx)
+		return o.getFabricSettings(ctx)
 	case compatibility.EqApstra420.Check(o.client.apiVersion):
-		raw, err = o.getFabricSettings420(ctx)
+		return o.getFabricSettings420(ctx)
 	default:
 		return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	return raw.polish()
 }
 
 // SetFabricSettings sets the specified fabric settings
@@ -860,9 +852,9 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 
 	switch {
 	case compatibility.FabricSettingsApiOk.Check(o.client.apiVersion):
-		return o.setFabricSettings(ctx, in.raw())
+		return o.setFabricSettings(ctx, in)
 	case compatibility.EqApstra420.Check(o.client.apiVersion):
-		return o.setFabricSettings420(ctx, in.raw())
+		return o.setFabricSettings420(ctx, in)
 	}
 
 	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
