@@ -10,6 +10,8 @@ import (
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
 
 const (
@@ -51,20 +53,49 @@ func (o *TwoStageL3ClosClient) getVirtualNetworkPolicy420(ctx context.Context) (
 	return &result, nil
 }
 
-func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, in *rawFabricSettings) error {
+func (o *TwoStageL3ClosClient) setVirtualNetworkPolicy420(ctx context.Context, in *FabricSettings) error {
 	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
 		return fmt.Errorf("setRawVirtualNetworkPolicy420() must not be invoked with apstra %s", o.client.apiVersion)
 	}
 
+	var evpnGenerateType5HostRoutes *string
+	if in.EvpnGenerateType5HostRoutes != nil {
+		evpnGenerateType5HostRoutes = pointer.To(in.EvpnGenerateType5HostRoutes.String())
+	}
+
+	var junosEvpnMaxNexthopAndInterfaceNumber *string
+	if in.JunosEvpnMaxNexthopAndInterfaceNumber != nil {
+		junosEvpnMaxNexthopAndInterfaceNumber = pointer.To(in.JunosEvpnMaxNexthopAndInterfaceNumber.String())
+	}
+
+	var jeriType *string
+	if in.JunosEvpnRoutingInstanceVlanAware != nil {
+		if in.JunosEvpnRoutingInstanceVlanAware.String() == enum.FeatureSwitchEnabled.String() {
+			jeriType = toPtr(junosEvpnRoutingInstanceTypeVlanAware.Value)
+		} else {
+			jeriType = toPtr(junosEvpnRoutingInstanceTypeDefault.Value)
+		}
+	}
+
+	var junosExOverlayEcmp *string
+	if in.JunosExOverlayEcmp != nil {
+		junosExOverlayEcmp = pointer.To(in.JunosExOverlayEcmp.String())
+	}
+
+	var junosGracefulRestart *string
+	if in.JunosGracefulRestart != nil {
+		junosGracefulRestart = pointer.To(in.JunosGracefulRestart.String())
+	}
+
 	apiInput := rawVirtualNetworkPolicy420{
 		DefaultSviL3Mtu:                       in.DefaultSviL3Mtu,
-		EvpnGenerateType5HostRoutes:           in.EvpnGenerateType5HostRoutes,
+		EvpnGenerateType5HostRoutes:           evpnGenerateType5HostRoutes,
 		ExternalRouterMtu:                     in.ExternalRouterMtu,
 		JunosEvpnDuplicateMacRecoveryTime:     in.JunosEvpnDuplicateMacRecoveryTime,
-		JunosEvpnMaxNexthopAndInterfaceNumber: in.JunosEvpnMaxNexthopAndInterfaceNumber,
-		JunosEvpnRoutingInstanceType:          in.JunosEvpnRoutingInstanceType,
-		JunosExOverlayEcmp:                    in.JunosExOverlayEcmp,
-		JunosGracefulRestart:                  in.JunosGracefulRestart,
+		JunosEvpnMaxNexthopAndInterfaceNumber: junosEvpnMaxNexthopAndInterfaceNumber,
+		JunosEvpnRoutingInstanceType:          jeriType,
+		JunosExOverlayEcmp:                    junosExOverlayEcmp,
+		JunosGracefulRestart:                  junosGracefulRestart,
 		MaxEvpnRoutes:                         in.MaxEvpnRoutes,
 		MaxExternalRoutes:                     in.MaxExternalRoutes,
 		MaxFabricRoutes:                       in.MaxFabricRoutes,

@@ -49,6 +49,11 @@ func FabricSettings(t testing.TB, set, get apstra.FabricSettings) {
 		AntiAffinityPolicy(t, *get.AntiAffinityPolicy, *set.AntiAffinityPolicy)
 	}
 
+	if set.DefaultAnycastGWMAC != nil {
+		require.NotNil(t, get.DefaultAnycastGWMAC)
+		require.Equalf(t, set.DefaultAnycastGWMAC, get.DefaultAnycastGWMAC, "DefaultAnycastGWMAC: set %s get %s", set.DefaultAnycastGWMAC, get.DefaultAnycastGWMAC)
+	}
+
 	if set.DefaultSviL3Mtu != nil {
 		require.NotNil(t, get.DefaultSviL3Mtu)
 		require.Equalf(t, *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu, "DefaultSviL3Mtu: set %d get %d", *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu)
