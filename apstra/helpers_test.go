@@ -12,7 +12,6 @@ import (
 	"math"
 	"math/rand"
 	"net"
-	"net/http"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -510,20 +509,8 @@ func testBlueprintH(ctx context.Context, t *testing.T, client *Client) *TwoStage
 		t.Fatal(err)
 	}
 
-	// set fabric addressing to enable IPv6
-	if compatibility.EqApstra420.Check(client.apiVersion) {
-		// todo - this is temporary
-		require.NoError(t, bpClient.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{Ipv6Enabled: toPtr(true)}))
-	} else {
-		require.NoError(t, client.talkToApstra(ctx, &talkToApstraIn{
-			method: http.MethodPatch,
-			urlStr: fmt.Sprintf("/api/blueprints/%s/fabric-settings", bpId),
-			apiInput: struct {
-				Ipv6Enabled bool `json:"ipv6_enabled"`
-			}{
-				Ipv6Enabled: true,
-			},
-		}))
+	if compatibility.FabricSettingsIPv6EnabledOK.Check(client.apiVersion) {
+		require.NoError(t, bpClient.SetFabricSettings(ctx, &FabricSettings{Ipv6Enabled: toPtr(true)}))
 	}
 
 	return bpClient

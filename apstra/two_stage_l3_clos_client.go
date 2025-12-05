@@ -819,35 +819,42 @@ func (o *TwoStageL3ClosClient) RefreshNodeIdsByType(ctx context.Context, nt Node
 
 // GetFabricSettings gets the fabric settings
 func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
-	var raw *rawFabricSettings
-	var err error
-
 	switch {
 	case compatibility.FabricSettingsApiOk.Check(o.client.apiVersion):
-		raw, err = o.getFabricSettings(ctx)
+		return o.getFabricSettings(ctx)
 	case compatibility.EqApstra420.Check(o.client.apiVersion):
-		raw, err = o.getFabricSettings420(ctx)
+		return o.getFabricSettings420(ctx)
 	default:
 		return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	return raw.polish()
 }
 
 // SetFabricSettings sets the specified fabric settings
 func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *FabricSettings) error {
+	if in == nil {
+		return nil // avoid dereference errors below. no error because we weren't asked to do anything.
+	}
+
 	if in.SpineLeafLinks != nil || in.SpineSuperspineLinks != nil {
-		return errors.New("SpineLeafLinks and SpineSuperspineLinks must be nil in SetFabricSettings()")
+		return errors.New("SpineLeafLinks and SpineSuperspineLinks both must be nil in SetFabricSettings()")
+	}
+
+	if in.Ipv6Enabled != nil && !compatibility.FabricSettingsIPv6EnabledOK.Check(o.client.apiVersion) {
+		// Beginning with Apstra 6.1.0, Ipv6Enabled is no longer a fabric-wide setting and it must not be sent.
+		// Make a copy of the caller's struct and clear the Ipv6Enabled pointer.
+		in = toPtr(*in)
+		in.Ipv6Enabled = nil
+	}
+
+	if in.DefaultAnycastGWMAC != nil && !compatibility.FabricSettingsDefaultAnycastGWMacOK.Check(o.client.apiVersion) {
+		return fmt.Errorf("DefaultAnycastGWMAC permitted only with apstra %s", compatibility.FabricSettingsDefaultAnycastGWMacOK)
 	}
 
 	switch {
 	case compatibility.FabricSettingsApiOk.Check(o.client.apiVersion):
-		return o.setFabricSettings(ctx, in.raw())
+		return o.setFabricSettings(ctx, in)
 	case compatibility.EqApstra420.Check(o.client.apiVersion):
-		return o.setFabricSettings420(ctx, in.raw())
+		return o.setFabricSettings420(ctx, in)
 	}
 
 	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)

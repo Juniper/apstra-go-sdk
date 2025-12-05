@@ -430,6 +430,10 @@ type AntiAffinityPolicy struct {
 }
 
 func (o *AntiAffinityPolicy) raw() *rawAntiAffinityPolicy {
+	if o == nil {
+		return nil
+	}
+
 	return &rawAntiAffinityPolicy{
 		Algorithm:                o.Algorithm.raw(),
 		MaxLinksPerPort:          o.MaxLinksPerPort,
@@ -450,6 +454,10 @@ type rawAntiAffinityPolicy struct {
 }
 
 func (o *rawAntiAffinityPolicy) polish() (*AntiAffinityPolicy, error) {
+	if o == nil {
+		return nil, nil
+	}
+
 	algorithm, err := o.Algorithm.parse()
 	if err != nil {
 		return nil, err

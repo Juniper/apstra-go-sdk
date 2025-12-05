@@ -250,16 +250,12 @@ type CreateBlueprintFromTemplateRequest struct {
 }
 
 func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTemplateRequest {
-	var fabricSettings *rawFabricSettings
-	if o.FabricSettings != nil {
-		fabricSettings = o.FabricSettings.raw()
-	}
 	return &rawCreateBlueprintFromTemplateRequest{
 		RefDesign:      o.RefDesign.String(),
 		Label:          o.Label,
 		InitType:       initTypeFromTemplate,
 		TemplateId:     o.TemplateId,
-		FabricSettings: fabricSettings,
+		FabricSettings: o.FabricSettings,
 	}
 }
 
@@ -278,11 +274,11 @@ func (o *CreateBlueprintFromTemplateRequest) raw420() *rawCreateBlueprintFromTem
 }
 
 type rawCreateBlueprintFromTemplateRequest struct {
-	RefDesign      string             `json:"design"`
-	Label          string             `json:"label"`
-	InitType       string             `json:"init_type"`
-	TemplateId     ObjectId           `json:"template_id"`
-	FabricSettings *rawFabricSettings `json:"fabric_policy,omitempty"`
+	RefDesign      string          `json:"design"`
+	Label          string          `json:"label"`
+	InitType       string          `json:"init_type"`
+	TemplateId     ObjectId        `json:"template_id"`
+	FabricSettings *FabricSettings `json:"fabric_policy,omitempty"`
 }
 
 type rawCreateBlueprintFromTemplateRequest420 struct {
