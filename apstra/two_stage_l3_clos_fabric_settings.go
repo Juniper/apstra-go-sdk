@@ -7,6 +7,7 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
@@ -28,6 +29,7 @@ var (
 
 type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.1.0
 	AntiAffinityPolicy                    *AntiAffinityPolicy     // /anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy
+	DefaultAnycastGWMAC                   net.HardwareAddr        //       introduced with 6.1.0
 	DefaultSviL3Mtu                       *uint16                 // virtual_network_policy node	not supported					not supported					not supported.
 	EsiMacMsb                             *uint8                  // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
 	EvpnGenerateType5HostRoutes           *enum.FeatureSwitch     // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
@@ -74,8 +76,14 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		spineSuperspineLinks = toPtr(addressingScheme(o.SpineSuperspineLinks.String()))
 	}
 
+	var DefaultAnycastGWMAC *string
+	if len(o.DefaultAnycastGWMAC.String()) > 0 {
+		DefaultAnycastGWMAC = toPtr(o.DefaultAnycastGWMAC.String())
+	}
+
 	return &rawFabricSettings{
 		AntiAffinity:                          antiAffinityPolicy,
+		DefaultAnycastGWMAC:                   DefaultAnycastGWMAC,
 		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
 		EsiMacMsb:                             o.EsiMacMsb,
 		EvpnGenerateType5HostRoutes:           stringerPtrToStringPtr(o.EvpnGenerateType5HostRoutes),
@@ -118,6 +126,7 @@ func (o FabricSettings) rawBlueprintRequestFabricAddressingPolicy() *rawBlueprin
 
 type rawFabricSettings struct {
 	AntiAffinity                          *rawAntiAffinityPolicy `json:"anti_affinity,omitempty"`
+	DefaultAnycastGWMAC                   *string                `json:"default_anycast_gw_mac,omitempty"`
 	DefaultSviL3Mtu                       *uint16                `json:"default_svi_l3_mtu,omitempty"`
 	EsiMacMsb                             *uint8                 `json:"esi_mac_msb,omitempty"`
 	EvpnGenerateType5HostRoutes           *string                `json:"evpn_generate_type5_host_routes,omitempty"`
@@ -145,6 +154,16 @@ type rawFabricSettings struct {
 }
 
 func (o rawFabricSettings) polish() (*FabricSettings, error) {
+	var err error
+
+	var defaultAnycastGWMAC net.HardwareAddr
+	if o.DefaultAnycastGWMAC != nil && *o.DefaultAnycastGWMAC != "" {
+		defaultAnycastGWMAC, err = net.ParseMAC(*o.DefaultAnycastGWMAC)
+		if err != nil {
+			return nil, fmt.Errorf("parsing MAC address %q: %w", *o.DefaultAnycastGWMAC, err)
+		}
+	}
+
 	var ocp *OverlayControlProtocol
 	if o.OverlayControlProtocol != nil {
 		ocp = new(OverlayControlProtocol)
@@ -192,6 +211,7 @@ func (o rawFabricSettings) polish() (*FabricSettings, error) {
 
 	return &FabricSettings{
 		AntiAffinityPolicy:                    antiAffinityPolicy,
+		DefaultAnycastGWMAC:                   defaultAnycastGWMAC,
 		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
 		EsiMacMsb:                             o.EsiMacMsb,
 		EvpnGenerateType5HostRoutes:           featureSwitchEnumFromStringPtr(o.EvpnGenerateType5HostRoutes),

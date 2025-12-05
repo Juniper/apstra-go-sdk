@@ -26,6 +26,12 @@ var (
 	FabricSettingsApiOk = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
 	}
+	FabricSettingsIPv6EnabledOK = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint("<" + apstra610)),
+	}
+	FabricSettingsDefaultAnycastGWMacOK = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra610)),
+	}
 	HasDeviceOsImageDownloadTimeout = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra510)),
 	}
