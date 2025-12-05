@@ -28,8 +28,10 @@ var (
 	junosEvpnRoutingInstanceTypes         = oenum.New(junosEvpnRoutingInstanceTypeVlanAware, junosEvpnRoutingInstanceTypeDefault)
 )
 
-var _ json.Marshaler = (*FabricSettings)(nil)
-var _ json.Unmarshaler = (*FabricSettings)(nil)
+var (
+	_ json.Marshaler   = (*FabricSettings)(nil)
+	_ json.Unmarshaler = (*FabricSettings)(nil)
+)
 
 type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.1.0
 	AntiAffinityPolicy                    *AntiAffinityPolicy     // /anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy
