@@ -196,7 +196,9 @@ func TestProfile_CRUD(t *testing.T) {
 					comparedevice.DeviceProfile(t, create, obj)
 
 					t.Log("retrieve the object by label and validate")
-					obj, err = client.Client.GetDeviceProfileByLabel(ctx, create.Label)
+					gdpblCtx, cf := context.WithTimeout(ctx, time.Minute)
+					obj, err = client.Client.GetDeviceProfileByLabel(gdpblCtx, create.Label)
+					cf()
 					require.NoError(t, err)
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
@@ -209,7 +211,9 @@ func TestProfile_CRUD(t *testing.T) {
 					require.Contains(t, ids, id)
 
 					t.Log("retrieve the list of objects (ours must be in there) and validate")
-					objs, err := client.Client.GetDeviceProfiles(ctx)
+					gdpCtx, cf := context.WithTimeout(ctx, time.Minute)
+					objs, err := client.Client.GetDeviceProfiles(gdpCtx)
+					cf()
 					require.NoError(t, err)
 					objPtr := slice.MustFindByID(objs, id)
 					require.NotNil(t, objPtr)
@@ -263,7 +267,9 @@ func TestProfile_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					t.Log("get the object by label")
-					_, err = client.Client.GetDeviceProfileByLabel(ctx, create.Label)
+					gdpblCtx, cf = context.WithTimeout(ctx, time.Minute)
+					_, err = client.Client.GetDeviceProfileByLabel(gdpblCtx, create.Label)
+					cf()
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
@@ -274,7 +280,9 @@ func TestProfile_CRUD(t *testing.T) {
 					require.NotContains(t, ids, id)
 
 					t.Log("retrieve the list of objects (ours must *not* be in there)")
-					objs, err = client.Client.GetDeviceProfiles(ctx)
+					gdpCtx, cf = context.WithTimeout(ctx, time.Minute)
+					objs, err = client.Client.GetDeviceProfiles(gdpCtx)
+					cf()
 					require.NoError(t, err)
 					objPtr = slice.MustFindByID(objs, id)
 					require.Nil(t, objPtr)
