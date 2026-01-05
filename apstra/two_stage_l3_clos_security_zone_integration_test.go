@@ -2,7 +2,7 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//go:build integration
+//go:build integration && requiretestutils
 
 package apstra_test
 

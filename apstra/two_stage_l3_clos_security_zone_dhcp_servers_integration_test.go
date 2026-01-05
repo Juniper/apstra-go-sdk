@@ -1,3 +1,9 @@
+// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+//go:build integration && requiretestutils
+
 package apstra_test
 
 import (
