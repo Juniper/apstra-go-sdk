@@ -209,7 +209,6 @@ func TestCRUDSecurityZone(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 				})
 			}
-
 		})
 	}
 }

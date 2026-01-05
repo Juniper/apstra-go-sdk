@@ -22,8 +22,10 @@ const (
 	apiUrlBlueprintSecurityZoneByIdDhcpServers = apiUrlBlueprintSecurityZoneById + apiUrlPathDelim + "dhcp-servers"
 )
 
-var _ internal.IDer = (*SecurityZone)(nil)
-var _ json.Unmarshaler = (*SecurityZone)(nil)
+var (
+	_ internal.IDer    = (*SecurityZone)(nil)
+	_ json.Unmarshaler = (*SecurityZone)(nil)
+)
 
 type SecurityZone struct {
 	Label             string                 `json:"label"`
