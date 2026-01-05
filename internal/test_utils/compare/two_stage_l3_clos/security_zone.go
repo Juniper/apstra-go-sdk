@@ -1,3 +1,9 @@
+// Copyright (c) Juniper Networks, Inc., 2026-2026.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+//go:build requiretestutils
+
 package comparedatacenter
 
 import (
