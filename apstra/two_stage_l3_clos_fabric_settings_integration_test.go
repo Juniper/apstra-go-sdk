@@ -4,240 +4,196 @@
 
 //go:build integration
 
-package apstra
+package apstra_test
 
 import (
 	"context"
-	"log"
+	"sync"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
+	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
-// Deprecated: Use compare.AntiAffinityPolicy
-func compareAntiAffinityPolicy(t testing.TB, set, get AntiAffinityPolicy) {
-	t.Helper()
-
-	if set.Algorithm != get.Algorithm {
-		t.Errorf("set AntiAffinityPolicy Algorithm %s got %s", set.Algorithm, get.Algorithm)
-	}
-
-	if set.MaxLinksPerPort != get.MaxLinksPerPort {
-		t.Errorf("set AntiAffinityPolicy MaxLinksPerPort %d got %d", set.MaxLinksPerPort, get.MaxLinksPerPort)
-	}
-
-	if set.MaxLinksPerSlot != get.MaxLinksPerSlot {
-		t.Errorf("set AntiAffinityPolicy MaxLinksPerSlot %d got %d", set.MaxLinksPerSlot, get.MaxLinksPerSlot)
-	}
-
-	if set.MaxPerSystemLinksPerPort != get.MaxPerSystemLinksPerPort {
-		t.Errorf("set AntiAffinityPolicy MaxPerSystemLinksPerPort %d got %d", set.MaxPerSystemLinksPerPort, get.MaxPerSystemLinksPerPort)
-	}
-
-	if set.MaxPerSystemLinksPerSlot != get.MaxPerSystemLinksPerSlot {
-		t.Errorf("set AntiAffinityPolicy MaxPerSystemLinksPerSlot %d got %d", set.MaxPerSystemLinksPerSlot, get.MaxPerSystemLinksPerSlot)
-	}
-
-	if set.Mode != get.Mode {
-		t.Errorf("set AntiAffinityPolicy Mode %s got %s", set.Mode, get.Mode)
-	}
-}
-
-// Deprecated: Use compare.FabricSettings
-func compareFabricSettings(t testing.TB, set, get FabricSettings) {
-	t.Helper()
-
-	if set.AntiAffinityPolicy != nil {
-		require.NotNil(t, get.AntiAffinityPolicy)
-		compareAntiAffinityPolicy(t, *get.AntiAffinityPolicy, *set.AntiAffinityPolicy)
-	}
-
-	if set.DefaultSviL3Mtu != nil {
-		require.NotNil(t, get.DefaultSviL3Mtu)
-		require.Equalf(t, *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu, "DefaultSviL3Mtu: set %d get %d", *set.DefaultSviL3Mtu, *get.DefaultSviL3Mtu)
-	}
-
-	if set.EsiMacMsb != nil {
-		require.NotNil(t, get.EsiMacMsb)
-		require.Equalf(t, *set.EsiMacMsb, *get.EsiMacMsb, "EsiMacMsb: set %d get %d", *set.EsiMacMsb, *get.EsiMacMsb)
-	}
-
-	if set.EvpnGenerateType5HostRoutes != nil && *set.EvpnGenerateType5HostRoutes != *get.EvpnGenerateType5HostRoutes {
-		require.NotNil(t, get.EvpnGenerateType5HostRoutes)
-		require.Equalf(t, *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes, "EvpnGenerateType5HostRoutes: set %d get %d", *set.EvpnGenerateType5HostRoutes, *get.EvpnGenerateType5HostRoutes)
-	}
-
-	if set.ExternalRouterMtu != nil {
-		require.NotNil(t, get.ExternalRouterMtu)
-		require.Equalf(t, *set.ExternalRouterMtu, *get.ExternalRouterMtu, "ExternalRouterMtu: set %d get %d", *set.ExternalRouterMtu, *get.ExternalRouterMtu)
-	}
-
-	if set.FabricL3Mtu != nil && *set.FabricL3Mtu != *get.FabricL3Mtu {
-		require.NotNil(t, get.FabricL3Mtu)
-		require.Equalf(t, *set.FabricL3Mtu, *get.FabricL3Mtu, "FabricL3Mtu: set %d get %d", *set.FabricL3Mtu, *get.FabricL3Mtu)
-	}
-
-	if set.Ipv6Enabled != nil {
-		require.NotNil(t, get.Ipv6Enabled)
-		require.Equalf(t, *set.Ipv6Enabled, *get.Ipv6Enabled, "Ipv6Enabled: set %d get %d", *set.Ipv6Enabled, *get.Ipv6Enabled)
-	}
-
-	if set.JunosEvpnDuplicateMacRecoveryTime != nil {
-		require.NotNil(t, get.JunosEvpnDuplicateMacRecoveryTime)
-		require.Equalf(t, *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime, "JunosEvpnDuplicateMacRecoveryTime: set %d get %d", *set.JunosEvpnDuplicateMacRecoveryTime, *get.JunosEvpnDuplicateMacRecoveryTime)
-	}
-
-	if set.JunosEvpnRoutingInstanceVlanAware != nil {
-		require.NotNil(t, get.JunosEvpnRoutingInstanceVlanAware)
-		require.Equalf(t, *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware, "JunosEvpnRoutingInstanceVlanAware: set %d get %d", *set.JunosEvpnRoutingInstanceVlanAware, *get.JunosEvpnRoutingInstanceVlanAware)
-	}
-
-	if set.JunosEvpnMaxNexthopAndInterfaceNumber != nil {
-		require.NotNil(t, get.JunosEvpnMaxNexthopAndInterfaceNumber)
-		require.Equalf(t, *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber, "JunosEvpnMaxNexthopAndInterfaceNumber: set %d get %d", *set.JunosEvpnMaxNexthopAndInterfaceNumber, *get.JunosEvpnMaxNexthopAndInterfaceNumber)
-	}
-
-	if set.JunosExOverlayEcmp != nil {
-		require.NotNil(t, get.JunosExOverlayEcmp)
-		require.Equalf(t, *set.JunosExOverlayEcmp, *get.JunosExOverlayEcmp, "JunosExOverlayEcmp: set %d get %d", *set.JunosExOverlayEcmp, *get.JunosExOverlayEcmp)
-	}
-
-	if set.JunosGracefulRestart != nil {
-		require.NotNil(t, get.JunosGracefulRestart)
-		require.Equalf(t, *set.JunosGracefulRestart, *get.JunosGracefulRestart, "JunosGracefulRestart: set %d get %d", *set.JunosGracefulRestart, *get.JunosGracefulRestart)
-	}
-
-	if set.MaxEvpnRoutes != nil {
-		require.NotNil(t, get.MaxEvpnRoutes)
-		require.Equalf(t, *set.MaxEvpnRoutes, *get.MaxEvpnRoutes, "MaxEvpnRoutes: set %d get %d", *set.MaxEvpnRoutes, *get.MaxEvpnRoutes)
-	}
-
-	if set.MaxExternalRoutes != nil {
-		require.NotNil(t, get.MaxExternalRoutes)
-		require.Equalf(t, *set.MaxExternalRoutes, *get.MaxExternalRoutes, "MaxExternalRoutes: set %d get %d", *set.MaxExternalRoutes, *get.MaxExternalRoutes)
-	}
-
-	if set.MaxFabricRoutes != nil {
-		require.NotNil(t, get.MaxFabricRoutes)
-		require.Equalf(t, *set.MaxFabricRoutes, *get.MaxFabricRoutes, "MaxFabricRoutes: set %d get %d", *set.MaxFabricRoutes, *get.MaxFabricRoutes)
-	}
-
-	if set.MaxMlagRoutes != nil {
-		require.NotNil(t, get.MaxMlagRoutes)
-		require.Equalf(t, *set.MaxMlagRoutes, *get.MaxMlagRoutes, "MaxMlagRoutes: set %d get %d", *set.MaxMlagRoutes, *get.MaxMlagRoutes)
-	}
-
-	if set.OptimiseSzFootprint != nil && *set.OptimiseSzFootprint != *get.OptimiseSzFootprint {
-		t.Errorf("set OptimiseSzFootprint %s got %s", *set.OptimiseSzFootprint, *get.OptimiseSzFootprint)
-	}
-
-	// don't check overlay control protocol - it's an immutable value. attempts to set it have no effect.
-	//if set.OverlayControlProtocol != get.OverlayControlProtocol {
-	//	t.Errorf("set OverlayControlProtocol %s got %s", set.OverlayControlProtocol, get.OverlayControlProtocol)
-	//}
-}
-
 func TestSetGetFabricSettings(t *testing.T) {
-	ctx := context.Background()
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.ContextWithTestID(context.Background(), t)
+	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
-		fabricSettings    FabricSettings
-		versionConstraint version.Constraints
+		fabricSettings    []*apstra.FabricSettings
+		versionConstraint *compatibility.Constraint
 	}
 
 	testCases := map[string]testCase{
-		"no_fabric_settings": {
-			fabricSettings: FabricSettings{},
+		"nil_value": {
+			fabricSettings: []*apstra.FabricSettings{nil},
 		},
-		"lots_of_values": {
-			fabricSettings: FabricSettings{
-				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(16)),
-				MaxExternalRoutes:                     toPtr(uint32(239832)),
-				EsiMacMsb:                             toPtr(uint8(32)),
-				JunosGracefulRestart:                  &enum.FeatureSwitchDisabled,
-				OptimiseSzFootprint:                   &enum.FeatureSwitchEnabled,
-				JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchEnabled,
-				EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchEnabled,
-				MaxFabricRoutes:                       toPtr(uint32(84231)),
-				MaxMlagRoutes:                         toPtr(uint32(76112)),
-				JunosExOverlayEcmp:                    &enum.FeatureSwitchDisabled,
-				DefaultSviL3Mtu:                       toPtr(uint16(9100)),
-				JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchDisabled,
-				FabricL3Mtu:                           toPtr(uint16(9178)),
-				Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
-				ExternalRouterMtu:                     toPtr(uint16(9100)),
-				MaxEvpnRoutes:                         toPtr(uint32(92342)),
-				AntiAffinityPolicy: &AntiAffinityPolicy{
-					Algorithm:                AlgorithmHeuristic,
-					MaxLinksPerPort:          2,
-					MaxLinksPerSlot:          2,
-					MaxPerSystemLinksPerPort: 2,
-					MaxPerSystemLinksPerSlot: 2,
-					Mode:                     AntiAffinityModeEnabledLoose,
+		"zero_value": {
+			fabricSettings: []*apstra.FabricSettings{{}},
+		},
+		"lots_of_values_including_ipv6_enable": {
+			versionConstraint: &compatibility.FabricSettingsIPv6EnabledOK,
+			fabricSettings: []*apstra.FabricSettings{
+				{
+					JunosEvpnDuplicateMacRecoveryTime:     pointer.To(uint16(16)),
+					MaxExternalRoutes:                     pointer.To(uint32(239832)),
+					EsiMacMsb:                             pointer.To(uint8(32)),
+					JunosGracefulRestart:                  &enum.FeatureSwitchDisabled,
+					OptimiseSzFootprint:                   &enum.FeatureSwitchEnabled,
+					JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchEnabled,
+					EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchEnabled,
+					MaxFabricRoutes:                       pointer.To(uint32(84231)),
+					MaxMlagRoutes:                         pointer.To(uint32(76112)),
+					JunosExOverlayEcmp:                    &enum.FeatureSwitchDisabled,
+					DefaultSviL3Mtu:                       pointer.To(uint16(9100)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchDisabled,
+					FabricL3Mtu:                           pointer.To(uint16(9178)),
+					Ipv6Enabled:                           pointer.To(false), // do not enable because it's a one-way trip
+					ExternalRouterMtu:                     pointer.To(uint16(9100)),
+					MaxEvpnRoutes:                         pointer.To(uint32(92342)),
+					AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+						Algorithm:                apstra.AlgorithmHeuristic,
+						MaxLinksPerPort:          2,
+						MaxLinksPerSlot:          2,
+						MaxPerSystemLinksPerPort: 2,
+						MaxPerSystemLinksPerSlot: 2,
+						Mode:                     apstra.AntiAffinityModeEnabledLoose,
+					},
+				},
+				{
+					JunosEvpnDuplicateMacRecoveryTime:     pointer.To(uint16(15)),
+					MaxExternalRoutes:                     pointer.To(uint32(239732)),
+					EsiMacMsb:                             pointer.To(uint8(30)),
+					JunosGracefulRestart:                  &enum.FeatureSwitchEnabled,
+					OptimiseSzFootprint:                   &enum.FeatureSwitchDisabled,
+					JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchDisabled,
+					EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchEnabled,
+					MaxFabricRoutes:                       pointer.To(uint32(84230)),
+					MaxMlagRoutes:                         pointer.To(uint32(76110)),
+					JunosExOverlayEcmp:                    &enum.FeatureSwitchEnabled,
+					DefaultSviL3Mtu:                       pointer.To(uint16(9050)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchEnabled,
+					FabricL3Mtu:                           pointer.To(uint16(9176)),
+					Ipv6Enabled:                           pointer.To(false), // do not enable because it's a one-way trip
+					ExternalRouterMtu:                     pointer.To(uint16(9050)),
+					MaxEvpnRoutes:                         pointer.To(uint32(92332)),
+					AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+						Algorithm:                apstra.AlgorithmHeuristic,
+						MaxLinksPerPort:          4,
+						MaxLinksPerSlot:          4,
+						MaxPerSystemLinksPerPort: 4,
+						MaxPerSystemLinksPerSlot: 4,
+						Mode:                     apstra.AntiAffinityModeEnabledStrict,
+					},
 				},
 			},
 		},
-		"different_values": {
-			fabricSettings: FabricSettings{
-				JunosEvpnDuplicateMacRecoveryTime:     toPtr(uint16(15)),
-				MaxExternalRoutes:                     toPtr(uint32(239732)),
-				EsiMacMsb:                             toPtr(uint8(30)),
-				JunosGracefulRestart:                  &enum.FeatureSwitchEnabled,
-				OptimiseSzFootprint:                   &enum.FeatureSwitchDisabled,
-				JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchDisabled,
-				EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchEnabled,
-				MaxFabricRoutes:                       toPtr(uint32(84230)),
-				MaxMlagRoutes:                         toPtr(uint32(76110)),
-				JunosExOverlayEcmp:                    &enum.FeatureSwitchEnabled,
-				DefaultSviL3Mtu:                       toPtr(uint16(9050)),
-				JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchEnabled,
-				FabricL3Mtu:                           toPtr(uint16(9176)),
-				Ipv6Enabled:                           toPtr(false), // do not enable because it's a one-way trip
-				ExternalRouterMtu:                     toPtr(uint16(9050)),
-				MaxEvpnRoutes:                         toPtr(uint32(92332)),
-				AntiAffinityPolicy: &AntiAffinityPolicy{
-					Algorithm:                AlgorithmHeuristic,
-					MaxLinksPerPort:          4,
-					MaxLinksPerSlot:          4,
-					MaxPerSystemLinksPerPort: 4,
-					MaxPerSystemLinksPerSlot: 4,
-					Mode:                     AntiAffinityModeEnabledStrict,
+		"lots_of_values_including_anycast_gw_mac": {
+			versionConstraint: &compatibility.FabricSettingsDefaultAnycastGWMacOK,
+			fabricSettings: []*apstra.FabricSettings{
+				{
+					DefaultAnycastGWMAC:                   testutils.RandomMAC(),
+					JunosEvpnDuplicateMacRecoveryTime:     pointer.To(uint16(17)),
+					MaxExternalRoutes:                     pointer.To(uint32(239833)),
+					EsiMacMsb:                             pointer.To(uint8(34)),
+					JunosGracefulRestart:                  &enum.FeatureSwitchEnabled,
+					OptimiseSzFootprint:                   &enum.FeatureSwitchDisabled,
+					JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchDisabled,
+					EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchDisabled,
+					MaxFabricRoutes:                       pointer.To(uint32(84232)),
+					MaxMlagRoutes:                         pointer.To(uint32(76113)),
+					JunosExOverlayEcmp:                    &enum.FeatureSwitchEnabled,
+					DefaultSviL3Mtu:                       pointer.To(uint16(9102)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchEnabled,
+					FabricL3Mtu:                           pointer.To(uint16(9176)),
+					ExternalRouterMtu:                     pointer.To(uint16(9102)),
+					MaxEvpnRoutes:                         pointer.To(uint32(92343)),
+					AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+						Algorithm:                apstra.AlgorithmHeuristic,
+						MaxLinksPerPort:          3,
+						MaxLinksPerSlot:          3,
+						MaxPerSystemLinksPerPort: 3,
+						MaxPerSystemLinksPerSlot: 3,
+						Mode:                     apstra.AntiAffinityModeEnabledStrict,
+					},
+				},
+				{
+					DefaultAnycastGWMAC:                   testutils.RandomMAC(),
+					JunosEvpnDuplicateMacRecoveryTime:     pointer.To(uint16(14)),
+					MaxExternalRoutes:                     pointer.To(uint32(239731)),
+					EsiMacMsb:                             pointer.To(uint8(28)),
+					JunosGracefulRestart:                  &enum.FeatureSwitchDisabled,
+					OptimiseSzFootprint:                   &enum.FeatureSwitchEnabled,
+					JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchEnabled,
+					EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchDisabled,
+					MaxFabricRoutes:                       pointer.To(uint32(84229)),
+					MaxMlagRoutes:                         pointer.To(uint32(76109)),
+					JunosExOverlayEcmp:                    &enum.FeatureSwitchDisabled,
+					DefaultSviL3Mtu:                       pointer.To(uint16(9050)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchDisabled,
+					FabricL3Mtu:                           pointer.To(uint16(9174)),
+					ExternalRouterMtu:                     pointer.To(uint16(9050)),
+					MaxEvpnRoutes:                         pointer.To(uint32(92332)),
+					AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+						Algorithm:                apstra.AlgorithmHeuristic,
+						MaxLinksPerPort:          4,
+						MaxLinksPerSlot:          4,
+						MaxPerSystemLinksPerPort: 4,
+						MaxPerSystemLinksPerSlot: 4,
+						Mode:                     apstra.AntiAffinityModeEnabledLoose,
+					},
 				},
 			},
 		},
 	}
 
-	for clientName, client := range clients {
-		clientName, client := clientName, client
-		t.Run(clientName, func(t *testing.T) {
-			bpClient := testBlueprintC(ctx, t, client.client)
+	// create a test blueprint in each test instance
+	bpwg := new(sync.WaitGroup)
+	bpwg.Add(len(clients))
+	bpClients := make([]*apstra.TwoStageL3ClosClient, len(clients))
+	for i, client := range clients {
+		go func() {
+			defer bpwg.Done()
+			bpClients[i] = dctestobj.TestBlueprintC(t, ctx, client.Client)
+		}()
+	}
+	bpwg.Wait()
 
-			for tName, tCase := range testCases {
-				tName, tCase := tName, tCase
-				t.Run(tName, func(t *testing.T) {
-					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(bpClient.client.apiVersion) {
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			// do not use t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
+
+			for _, bpClient := range bpClients {
+				apiVersion := version.Must(version.NewVersion(bpClient.Client().ApiVersion()))
+				t.Run(apiVersion.String(), func(t *testing.T) {
+					t.Parallel()
+					ctx := testutils.ContextWithTestID(ctx, t)
+
+					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(apiVersion) {
 						t.Skipf("skipping test %q due to version constraints: %q. API version %q",
-							tName, tCase.versionConstraint, bpClient.client.apiVersion)
+							tName, tCase.versionConstraint, apiVersion)
 					}
 
-					log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-					err = bpClient.SetFabricSettings(ctx, &tCase.fabricSettings)
-					if err != nil {
-						t.Fatal(err)
-					}
+					for _, set := range tCase.fabricSettings {
+						err := bpClient.SetFabricSettings(ctx, set)
+						require.NoError(t, err)
 
-					log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-					fs, err := bpClient.GetFabricSettings(ctx)
-					if err != nil {
-						t.Fatal(err)
+						get, err := bpClient.GetFabricSettings(ctx)
+						require.NoError(t, err)
+						require.NotNil(t, get)
+						if set != nil {
+							compare.FabricSettings(t, *set, *get)
+						}
 					}
-					compareFabricSettings(t, tCase.fabricSettings, *fs)
 				})
 			}
 		})
@@ -245,15 +201,12 @@ func TestSetGetFabricSettings(t *testing.T) {
 }
 
 func TestFabricSettingsRoutesMaxDefaultVsZero(t *testing.T) {
-	ctx := context.Background()
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.ContextWithTestID(context.Background(), t)
+	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
 		name              string
-		fabricSettings    FabricSettings
+		fabricSettings    apstra.FabricSettings
 		versionConstraint version.Constraints
 	}
 
@@ -261,105 +214,107 @@ func TestFabricSettingsRoutesMaxDefaultVsZero(t *testing.T) {
 	testCases := []testCase{
 		{
 			name:           "defaults",
-			fabricSettings: FabricSettings{},
+			fabricSettings: apstra.FabricSettings{},
 		},
 		{
 			name: "values",
-			fabricSettings: FabricSettings{
-				MaxEvpnRoutes:     toPtr(uint32(10000)),
-				MaxExternalRoutes: toPtr(uint32(11000)),
-				MaxFabricRoutes:   toPtr(uint32(12000)),
-				MaxMlagRoutes:     toPtr(uint32(13000)),
+			fabricSettings: apstra.FabricSettings{
+				MaxEvpnRoutes:     pointer.To(uint32(10000)),
+				MaxExternalRoutes: pointer.To(uint32(11000)),
+				MaxFabricRoutes:   pointer.To(uint32(12000)),
+				MaxMlagRoutes:     pointer.To(uint32(13000)),
 			},
 		},
 		{
 			name: "zeros",
-			fabricSettings: FabricSettings{
-				MaxEvpnRoutes:     toPtr(uint32(0)),
-				MaxExternalRoutes: toPtr(uint32(0)),
-				MaxFabricRoutes:   toPtr(uint32(0)),
-				MaxMlagRoutes:     toPtr(uint32(0)),
+			fabricSettings: apstra.FabricSettings{
+				MaxEvpnRoutes:     pointer.To(uint32(0)),
+				MaxExternalRoutes: pointer.To(uint32(0)),
+				MaxFabricRoutes:   pointer.To(uint32(0)),
+				MaxMlagRoutes:     pointer.To(uint32(0)),
 			},
 		},
 		{
 			name:           "restore_defaults",
-			fabricSettings: FabricSettings{},
+			fabricSettings: apstra.FabricSettings{},
 		},
 	}
 
-	for clientName, client := range clients {
-		client := client
-		bpClient := testBlueprintC(ctx, t, client.client)
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			ctx := testutils.ContextWithTestID(ctx, t)
+			t.Parallel()
 
-		for _, tCase := range testCases {
-			tCase := tCase
-			t.Run(tCase.name, func(t *testing.T) {
-				if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(bpClient.client.apiVersion) {
-					t.Skipf("skipping test %q due to version constraints: %q. API version %q",
-						tCase.name, tCase.versionConstraint, bpClient.client.apiVersion)
-				}
+			bpClient := dctestobj.TestBlueprintC(t, ctx, client.Client)
 
-				log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-				err = bpClient.SetFabricSettings(ctx, &tCase.fabricSettings)
-				if err != nil {
-					t.Fatal(err)
-				}
+			for _, tCase := range testCases {
+				t.Run(tCase.name, func(t *testing.T) {
+					ctx := testutils.ContextWithTestID(ctx, t)
 
-				log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-				fs, err := bpClient.GetFabricSettings(ctx)
-				if err != nil {
-					t.Fatal(err)
-				}
-				compareFabricSettings(t, tCase.fabricSettings, *fs)
-			})
-		}
+					apiVersion := version.Must(version.NewVersion(bpClient.Client().ApiVersion()))
+					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(apiVersion) {
+						t.Skipf("skipping test %q due to version constraints: %q. API version %q",
+							tCase.name, tCase.versionConstraint, apiVersion)
+					}
+
+					err := bpClient.SetFabricSettings(ctx, &tCase.fabricSettings)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					fs, err := bpClient.GetFabricSettings(ctx)
+					if err != nil {
+						t.Fatal(err)
+					}
+					compare.FabricSettings(t, tCase.fabricSettings, *fs)
+				})
+			}
+		})
 	}
 }
 
 func TestSetGetFabricSettingsV6(t *testing.T) {
-	ctx := context.Background()
-	clients, err := getTestClients(ctx, t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := testutils.ContextWithTestID(context.Background(), t)
+	clients := testclient.GetTestClients(t, ctx)
 
-	for clientName, client := range clients {
-		clientName, client := clientName, client
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			ctx := testutils.ContextWithTestID(ctx, t)
+			t.Parallel()
 
-		t.Run(clientName, func(t *testing.T) {
-			bpClient := testBlueprintC(ctx, t, client.client)
+			if !compatibility.FabricSettingsIPv6EnabledOK.Check(client.APIVersion()) {
+				t.Skipf("skipping test with Apstra %s", client.APIVersion())
+			}
+
+			bpClient := dctestobj.TestBlueprintC(t, ctx, client.Client)
 
 			t.Run("enable_and_check_ipv6", func(t *testing.T) {
-				fsSet := &FabricSettings{
-					AntiAffinityPolicy: &AntiAffinityPolicy{
-						Algorithm:                AlgorithmHeuristic,
+				fsSet := &apstra.FabricSettings{
+					AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+						Algorithm:                apstra.AlgorithmHeuristic,
 						MaxLinksPerPort:          2,
 						MaxLinksPerSlot:          2,
 						MaxPerSystemLinksPerPort: 2,
 						MaxPerSystemLinksPerSlot: 2,
-						Mode:                     AntiAffinityModeEnabledStrict,
+						Mode:                     apstra.AntiAffinityModeEnabledStrict,
 					},
-					EsiMacMsb:                   toPtr(uint8(4)),
+					EsiMacMsb:                   pointer.To(uint8(4)),
 					EvpnGenerateType5HostRoutes: &enum.FeatureSwitchEnabled,
-					ExternalRouterMtu:           toPtr(uint16(9002)),
-					Ipv6Enabled:                 toPtr(true),
-					MaxEvpnRoutes:               toPtr(uint32(10000)),
-					MaxExternalRoutes:           toPtr(uint32(11000)),
-					MaxFabricRoutes:             toPtr(uint32(12000)),
-					MaxMlagRoutes:               toPtr(uint32(13000)),
-				}
-				log.Printf("testing SetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-				err = bpClient.SetFabricSettings(ctx, fsSet)
-				if err != nil {
-					t.Fatal(err)
-				}
-				log.Printf("testing GetFabricSettings() against %s %s (%s)", client.clientType, clientName, bpClient.client.apiVersion)
-				fsGet, err := bpClient.GetFabricSettings(ctx)
-				if err != nil {
-					t.Fatal(err)
+					ExternalRouterMtu:           pointer.To(uint16(9002)),
+					Ipv6Enabled:                 pointer.To(true),
+					MaxEvpnRoutes:               pointer.To(uint32(10000)),
+					MaxExternalRoutes:           pointer.To(uint32(11000)),
+					MaxFabricRoutes:             pointer.To(uint32(12000)),
+					MaxMlagRoutes:               pointer.To(uint32(13000)),
 				}
 
-				compareFabricSettings(t, *fsSet, *fsGet)
+				err := bpClient.SetFabricSettings(ctx, fsSet)
+				require.NoError(t, err)
+
+				fsGet, err := bpClient.GetFabricSettings(ctx)
+				require.NoError(t, err)
+
+				compare.FabricSettings(t, *fsSet, *fsGet)
 			})
 		})
 	}

@@ -130,6 +130,26 @@ func GetRandInts(min, max, count int) ([]int, error) {
 	return result, nil
 }
 
+// RandomMAC returns a random 6-byte MAC address. The optional flags indicate whether
+// the returned MAC should have the group bit set (flags[0] == true) or the Locally
+// Administered Address bit (flags[1] == true). By default, neither bit is set.
+func RandomMAC(flags ...bool) net.HardwareAddr {
+	var flagByte uint8
+	if len(flags) > 0 && flags[0] {
+		flagByte += 1 // I/G bit
+	}
+	if len(flags) > 1 && flags[1] {
+		flagByte += 2 // LAA bit
+	}
+
+	result := net.HardwareAddr{(byte(rand.Int()) << 2) | flagByte}
+	for len(result) < 6 {
+		result = append(result, byte(rand.Int()))
+	}
+
+	return result
+}
+
 func RandomPrefix(t testing.TB, cidrBlock string, bits int) net.IPNet {
 	t.Helper()
 

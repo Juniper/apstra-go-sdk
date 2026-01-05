@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2025.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 )
 
 const (
@@ -35,6 +37,10 @@ func (o *TwoStageL3ClosClient) GetFabricAddressingPolicy(ctx context.Context) (*
 }
 
 func (o *TwoStageL3ClosClient) SetFabricAddressingPolicy(ctx context.Context, in *TwoStageL3ClosFabricAddressingPolicy) error {
+	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
+		return fmt.Errorf("SetFabricAddressingPolicy only for use with Apstra %s", compatibility.EqApstra420)
+	}
+
 	if in.Ipv6Enabled == nil &&
 		in.EsiMacMsb == nil &&
 		in.FabricL3Mtu == nil {

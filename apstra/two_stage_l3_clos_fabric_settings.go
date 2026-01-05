@@ -6,7 +6,9 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
@@ -26,8 +28,14 @@ var (
 	junosEvpnRoutingInstanceTypes         = oenum.New(junosEvpnRoutingInstanceTypeVlanAware, junosEvpnRoutingInstanceTypeDefault)
 )
 
+var (
+	_ json.Marshaler   = (*FabricSettings)(nil)
+	_ json.Unmarshaler = (*FabricSettings)(nil)
+)
+
 type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.1.0
 	AntiAffinityPolicy                    *AntiAffinityPolicy     // /anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy
+	DefaultAnycastGWMAC                   net.HardwareAddr        //       introduced with 6.1.0
 	DefaultSviL3Mtu                       *uint16                 // virtual_network_policy node	not supported					not supported					not supported.
 	EsiMacMsb                             *uint8                  // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
 	EvpnGenerateType5HostRoutes           *enum.FeatureSwitch     // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
@@ -49,7 +57,7 @@ type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.
 	SpineSuperspineLinks                  *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
 }
 
-func (o FabricSettings) raw() *rawFabricSettings {
+func (o FabricSettings) MarshalJSON() ([]byte, error) {
 	var antiAffinityPolicy *rawAntiAffinityPolicy
 	if o.AntiAffinityPolicy != nil {
 		antiAffinityPolicy = o.AntiAffinityPolicy.raw()
@@ -74,8 +82,14 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		spineSuperspineLinks = toPtr(addressingScheme(o.SpineSuperspineLinks.String()))
 	}
 
-	return &rawFabricSettings{
+	var DefaultAnycastGWMAC *string
+	if len(o.DefaultAnycastGWMAC.String()) > 0 {
+		DefaultAnycastGWMAC = toPtr(o.DefaultAnycastGWMAC.String())
+	}
+
+	raw := rawFabricSettings{
 		AntiAffinity:                          antiAffinityPolicy,
+		DefaultAnycastGWMAC:                   DefaultAnycastGWMAC,
 		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
 		EsiMacMsb:                             o.EsiMacMsb,
 		EvpnGenerateType5HostRoutes:           stringerPtrToStringPtr(o.EvpnGenerateType5HostRoutes),
@@ -96,6 +110,94 @@ func (o FabricSettings) raw() *rawFabricSettings {
 		SpineLeafLinks:                        spineLeafLinks,
 		SpineSuperspineLinks:                  spineSuperspineLinks,
 	}
+
+	return json.Marshal(&raw)
+}
+
+func (o *FabricSettings) UnmarshalJSON(bytes []byte) error {
+	var raw rawFabricSettings
+	if err := json.Unmarshal(bytes, &raw); err != nil {
+		return fmt.Errorf("unmarshaling rawFabricSettings: %w", err)
+	}
+
+	var err error
+
+	if o.AntiAffinityPolicy, err = raw.AntiAffinity.polish(); err != nil {
+		return fmt.Errorf("parsing AntiAffinityPolicy: %w", err)
+	}
+
+	if raw.DefaultAnycastGWMAC != nil && *raw.DefaultAnycastGWMAC != "" {
+		if o.DefaultAnycastGWMAC, err = net.ParseMAC(*raw.DefaultAnycastGWMAC); err != nil {
+			return fmt.Errorf("parsing DefaultAnycastGWMAC: %w", err)
+		}
+	} else {
+		o.DefaultAnycastGWMAC = nil
+	}
+
+	o.DefaultSviL3Mtu = raw.DefaultSviL3Mtu
+	o.EsiMacMsb = raw.EsiMacMsb
+	o.EvpnGenerateType5HostRoutes = featureSwitchEnumFromStringPtr(raw.EvpnGenerateType5HostRoutes)
+	o.ExternalRouterMtu = raw.ExternalRouterMtu
+	o.FabricL3Mtu = raw.FabricL3Mtu
+	o.Ipv6Enabled = raw.Ipv6Enabled
+	o.JunosEvpnDuplicateMacRecoveryTime = raw.JunosEvpnDuplicateMacRecoveryTime
+	o.JunosEvpnMaxNexthopAndInterfaceNumber = featureSwitchEnumFromStringPtr(raw.JunosEvpnMaxNexthopAndInterfaceNumber)
+
+	if raw.JunosEvpnRoutingInstanceType != nil {
+		parsed := junosEvpnRoutingInstanceTypes.Parse(*raw.JunosEvpnRoutingInstanceType)
+		if parsed == nil {
+			return fmt.Errorf("cannot parse junos_evpn_routing_instance_type value %q", *raw.JunosEvpnRoutingInstanceType)
+		}
+
+		if *parsed == junosEvpnRoutingInstanceTypeDefault {
+			o.JunosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchDisabled
+		} else {
+			o.JunosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchEnabled
+		}
+	} else {
+		o.JunosEvpnRoutingInstanceVlanAware = nil
+	}
+
+	o.JunosExOverlayEcmp = featureSwitchEnumFromStringPtr(raw.JunosExOverlayEcmp)
+	o.JunosGracefulRestart = featureSwitchEnumFromStringPtr(raw.JunosGracefulRestart)
+	o.MaxEvpnRoutes = raw.MaxEvpnRoutes
+	o.MaxExternalRoutes = raw.MaxExternalRoutes
+	o.MaxFabricRoutes = raw.MaxFabricRoutes
+	o.MaxMlagRoutes = raw.MaxMlagRoutes
+	o.OptimiseSzFootprint = featureSwitchEnumFromStringPtr(raw.OptimiseSzFootprint)
+
+	if raw.OverlayControlProtocol != nil {
+		ocp := new(OverlayControlProtocol)
+		if err := ocp.FromString(*raw.OverlayControlProtocol); err != nil {
+			return fmt.Errorf("parsing overlay_control_protocol %q: %w", *raw.OverlayControlProtocol, err)
+		}
+	} else {
+		o.OverlayControlProtocol = nil
+	}
+
+	if raw.SpineLeafLinks != nil {
+		x := new(addressingScheme)
+		i, err := x.parse()
+		if err != nil {
+			return fmt.Errorf("parsing spine_leaf_links: %w", err)
+		}
+		o.SpineLeafLinks = toPtr(AddressingScheme(i))
+	} else {
+		o.SpineLeafLinks = nil
+	}
+
+	if raw.SpineSuperspineLinks != nil {
+		x := new(addressingScheme)
+		i, err := x.parse()
+		if err != nil {
+			return fmt.Errorf("parsing spine_superspine_links: %w", err)
+		}
+		o.SpineSuperspineLinks = toPtr(AddressingScheme(i))
+	} else {
+		o.SpineSuperspineLinks = nil
+	}
+
+	return nil
 }
 
 func (o FabricSettings) rawBlueprintRequestFabricAddressingPolicy() *rawBlueprintRequestFabricAddressingPolicy {
@@ -118,6 +220,7 @@ func (o FabricSettings) rawBlueprintRequestFabricAddressingPolicy() *rawBlueprin
 
 type rawFabricSettings struct {
 	AntiAffinity                          *rawAntiAffinityPolicy `json:"anti_affinity,omitempty"`
+	DefaultAnycastGWMAC                   *string                `json:"default_anycast_gw_mac,omitempty"`
 	DefaultSviL3Mtu                       *uint16                `json:"default_svi_l3_mtu,omitempty"`
 	EsiMacMsb                             *uint8                 `json:"esi_mac_msb,omitempty"`
 	EvpnGenerateType5HostRoutes           *string                `json:"evpn_generate_type5_host_routes,omitempty"`
@@ -144,78 +247,8 @@ type rawFabricSettings struct {
 	// default_fabric_evi_route_target
 }
 
-func (o rawFabricSettings) polish() (*FabricSettings, error) {
-	var ocp *OverlayControlProtocol
-	if o.OverlayControlProtocol != nil {
-		ocp = new(OverlayControlProtocol)
-		err := ocp.FromString(*o.OverlayControlProtocol)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse overlay_control_protocol value %q", *o.OverlayControlProtocol)
-		}
-	}
-
-	var junosEvpnRoutingInstanceVlanAware *enum.FeatureSwitch
-	if o.JunosEvpnRoutingInstanceType != nil {
-		x := junosEvpnRoutingInstanceTypes.Parse(*o.JunosEvpnRoutingInstanceType)
-		if x == nil {
-			return nil, fmt.Errorf("failed to parse junos_evpn_routing_instance_type value %q", *o.JunosEvpnRoutingInstanceType)
-		}
-		if *x == junosEvpnRoutingInstanceTypeDefault {
-			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchDisabled
-		} else {
-			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchEnabled
-		}
-	}
-
-	antiAffinityPolicy, err := o.AntiAffinity.polish()
-	if err != nil {
-		return nil, err
-	}
-
-	var spineLeafLinks *AddressingScheme
-	if o.SpineLeafLinks != nil {
-		i, err := o.SpineLeafLinks.parse()
-		if err != nil {
-			return nil, err
-		}
-		spineLeafLinks = toPtr(AddressingScheme(i))
-	}
-
-	var spineSuperspineLinks *AddressingScheme
-	if o.SpineSuperspineLinks != nil {
-		i, err := o.SpineSuperspineLinks.parse()
-		if err != nil {
-			return nil, err
-		}
-		spineSuperspineLinks = toPtr(AddressingScheme(i))
-	}
-
-	return &FabricSettings{
-		AntiAffinityPolicy:                    antiAffinityPolicy,
-		DefaultSviL3Mtu:                       o.DefaultSviL3Mtu,
-		EsiMacMsb:                             o.EsiMacMsb,
-		EvpnGenerateType5HostRoutes:           featureSwitchEnumFromStringPtr(o.EvpnGenerateType5HostRoutes),
-		ExternalRouterMtu:                     o.ExternalRouterMtu,
-		FabricL3Mtu:                           o.FabricL3Mtu,
-		Ipv6Enabled:                           o.Ipv6Enabled,
-		JunosEvpnDuplicateMacRecoveryTime:     o.JunosEvpnDuplicateMacRecoveryTime,
-		JunosEvpnMaxNexthopAndInterfaceNumber: featureSwitchEnumFromStringPtr(o.JunosEvpnMaxNexthopAndInterfaceNumber),
-		JunosEvpnRoutingInstanceVlanAware:     junosEvpnRoutingInstanceVlanAware,
-		JunosExOverlayEcmp:                    featureSwitchEnumFromStringPtr(o.JunosExOverlayEcmp),
-		JunosGracefulRestart:                  featureSwitchEnumFromStringPtr(o.JunosGracefulRestart),
-		MaxEvpnRoutes:                         o.MaxEvpnRoutes,
-		MaxExternalRoutes:                     o.MaxExternalRoutes,
-		MaxFabricRoutes:                       o.MaxFabricRoutes,
-		MaxMlagRoutes:                         o.MaxMlagRoutes,
-		OptimiseSzFootprint:                   featureSwitchEnumFromStringPtr(o.OptimiseSzFootprint),
-		OverlayControlProtocol:                ocp,
-		SpineLeafLinks:                        spineLeafLinks,
-		SpineSuperspineLinks:                  spineSuperspineLinks,
-	}, nil
-}
-
-func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*rawFabricSettings, error) {
-	var response rawFabricSettings
+func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*FabricSettings, error) {
+	var response FabricSettings
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
 		urlStr:      fmt.Sprintf(apiUrlBlueprintFabricSettings, o.blueprintId),
@@ -230,7 +263,7 @@ func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*rawFabri
 
 // getFabricSettings420 does the same job as setFabricSettings, but for Apstra 4.2.0, which collects
 // the parameters in rawFabricSettings from 3 different places
-func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*rawFabricSettings, error) {
+func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*FabricSettings, error) {
 	fabricAddressingPolicy, err := o.GetFabricAddressingPolicy(ctx)
 	if err != nil {
 		return nil, err
@@ -246,34 +279,62 @@ func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*rawFa
 		return nil, err
 	}
 
-	antiAffinityPolicy, err := o.getAntiAffinityPolicy(ctx)
-	if err != nil {
-		return nil, err
+	var antiAffinityPolicy *AntiAffinityPolicy
+	if rawAAP, err := o.getAntiAffinityPolicy(ctx); err != nil {
+		return nil, fmt.Errorf("getting AntiAffinityPolicy: %w", err)
+	} else {
+		if antiAffinityPolicy, err = rawAAP.polish(); err != nil {
+			return nil, fmt.Errorf("polishing AntiAffinityPolicy: %w", err)
+		}
 	}
 
-	return &rawFabricSettings{
-		AntiAffinity:                          antiAffinityPolicy,
+	var junosEvpnRoutingInstanceVlanAware *enum.FeatureSwitch
+	if virtualNetworkPolicy.JunosEvpnRoutingInstanceType != nil {
+		parsed := junosEvpnRoutingInstanceTypes.Parse(*virtualNetworkPolicy.JunosEvpnRoutingInstanceType)
+		if parsed == nil {
+			return nil, fmt.Errorf("cannot parse junos_evpn_routing_instance_type value %q", *virtualNetworkPolicy.JunosEvpnRoutingInstanceType)
+		}
+
+		if *parsed == junosEvpnRoutingInstanceTypeDefault {
+			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchDisabled
+		} else {
+			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchEnabled
+		}
+	} else {
+		junosEvpnRoutingInstanceVlanAware = nil
+	}
+
+	var ocp *OverlayControlProtocol
+	if virtualNetworkPolicy.OverlayControlProtocol != nil {
+		ocp := new(OverlayControlProtocol)
+		if err := ocp.FromString(*virtualNetworkPolicy.OverlayControlProtocol); err != nil {
+			return nil, fmt.Errorf("parsing overlay_control_protocol %q: %w", *virtualNetworkPolicy.OverlayControlProtocol, err)
+		}
+	}
+
+	return &FabricSettings{
+		AntiAffinityPolicy:                    antiAffinityPolicy,
 		DefaultSviL3Mtu:                       virtualNetworkPolicy.DefaultSviL3Mtu,
 		EsiMacMsb:                             fabricAddressingPolicy.EsiMacMsb,
-		EvpnGenerateType5HostRoutes:           virtualNetworkPolicy.EvpnGenerateType5HostRoutes,
+		EvpnGenerateType5HostRoutes:           featureSwitchEnumFromStringPtr(virtualNetworkPolicy.EvpnGenerateType5HostRoutes),
 		ExternalRouterMtu:                     virtualNetworkPolicy.ExternalRouterMtu,
 		FabricL3Mtu:                           fabricAddressingPolicy.FabricL3Mtu,
 		Ipv6Enabled:                           fabricAddressingPolicy.Ipv6Enabled,
 		JunosEvpnDuplicateMacRecoveryTime:     virtualNetworkPolicy.JunosEvpnDuplicateMacRecoveryTime,
-		JunosEvpnMaxNexthopAndInterfaceNumber: virtualNetworkPolicy.JunosEvpnMaxNexthopAndInterfaceNumber,
-		JunosEvpnRoutingInstanceType:          virtualNetworkPolicy.JunosEvpnRoutingInstanceType,
-		JunosExOverlayEcmp:                    virtualNetworkPolicy.JunosExOverlayEcmp,
-		JunosGracefulRestart:                  virtualNetworkPolicy.JunosGracefulRestart,
+		JunosEvpnMaxNexthopAndInterfaceNumber: featureSwitchEnumFromStringPtr(virtualNetworkPolicy.JunosEvpnMaxNexthopAndInterfaceNumber),
+		JunosEvpnRoutingInstanceVlanAware:     junosEvpnRoutingInstanceVlanAware,
+		JunosExOverlayEcmp:                    featureSwitchEnumFromStringPtr(virtualNetworkPolicy.JunosExOverlayEcmp),
+		JunosGracefulRestart:                  featureSwitchEnumFromStringPtr(virtualNetworkPolicy.JunosGracefulRestart),
 		MaxEvpnRoutes:                         virtualNetworkPolicy.MaxEvpnRoutes,
 		MaxExternalRoutes:                     virtualNetworkPolicy.MaxExternalRoutes,
 		MaxFabricRoutes:                       virtualNetworkPolicy.MaxFabricRoutes,
 		MaxMlagRoutes:                         virtualNetworkPolicy.MaxMlagRoutes,
 		OptimiseSzFootprint:                   &optimiseFootprint,
-		OverlayControlProtocol:                virtualNetworkPolicy.OverlayControlProtocol,
+		OverlayControlProtocol:                ocp,
 	}, nil
 }
 
-func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFabricSettings) error {
+func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *FabricSettings) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
 		urlStr:   fmt.Sprintf(apiUrlBlueprintFabricSettings, o.blueprintId),
@@ -288,7 +349,7 @@ func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *rawFab
 
 // setFabricSettings420 does the same job as setFabricSettings, but for Apstra 4.2.0, which controls
 // the parameters in rawFabricSettings in 3 different places
-func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *rawFabricSettings) error {
+func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *FabricSettings) error {
 	err := o.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{
 		Ipv6Enabled: in.Ipv6Enabled,
 		EsiMacMsb:   in.EsiMacMsb,
@@ -308,7 +369,7 @@ func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *raw
 		return err
 	}
 
-	err = o.setAntiAffinityPolicy(ctx, in.AntiAffinity)
+	err = o.setAntiAffinityPolicy(ctx, in.AntiAffinityPolicy.raw())
 	if err != nil {
 		return err
 	}
@@ -316,17 +377,17 @@ func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *raw
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) getSzFootprintOptimization420(ctx context.Context) (string, error) {
+func (o *TwoStageL3ClosClient) getSzFootprintOptimization420(ctx context.Context) (enum.FeatureSwitch, error) {
 	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
-		return "", fmt.Errorf("getSzFootprintOptimization420() must not be invoked with apstra %s", o.client.apiVersion)
+		return enum.FeatureSwitch{}, fmt.Errorf("getSzFootprintOptimization420() must not be invoked with apstra %s", o.client.apiVersion)
 	}
 
 	securityZonePolicyNodeIds, err := o.NodeIdsByType(ctx, NodeTypeSecurityZonePolicy)
 	if err != nil {
-		return "", err
+		return enum.FeatureSwitch{}, err
 	}
 	if len(securityZonePolicyNodeIds) != 1 {
-		return "", fmt.Errorf("expected 1 %s, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
+		return enum.FeatureSwitch{}, fmt.Errorf("expected 1 %s, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
 	}
 
 	var node struct {
@@ -335,19 +396,20 @@ func (o *TwoStageL3ClosClient) getSzFootprintOptimization420(ctx context.Context
 
 	err = o.client.GetNode(ctx, o.blueprintId, securityZonePolicyNodeIds[0], &node)
 	if err != nil {
-		return "", err
+		return enum.FeatureSwitch{}, err
 	}
 
-	return node.FootprintOptimise, nil
+	var result enum.FeatureSwitch
+	if err := result.FromString(node.FootprintOptimise); err != nil {
+		return enum.FeatureSwitch{}, fmt.Errorf("parsing footprint_optimise: %w", err)
+	}
+
+	return result, nil
 }
 
-func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context, in *string) error {
+func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context, in *enum.FeatureSwitch) error {
 	if in == nil {
 		return nil
-	}
-
-	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
-		return fmt.Errorf("setSzFootprintOptimization420() must not be invoked with apstra %s", o.client.apiVersion)
 	}
 
 	securityZonePolicyNodeIds, err := o.NodeIdsByType(ctx, NodeTypeSecurityZonePolicy)
@@ -355,7 +417,7 @@ func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context
 		return err
 	}
 	if len(securityZonePolicyNodeIds) != 1 {
-		return fmt.Errorf("expected 1 %s, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
+		return fmt.Errorf("expected 1 %s node, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
 	}
 
 	err = o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -364,7 +426,7 @@ func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context
 		apiInput: &struct {
 			FootprintOptimise string `json:"footprint_optimise"`
 		}{
-			FootprintOptimise: *in,
+			FootprintOptimise: in.String(),
 		},
 	})
 	if err != nil {
