@@ -51,11 +51,11 @@ var _ json.Marshaler = (*SecurityZoneLoopback)(nil)
 // Note that the API is only concerned with the IPv4Addr and IPv6Addr elements.
 // We include those other elements in various GET methods for convenience.
 type SecurityZoneLoopback struct {
-	Id             ObjectId
+	ID             string
 	IPv4Addr       *netip.Prefix
 	IPv6Addr       *netip.Prefix
 	LoopbackId     int
-	SecurityZoneId ObjectId
+	SecurityZoneID string
 }
 
 func (o *SecurityZoneLoopback) loadIpsFromStringPointers(ipv4Addr, ipv6Addr *string) error {
@@ -107,7 +107,7 @@ func (o SecurityZoneLoopback) MarshalJSON() ([]byte, error) {
 // Only IP information is required in the `SecurityZoneLoopback` objects passed to this function. The other
 // elements will not be rendered to JSON and would be ignored by the API. See the SecurityZoneLoopback for an
 // explanation of how to set and clear addresses (Go nil vs. JSON null, etc...)
-func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szId ObjectId, loopbacks map[ObjectId]SecurityZoneLoopback) error {
+func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szId string, loopbacks map[string]SecurityZoneLoopback) error {
 	if !compatibility.SecurityZoneLoopbackApiSupported.Check(o.client.apiVersion) {
 		return fmt.Errorf("SetSecurityZoneLoopbacks requires Apstra version %s, have version %s",
 			compatibility.SecurityZoneLoopbackApiSupported, o.client.apiVersion,
@@ -115,9 +115,9 @@ func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szI
 	}
 
 	var apiInput struct {
-		Loopbacks map[ObjectId]json.RawMessage `json:"loopbacks"`
+		Loopbacks map[string]json.RawMessage `json:"loopbacks"`
 	}
-	apiInput.Loopbacks = make(map[ObjectId]json.RawMessage)
+	apiInput.Loopbacks = make(map[string]json.RawMessage)
 
 	for k, v := range loopbacks {
 		rawJson, err := json.Marshal(v)
@@ -142,7 +142,7 @@ func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szI
 // GetSecurityZoneLoopbacks returns a map keyed by loopback interface node ID.
 // This is the format used by the API (PATCH), and by our SetSecurityZoneLoopbacks
 // function.
-func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacks(ctx context.Context, szId ObjectId) (map[ObjectId]SecurityZoneLoopback, error) {
+func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacks(ctx context.Context, szId string) (map[string]SecurityZoneLoopback, error) {
 	query := new(PathQuery).
 		SetBlueprintId(o.blueprintId).
 		SetClient(o.client).
@@ -162,10 +162,10 @@ func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacks(ctx context.Context, szI
 	var queryResponse struct {
 		Items []struct {
 			Interface struct {
-				Id         ObjectId `json:"id"`
-				LoopbackId int      `json:"loopback_id"`
-				IPv4Addr   *string  `json:"ipv4_addr"`
-				IPv6Addr   *string  `json:"ipv6_addr"`
+				Id         string  `json:"id"`
+				LoopbackId int     `json:"loopback_id"`
+				IPv4Addr   *string `json:"ipv4_addr"`
+				IPv6Addr   *string `json:"ipv6_addr"`
 			} `json:"n_interface"`
 		} `json:"items"`
 	}
@@ -178,12 +178,12 @@ func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacks(ctx context.Context, szI
 		return nil, nil
 	}
 
-	result := make(map[ObjectId]SecurityZoneLoopback, len(queryResponse.Items))
+	result := make(map[string]SecurityZoneLoopback, len(queryResponse.Items))
 	for _, item := range queryResponse.Items {
 		szl := SecurityZoneLoopback{
-			Id:             item.Interface.Id,
+			ID:             item.Interface.Id,
 			LoopbackId:     item.Interface.LoopbackId,
-			SecurityZoneId: szId,
+			SecurityZoneID: szId,
 		}
 
 		err = szl.loadIpsFromStringPointers(item.Interface.IPv4Addr, item.Interface.IPv6Addr)
@@ -199,13 +199,13 @@ func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacks(ctx context.Context, szI
 
 // GetSecurityZoneLoopbackByInterfaceId returns a single *SecurityZoneLoopback
 // representing the specified loopback graph node ID.
-func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbackByInterfaceId(ctx context.Context, ifId ObjectId) (*SecurityZoneLoopback, error) {
+func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbackByInterfaceId(ctx context.Context, ifID string) (*SecurityZoneLoopback, error) {
 	query := new(PathQuery).
 		SetBlueprintId(o.blueprintId).
 		SetClient(o.client).
 		Node([]QEEAttribute{
 			NodeTypeInterface.QEEAttribute(),
-			{Key: "id", Value: QEStringVal(ifId)},
+			{Key: "id", Value: QEStringVal(ifID)},
 			{Key: "if_type", Value: QEStringVal("loopback")},
 			{Key: "name", Value: QEStringVal("n_interface")},
 		}).
@@ -220,40 +220,40 @@ func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbackByInterfaceId(ctx context.
 	var queryResult struct {
 		Items []struct {
 			Interface struct {
-				Id         ObjectId `json:"id"`
-				Ipv4Addr   *string  `json:"ipv4_addr"`
-				Ipv6Addr   *string  `json:"ipv6_addr"`
-				LoopbackId int      `json:"loopback_id"`
+				Id         string  `json:"id"`
+				Ipv4Addr   *string `json:"ipv4_addr"`
+				Ipv6Addr   *string `json:"ipv6_addr"`
+				LoopbackId int     `json:"loopback_id"`
 			} `json:"n_interface"`
 			SecurityZone struct {
-				Id ObjectId `json:"id"`
+				Id string `json:"id"`
 			} `json:"n_security_zone"`
 		} `json:"items"`
 	}
 
 	err := query.Do(ctx, &queryResult)
 	if err != nil {
-		return nil, fmt.Errorf("failed while querying for loopback interface %q - %w", ifId, err)
+		return nil, fmt.Errorf("failed while querying for loopback interface %q - %w", ifID, err)
 	}
 
 	switch len(queryResult.Items) {
 	case 0:
 		return nil, ClientErr{
 			errType: ErrNotfound,
-			err:     fmt.Errorf("loopback interface %q not found with query %q", ifId, query),
+			err:     fmt.Errorf("loopback interface %q not found with query %q", ifID, query),
 		}
 	case 1:
 	default:
 		return nil, ClientErr{
 			errType: ErrMultipleMatch,
-			err:     fmt.Errorf("found %d matches while looking for loopback interface %q with query %q", len(queryResult.Items), ifId, query),
+			err:     fmt.Errorf("found %d matches while looking for loopback interface %q with query %q", len(queryResult.Items), ifID, query),
 		}
 	}
 
 	szl := SecurityZoneLoopback{
-		Id:             queryResult.Items[0].Interface.Id,
+		ID:             queryResult.Items[0].Interface.Id,
 		LoopbackId:     queryResult.Items[0].Interface.LoopbackId,
-		SecurityZoneId: queryResult.Items[0].SecurityZone.Id,
+		SecurityZoneID: queryResult.Items[0].SecurityZone.Id,
 	}
 
 	err = szl.loadIpsFromStringPointers(queryResult.Items[0].Interface.Ipv4Addr, queryResult.Items[0].Interface.Ipv6Addr)
@@ -291,13 +291,13 @@ func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacksBySystemId(ctx context.Co
 	var queryResult struct {
 		Items []struct {
 			Interface struct {
-				Id         ObjectId `json:"id"`
-				Ipv4Addr   *string  `json:"ipv4_addr"`
-				Ipv6Addr   *string  `json:"ipv6_addr"`
-				LoopbackId int      `json:"loopback_id"`
+				Id         string  `json:"id"`
+				Ipv4Addr   *string `json:"ipv4_addr"`
+				Ipv6Addr   *string `json:"ipv6_addr"`
+				LoopbackId int     `json:"loopback_id"`
 			} `json:"n_interface"`
 			SecurityZone struct {
-				Id ObjectId `json:"id"`
+				Id string `json:"id"`
 			} `json:"n_security_zone"`
 		} `json:"items"`
 	}
@@ -310,9 +310,9 @@ func (o *TwoStageL3ClosClient) GetSecurityZoneLoopbacksBySystemId(ctx context.Co
 	result := make([]SecurityZoneLoopback, len(queryResult.Items))
 	for i, item := range queryResult.Items {
 		szl := SecurityZoneLoopback{
-			Id:             item.Interface.Id,
+			ID:             item.Interface.Id,
 			LoopbackId:     item.Interface.LoopbackId,
-			SecurityZoneId: item.SecurityZone.Id,
+			SecurityZoneID: item.SecurityZone.Id,
 		}
 
 		err = szl.loadIpsFromStringPointers(item.Interface.Ipv4Addr, item.Interface.Ipv6Addr)

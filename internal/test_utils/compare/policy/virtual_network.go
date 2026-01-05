@@ -9,12 +9,13 @@ package comparepolicy
 import (
 	"testing"
 
+	testmessage "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/stretchr/testify/require"
 )
 
 func VirtualNetwork(t testing.TB, req, resp policy.VirtualNetwork, msg ...string) {
-	msg = addMsg(msg, "Comparing Virtual Network Policy")
+	msg = testmessage.Add(msg, "Comparing Virtual Network Policy")
 
 	require.Equal(t, req.OverlayControlProtocol, resp.OverlayControlProtocol, msg)
 }

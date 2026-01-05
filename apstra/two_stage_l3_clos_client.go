@@ -10,12 +10,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
-	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 const (
@@ -167,112 +165,6 @@ func (o *TwoStageL3ClosClient) GetInterfaceMapAssignments(ctx context.Context) (
 // the Blueprint config revision number.
 func (o *TwoStageL3ClosClient) SetInterfaceMapAssignments(ctx context.Context, assignments SystemIdToInterfaceMapAssignment) error {
 	return o.setInterfaceMapAssignments(ctx, assignments)
-}
-
-// CreateSecurityZone creates an Apstra Routing Zone / Security Zone / VRF.
-// If cfg.JunosEvpnIrbMode is omitted, but the API's version-dependent behavior
-// requires that field, it will be set to JunosEvpnIrbModeAsymmetric in the
-// request sent to the API.
-func (o *TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg *SecurityZoneData) (ObjectId, error) {
-	raw := cfg.raw()
-	if raw.JunosEvpnIrbMode == "" {
-		raw.JunosEvpnIrbMode = enum.JunosEvpnIrbModeAsymmetric.Value
-	}
-
-	response, err := o.createSecurityZone(ctx, raw)
-	if err != nil {
-		return "", err
-	}
-	return response.Id, nil
-}
-
-// DeleteSecurityZone deletes an Apstra Routing Zone / Security Zone / VRF
-func (o *TwoStageL3ClosClient) DeleteSecurityZone(ctx context.Context, zoneId ObjectId) error {
-	return o.deleteSecurityZone(ctx, zoneId)
-}
-
-// GetSecurityZoneDhcpServers returns []net.IP representing the DHCP relay
-// targets for the security zone specified by zoneId.
-func (o *TwoStageL3ClosClient) GetSecurityZoneDhcpServers(ctx context.Context, zoneId ObjectId) ([]net.IP, error) {
-	var err error
-	ips, err := o.getSecurityZoneDhcpServers(ctx, zoneId)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]net.IP, len(ips))
-	for i, s := range ips {
-		result[i] = net.ParseIP(s)
-		if result[i] == nil {
-			err = errors.Join(err, fmt.Errorf("failed to parse blueprint %s security zone %s dhcp server"+
-				" at index %d; expected an IP address, got %q", o.blueprintId, zoneId, i, s))
-		}
-	}
-	return result, err
-}
-
-// SetSecurityZoneDhcpServers assigns the []net.IP as DHCP relay targets for
-// the specified security zone, overwriting whatever is there. On the Apstra
-// side, the servers seem to be maintained as an ordered list with duplicates
-// permitted (though the web UI sorts the data prior to display)
-func (o *TwoStageL3ClosClient) SetSecurityZoneDhcpServers(ctx context.Context, zoneId ObjectId, IPs []net.IP) error {
-	ips := make([]string, len(IPs))
-	for i, ip := range IPs {
-		ips[i] = ip.String()
-	}
-	return o.setSecurityZoneDhcpServers(ctx, zoneId, ips)
-}
-
-// GetSecurityZone fetches the Security Zone / Routing Zone / VRF with the given
-// zoneId.
-func (o *TwoStageL3ClosClient) GetSecurityZone(ctx context.Context, zoneId ObjectId) (*SecurityZone, error) {
-	raw, err := o.getSecurityZone(ctx, zoneId)
-	if err != nil {
-		return nil, err
-	}
-	return raw.polish()
-}
-
-// GetSecurityZoneByVrfName fetches the Security Zone / Routing Zone / VRF with
-// the given label.
-func (o *TwoStageL3ClosClient) GetSecurityZoneByVrfName(ctx context.Context, vrfName string) (*SecurityZone, error) {
-	raw, err := o.getSecurityZoneByVrfName(ctx, vrfName)
-	if err != nil {
-		return nil, err
-	}
-	return raw.polish()
-}
-
-// GetAllSecurityZones returns []SecurityZone representing all Security Zones /
-// Routing Zones / VRFs on the system.
-func (o *TwoStageL3ClosClient) GetAllSecurityZones(ctx context.Context) ([]SecurityZone, error) {
-	response, err := o.getAllSecurityZones(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// This API endpoint returns a map. Convert to list for consistency with other 'GetAll' functions.
-	result := make([]SecurityZone, len(response))
-	var i int
-	for k := range response {
-		polished, err := response[k].polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *polished
-		i++
-	}
-
-	return result, nil
-}
-
-// UpdateSecurityZone replaces the configuration of zone zoneId with the supplied CreateSecurityZoneCfg
-func (o *TwoStageL3ClosClient) UpdateSecurityZone(ctx context.Context, zoneId ObjectId, cfg *SecurityZoneData) error {
-	if cfg.JunosEvpnIrbMode == nil {
-		return errors.New("junos_evpn_irb_mode cannot be nil")
-	}
-
-	return o.updateSecurityZone(ctx, zoneId, cfg.raw())
 }
 
 // GetAllPolicies returns []Policy representing all policies configured within the DC blueprint

@@ -263,10 +263,10 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 
 			// create a security zone (VNs live here)
 			szName := randString(5, "hex")
-			szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
-				SzType:  SecurityZoneTypeEVPN,
+			szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
+				Type:    enum.SecurityZoneTypeEVPN,
 				Label:   szName,
-				VrfName: szName,
+				VRFName: szName,
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -278,7 +278,7 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 				vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
 					Ipv4Enabled:    true,
 					Label:          "vn_" + strconv.Itoa(i),
-					SecurityZoneId: szId,
+					SecurityZoneId: ObjectId(szId),
 					VnBindings:     bindings,
 					VnType:         enum.VnTypeVxlan,
 				})
@@ -388,10 +388,10 @@ func TestAddDeletePolicyRule(t *testing.T) {
 
 			// create a security zone (VNs live here)
 			szName := randString(5, "hex")
-			szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
-				SzType:  SecurityZoneTypeEVPN,
+			szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
+				Type:    enum.SecurityZoneTypeEVPN,
 				Label:   szName,
-				VrfName: szName,
+				VRFName: szName,
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -403,7 +403,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 				vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
 					Ipv4Enabled:    true,
 					Label:          "vn_" + strconv.Itoa(i),
-					SecurityZoneId: szId,
+					SecurityZoneId: ObjectId(szId),
 					VnBindings:     bindings,
 					VnType:         enum.VnTypeVxlan,
 				})

@@ -10,11 +10,12 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/design"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func Spine(t testing.TB, req, resp design.Spine, msg ...string) {
-	msg = addMsg(msg, "Comparing Spine")
+	msg = testmessage.Add(msg, "Comparing Spine")
 
 	require.Equal(t, req.Count, resp.Count, msg)
 	require.Equal(t, req.LinkPerSuperspineCount, resp.LinkPerSuperspineCount, msg)
@@ -22,6 +23,6 @@ func Spine(t testing.TB, req, resp design.Spine, msg ...string) {
 	LogicalDevice(t, req.LogicalDevice, req.LogicalDevice, msg...)
 	require.Equal(t, len(req.Tags), len(resp.Tags), msg)
 	for i := range len(req.Tags) {
-		Tag(t, req.Tags[i], resp.Tags[i], addMsg(msg, "Comparing Tag %d", i)...)
+		Tag(t, req.Tags[i], resp.Tags[i], testmessage.Add(msg, "Comparing Tag %d", i)...)
 	}
 }

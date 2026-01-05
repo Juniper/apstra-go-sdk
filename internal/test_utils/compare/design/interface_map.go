@@ -10,17 +10,18 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/design"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func InterfaceMap(t testing.TB, req, resp design.InterfaceMap, msg ...string) {
-	msg = addMsg(msg, "Comparing Interface Map")
+	msg = testmessage.Add(msg, "Comparing Interface Map")
 
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, req.DeviceProfileID, resp.DeviceProfileID, msg)
 	require.Equal(t, len(req.Interfaces), len(resp.Interfaces), msg)
 	for i := range len(req.Interfaces) {
-		InterfaceMapInterface(t, req.Interfaces[i], resp.Interfaces[i], addMsg(msg, "Comparing Interface %d", i)...)
+		InterfaceMapInterface(t, req.Interfaces[i], resp.Interfaces[i], testmessage.Add(msg, "Comparing Interface %d", i)...)
 	}
 
 	if req.ID() != nil && resp.ID() != nil {
@@ -29,7 +30,7 @@ func InterfaceMap(t testing.TB, req, resp design.InterfaceMap, msg ...string) {
 }
 
 func InterfaceMapInterface(t testing.TB, req, resp design.InterfaceMapInterface, msg ...string) {
-	msg = addMsg(msg, "Comparing Interface Map Interface")
+	msg = testmessage.Add(msg, "Comparing Interface Map Interface")
 
 	require.Equal(t, req.Name, resp.Name, msg)
 	require.Equal(t, req.Roles, resp.Roles, msg)
@@ -41,7 +42,7 @@ func InterfaceMapInterface(t testing.TB, req, resp design.InterfaceMapInterface,
 }
 
 func InterfaceMapInterfaceMapping(t testing.TB, req, resp design.InterfaceMapInterfaceMapping, msg ...string) {
-	msg = addMsg(msg, "Comparing Mapping")
+	msg = testmessage.Add(msg, "Comparing Mapping")
 
 	require.Equal(t, req.DeviceProfilePortID, resp.DeviceProfilePortID, msg)
 	require.Equal(t, req.DeviceProfileTransformID, resp.DeviceProfileTransformID, msg)

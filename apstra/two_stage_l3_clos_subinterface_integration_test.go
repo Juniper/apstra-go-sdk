@@ -87,11 +87,11 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 
 			// create a security zone within the blueprint
 			szName := randString(6, "hex")
-			szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+			szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
 				Label:   szName,
-				SzType:  SecurityZoneTypeEVPN,
-				VrfName: szName,
-				VniId:   toPtr(rand.Intn(1000) + 10000),
+				Type:    enum.SecurityZoneTypeEVPN,
+				VRFName: szName,
+				VNI:     toPtr(rand.Intn(1000) + 10000),
 			})
 			require.NoError(t, err)
 
@@ -102,7 +102,7 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 					Label: "IP Link",
 					Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
 						Label:              "",
-						SecurityZone:       &szId,
+						SecurityZone:       (*ObjectId)(&szId),
 						IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNone,
 						IPv6AddressingType: CtPrimitiveIPv6AddressingTypeLinkLocal,
 					},

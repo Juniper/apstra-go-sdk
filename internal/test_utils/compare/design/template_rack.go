@@ -10,11 +10,12 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/design"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func RackTypeWithCount(t testing.TB, req, resp design.RackTypeWithCount, msg ...string) {
-	msg = addMsg(msg, "Comparing Rack Type With Count")
+	msg = testmessage.Add(msg, "Comparing Rack Type With Count")
 
 	require.Equal(t, req.Count, resp.Count, msg)
 	RackType(t, req.RackType, resp.RackType, msg...)

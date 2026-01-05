@@ -106,10 +106,10 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 			require.LessOrEqual(t, len(leafIds), 40, "test requires no more than 40 leaf switches")
 
 			rzLabel := randString(6, "hex")
-			rzId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+			rzId, err := bp.CreateSecurityZone(ctx, SecurityZone{
 				Label:   rzLabel,
-				SzType:  SecurityZoneTypeEVPN,
-				VrfName: rzLabel,
+				Type:    enum.SecurityZoneTypeEVPN,
+				VRFName: rzLabel,
 			})
 			require.NoError(t, err)
 
@@ -118,7 +118,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 				Ipv4Enabled:    true,
 				Ipv4Subnet:     &vnPrefix,
 				Label:          randString(6, "hex"),
-				SecurityZoneId: rzId,
+				SecurityZoneId: ObjectId(rzId),
 				VnType:         enum.VnTypeVxlan,
 			})
 			require.NoError(t, err)
@@ -137,7 +137,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 					bindings[leafIds[j]] = &VnBinding{
 						AccessSwitchNodeIds: nil,
 						SystemId:            leafIds[j],
-						VlanId:              toPtr(Vlan(100*(count) + rand.Intn(100))),
+						VlanId:              toPtr(VLAN(100*(count) + rand.Intn(100))),
 					}
 				}
 
@@ -266,17 +266,17 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 			leafIds = leafIds[1:]
 
 			rzLabel := randString(6, "hex")
-			rzId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+			rzId, err := bp.CreateSecurityZone(ctx, SecurityZone{
 				Label:   rzLabel,
-				SzType:  SecurityZoneTypeEVPN,
-				VrfName: rzLabel,
+				Type:    enum.SecurityZoneTypeEVPN,
+				VRFName: rzLabel,
 			})
 			require.NoError(t, err)
 
 			vnPrefix := randomPrefix(t, "10.0.0.0/8", 24)
 			vnBinding := VnBinding{
 				SystemId: fixedLeafId,
-				VlanId:   toPtr(Vlan(rand.Intn(89) + 11)),
+				VlanId:   toPtr(VLAN(rand.Intn(89) + 11)),
 			}
 			sviIp := SviIp{
 				SystemId: fixedLeafId,
@@ -291,7 +291,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 				Ipv4Enabled:    true,
 				Ipv4Subnet:     &vnPrefix,
 				Label:          randString(6, "hex"),
-				SecurityZoneId: rzId,
+				SecurityZoneId: ObjectId(rzId),
 				VnType:         enum.VnTypeVxlan,
 				VnBindings:     []VnBinding{vnBinding},
 				SviIps:         []SviIp{sviIp},
@@ -313,7 +313,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 						requestBindings[leafId] = &VnBinding{
 							AccessSwitchNodeIds: nil,
 							SystemId:            leafIds[j],
-							VlanId:              toPtr(Vlan(100*(count) + rand.Intn(100))),
+							VlanId:              toPtr(VLAN(100*(count) + rand.Intn(100))),
 						}
 					} else {
 						requestBindings[leafId] = nil

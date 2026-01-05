@@ -16,9 +16,9 @@ const (
 	vniMax = 16777214
 )
 
-type Vlan uint16
+type VLAN uint16
 
-func (o Vlan) validate() error {
+func (o VLAN) validate() error {
 	if o < vlanMin || o > vlanMax {
 		return fmt.Errorf("VLAN %d out of range", o)
 	}
@@ -27,7 +27,7 @@ func (o Vlan) validate() error {
 
 type VNI uint32
 
-type RtPolicy struct {
+type RTPolicy struct {
 	ImportRTs []string `json:"import_RTs"`
 	ExportRTs []string `json:"export_RTs"`
 }

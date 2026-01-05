@@ -30,7 +30,7 @@ type TwoStageL3ClosSubinterfaceLinkEndpoint struct {
 
 type TwoStageL3ClosSubinterfaceLink struct {
 	Id        ObjectId // logical link ID
-	VlanId    *Vlan
+	VlanId    *VLAN
 	Endpoints []TwoStageL3ClosSubinterfaceLinkEndpoint
 	SzId      ObjectId
 	SzLabel   string
@@ -39,7 +39,7 @@ type TwoStageL3ClosSubinterfaceLink struct {
 func (o *TwoStageL3ClosSubinterfaceLink) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		LinkId    ObjectId `json:"link_id"`
-		VlanId    *Vlan    `json:"vlan_id"`
+		VlanId    *VLAN    `json:"vlan_id"`
 		Endpoints []struct {
 			System struct {
 				Id    ObjectId   `json:"id"`

@@ -4,11 +4,11 @@
 
 //go:build requiretestutils
 
-package comparedesign
+package testmessage
 
 import "fmt"
 
-func addMsg(old []string, new string, a ...any) []string {
+func Add(old []string, new string, a ...any) []string {
 	var prefix string
 	if len(old) > 0 && old[0] != "" {
 		prefix = old[0] + ": "

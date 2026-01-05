@@ -10,17 +10,18 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/design"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func Superspine(t testing.TB, req, resp design.Superspine, msg ...string) {
-	msg = addMsg(msg, "Comparing Superspine")
+	msg = testmessage.Add(msg, "Comparing Superspine")
 
 	require.Equal(t, req.PlaneCount, resp.PlaneCount, msg)
 	require.Equal(t, req.SuperspinePerPlane, resp.SuperspinePerPlane, msg)
 	LogicalDevice(t, req.LogicalDevice, req.LogicalDevice, msg...)
 	require.Equal(t, len(req.Tags), len(resp.Tags), msg)
 	for i := range len(req.Tags) {
-		Tag(t, req.Tags[i], resp.Tags[i], addMsg(msg, "Comparing Tag %d", i)...)
+		Tag(t, req.Tags[i], resp.Tags[i], testmessage.Add(msg, "Comparing Tag %d", i)...)
 	}
 }

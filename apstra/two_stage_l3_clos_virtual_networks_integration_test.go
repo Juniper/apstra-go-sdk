@@ -18,16 +18,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func compareRtPolicy(t testing.TB, a, b *RtPolicy) {
+func compareRtPolicy(t testing.TB, a, b *RTPolicy) {
 	t.Helper()
 
 	if (a != nil) != (b != nil) { // XOR
-		t.Fatalf("RtPolicy exists mismatch: %t vs %t", a != nil, b != nil)
+		t.Fatalf("RTPolicy exists mismatch: %t vs %t", a != nil, b != nil)
 	}
 
 	if a != nil && b != nil {
-		compareSlices(t, a.ImportRTs, b.ImportRTs, "RtPolicy ImportRTs elements")
-		compareSlices(t, a.ExportRTs, b.ExportRTs, "RtPolicy ExportRTs elements")
+		compareSlices(t, a.ImportRTs, b.ImportRTs, "RTPolicy ImportRTs elements")
+		compareSlices(t, a.ExportRTs, b.ExportRTs, "RTPolicy ExportRTs elements")
 	}
 }
 
@@ -151,9 +151,9 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			bpClient.SetType(BlueprintTypeStaging)
 
 			log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			zoneId, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
-				SzType:  SecurityZoneTypeEVPN,
-				VrfName: vrfName,
+			zoneId, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+				Type:    enum.SecurityZoneTypeEVPN,
+				VRFName: vrfName,
 				Label:   label,
 			})
 			if err != nil {
@@ -203,7 +203,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 				Ipv4Enabled:               true,
 				L3Mtu:                     l3Mtu,
 				Label:                     label,
-				SecurityZoneId:            zoneId,
+				SecurityZoneId:            ObjectId(zoneId),
 				SviIps:                    sviIps[:1],
 				VirtualGatewayIpv4Enabled: true,
 				VnBindings:                vnBindings[:1],
@@ -246,7 +246,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			}
 			compareVirtualNetworkData(t, &createData, getByName.Data, false)
 
-			newVlan := Vlan(100)
+			newVlan := VLAN(100)
 			createData.ReservedVlanId = &newVlan
 			createData.Label = randString(10, "hex")
 			createData.L3Mtu = toPtr(1280 + (2 * rand.Intn(3969))) // 1280 - 9216 even numbers only
@@ -337,9 +337,9 @@ func TestVirtualNetworkTags(t *testing.T) {
 			bpClient := testBlueprintC(ctx, t, client.client)
 
 			log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			zoneId, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
-				SzType:  SecurityZoneTypeEVPN,
-				VrfName: vrfName,
+			zoneId, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+				Type:    enum.SecurityZoneTypeEVPN,
+				VRFName: vrfName,
 				Label:   label,
 			})
 			require.NoError(t, err)
@@ -376,7 +376,7 @@ func TestVirtualNetworkTags(t *testing.T) {
 			createData := VirtualNetworkData{
 				Ipv4Enabled:               true,
 				Label:                     label,
-				SecurityZoneId:            zoneId,
+				SecurityZoneId:            ObjectId(zoneId),
 				VirtualGatewayIpv4Enabled: true,
 				VnBindings:                vnBindings[:1],
 				VnType:                    enum.VnTypeVxlan,

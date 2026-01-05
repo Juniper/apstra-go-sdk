@@ -10,11 +10,12 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/design"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func PodWithCount(t testing.TB, req, resp design.PodWithCount, msg ...string) {
-	msg = addMsg(msg, "Comparing Pod With Count")
+	msg = testmessage.Add(msg, "Comparing Pod With Count")
 
 	require.Equal(t, req.Count, resp.Count, msg)
 	TemplateRackBased(t, req.Pod, resp.Pod, msg...)

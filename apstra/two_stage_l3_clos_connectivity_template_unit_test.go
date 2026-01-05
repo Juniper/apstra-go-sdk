@@ -59,7 +59,7 @@ func TestBgpOverL3Connectivity(t *testing.T) {
 	}
 
 	securityZone := ObjectId("6k8Wmo0n1h5b_Mbnmbc")
-	vlan := Vlan(5)
+	vlan := VLAN(5)
 	attachLogicalLink := ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
 		SecurityZone:       &securityZone,
 		Tagged:             true,

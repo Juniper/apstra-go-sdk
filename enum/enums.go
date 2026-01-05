@@ -15,6 +15,14 @@ import oenum "github.com/orsinium-labs/enum"
 // or `go generate enum/enums.go` from the repository root directory to refresh
 // `generated_enums.go`.
 
+type AddressingScheme oenum.Member[string]
+
+var (
+	AddressingSchemeIPv4  = AddressingScheme{Value: "ipv4"}
+	AddressingSchemeIPv46 = AddressingScheme{Value: "ipv4_ipv6"}
+	AddressingSchemeIPv6  = AddressingScheme{Value: "ipv6"}
+)
+
 type AntiAffinityMode oenum.Member[string]
 
 var (
@@ -68,11 +76,11 @@ var (
 	InterfaceStateInactive = InterfaceState{Value: "inactive"}
 )
 
-type JunosEvpnIrbMode oenum.Member[string]
+type JunosEVPNIRBMode oenum.Member[string]
 
 var (
-	JunosEvpnIrbModeSymmetric  = JunosEvpnIrbMode{Value: "symmetric"}
-	JunosEvpnIrbModeAsymmetric = JunosEvpnIrbMode{Value: "asymmetric"}
+	JunosEVPNIRBModeSymmetric  = JunosEVPNIRBMode{Value: "symmetric"}
+	JunosEVPNIRBModeAsymmetric = JunosEVPNIRBMode{Value: "asymmetric"}
 )
 
 type PolicyApplicationPointType oenum.Member[string]
@@ -324,7 +332,7 @@ var (
 type SecurityZoneType oenum.Member[string]
 
 var (
-	SecurityZoneTypeEvpn            = SecurityZoneType{Value: "evpn"}
+	SecurityZoneTypeEVPN            = SecurityZoneType{Value: "evpn"}
 	SecurityZoneTypeL3Fabric        = SecurityZoneType{Value: "l3_fabric"}
 	SecurityZoneTypeVirtualL3Fabric = SecurityZoneType{Value: "virtual_l3_fabric"}
 )

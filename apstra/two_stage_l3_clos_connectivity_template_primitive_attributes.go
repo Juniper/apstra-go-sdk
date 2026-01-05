@@ -127,7 +127,7 @@ type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	Label              string
 	SecurityZone       *ObjectId
 	Tagged             bool
-	Vlan               *Vlan
+	Vlan               *VLAN
 	IPv4AddressingType CtPrimitiveIPv4AddressingType
 	IPv6AddressingType CtPrimitiveIPv6AddressingType
 	L3Mtu              *uint16
@@ -652,7 +652,7 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) polish(t *
 
 type rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	InterfaceType      string                        `json:"interface_type"`
-	Vlan               *Vlan                         `json:"vlan_id"`
+	Vlan               *VLAN                         `json:"vlan_id"`
 	Ipv4AddressingType ctPrimitiveIPv4AddressingType `json:"ipv4_addressing_type"`
 	Ipv6AddressingType ctPrimitiveIPv6AddressingType `json:"ipv6_addressing_type"`
 	SecurityZone       *ObjectId                     `json:"security_zone"`

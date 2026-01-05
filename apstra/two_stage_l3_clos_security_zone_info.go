@@ -74,12 +74,12 @@ type TwoStageL3ClosSecurityZoneInfo struct {
 	Label            string                 `json:"label"`
 	VrfName          string                 `json:"vrf_name"`
 	SecurityZoneType *enum.SecurityZoneType `json:"sz_type"`
-	VlanId           *Vlan                  `json:"vlan_id"`
+	VlanId           *VLAN                  `json:"vlan_id"`
 	RoutingPolicyId  *ObjectId              `json:"routing_policy_id"`
-	JunosEvpnIrbMode *enum.JunosEvpnIrbMode `json:"junos_evpn_irb_mode"`
+	JunosEvpnIrbMode *enum.JunosEVPNIRBMode `json:"junos_evpn_irb_mode"`
 	RouteTarget      *string                `json:"route_target"`
 	VniId            *int                   `json:"vni_id"`
-	RtPolicy         *RtPolicy              `json:"rt_policy"`
+	RtPolicy         *RTPolicy              `json:"rt_policy"`
 	Tags             []string               `json:"tags"`
 	MemberInterfaces []struct {
 		Loopbacks     []TwoStageL3ClosSecurityZoneInfoInterface `json:"loopbacks"`

@@ -88,10 +88,10 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			}
 
 			vrf := randString(5, "hex")
-			szId, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
+			szId, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
 				Label:   vrf,
-				SzType:  SecurityZoneTypeEVPN,
-				VrfName: vrf,
+				Type:    enum.SecurityZoneTypeEVPN,
+				VRFName: vrf,
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -104,7 +104,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 				log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 				vnIds[i], err = bpClient.CreateVirtualNetwork(ctx, &VirtualNetworkData{
 					Label:          randString(6, "hex"),
-					SecurityZoneId: szId,
+					SecurityZoneId: ObjectId(szId),
 					VnBindings:     bindings,
 					VnType:         enum.VnTypeVxlan,
 				})
@@ -359,7 +359,7 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 
 			bpClient := testBlueprintC(ctx, t, client.client)
 
-			zones, err := bpClient.GetAllSecurityZones(ctx)
+			zones, err := bpClient.GetSecurityZones(ctx)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(zones))
 
@@ -372,9 +372,9 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 					Subpolicies: []*ConnectivityTemplatePrimitive{
 						{
 							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-								SecurityZone:       &zones[0].Id,
+								SecurityZone:       (*ObjectId)(zones[0].ID()),
 								Tagged:             true,
-								Vlan:               toPtr(Vlan(i + 101)),
+								Vlan:               toPtr(VLAN(i + 101)),
 								IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
 							},
 						},
@@ -597,7 +597,7 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 
 			bpClient := testBlueprintC(ctx, t, client.client)
 
-			zones, err := bpClient.GetAllSecurityZones(ctx)
+			zones, err := bpClient.GetSecurityZones(ctx)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(zones))
 
@@ -610,9 +610,9 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 					Subpolicies: []*ConnectivityTemplatePrimitive{
 						{
 							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-								SecurityZone:       &zones[0].Id,
+								SecurityZone:       (*ObjectId)(zones[0].ID()),
 								Tagged:             true,
-								Vlan:               toPtr(Vlan(i + 101)),
+								Vlan:               toPtr(VLAN(i + 101)),
 								IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
 							},
 						},

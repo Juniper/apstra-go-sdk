@@ -24,22 +24,22 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 
 	securityZoneCount := rand.Intn(3) + 3
 
-	compareSzDataToSzInfo := func(t *testing.T, a *SecurityZoneData, b *TwoStageL3ClosSecurityZoneInfo) {
+	compareSzDataToSzInfo := func(t *testing.T, a *SecurityZone, b *TwoStageL3ClosSecurityZoneInfo) {
 		t.Helper()
 
 		require.NotNil(t, a)
 		require.NotNil(t, b)
 
 		require.Equal(t, a.Label, b.Label)
-		require.Equal(t, a.SzType.String(), b.SecurityZoneType.String())
-		require.Equal(t, a.VrfName, b.VrfName)
-		require.Equal(t, a.VlanId, b.VlanId)
-		require.NotNil(t, a.JunosEvpnIrbMode)
+		require.Equal(t, a.Type.String(), b.SecurityZoneType.String())
+		require.Equal(t, a.VRFName, b.VrfName)
+		require.Equal(t, a.VLAN, b.VlanId)
+		require.NotNil(t, a.JunosEVPNIRBMode)
 		require.NotNil(t, b.JunosEvpnIrbMode)
-		require.Equal(t, *a.JunosEvpnIrbMode, *b.JunosEvpnIrbMode)
+		require.Equal(t, *a.JunosEVPNIRBMode, *b.JunosEvpnIrbMode)
 	}
 
-	compareLoopbacksToSzInfo := func(t *testing.T, a map[ObjectId]SecurityZoneLoopback, b TwoStageL3ClosSecurityZoneInfo) {
+	compareLoopbacksToSzInfo := func(t *testing.T, a map[string]SecurityZoneLoopback, b TwoStageL3ClosSecurityZoneInfo) {
 		t.Helper()
 
 		// reorganize member interfaces into a map keyed by interface ID
@@ -51,7 +51,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 		}
 
 		for ifId, loopbackInfo := range a {
-			if loopback, ok := loopbacks[ifId]; ok {
+			if loopback, ok := loopbacks[ObjectId(ifId)]; ok {
 				require.NotNil(t, loopback.Ipv4Addr)
 				require.NotNil(t, loopbackInfo.IPv4Addr)
 				require.Equal(t, loopbackInfo.IPv4Addr.String(), loopback.Ipv4Addr.String())
@@ -100,23 +100,23 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 				vnBindings = append(vnBindings, VnBinding{SystemId: k})
 			}
 
-			szIds := make([]ObjectId, securityZoneCount)
-			szDatas := make([]SecurityZoneData, securityZoneCount)
+			szIds := make([]string, securityZoneCount)
+			securityZones := make([]SecurityZone, securityZoneCount)
 			VlanIds := make([]int, securityZoneCount) // dedicated vlan slice ensures no collisions
 			randomIntsN(VlanIds, vlanMax-2)
 
 			// create security zones
 			for i := range securityZoneCount {
-				szDatas[i] = SecurityZoneData{
+				securityZones[i] = SecurityZone{
 					Label:            randString(6, "hex"),
-					SzType:           SecurityZoneTypeEVPN,
-					VrfName:          randString(6, "hex"),
-					VlanId:           toPtr(Vlan(VlanIds[i])),
-					JunosEvpnIrbMode: oneOf(&enum.JunosEvpnIrbModeAsymmetric, &enum.JunosEvpnIrbModeSymmetric),
+					Type:             enum.SecurityZoneTypeEVPN,
+					VRFName:          randString(6, "hex"),
+					VLAN:             toPtr(VLAN(VlanIds[i])),
+					JunosEVPNIRBMode: oneOf(&enum.JunosEVPNIRBModeAsymmetric, &enum.JunosEVPNIRBModeSymmetric),
 				}
 
 				// create security zone, record ID
-				szIds[i], err = bp.CreateSecurityZone(ctx, &szDatas[i])
+				szIds[i], err = bp.CreateSecurityZone(ctx, securityZones[i])
 				require.NoError(t, err)
 
 				// create a VN to activate the SZ is on leaf switches
@@ -124,7 +124,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 					Ipv4Enabled:    true,
 					Ipv6Enabled:    true,
 					Label:          randString(6, "hex"),
-					SecurityZoneId: szIds[i],
+					SecurityZoneId: ObjectId(szIds[i]),
 					VnBindings:     vnBindings,
 					VnType:         enum.VnTypeVxlan,
 				})
@@ -132,7 +132,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 			}
 
 			// set ipv4 and ipv6 addresses of each leaf in each security zone
-			szidToIfidToLoopbackInfo := make(map[ObjectId]map[ObjectId]SecurityZoneLoopback, securityZoneCount)
+			szidToIfidToLoopbackInfo := make(map[string]map[string]SecurityZoneLoopback, securityZoneCount)
 			for _, szId := range szIds {
 				szidToIfidToLoopbackInfo[szId], err = bp.GetSecurityZoneLoopbacks(ctx, szId)
 				require.NoError(t, err)
@@ -152,21 +152,21 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 
 			// drop the default SZ from infos since we didn't set addresses in there
 			for k := range infos {
-				if !sliceContains(szIds, k) {
+				if !sliceContains(szIds, string(k)) {
 					delete(infos, k)
 				}
 			}
 			require.Equal(t, securityZoneCount, len(infos))
 
 			for i, szId := range szIds {
-				info, err := bp.GetSecurityZoneInfo(ctx, szId)
+				info, err := bp.GetSecurityZoneInfo(ctx, ObjectId(szId))
 				require.NoError(t, err)
 
 				// check security zone details
-				compareSzDataToSzInfo(t, &szDatas[i], info)
+				compareSzDataToSzInfo(t, &securityZones[i], info)
 
 				// check per-sz loopback addresses
-				compareLoopbacksToSzInfo(t, szidToIfidToLoopbackInfo[szId], infos[szId])
+				compareLoopbacksToSzInfo(t, szidToIfidToLoopbackInfo[szId], infos[ObjectId(szId)])
 			}
 		})
 	}

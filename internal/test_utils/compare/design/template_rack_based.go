@@ -11,16 +11,17 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/design"
 	comparepolicy "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/policy"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func TemplateRackBased(t testing.TB, req, resp design.TemplateRackBased, msg ...string) {
-	msg = addMsg(msg, "Comparing Rack Based Template")
+	msg = testmessage.Add(msg, "Comparing Rack Based Template")
 
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, len(req.Racks), len(resp.Racks), msg)
 	for i := range len(req.Racks) {
-		RackTypeWithCount(t, req.Racks[i], resp.Racks[i], addMsg(msg, "Comparing Rack %d", i)...)
+		RackTypeWithCount(t, req.Racks[i], resp.Racks[i], testmessage.Add(msg, "Comparing Rack %d", i)...)
 	}
 
 	if req.AntiAffinityPolicy != nil {

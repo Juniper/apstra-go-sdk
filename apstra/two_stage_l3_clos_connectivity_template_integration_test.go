@@ -162,12 +162,12 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 
 			apiVersion := version.Must(version.NewVersion(bpClient.client.apiVersion.String()))
 
-			sz, err := bpClient.GetSecurityZoneByVrfName(ctx, "default")
+			sz, err := bpClient.GetSecurityZoneByVRFName(ctx, "default")
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			vlan10 := Vlan(10)
+			vlan10 := VLAN(10)
 			sixThousand := uint16(6000)
 
 			testCases := map[string]testCase{
@@ -194,7 +194,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 						Subpolicies: []*ConnectivityTemplatePrimitive{
 							{
 								Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-									SecurityZone:       &sz.Id,
+									SecurityZone:       (*ObjectId)(sz.ID()),
 									Tagged:             false,
 									IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
 									IPv6AddressingType: CtPrimitiveIPv6AddressingTypeLinkLocal,
@@ -202,7 +202,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 							},
 							{
 								Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-									SecurityZone:       &sz.Id,
+									SecurityZone:       (*ObjectId)(sz.ID()),
 									Tagged:             true,
 									Vlan:               &vlan10,
 									IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
@@ -242,7 +242,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 						Subpolicies: []*ConnectivityTemplatePrimitive{
 							{
 								Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-									SecurityZone:       &sz.Id,
+									SecurityZone:       (*ObjectId)(sz.ID()),
 									Tagged:             false,
 									IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
 									IPv6AddressingType: CtPrimitiveIPv6AddressingTypeLinkLocal,
@@ -359,7 +359,7 @@ func TestCtLayout(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		sz, err := bpClient.GetSecurityZoneByVrfName(ctx, "default")
+		sz, err := bpClient.GetSecurityZoneByVRFName(ctx, "default")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -369,14 +369,14 @@ func TestCtLayout(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		vlan := Vlan(11)
+		vlan := VLAN(11)
 		ct := ConnectivityTemplate{
 			Label: randString(5, "hex"),
 			Subpolicies: []*ConnectivityTemplatePrimitive{
 				{
 					Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
 						// SecurityZone:       &sz.Id,
-						SecurityZone:       &sz.Id,
+						SecurityZone:       (*ObjectId)(sz.ID()),
 						Tagged:             false,
 						Vlan:               &vlan,
 						IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
@@ -423,7 +423,7 @@ func TestCtLayout(t *testing.T) {
 				},
 				{
 					Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-						SecurityZone:       &sz.Id,
+						SecurityZone:       (*ObjectId)(sz.ID()),
 						Tagged:             false,
 						Vlan:               &vlan,
 						IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
