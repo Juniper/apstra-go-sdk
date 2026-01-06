@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,21 +10,22 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/design"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func Configlet(t testing.TB, req, resp design.Configlet, msg ...string) {
-	msg = addMsg(msg, "Comparing Configlet")
+	msg = testmessage.Add(msg, "Comparing Configlet")
 
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, len(req.Generators), len(resp.Generators), msg)
 	for i := range len(req.Generators) {
-		ConfigletGenerator(t, req.Generators[i], resp.Generators[i], addMsg(msg, "Comparing Configlet Generator %d", i)...)
+		ConfigletGenerator(t, req.Generators[i], resp.Generators[i], testmessage.Add(msg, "Comparing Configlet Generator %d", i)...)
 	}
 }
 
 func ConfigletGenerator(t testing.TB, req, resp design.ConfigletGenerator, msg ...string) {
-	msg = addMsg(msg, "Comparing Configlet Generator")
+	msg = testmessage.Add(msg, "Comparing Configlet Generator")
 
 	require.Equal(t, req.ConfigStyle, resp.ConfigStyle, msg)
 	require.Equal(t, req.Section, resp.Section, msg)

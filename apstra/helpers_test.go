@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -813,21 +813,21 @@ func testTemplateB(ctx context.Context, t *testing.T, client *Client) ObjectId {
 }
 
 // Deprecated: Use testutils.TestSecurityZoneA
-func testSecurityZone(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClient) ObjectId {
+func testSecurityZone(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClient) string {
 	t.Helper()
 
 	rs := randString(6, "hex")
 
-	id, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+	id, err := bp.CreateSecurityZone(ctx, SecurityZone{
 		Label:            rs,
-		SzType:           SecurityZoneTypeEVPN,
-		VrfName:          rs,
-		RoutingPolicyId:  "",
+		Type:             enum.SecurityZoneTypeEVPN,
+		VRFName:          rs,
+		RoutingPolicyID:  "",
 		RouteTarget:      nil,
-		RtPolicy:         nil,
-		VlanId:           nil,
-		VniId:            nil,
-		JunosEvpnIrbMode: nil,
+		RTPolicy:         nil,
+		VLAN:             nil,
+		VNI:              nil,
+		JunosEVPNIRBMode: nil,
 	})
 	require.NoError(t, err)
 

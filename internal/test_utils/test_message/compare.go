@@ -1,14 +1,14 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build requiretestutils
 
-package comparedesign
+package testmessage
 
 import "fmt"
 
-func addMsg(old []string, new string, a ...any) []string {
+func Add(old []string, new string, a ...any) []string {
 	var prefix string
 	if len(old) > 0 && old[0] != "" {
 		prefix = old[0] + ": "

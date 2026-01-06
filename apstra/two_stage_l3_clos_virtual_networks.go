@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -229,7 +229,7 @@ func (o *SviIp) UnmarshalJSON(bytes []byte) error {
 type VnBinding struct {
 	AccessSwitchNodeIds []ObjectId `json:"access_switch_node_ids"`
 	SystemId            ObjectId   `json:"system_id"` // graphdb node id of a leaf (so far) switch
-	VlanId              *Vlan      `json:"vlan_id"`   // optional (auto-assign)
+	VlanId              *VLAN      `json:"vlan_id"`   // optional (auto-assign)
 }
 
 var _ json.Unmarshaler = (*VirtualNetwork)(nil)
@@ -250,9 +250,9 @@ func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 		Ipv6Subnet                string      `json:"ipv6_subnet"`
 		L3Mtu                     *int        `json:"l3_mtu"`
 		Label                     string      `json:"label"`
-		ReservedVlanId            *Vlan       `json:"reserved_vlan_id"`
+		ReservedVlanId            *VLAN       `json:"reserved_vlan_id"`
 		RouteTarget               string      `json:"route_target"`
-		RtPolicy                  *RtPolicy   `json:"rt_policy"`
+		RtPolicy                  *RTPolicy   `json:"rt_policy"`
 		SecurityZoneId            ObjectId    `json:"security_zone_id"`
 		SviIps                    []SviIp     `json:"svi_ips"`
 		Tags                      []string    `json:"tags"`
@@ -354,9 +354,9 @@ type VirtualNetworkData struct {
 	Ipv6Subnet                *net.IPNet         `json:"ipv6_subnet,omitempty"`
 	L3Mtu                     *int               `json:"l3_mtu,omitempty"`
 	Label                     string             `json:"label"`
-	ReservedVlanId            *Vlan              `json:"reserved_vlan_id,omitempty"`
+	ReservedVlanId            *VLAN              `json:"reserved_vlan_id,omitempty"`
 	RouteTarget               string             `json:"route_target,omitempty"`
-	RtPolicy                  *RtPolicy          `json:"rt_policy"`
+	RtPolicy                  *RTPolicy          `json:"rt_policy"`
 	SecurityZoneId            ObjectId           `json:"security_zone_id,omitempty"`
 	SviIps                    []SviIp            `json:"svi_ips"`
 	Tags                      []string           `json:"tags"`
@@ -380,9 +380,9 @@ func (o VirtualNetworkData) MarshalJSON() ([]byte, error) {
 		Ipv6Subnet                string      `json:"ipv6_subnet,omitempty"`
 		L3Mtu                     *int        `json:"l3_mtu,omitempty"`
 		Label                     string      `json:"label"`
-		ReservedVlanId            *Vlan       `json:"reserved_vlan_id,omitempty"`
+		ReservedVlanId            *VLAN       `json:"reserved_vlan_id,omitempty"`
 		RouteTarget               string      `json:"route_target,omitempty"`
-		RtPolicy                  *RtPolicy   `json:"rt_policy"`
+		RtPolicy                  *RTPolicy   `json:"rt_policy"`
 		SecurityZoneId            ObjectId    `json:"security_zone_id,omitempty"`
 		SviIps                    []SviIp     `json:"svi_ips"`
 		VirtualGatewayIpv4        string      `json:"virtual_gateway_ipv4,omitempty"`

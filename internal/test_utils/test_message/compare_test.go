@@ -1,10 +1,10 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build requiretestutils
 
-package comparedesign
+package testmessage
 
 import (
 	"testing"
@@ -43,7 +43,7 @@ func TestAddMsg(t *testing.T) {
 		t.Run(tName, func(t *testing.T) {
 			t.Parallel()
 
-			result := addMsg(tCase.old, tCase.msg, tCase.args...)
+			result := Add(tCase.old, tCase.msg, tCase.args...)
 			require.Equal(t, 1, len(result))
 			require.Equal(t, tCase.expected, result[0])
 		})

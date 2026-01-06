@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -46,6 +46,12 @@ var (
 	}
 	RoutingPolicyExportHasL3EdgeLinks = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
+	}
+	SecurityZoneAddressingSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra610)),
+	}
+	SecurityZoneDescriptionSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
 	SecurityZoneLoopbackApiSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),

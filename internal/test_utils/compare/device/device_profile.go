@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,11 +10,12 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/device"
+	testmessage "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func DeviceProfile(t testing.TB, req, resp device.Profile, msg ...string) {
-	msg = addMsg(msg, "Comparing Rack Type")
+	msg = testmessage.Add(msg, "Comparing Rack Type")
 
 	require.Equal(t, req.Selector, resp.Selector, msg)
 	require.Equal(t, req.DeviceProfileType, resp.DeviceProfileType, msg)
@@ -28,7 +29,7 @@ func DeviceProfile(t testing.TB, req, resp device.Profile, msg ...string) {
 	require.Equal(t, req.ChassisCount, resp.ChassisCount, msg)
 	require.Equal(t, len(req.Ports), len(resp.Ports), msg)
 	for i := range len(req.Ports) {
-		Port(t, req.Ports[i], resp.Ports[i], addMsg(msg, "Comparing Port %d", i)...)
+		Port(t, req.Ports[i], resp.Ports[i], testmessage.Add(msg, "Comparing Port %d", i)...)
 	}
 	require.Equal(t, req.Label, resp.Label, msg)
 	if req.ChassisInfo == nil {
@@ -39,11 +40,11 @@ func DeviceProfile(t testing.TB, req, resp device.Profile, msg ...string) {
 	}
 	require.Equal(t, len(req.LinecardsInfo), len(resp.LinecardsInfo), msg)
 	for i := range len(req.LinecardsInfo) {
-		LinecardInfo(t, req.LinecardsInfo[i], resp.LinecardsInfo[i], addMsg(msg, "Comparing Linecard %d", i)...)
+		LinecardInfo(t, req.LinecardsInfo[i], resp.LinecardsInfo[i], testmessage.Add(msg, "Comparing Linecard %d", i)...)
 	}
 	require.Equal(t, len(req.SlotConfiguration), len(resp.SlotConfiguration), msg)
 	for i := range len(req.SlotConfiguration) {
-		require.Equal(t, req.SlotConfiguration[i], resp.SlotConfiguration[i], addMsg(msg, "Comparing Slot %d Configuration", i))
+		require.Equal(t, req.SlotConfiguration[i], resp.SlotConfiguration[i], testmessage.Add(msg, "Comparing Slot %d Configuration", i))
 	}
 	require.Equal(t, req.PhysicalDevice, resp.PhysicalDevice, msg)
 	if req.ID() != nil && resp.ID() != nil {
@@ -58,35 +59,35 @@ func DeviceProfile(t testing.TB, req, resp device.Profile, msg ...string) {
 }
 
 func HardwareCapabilities(t testing.TB, req, resp device.HardwareCapabilities, msg ...string) {
-	msg = addMsg(msg, "Comparing Hardware Capabilities")
+	msg = testmessage.Add(msg, "Comparing Hardware Capabilities")
 
 	require.Equal(t, req.MaxL3Mtu, resp.MaxL3Mtu, msg)
 	require.Equal(t, req.MaxL2Mtu, resp.MaxL2Mtu, msg)
 	require.Equal(t, req.FormFactor, resp.FormFactor, msg)
 	require.Equal(t, req.VTEPLimit, resp.VTEPLimit, msg)
 	require.Equal(t, req.BFDSupported, resp.BFDSupported, msg)
-	FeatureVersions(t, req.COPPStrict, resp.COPPStrict, addMsg(msg, "comparing COPPStrict feature support")...)
+	FeatureVersions(t, req.COPPStrict, resp.COPPStrict, testmessage.Add(msg, "comparing COPPStrict feature support")...)
 	require.Equal(t, req.ECMPLimit, resp.ECMPLimit, msg)
-	FeatureVersions(t, req.ASNSequencing, resp.ASNSequencing, addMsg(msg, "comparing ASNSequencing feature support")...)
+	FeatureVersions(t, req.ASNSequencing, resp.ASNSequencing, testmessage.Add(msg, "comparing ASNSequencing feature support")...)
 	require.Equal(t, req.RAM, resp.RAM, msg)
 	require.Equal(t, req.VTEPFloodLimit, resp.VTEPFloodLimit, msg)
 	require.Equal(t, req.BreakoutCapable, resp.BreakoutCapable, msg)
 	require.Equal(t, req.Userland, resp.Userland, msg)
 	require.Equal(t, req.ASIC, resp.ASIC, msg)
 	require.Equal(t, req.VRFLimit, resp.VRFLimit, msg)
-	FeatureVersions(t, req.RoutingInstance, resp.RoutingInstance, addMsg(msg, "comparing RoutingInstance feature support")...)
+	FeatureVersions(t, req.RoutingInstance, resp.RoutingInstance, testmessage.Add(msg, "comparing RoutingInstance feature support")...)
 	require.Equal(t, req.VxlanSupported, resp.VxlanSupported, msg)
 	require.Equal(t, req.CPU, resp.CPU, msg)
 }
 
 func Port(t testing.TB, req, resp device.Port, msg ...string) {
-	msg = addMsg(msg, "Comparing Port")
+	msg = testmessage.Add(msg, "Comparing Port")
 
 	require.Equal(t, req.ConnectorType, resp.ConnectorType, msg)
 	require.Equal(t, req.Panel, resp.Panel, msg)
 	require.Equal(t, len(req.Transformations), len(resp.Transformations), msg)
 	for i := range len(req.Transformations) {
-		Transformation(t, req.Transformations[i], resp.Transformations[i], addMsg(msg, "Comparing Transformation %d", i)...)
+		Transformation(t, req.Transformations[i], resp.Transformations[i], testmessage.Add(msg, "Comparing Transformation %d", i)...)
 	}
 	require.Equal(t, req.Column, resp.Column, msg)
 	require.Equal(t, req.ID, resp.ID, msg)
@@ -97,18 +98,18 @@ func Port(t testing.TB, req, resp device.Port, msg ...string) {
 }
 
 func Transformation(t testing.TB, req, resp device.Transformation, msg ...string) {
-	msg = addMsg(msg, "Comparing Transformation")
+	msg = testmessage.Add(msg, "Comparing Transformation")
 
 	require.Equal(t, req.ID, resp.ID, msg)
 	require.Equal(t, req.IsDefault, resp.IsDefault, msg)
 	require.Equal(t, len(req.Interfaces), len(resp.Interfaces), msg)
 	for i := range len(req.Interfaces) {
-		Interface(t, req.Interfaces[i], resp.Interfaces[i], addMsg(msg, "Comparing Interface %d", i)...)
+		Interface(t, req.Interfaces[i], resp.Interfaces[i], testmessage.Add(msg, "Comparing Interface %d", i)...)
 	}
 }
 
 func Interface(t testing.TB, req, resp device.TransformationInterface, msg ...string) {
-	msg = addMsg(msg, "Comparing Interface")
+	msg = testmessage.Add(msg, "Comparing Interface")
 
 	require.Equal(t, req.ID, resp.ID, msg)
 	require.Equal(t, req.Name, resp.Name, msg)
@@ -118,15 +119,15 @@ func Interface(t testing.TB, req, resp device.TransformationInterface, msg ...st
 }
 
 func FeatureVersions(t testing.TB, req, resp device.FeatureVersions, msg ...string) {
-	msg = addMsg(msg, "Comparing Feature Versions")
+	msg = testmessage.Add(msg, "Comparing Feature Versions")
 
 	require.NoError(t, req.Validate(), "validating req")
 	require.NoError(t, req.Validate(), "validating resp")
-	require.Equal(t, len(req), len(resp), addMsg(msg, "different size slices"))
+	require.Equal(t, len(req), len(resp), testmessage.Add(msg, "different size slices"))
 }
 
 func ChassisInfo(t testing.TB, req, resp device.ProfileChassisInfo, msg ...string) {
-	msg = addMsg(msg, "Comparing Chassis Info")
+	msg = testmessage.Add(msg, "Comparing Chassis Info")
 
 	require.Equal(t, req.ID, resp.ID, msg)
 	require.Equal(t, req.Selector, resp.Selector, msg)
@@ -139,7 +140,7 @@ func ChassisInfo(t testing.TB, req, resp device.ProfileChassisInfo, msg ...strin
 }
 
 func LinecardInfo(t testing.TB, req, resp device.ProfileLinecardInfo, msg ...string) {
-	msg = addMsg(msg, "Comparing Linecard Info")
+	msg = testmessage.Add(msg, "Comparing Linecard Info")
 
 	require.Equal(t, req.ID, resp.ID, msg)
 	require.Equal(t, req.Selector, resp.Selector, msg)
