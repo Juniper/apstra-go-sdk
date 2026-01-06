@@ -24,7 +24,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 
 	securityZoneCount := rand.Intn(3) + 3
 
-	compareSzDataToSzInfo := func(t *testing.T, a *SecurityZone, b *TwoStageL3ClosSecurityZoneInfo) {
+	compareSzToSzInfo := func(t *testing.T, a *SecurityZone, b *TwoStageL3ClosSecurityZoneInfo) {
 		t.Helper()
 
 		require.NotNil(t, a)
@@ -163,7 +163,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 				require.NoError(t, err)
 
 				// check security zone details
-				compareSzDataToSzInfo(t, &securityZones[i], info)
+				compareSzToSzInfo(t, &securityZones[i], info)
 
 				// check per-sz loopback addresses
 				compareLoopbacksToSzInfo(t, szidToIfidToLoopbackInfo[szId], infos[ObjectId(szId)])
