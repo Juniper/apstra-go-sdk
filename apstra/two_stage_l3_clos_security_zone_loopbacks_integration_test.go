@@ -122,7 +122,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 				}
 			}
 			require.NotNil(t, szId)
-			require.NotEmpty(t, szId)
+			require.NotEmpty(t, *szId)
 
 			// assign an IPv4 pool to leaf loopbacks so that we can "remove" (cause it to revert to a pool address) a loopback IPv4 address
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
@@ -165,7 +165,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 					actualByIfId, err := bpClient.GetSecurityZoneLoopbackByInterfaceId(ctx, loopbackNodeId)
 					require.NoError(t, err)
 					require.Equal(t, loopbackNodeId, actualByIfId.ID)
-					require.Equal(t, szId, actualByIfId.SecurityZoneID)
+					require.Equal(t, *szId, actualByIfId.SecurityZoneID)
 					require.Equal(t, 0, actualByIfId.LoopbackId)
 
 					// fetch by system id
@@ -180,7 +180,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 					}
 					require.NotNil(t, actualBySysId)
 					require.Equal(t, loopbackNodeId, actualBySysId.ID)
-					require.Equal(t, szId, actualBySysId.SecurityZoneID)
+					require.Equal(t, *szId, actualBySysId.SecurityZoneID)
 					require.Equal(t, 0, actualBySysId.LoopbackId)
 
 					// fetch all
@@ -188,7 +188,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 					require.NoError(t, err)
 					require.Contains(t, actualMap, loopbackNodeId)
 					require.Equal(t, loopbackNodeId, actualMap[loopbackNodeId].ID)
-					require.Equal(t, szId, actualMap[loopbackNodeId].SecurityZoneID)
+					require.Equal(t, *szId, actualMap[loopbackNodeId].SecurityZoneID)
 					require.Equal(t, 0, actualMap[loopbackNodeId].LoopbackId)
 
 					switch {
