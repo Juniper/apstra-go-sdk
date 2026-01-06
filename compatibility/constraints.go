@@ -47,6 +47,9 @@ var (
 	RoutingPolicyExportHasL3EdgeLinks = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
 	}
+	SecurityZoneDescriptionSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	}
 	SecurityZoneLoopbackApiSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}

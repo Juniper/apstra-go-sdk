@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2026.
+// Copyright (c) Juniper Networks, Inc., 2026-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
@@ -25,12 +26,46 @@ func TestCRUDSecurityZone(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
-		create apstra.SecurityZone
-		update *apstra.SecurityZone
+		versionConstraint *compatibility.Constraint
+		create            apstra.SecurityZone
+		update            *apstra.SecurityZone
 	}
 
 	testCases := map[string]testCase{
-		"start_minimal": {
+		"start_minimal_4.x+": {
+			create: apstra.SecurityZone{
+				Label:   testutils.RandString(6, "hex"),
+				VRFName: testutils.RandString(6, "hex"),
+				Type:    enum.SecurityZoneTypeEVPN,
+			},
+			update: &apstra.SecurityZone{
+				Label:            testutils.RandString(8, "hex"),
+				Type:             enum.SecurityZoneTypeEVPN,
+				RoutingPolicyID:  "",
+				RTPolicy:         nil,
+				VLAN:             pointer.To(apstra.VLAN(4000)),
+				VNI:              pointer.To(40000),
+				JunosEVPNIRBMode: pointer.To(enum.JunosEVPNIRBModeSymmetric),
+			},
+		},
+		"start_maximal_4.x+": {
+			create: apstra.SecurityZone{
+				Label:            testutils.RandString(8, "hex"),
+				Type:             enum.SecurityZoneTypeEVPN,
+				RoutingPolicyID:  "",
+				RTPolicy:         nil,
+				VLAN:             pointer.To(apstra.VLAN(4001)),
+				VNI:              pointer.To(40010),
+				JunosEVPNIRBMode: pointer.To(enum.JunosEVPNIRBModeSymmetric),
+				VRFName:          testutils.RandString(6, "hex"),
+			},
+			update: &apstra.SecurityZone{
+				Label: testutils.RandString(6, "hex"),
+				Type:  enum.SecurityZoneTypeEVPN,
+			},
+		},
+		"start_minimal_5.x+": {
+			versionConstraint: &compatibility.SecurityZoneDescriptionSupported,
 			create: apstra.SecurityZone{
 				Label:   testutils.RandString(6, "hex"),
 				VRFName: testutils.RandString(6, "hex"),
@@ -47,7 +82,8 @@ func TestCRUDSecurityZone(t *testing.T) {
 				JunosEVPNIRBMode: pointer.To(enum.JunosEVPNIRBModeSymmetric),
 			},
 		},
-		"start_maximal": {
+		"start_maximal_5.x+": {
+			versionConstraint: &compatibility.SecurityZoneDescriptionSupported,
 			create: apstra.SecurityZone{
 				Description:      pointer.To(testutils.RandString(8, "hex")),
 				Label:            testutils.RandString(8, "hex"),
@@ -77,6 +113,11 @@ func TestCRUDSecurityZone(t *testing.T) {
 				t.Run(tName, func(t *testing.T) {
 					t.Parallel()
 					ctx := testutils.ContextWithTestID(ctx, t)
+
+					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(client.APIVersion()) {
+						t.Skipf("skipping %q due to version constraints: %q. API version: %q",
+							tName, tCase.versionConstraint, client.Client.ApiVersion())
+					}
 
 					// because we modify these values below
 					create := tCase.create
