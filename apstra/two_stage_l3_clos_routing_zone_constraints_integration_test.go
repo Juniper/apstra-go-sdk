@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -131,7 +131,7 @@ func TestRoutingZoneConstraints(t *testing.T) {
 						{
 							Label:          "change_rz_ids_only",
 							Mode:           enum.RoutingZoneConstraintModeAllow,
-							RoutingZoneIds: []ObjectId{testSecurityZone(t, ctx, bpClient)},
+							RoutingZoneIds: []ObjectId{ObjectId(testSecurityZone(t, ctx, bpClient))},
 						},
 						{
 							Label:          "change_rz_ids_only",
@@ -141,7 +141,7 @@ func TestRoutingZoneConstraints(t *testing.T) {
 						{
 							Label:          "change_rz_ids_only",
 							Mode:           enum.RoutingZoneConstraintModeAllow,
-							RoutingZoneIds: []ObjectId{testSecurityZone(t, ctx, bpClient), testSecurityZone(t, ctx, bpClient)},
+							RoutingZoneIds: []ObjectId{ObjectId(testSecurityZone(t, ctx, bpClient)), ObjectId(testSecurityZone(t, ctx, bpClient))},
 						},
 						{
 							Label:          "change_rz_ids_only",

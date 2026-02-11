@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -35,6 +35,37 @@ func (o ASNAllocationScheme) MarshalJSON() ([]byte, error) {
 }
 
 func (o *ASNAllocationScheme) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*AddressingScheme)(nil)
+	_ json.Marshaler   = (*AddressingScheme)(nil)
+	_ json.Unmarshaler = (*AddressingScheme)(nil)
+)
+
+func (o AddressingScheme) String() string {
+	return o.Value
+}
+
+func (o *AddressingScheme) FromString(s string) error {
+	if AddressingSchemes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o AddressingScheme) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *AddressingScheme) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -664,28 +695,28 @@ func (o *InterfaceState) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
-	_ enum             = (*JunosEvpnIrbMode)(nil)
-	_ json.Marshaler   = (*JunosEvpnIrbMode)(nil)
-	_ json.Unmarshaler = (*JunosEvpnIrbMode)(nil)
+	_ enum             = (*JunosEVPNIRBMode)(nil)
+	_ json.Marshaler   = (*JunosEVPNIRBMode)(nil)
+	_ json.Unmarshaler = (*JunosEVPNIRBMode)(nil)
 )
 
-func (o JunosEvpnIrbMode) String() string {
+func (o JunosEVPNIRBMode) String() string {
 	return o.Value
 }
 
-func (o *JunosEvpnIrbMode) FromString(s string) error {
-	if JunosEvpnIrbModes.Parse(s) == nil {
+func (o *JunosEVPNIRBMode) FromString(s string) error {
+	if JunosEVPNIRBModes.Parse(s) == nil {
 		return newEnumParseError(o, s)
 	}
 	o.Value = s
 	return nil
 }
 
-func (o JunosEvpnIrbMode) MarshalJSON() ([]byte, error) {
+func (o JunosEVPNIRBMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
-func (o *JunosEvpnIrbMode) UnmarshalJSON(bytes []byte) error {
+func (o *JunosEVPNIRBMode) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -1662,6 +1693,13 @@ var (
 		ASNAllocationSchemeSingle,
 	)
 
+	_                 enum = new(AddressingScheme)
+	AddressingSchemes      = oenum.New(
+		AddressingSchemeIPv4,
+		AddressingSchemeIPv46,
+		AddressingSchemeIPv6,
+	)
+
 	_                 enum = new(AntiAffinityMode)
 	AntiAffinityModes      = oenum.New(
 		AntiAffinityModeDisabled,
@@ -1816,10 +1854,10 @@ var (
 		InterfaceStateInactive,
 	)
 
-	_                 enum = new(JunosEvpnIrbMode)
-	JunosEvpnIrbModes      = oenum.New(
-		JunosEvpnIrbModeSymmetric,
-		JunosEvpnIrbModeAsymmetric,
+	_                 enum = new(JunosEVPNIRBMode)
+	JunosEVPNIRBModes      = oenum.New(
+		JunosEVPNIRBModeSymmetric,
+		JunosEVPNIRBModeAsymmetric,
 	)
 
 	_        enum = new(LAGMode)
@@ -2001,7 +2039,7 @@ var (
 
 	_                 enum = new(SecurityZoneType)
 	SecurityZoneTypes      = oenum.New(
-		SecurityZoneTypeEvpn,
+		SecurityZoneTypeEVPN,
 		SecurityZoneTypeL3Fabric,
 		SecurityZoneTypeVirtualL3Fabric,
 	)

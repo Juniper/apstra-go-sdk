@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,16 +11,17 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/design"
 	comparepolicy "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/policy"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func TemplateRailCollapsed(t testing.TB, req, resp design.TemplateRailCollapsed, msg ...string) {
-	msg = addMsg(msg, "Comparing Rail Collapsed Template")
+	msg = testmessage.Add(msg, "Comparing Rail Collapsed Template")
 
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, len(req.Racks), len(resp.Racks), msg)
 	for i := range len(req.Racks) {
-		RackTypeWithCount(t, req.Racks[i], resp.Racks[i], addMsg(msg, "Comparing Rack %d", i)...)
+		RackTypeWithCount(t, req.Racks[i], resp.Racks[i], testmessage.Add(msg, "Comparing Rack %d", i)...)
 	}
 
 	comparepolicy.DHCPServiceIntent(t, req.DHCPServiceIntent, resp.DHCPServiceIntent, msg...)

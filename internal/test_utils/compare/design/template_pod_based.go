@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,11 +11,12 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/design"
 	comparepolicy "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/policy"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func TemplatePodBased(t testing.TB, req, resp design.TemplatePodBased, msg ...string) {
-	msg = addMsg(msg, "Comparing Pod Based Template")
+	msg = testmessage.Add(msg, "Comparing Pod Based Template")
 
 	require.Equal(t, req.Label, resp.Label, msg)
 
@@ -28,7 +29,7 @@ func TemplatePodBased(t testing.TB, req, resp design.TemplatePodBased, msg ...st
 
 	require.Equal(t, len(req.Pods), len(resp.Pods), msg)
 	for i := range len(req.Pods) {
-		PodWithCount(t, req.Pods[i], resp.Pods[i], addMsg(msg, "Comparing Pod %d", i)...)
+		PodWithCount(t, req.Pods[i], resp.Pods[i], testmessage.Add(msg, "Comparing Pod %d", i)...)
 	}
 
 	if req.ID() != nil && resp.ID() != nil {

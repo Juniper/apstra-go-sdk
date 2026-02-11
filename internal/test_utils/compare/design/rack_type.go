@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,11 +11,12 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
 func RackType(t testing.TB, req, resp design.RackType, msg ...string) {
-	msg = addMsg(msg, "Comparing Rack Type")
+	msg = testmessage.Add(msg, "Comparing Rack Type")
 
 	require.Equal(t, req.Description, resp.Description, msg)
 	require.Equal(t, req.Label, resp.Label, msg)
@@ -28,15 +29,15 @@ func RackType(t testing.TB, req, resp design.RackType, msg ...string) {
 	//   rack type in global catalog is consistent
 	require.Equal(t, len(req.LeafSwitches), len(resp.LeafSwitches), msg)
 	for i := range len(req.LeafSwitches) {
-		RackTypeLeafSwitch(t, req.LeafSwitches[i], resp.LeafSwitches[i], addMsg(msg, "Comparing Leaf Switch %d", i)...)
+		RackTypeLeafSwitch(t, req.LeafSwitches[i], resp.LeafSwitches[i], testmessage.Add(msg, "Comparing Leaf Switch %d", i)...)
 	}
 	require.Equal(t, len(req.AccessSwitches), len(resp.AccessSwitches), msg)
 	for i := range len(req.AccessSwitches) {
-		RackTypeAccessSwitch(t, req.AccessSwitches[i], resp.AccessSwitches[i], addMsg(msg, "Comparing Access Switch %d", i)...)
+		RackTypeAccessSwitch(t, req.AccessSwitches[i], resp.AccessSwitches[i], testmessage.Add(msg, "Comparing Access Switch %d", i)...)
 	}
 	require.Equal(t, len(req.GenericSystems), len(resp.GenericSystems), msg)
 	for i := range len(req.GenericSystems) {
-		RackTypeGenericSystem(t, req.GenericSystems[i], resp.GenericSystems[i], addMsg(msg, "Comparing Generic System %d", i)...)
+		RackTypeGenericSystem(t, req.GenericSystems[i], resp.GenericSystems[i], testmessage.Add(msg, "Comparing Generic System %d", i)...)
 	}
 	if req.ID() != nil && resp.ID() != nil {
 		require.Equal(t, req.ID(), resp.ID(), msg)
@@ -50,7 +51,7 @@ func RackType(t testing.TB, req, resp design.RackType, msg ...string) {
 }
 
 func RackTypeLeafSwitch(t testing.TB, req, resp design.RackTypeLeafSwitch, msg ...string) {
-	msg = addMsg(msg, "Comparing Leaf Switch")
+	msg = testmessage.Add(msg, "Comparing Leaf Switch")
 
 	require.Equal(t, req.Label, resp.Label, msg)
 
@@ -73,7 +74,7 @@ func RackTypeLeafSwitch(t testing.TB, req, resp design.RackTypeLeafSwitch, msg .
 }
 
 func RackTypeAccessSwitch(t testing.TB, req, resp design.RackTypeAccessSwitch, msg ...string) {
-	msg = addMsg(msg, "Comparing Access Switch")
+	msg = testmessage.Add(msg, "Comparing Access Switch")
 
 	require.Equal(t, req.Count, resp.Count, msg)
 	if req.ESILAGInfo == nil {
@@ -85,14 +86,14 @@ func RackTypeAccessSwitch(t testing.TB, req, resp design.RackTypeAccessSwitch, m
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, len(req.Links), len(resp.Links), msg)
 	for i := range len(req.Links) {
-		RackTypeLink(t, req.Links[i], resp.Links[i], addMsg(msg, "Comparing Link %d", i)...)
+		RackTypeLink(t, req.Links[i], resp.Links[i], testmessage.Add(msg, "Comparing Link %d", i)...)
 	}
 	LogicalDevice(t, req.LogicalDevice, resp.LogicalDevice, msg...)
 	require.ElementsMatch(t, req.Tags, resp.Tags, msg)
 }
 
 func RackTypeGenericSystem(t testing.TB, req, resp design.RackTypeGenericSystem, msg ...string) {
-	msg = addMsg(msg, "Comparing Generic System")
+	msg = testmessage.Add(msg, "Comparing Generic System")
 
 	if req.ASNDomain == nil {
 		require.NotNil(t, resp.ASNDomain, msg)
@@ -109,7 +110,7 @@ func RackTypeGenericSystem(t testing.TB, req, resp design.RackTypeGenericSystem,
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, len(req.Links), len(resp.Links), msg)
 	for i := range len(req.Links) {
-		RackTypeLink(t, req.Links[i], resp.Links[i], addMsg(msg, "Comparing Link %d", i)...)
+		RackTypeLink(t, req.Links[i], resp.Links[i], testmessage.Add(msg, "Comparing Link %d", i)...)
 	}
 	LogicalDevice(t, req.LogicalDevice, resp.LogicalDevice, msg...)
 	if req.Loopback == nil {
@@ -126,7 +127,7 @@ func RackTypeGenericSystem(t testing.TB, req, resp design.RackTypeGenericSystem,
 }
 
 func RackTypeLink(t testing.TB, req, resp design.RackTypeLink, msg ...string) {
-	msg = addMsg(msg, "Comparing Link")
+	msg = testmessage.Add(msg, "Comparing Link")
 
 	require.Equal(t, req.Label, resp.Label, msg)
 	require.Equal(t, req.TargetSwitchLabel, resp.TargetSwitchLabel, msg)

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -70,7 +70,7 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 		return applicationPointIds
 	}
 
-	createCt := func(t *testing.T, ctx context.Context, bp *TwoStageL3ClosClient, vlan Vlan) EndpointPolicyStatus {
+	createCt := func(t *testing.T, ctx context.Context, bp *TwoStageL3ClosClient, vlan VLAN) EndpointPolicyStatus {
 		t.Helper()
 
 		result := EndpointPolicyStatus{
@@ -82,10 +82,10 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 		}
 
 		szLabel := randString(6, "hex")
-		szId, err := bp.CreateSecurityZone(ctx, &SecurityZoneData{
+		szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
 			Label:   szLabel,
-			SzType:  SecurityZoneTypeEVPN,
-			VrfName: szLabel,
+			Type:    enum.SecurityZoneTypeEVPN,
+			VRFName: szLabel,
 		})
 		require.NoError(t, err)
 
@@ -102,7 +102,7 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 			Subpolicies: []*ConnectivityTemplatePrimitive{
 				{
 					Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-						SecurityZone:       &szId,
+						SecurityZone:       (*ObjectId)(&szId),
 						Tagged:             true,
 						Vlan:               vlanPtr,
 						IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
@@ -144,7 +144,7 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	var vlan Vlan = 10
+	var vlan VLAN = 10
 
 	for clientName, client := range clients {
 		t.Run(clientName, func(t *testing.T) {

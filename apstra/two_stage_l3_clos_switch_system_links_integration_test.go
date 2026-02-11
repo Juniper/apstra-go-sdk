@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -337,7 +337,7 @@ func TestDeleteSwitchSystemLinks_WithCtAssigned(t *testing.T) {
 			log.Printf("creating virtual networks in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
 			vnIds := make([]ObjectId, 3)
 			for i := range vnIds {
-				vnIds[i] = testVirtualNetwork(t, ctx, bp, szId)
+				vnIds[i] = testVirtualNetwork(t, ctx, bp, ObjectId(szId))
 			}
 
 			// create connectivity templates

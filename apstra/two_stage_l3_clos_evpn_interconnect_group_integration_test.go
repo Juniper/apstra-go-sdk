@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,6 +14,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -91,13 +92,13 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 			securityZoneIDs := make([]ObjectId, securityZoneCount)
 			for i := range securityZoneIDs {
 				vrfName := randString(6, "hex")
-				id, err := bpClient.CreateSecurityZone(ctx, &SecurityZoneData{
+				id, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
 					Label:   vrfName,
-					SzType:  SecurityZoneTypeEVPN,
-					VrfName: vrfName,
+					Type:    enum.SecurityZoneTypeEVPN,
+					VRFName: vrfName,
 				})
 				require.NoError(t, err)
-				securityZoneIDs[i] = id
+				securityZoneIDs[i] = ObjectId(id)
 			}
 
 			routingPolicyIDs := make([]ObjectId, routingPolicyCount)

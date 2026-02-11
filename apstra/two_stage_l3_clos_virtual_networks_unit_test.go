@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -91,7 +91,7 @@ func TestVirtualNetworkDataMarshalJson(t *testing.T) {
 				Ipv6Subnet:     mustParseIpNet(t, "3fff::/64"),
 				L3Mtu:          toPtr(9010),
 				Label:          "a",
-				ReservedVlanId: toPtr(Vlan(10)),
+				ReservedVlanId: toPtr(VLAN(10)),
 				SecurityZoneId: "dtUF3UAr4Cqfuoy6iII",
 				SviIps: []SviIp{
 					{
@@ -110,7 +110,7 @@ func TestVirtualNetworkDataMarshalJson(t *testing.T) {
 					{
 						AccessSwitchNodeIds: []ObjectId{"tFlHPPD766lj8g8PYsqw", "Ik82Xta17zkWGHNw6pbN"},
 						SystemId:            "UJoJhK-jXJkc5Mtarc8",
-						VlanId:              toPtr(Vlan(10)),
+						VlanId:              toPtr(VLAN(10)),
 					},
 				},
 				VnId:       toPtr(VNI(10 * 1000)),
@@ -165,7 +165,7 @@ func TestVirtualNetworkDataMarshalJson(t *testing.T) {
 				Ipv6Subnet:     nil,
 				L3Mtu:          toPtr(9010),
 				Label:          "a",
-				ReservedVlanId: toPtr(Vlan(10)),
+				ReservedVlanId: toPtr(VLAN(10)),
 				SecurityZoneId: "dtUF3UAr4Cqfuoy6iII",
 				SviIps: []SviIp{
 					{
@@ -191,12 +191,12 @@ func TestVirtualNetworkDataMarshalJson(t *testing.T) {
 					{
 						AccessSwitchNodeIds: []ObjectId{"tFlHPPD766lj8g8PYsqw", "Ik82Xta17zkWGHNw6pbN"},
 						SystemId:            "UJoJhK-jXJkc5Mtarc8",
-						VlanId:              toPtr(Vlan(10)),
+						VlanId:              toPtr(VLAN(10)),
 					},
 					{
 						AccessSwitchNodeIds: []ObjectId{"dxodxTyx6SAlMYbP45Bp", "7ZNWB3KlYGlxj87UdeaF", "v6mwfD43FJP3mhhvF7YN"},
 						SystemId:            "iEbRhCoGzNlIgfO9DZ4r",
-						VlanId:              toPtr(Vlan(10)),
+						VlanId:              toPtr(VLAN(10)),
 					},
 				},
 				VnId:       toPtr(VNI(10 * 1000)),

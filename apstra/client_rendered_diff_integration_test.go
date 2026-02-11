@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -66,10 +66,10 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 
 				// create a security zone
 				szLabel := testutils.RandString(6, "hex")
-				szId, err := bp.CreateSecurityZone(ctx, &apstra.SecurityZoneData{
+				szId, err := bp.CreateSecurityZone(ctx, apstra.SecurityZone{
 					Label:   szLabel,
-					SzType:  apstra.SecurityZoneTypeEVPN,
-					VrfName: szLabel,
+					Type:    enum.SecurityZoneTypeEVPN,
+					VRFName: szLabel,
 				})
 				require.NoError(t, err)
 
@@ -77,14 +77,14 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 					ResourceGroup: apstra.ResourceGroup{
 						Type:           apstra.ResourceTypeIp4Pool,
 						Name:           apstra.ResourceGroupNameLeafIp4,
-						SecurityZoneId: &szId,
+						SecurityZoneId: (*apstra.ObjectId)(&szId),
 					},
 					PoolIds: []apstra.ObjectId{"Private-10_0_0_0-8"},
 				})
 				require.NoError(t, err)
 
 				// prep VN bindings
-				vlanId := apstra.Vlan(rand.IntN(apstra.VlanMax-2) + 2) // 2-4094
+				vlanId := apstra.VLAN(rand.IntN(apstra.VlanMax-2) + 2) // 2-4094
 				vnBindings := make([]apstra.VnBinding, len(leafIds))
 				for i, leafId := range leafIds {
 					vnBindings[i] = apstra.VnBinding{
@@ -100,7 +100,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 					Ipv4Enabled:               true,
 					Ipv4Subnet:                &rip,
 					Label:                     testutils.RandString(6, "hex"),
-					SecurityZoneId:            szId,
+					SecurityZoneId:            apstra.ObjectId(szId),
 					VnBindings:                vnBindings,
 					VnType:                    enum.VnTypeVxlan,
 				})

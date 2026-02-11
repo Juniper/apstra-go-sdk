@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -61,7 +61,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	getLoopbackNodeId := func(t *testing.T, ctx context.Context, bpClient *TwoStageL3ClosClient, systemId, securityZoenId ObjectId) ObjectId {
+	getLoopbackNodeId := func(t *testing.T, ctx context.Context, bpClient *TwoStageL3ClosClient, systemId, securityZoneId string) string {
 		query := new(PathQuery).
 			SetBlueprintId(bpClient.Id()).
 			SetClient(bpClient.client).
@@ -80,13 +80,13 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			In([]QEEAttribute{RelationshipTypeInstantiatedBy.QEEAttribute()}).
 			Node([]QEEAttribute{
 				NodeTypeSecurityZone.QEEAttribute(),
-				{"id", QEStringVal(securityZoenId)},
+				{"id", QEStringVal(securityZoneId)},
 			})
 
 		var response struct {
 			Items []struct {
 				Interface struct {
-					Id ObjectId `json:"id"`
+					Id string `json:"id"`
 				} `json:"n_interface"`
 			} `json:"items"`
 		}
@@ -110,18 +110,19 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			bpClient := testBlueprintH(ctx, t, client.client)
 
 			// fetch all security zones
-			szs, err := bpClient.GetAllSecurityZones(ctx)
+			szs, err := bpClient.GetSecurityZones(ctx)
 			require.NoError(t, err)
 			require.Greater(t, len(szs), 0)
 
 			// find the default security zone ID
-			var szId ObjectId
+			var szId *string
 			for _, sz := range szs {
-				if sz.Data.Label == "Default routing zone" {
-					szId = sz.Id
+				if sz.Label == "Default routing zone" {
+					szId = sz.ID()
 				}
 			}
-			require.NotEmpty(t, szId)
+			require.NotNil(t, szId)
+			require.NotEmpty(t, *szId)
 
 			// assign an IPv4 pool to leaf loopbacks so that we can "remove" (cause it to revert to a pool address) a loopback IPv4 address
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
@@ -148,11 +149,11 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			require.Greater(t, len(leafIds), 0)
 			leafId := leafIds[0]
 
-			loopbackNodeId := getLoopbackNodeId(t, ctx, bpClient, leafId, szId)
+			loopbackNodeId := getLoopbackNodeId(t, ctx, bpClient, string(leafId), *szId)
 
 			for i, tCase := range testCases {
 				t.Run(fmt.Sprintf("test_case_%d", i), func(t *testing.T) {
-					err := bpClient.SetSecurityZoneLoopbacks(ctx, szId, map[ObjectId]SecurityZoneLoopback{
+					err := bpClient.SetSecurityZoneLoopbacks(ctx, *szId, map[string]SecurityZoneLoopback{
 						loopbackNodeId: {
 							IPv4Addr: tCase.ipv4,
 							IPv6Addr: tCase.ipv6,
@@ -163,8 +164,8 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 					// fetch by interface id
 					actualByIfId, err := bpClient.GetSecurityZoneLoopbackByInterfaceId(ctx, loopbackNodeId)
 					require.NoError(t, err)
-					require.Equal(t, loopbackNodeId, actualByIfId.Id)
-					require.Equal(t, szId, actualByIfId.SecurityZoneId)
+					require.Equal(t, loopbackNodeId, actualByIfId.ID)
+					require.Equal(t, *szId, actualByIfId.SecurityZoneID)
 					require.Equal(t, 0, actualByIfId.LoopbackId)
 
 					// fetch by system id
@@ -172,22 +173,22 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 					require.NoError(t, err)
 					var actualBySysId *SecurityZoneLoopback
 					for _, szl := range actualsBySysId {
-						if szl.Id == loopbackNodeId {
+						if szl.ID == loopbackNodeId {
 							actualBySysId = &szl
 							break
 						}
 					}
 					require.NotNil(t, actualBySysId)
-					require.Equal(t, loopbackNodeId, actualBySysId.Id)
-					require.Equal(t, szId, actualBySysId.SecurityZoneId)
+					require.Equal(t, loopbackNodeId, actualBySysId.ID)
+					require.Equal(t, *szId, actualBySysId.SecurityZoneID)
 					require.Equal(t, 0, actualBySysId.LoopbackId)
 
 					// fetch all
-					actualMap, err := bpClient.GetSecurityZoneLoopbacks(ctx, szId)
+					actualMap, err := bpClient.GetSecurityZoneLoopbacks(ctx, *szId)
 					require.NoError(t, err)
 					require.Contains(t, actualMap, loopbackNodeId)
-					require.Equal(t, loopbackNodeId, actualMap[loopbackNodeId].Id)
-					require.Equal(t, szId, actualMap[loopbackNodeId].SecurityZoneId)
+					require.Equal(t, loopbackNodeId, actualMap[loopbackNodeId].ID)
+					require.Equal(t, *szId, actualMap[loopbackNodeId].SecurityZoneID)
 					require.Equal(t, 0, actualMap[loopbackNodeId].LoopbackId)
 
 					switch {
