@@ -140,6 +140,21 @@ func TestCRUDSecurityZone(t *testing.T) {
 				Type:  enum.SecurityZoneTypeEVPN,
 			},
 		},
+		"auto_reset_of_disable_ipv4_attribute_6.1+": {
+			versionConstraint: &compatibility.SecurityZoneAddressingSupported,
+			create: apstra.SecurityZone{
+				Label:             testutils.RandString(6, "hex"),
+				VRFName:           testutils.RandString(6, "hex"),
+				Type:              enum.SecurityZoneTypeEVPN,
+				AddressingSupport: &enum.AddressingSchemeIPv6,
+				DisableIPv4:       pointer.To(true),
+			},
+			update: &apstra.SecurityZone{
+				Label:             testutils.RandString(6, "hex"),
+				Type:              enum.SecurityZoneTypeEVPN,
+				AddressingSupport: &enum.AddressingSchemeIPv4,
+			},
+		},
 	}
 
 	for _, client := range clients {
