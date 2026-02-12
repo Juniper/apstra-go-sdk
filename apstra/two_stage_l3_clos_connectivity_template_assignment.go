@@ -85,6 +85,8 @@ func (o *TwoStageL3ClosClient) GetAllInterfacesConnectivityTemplates(ctx context
 	return result, nil
 }
 
+// GetInterfaceConnectivityTemplates returns []ObjectId representing connectivity templates applied to intfId
+// Deprecated: Use GetConnectivityTemplatesByApplicationPoints() instead. Will be removed no sooner than 2026-09-01.
 func (o *TwoStageL3ClosClient) GetInterfaceConnectivityTemplates(ctx context.Context, intfId ObjectId) ([]ObjectId, error) {
 	allMap, err := o.GetAllInterfacesConnectivityTemplates(ctx)
 	if err != nil {
