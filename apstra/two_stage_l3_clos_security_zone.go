@@ -10,8 +10,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 )
 
@@ -98,6 +100,19 @@ func (o *SecurityZone) UnmarshalJSON(bytes []byte) error {
 // requires that field, it will be set to JunosEVPNIRBModeAsymmetric in the
 // request sent to the API.
 func (o TwoStageL3ClosClient) CreateSecurityZone(ctx context.Context, cfg SecurityZone) (string, error) {
+	szAddressingSupportOK := compatibility.SecurityZoneAddressingSupported.Check(o.client.apiVersion)
+
+	if (cfg.AddressingSupport != nil || cfg.DisableIPv4 != nil) && !szAddressingSupportOK {
+		return "", fmt.Errorf("AddressingSupport and DisableIPv4 must be nil with Apstra %s", o.client.apiVersion)
+	}
+
+	if cfg.AddressingSupport != nil &&
+		*cfg.AddressingSupport != enum.AddressingSchemeIPv6 &&
+		cfg.DisableIPv4 != nil &&
+		*cfg.DisableIPv4 {
+		return "", fmt.Errorf("disabling IPv4 not permitted with addressing scheme %s", *cfg.AddressingSupport)
+	}
+
 	response := &objectIdResponse{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -197,6 +212,40 @@ func (o TwoStageL3ClosClient) GetSecurityZones(ctx context.Context) ([]SecurityZ
 func (o TwoStageL3ClosClient) UpdateSecurityZone(ctx context.Context, v SecurityZone) error {
 	if v.ID() == nil {
 		return fmt.Errorf("id is required in %s", str.FuncName())
+	}
+
+	szAddressingSupportOK := compatibility.SecurityZoneAddressingSupported.Check(o.client.apiVersion)
+
+	if (v.AddressingSupport != nil || v.DisableIPv4 != nil) && !szAddressingSupportOK {
+		return fmt.Errorf("AddressingSupport and DisableIPv4 must be nil with Apstra %s", o.client.apiVersion)
+	}
+
+	if v.AddressingSupport != nil &&
+		*v.AddressingSupport != enum.AddressingSchemeIPv6 &&
+		v.DisableIPv4 != nil &&
+		*v.DisableIPv4 {
+		return fmt.Errorf("disabling IPv4 not permitted with addressing scheme %s", *v.AddressingSupport)
+	}
+
+	// workaround for error:
+	//
+	// {
+	//  "error_code": 422,
+	//  "errors": {
+	//    "disable_ipv4": "IPv4 support can only be disabled when addressing_support=\"ipv6\""
+	//  }
+	// }
+	//
+	// JP says the API behavior is deliberate: A shim layer sets an omitted `disable_ipv4` attribute
+	// to the current value in PUT requests /even when doing so produces an unsupported combination/.
+	//
+	// Because of this API behavior, when setting addressing_support to something other than IPv6,
+	// we will explicitly enable IPv4 support (disable = false)
+	if v.AddressingSupport != nil &&
+		*v.AddressingSupport != enum.AddressingSchemeIPv6 &&
+		v.DisableIPv4 == nil &&
+		szAddressingSupportOK {
+		v.DisableIPv4 = pointer.To(false)
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
