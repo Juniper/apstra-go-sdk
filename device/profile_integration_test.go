@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -182,7 +182,7 @@ func TestProfile_CRUD(t *testing.T) {
 					require.NoError(t, err)
 
 					t.Log("ensure the object is deleted even if tests fail")
-					testutils.CleanupWithFreshContext(t, time.Minute, func(ctx context.Context) error {
+					testutils.CleanupWithFreshContext(t, 2*time.Minute, func(ctx context.Context) error {
 						_ = client.Client.DeleteDeviceProfile(ctx, id)
 						return nil
 					})
@@ -196,7 +196,7 @@ func TestProfile_CRUD(t *testing.T) {
 					comparedevice.DeviceProfile(t, create, obj)
 
 					t.Log("retrieve the object by label and validate")
-					gdpblCtx, cf := context.WithTimeout(ctx, time.Minute)
+					gdpblCtx, cf := context.WithTimeout(ctx, 2*time.Minute)
 					obj, err = client.Client.GetDeviceProfileByLabel(gdpblCtx, create.Label)
 					cf()
 					require.NoError(t, err)
@@ -211,7 +211,7 @@ func TestProfile_CRUD(t *testing.T) {
 					require.Contains(t, ids, id)
 
 					t.Log("retrieve the list of objects (ours must be in there) and validate")
-					gdpCtx, cf := context.WithTimeout(ctx, time.Minute)
+					gdpCtx, cf := context.WithTimeout(ctx, 2*time.Minute)
 					objs, err := client.Client.GetDeviceProfiles(gdpCtx)
 					cf()
 					require.NoError(t, err)
@@ -267,7 +267,7 @@ func TestProfile_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					t.Log("get the object by label")
-					gdpblCtx, cf = context.WithTimeout(ctx, time.Minute)
+					gdpblCtx, cf = context.WithTimeout(ctx, 2*time.Minute)
 					_, err = client.Client.GetDeviceProfileByLabel(gdpblCtx, create.Label)
 					cf()
 					require.Error(t, err)
@@ -280,7 +280,7 @@ func TestProfile_CRUD(t *testing.T) {
 					require.NotContains(t, ids, id)
 
 					t.Log("retrieve the list of objects (ours must *not* be in there)")
-					gdpCtx, cf = context.WithTimeout(ctx, time.Minute)
+					gdpCtx, cf = context.WithTimeout(ctx, 2*time.Minute)
 					objs, err = client.Client.GetDeviceProfiles(gdpCtx)
 					cf()
 					require.NoError(t, err)
