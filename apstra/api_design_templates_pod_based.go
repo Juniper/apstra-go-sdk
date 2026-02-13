@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -296,6 +296,14 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		rbt, err := client.getRackBasedTemplate(ctx, k)
 		if err != nil {
 			return nil, err
+		}
+		for j := range rbt.RackTypes {
+			for jj := range rbt.RackTypes[j].LogicalDevices {
+				// Clear these values retrieved from the API so we don't send them
+				// when creating the template. Required by Apstra 6.1.
+				rbt.RackTypes[j].LogicalDevices[jj].CreatedAt = nil
+				rbt.RackTypes[j].LogicalDevices[jj].LastModifiedAt = nil
+			}
 		}
 		templatesRackBased[i] = *rbt
 

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -295,6 +295,12 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		rt, err := client.getRackType(ctx, k)
 		if err != nil {
 			return nil, err
+		}
+		for j := range rt.LogicalDevices {
+			// Clear these values retrieved from the API so we don't send them
+			// when creating the template. Required by Apstra 6.1.
+			rt.LogicalDevices[j].CreatedAt = nil
+			rt.LogicalDevices[j].LastModifiedAt = nil
 		}
 		rackTypes[i] = *rt
 
