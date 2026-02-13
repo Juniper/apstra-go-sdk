@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
 )
@@ -81,11 +82,17 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 			topLevel:    true,
 		}
 
+		var as *enum.AddressingScheme
+		if compatibility.SecurityZoneAddressingSupported.Check(bp.client.apiVersion) {
+			as = &enum.AddressingSchemeIPv46
+		}
+
 		szLabel := randString(6, "hex")
 		szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
-			Label:   szLabel,
-			Type:    enum.SecurityZoneTypeEVPN,
-			VRFName: szLabel,
+			Label:             szLabel,
+			Type:              enum.SecurityZoneTypeEVPN,
+			VRFName:           szLabel,
+			AddressingSupport: as,
 		})
 		require.NoError(t, err)
 
