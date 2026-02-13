@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/design"
@@ -154,7 +155,7 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					require.NoError(t, err)
 
 					// ensure the object is deleted even if tests fail
-					testutils.CleanupWithFreshContext(t, 10, func(ctx context.Context) error {
+					testutils.CleanupWithFreshContext(t, 2*time.Minute, func(ctx context.Context) error {
 						_ = client.Client.DeleteInterfaceMap2(ctx, id)
 						return nil
 					})
@@ -168,7 +169,9 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					comparedesign.InterfaceMap(t, create, obj)
 
 					// retrieve the object by label and validate
-					obj, err = client.Client.GetInterfaceMapByLabel2(ctx, create.Label)
+					gimCtx, cf := context.WithTimeout(ctx, 2*time.Minute)
+					obj, err = client.Client.GetInterfaceMapByLabel2(gimCtx, create.Label)
+					cf()
 					require.NoError(t, err)
 					idPtr = obj.ID()
 					require.NotNil(t, idPtr)
@@ -181,7 +184,9 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					require.Contains(t, ids, id)
 
 					// retrieve the list of objects (ours must be in there) and validate
-					objs, err := client.Client.GetInterfaceMaps2(ctx)
+					gimCtx, cf = context.WithTimeout(ctx, 2*time.Minute)
+					objs, err := client.Client.GetInterfaceMaps2(gimCtx)
+					cf()
 					require.NoError(t, err)
 					objPtr := slice.MustFindByID(objs, id)
 					require.NotNil(t, objPtr)
@@ -235,7 +240,9 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// get the object by label
-					_, err = client.Client.GetInterfaceMapByLabel2(ctx, create.Label)
+					gimCtx, cf = context.WithTimeout(ctx, 2*time.Minute)
+					_, err = client.Client.GetInterfaceMapByLabel2(gimCtx, create.Label)
+					cf()
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
@@ -246,7 +253,9 @@ func TestInterfaceMap_CRUD(t *testing.T) {
 					require.NotContains(t, ids, id)
 
 					// retrieve the list of objects (ours must *not* be in there)
-					objs, err = client.Client.GetInterfaceMaps2(ctx)
+					gimCtx, cf = context.WithTimeout(ctx, 2*time.Minute)
+					objs, err = client.Client.GetInterfaceMaps2(gimCtx)
+					cf()
 					require.NoError(t, err)
 					objPtr = slice.MustFindByID(objs, id)
 					require.Nil(t, objPtr)
