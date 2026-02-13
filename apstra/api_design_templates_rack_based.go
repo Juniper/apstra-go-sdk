@@ -296,11 +296,11 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 		if err != nil {
 			return nil, err
 		}
-		for i := range rt.LogicalDevices {
+		for j := range rt.LogicalDevices {
 			// Clear these values retrieved from the API so we don't send them
 			// when creating the template. Required by Apstra 6.1.
-			rt.LogicalDevices[i].CreatedAt = nil
-			rt.LogicalDevices[i].LastModifiedAt = nil
+			rt.LogicalDevices[j].CreatedAt = nil
+			rt.LogicalDevices[j].LastModifiedAt = nil
 		}
 		rackTypes[i] = *rt
 
