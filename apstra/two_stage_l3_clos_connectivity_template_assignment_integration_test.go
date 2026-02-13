@@ -12,6 +12,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
 )
@@ -359,9 +360,17 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 
 			bpClient := testBlueprintC(ctx, t, client.client)
 
-			zones, err := bpClient.GetSecurityZones(ctx)
-			require.NoError(t, err)
-			require.Equal(t, 1, len(zones))
+			var rzAddressing *enum.AddressingScheme
+			if compatibility.SecurityZoneAddressingSupported.Check(client.client.apiVersion) {
+				rzAddressing = &enum.AddressingSchemeIPv46
+			}
+
+			rzID, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+				Label:             randString(6, "hex"),
+				Type:              enum.SecurityZoneTypeEVPN,
+				VRFName:           randString(6, "hex"),
+				AddressingSupport: rzAddressing,
+			})
 
 			cts := make([]*ConnectivityTemplate, ctCount)
 			ctIds := make([]ObjectId, ctCount)
@@ -372,7 +381,7 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 					Subpolicies: []*ConnectivityTemplatePrimitive{
 						{
 							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-								SecurityZone:       (*ObjectId)(zones[0].ID()),
+								SecurityZone:       (*ObjectId)(&rzID),
 								Tagged:             true,
 								Vlan:               toPtr(VLAN(i + 101)),
 								IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
