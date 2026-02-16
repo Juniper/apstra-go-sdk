@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,9 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
 
 const (
@@ -91,9 +94,16 @@ func (o *CreateLinksWithNewSystemRequest) raw(ctx context.Context, client *Clien
 		return nil, err
 	}
 
+	zp := pointer.To(0)
+	if compatibility.SwitchSystemLinksSystemIDNotSupported.Check(client.apiVersion) {
+		// workaround for pre 6.1
+		zp = nil
+	}
+
 	links := make([]rawCreateLinkRequest, len(o.Links))
 	for i, link := range o.Links {
 		links[i] = *link.raw()
+		links[i].NewSystemIndex = zp
 	}
 
 	return &rawCreateLinksWithNewSystemRequest{
@@ -180,6 +190,7 @@ func (o *CreateLinkRequest) raw() *rawCreateLinkRequest {
 }
 
 type rawCreateLinkRequest struct {
+	NewSystemIndex *int                  `json:"new_system_index,omitempty"`
 	Tags           []string              `json:"tags,omitempty"`
 	SystemEndpoint rawSwitchLinkEndpoint `json:"system"`
 	SwitchEndpoint rawSwitchLinkEndpoint `json:"switch"`

@@ -61,6 +61,9 @@ var (
 		considerPreReleaseLabel: true,
 		permitAny:               true,
 	}
+	SwitchSystemLinksSystemIDNotSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint("<" + apstra610)),
+	}
 	SystemManagerHasSkipInterfaceShutdownOnUpgrade = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
