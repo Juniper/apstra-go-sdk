@@ -13,6 +13,8 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -106,29 +108,50 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 				t.Skipf("skipping due to version constraint %q", compatibility.SecurityZoneLoopbackApiSupported)
 			}
 
-			// create a blueprint with IPv6 enabled
+			// create a blueprint with IPv4 and IPv6 enabled
 			bpClient := testBlueprintH(ctx, t, client.client)
 
-			// fetch all security zones
-			szs, err := bpClient.GetSecurityZones(ctx)
-			require.NoError(t, err)
-			require.Greater(t, len(szs), 0)
-
-			// find the default security zone ID
-			var szId *string
-			for _, sz := range szs {
-				if sz.Label == "Default routing zone" {
-					szId = sz.ID()
-				}
+			// create a routing zone with IPv4 and IPv6 support
+			var as *enum.AddressingScheme
+			if compatibility.SecurityZoneAddressingSupported.Check(client.client.apiVersion) {
+				as = pointer.To(enum.AddressingSchemeIPv46)
 			}
-			require.NotNil(t, szId)
-			require.NotEmpty(t, *szId)
+			rzID, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+				Label:             randString(6, "hex"),
+				Type:              enum.SecurityZoneTypeEVPN,
+				VRFName:           randString(6, "hex"),
+				AddressingSupport: as,
+			})
+			require.NoError(t, err)
+
+			// create a set of bindings which include all leaf switches
+			leafIDs, err := getSystemIdsByRole(ctx, bpClient, "leaf")
+			require.NoError(t, err)
+			require.Greater(t, len(leafIDs), 0)
+			bindings := make([]VnBinding, len(leafIDs))
+			for i, leafID := range leafIDs {
+				bindings[i] = VnBinding{SystemId: leafID}
+			}
+
+			// create a VN with IPv4 and IPv6 enabled so that the VRF is rendered on switches and loopbacks will be assigned
+			_, err = bpClient.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+				Ipv4Enabled:               true,
+				VirtualGatewayIpv4Enabled: true,
+				Ipv6Enabled:               true,
+				VirtualGatewayIpv6Enabled: true,
+				Label:                     randString(6, "hex"),
+				SecurityZoneId:            ObjectId(rzID),
+				VnBindings:                bindings,
+				VnType:                    enum.VnTypeVxlan,
+			})
+			require.NoError(t, err)
 
 			// assign an IPv4 pool to leaf loopbacks so that we can "remove" (cause it to revert to a pool address) a loopback IPv4 address
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 				ResourceGroup: ResourceGroup{
-					Type: ResourceTypeIp4Pool,
-					Name: ResourceGroupNameLeafIp4,
+					SecurityZoneId: (*ObjectId)(&rzID),
+					Type:           ResourceTypeIp4Pool,
+					Name:           ResourceGroupNameLeafIp4,
 				},
 				PoolIds: []ObjectId{ipV4PoolId},
 			})
@@ -137,23 +160,19 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			// assign an IPv6 pool to leaf loopbacks so that we can "remove" (cause it to revert to a pool) address a loopback IPv6 address
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 				ResourceGroup: ResourceGroup{
-					Type: ResourceTypeIp6Pool,
-					Name: ResourceGroupNameLeafIp6,
+					SecurityZoneId: (*ObjectId)(&rzID),
+					Type:           ResourceTypeIp6Pool,
+					Name:           ResourceGroupNameLeafIp6,
 				},
 				PoolIds: []ObjectId{ipV6PoolId},
 			})
 			require.NoError(t, err)
 
-			leafIds, err := getSystemIdsByRole(ctx, bpClient, "leaf")
-			require.NoError(t, err)
-			require.Greater(t, len(leafIds), 0)
-			leafId := leafIds[0]
-
-			loopbackNodeId := getLoopbackNodeId(t, ctx, bpClient, string(leafId), *szId)
+			loopbackNodeId := getLoopbackNodeId(t, ctx, bpClient, string(leafIDs[0]), rzID)
 
 			for i, tCase := range testCases {
 				t.Run(fmt.Sprintf("test_case_%d", i), func(t *testing.T) {
-					err := bpClient.SetSecurityZoneLoopbacks(ctx, *szId, map[string]SecurityZoneLoopback{
+					err := bpClient.SetSecurityZoneLoopbacks(ctx, rzID, map[string]SecurityZoneLoopback{
 						loopbackNodeId: {
 							IPv4Addr: tCase.ipv4,
 							IPv6Addr: tCase.ipv6,
@@ -165,11 +184,11 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 					actualByIfId, err := bpClient.GetSecurityZoneLoopbackByInterfaceId(ctx, loopbackNodeId)
 					require.NoError(t, err)
 					require.Equal(t, loopbackNodeId, actualByIfId.ID)
-					require.Equal(t, *szId, actualByIfId.SecurityZoneID)
-					require.Equal(t, 0, actualByIfId.LoopbackId)
+					require.Equal(t, rzID, actualByIfId.SecurityZoneID)
+					require.Equal(t, 2, actualByIfId.LoopbackId)
 
 					// fetch by system id
-					actualsBySysId, err := bpClient.GetSecurityZoneLoopbacksBySystemId(ctx, leafId)
+					actualsBySysId, err := bpClient.GetSecurityZoneLoopbacksBySystemId(ctx, leafIDs[0])
 					require.NoError(t, err)
 					var actualBySysId *SecurityZoneLoopback
 					for _, szl := range actualsBySysId {
@@ -180,16 +199,16 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 					}
 					require.NotNil(t, actualBySysId)
 					require.Equal(t, loopbackNodeId, actualBySysId.ID)
-					require.Equal(t, *szId, actualBySysId.SecurityZoneID)
-					require.Equal(t, 0, actualBySysId.LoopbackId)
+					require.Equal(t, rzID, actualBySysId.SecurityZoneID)
+					require.Equal(t, 2, actualBySysId.LoopbackId)
 
 					// fetch all
-					actualMap, err := bpClient.GetSecurityZoneLoopbacks(ctx, *szId)
+					actualMap, err := bpClient.GetSecurityZoneLoopbacks(ctx, rzID)
 					require.NoError(t, err)
 					require.Contains(t, actualMap, loopbackNodeId)
 					require.Equal(t, loopbackNodeId, actualMap[loopbackNodeId].ID)
-					require.Equal(t, *szId, actualMap[loopbackNodeId].SecurityZoneID)
-					require.Equal(t, 0, actualMap[loopbackNodeId].LoopbackId)
+					require.Equal(t, rzID, actualMap[loopbackNodeId].SecurityZoneID)
+					require.Equal(t, 2, actualMap[loopbackNodeId].LoopbackId)
 
 					switch {
 					case tCase.ipv4 == nil:
