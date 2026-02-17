@@ -14,6 +14,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -105,14 +106,20 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 			VlanIds := make([]int, securityZoneCount) // dedicated vlan slice ensures no collisions
 			randomIntsN(VlanIds, vlanMax-2)
 
+			var as *enum.AddressingScheme
+			if compatibility.SecurityZoneAddressingSupported.Check(bp.client.apiVersion) {
+				as = pointer.To(enum.AddressingSchemeIPv46)
+			}
+
 			// create security zones
 			for i := range securityZoneCount {
 				securityZones[i] = SecurityZone{
-					Label:            randString(6, "hex"),
-					Type:             enum.SecurityZoneTypeEVPN,
-					VRFName:          randString(6, "hex"),
-					VLAN:             toPtr(VLAN(VlanIds[i])),
-					JunosEVPNIRBMode: oneOf(&enum.JunosEVPNIRBModeAsymmetric, &enum.JunosEVPNIRBModeSymmetric),
+					Label:             randString(6, "hex"),
+					Type:              enum.SecurityZoneTypeEVPN,
+					VRFName:           randString(6, "hex"),
+					VLAN:              toPtr(VLAN(VlanIds[i])),
+					JunosEVPNIRBMode:  oneOf(&enum.JunosEVPNIRBModeAsymmetric, &enum.JunosEVPNIRBModeSymmetric),
+					AddressingSupport: as,
 				}
 
 				// create security zone, record ID
