@@ -900,7 +900,7 @@ func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, intSyst
 	for i := range intSystemIds {
 		intSystemIds[i], err = c.CreateSystem(ctx, &FreeformSystemData{
 			Type:            SystemTypeInternal,
-			Label:           randString(2, "hex"),
+			Label:           randString(6, "hex"),
 			DeviceProfileId: &dpId,
 		})
 		require.NoError(t, err)
@@ -910,7 +910,7 @@ func testFFBlueprintB(ctx context.Context, t testing.TB, client *Client, intSyst
 	for i := range extSystemIds {
 		extSystemIds[i], err = c.CreateSystem(ctx, &FreeformSystemData{
 			Type:  SystemTypeExternal,
-			Label: randString(2, "hex"),
+			Label: randString(6, "hex"),
 		})
 		require.NoError(t, err)
 	}

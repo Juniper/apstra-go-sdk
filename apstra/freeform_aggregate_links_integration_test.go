@@ -41,7 +41,7 @@ func TestCRUDFFAggLink(t *testing.T) {
 		link1 := []FreeformLinkRequest{
 			{
 				Label: randString(2, "hex"),
-				Endpoints: [2]FreeformEndpoint{
+				Endpoints: [2]FreeformEthernetEndpoint{
 					{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
 						IfName:           toPtr("ge-0/0/0"),
 						TransformationId: toPtr(1),
@@ -56,7 +56,7 @@ func TestCRUDFFAggLink(t *testing.T) {
 		link2 := []FreeformLinkRequest{
 			{
 				Label: randString(2, "hex"),
-				Endpoints: [2]FreeformEndpoint{
+				Endpoints: [2]FreeformEthernetEndpoint{
 					{SystemId: intSysIds[0], Interface: FreeformInterface{Data: &FreeformInterfaceData{
 						IfName:           toPtr("ge-0/0/1"),
 						TransformationId: toPtr(1),
@@ -71,7 +71,7 @@ func TestCRUDFFAggLink(t *testing.T) {
 		link3 := []FreeformLinkRequest{
 			{
 				Label: randString(2, "hex"),
-				Endpoints: [2]FreeformEndpoint{
+				Endpoints: [2]FreeformEthernetEndpoint{
 					{SystemId: intSysIds[2], Interface: FreeformInterface{Data: &FreeformInterfaceData{
 						IfName:           toPtr("ge-0/0/0"),
 						TransformationId: toPtr(1),
@@ -86,7 +86,7 @@ func TestCRUDFFAggLink(t *testing.T) {
 		link4 := []FreeformLinkRequest{
 			{
 				Label: randString(2, "hex"),
-				Endpoints: [2]FreeformEndpoint{
+				Endpoints: [2]FreeformEthernetEndpoint{
 					{SystemId: intSysIds[2], Interface: FreeformInterface{Data: &FreeformInterfaceData{
 						IfName:           toPtr("ge-0/0/1"),
 						TransformationId: toPtr(1),
