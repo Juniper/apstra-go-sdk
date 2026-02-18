@@ -78,8 +78,8 @@ func TestGetInterfaceMapDigestsByDeviceProfile(t *testing.T) {
 				imds, err := client.Client.GetInterfaceMapDigestsByDeviceProfile(ctx, apstra.ObjectId(*randId))
 				require.NoError(t, err)
 
-				for _, imd := range imds {
-					log.Printf("%s: %s -> %s", imd.Label, imd.LogicalDevice.Label, imd.DeviceProfile.Label)
+				for i, imd := range imds {
+					log.Printf("%3d %s: %s -> %s", i, imd.Label, imd.LogicalDevice.Label, imd.DeviceProfile.Label)
 				}
 			})
 		})
