@@ -107,7 +107,7 @@ func convertTtaeToAceWherePossible(err error) error {
 				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "No virtual_network with id: "):
 				return ClientErr{errType: ErrNotfound, err: errors.New(ttae.Msg)}
-			case strings.Contains(ttae.Msg, "Virtual Network name ") && strings.Contains(ttae.Msg, "not unique"):
+			case strings.Contains(ttae.Msg, "Virtual Network name ") && (strings.Contains(ttae.Msg, "not unique") || strings.Contains(ttae.Msg, "overlaps with")):
 				return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
 			case strings.Contains(ttae.Msg, "Virtual Network name not unique"):
 				return ClientErr{errType: ErrExists, err: errors.New(ttae.Msg)}
