@@ -272,7 +272,8 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 				TemplateId: "L2_Virtual_EVPN",
 			},
 		},
-		"4.1.1_and_later": {
+		"4.1.1_through_6.0.0": {
+			constraint: compatibility.NewConstraint(version.MustConstraints(version.NewConstraint("<6.1.0")), false, false),
 			req: apstra.CreateBlueprintFromTemplateRequest{
 				RefDesign:  enum.RefDesignDatacenter,
 				Label:      testutils.RandString(5, "hex"),
@@ -283,7 +284,21 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 				},
 			},
 		},
+		"6.1.0_and_later": {
+			constraint: compatibility.NewConstraint(version.MustConstraints(version.NewConstraint(">=6.1.0")), false, false),
+			req: apstra.CreateBlueprintFromTemplateRequest{
+				RefDesign:  enum.RefDesignDatacenter,
+				Label:      testutils.RandString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				AddressingPolicy: &apstra.AddressingPolicy{
+					AddressingSupport: &enum.AddressingSchemeIPv6,
+					DisableIPv4:       pointer.To(true),
+					VTEPAddressing:    &enum.AddressingSchemeIPv6,
+				},
+			},
+		},
 		"4.2.0_specific_test": {
+			constraint: compatibility.NewConstraint(version.MustConstraints(version.NewConstraint("<6.1.0")), false, false),
 			req: apstra.CreateBlueprintFromTemplateRequest{
 				RefDesign:  enum.RefDesignDatacenter,
 				Label:      testutils.RandString(5, "hex"),
@@ -296,6 +311,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 			},
 		},
 		"lots_of_values": {
+			constraint: compatibility.NewConstraint(version.MustConstraints(version.NewConstraint("<6.1.0")), false, false),
 			req: apstra.CreateBlueprintFromTemplateRequest{
 				RefDesign:  enum.RefDesignDatacenter,
 				Label:      testutils.RandString(5, "hex"),
@@ -330,7 +346,48 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 				},
 			},
 		},
+		"lots_of_values_6.1.0": {
+			constraint: compatibility.NewConstraint(version.MustConstraints(version.NewConstraint(">=6.1.0")), false, false),
+			req: apstra.CreateBlueprintFromTemplateRequest{
+				RefDesign:  enum.RefDesignDatacenter,
+				Label:      testutils.RandString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &apstra.FabricSettings{
+					JunosEvpnDuplicateMacRecoveryTime:     pointer.To(uint16(16)),
+					MaxExternalRoutes:                     pointer.To(uint32(239832)),
+					EsiMacMsb:                             pointer.To(uint8(32)),
+					JunosGracefulRestart:                  &enum.FeatureSwitchDisabled,
+					OptimiseSzFootprint:                   &enum.FeatureSwitchDisabled,
+					JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchDisabled,
+					EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchDisabled,
+					MaxFabricRoutes:                       pointer.To(uint32(84231)),
+					MaxMlagRoutes:                         pointer.To(uint32(76112)),
+					JunosExOverlayEcmp:                    &enum.FeatureSwitchDisabled,
+					DefaultSviL3Mtu:                       pointer.To(uint16(9100)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchDisabled,
+					FabricL3Mtu:                           pointer.To(uint16(9178)),
+					ExternalRouterMtu:                     pointer.To(uint16(9100)),
+					MaxEvpnRoutes:                         pointer.To(uint32(92342)),
+					AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+						Algorithm:                apstra.AlgorithmHeuristic,
+						MaxLinksPerPort:          2,
+						MaxLinksPerSlot:          2,
+						MaxPerSystemLinksPerPort: 2,
+						MaxPerSystemLinksPerSlot: 2,
+						Mode:                     apstra.AntiAffinityModeEnabledLoose,
+					},
+					SpineLeafLinks:       pointer.To(apstra.AddressingSchemeIp4),
+					SpineSuperspineLinks: pointer.To(apstra.AddressingSchemeIp4),
+				},
+				AddressingPolicy: &apstra.AddressingPolicy{
+					AddressingSupport: &enum.AddressingSchemeIPv46,
+					DisableIPv4:       pointer.To(false),
+					VTEPAddressing:    &enum.AddressingSchemeIPv6,
+				},
+			},
+		},
 		"different_values": {
+			constraint: compatibility.NewConstraint(version.MustConstraints(version.NewConstraint("<6.1.0")), false, false),
 			req: apstra.CreateBlueprintFromTemplateRequest{
 				RefDesign:  enum.RefDesignDatacenter,
 				Label:      testutils.RandString(5, "hex"),
@@ -362,6 +419,44 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 					},
 					SpineLeafLinks:       pointer.To(apstra.AddressingSchemeIp46),
 					SpineSuperspineLinks: pointer.To(apstra.AddressingSchemeIp46),
+				},
+			},
+		},
+		"different_values_6.1.0": {
+			constraint: compatibility.NewConstraint(version.MustConstraints(version.NewConstraint(">=6.1.0")), false, false),
+			req: apstra.CreateBlueprintFromTemplateRequest{
+				RefDesign:  enum.RefDesignDatacenter,
+				Label:      testutils.RandString(5, "hex"),
+				TemplateId: "L2_Virtual_EVPN",
+				FabricSettings: &apstra.FabricSettings{
+					JunosEvpnDuplicateMacRecoveryTime:     pointer.To(uint16(14)),
+					MaxExternalRoutes:                     pointer.To(uint32(233832)),
+					EsiMacMsb:                             pointer.To(uint8(50)),
+					JunosGracefulRestart:                  &enum.FeatureSwitchEnabled,
+					OptimiseSzFootprint:                   &enum.FeatureSwitchEnabled,
+					JunosEvpnRoutingInstanceVlanAware:     &enum.FeatureSwitchEnabled,
+					EvpnGenerateType5HostRoutes:           &enum.FeatureSwitchEnabled,
+					MaxFabricRoutes:                       pointer.To(uint32(82231)),
+					MaxMlagRoutes:                         pointer.To(uint32(74112)),
+					JunosExOverlayEcmp:                    &enum.FeatureSwitchEnabled,
+					DefaultSviL3Mtu:                       pointer.To(uint16(9070)),
+					JunosEvpnMaxNexthopAndInterfaceNumber: &enum.FeatureSwitchEnabled,
+					FabricL3Mtu:                           pointer.To(uint16(9172)),
+					ExternalRouterMtu:                     pointer.To(uint16(9080)),
+					MaxEvpnRoutes:                         pointer.To(uint32(91342)),
+					AntiAffinityPolicy: &apstra.AntiAffinityPolicy{
+						Algorithm:                apstra.AlgorithmHeuristic,
+						MaxLinksPerPort:          4,
+						MaxLinksPerSlot:          4,
+						MaxPerSystemLinksPerPort: 4,
+						MaxPerSystemLinksPerSlot: 4,
+						Mode:                     apstra.AntiAffinityModeEnabledLoose,
+					},
+				},
+				AddressingPolicy: &apstra.AddressingPolicy{
+					AddressingSupport: &enum.AddressingSchemeIPv46,
+					DisableIPv4:       pointer.To(false),
+					VTEPAddressing:    &enum.AddressingSchemeIPv6,
 				},
 			},
 		},
@@ -452,6 +547,23 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 							if tCase.req.FabricSettings.SpineLeafLinks != nil && *tCase.req.FabricSettings.SpineLeafLinks != spineLeaf {
 								t.Fatalf("expected spine superspine addressing: %q, got %q", *tCase.req.FabricSettings.SpineSuperspineLinks, spineSuperspine)
 							}
+						}
+					}
+
+					if tCase.req.AddressingPolicy != nil {
+						sz, err := bpClient.GetSecurityZoneByLabel(ctx, "Default routing zone")
+						require.NoError(t, err)
+						require.NotNil(t, sz.AddressingSupport)
+						require.NotNil(t, sz.DisableIPv4)
+						require.NotNil(t, sz.VTEPAddressing)
+						if tCase.req.AddressingPolicy.AddressingSupport != nil {
+							require.Equal(t, *tCase.req.AddressingPolicy.AddressingSupport, *sz.AddressingSupport)
+						}
+						if tCase.req.AddressingPolicy.DisableIPv4 != nil {
+							require.Equal(t, *tCase.req.AddressingPolicy.DisableIPv4, *sz.DisableIPv4)
+						}
+						if tCase.req.AddressingPolicy.VTEPAddressing != nil {
+							require.Equal(t, *tCase.req.AddressingPolicy.VTEPAddressing, *sz.VTEPAddressing)
 						}
 					}
 

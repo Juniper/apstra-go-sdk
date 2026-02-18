@@ -896,9 +896,12 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlu
 			return id, fmt.Errorf("failed while creating new blueprint - %w", err)
 		}
 	default:
+		if !compatibility.SecurityZoneAddressingSupported.Check(o.apiVersion) && req.AddressingPolicy != nil {
+			return "", fmt.Errorf("addressing policy not supported with Apstra %s", o.apiVersion)
+		}
 		id, err = o.createBlueprintFromTemplate(ctx, req.raw())
 		if err != nil {
-			return id, err
+			return id, fmt.Errorf("failed while creating new blueprint - %w", err)
 		}
 	}
 

@@ -46,3 +46,11 @@ func (o Constraint) String() string {
 
 	return strings.Join(result, ",")
 }
+
+func NewConstraint(constraints version.Constraints, considerPreReleaseLabel, permitAny bool) *Constraint {
+	return &Constraint{
+		constraints:             constraints,
+		considerPreReleaseLabel: considerPreReleaseLabel,
+		permitAny:               permitAny,
+	}
+}

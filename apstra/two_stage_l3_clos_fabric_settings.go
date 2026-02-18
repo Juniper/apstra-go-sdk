@@ -33,28 +33,28 @@ var (
 	_ json.Unmarshaler = (*FabricSettings)(nil)
 )
 
-type FabricSettings struct { //										 4.2.0							4.1.2							4.1.1							4.1.0
-	AntiAffinityPolicy                    *AntiAffinityPolicy     // /anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy			/anti-affinity-policy
-	DefaultAnycastGWMAC                   net.HardwareAddr        //       introduced with 6.1.0
-	DefaultSviL3Mtu                       *uint16                 // virtual_network_policy node	not supported					not supported					not supported.
-	EsiMacMsb                             *uint8                  // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
-	EvpnGenerateType5HostRoutes           *enum.FeatureSwitch     // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	ExternalRouterMtu                     *uint16                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	FabricL3Mtu                           *uint16                 // /fabric-addressing-policy		not supported					not supported					not supported
-	Ipv6Enabled                           *bool                   // /fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy		/fabric-addressing-policy
-	JunosEvpnDuplicateMacRecoveryTime     *uint16                 // virtual_network_policy node	not supported					not supported					not supported
-	JunosEvpnMaxNexthopAndInterfaceNumber *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
-	JunosEvpnRoutingInstanceVlanAware     *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
-	JunosExOverlayEcmp                    *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
-	JunosGracefulRestart                  *enum.FeatureSwitch     // virtual_network_policy node	not supported					not supported					not supported
-	MaxEvpnRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	MaxExternalRoutes                     *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	MaxFabricRoutes                       *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	MaxMlagRoutes                         *uint32                 // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	OptimiseSzFootprint                   *enum.FeatureSwitch     // security_zone_policy node		not supported					not supported					not supported
-	OverlayControlProtocol                *OverlayControlProtocol // virtual_network_policy node	virtual_network_policy node		virtual_network_policy node		virtual_network_policy node
-	SpineLeafLinks                        *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
-	SpineSuperspineLinks                  *AddressingScheme       // blueprint creation only		blueprint creation only			blueprint creation only			blueprint creation only
+type FabricSettings struct { //										 4.2.0                          6.1.0
+	AntiAffinityPolicy                    *AntiAffinityPolicy     // anti-affinity-policy           fabric_policy node
+	DefaultAnycastGWMAC                   net.HardwareAddr        // n/a                            fabric_policy node
+	DefaultSviL3Mtu                       *uint16                 // virtual_network_policy node    fabric_policy node
+	EsiMacMsb                             *uint8                  // /fabric-addressing-policy      fabric_policy node
+	EvpnGenerateType5HostRoutes           *enum.FeatureSwitch     // virtual_network_policy node    fabric_policy node
+	ExternalRouterMtu                     *uint16                 // virtual_network_policy node    fabric_policy node
+	FabricL3Mtu                           *uint16                 // /fabric-addressing-policy      fabric_policy node
+	Ipv6Enabled                           *bool                   // /fabric-addressing-policy      n/a
+	JunosEvpnDuplicateMacRecoveryTime     *uint16                 // virtual_network_policy node    fabric_policy node
+	JunosEvpnMaxNexthopAndInterfaceNumber *enum.FeatureSwitch     // virtual_network_policy node    fabric_policy node
+	JunosEvpnRoutingInstanceVlanAware     *enum.FeatureSwitch     // virtual_network_policy node    fabric_policy node
+	JunosExOverlayEcmp                    *enum.FeatureSwitch     // virtual_network_policy node    fabric_policy node
+	JunosGracefulRestart                  *enum.FeatureSwitch     // virtual_network_policy node    fabric_policy node
+	MaxEvpnRoutes                         *uint32                 // virtual_network_policy node    fabric_policy node
+	MaxExternalRoutes                     *uint32                 // virtual_network_policy node    fabric_policy node
+	MaxFabricRoutes                       *uint32                 // virtual_network_policy node    fabric_policy node
+	MaxMlagRoutes                         *uint32                 // virtual_network_policy node    fabric_policy node
+	OptimiseSzFootprint                   *enum.FeatureSwitch     // security_zone_policy node      fabric_policy node
+	OverlayControlProtocol                *OverlayControlProtocol // virtual_network_policy node    fabric_policy node
+	SpineLeafLinks                        *AddressingScheme       // blueprint creation only        n/a
+	SpineSuperspineLinks                  *AddressingScheme       // blueprint creation only        n/a
 }
 
 func (o FabricSettings) MarshalJSON() ([]byte, error) {
