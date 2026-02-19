@@ -10,10 +10,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/enum"
-	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	comparefreeform "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/freeform"
 	fftestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/freeform_test_objects"
