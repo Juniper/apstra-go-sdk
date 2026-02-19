@@ -41,6 +41,15 @@ func (o FreeformAggregateLink) ID() *string {
 	return &o.id
 }
 
+func (o *FreeformAggregateLink) SetID(id string) {
+	if o.id != "" {
+		panic(fmt.Sprintf("id already has value %q", o.id))
+	}
+
+	o.id = id
+	return
+}
+
 func (o FreeformAggregateLink) MarshalJSON() ([]byte, error) {
 	// set the endpoint group numbers (0 or 1) on the EndpointGroups and the Endpoints contained in each group
 	for i := range o.EndpointGroups {

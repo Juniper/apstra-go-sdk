@@ -85,17 +85,8 @@ func (o *MetricDbQueryRequest) SetEnd(t time.Time) {
 	o.end = t
 }
 
-// The `SetID()` functions are not available to end users
+// These `SetID()` functions are not available to end users
 // due to the `_test.go` filename, but we use them in tests.
-
-func (o *FreeformAggregateLink) SetID(id string) {
-	if o.id != "" {
-		panic(fmt.Sprintf("id already has value %q", o.id))
-	}
-
-	o.id = id
-	return
-}
 
 func (o *FreeformAggregateLinkEndpointGroup) SetID(id string) {
 	if o.id != "" {
