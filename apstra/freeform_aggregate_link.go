@@ -8,10 +8,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Juniper/apstra-go-sdk/internal/zero"
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/internal"
+	"github.com/Juniper/apstra-go-sdk/internal/zero"
 )
 
 const (

@@ -8,10 +8,10 @@ package apstra_test
 
 import (
 	"context"
-	"github.com/Juniper/apstra-go-sdk/enum"
-	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
