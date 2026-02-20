@@ -7,7 +7,6 @@
 package comparefreeform
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
@@ -40,11 +39,11 @@ func AggregateLinkEndpointGroup(t testing.TB, req, resp apstra.FreeformAggregate
 		respEndpoints[ep.SystemID] = ep
 	}
 
-	for sysID, reqEp := range req.Endpoints {
+	for _, reqEp := range req.Endpoints {
 		respEp, ok := respEndpoints[reqEp.SystemID]
 		require.True(t, ok, msg)
 
-		msg := testmessage.Add(msg, fmt.Sprintf("Comparing Endpoint on system %q", sysID))
+		msg := testmessage.Add(msg, "Comparing Endpoint on system %q")
 		AggregateLinkEndpoint(t, reqEp, respEp, msg...)
 	}
 }
