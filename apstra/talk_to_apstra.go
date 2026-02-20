@@ -329,7 +329,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	var tIdR taskIdResponse
 	taskResponseFound, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
 	if err != nil {
-		return newTalkToApstraErr(req, requestBody, resp, "error peeking response body")
+		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("error peeking response body: %v", err))
 	}
 
 	// no task ID response, so no polling tomfoolery required
