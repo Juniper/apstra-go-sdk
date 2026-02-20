@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
 )
@@ -87,11 +88,16 @@ func TestUpdateTwoStageL3ClosSubinterface(t *testing.T) {
 
 			// create a security zone within the blueprint
 			szName := randString(6, "hex")
+			var as *enum.AddressingScheme
+			if compatibility.SecurityZoneAddressingSupported.Check(client.client.apiVersion) {
+				as = &enum.AddressingSchemeIPv46
+			}
 			szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
-				Label:   szName,
-				Type:    enum.SecurityZoneTypeEVPN,
-				VRFName: szName,
-				VNI:     toPtr(rand.Intn(1000) + 10000),
+				Label:             szName,
+				Type:              enum.SecurityZoneTypeEVPN,
+				VRFName:           szName,
+				VNI:               toPtr(rand.Intn(1000) + 10000),
+				AddressingSupport: as,
 			})
 			require.NoError(t, err)
 
