@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -243,7 +243,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	if err != nil {
 		req.URL = apstraUrl
 		req.URL.Host = "api-ops"
-		return newTalkToApstraErr(req, requestBody, innerResp, "error peeking response body")
+		return newTalkToApstraErr(req, requestBody, innerResp, fmt.Sprintf("error peeking response body: %v", err))
 	}
 
 	// no task ID response, so no polling tomfoolery required
