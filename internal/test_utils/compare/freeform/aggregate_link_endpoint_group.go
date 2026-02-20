@@ -43,7 +43,7 @@ func AggregateLinkEndpointGroup(t testing.TB, req, resp apstra.FreeformAggregate
 		respEp, ok := respEndpoints[reqEp.SystemID]
 		require.True(t, ok, msg)
 
-		msg := testmessage.Add(msg, "Comparing Endpoint on system %q")
+		msg := testmessage.Add(msg, "Comparing Endpoint")
 		AggregateLinkEndpoint(t, reqEp, respEp, msg...)
 	}
 }
