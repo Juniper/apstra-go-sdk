@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
@@ -58,17 +59,29 @@ func TestGetInterfaceMapDigestsByDeviceProfile(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 
 	for _, client := range clients {
-		dpIDs, err := client.Client.GetDeviceProfiles(ctx)
-		require.NoError(t, err)
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
 
-		randId := dpIDs[rand.Intn(len(dpIDs))].ID()
-		require.NotNil(t, randId)
+			longCtx, cf := context.WithTimeout(ctx, time.Minute)
+			dpIDs, err := client.Client.GetDeviceProfiles(longCtx)
+			cf()
+			require.NoError(t, err)
 
-		imds, err := client.Client.GetInterfaceMapDigestsByDeviceProfile(ctx, apstra.ObjectId(*randId))
-		require.NoError(t, err)
+			randId := dpIDs[rand.Intn(len(dpIDs))].ID()
+			require.NotNil(t, randId)
 
-		for _, imd := range imds {
-			log.Printf("%s: %s -> %s", imd.Label, imd.LogicalDevice.Label, imd.DeviceProfile.Label)
-		}
+			t.Run(*randId, func(t *testing.T) {
+				t.Parallel()
+				ctx := testutils.ContextWithTestID(ctx, t)
+
+				imds, err := client.Client.GetInterfaceMapDigestsByDeviceProfile(ctx, apstra.ObjectId(*randId))
+				require.NoError(t, err)
+
+				for i, imd := range imds {
+					log.Printf("%3d %s: %s -> %s", i, imd.Label, imd.LogicalDevice.Label, imd.DeviceProfile.Label)
+				}
+			})
+		})
 	}
 }
