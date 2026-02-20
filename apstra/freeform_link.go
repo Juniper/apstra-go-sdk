@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -238,16 +238,22 @@ func (o FreeformEthernetEndpoint) MarshalJSON() ([]byte, error) {
 		})
 		raw.System.Id = o.SystemId
 	}
-	raw.Interface.Id = o.Interface.Id
-	raw.Interface.IfName = o.Interface.Data.IfName
-	if o.Interface.Data.Ipv4Address != nil {
-		raw.Interface.Ipv4Addr = toPtr(o.Interface.Data.Ipv4Address.String())
+	if o.Interface.Id != nil {
+		raw.Interface.Id = o.Interface.Id
 	}
-	if o.Interface.Data.Ipv6Address != nil {
-		raw.Interface.Ipv6Addr = toPtr(o.Interface.Data.Ipv6Address.String())
+	if o.Interface.Data != nil {
+		if o.Interface.Data.IfName != nil {
+			raw.Interface.IfName = o.Interface.Data.IfName
+		}
+		if o.Interface.Data.Ipv4Address != nil {
+			raw.Interface.Ipv4Addr = toPtr(o.Interface.Data.Ipv4Address.String())
+		}
+		if o.Interface.Data.Ipv6Address != nil {
+			raw.Interface.Ipv6Addr = toPtr(o.Interface.Data.Ipv6Address.String())
+		}
+		raw.Interface.TransformId = o.Interface.Data.TransformationId
+		raw.Interface.Tags = o.Interface.Data.Tags
 	}
-	raw.Interface.TransformId = o.Interface.Data.TransformationId
-	raw.Interface.Tags = o.Interface.Data.Tags
 
 	return json.Marshal(raw)
 }

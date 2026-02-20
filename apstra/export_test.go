@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,7 @@ package apstra
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -82,4 +83,25 @@ func (o *MetricDbQueryRequest) SetBegin(t time.Time) {
 // SetEnd is in the export_test file because this private struct element needed to be exposed for test code
 func (o *MetricDbQueryRequest) SetEnd(t time.Time) {
 	o.end = t
+}
+
+// These `SetID()` functions are not available to end users
+// due to the `_test.go` filename, but we use them in tests.
+
+func (o *FreeformAggregateLinkEndpointGroup) SetID(id string) {
+	if o.id != "" {
+		panic(fmt.Sprintf("id already has value %q", o.id))
+	}
+
+	o.id = id
+	return
+}
+
+func (o *FreeformAggregateLinkEndpoint) SetID(id string) {
+	if o.id != "" {
+		panic(fmt.Sprintf("id already has value %q", o.id))
+	}
+
+	o.id = id
+	return
 }

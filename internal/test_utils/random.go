@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,8 +10,10 @@ import (
 	crand "crypto/rand"
 	"fmt"
 	"math"
+	"math/big"
 	"math/rand"
 	"net"
+	"net/netip"
 	"os"
 	"slices"
 	"strconv"
@@ -148,6 +150,59 @@ func RandomMAC(flags ...bool) net.HardwareAddr {
 	}
 
 	return result
+}
+
+// RandomHostIP returns a random host address within the given CIDR.
+// IPv4 avoids network and broadcast addresses. IPv6 can use all addresses.
+// The returned prefix preserves the original CIDR length.
+func RandomHostIP(t testing.TB, cidrBlock string) *netip.Prefix {
+	t.Helper()
+
+	p := netip.MustParsePrefix(cidrBlock).Masked()
+	hostBits := p.Addr().BitLen() - p.Bits()
+	if hostBits <= 0 {
+		return &p // single-address prefix (/32 or /128)
+	}
+
+	// total possible addresses in host portion
+	totalHosts := new(big.Int).Lsh(big.NewInt(1), uint(hostBits))
+
+	var minOffset, maxOffset *big.Int
+
+	if p.Addr().Is4() && hostBits > 1 {
+		// IPv4 with /30 or larger block: skip network & broadcast addresses
+		minOffset = big.NewInt(1)
+		maxOffset = new(big.Int).Sub(totalHosts, big.NewInt(1)) // exclusive
+	} else {
+		// IPv6 or IPv4 with 1 host bit: use full range
+		minOffset = big.NewInt(0)
+		maxOffset = new(big.Int).Set(totalHosts) // exclusive
+	}
+
+	// size of range
+	rangeSize := new(big.Int).Sub(maxOffset, minOffset)
+
+	// generate random offset in [minOffset, maxOffset-1]
+	randOffset, err := crand.Int(crand.Reader, rangeSize)
+	if err != nil {
+		t.Fatalf("failed to generate random offset: %v", err)
+	}
+	randOffset.Add(randOffset, minOffset) // shift into usable range
+
+	// convert base address to 16-byte big-endian integer
+	baseBytes := p.Addr().As16()
+	baseInt := new(big.Int).SetBytes(baseBytes[:])
+	baseInt.Add(baseInt, randOffset)
+
+	// convert back to netip.Addr
+	var addrBytes [16]byte
+	sumBytes := baseInt.Bytes()
+	copy(addrBytes[16-len(sumBytes):], sumBytes)
+	newAddr := netip.AddrFrom16(addrBytes).Unmap()
+
+	// return prefix preserving original CIDR length
+	result := netip.PrefixFrom(newAddr, p.Bits())
+	return &result
 }
 
 func RandomPrefix(t testing.TB, cidrBlock string, bits int) net.IPNet {
