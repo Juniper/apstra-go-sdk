@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -246,16 +246,18 @@ type CreateBlueprintFromTemplateRequest struct {
 	Label                     string
 	TemplateId                ObjectId
 	FabricSettings            *FabricSettings
+	AddressingPolicy          *AddressingPolicy
 	SkipCablingReadinessCheck bool
 }
 
 func (o *CreateBlueprintFromTemplateRequest) raw() *rawCreateBlueprintFromTemplateRequest {
 	return &rawCreateBlueprintFromTemplateRequest{
-		RefDesign:      o.RefDesign.String(),
-		Label:          o.Label,
-		InitType:       initTypeFromTemplate,
-		TemplateId:     o.TemplateId,
-		FabricSettings: o.FabricSettings,
+		RefDesign:        o.RefDesign.String(),
+		Label:            o.Label,
+		InitType:         initTypeFromTemplate,
+		TemplateId:       o.TemplateId,
+		FabricSettings:   o.FabricSettings,
+		AddressingPolicy: o.AddressingPolicy,
 	}
 }
 
@@ -274,11 +276,12 @@ func (o *CreateBlueprintFromTemplateRequest) raw420() *rawCreateBlueprintFromTem
 }
 
 type rawCreateBlueprintFromTemplateRequest struct {
-	RefDesign      string          `json:"design"`
-	Label          string          `json:"label"`
-	InitType       string          `json:"init_type"`
-	TemplateId     ObjectId        `json:"template_id"`
-	FabricSettings *FabricSettings `json:"fabric_policy,omitempty"`
+	RefDesign        string            `json:"design"`
+	Label            string            `json:"label"`
+	InitType         string            `json:"init_type"`
+	TemplateId       ObjectId          `json:"template_id"`
+	FabricSettings   *FabricSettings   `json:"fabric_policy,omitempty"`
+	AddressingPolicy *AddressingPolicy `json:"addressing_policy,omitempty"` // introduced with Apstra 6.1.0
 }
 
 type rawCreateBlueprintFromTemplateRequest420 struct {

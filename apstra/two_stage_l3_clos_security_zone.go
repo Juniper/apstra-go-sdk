@@ -42,6 +42,7 @@ type SecurityZone struct {
 	JunosEVPNIRBMode  *enum.JunosEVPNIRBMode `json:"junos_evpn_irb_mode,omitempty"` // can be null in POST, required in PUT AOS-58916
 	AddressingSupport *enum.AddressingScheme `json:"addressing_support,omitempty"`  // Apstra 6.1+ only
 	DisableIPv4       *bool                  `json:"disable_ipv4,omitempty"`        // Apstra 6.1+ only
+	VTEPAddressing    *enum.AddressingScheme `json:"vtep_addressing,omitempty"`     // Apstra 6.1+ only
 
 	id string
 }
@@ -72,6 +73,7 @@ func (o *SecurityZone) UnmarshalJSON(bytes []byte) error {
 		JunosEVPNIRBMode  *enum.JunosEVPNIRBMode `json:"junos_evpn_irb_mode"`
 		AddressingSupport *enum.AddressingScheme `json:"addressing_support"`
 		DisableIPv4       *bool                  `json:"disable_ipv4"`
+		VTEPAddressing    *enum.AddressingScheme `json:"vtep_addressing"`
 	}
 	err := json.Unmarshal(bytes, &raw)
 	if err != nil {
@@ -91,6 +93,7 @@ func (o *SecurityZone) UnmarshalJSON(bytes []byte) error {
 	o.JunosEVPNIRBMode = raw.JunosEVPNIRBMode
 	o.AddressingSupport = raw.AddressingSupport
 	o.DisableIPv4 = raw.DisableIPv4
+	o.VTEPAddressing = raw.VTEPAddressing
 
 	return nil
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -45,4 +45,12 @@ func (o Constraint) String() string {
 	}
 
 	return strings.Join(result, ",")
+}
+
+func NewConstraint(constraints version.Constraints, considerPreReleaseLabel, permitAny bool) *Constraint {
+	return &Constraint{
+		constraints:             constraints,
+		considerPreReleaseLabel: considerPreReleaseLabel,
+		permitAny:               permitAny,
+	}
 }

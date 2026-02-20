@@ -70,4 +70,9 @@ func SecurityZone(t testing.TB, req, resp apstra.SecurityZone, msg ...string) {
 		require.NotNil(t, resp.DisableIPv4, msg)
 		require.Equal(t, *req.DisableIPv4, *resp.DisableIPv4, msg)
 	}
+
+	if req.VTEPAddressing != nil {
+		require.NotNil(t, resp.VTEPAddressing, msg)
+		require.Equal(t, *req.VTEPAddressing, *resp.VTEPAddressing, msg)
+	}
 }
