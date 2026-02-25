@@ -20,8 +20,8 @@ var _ Template = &TemplateRackBased{}
 
 type TemplateRackBased struct {
 	Id             ObjectId
-	CreatedAt      time.Time
-	LastModifiedAt time.Time
+	CreatedAt      *time.Time
+	LastModifiedAt *time.Time
 	templateType   TemplateType
 	Data           *TemplateRackBasedData
 }
@@ -46,8 +46,8 @@ type rawTemplateRackBased struct {
 	Type                 templateType            `json:"type"`
 	DisplayName          string                  `json:"display_name"`
 	AntiAffinityPolicy   *rawAntiAffinityPolicy  `json:"anti_affinity_policy,omitempty"`
-	CreatedAt            time.Time               `json:"created_at"`
-	LastModifiedAt       time.Time               `json:"last_modified_at"`
+	CreatedAt            *time.Time              `json:"created_at,omitempty"`
+	LastModifiedAt       *time.Time              `json:"last_modified_at,omitempty"`
 	VirtualNetworkPolicy rawVirtualNetworkPolicy `json:"virtual_network_policy"`
 	AsnAllocationPolicy  rawAsnAllocationPolicy  `json:"asn_allocation_policy"`
 	Capability           templateCapability      `json:"capability,omitempty"`

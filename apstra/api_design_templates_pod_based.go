@@ -175,6 +175,8 @@ func (o *TemplateElementSuperspineRequest) raw(ctx context.Context, client *Clie
 	if err != nil {
 		return nil, err
 	}
+	logicalDevice.CreatedAt = nil
+	logicalDevice.LastModifiedAt = nil
 
 	return &rawSuperspine{
 		PlaneCount:         o.PlaneCount,
@@ -297,9 +299,17 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		if err != nil {
 			return nil, err
 		}
+		// Clear timestamp values retrieved from the API so we don't send them
+		// when creating the template. Required by Apstra 6.1.
+		rbt.CreatedAt = nil
+		rbt.LastModifiedAt = nil
+		rbt.Spine.LogicalDevice.CreatedAt = nil
+		rbt.Spine.LogicalDevice.LastModifiedAt = nil
 		for j := range rbt.RackTypes {
+			rbt.RackTypes[j].CreatedAt = nil
+			rbt.RackTypes[j].LastModifiedAt = nil
 			for jj := range rbt.RackTypes[j].LogicalDevices {
-				// Clear these values retrieved from the API so we don't send them
+				// Clear timestamp values retrieved from the API so we don't send them
 				// when creating the template. Required by Apstra 6.1.
 				rbt.RackTypes[j].LogicalDevices[jj].CreatedAt = nil
 				rbt.RackTypes[j].LogicalDevices[jj].LastModifiedAt = nil
