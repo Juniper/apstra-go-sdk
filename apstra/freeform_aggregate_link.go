@@ -60,7 +60,7 @@ func (o FreeformAggregateLink) MarshalJSON() ([]byte, error) {
 	}
 
 	raw := struct {
-		Label          string                                     `json:"label"`
+		Label          string                                     `json:"label,omitempty"`
 		MemberLinkIDs  []string                                   `json:"member_link_ids"`
 		Endpoints      []FreeformAggregateLinkEndpoint            `json:"endpoints"`
 		EndpointGroups map[int]FreeformAggregateLinkEndpointGroup `json:"endpoint_groups"`
