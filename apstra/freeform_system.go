@@ -61,7 +61,7 @@ func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		SystemId        ObjectId  `json:"system_id,omitempty"`
 		SystemType      string    `json:"system_type"`
-		Label           string    `json:"label"`
+		Label           string    `json:"label,omitempty"`
 		Hostname        string    `json:"hostname,omitempty"`
 		Tags            []string  `json:"tags"`
 		DeviceProfileId *ObjectId `json:"device_profile_id,omitempty"`

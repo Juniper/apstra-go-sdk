@@ -22,7 +22,15 @@ func AggregateLinkEndpointGroup(t testing.TB, req, resp apstra.FreeformAggregate
 		require.Equal(t, *req.ID(), *resp.ID(), msg)
 	}
 
-	require.Equal(t, req.Label, resp.Label, msg)
+	if req.Label != nil {
+		if *req.Label == "" {
+			require.Nil(t, resp.Label, msg) // an empty string in the request will clear API value if any
+		} else {
+			require.NotNil(t, resp.Label)
+			require.Equal(t, *req.Label, *resp.Label, msg)
+		}
+	}
+
 	require.ElementsMatch(t, req.Tags, resp.Tags, msg)
 
 	require.Equal(t, len(req.Endpoints), len(resp.Endpoints), msg)

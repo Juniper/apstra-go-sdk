@@ -117,13 +117,13 @@ func TestCRUDFreeformAggregateLink(t *testing.T) {
 			e1, i1, i2, l1, l2 := create2i1e(t, ctx, *bp)
 
 			testCases := map[string]testCase{
-				"one": {
+				"with_labels": {
 					create: apstra.FreeformAggregateLink{
-						Label:         testutils.RandString(6, "hex"),
+						Label:         pointer.To(testutils.RandString(6, "hex")),
 						MemberLinkIds: []string{l1, l2},
 						EndpointGroups: [2]apstra.FreeformAggregateLinkEndpointGroup{
 							{
-								Label: testutils.RandString(6, "hex"),
+								Label: pointer.To(testutils.RandString(6, "hex")),
 								Tags:  []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
 								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
 									{
@@ -138,7 +138,7 @@ func TestCRUDFreeformAggregateLink(t *testing.T) {
 								},
 							},
 							{
-								Label: testutils.RandString(6, "hex"),
+								Label: pointer.To(testutils.RandString(6, "hex")),
 								Tags:  []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
 								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
 									{
@@ -165,11 +165,11 @@ func TestCRUDFreeformAggregateLink(t *testing.T) {
 						Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
 					},
 					update: apstra.FreeformAggregateLink{
-						Label:         testutils.RandString(6, "hex"),
+						Label:         pointer.To(testutils.RandString(6, "hex")),
 						MemberLinkIds: []string{l1, l2},
 						EndpointGroups: [2]apstra.FreeformAggregateLinkEndpointGroup{
 							{
-								Label: testutils.RandString(6, "hex"),
+								Label: pointer.To(testutils.RandString(6, "hex")),
 								Tags:  []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
 								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
 									{
@@ -184,7 +184,189 @@ func TestCRUDFreeformAggregateLink(t *testing.T) {
 								},
 							},
 							{
-								Label: testutils.RandString(6, "hex"),
+								Label: pointer.To(testutils.RandString(6, "hex")),
+								Tags:  []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
+									{
+										SystemID:      i1,
+										IfName:        "ae31",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 231,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeStatic,
+									},
+									{
+										SystemID:      i2,
+										IfName:        "ae32",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 232,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeStatic,
+									},
+								},
+							},
+						},
+						Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+					},
+				},
+				"labels_are_nil": {
+					create: apstra.FreeformAggregateLink{
+						MemberLinkIds: []string{l1, l2},
+						EndpointGroups: [2]apstra.FreeformAggregateLinkEndpointGroup{
+							{
+								Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
+									{
+										SystemID:      e1,
+										IfName:        "bond0",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 11,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModePassiveLACP,
+									},
+								},
+							},
+							{
+								Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
+									{
+										SystemID:      i1,
+										IfName:        "ae21",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 221,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeActiveLACP,
+									},
+									{
+										SystemID:      i2,
+										IfName:        "ae22",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 222,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeActiveLACP,
+									},
+								},
+							},
+						},
+						Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+					},
+					update: apstra.FreeformAggregateLink{
+						MemberLinkIds: []string{l1, l2},
+						EndpointGroups: [2]apstra.FreeformAggregateLinkEndpointGroup{
+							{
+								Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
+									{
+										SystemID:      e1,
+										IfName:        "bond1",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 12,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeStatic,
+									},
+								},
+							},
+							{
+								Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
+									{
+										SystemID:      i1,
+										IfName:        "ae31",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 231,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeStatic,
+									},
+									{
+										SystemID:      i2,
+										IfName:        "ae32",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 232,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeStatic,
+									},
+								},
+							},
+						},
+						Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+					},
+				},
+				"clear_labels": {
+					create: apstra.FreeformAggregateLink{
+						Label:         pointer.To(testutils.RandString(6, "hex")),
+						MemberLinkIds: []string{l1, l2},
+						EndpointGroups: [2]apstra.FreeformAggregateLinkEndpointGroup{
+							{
+								Label: pointer.To(testutils.RandString(6, "hex")),
+								Tags:  []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
+									{
+										SystemID:      e1,
+										IfName:        "bond0",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 11,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModePassiveLACP,
+									},
+								},
+							},
+							{
+								Label: pointer.To(testutils.RandString(6, "hex")),
+								Tags:  []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
+									{
+										SystemID:      i1,
+										IfName:        "ae21",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 221,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeActiveLACP,
+									},
+									{
+										SystemID:      i2,
+										IfName:        "ae22",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 222,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeActiveLACP,
+									},
+								},
+							},
+						},
+						Tags: []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+					},
+					update: apstra.FreeformAggregateLink{
+						Label:         pointer.To(""),
+						MemberLinkIds: []string{l1, l2},
+						EndpointGroups: [2]apstra.FreeformAggregateLinkEndpointGroup{
+							{
+								Label: pointer.To(""),
+								Tags:  []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
+									{
+										SystemID:      e1,
+										IfName:        "bond1",
+										IPv4Addr:      testutils.RandomHostIP(t, "192.0.2.0/24"),
+										IPv6Addr:      testutils.RandomHostIP(t, "3fff::/64"),
+										PortChannelID: 12,
+										Tags:          []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
+										LAGMode:       enum.LAGModeStatic,
+									},
+								},
+							},
+							{
+								Label: pointer.To(""),
 								Tags:  []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")},
 								Endpoints: []apstra.FreeformAggregateLinkEndpoint{
 									{
@@ -232,12 +414,14 @@ func TestCRUDFreeformAggregateLink(t *testing.T) {
 					comparefreeform.AggregateLink(t, create, obj)
 
 					// retrieve the object by label and validate
-					obj, err = bp.GetAggregateLinkByLabel(ctx, create.Label)
-					require.NoError(t, err)
-					idPtr = obj.ID()
-					require.NotNil(t, idPtr)
-					require.Equal(t, id, *idPtr)
-					comparefreeform.AggregateLink(t, create, obj)
+					if create.Label != nil {
+						obj, err = bp.GetAggregateLinkByLabel(ctx, *create.Label)
+						require.NoError(t, err)
+						idPtr = obj.ID()
+						require.NotNil(t, idPtr)
+						require.Equal(t, id, *idPtr)
+						comparefreeform.AggregateLink(t, create, obj)
+					}
 
 					// retrieve the list of IDs - ours must be in there
 					ids, err := bp.ListAggregateLinks(ctx)
@@ -284,10 +468,12 @@ func TestCRUDFreeformAggregateLink(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 					// get the object by label
-					_, err = bp.GetAggregateLinkByLabel(ctx, create.Label)
-					require.Error(t, err)
-					require.ErrorAs(t, err, &ace)
-					require.Equal(t, apstra.ErrNotfound, ace.Type())
+					if create.Label != nil {
+						_, err = bp.GetAggregateLinkByLabel(ctx, *create.Label)
+						require.Error(t, err)
+						require.ErrorAs(t, err, &ace)
+						require.Equal(t, apstra.ErrNotfound, ace.Type())
+					}
 
 					// retrieve the list of IDs (ours must *not* be in there)
 					ids, err = bp.ListAggregateLinks(ctx)

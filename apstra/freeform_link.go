@@ -259,7 +259,7 @@ func (o FreeformEthernetEndpoint) MarshalJSON() ([]byte, error) {
 }
 
 type FreeformLinkRequest struct {
-	Label     string                      `json:"label"`
+	Label     string                      `json:"label,omitempty"`
 	Tags      []string                    `json:"tags"`
 	Endpoints [2]FreeformEthernetEndpoint `json:"endpoints"`
 }
