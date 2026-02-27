@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2024.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -61,7 +61,7 @@ func (o FreeformSystemData) MarshalJSON() ([]byte, error) {
 	var raw struct {
 		SystemId        ObjectId  `json:"system_id,omitempty"`
 		SystemType      string    `json:"system_type"`
-		Label           string    `json:"label"`
+		Label           string    `json:"label,omitempty"`
 		Hostname        string    `json:"hostname,omitempty"`
 		Tags            []string  `json:"tags"`
 		DeviceProfileId *ObjectId `json:"device_profile_id,omitempty"`

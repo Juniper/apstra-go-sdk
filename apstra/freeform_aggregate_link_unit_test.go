@@ -2,7 +2,7 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//go:build integration && requiretestutils
+//go:build requiretestutils
 
 package apstra_test
 
@@ -26,11 +26,11 @@ func TestFreeformAggregateLink_MarshalJSON(t *testing.T) {
 	testcases := map[string]testcase{
 		"one_server_two_switches": {
 			data: apstra.FreeformAggregateLink{
-				Label:         "label",
+				Label:         pointer.To("label"),
 				MemberLinkIds: []string{"link_id_1", "link_id_2", "link_id_3"},
 				EndpointGroups: [2]apstra.FreeformAggregateLinkEndpointGroup{
 					{
-						Label: "server",
+						Label: pointer.To("server"),
 						Tags:  []string{"server_tag_1", "server_tag_2", "server_tag_3"},
 						Endpoints: []apstra.FreeformAggregateLinkEndpoint{
 							{
@@ -45,7 +45,7 @@ func TestFreeformAggregateLink_MarshalJSON(t *testing.T) {
 						},
 					},
 					{
-						Label: "switch",
+						Label: pointer.To("switch"),
 						Tags:  []string{"switch_1", "switch_2"},
 						Endpoints: []apstra.FreeformAggregateLinkEndpoint{
 							{
@@ -145,11 +145,11 @@ func TestFreeformAggregateLink_UnmarshalJSON(t *testing.T) {
 	}
 
 	oneServerTwoSwitches := apstra.FreeformAggregateLink{
-		Label:         "label",
+		Label:         pointer.To("label"),
 		MemberLinkIds: []string{"link_id_1", "link_id_2", "link_id_3"},
 		EndpointGroups: [2]apstra.FreeformAggregateLinkEndpointGroup{
 			{
-				Label: "server",
+				Label: pointer.To("server"),
 				Tags:  []string{"server_tag_1", "server_tag_2", "server_tag_3"},
 				Endpoints: []apstra.FreeformAggregateLinkEndpoint{
 					{
@@ -164,7 +164,7 @@ func TestFreeformAggregateLink_UnmarshalJSON(t *testing.T) {
 				},
 			},
 			{
-				Label: "switch",
+				Label: pointer.To("switch"),
 				Tags:  []string{"switch_1", "switch_2"},
 				Endpoints: []apstra.FreeformAggregateLinkEndpoint{
 					{

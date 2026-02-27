@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/internal"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/zero"
 )
 
@@ -26,7 +27,7 @@ var (
 )
 
 type FreeformAggregateLink struct {
-	Label          string
+	Label          *string
 	MemberLinkIds  []string
 	EndpointGroups [2]FreeformAggregateLinkEndpointGroup
 	Tags           []string
@@ -60,13 +61,13 @@ func (o FreeformAggregateLink) MarshalJSON() ([]byte, error) {
 	}
 
 	raw := struct {
-		Label          string                                     `json:"label"`
+		Label          json.RawMessage                            `json:"label,omitempty"`
 		MemberLinkIDs  []string                                   `json:"member_link_ids"`
 		Endpoints      []FreeformAggregateLinkEndpoint            `json:"endpoints"`
 		EndpointGroups map[int]FreeformAggregateLinkEndpointGroup `json:"endpoint_groups"`
 		Tags           []string                                   `json:"tags"`
 	}{
-		Label:          o.Label,
+		Label:          pointer.StringMarshalJSONWithEmptyAsNull(o.Label),
 		MemberLinkIDs:  o.MemberLinkIds,
 		Endpoints:      make([]FreeformAggregateLinkEndpoint, 0, len(o.EndpointGroups[0].Endpoints)+len(o.EndpointGroups[1].Endpoints)),
 		EndpointGroups: make(map[int]FreeformAggregateLinkEndpointGroup, 2),
@@ -89,7 +90,7 @@ func (o FreeformAggregateLink) MarshalJSON() ([]byte, error) {
 func (o *FreeformAggregateLink) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
 		ID             string                                     `json:"id"`
-		Label          string                                     `json:"label"`
+		Label          *string                                    `json:"label"`
 		MemberLinkIDs  []string                                   `json:"member_link_ids"`
 		Endpoints      []FreeformAggregateLinkEndpoint            `json:"endpoints"`
 		EndpointGroups map[int]FreeformAggregateLinkEndpointGroup `json:"endpoint_groups"`
@@ -186,7 +187,7 @@ func (o FreeformClient) GetAggregateLinkByLabel(ctx context.Context, label strin
 	}
 
 	for _, item := range all {
-		if item.Label == label {
+		if item.Label != nil && *item.Label == label {
 			result = append(result, item)
 		}
 	}
