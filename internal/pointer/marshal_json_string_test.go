@@ -6,8 +6,9 @@ package pointer_test
 
 import (
 	"encoding/json"
-	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
 
 func TestMarshalJSONStringWithEmptyAsNull(t *testing.T) {

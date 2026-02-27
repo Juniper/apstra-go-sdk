@@ -6,6 +6,7 @@ package apstra
 
 import (
 	"encoding/json"
+
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
