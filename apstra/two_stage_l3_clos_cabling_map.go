@@ -6,16 +6,19 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/netip"
 	"net/url"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 const (
-	apiUrlBlueprintExperienceWeb = apiUrlBlueprintById + apiUrlPathDelim + "experience/web/"
-	apiUrlBlueprintCablingMap    = apiUrlBlueprintExperienceWeb + "cabling-map"
+	apiUrlBlueprintExperienceWeb   = apiUrlBlueprintById + apiUrlPathDelim + "experience/web/"
+	apiUrlBlueprintGETCablingMap   = apiUrlBlueprintExperienceWeb + "cabling-map"
+	apiUrlBlueprintPATCHCablingMap = apiUrlBlueprintById + apiUrlPathDelim + "cabling-map"
 
 	includeLagParam    = "aggregate_links"
 	linksBySystemParam = "system_node_id"
@@ -39,6 +42,8 @@ type CablingMapLinkEndpoint struct {
 	System    *CablingMapLinkEndpointSystem   `json:"system,omitempty"`
 }
 
+var _ json.Marshaler = (*CablingMapLinkEndpointInterface)(nil)
+
 type CablingMapLinkEndpointInterface struct {
 	Description    *string                       `json:"description,omitempty"`
 	TagLabels      []string                      `json:"tags,omitempty"`
@@ -48,6 +53,42 @@ type CablingMapLinkEndpointInterface struct {
 	PortChannelID  *int                          `json:"port_channel_id,omitempty"`
 	ID             string                        `json:"id"`
 	LAGMode        *enum.LAGMode                 `json:"lag_mode,omitempty"`
+	IPv4Addr       *netip.Prefix                 `json:"ipv4_addr,omitempty"`
+	IPv4Enabled    *bool                         `json:"ipv4_enabled,omitempty"`
+	IPv6Addr       *netip.Prefix                 `json:"ipv6_addr,omitempty"`
+	IPv6Enabled    *bool                         `json:"ipv6_enabled,omitempty"`
+}
+
+func (c CablingMapLinkEndpointInterface) MarshalJSON() ([]byte, error) {
+	raw := struct {
+		ID       string          `json:"id"`
+		IfName   json.RawMessage `json:"if_name"`
+		IPv4Addr json.RawMessage `json:"ipv4_addr"`
+		IPv6Addr json.RawMessage `json:"ipv6_addr"`
+	}{ID: c.ID}
+
+	// Clear value from API by sending `null` if value is a pointer to an empty string.
+	if c.IfName != nil && *c.IfName == "" {
+		raw.IfName = []byte("null")
+	} else {
+		raw.IfName, _ = json.Marshal(c.IfName)
+	}
+
+	// Clear value from API by sending `null` if value is a pointer to an invalid prefix.
+	if c.IPv4Addr != nil && !c.IPv4Addr.IsValid() {
+		raw.IPv4Addr = []byte("null")
+	} else {
+		raw.IPv4Addr, _ = json.Marshal(c.IPv4Addr)
+	}
+
+	// Clear value from API by sending `null` if value is a pointer to an invalid prefix.
+	if c.IPv6Addr != nil && !c.IPv6Addr.IsValid() {
+		raw.IPv6Addr = []byte("null")
+	} else {
+		raw.IPv6Addr, _ = json.Marshal(c.IPv6Addr)
+	}
+
+	return json.Marshal(raw)
 }
 
 type CablingMapLinkEndpointSystem struct {
@@ -108,7 +149,7 @@ func (o CablingMapLink) OppositeEndpointBySystemID(systemId string) *CablingMapL
 
 // GetCablingMapLinks returns []CablingMapLink representing every link in the blueprint
 func (o *TwoStageL3ClosClient) GetCablingMapLinks(ctx context.Context) ([]CablingMapLink, error) {
-	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintCablingMap, o.blueprintId))
+	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintGETCablingMap, o.blueprintId))
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +176,7 @@ func (o *TwoStageL3ClosClient) GetCablingMapLinks(ctx context.Context) ([]Cablin
 
 // GetCablingMapLinksBySystem returns []CablingMapLink representing every link (including LAGs)
 func (o *TwoStageL3ClosClient) GetCablingMapLinksBySystem(ctx context.Context, systemNodeId string) ([]CablingMapLink, error) {
-	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintCablingMap, o.blueprintId))
+	apstraUrl, err := url.Parse(fmt.Sprintf(apiUrlBlueprintGETCablingMap, o.blueprintId))
 	if err != nil {
 		return nil, err
 	}
@@ -159,4 +200,52 @@ func (o *TwoStageL3ClosClient) GetCablingMapLinksBySystem(ctx context.Context, s
 	}
 
 	return response.Links, nil
+}
+
+func (o *TwoStageL3ClosClient) PatchCablingMapLinks(ctx context.Context, in []CablingMapLink) error {
+	// make a copy of the input slice which we'll send to the API
+	payload := struct {
+		Links []CablingMapLink `json:"links"`
+	}{
+		Links: make([]CablingMapLink, len(in)),
+	}
+
+	// Only populate the patch-able fields into the payload.
+	for i, link := range in {
+		payload.Links[i] = CablingMapLink{
+			Endpoints: [2]CablingMapLinkEndpoint{
+				{Interface: CablingMapLinkEndpointInterface{ID: link.Endpoints[0].Interface.ID}},
+				{Interface: CablingMapLinkEndpointInterface{ID: link.Endpoints[1].Interface.ID}},
+			},
+		}
+		if link.Endpoints[0].Interface.IfName != nil {
+			payload.Links[i].Endpoints[0].Interface.IfName = link.Endpoints[0].Interface.IfName
+		}
+		if link.Endpoints[0].Interface.IPv4Addr != nil {
+			payload.Links[i].Endpoints[0].Interface.IPv4Addr = link.Endpoints[0].Interface.IPv4Addr
+		}
+		if link.Endpoints[0].Interface.IPv6Addr != nil {
+			payload.Links[i].Endpoints[0].Interface.IPv6Addr = link.Endpoints[0].Interface.IPv6Addr
+		}
+		if link.Endpoints[1].Interface.IfName != nil {
+			payload.Links[i].Endpoints[1].Interface.IfName = link.Endpoints[1].Interface.IfName
+		}
+		if link.Endpoints[1].Interface.IPv4Addr != nil {
+			payload.Links[i].Endpoints[1].Interface.IPv4Addr = link.Endpoints[1].Interface.IPv4Addr
+		}
+		if link.Endpoints[1].Interface.IPv6Addr != nil {
+			payload.Links[i].Endpoints[1].Interface.IPv6Addr = link.Endpoints[1].Interface.IPv6Addr
+		}
+	}
+
+	err := o.client.talkToApstra(ctx, &talkToApstraIn{
+		method:   http.MethodPatch,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintPATCHCablingMap, o.blueprintId),
+		apiInput: payload,
+	})
+	if err != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	return nil
 }
