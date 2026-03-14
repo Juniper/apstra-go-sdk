@@ -1,9 +1,8 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2024.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build integration
-// +build integration
 
 package apstra
 
@@ -12,10 +11,12 @@ import (
 	"log"
 	"sort"
 	"testing"
+
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 )
 
 func TestGetCablingMapLinks(t *testing.T) {
-	ctx := context.Background()
+	ctx := testutils.ContextWithTestID(context.Background(), t)
 
 	clients, err := getTestClients(ctx, t)
 	if err != nil {
@@ -23,10 +24,13 @@ func TestGetCablingMapLinks(t *testing.T) {
 	}
 
 	linksAreEqual := func(a, b CablingMapLink) bool {
-		if a.Id != b.Id {
+		if a.ID != b.ID {
 			return false
 		}
-		if a.Label != b.Label {
+		if (a.Label == nil) != (b.Label == nil) {
+			return false
+		}
+		if (a.Label != nil && b.Label != nil) && *a.Label != *b.Label {
 			return false
 		}
 		return true
@@ -45,16 +49,16 @@ func TestGetCablingMapLinks(t *testing.T) {
 			t.Fatalf("expectex 16 links, got %d", len(links))
 		}
 
-		systemIdToLinks := make(map[ObjectId][]CablingMapLink)
+		systemIdToLinks := make(map[string][]CablingMapLink)
 		for i, link := range links {
 			for _, endpoint := range link.Endpoints {
-				systemIdToLinks[endpoint.System.Id] = append(systemIdToLinks[endpoint.System.Id], links[i])
+				systemIdToLinks[endpoint.System.ID] = append(systemIdToLinks[endpoint.System.ID], links[i])
 			}
 		}
 
 		for systemId, linksA := range systemIdToLinks {
 			sort.Slice(linksA, func(i, j int) bool {
-				return linksA[i].Id < linksA[j].Id
+				return linksA[i].ID < linksA[j].ID
 			})
 
 			linksB, err := bpClient.GetCablingMapLinksBySystem(ctx, systemId)
@@ -67,7 +71,7 @@ func TestGetCablingMapLinks(t *testing.T) {
 			}
 
 			sort.Slice(linksB, func(i, j int) bool {
-				return linksB[i].Id < linksB[j].Id
+				return linksB[i].ID < linksB[j].ID
 			})
 
 			for i := range linksA {

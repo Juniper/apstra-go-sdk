@@ -176,6 +176,57 @@ var (
 	InterfaceNumberingIpv6TypeLinkLocal = InterfaceNumberingIpv6Type{Value: "link_local"}
 )
 
+type InterfaceOperationState oenum.Member[string]
+
+var (
+	InterfaceOperationStateAdminDown = InterfaceOperationState{Value: "admin_down"}
+	InterfaceOperationStateDown      = InterfaceOperationState{Value: "deduced_down"}
+	InterfaceOperationStateUp        = InterfaceOperationState{Value: "up"}
+)
+
+type InterfaceType oenum.Member[string]
+
+var (
+	InterfaceTypeEthernet          = InterfaceType{Value: "ethernet"}
+	InterfaceTypeIp                = InterfaceType{Value: "ip"}
+	InterfaceTypeLoopback          = InterfaceType{Value: "loopback"}
+	InterfaceTypePortChannel       = InterfaceType{Value: "port_channel"}
+	InterfaceTypeSvi               = InterfaceType{Value: "svi"}
+	InterfaceTypeLogicalVtep       = InterfaceType{Value: "logical_vtep"}
+	InterfaceTypeAnycastVtep       = InterfaceType{Value: "anycast_vtep"}
+	InterfaceTypeUnicastVtep       = InterfaceType{Value: "unicast_vtep"}
+	InterfaceTypeGlobalAnycastVtep = InterfaceType{Value: "global_anycast_vtep"}
+	InterfaceTypeSubinterface      = InterfaceType{Value: "subinterface"}
+)
+
+type LinkRole oenum.Member[string]
+
+var (
+	LinkRoleAccessL3PeerLink   = LinkRole{Value: "access_l3_peer_link"}
+	LinkRoleAccessServer       = LinkRole{Value: "access_server"}
+	LinkRoleLeafAccess         = LinkRole{Value: "leaf_access"}
+	LinkRoleLeafL2Server       = LinkRole{Value: "leaf_l2_server"}
+	LinkRoleLeafL3PeerLink     = LinkRole{Value: "leaf_l3_peer_link"}
+	LinkRoleLeafL3Server       = LinkRole{Value: "leaf_l3_server"}
+	LinkRoleLeafLeaf           = LinkRole{Value: "leaf_leaf"}
+	LinkRoleLeafPairAccess     = LinkRole{Value: "leaf_pair_access"}
+	LinkRoleLeafPairAccessPair = LinkRole{Value: "leaf_pair_access_pair"}
+	LinkRoleLeafPairL2Server   = LinkRole{Value: "leaf_pair_l2_server"}
+	LinkRoleLeafPeerLink       = LinkRole{Value: "leaf_peer_link"}
+	LinkRoleSpineLeaf          = LinkRole{Value: "spine_leaf"}
+	LinkRoleSpineSuperspine    = LinkRole{Value: "spine_superspine"}
+	LinkRoleToExternalRouter   = LinkRole{Value: "to_external_router"}
+	LinkRoleToGeneric          = LinkRole{Value: "to_generic"}
+)
+
+type LinkType oenum.Member[string]
+
+var (
+	LinkTypeAggregateLink = LinkType{Value: "aggregate_link"}
+	LinkTypeEthernet      = LinkType{Value: "ethernet"}
+	LinkTypeLogicalLink   = LinkType{Value: "logical_link"}
+)
+
 type ResourcePoolType oenum.Member[string]
 
 var (
@@ -335,6 +386,18 @@ var (
 	SecurityZoneTypeEVPN            = SecurityZoneType{Value: "evpn"}
 	SecurityZoneTypeL3Fabric        = SecurityZoneType{Value: "l3_fabric"}
 	SecurityZoneTypeVirtualL3Fabric = SecurityZoneType{Value: "virtual_l3_fabric"}
+)
+
+type SystemNodeRole oenum.Member[string]
+
+var (
+	SystemNodeRoleAccess        = SystemNodeRole{Value: "access"}
+	SystemNodeRoleGeneric       = SystemNodeRole{Value: "generic"}
+	SystemNodeRoleL3Server      = SystemNodeRole{Value: "l3_server"}
+	SystemNodeRoleLeaf          = SystemNodeRole{Value: "leaf"}
+	SystemNodeRoleRemoteGateway = SystemNodeRole{Value: "remote_gateway"}
+	SystemNodeRoleSpine         = SystemNodeRole{Value: "spine"}
+	SystemNodeRoleSuperspine    = SystemNodeRole{Value: "superspine"}
 )
 
 type LockStatus oenum.Member[string]
