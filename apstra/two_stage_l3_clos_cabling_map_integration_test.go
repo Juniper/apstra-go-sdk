@@ -154,7 +154,9 @@ func TestPatchCablingMapLinks(t *testing.T) {
 
 	for clientName, client := range clients {
 		t.Run(clientName, func(t *testing.T) {
+			t.Parallel()
 			ctx := testutils.ContextWithTestID(context.Background(), t)
+
 			bpClient := testBlueprintH(ctx, t, client.client)
 			links, err := bpClient.GetCablingMapLinks(ctx)
 			require.NoError(t, err)
