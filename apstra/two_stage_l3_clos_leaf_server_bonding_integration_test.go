@@ -14,6 +14,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -229,7 +230,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 					linkIds, err := bpClient.CreateLinksWithNewSystem(ctx, &request)
 					require.NoError(t, err)
 
-					genericId, err := bpClient.SystemNodeFromLinkIds(ctx, linkIds, SystemNodeRoleGeneric)
+					genericId, err := bpClient.SystemNodeFromLinkIds(ctx, linkIds, &enum.SystemNodeRoleGeneric)
 					require.NoError(t, err)
 
 					systemTags, err := bpClient.GetNodeTags(ctx, genericId)
@@ -290,9 +291,9 @@ func TestSetGenericServerBonding(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if typeCount[LinkTypeAggregateLink] != typeCount[LinkTypeEthernet] {
+					if typeCount[enum.LinkTypeAggregateLink] != typeCount[enum.LinkTypeEthernet] {
 						t.Fatalf("expected count of aggregate to match count of ethernet, got %d and %d",
-							typeCount[LinkTypeAggregateLink], typeCount[LinkTypeEthernet])
+							typeCount[enum.LinkTypeAggregateLink], typeCount[enum.LinkTypeEthernet])
 					}
 					if len(linkIds) != lagMemberCount {
 						t.Fatalf("expected %d lag member links, got %d", len(linkIds), lagMemberCount)
@@ -329,7 +330,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if typeCount[LinkTypeAggregateLink] != 1 {
+					if typeCount[enum.LinkTypeAggregateLink] != 1 {
 						t.Fatal("expected one big LAG")
 					}
 					if len(linkIds) != lagMemberCount {
@@ -368,9 +369,9 @@ func TestSetGenericServerBonding(t *testing.T) {
 
 					typeCount, lagMemberCount, err = countSystemLinkTypes(ctx, genericId, bpClient)
 					require.NoError(t, err)
-					require.Equalf(t, typeCount[LinkTypeAggregateLink], typeCount[LinkTypeEthernet]/2,
+					require.Equalf(t, typeCount[enum.LinkTypeAggregateLink], typeCount[enum.LinkTypeEthernet]/2,
 						"expected half as many aggregate links as ethernet, got %d and %d",
-						typeCount[LinkTypeAggregateLink], typeCount[LinkTypeEthernet])
+						typeCount[enum.LinkTypeAggregateLink], typeCount[enum.LinkTypeEthernet])
 					require.Equalf(t, len(linkIds), lagMemberCount, "expected %d lag member links, got %d", len(linkIds), lagMemberCount)
 
 					observedLinkTagDigests = make([]string, len(linkIds))
@@ -406,7 +407,7 @@ func TestSetGenericServerBonding(t *testing.T) {
 
 					typeCount, lagMemberCount, err = countSystemLinkTypes(ctx, genericId, bpClient)
 					require.NoError(t, err)
-					require.Equalf(t, 0, typeCount[LinkTypeAggregateLink], "expected 0 LAGs got %d", typeCount[LinkTypeAggregateLink])
+					require.Equalf(t, 0, typeCount[enum.LinkTypeAggregateLink], "expected 0 LAGs got %d", typeCount[enum.LinkTypeAggregateLink])
 					require.Equalf(t, 0, lagMemberCount, "expected 0 LAG member links got %d", lagMemberCount)
 
 					// delete the server

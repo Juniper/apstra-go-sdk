@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
+
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 const envSampleSize = "APSTRA_TEST_SAMPLE_MAX"
@@ -178,19 +180,21 @@ func nextInterface(in string) string {
 	return beginStr + strconv.Itoa(i+1)
 }
 
-func countSystemLinkTypes(ctx context.Context, systemId ObjectId, client *TwoStageL3ClosClient) (map[LinkType]int, int, error) {
-	links, err := client.GetCablingMapLinksBySystem(ctx, systemId)
+func countSystemLinkTypes(ctx context.Context, systemId ObjectId, client *TwoStageL3ClosClient) (map[enum.LinkType]int, int, error) {
+	links, err := client.GetCablingMapLinksBySystem(ctx, string(systemId))
 	if err != nil {
 		return nil, 0, err
 	}
 
 	var lagMembers int
 
-	result := make(map[LinkType]int)
+	result := make(map[enum.LinkType]int)
 	for _, link := range links {
-		result[link.Type]++
-		if link.Type == LinkTypeEthernet && link.AggregateLinkId != "" {
-			lagMembers++
+		if link.Type != nil {
+			result[*link.Type]++
+			if *link.Type == enum.LinkTypeEthernet && link.AggregateLinkId != nil && *link.AggregateLinkId != "" {
+				lagMembers++
+			}
 		}
 	}
 

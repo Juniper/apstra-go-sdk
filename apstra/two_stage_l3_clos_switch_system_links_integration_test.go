@@ -14,6 +14,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
 )
 
@@ -92,7 +93,7 @@ func TestCreateDeleteGenericSystem(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		systemId, err := bpClient.SystemNodeFromLinkIds(ctx, linkIds, SystemNodeRoleGeneric)
+		systemId, err := bpClient.SystemNodeFromLinkIds(ctx, linkIds, &enum.SystemNodeRoleGeneric)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -102,14 +103,14 @@ func TestCreateDeleteGenericSystem(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		cmLinks, err := bpClient.GetCablingMapLinksBySystem(ctx, systemId)
+		cmLinks, err := bpClient.GetCablingMapLinksBySystem(ctx, string(systemId))
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		var aggregateCount int
 		for i := range cmLinks {
-			if cmLinks[i].Type == LinkTypeAggregateLink {
+			if cmLinks[i].Type != nil && *cmLinks[i].Type == enum.LinkTypeAggregateLink {
 				aggregateCount++
 			}
 		}
@@ -231,7 +232,7 @@ func TestCreateDeleteExternalGenericSystem(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		systemId, err := bpClient.SystemNodeFromLinkIds(ctx, linkIds, SystemNodeRoleGeneric)
+		systemId, err := bpClient.SystemNodeFromLinkIds(ctx, linkIds, &enum.SystemNodeRoleGeneric)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -241,14 +242,14 @@ func TestCreateDeleteExternalGenericSystem(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		cmLinks, err := bpClient.GetCablingMapLinksBySystem(ctx, systemId)
+		cmLinks, err := bpClient.GetCablingMapLinksBySystem(ctx, string(systemId))
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		var aggregateCount int
 		for i := range cmLinks {
-			if cmLinks[i].Type == LinkTypeAggregateLink {
+			if cmLinks[i].Type != nil && *cmLinks[i].Type == enum.LinkTypeAggregateLink {
 				aggregateCount++
 			}
 		}
