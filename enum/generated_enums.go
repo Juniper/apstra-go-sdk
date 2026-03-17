@@ -664,6 +664,37 @@ func (o *InterfaceNumberingIpv6Type) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*InterfaceOperationState)(nil)
+	_ json.Marshaler   = (*InterfaceOperationState)(nil)
+	_ json.Unmarshaler = (*InterfaceOperationState)(nil)
+)
+
+func (o InterfaceOperationState) String() string {
+	return o.Value
+}
+
+func (o *InterfaceOperationState) FromString(s string) error {
+	if InterfaceOperationStates.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o InterfaceOperationState) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *InterfaceOperationState) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*InterfaceState)(nil)
 	_ json.Marshaler   = (*InterfaceState)(nil)
 	_ json.Unmarshaler = (*InterfaceState)(nil)
@@ -686,6 +717,37 @@ func (o InterfaceState) MarshalJSON() ([]byte, error) {
 }
 
 func (o *InterfaceState) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*InterfaceType)(nil)
+	_ json.Marshaler   = (*InterfaceType)(nil)
+	_ json.Unmarshaler = (*InterfaceType)(nil)
+)
+
+func (o InterfaceType) String() string {
+	return o.Value
+}
+
+func (o *InterfaceType) FromString(s string) error {
+	if InterfaceTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o InterfaceType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *InterfaceType) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -819,6 +881,37 @@ func (o *LinkAttachmentType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*LinkRole)(nil)
+	_ json.Marshaler   = (*LinkRole)(nil)
+	_ json.Unmarshaler = (*LinkRole)(nil)
+)
+
+func (o LinkRole) String() string {
+	return o.Value
+}
+
+func (o *LinkRole) FromString(s string) error {
+	if LinkRoles.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o LinkRole) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LinkRole) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*LinkSpeed)(nil)
 	_ json.Marshaler   = (*LinkSpeed)(nil)
 	_ json.Unmarshaler = (*LinkSpeed)(nil)
@@ -872,6 +965,37 @@ func (o LinkSwitchPeer) MarshalJSON() ([]byte, error) {
 }
 
 func (o *LinkSwitchPeer) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*LinkType)(nil)
+	_ json.Marshaler   = (*LinkType)(nil)
+	_ json.Unmarshaler = (*LinkType)(nil)
+)
+
+func (o LinkType) String() string {
+	return o.Value
+}
+
+func (o *LinkType) FromString(s string) error {
+	if LinkTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o LinkType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *LinkType) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -1532,6 +1656,37 @@ func (o *SystemManagementLevel) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*SystemNodeRole)(nil)
+	_ json.Marshaler   = (*SystemNodeRole)(nil)
+	_ json.Unmarshaler = (*SystemNodeRole)(nil)
+)
+
+func (o SystemNodeRole) String() string {
+	return o.Value
+}
+
+func (o *SystemNodeRole) FromString(s string) error {
+	if SystemNodeRoles.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o SystemNodeRole) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *SystemNodeRole) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*SystemType)(nil)
 	_ json.Marshaler   = (*SystemType)(nil)
 	_ json.Unmarshaler = (*SystemType)(nil)
@@ -1848,10 +2003,31 @@ var (
 		InterfaceNumberingIpv6TypeLinkLocal,
 	)
 
+	_                        enum = new(InterfaceOperationState)
+	InterfaceOperationStates      = oenum.New(
+		InterfaceOperationStateAdminDown,
+		InterfaceOperationStateDown,
+		InterfaceOperationStateUp,
+	)
+
 	_               enum = new(InterfaceState)
 	InterfaceStates      = oenum.New(
 		InterfaceStateActive,
 		InterfaceStateInactive,
+	)
+
+	_              enum = new(InterfaceType)
+	InterfaceTypes      = oenum.New(
+		InterfaceTypeEthernet,
+		InterfaceTypeIp,
+		InterfaceTypeLoopback,
+		InterfaceTypePortChannel,
+		InterfaceTypeSvi,
+		InterfaceTypeLogicalVtep,
+		InterfaceTypeAnycastVtep,
+		InterfaceTypeUnicastVtep,
+		InterfaceTypeGlobalAnycastVtep,
+		InterfaceTypeSubinterface,
 	)
 
 	_                 enum = new(JunosEVPNIRBMode)
@@ -1879,6 +2055,25 @@ var (
 	LinkAttachmentTypes      = oenum.New(
 		LinkAttachmentTypeSingle,
 		LinkAttachmentTypeDual,
+	)
+
+	_         enum = new(LinkRole)
+	LinkRoles      = oenum.New(
+		LinkRoleAccessL3PeerLink,
+		LinkRoleAccessServer,
+		LinkRoleLeafAccess,
+		LinkRoleLeafL2Server,
+		LinkRoleLeafL3PeerLink,
+		LinkRoleLeafL3Server,
+		LinkRoleLeafLeaf,
+		LinkRoleLeafPairAccess,
+		LinkRoleLeafPairAccessPair,
+		LinkRoleLeafPairL2Server,
+		LinkRoleLeafPeerLink,
+		LinkRoleSpineLeaf,
+		LinkRoleSpineSuperspine,
+		LinkRoleToExternalRouter,
+		LinkRoleToGeneric,
 	)
 
 	_          enum = new(LinkSpeed)
@@ -1918,6 +2113,13 @@ var (
 		LinkSwitchPeerUnspecified,
 		LinkSwitchPeerFirst,
 		LinkSwitchPeerSecond,
+	)
+
+	_         enum = new(LinkType)
+	LinkTypes      = oenum.New(
+		LinkTypeAggregateLink,
+		LinkTypeEthernet,
+		LinkTypeLogicalLink,
 	)
 
 	_            enum = new(LockStatus)
@@ -2095,6 +2297,17 @@ var (
 		SystemManagementLevelFullControl,
 		SystemManagementLevelTelemetryOnly,
 		SystemManagementLevelUnmanaged,
+	)
+
+	_               enum = new(SystemNodeRole)
+	SystemNodeRoles      = oenum.New(
+		SystemNodeRoleAccess,
+		SystemNodeRoleGeneric,
+		SystemNodeRoleL3Server,
+		SystemNodeRoleLeaf,
+		SystemNodeRoleRemoteGateway,
+		SystemNodeRoleSpine,
+		SystemNodeRoleSuperspine,
 	)
 
 	_           enum = new(SystemType)
