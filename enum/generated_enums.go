@@ -1949,26 +1949,26 @@ var (
 
 	_               enum = new(FeatureSwitch)
 	FeatureSwitches      = oenum.New(
-		FeatureSwitchEnabled,
 		FeatureSwitchDisabled,
+		FeatureSwitchEnabled,
 	)
 
 	_                         enum = new(IbaWidgetAggregationType)
 	IbaWidgetAggregationTypes      = oenum.New(
-		IbaWidgetAggregationTypeUnset,
-		IbaWidgetAggregationTypeMin,
-		IbaWidgetAggregationTypeAverage,
-		IbaWidgetAggregationTypeNone,
-		IbaWidgetAggregationTypeAnyOf,
-		IbaWidgetAggregationTypeLast,
 		IbaWidgetAggregationTypeAllOf,
+		IbaWidgetAggregationTypeAnyOf,
+		IbaWidgetAggregationTypeAverage,
+		IbaWidgetAggregationTypeLast,
 		IbaWidgetAggregationTypeMax,
+		IbaWidgetAggregationTypeMin,
+		IbaWidgetAggregationTypeNone,
+		IbaWidgetAggregationTypeUnset,
 	)
 
 	_                      enum = new(IbaWidgetCombineGraph)
 	IbaWidgetCombineGraphs      = oenum.New(
-		IbaWidgetCombineGraphNone,
 		IbaWidgetCombineGraphLinear,
+		IbaWidgetCombineGraphNone,
 		IbaWidgetCombineGraphStacked,
 	)
 
@@ -1980,8 +1980,8 @@ var (
 
 	_              enum = new(IbaWidgetType)
 	IbaWidgetTypes      = oenum.New(
-		IbaWidgetTypeStage,
 		IbaWidgetTypeAnomalyHeatmap,
+		IbaWidgetTypeStage,
 	)
 
 	_                           enum = new(InterfaceMapInterfaceState)
@@ -1998,9 +1998,9 @@ var (
 
 	_                           enum = new(InterfaceNumberingIpv6Type)
 	InterfaceNumberingIpv6Types      = oenum.New(
+		InterfaceNumberingIpv6TypeLinkLocal,
 		InterfaceNumberingIpv6TypeNone,
 		InterfaceNumberingIpv6TypeNumbered,
-		InterfaceNumberingIpv6TypeLinkLocal,
 	)
 
 	_                        enum = new(InterfaceOperationState)
@@ -2018,43 +2018,43 @@ var (
 
 	_              enum = new(InterfaceType)
 	InterfaceTypes      = oenum.New(
+		InterfaceTypeAnycastVtep,
 		InterfaceTypeEthernet,
+		InterfaceTypeGlobalAnycastVtep,
 		InterfaceTypeIp,
+		InterfaceTypeLogicalVtep,
 		InterfaceTypeLoopback,
 		InterfaceTypePortChannel,
-		InterfaceTypeSvi,
-		InterfaceTypeLogicalVtep,
-		InterfaceTypeAnycastVtep,
-		InterfaceTypeUnicastVtep,
-		InterfaceTypeGlobalAnycastVtep,
 		InterfaceTypeSubinterface,
+		InterfaceTypeSvi,
+		InterfaceTypeUnicastVtep,
 	)
 
 	_                 enum = new(JunosEVPNIRBMode)
 	JunosEVPNIRBModes      = oenum.New(
-		JunosEVPNIRBModeSymmetric,
 		JunosEVPNIRBModeAsymmetric,
+		JunosEVPNIRBModeSymmetric,
 	)
 
 	_        enum = new(LAGMode)
 	LAGModes      = oenum.New(
-		LAGModeNone,
 		LAGModeActiveLACP,
+		LAGModeNone,
 		LAGModePassiveLACP,
 		LAGModeStatic,
 	)
 
 	_                       enum = new(LeafRedundancyProtocol)
 	LeafRedundancyProtocols      = oenum.New(
-		LeafRedundancyProtocolNone,
 		LeafRedundancyProtocolESI,
 		LeafRedundancyProtocolMLAG,
+		LeafRedundancyProtocolNone,
 	)
 
 	_                   enum = new(LinkAttachmentType)
 	LinkAttachmentTypes      = oenum.New(
-		LinkAttachmentTypeSingle,
 		LinkAttachmentTypeDual,
+		LinkAttachmentTypeSingle,
 	)
 
 	_         enum = new(LinkRole)
@@ -2110,9 +2110,9 @@ var (
 
 	_               enum = new(LinkSwitchPeer)
 	LinkSwitchPeers      = oenum.New(
-		LinkSwitchPeerUnspecified,
 		LinkSwitchPeerFirst,
 		LinkSwitchPeerSecond,
+		LinkSwitchPeerUnspecified,
 	)
 
 	_         enum = new(LinkType)
@@ -2150,15 +2150,15 @@ var (
 
 	_                       enum = new(OverlayControlProtocol)
 	OverlayControlProtocols      = oenum.New(
-		OverlayControlProtocolNone,
 		OverlayControlProtocolEVPN,
+		OverlayControlProtocolNone,
 	)
 
 	_                           enum = new(PolicyApplicationPointType)
 	PolicyApplicationPointTypes      = oenum.New(
+		PolicyApplicationPointTypeExternal,
 		PolicyApplicationPointTypeGroup,
 		PolicyApplicationPointTypeInternal,
-		PolicyApplicationPointTypeExternal,
 		PolicyApplicationPointTypeSecurityZone,
 		PolicyApplicationPointTypeVirtualNetwork,
 	)
@@ -2218,8 +2218,8 @@ var (
 
 	_                   enum = new(RenderedConfigType)
 	RenderedConfigTypes      = oenum.New(
-		RenderedConfigTypeStaging,
 		RenderedConfigTypeDeployed,
+		RenderedConfigTypeStaging,
 	)
 
 	_                 enum = new(ResourcePoolType)
@@ -2234,9 +2234,9 @@ var (
 
 	_                          enum = new(RoutingZoneConstraintMode)
 	RoutingZoneConstraintModes      = oenum.New(
-		RoutingZoneConstraintModeNone,
 		RoutingZoneConstraintModeAllow,
 		RoutingZoneConstraintModeDeny,
+		RoutingZoneConstraintModeNone,
 	)
 
 	_                 enum = new(SecurityZoneType)
@@ -2248,8 +2248,8 @@ var (
 
 	_          enum = new(SpeedUnit)
 	SpeedUnits      = oenum.New(
-		SpeedUnitM,
 		SpeedUnitG,
+		SpeedUnitM,
 	)
 
 	_                  enum = new(StorageSchemaPath)
@@ -2329,9 +2329,9 @@ var (
 
 	_             enum = new(TemplateType)
 	TemplateTypes      = oenum.New(
-		TemplateTypeRackBased,
-		TemplateTypePodBased,
 		TemplateTypeL3Collapsed,
+		TemplateTypePodBased,
+		TemplateTypeRackBased,
 		TemplateTypeRailCollapsed,
 	)
 
