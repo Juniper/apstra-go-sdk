@@ -100,12 +100,12 @@ func TestPatchCablingMapLinks(t *testing.T) {
 	// This test assumes that specific IPv4 and IPv6 pools have been assigned, checks for those prefixes.
 	compareLinks := func(t *testing.T, req, resp CablingMapLink) {
 		require.Equal(t, req.Endpoints[0].Interface.ID, resp.Endpoints[0].Interface.ID)
-		if req.Endpoints[0].Interface.IfName != nil { // IF Name must match or be nil
-			if *req.Endpoints[0].Interface.IfName == "" {
-				require.Nil(t, resp.Endpoints[0].Interface.IfName)
+		if req.Endpoints[0].Interface.Name != nil { // IF Name must match or be nil
+			if *req.Endpoints[0].Interface.Name == "" {
+				require.Nil(t, resp.Endpoints[0].Interface.Name)
 			} else {
-				require.NotNil(t, resp.Endpoints[0].Interface.IfName)
-				require.Equal(t, *req.Endpoints[0].Interface.IfName, *resp.Endpoints[0].Interface.IfName)
+				require.NotNil(t, resp.Endpoints[0].Interface.Name)
+				require.Equal(t, *req.Endpoints[0].Interface.Name, *resp.Endpoints[0].Interface.Name)
 			}
 		}
 		if req.Endpoints[0].Interface.IPv4Addr != nil { // IPv4 Addr must match or come from pool
@@ -126,12 +126,12 @@ func TestPatchCablingMapLinks(t *testing.T) {
 		}
 
 		require.Equal(t, req.Endpoints[1].Interface.ID, resp.Endpoints[1].Interface.ID)
-		if req.Endpoints[1].Interface.IfName != nil { // IF Name must match or be nil
-			if *req.Endpoints[1].Interface.IfName == "" {
-				require.Nil(t, resp.Endpoints[1].Interface.IfName)
+		if req.Endpoints[1].Interface.Name != nil { // IF Name must match or be nil
+			if *req.Endpoints[1].Interface.Name == "" {
+				require.Nil(t, resp.Endpoints[1].Interface.Name)
 			} else {
-				require.NotNil(t, resp.Endpoints[1].Interface.IfName)
-				require.Equal(t, *req.Endpoints[1].Interface.IfName, *resp.Endpoints[1].Interface.IfName)
+				require.NotNil(t, resp.Endpoints[1].Interface.Name)
+				require.Equal(t, *req.Endpoints[1].Interface.Name, *resp.Endpoints[1].Interface.Name)
 			}
 		}
 		if req.Endpoints[1].Interface.IPv4Addr != nil { // IPv4 Addr must match or come from pool
@@ -204,10 +204,10 @@ func TestPatchCablingMapLinks(t *testing.T) {
 			ipv6Base := ipv6Addr.Masked()
 			ipv4Next := netip.PrefixFrom(ipv4Base.Addr().Next(), ipv4Base.Bits())
 			ipv6Next := netip.PrefixFrom(ipv6Base.Addr().Next(), ipv6Base.Bits())
-			req.Endpoints[0].Interface.IfName = pointer.To(randString(6, "hex"))
+			req.Endpoints[0].Interface.Name = pointer.To(randString(6, "hex"))
 			req.Endpoints[0].Interface.IPv4Addr = pointer.To(ipv4Base)
 			req.Endpoints[0].Interface.IPv6Addr = pointer.To(ipv6Base)
-			req.Endpoints[1].Interface.IfName = pointer.To(randString(6, "hex"))
+			req.Endpoints[1].Interface.Name = pointer.To(randString(6, "hex"))
 			req.Endpoints[1].Interface.IPv4Addr = pointer.To(ipv4Next)
 			req.Endpoints[1].Interface.IPv6Addr = pointer.To(ipv6Next)
 
@@ -228,10 +228,10 @@ func TestPatchCablingMapLinks(t *testing.T) {
 			compareLinks(t, *req, *resp)
 
 			// patch the link with a minimal (no-op) patch to ensure that nothing changes
-			req.Endpoints[0].Interface.IfName = nil   //    do not modify this field
+			req.Endpoints[0].Interface.Name = nil     //    do not modify this field
 			req.Endpoints[0].Interface.IPv4Addr = nil //  do not modify this field
 			req.Endpoints[0].Interface.IPv6Addr = nil //  do not modify this field
-			req.Endpoints[1].Interface.IfName = nil   //    do not modify this field
+			req.Endpoints[1].Interface.Name = nil     //    do not modify this field
 			req.Endpoints[1].Interface.IPv4Addr = nil //  do not modify this field
 			req.Endpoints[1].Interface.IPv6Addr = nil //  do not modify this field
 			err = bpClient.PatchCablingMapLinks(ctx, []CablingMapLink{*req})
@@ -250,10 +250,10 @@ func TestPatchCablingMapLinks(t *testing.T) {
 			compareLinks(t, *req, *resp)
 
 			// clear the values from the patchable fields using our non-nil empty value signals.
-			req.Endpoints[0].Interface.IfName = pointer.To("")
+			req.Endpoints[0].Interface.Name = pointer.To("")
 			req.Endpoints[0].Interface.IPv4Addr = new(netip.Prefix)
 			req.Endpoints[0].Interface.IPv6Addr = new(netip.Prefix)
-			req.Endpoints[1].Interface.IfName = pointer.To("")
+			req.Endpoints[1].Interface.Name = pointer.To("")
 			req.Endpoints[1].Interface.IPv4Addr = new(netip.Prefix)
 			req.Endpoints[1].Interface.IPv6Addr = new(netip.Prefix)
 

@@ -28,7 +28,7 @@ type CablingMapLink struct {
 	ID              string                    `json:"id,omitempty"`
 	TagLabels       []string                  `json:"tags,omitempty"`
 	Speed           *enum.LinkSpeed           `json:"speed,omitempty"`
-	AggregateLinkId *string                   `json:"aggregate_link_id,omitempty"`
+	AggregateLinkID *string                   `json:"aggregate_link_id,omitempty"`
 	GroupLabel      *string                   `json:"group_label,omitempty"`
 	Label           *string                   `json:"label,omitempty"`
 	Role            *enum.LinkRole            `json:"role,omitempty"`
@@ -47,9 +47,9 @@ var _ json.Marshaler = (*CablingMapLinkEndpointInterface)(nil)
 type CablingMapLinkEndpointInterface struct {
 	Description    *string                       `json:"description,omitempty"`
 	TagLabels      []string                      `json:"tags,omitempty"`
-	IfType         *enum.InterfaceType           `json:"if_type,omitempty"`
+	Type           *enum.InterfaceType           `json:"if_type,omitempty"`
 	OperationState *enum.InterfaceOperationState `json:"operation_state,omitempty"`
-	IfName         *string                       `json:"if_name,omitempty"`
+	Name           *string                       `json:"if_name,omitempty"`
 	PortChannelID  *int                          `json:"port_channel_id,omitempty"`
 	ID             string                        `json:"id"`
 	LAGMode        *enum.LAGMode                 `json:"lag_mode,omitempty"`
@@ -62,17 +62,17 @@ type CablingMapLinkEndpointInterface struct {
 func (c CablingMapLinkEndpointInterface) MarshalJSON() ([]byte, error) {
 	raw := struct {
 		ID       string          `json:"id"`
-		IfName   json.RawMessage `json:"if_name,omitempty"`
+		Name     json.RawMessage `json:"if_name,omitempty"`
 		IPv4Addr json.RawMessage `json:"ipv4_addr,omitempty"`
 		IPv6Addr json.RawMessage `json:"ipv6_addr,omitempty"`
 	}{ID: c.ID}
 
 	// Clear value from API by sending `null` if value is a pointer to an empty string.
-	if c.IfName != nil {
-		if *c.IfName == "" {
-			raw.IfName = []byte("null")
+	if c.Name != nil {
+		if *c.Name == "" {
+			raw.Name = []byte("null")
 		} else {
-			raw.IfName, _ = json.Marshal(c.IfName)
+			raw.Name, _ = json.Marshal(c.Name)
 		}
 	}
 
@@ -108,11 +108,11 @@ type CablingMapLinkEndpointSystem struct {
 // or "def456:eth0"
 // If any of the required elements are nil, nil is returned.
 func (o CablingMapLinkEndpoint) Digest() *string {
-	if o.System == nil || o.Interface.IfName == nil {
+	if o.System == nil || o.Interface.Name == nil {
 		return nil
 	}
 
-	result := o.System.ID + ":" + *o.Interface.IfName
+	result := o.System.ID + ":" + *o.Interface.Name
 	return &result
 }
 
@@ -224,8 +224,8 @@ func (o *TwoStageL3ClosClient) PatchCablingMapLinks(ctx context.Context, in []Ca
 				{Interface: CablingMapLinkEndpointInterface{ID: link.Endpoints[1].Interface.ID}},
 			},
 		}
-		if link.Endpoints[0].Interface.IfName != nil {
-			payload.Links[i].Endpoints[0].Interface.IfName = link.Endpoints[0].Interface.IfName
+		if link.Endpoints[0].Interface.Name != nil {
+			payload.Links[i].Endpoints[0].Interface.Name = link.Endpoints[0].Interface.Name
 		}
 		if link.Endpoints[0].Interface.IPv4Addr != nil {
 			payload.Links[i].Endpoints[0].Interface.IPv4Addr = link.Endpoints[0].Interface.IPv4Addr
@@ -233,8 +233,8 @@ func (o *TwoStageL3ClosClient) PatchCablingMapLinks(ctx context.Context, in []Ca
 		if link.Endpoints[0].Interface.IPv6Addr != nil {
 			payload.Links[i].Endpoints[0].Interface.IPv6Addr = link.Endpoints[0].Interface.IPv6Addr
 		}
-		if link.Endpoints[1].Interface.IfName != nil {
-			payload.Links[i].Endpoints[1].Interface.IfName = link.Endpoints[1].Interface.IfName
+		if link.Endpoints[1].Interface.Name != nil {
+			payload.Links[i].Endpoints[1].Interface.Name = link.Endpoints[1].Interface.Name
 		}
 		if link.Endpoints[1].Interface.IPv4Addr != nil {
 			payload.Links[i].Endpoints[1].Interface.IPv4Addr = link.Endpoints[1].Interface.IPv4Addr
