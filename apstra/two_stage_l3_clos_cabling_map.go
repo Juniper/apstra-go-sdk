@@ -62,30 +62,36 @@ type CablingMapLinkEndpointInterface struct {
 func (c CablingMapLinkEndpointInterface) MarshalJSON() ([]byte, error) {
 	raw := struct {
 		ID       string          `json:"id"`
-		IfName   json.RawMessage `json:"if_name"`
-		IPv4Addr json.RawMessage `json:"ipv4_addr"`
-		IPv6Addr json.RawMessage `json:"ipv6_addr"`
+		IfName   json.RawMessage `json:"if_name,omitempty"`
+		IPv4Addr json.RawMessage `json:"ipv4_addr,omitempty"`
+		IPv6Addr json.RawMessage `json:"ipv6_addr,omitempty"`
 	}{ID: c.ID}
 
 	// Clear value from API by sending `null` if value is a pointer to an empty string.
-	if c.IfName != nil && *c.IfName == "" {
-		raw.IfName = []byte("null")
-	} else {
-		raw.IfName, _ = json.Marshal(c.IfName)
+	if c.IfName != nil {
+		if *c.IfName == "" {
+			raw.IfName = []byte("null")
+		} else {
+			raw.IfName, _ = json.Marshal(c.IfName)
+		}
 	}
 
-	// Clear value from API by sending `null` if value is a pointer to an invalid prefix.
-	if c.IPv4Addr != nil && !c.IPv4Addr.IsValid() {
-		raw.IPv4Addr = []byte("null")
-	} else {
-		raw.IPv4Addr, _ = json.Marshal(c.IPv4Addr)
+	// Clear IPv4 value from API by sending `null` if value is a pointer to an invalid prefix.
+	if c.IPv4Addr != nil {
+		if c.IPv4Addr.IsValid() {
+			raw.IPv4Addr, _ = json.Marshal(c.IPv4Addr)
+		} else {
+			raw.IPv4Addr = []byte("null")
+		}
 	}
 
-	// Clear value from API by sending `null` if value is a pointer to an invalid prefix.
-	if c.IPv6Addr != nil && !c.IPv6Addr.IsValid() {
-		raw.IPv6Addr = []byte("null")
-	} else {
-		raw.IPv6Addr, _ = json.Marshal(c.IPv6Addr)
+	// Clear IPv6 value from API by sending `null` if value is a pointer to an invalid prefix.
+	if c.IPv6Addr != nil {
+		if c.IPv6Addr.IsValid() {
+			raw.IPv6Addr, _ = json.Marshal(c.IPv6Addr)
+		} else {
+			raw.IPv6Addr = []byte("null")
+		}
 	}
 
 	return json.Marshal(raw)
