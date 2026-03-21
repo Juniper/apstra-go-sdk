@@ -227,6 +227,28 @@ func TestPatchCablingMapLinks(t *testing.T) {
 			require.NotNil(t, resp)
 			compareLinks(t, *req, *resp)
 
+			// patch the link with a minimal (no-op) patch to ensure that nothing changes
+			req.Endpoints[0].Interface.IfName = nil   //    do not modify this field
+			req.Endpoints[0].Interface.IPv4Addr = nil //  do not modify this field
+			req.Endpoints[0].Interface.IPv6Addr = nil //  do not modify this field
+			req.Endpoints[1].Interface.IfName = nil   //    do not modify this field
+			req.Endpoints[1].Interface.IPv4Addr = nil //  do not modify this field
+			req.Endpoints[1].Interface.IPv6Addr = nil //  do not modify this field
+			err = bpClient.PatchCablingMapLinks(ctx, []CablingMapLink{*req})
+			require.NoError(t, err)
+
+			// retrieve and check the no-op patched link
+			links, err = bpClient.GetCablingMapLinks(ctx)
+			require.NoError(t, err)
+			for _, v := range links {
+				if v.ID == linkID {
+					resp = &v
+					break
+				}
+			}
+			require.NotNil(t, resp)
+			compareLinks(t, *req, *resp)
+
 			// clear the values from the patchable fields using our non-nil empty value signals.
 			req.Endpoints[0].Interface.IfName = pointer.To("")
 			req.Endpoints[0].Interface.IPv4Addr = new(netip.Prefix)
