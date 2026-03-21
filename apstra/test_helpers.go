@@ -192,7 +192,7 @@ func countSystemLinkTypes(ctx context.Context, systemId ObjectId, client *TwoSta
 	for _, link := range links {
 		if link.Type != nil {
 			result[*link.Type]++
-			if *link.Type == enum.LinkTypeEthernet && link.AggregateLinkId != nil && *link.AggregateLinkId != "" {
+			if *link.Type == enum.LinkTypeEthernet && link.AggregateLinkID != nil && *link.AggregateLinkID != "" {
 				lagMembers++
 			}
 		}

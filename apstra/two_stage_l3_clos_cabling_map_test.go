@@ -24,7 +24,7 @@ func TestCablingMapLinkEndpointInterface_MarshalJSON(t *testing.T) {
 		"everything_null": {
 			data: apstra.CablingMapLinkEndpointInterface{
 				ID:       "abc",
-				IfName:   pointer.To(""),
+				Name:     pointer.To(""),
 				IPv4Addr: new(netip.Prefix),
 				IPv6Addr: new(netip.Prefix),
 			},
@@ -33,7 +33,7 @@ func TestCablingMapLinkEndpointInterface_MarshalJSON(t *testing.T) {
 		"everything_populated": {
 			data: apstra.CablingMapLinkEndpointInterface{
 				ID:       "abc",
-				IfName:   pointer.To("def"),
+				Name:     pointer.To("def"),
 				IPv4Addr: pointer.To(netip.MustParsePrefix("192.0.2.55/24")),
 				IPv6Addr: pointer.To(netip.MustParsePrefix("3fff::1:2:3/64")),
 			},
