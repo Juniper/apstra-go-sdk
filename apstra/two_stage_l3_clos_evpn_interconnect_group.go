@@ -10,6 +10,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+
+	sdk "github.com/Juniper/apstra-go-sdk"
+	"github.com/Juniper/apstra-go-sdk/internal"
+	"github.com/Juniper/apstra-go-sdk/internal/str"
 )
 
 const (
@@ -18,77 +22,102 @@ const (
 	apiUrlBlueprintEvpnInterconnectGroupById    = apiUrlBlueprintEvpnInterconnectGroupsPrefix + "%s"
 )
 
-var _ json.Unmarshaler = (*EvpnInterconnectGroup)(nil)
-
-type EvpnInterconnectGroup struct {
-	Id   ObjectId
-	Data *EvpnInterconnectGroupData
+type InterconnectVirtualNetwork struct {
+	L2Enabled      bool    `json:"l2"`
+	L3Enabled      bool    `json:"l3"`
+	TranslationVNI *uint32 `json:"translation_vni,omitempty"`
 }
 
-func (o *EvpnInterconnectGroup) UnmarshalJSON(bytes []byte) error {
-	var raw struct {
-		Id                        ObjectId                                  `json:"id"`
-		Label                     string                                    `json:"label"`
-		RouteTarget               string                                    `json:"interconnect_route_target"`
-		EsiMac                    *string                                   `json:"interconnect_esi_mac"`
-		InterconnectSecurityZones map[ObjectId]InterconnectSecurityZoneData `json:"interconnect_security_zones"`
+type InterconnectSecurityZone struct {
+	L3Enabled       bool    `json:"enabled_for_l3"`
+	RouteTarget     *string `json:"interconnect_route_target"`
+	RoutingPolicyId *string `json:"routing_policy_id"`
+}
+
+var (
+	_ internal.IDer    = (*EVPNInterconnectGroup)(nil)
+	_ json.Marshaler   = (*EVPNInterconnectGroup)(nil)
+	_ json.Unmarshaler = (*EVPNInterconnectGroup)(nil)
+)
+
+type EVPNInterconnectGroup struct {
+	Label                       *string                               `json:"label,omitempty"`
+	RouteTarget                 *string                               `json:"interconnect_route_target,omitempty"`
+	ESIMAC                      net.HardwareAddr                      `json:"interconnect_esi_mac,omitempty"`
+	InterconnectSecurityZones   map[string]InterconnectSecurityZone   `json:"interconnect_security_zones,omitempty"`
+	InterconnectVirtualNetworks map[string]InterconnectVirtualNetwork `json:"interconnect_virtual_networks,omitempty"`
+
+	id string
+}
+
+func (e EVPNInterconnectGroup) ID() *string {
+	if e.id == "" {
+		return nil
+	}
+	return &e.id
+}
+
+func (e *EVPNInterconnectGroup) SetID(id string) error {
+	if e.id != "" {
+		return sdk.ErrIDAlreadySet(fmt.Sprintf("id already has value %q", e.id))
 	}
 
-	if err := json.Unmarshal(bytes, &raw); err != nil {
+	e.id = id
+	return nil
+}
+
+func (e EVPNInterconnectGroup) MarshalJSON() ([]byte, error) {
+	type Alias EVPNInterconnectGroup
+
+	return json.Marshal(&struct {
+		EsiMac string `json:"interconnect_esi_mac,omitempty"`
+		*Alias
+	}{
+		EsiMac: func() string {
+			if e.ESIMAC == nil {
+				return ""
+			}
+			return e.ESIMAC.String()
+		}(),
+		Alias: (*Alias)(&e),
+	})
+
+}
+
+func (e *EVPNInterconnectGroup) UnmarshalJSON(bytes []byte) error {
+	type Alias EVPNInterconnectGroup
+
+	aux := &struct {
+		ID     string `json:"id"`
+		ESIMAC string `json:"interconnect_esi_mac"`
+		*Alias
+	}{
+		Alias: (*Alias)(e),
+	}
+
+	if err := json.Unmarshal(bytes, aux); err != nil {
 		return err
 	}
 
-	o.Id = raw.Id
-	o.Data = new(EvpnInterconnectGroupData)
-	o.Data.Label = raw.Label
-	o.Data.RouteTarget = raw.RouteTarget
-	if raw.EsiMac != nil {
-		esiMac, err := net.ParseMAC(*raw.EsiMac)
+	e.id = aux.ID
+
+	if aux.ESIMAC != "" {
+		hw, err := net.ParseMAC(aux.ESIMAC)
 		if err != nil {
-			return fmt.Errorf("parsing interconnect esi mac: %s", err)
+			return err
 		}
-		o.Data.EsiMac = esiMac
+		e.ESIMAC = hw
+	} else {
+		e.ESIMAC = nil
 	}
-	o.Data.InterconnectSecurityZones = raw.InterconnectSecurityZones
 
 	return nil
 }
 
-type InterconnectSecurityZoneData struct {
-	RoutingPolicyId *ObjectId `json:"routing_policy_id"`
-	RouteTarget     *string   `json:"interconnect_route_target"`
-	L3Enabled       bool      `json:"enabled_for_l3"`
-}
-
-var _ json.Marshaler = (*EvpnInterconnectGroupData)(nil)
-
-type EvpnInterconnectGroupData struct {
-	Label                     string
-	RouteTarget               string
-	EsiMac                    net.HardwareAddr
-	InterconnectSecurityZones map[ObjectId]InterconnectSecurityZoneData
-}
-
-func (o EvpnInterconnectGroupData) MarshalJSON() ([]byte, error) {
-	var raw struct {
-		Label                     string                                    `json:"label"`
-		RouteTarget               string                                    `json:"interconnect_route_target"`
-		EsiMac                    string                                    `json:"interconnect_esi_mac,omitempty"`
-		InterconnectSecurityZones map[ObjectId]InterconnectSecurityZoneData `json:"interconnect_security_zones"`
+func (o *TwoStageL3ClosClient) CreateEVPNInterconnectGroup(ctx context.Context, in EVPNInterconnectGroup) (string, error) {
+	var response struct {
+		ID string `json:"id"`
 	}
-
-	raw.Label = o.Label
-	raw.RouteTarget = o.RouteTarget
-	if o.EsiMac != nil {
-		raw.EsiMac = o.EsiMac.String()
-	}
-	raw.InterconnectSecurityZones = o.InterconnectSecurityZones
-
-	return json.Marshal(raw)
-}
-
-func (o *TwoStageL3ClosClient) CreateEvpnInterconnectGroup(ctx context.Context, in *EvpnInterconnectGroupData) (ObjectId, error) {
-	var response objectIdResponse
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
@@ -100,11 +129,11 @@ func (o *TwoStageL3ClosClient) CreateEvpnInterconnectGroup(ctx context.Context, 
 		return "", convertTtaeToAceWherePossible(err)
 	}
 
-	return response.Id, nil
+	return response.ID, nil
 }
 
-func (o *TwoStageL3ClosClient) GetEvpnInterconnectGroup(ctx context.Context, id ObjectId) (*EvpnInterconnectGroup, error) {
-	var response EvpnInterconnectGroup
+func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroup(ctx context.Context, id string) (EVPNInterconnectGroup, error) {
+	var response EVPNInterconnectGroup
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -112,15 +141,15 @@ func (o *TwoStageL3ClosClient) GetEvpnInterconnectGroup(ctx context.Context, id 
 		apiResponse: &response,
 	})
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		return EVPNInterconnectGroup{}, convertTtaeToAceWherePossible(err)
 	}
 
-	return &response, nil
+	return response, nil
 }
 
-func (o *TwoStageL3ClosClient) GetAllEvpnInterconnectGroups(ctx context.Context) ([]EvpnInterconnectGroup, error) {
+func (o *TwoStageL3ClosClient) GetAllEVPNInterconnectGroups(ctx context.Context) ([]EVPNInterconnectGroup, error) {
 	var response struct {
-		Items []EvpnInterconnectGroup `json:"evpn_interconnect_groups"`
+		Items []EVPNInterconnectGroup `json:"evpn_interconnect_groups"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -135,19 +164,19 @@ func (o *TwoStageL3ClosClient) GetAllEvpnInterconnectGroups(ctx context.Context)
 	return response.Items, nil
 }
 
-func (o *TwoStageL3ClosClient) GetEvpnInterconnectGroupByName(ctx context.Context, name string) (*EvpnInterconnectGroup, error) {
-	items, err := o.GetAllEvpnInterconnectGroups(ctx)
+func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroupByName(ctx context.Context, name string) (EVPNInterconnectGroup, error) {
+	items, err := o.GetAllEVPNInterconnectGroups(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("GetAllEvpnInterconnectGroups: %w", err)
+		return EVPNInterconnectGroup{}, fmt.Errorf("GetAllEVPNInterconnectGroups: %w", err)
 	}
 
-	var evpnInterconnectGroup *EvpnInterconnectGroup
+	var evpnInterconnectGroup *EVPNInterconnectGroup
 	for _, item := range items {
-		if item.Data.Label == name {
+		if item.Label != nil && *item.Label == name {
 			if evpnInterconnectGroup == nil {
 				evpnInterconnectGroup = &item
 			} else {
-				return nil, ClientErr{
+				return EVPNInterconnectGroup{}, ClientErr{
 					errType: ErrMultipleMatch,
 					err:     fmt.Errorf("found multiple EVPN Interconnect Groups with label %q", name),
 				}
@@ -156,20 +185,24 @@ func (o *TwoStageL3ClosClient) GetEvpnInterconnectGroupByName(ctx context.Contex
 	}
 
 	if evpnInterconnectGroup == nil {
-		return nil, ClientErr{
+		return EVPNInterconnectGroup{}, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("EVPN Interconnect Group with label %q not found", name),
 		}
 	}
 
-	return evpnInterconnectGroup, nil
+	return *evpnInterconnectGroup, nil
 }
 
-func (o *TwoStageL3ClosClient) UpdateEvpnInterconnectGroup(ctx context.Context, id ObjectId, cfg *EvpnInterconnectGroupData) error {
+func (o *TwoStageL3ClosClient) UpdateEVPNInterconnectGroup(ctx context.Context, v EVPNInterconnectGroup) error {
+	if v.ID() == nil {
+		return fmt.Errorf("id is required in %s", str.FuncName())
+	}
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintEvpnInterconnectGroupById, o.Id(), id),
-		apiInput: cfg,
+		urlStr:   fmt.Sprintf(apiUrlBlueprintEvpnInterconnectGroupById, o.Id(), *v.ID()),
+		apiInput: &v,
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
@@ -178,7 +211,7 @@ func (o *TwoStageL3ClosClient) UpdateEvpnInterconnectGroup(ctx context.Context, 
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) DeleteEvpnInterconnectGroup(ctx context.Context, id ObjectId) error {
+func (o *TwoStageL3ClosClient) DeleteEVPNInterconnectGroup(ctx context.Context, id string) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(apiUrlBlueprintEvpnInterconnectGroupById, o.Id(), id),

@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -82,12 +83,12 @@ func TestCRUDRemoteGateway(t *testing.T) {
 			leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
 			require.NoError(t, err)
 
-			evpnInterConnectGroupId, err := bp.CreateEvpnInterconnectGroup(ctx, &EvpnInterconnectGroupData{
-				Label:       "a" + randString(6, "hex"),
-				RouteTarget: fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1),
+			evpnInterConnectGroupID, err := bp.CreateEVPNInterconnectGroup(ctx, EVPNInterconnectGroup{
+				Label:       pointer.To("a" + randString(6, "hex")),
+				RouteTarget: pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 			})
 			require.NoError(t, err)
-			_ = evpnInterConnectGroupId
+			_ = evpnInterConnectGroupID
 
 			type testStep struct {
 				config TwoStageL3ClosRemoteGatewayData
@@ -138,7 +139,7 @@ func TestCRUDRemoteGateway(t *testing.T) {
 								KeepaliveTimer:          toPtr(uint16(rand.Intn(math.MaxUint16) + 1)),   // 1-65535
 								HoldtimeTimer:           toPtr(uint16(rand.Intn(math.MaxUint16-2) + 3)), // 3-65535
 								Password:                toPtr(randString(6, "hex")),
-								EvpnInterconnectGroupId: &evpnInterConnectGroupId,
+								EvpnInterconnectGroupId: (*ObjectId)(&evpnInterConnectGroupID),
 								LocalGwNodes:            leafIds,
 							},
 						},
@@ -166,7 +167,7 @@ func TestCRUDRemoteGateway(t *testing.T) {
 								KeepaliveTimer:          toPtr(uint16(rand.Intn(math.MaxUint16) + 1)),   // 1-65535
 								HoldtimeTimer:           toPtr(uint16(rand.Intn(math.MaxUint16-2) + 3)), // 3-65535
 								Password:                toPtr(randString(6, "hex")),
-								EvpnInterconnectGroupId: &evpnInterConnectGroupId,
+								EvpnInterconnectGroupId: (*ObjectId)(&evpnInterConnectGroupID),
 								LocalGwNodes:            leafIds,
 							},
 						},
@@ -192,7 +193,7 @@ func TestCRUDRemoteGateway(t *testing.T) {
 								KeepaliveTimer:          toPtr(uint16(rand.Intn(math.MaxUint16) + 1)),   // 1-65535
 								HoldtimeTimer:           toPtr(uint16(rand.Intn(math.MaxUint16-2) + 3)), // 3-65535
 								Password:                toPtr(randString(6, "hex")),
-								EvpnInterconnectGroupId: &evpnInterConnectGroupId,
+								EvpnInterconnectGroupId: (*ObjectId)(&evpnInterConnectGroupID),
 								LocalGwNodes:            leafIds,
 							},
 						},
@@ -209,7 +210,7 @@ func TestCRUDRemoteGateway(t *testing.T) {
 								Label:                   randString(6, "hex"),
 								GwIp:                    netIpToNetIpAddr(t, randomIpv4()),
 								GwAsn:                   rand.Uint32(),
-								EvpnInterconnectGroupId: &evpnInterConnectGroupId,
+								EvpnInterconnectGroupId: (*ObjectId)(&evpnInterConnectGroupID),
 								LocalGwNodes:            []ObjectId{leafIds[rand.Intn(len(leafIds))]},
 							},
 						},
