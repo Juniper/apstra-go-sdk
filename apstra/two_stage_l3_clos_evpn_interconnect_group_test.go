@@ -178,5 +178,4 @@ func TestEVPNInterconnectGroup_UnmarshalJSON(t *testing.T) {
 			comparedatacenter.EVPNInterconnectGroup(t, tCase.exp, result)
 		})
 	}
-
 }

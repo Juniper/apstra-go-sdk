@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -81,7 +81,6 @@ func (e EVPNInterconnectGroup) MarshalJSON() ([]byte, error) {
 		}(),
 		Alias: (*Alias)(&e),
 	})
-
 }
 
 func (e *EVPNInterconnectGroup) UnmarshalJSON(bytes []byte) error {
