@@ -10,6 +10,7 @@ import (
 	"context"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
@@ -30,7 +31,9 @@ func TestInterfaceMapDigest_Retrieval(t *testing.T) {
 			require.NoError(t, err)
 			sort.Strings(ids)
 
-			objs, err := client.Client.GetInterfaceMapDigests2(ctx)
+			timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+			defer cancel()
+			objs, err := client.Client.GetInterfaceMapDigests2(timeoutCtx)
 			require.NoError(t, err)
 
 			require.Equal(t, len(ids), len(objs))
