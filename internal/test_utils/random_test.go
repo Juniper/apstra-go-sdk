@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -77,6 +77,59 @@ func TestRandTime(t *testing.T) {
 
 			require.True(t, minExpected.Before(result))
 			require.True(t, maxExpected.After(result))
+		})
+	}
+}
+
+func TestRandomHardwareAddr(t *testing.T) {
+	type testCase struct {
+		set   []byte
+		unset []byte
+	}
+
+	testCases := map[string]testCase{
+		"laa": {
+			set: []byte{2},
+		},
+		"group": {
+			set: []byte{1},
+		},
+		"laa_and_not_group": {
+			set:   []byte{2},
+			unset: []byte{1},
+		},
+		"group_and_not_laa": {
+			set:   []byte{1},
+			unset: []byte{2},
+		},
+		"laa_and_group": {
+			set: []byte{3},
+		},
+		"last_byte_128": {
+			set:   []byte{0, 0, 0, 0, 0, 128},
+			unset: []byte{0, 0, 0, 0, 0, 127},
+		},
+		"last_byte_high": {
+			set: []byte{0, 0, 0, 0, 0, 128},
+		},
+		"last_byte_low": {
+			unset: []byte{0, 0, 0, 0, 0, 128},
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			result := testutils.RandomHardwareAddr(tCase.set, tCase.unset)
+
+			for i, setByte := range tCase.set {
+				require.Equal(t, setByte, result[i]&setByte)
+			}
+
+			for i, unsetByte := range tCase.unset {
+				require.Equal(t, ^unsetByte, result[i]|^unsetByte)
+			}
 		})
 	}
 }

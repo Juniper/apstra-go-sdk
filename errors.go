@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,12 @@ package sdk
 type ErrAPIResponseInvalid string
 
 func (e ErrAPIResponseInvalid) Error() string {
+	return string(e)
+}
+
+type ErrIDAlreadySet string
+
+func (e ErrIDAlreadySet) Error() string {
 	return string(e)
 }
 
