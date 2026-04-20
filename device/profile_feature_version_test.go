@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +25,7 @@ func TestFeatureVersions_Validate(t *testing.T) {
 		"multiple": {v: FeatureVersions{{Version: "1.2.3"}, {Version: "4.5.6"}}},
 		"collision": {
 			v:      FeatureVersions{{Version: "1.2.3"}, {Version: "4.5.6"}, {Version: "1.2.3"}},
-			expErr: new(sdk.ErrMultipleMatch),
+			expErr: new(errors.MultipleMatch),
 		},
 	}
 

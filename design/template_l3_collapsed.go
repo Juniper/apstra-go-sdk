@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/Juniper/apstra-go-sdk/speed"
@@ -155,7 +155,7 @@ func (t *TemplateL3Collapsed) UnmarshalJSON(bytes []byte) error {
 	for _, v := range raw.RackTypes {
 		count, ok := idToCount[v.id]
 		if !ok {
-			return sdk.ErrAPIResponseInvalid(fmt.Sprintf("rack type id %q has no associated count", v.id))
+			return errors.APIResponseInvalid(fmt.Sprintf("rack type id %q has no associated count", v.id))
 		}
 
 		t.Racks = append(t.Racks, RackTypeWithCount{Count: count, RackType: v})

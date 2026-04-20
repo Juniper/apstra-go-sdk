@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"time"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
@@ -156,14 +156,14 @@ func (p *Profile) PortByID(id int) (Port, error) {
 	for _, port := range p.Ports {
 		if port.ID == id {
 			if result != nil {
-				return Port{}, sdk.ErrMultipleMatch(fmt.Sprintf("found multiple ports with ID %d", id))
+				return Port{}, errors.MultipleMatch(fmt.Sprintf("found multiple ports with ID %d", id))
 			}
 			result = &port
 		}
 	}
 
 	if result == nil {
-		return Port{}, sdk.ErrNotFound(fmt.Sprintf("found no ports with ID %d", id))
+		return Port{}, errors.NotFound(fmt.Sprintf("found no ports with ID %d", id))
 	}
 
 	return *result, nil
@@ -197,11 +197,11 @@ func (p Profile) PortByInterfaceName(name string) (Port, error) {
 
 	switch len(ports) {
 	case 0:
-		return Port{}, sdk.ErrNotFound(fmt.Sprintf("found no ports with intinterface name %q", name))
+		return Port{}, errors.NotFound(fmt.Sprintf("found no ports with intinterface name %q", name))
 	case 1:
 		return ports[0], nil
 	default:
-		return Port{}, sdk.ErrMultipleMatch(fmt.Sprintf("found %d ports with intinterface name %q", len(ports), name))
+		return Port{}, errors.MultipleMatch(fmt.Sprintf("found %d ports with intinterface name %q", len(ports), name))
 	}
 }
 
@@ -248,7 +248,7 @@ func (p Profile) PortWithMatchingTransforms(ifName string, ifSpeed speed.Speed) 
 
 	transformations := port.transformationCandidates(ifName, ifSpeed)
 	if len(transformations) == 0 {
-		return Port{}, sdk.ErrNotFound(fmt.Sprintf("port %d in device profile %q has no transformations named %s which operate at %s", port.ID, p.id, ifName, ifSpeed))
+		return Port{}, errors.NotFound(fmt.Sprintf("port %d in device profile %q has no transformations named %s which operate at %s", port.ID, p.id, ifName, ifSpeed))
 	}
 
 	port.Transformations = transformations // replace the transform slice with the set of matching values
@@ -293,7 +293,7 @@ func (t Transformation) Interface(id int) (TransformationInterface, error) {
 		}
 	}
 
-	return TransformationInterface{}, sdk.ErrNotFound(fmt.Sprintf("interface %d not found in transformation", id))
+	return TransformationInterface{}, errors.NotFound(fmt.Sprintf("interface %d not found in transformation", id))
 }
 
 type TransformationInterface struct {

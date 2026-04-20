@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,9 +8,9 @@ import (
 	"context"
 	"fmt"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 )
 
 func (c Client) CreateTemplateRailCollapsed2(ctx context.Context, v design.TemplateRailCollapsed) (string, error) {
@@ -24,18 +24,18 @@ func (c Client) GetTemplateRailCollapsed2(ctx context.Context, id string) (desig
 	}
 
 	if response == nil {
-		return design.TemplateRailCollapsed{}, sdk.ErrInternal("template is unexpectedly nil")
+		return design.TemplateRailCollapsed{}, errors.Internal("template is unexpectedly nil")
 	}
 
 	if response.TemplateType() != enum.TemplateTypeRailCollapsed {
-		return design.TemplateRailCollapsed{}, sdk.ErrWrongType(fmt.Sprintf("template with id %q has wrong type: expected %q got %q", id, enum.TemplateTypeRailCollapsed, response.TemplateType()))
+		return design.TemplateRailCollapsed{}, errors.WrongType(fmt.Sprintf("template with id %q has wrong type: expected %q got %q", id, enum.TemplateTypeRailCollapsed, response.TemplateType()))
 	}
 
 	if result, ok := response.(*design.TemplateRailCollapsed); ok {
 		return *result, nil
 	}
 
-	return design.TemplateRailCollapsed{}, sdk.ErrInternal(fmt.Sprintf("response has unexpected underlying type %T", response))
+	return design.TemplateRailCollapsed{}, errors.Internal(fmt.Sprintf("response has unexpected underlying type %T", response))
 }
 
 func (c Client) UpdateTemplateRailCollapsed2(ctx context.Context, v design.TemplateRailCollapsed) error {
@@ -52,7 +52,7 @@ func (c Client) ListTemplatesRailCollapsed2(ctx context.Context) ([]string, erro
 	for i, t := range templates {
 		if t.TemplateType() == enum.TemplateTypeRailCollapsed {
 			if t.ID() == nil {
-				return nil, sdk.ErrAPIResponseInvalid(fmt.Sprintf("template at index %d has nil id", i))
+				return nil, errors.APIResponseInvalid(fmt.Sprintf("template at index %d has nil id", i))
 			}
 			result = append(result, *t.ID())
 		}
@@ -75,10 +75,10 @@ func (c Client) GetTemplatesRailCollapsed2(ctx context.Context) ([]design.Templa
 
 		tt, ok := t.(*design.TemplateRailCollapsed)
 		if !ok {
-			return nil, sdk.ErrInternal(fmt.Sprintf("template at index %d claims to be a %q but has type %T", i, enum.TemplateTypeRailCollapsed, t))
+			return nil, errors.Internal(fmt.Sprintf("template at index %d claims to be a %q but has type %T", i, enum.TemplateTypeRailCollapsed, t))
 		}
 		if tt == nil {
-			return nil, sdk.ErrInternal(fmt.Sprintf("template at index %d is unexpectedly nil", i))
+			return nil, errors.Internal(fmt.Sprintf("template at index %d is unexpectedly nil", i))
 		}
 
 		result = append(result, *tt)
@@ -94,16 +94,16 @@ func (c Client) GetTemplateRailCollapsedByLabel2(ctx context.Context, label stri
 	}
 
 	if t == nil {
-		return design.TemplateRailCollapsed{}, sdk.ErrInternal(fmt.Sprintf("template with label %q is unexpectedly nil", label))
+		return design.TemplateRailCollapsed{}, errors.Internal(fmt.Sprintf("template with label %q is unexpectedly nil", label))
 	}
 
 	if t.TemplateType() != enum.TemplateTypeRailCollapsed {
-		return design.TemplateRailCollapsed{}, sdk.ErrWrongType(fmt.Sprintf("template with label %q has type %q", label, t.TemplateType()))
+		return design.TemplateRailCollapsed{}, errors.WrongType(fmt.Sprintf("template with label %q has type %q", label, t.TemplateType()))
 	}
 
 	result, ok := t.(*design.TemplateRailCollapsed)
 	if !ok {
-		return design.TemplateRailCollapsed{}, sdk.ErrInternal(fmt.Sprintf("template with label %q has unexpected type %T", label, t))
+		return design.TemplateRailCollapsed{}, errors.Internal(fmt.Sprintf("template with label %q has unexpected type %T", label, t))
 	}
 
 	return *result, nil

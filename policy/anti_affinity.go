@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 )
 
 const heuristic = "heuristic"
@@ -48,7 +48,7 @@ func (a *AntiAffinity) UnmarshalJSON(bytes []byte) error {
 	}
 
 	if raw.Algorithm != heuristic {
-		return sdk.ErrAPIResponseInvalid(fmt.Sprintf("anti affinity policy has invalid algorithm: %q", raw.Algorithm))
+		return errors.APIResponseInvalid(fmt.Sprintf("anti affinity policy has invalid algorithm: %q", raw.Algorithm))
 	}
 
 	a.MaxLinksPerPort = raw.MaxLinksPerPort

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
@@ -124,7 +124,7 @@ func TestProfile_PortByID(t *testing.T) {
 			profile: testProfileGeneric1x10,
 			id:      2,
 			exp:     Port{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "eth0", State: enum.InterfaceStateActive, Setting: pointer.To(""), Speed: "10G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(1)},
-			expErr:  new(sdk.ErrNotFound),
+			expErr:  new(errors.NotFound),
 		},
 		"bogus_multiple_match": {
 			profile: Profile{
@@ -137,7 +137,7 @@ func TestProfile_PortByID(t *testing.T) {
 				},
 			},
 			id:     2,
-			expErr: new(sdk.ErrMultipleMatch),
+			expErr: new(errors.MultipleMatch),
 		},
 	}
 
@@ -185,7 +185,7 @@ func TestProfile_PortByInterfaceName(t *testing.T) {
 		"generic_1x10_not_found": {
 			profile: testProfileGeneric1x10,
 			name:    "eth99999",
-			expErr:  new(sdk.ErrNotFound),
+			expErr:  new(errors.NotFound),
 		},
 		"bogus_multiple_match": {
 			profile: Profile{
@@ -198,7 +198,7 @@ func TestProfile_PortByInterfaceName(t *testing.T) {
 				},
 			},
 			name:   "ge-0/0/0",
-			expErr: new(sdk.ErrMultipleMatch),
+			expErr: new(errors.MultipleMatch),
 		},
 	}
 
@@ -294,13 +294,13 @@ func TestProfile_PortWithMatchingTransforms(t *testing.T) {
 			profile: testProfileGeneric1x10,
 			ifName:  "bogus",
 			ifSpeed: "10G",
-			expErr:  new(sdk.ErrNotFound),
+			expErr:  new(errors.NotFound),
 		},
 		"bogus_speed": {
 			profile: testProfileGeneric1x10,
 			ifName:  "eth0",
 			ifSpeed: "100G",
-			expErr:  new(sdk.ErrNotFound),
+			expErr:  new(errors.NotFound),
 		},
 		"breakout": {
 			profile:  testProfileJuniperEX440048F,
@@ -350,7 +350,7 @@ func TestTransformation_Interface(t *testing.T) {
 		"notfound_Juniper_EX4400-48F_p1_t1_i2": {
 			transformation: testProfileJuniperEX440048F.Ports[0].Transformations[0],
 			id:             2,
-			expErr:         new(sdk.ErrNotFound),
+			expErr:         new(errors.NotFound),
 		},
 		"Juniper_EX4400-48F_p49_t2_i2": {
 			transformation: testProfileJuniperEX440048F.Ports[48].Transformations[1],

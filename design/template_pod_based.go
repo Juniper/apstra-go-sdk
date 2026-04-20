@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/policy"
 )
@@ -139,7 +139,7 @@ func (t *TemplatePodBased) UnmarshalJSON(bytes []byte) error {
 	for _, v := range raw.RackBasedTemplates {
 		count, ok := idToCount[v.id]
 		if !ok {
-			return sdk.ErrAPIResponseInvalid(fmt.Sprintf("pod id %q has no associated count", v.id))
+			return errors.APIResponseInvalid(fmt.Sprintf("pod id %q has no associated count", v.id))
 		}
 
 		t.Pods = append(t.Pods, PodWithCount{Count: count, Pod: v})

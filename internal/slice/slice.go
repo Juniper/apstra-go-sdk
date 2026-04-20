@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@ package slice
 import (
 	"fmt"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal"
 )
 
@@ -25,7 +25,7 @@ func FindByID[T internal.IDer](elements []T, id string) (*T, error) {
 			if result == nil {
 				result = &elements[i]
 			} else {
-				return nil, sdk.ErrMultipleMatch(fmt.Sprintf("found multiple elements with ID: %s", id))
+				return nil, errors.MultipleMatch(fmt.Sprintf("found multiple elements with ID: %s", id))
 			}
 		}
 	}

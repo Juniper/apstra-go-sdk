@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,9 +8,9 @@ import (
 	"context"
 	"fmt"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	errors "github.com/Juniper/apstra-go-sdk/errors"
 )
 
 func (c Client) CreateTemplateRackBased2(ctx context.Context, v design.TemplateRackBased) (string, error) {
@@ -24,18 +24,18 @@ func (c Client) GetTemplateRackBased2(ctx context.Context, id string) (design.Te
 	}
 
 	if response == nil {
-		return design.TemplateRackBased{}, sdk.ErrInternal("template is unexpectedly nil")
+		return design.TemplateRackBased{}, errors.Internal("template is unexpectedly nil")
 	}
 
 	if response.TemplateType() != enum.TemplateTypeRackBased {
-		return design.TemplateRackBased{}, sdk.ErrWrongType(fmt.Sprintf("template with id %q has wrong type: expected %q got %q", id, enum.TemplateTypeRackBased, response.TemplateType()))
+		return design.TemplateRackBased{}, errors.WrongType(fmt.Sprintf("template with id %q has wrong type: expected %q got %q", id, enum.TemplateTypeRackBased, response.TemplateType()))
 	}
 
 	if result, ok := response.(*design.TemplateRackBased); ok {
 		return *result, nil
 	}
 
-	return design.TemplateRackBased{}, sdk.ErrInternal(fmt.Sprintf("response has unexpected underlying type %T", response))
+	return design.TemplateRackBased{}, errors.Internal(fmt.Sprintf("response has unexpected underlying type %T", response))
 }
 
 func (c Client) UpdateTemplateRackBased2(ctx context.Context, v design.TemplateRackBased) error {
@@ -52,7 +52,7 @@ func (c Client) ListTemplatesRackBased2(ctx context.Context) ([]string, error) {
 	for i, t := range templates {
 		if t.TemplateType() == enum.TemplateTypeRackBased {
 			if t.ID() == nil {
-				return nil, sdk.ErrAPIResponseInvalid(fmt.Sprintf("template at index %d has nil id", i))
+				return nil, errors.APIResponseInvalid(fmt.Sprintf("template at index %d has nil id", i))
 			}
 			result = append(result, *t.ID())
 		}
@@ -75,10 +75,10 @@ func (c Client) GetTemplatesRackBased2(ctx context.Context) ([]design.TemplateRa
 
 		tt, ok := t.(*design.TemplateRackBased)
 		if !ok {
-			return nil, sdk.ErrInternal(fmt.Sprintf("template at index %d claims to be a %q but has type %T", i, enum.TemplateTypeRackBased, t))
+			return nil, errors.Internal(fmt.Sprintf("template at index %d claims to be a %q but has type %T", i, enum.TemplateTypeRackBased, t))
 		}
 		if tt == nil {
-			return nil, sdk.ErrInternal(fmt.Sprintf("template at index %d is unexpectedly nil", i))
+			return nil, errors.Internal(fmt.Sprintf("template at index %d is unexpectedly nil", i))
 		}
 
 		result = append(result, *tt)
@@ -94,16 +94,16 @@ func (c Client) GetTemplateRackBasedByLabel2(ctx context.Context, label string) 
 	}
 
 	if t == nil {
-		return design.TemplateRackBased{}, sdk.ErrInternal(fmt.Sprintf("template with label %q is unexpectedly nil", label))
+		return design.TemplateRackBased{}, errors.Internal(fmt.Sprintf("template with label %q is unexpectedly nil", label))
 	}
 
 	if t.TemplateType() != enum.TemplateTypeRackBased {
-		return design.TemplateRackBased{}, sdk.ErrWrongType(fmt.Sprintf("template with label %q has type %q", label, t.TemplateType()))
+		return design.TemplateRackBased{}, errors.WrongType(fmt.Sprintf("template with label %q has type %q", label, t.TemplateType()))
 	}
 
 	result, ok := t.(*design.TemplateRackBased)
 	if !ok {
-		return design.TemplateRackBased{}, sdk.ErrInternal(fmt.Sprintf("template with label %q has unexpected type %T", label, t))
+		return design.TemplateRackBased{}, errors.Internal(fmt.Sprintf("template with label %q has unexpected type %T", label, t))
 	}
 
 	return *result, nil
