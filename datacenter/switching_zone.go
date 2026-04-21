@@ -34,7 +34,7 @@ func (z SwitchingZone) ID() *string {
 
 func (z *SwitchingZone) SetID(id string) error {
 	if z.id != "" {
-		return errors.ErrIDAlreadySet(fmt.Sprintf("id already has value %q", z.id))
+		return errors.IDAlreadySet(fmt.Sprintf("id already has value %q", z.id))
 	}
 
 	z.id = id
