@@ -36,11 +36,13 @@ type FreeformAggregateLinkEndpoint struct {
 	id            string
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (o FreeformAggregateLinkEndpoint) ID() *string {
 	if o.id == "" {
 		return nil
 	}
-	return &o.id
+	id := o.id
+	return &id
 }
 
 func (o FreeformAggregateLinkEndpoint) MarshalJSON() ([]byte, error) {

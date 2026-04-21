@@ -43,11 +43,13 @@ func (t Common) TemplateType() enum.TemplateType {
 	return t.templateType
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (t Common) ID() *string {
 	if t.id == "" {
 		return nil
 	}
-	return &t.id
+	id := t.id
+	return &id
 }
 
 func (t *Common) UnmarshalJSON(bytes []byte) error {

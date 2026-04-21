@@ -46,11 +46,13 @@ func (t TemplateRackBased) TemplateType() enum.TemplateType {
 	return enum.TemplateTypeRackBased
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (t TemplateRackBased) ID() *string {
 	if t.id == "" {
 		return nil
 	}
-	return &t.id
+	id := t.id
+	return &id
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields

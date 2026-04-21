@@ -44,11 +44,13 @@ type Profile struct {
 	lastModifiedAt *time.Time
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (p Profile) ID() *string {
 	if p.id == "" {
 		return nil
 	}
-	return &p.id
+	id := p.id
+	return &id
 }
 
 func (p Profile) MarshalJSON() ([]byte, error) {

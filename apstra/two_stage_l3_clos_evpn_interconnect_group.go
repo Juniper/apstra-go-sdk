@@ -50,11 +50,13 @@ type EVPNInterconnectGroup struct {
 	id string
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (e EVPNInterconnectGroup) ID() *string {
 	if e.id == "" {
 		return nil
 	}
-	return &e.id
+	id := e.id
+	return &id
 }
 
 func (e *EVPNInterconnectGroup) SetID(id string) error {

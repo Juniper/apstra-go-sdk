@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -37,11 +37,13 @@ type RackType struct {
 	lastModifiedAt *time.Time
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (r RackType) ID() *string {
 	if r.id == "" {
 		return nil
 	}
-	return &r.id
+	id := r.id
+	return &id
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,11 +30,13 @@ type Tag struct {
 	lastModifiedAt *time.Time
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (t Tag) ID() *string {
 	if t.id == "" {
 		return nil
 	}
-	return &t.id
+	id := t.id
+	return &id
 }
 
 // Replicate returns a copy of itself with zero values for metadata fields
