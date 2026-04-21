@@ -5,6 +5,6 @@
 package urls
 
 const (
-	DatacenterSwitchingZones    = BlueprintByID + PathDelim + "switching-zones"
-	DatacenterSwitchingZoneByID = DatacenterSwitchingZones + PathDelim + "%s"
+	DatacenterSwitchingZones    = blueprintByID + pathDelim + "switching-zones"
+	DatacenterSwitchingZoneByID = DatacenterSwitchingZones + pathDelim + "%s"
 )
