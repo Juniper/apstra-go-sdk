@@ -46,11 +46,13 @@ func (o FreeformAggregateLinkEndpointGroup) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&raw)
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (o FreeformAggregateLinkEndpointGroup) ID() *string {
 	if o.id == "" {
 		return nil
 	}
-	return &o.id
+	id := o.id
+	return &id
 }
 
 func (o *FreeformAggregateLinkEndpointGroup) UnmarshalJSON(bytes []byte) error {

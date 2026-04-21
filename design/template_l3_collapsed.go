@@ -42,11 +42,13 @@ func (t TemplateL3Collapsed) TemplateType() enum.TemplateType {
 	return enum.TemplateTypeL3Collapsed
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (t TemplateL3Collapsed) ID() *string {
 	if t.id == "" {
 		return nil
 	}
-	return &t.id
+	id := t.id
+	return &id
 }
 
 func (t TemplateL3Collapsed) MarshalJSON() ([]byte, error) {

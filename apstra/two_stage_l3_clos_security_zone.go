@@ -47,11 +47,13 @@ type SecurityZone struct {
 	id string
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (o SecurityZone) ID() *string {
 	if o.id == "" {
 		return nil
 	}
-	return &o.id
+	id := o.id
+	return &id
 }
 
 func (o *SecurityZone) SetID(id string) {

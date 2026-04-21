@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,11 +31,13 @@ type InterfaceMapDigest struct {
 	lastModifiedAt *time.Time
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (i InterfaceMapDigest) ID() *string {
 	if i.id == "" {
 		return nil
 	}
-	return &i.id
+	id := i.id
+	return &id
 }
 
 func (i InterfaceMapDigest) CreatedAt() *time.Time {

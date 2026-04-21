@@ -38,11 +38,13 @@ func (t TemplatePodBased) TemplateType() enum.TemplateType {
 	return enum.TemplateTypePodBased
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (t TemplatePodBased) ID() *string {
 	if t.id == "" {
 		return nil
 	}
-	return &t.id
+	id := t.id
+	return &id
 }
 
 func (t TemplatePodBased) MarshalJSON() ([]byte, error) {

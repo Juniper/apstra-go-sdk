@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -29,11 +29,13 @@ type Configlet struct {
 	lastModifiedAt *time.Time
 }
 
+// ID returns a pointer to a copy of the object's ID, or nil when no ID is set.
 func (c Configlet) ID() *string {
 	if c.id == "" {
 		return nil
 	}
-	return &c.id
+	id := c.id
+	return &id
 }
 
 func (c Configlet) CreatedAt() *time.Time {
