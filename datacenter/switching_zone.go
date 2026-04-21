@@ -1,3 +1,7 @@
+// Copyright (c) Juniper Networks, Inc., 2026-2026.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package datacenter
 
 import (
@@ -5,11 +9,6 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/errors"
-)
-
-const (
-	apiUrlBlueprintSwitchingZones    = apiUrlBlueprintByID + apiUrlPathDelim + "switching-zones"
-	apiUrlBlueprintSwitchingZoneByID = apiUrlBlueprintSwitchingZones + apiUrlPathDelim + "%s"
 )
 
 type SwitchingZone struct {
