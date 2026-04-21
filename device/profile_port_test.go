@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/speed"
 	"github.com/stretchr/testify/require"
@@ -121,7 +121,7 @@ func TestPort_DefaultTransform(t *testing.T) {
 		},
 		"err_not_found": {
 			port:   Port{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(0), Slot: 0},
-			expErr: new(sdk.ErrNotFound),
+			expErr: new(errors.NotFound),
 		},
 		"not_at_index_zero": {
 			port:   Port{ConnectorType: "sfp", Panel: 1, Transformations: []Transformation{{ID: 1, IsDefault: false, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": "10g"}}`), Speed: "10G"}}}, {ID: 2, IsDefault: true, Interfaces: []TransformationInterface{{ID: 1, Name: "ge-0/0/0", State: enum.InterfaceStateActive, Setting: pointer.To(`{"global": {"speed": ""}, "interface": {"speed": ""}}`), Speed: "1G"}}}}, Column: 1, ID: 1, Row: 1, FailureDomain: 1, Display: pointer.To(0), Slot: 0},
@@ -167,7 +167,7 @@ func TestPort_Transformation(t *testing.T) {
 		"not_found": {
 			port:   testProfileJuniperEX440048F.Ports[49],
 			id:     0,
-			expErr: new(sdk.ErrNotFound),
+			expErr: new(errors.NotFound),
 		},
 	}
 

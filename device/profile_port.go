@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,8 +7,8 @@ package device
 import (
 	"fmt"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
@@ -33,7 +33,7 @@ func (p Port) DefaultTransform() (Transformation, error) {
 		}
 	}
 
-	return Transformation{}, sdk.ErrNotFound(fmt.Sprintf("Port %d has no default transformation", p.ID))
+	return Transformation{}, errors.NotFound(fmt.Sprintf("Port %d has no default transformation", p.ID))
 }
 
 // transformationCandidates takes an interface name ("xe-0/0/1:1") and a speed,
@@ -84,5 +84,5 @@ func (p Port) Transformation(id int) (Transformation, error) {
 		}
 	}
 
-	return Transformation{}, sdk.ErrNotFound(fmt.Sprintf("transformation id %d not found", id))
+	return Transformation{}, errors.NotFound(fmt.Sprintf("transformation id %d not found", id))
 }

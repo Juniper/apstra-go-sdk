@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"net/http"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 	commontemplate "github.com/Juniper/apstra-go-sdk/internal/template"
 )
@@ -52,27 +52,27 @@ func (c Client) GetTemplate2(ctx context.Context, id string) (design.Template, e
 	switch response.TemplateType().String() {
 	case enum.TemplateTypeL3Collapsed.String():
 		if response.L3Collapsed == nil {
-			return nil, sdk.ErrInternal("internal error: embedded template is unexpectedly nil")
+			return nil, errors.Internal("internal error: embedded template is unexpectedly nil")
 		}
 		return response.L3Collapsed, nil
 	case enum.TemplateTypePodBased.String():
 		if response.PodBased == nil {
-			return nil, sdk.ErrInternal("internal error: embedded template is unexpectedly nil")
+			return nil, errors.Internal("internal error: embedded template is unexpectedly nil")
 		}
 		return response.PodBased, nil
 	case enum.TemplateTypeRackBased.String():
 		if response.RackBased == nil {
-			return nil, sdk.ErrInternal("internal error: embedded template is unexpectedly nil")
+			return nil, errors.Internal("internal error: embedded template is unexpectedly nil")
 		}
 		return response.RackBased, nil
 	case enum.TemplateTypeRailCollapsed.String():
 		if response.RailCollapsed == nil {
-			return nil, sdk.ErrInternal("internal error: embedded template is unexpectedly nil")
+			return nil, errors.Internal("internal error: embedded template is unexpectedly nil")
 		}
 		return response.RailCollapsed, nil
 	}
 
-	return nil, sdk.ErrInternal(fmt.Sprintf("internal error: unhandled template type %q", response.TemplateType()))
+	return nil, errors.Internal(fmt.Sprintf("internal error: unhandled template type %q", response.TemplateType()))
 }
 
 func (c Client) UpdateTemplate2(ctx context.Context, v design.Template) error {
@@ -151,7 +151,7 @@ func (c Client) GetTemplates2(ctx context.Context) ([]design.Template, error) {
 			if item.ID() != nil {
 				id = *item.ID()
 			}
-			return nil, sdk.ErrInternal(fmt.Sprintf("internal error: template %q has unhandled type %q", id, item.TemplateType()))
+			return nil, errors.Internal(fmt.Sprintf("internal error: template %q has unhandled type %q", id, item.TemplateType()))
 		}
 	}
 
@@ -189,22 +189,22 @@ func (c Client) GetTemplateByLabel2(ctx context.Context, label string) (design.T
 		switch result[0].TemplateType().String() {
 		case enum.TemplateTypeL3Collapsed.String():
 			if result[0].L3Collapsed == nil {
-				return nil, sdk.ErrInternal("internal error: embedded template is unexpectedly nil")
+				return nil, errors.Internal("internal error: embedded template is unexpectedly nil")
 			}
 			return result[0].L3Collapsed, nil
 		case enum.TemplateTypePodBased.String():
 			if result[0].PodBased == nil {
-				return nil, sdk.ErrInternal("internal error: embedded template is unexpectedly nil")
+				return nil, errors.Internal("internal error: embedded template is unexpectedly nil")
 			}
 			return result[0].PodBased, nil
 		case enum.TemplateTypeRackBased.String():
 			if result[0].RackBased == nil {
-				return nil, sdk.ErrInternal("internal error: embedded template is unexpectedly nil")
+				return nil, errors.Internal("internal error: embedded template is unexpectedly nil")
 			}
 			return result[0].RackBased, nil
 		case enum.TemplateTypeRailCollapsed.String():
 			if result[0].RailCollapsed == nil {
-				return nil, sdk.ErrInternal("internal error: embedded template is unexpectedly nil")
+				return nil, errors.Internal("internal error: embedded template is unexpectedly nil")
 			}
 			return result[0].RailCollapsed, nil
 		default:
@@ -212,7 +212,7 @@ func (c Client) GetTemplateByLabel2(ctx context.Context, label string) (design.T
 			if result[0].ID() != nil {
 				id = *result[0].ID()
 			}
-			return nil, sdk.ErrInternal(fmt.Sprintf("internal error: template %q has unhandled type %q", id, result[0].TemplateType()))
+			return nil, errors.Internal(fmt.Sprintf("internal error: template %q has unhandled type %q", id, result[0].TemplateType()))
 		}
 	default: // len(result) > 1
 		return nil, ClientErr{

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,8 +11,8 @@ import (
 	"hash"
 	"time"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/policy"
@@ -190,7 +190,7 @@ func (t *TemplateRackBased) UnmarshalJSON(bytes []byte) error {
 	for _, v := range raw.RackTypes {
 		count, ok := idToCount[v.id]
 		if !ok {
-			return sdk.ErrAPIResponseInvalid(fmt.Sprintf("rack type id %q has no associated count", v.id))
+			return errors.APIResponseInvalid(fmt.Sprintf("rack type id %q has no associated count", v.id))
 		}
 
 		t.Racks = append(t.Racks, RackTypeWithCount{Count: count, RackType: v})

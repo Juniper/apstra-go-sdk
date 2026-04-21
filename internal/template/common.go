@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"time"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	timeutils "github.com/Juniper/apstra-go-sdk/internal/time_utils"
 )
@@ -64,11 +64,11 @@ func (t *Common) UnmarshalJSON(bytes []byte) error {
 	}
 
 	if raw.ID == "" {
-		return sdk.ErrAPIResponseInvalid("unmarshaling template: id is empty")
+		return errors.APIResponseInvalid("unmarshaling template: id is empty")
 	}
 
 	if raw.Type == nil {
-		return sdk.ErrAPIResponseInvalid("unmarshaling template: templateType is nil")
+		return errors.APIResponseInvalid("unmarshaling template: templateType is nil")
 	}
 
 	t.id = raw.ID
@@ -92,7 +92,7 @@ func (t *Common) UnmarshalJSON(bytes []byte) error {
 		return json.Unmarshal(bytes, t.RailCollapsed)
 	}
 
-	return sdk.ErrAPIResponseInvalid(fmt.Sprintf("unhandled template type: %q", t.templateType))
+	return errors.APIResponseInvalid(fmt.Sprintf("unhandled template type: %q", t.templateType))
 }
 
 func (t Common) CreatedAt() *time.Time {

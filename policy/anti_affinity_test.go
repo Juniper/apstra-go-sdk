@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/stretchr/testify/require"
 )
@@ -105,7 +105,7 @@ func TestAntiAffinity_UnmarshalJSON(t *testing.T) {
 		},
 		"bogus_algorithm": {
 			v:      `{"algorithm":"bogus"}`,
-			expErr: new(sdk.ErrAPIResponseInvalid),
+			expErr: new(errors.APIResponseInvalid),
 		},
 	}
 

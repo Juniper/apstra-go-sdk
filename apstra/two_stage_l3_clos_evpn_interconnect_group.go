@@ -11,7 +11,7 @@ import (
 	"net"
 	"net/http"
 
-	sdk "github.com/Juniper/apstra-go-sdk"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 )
@@ -59,7 +59,7 @@ func (e EVPNInterconnectGroup) ID() *string {
 
 func (e *EVPNInterconnectGroup) SetID(id string) error {
 	if e.id != "" {
-		return sdk.ErrIDAlreadySet(fmt.Sprintf("id already has value %q", e.id))
+		return errors.IDAlreadySet(fmt.Sprintf("id already has value %q", e.id))
 	}
 
 	e.id = id
