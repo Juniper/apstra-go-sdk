@@ -5,7 +5,7 @@
 package urls
 
 const (
-	PathDelim     = "/"
-	Blueprints    = "/api/blueprints"
-	BlueprintByID = Blueprints + PathDelim + "%s"
+	pathDelim     = "/"
+	blueprints    = "/api/blueprints"
+	blueprintByID = blueprints + pathDelim + "%s"
 )
