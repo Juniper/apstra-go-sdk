@@ -518,6 +518,13 @@ var (
 	SviIpv6ModeLinkLocal = SviIpv6Mode{Value: "link_local"}
 )
 
+type SwitchingZoneMACVRFServiceType oenum.Member[string]
+
+var (
+	SwitchingZoneMACVRFServiceTypeVLANAware  = SwitchingZoneMACVRFServiceType{Value: "vlan_aware"}
+	SwitchingZoneMACVRFServiceTypeVLANBundle = SwitchingZoneMACVRFServiceType{Value: "vlan_bundle"}
+)
+
 type SystemManagementLevel oenum.Member[string]
 
 var ( // do not introduce "not_installed" - that's an agent parameter with similar enum values

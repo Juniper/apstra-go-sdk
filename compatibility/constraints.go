@@ -17,6 +17,9 @@ var (
 	BpHasVirtualNetworkPolicyNode = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
 	}
+	DatacenterSwitchingZoneOK = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
+	}
 	DeviceProfileHasRefdesignCapabilities = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
