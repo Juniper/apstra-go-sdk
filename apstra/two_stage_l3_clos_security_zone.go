@@ -43,7 +43,7 @@ type SecurityZone struct {
 	AddressingSupport *enum.AddressingScheme `json:"addressing_support,omitempty"`  // Apstra 6.1+ only
 	DisableIPv4       *bool                  `json:"disable_ipv4,omitempty"`        // Apstra 6.1+ only
 	VTEPAddressing    *enum.AddressingScheme `json:"vtep_addressing,omitempty"`     // Apstra 6.1+ only
-	Tags              []string               // Apstra 5.0.0+ only and read-only
+	Tags              []string               // Apstra 5.0.0+ and read-only - JSON struct tag is omitted to prevent marshaling this attribute
 
 	id string
 }
