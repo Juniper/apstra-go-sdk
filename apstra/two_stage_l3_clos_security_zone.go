@@ -62,7 +62,7 @@ func (o *SecurityZone) SetID(id string) {
 }
 
 func (o *SecurityZone) UnmarshalJSON(bytes []byte) error {
-	type securityZoneAlias SecurityZone // type alias defeats recursion
+	type securityZoneAlias SecurityZone // type alias prevents recursion
 
 	var aux struct {
 		securityZoneAlias
