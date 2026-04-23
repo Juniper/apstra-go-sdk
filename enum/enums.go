@@ -518,13 +518,6 @@ var (
 	SviIpv6ModeLinkLocal = SviIpv6Mode{Value: "link_local"}
 )
 
-type SwitchingZoneImplementationType oenum.Member[string]
-
-var (
-	SwitchingZoneImplementationTypeDefault = SwitchingZoneImplementationType{Value: "default"}
-	SwitchingZoneImplementationTypeMACVRF  = SwitchingZoneImplementationType{Value: "mac_vrf"}
-)
-
 type SwitchingZoneMACVRFServiceType oenum.Member[string]
 
 var (
