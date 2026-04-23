@@ -43,6 +43,7 @@ type SecurityZone struct {
 	AddressingSupport *enum.AddressingScheme `json:"addressing_support,omitempty"`  // Apstra 6.1+ only
 	DisableIPv4       *bool                  `json:"disable_ipv4,omitempty"`        // Apstra 6.1+ only
 	VTEPAddressing    *enum.AddressingScheme `json:"vtep_addressing,omitempty"`     // Apstra 6.1+ only
+	Tags              []string               // Apstra 5.0.0+ and read-only - JSON struct tag is omitted to prevent marshaling this attribute
 
 	id string
 }
@@ -61,41 +62,22 @@ func (o *SecurityZone) SetID(id string) {
 }
 
 func (o *SecurityZone) UnmarshalJSON(bytes []byte) error {
-	var raw struct {
-		ID                string                 `json:"id"`
-		Label             string                 `json:"label"`
-		Description       *string                `json:"vrf_description"`
-		Type              enum.SecurityZoneType  `json:"sz_type"`
-		VRFName           string                 `json:"vrf_name"`
-		RoutingPolicyID   string                 `json:"routing_policy_id"`
-		RouteTarget       *string                `json:"route_target"`
-		RTPolicy          *RTPolicy              `json:"rt_policy"`
-		VLAN              *VLAN                  `json:"vlan_id"`
-		VNI               *int                   `json:"vni_id"`
-		JunosEVPNIRBMode  *enum.JunosEVPNIRBMode `json:"junos_evpn_irb_mode"`
-		AddressingSupport *enum.AddressingScheme `json:"addressing_support"`
-		DisableIPv4       *bool                  `json:"disable_ipv4"`
-		VTEPAddressing    *enum.AddressingScheme `json:"vtep_addressing"`
+	type securityZoneAlias SecurityZone // type alias prevents recursion
+
+	var aux struct {
+		securityZoneAlias
+		ID   string   `json:"id"`   // the `id` struct element cannot be unmarshaled so we temporarily stash that value here
+		Tags []string `json:"tags"` // the `Tags` struct element cannot be unmarshaled so we temporarily stash that value here
 	}
-	err := json.Unmarshal(bytes, &raw)
-	if err != nil {
+
+	// unmarshal everything which can be handled by the `json` package.
+	if err := json.Unmarshal(bytes, &aux); err != nil {
 		return err
 	}
 
-	o.id = raw.ID
-	o.Label = raw.Label
-	o.Description = raw.Description
-	o.Type = raw.Type
-	o.VRFName = raw.VRFName
-	o.RoutingPolicyID = raw.RoutingPolicyID
-	o.RouteTarget = raw.RouteTarget
-	o.RTPolicy = raw.RTPolicy
-	o.VLAN = raw.VLAN
-	o.VNI = raw.VNI
-	o.JunosEVPNIRBMode = raw.JunosEVPNIRBMode
-	o.AddressingSupport = raw.AddressingSupport
-	o.DisableIPv4 = raw.DisableIPv4
-	o.VTEPAddressing = raw.VTEPAddressing
+	*o = SecurityZone(aux.securityZoneAlias)
+	o.id = aux.ID
+	o.Tags = aux.Tags
 
 	return nil
 }

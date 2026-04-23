@@ -326,3 +326,32 @@ func TestGetDefaultRoutingZone(t *testing.T) {
 		})
 	}
 }
+
+func TestSecurityZone_Tagging(t *testing.T) {
+	ctx := testutils.ContextWithTestID(t.Context(), t)
+
+	clients := testclient.GetTestClients(t, ctx)
+
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			if compatibility.SecurityZoneTaggingForbidden.Check(client.APIVersion()) {
+				t.Skipf("skipping test due to API version constraints: tagging of security zones is forbidden in Apstra %s", client.APIVersion())
+			}
+
+			t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
+
+			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			sz, err := bpClient.GetSecurityZoneByVRFName(ctx, "default")
+			require.NoError(t, err)
+			require.NotNil(t, sz.ID())
+
+			desiredTags := []string{testutils.RandString(6, "hex"), testutils.RandString(6, "hex")}
+
+			require.NoError(t, bpClient.SetNodeTags(ctx, apstra.ObjectId(*sz.ID()), desiredTags))
+			sz, err = bpClient.GetSecurityZone(ctx, *sz.ID())
+
+			require.ElementsMatch(t, desiredTags, sz.Tags)
+		})
+	}
+}
