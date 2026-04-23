@@ -6,6 +6,7 @@ package apstra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"maps"
 	"net/http"
@@ -91,6 +92,76 @@ func (c *TwoStageL3ClosClient) GetSwitchingZoneByLabel(ctx context.Context, labe
 	}
 
 	return *result, nil
+}
+
+func (c *TwoStageL3ClosClient) GetDefaultSwitchingZone(ctx context.Context) (datacenter.SwitchingZone, error) {
+	// collect all Switching Zones here without unpacking them
+	var response struct {
+		Items map[string]json.RawMessage `json:"items"`
+	}
+
+	err := c.client.talkToApstra(ctx, &talkToApstraIn{
+		method:      http.MethodGet,
+		urlStr:      fmt.Sprintf(urls.DatacenterSwitchingZones, c.blueprintId),
+		apiResponse: &response,
+	})
+	if err != nil {
+		return datacenter.SwitchingZone{}, convertTtaeToAceWherePossible(err)
+	}
+
+	// impl_type is omitted from the SwitchingZone type. This struct exists as a filter used here only.
+	var target struct {
+		ImplType string `json:"impl_type"`
+	}
+
+	// loop over switching zones looking for the one (we expect) with impl_type == default
+	var result *datacenter.SwitchingZone
+	for i, item := range response.Items {
+		if err = json.Unmarshal(item, &target); err != nil {
+			return datacenter.SwitchingZone{}, fmt.Errorf("error unmarshalling Switching Zone %q: %w", i, err)
+		}
+		if target.ImplType == "default" {
+			if result != nil {
+				return datacenter.SwitchingZone{}, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("found multiple Switching Zones with impl_type == default"),
+				}
+			}
+			if err = json.Unmarshal(item, &result); err != nil {
+				return datacenter.SwitchingZone{}, fmt.Errorf("error unmarshalling default Switching Zone: %w", err)
+			}
+		}
+	}
+
+	if result == nil {
+		return datacenter.SwitchingZone{}, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no Switching Zone with impl_type == default"),
+		}
+	}
+
+	return *result, nil
+}
+
+func (c *TwoStageL3ClosClient) ListSwitchingZones(ctx context.Context) ([]string, error) {
+	items, err := c.GetSwitchingZones(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]string, len(items))
+	for i, item := range items {
+		idPtr := item.ID()
+		if idPtr == nil {
+			return nil, ClientErr{
+				errType: ErrInvalidId,
+				err:     fmt.Errorf("the Switching Zone at index %d has nil ID", i),
+			}
+		}
+		result[i] = *idPtr
+	}
+
+	return result, nil
 }
 
 func (c *TwoStageL3ClosClient) UpdateSwitchingZone(ctx context.Context, v datacenter.SwitchingZone) error {

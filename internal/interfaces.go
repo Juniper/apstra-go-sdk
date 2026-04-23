@@ -7,3 +7,7 @@ package internal
 type IDer interface {
 	ID() *string
 }
+
+type IDSetter interface {
+	SetID(string) error
+}

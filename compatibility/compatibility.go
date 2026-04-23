@@ -20,6 +20,7 @@ const (
 	apstra610  = "6.1.0"
 	apstra611  = "6.1.1"
 	apstra612  = "6.1.2"
+	apstra620  = "6.2.0"
 )
 
 var (

@@ -1625,37 +1625,6 @@ func (o *SviIpv6Mode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
-	_ enum             = (*SwitchingZoneImplementationType)(nil)
-	_ json.Marshaler   = (*SwitchingZoneImplementationType)(nil)
-	_ json.Unmarshaler = (*SwitchingZoneImplementationType)(nil)
-)
-
-func (o SwitchingZoneImplementationType) String() string {
-	return o.Value
-}
-
-func (o *SwitchingZoneImplementationType) FromString(s string) error {
-	if SwitchingZoneImplementationTypes.Parse(s) == nil {
-		return newEnumParseError(o, s)
-	}
-	o.Value = s
-	return nil
-}
-
-func (o SwitchingZoneImplementationType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.String())
-}
-
-func (o *SwitchingZoneImplementationType) UnmarshalJSON(bytes []byte) error {
-	var s string
-	err := json.Unmarshal(bytes, &s)
-	if err != nil {
-		return err
-	}
-	return o.FromString(s)
-}
-
-var (
 	_ enum             = (*SwitchingZoneMACVRFServiceType)(nil)
 	_ json.Marshaler   = (*SwitchingZoneMACVRFServiceType)(nil)
 	_ json.Unmarshaler = (*SwitchingZoneMACVRFServiceType)(nil)
@@ -2352,12 +2321,6 @@ var (
 		SviIpv6ModeEnabled,
 		SviIpv6ModeForced,
 		SviIpv6ModeLinkLocal,
-	)
-
-	_                                enum = new(SwitchingZoneImplementationType)
-	SwitchingZoneImplementationTypes      = oenum.New(
-		SwitchingZoneImplementationTypeDefault,
-		SwitchingZoneImplementationTypeMACVRF,
 	)
 
 	_                               enum = new(SwitchingZoneMACVRFServiceType)
