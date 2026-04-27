@@ -56,6 +56,9 @@ var (
 	SecurityZoneLoopbackApiSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
+	SecurityZoneTaggingForbidden = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
+	}
 	ServerVersionSupported = Constraint{
 		constraints:             version.MustConstraints(version.NewConstraint(strings.Join(SupportedApiVersions(), ","))),
 		considerPreReleaseLabel: true,
