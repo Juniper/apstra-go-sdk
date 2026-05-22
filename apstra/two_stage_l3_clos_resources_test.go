@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -141,6 +141,7 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "ipv6_spine_leaf_link_ips", intType: ResourceGroupNameSpineLeafIp6, stringType: resourceGroupNameSpineLeafIp6},
 		{stringVal: "access_l3_peer_link_link_ips", intType: ResourceGroupNameAccessAccessIp4, stringType: resourceGroupNameAccessAccessIp4},
 		{stringVal: "leaf_leaf_link_ips", intType: ResourceGroupNameLeafLeafIp4, stringType: resourceGroupNameLeafLeafIp4},
+		{stringVal: "ipv6_leaf_leaf_link_ips", intType: ResourceGroupNameLeafLeafIp6, stringType: resourceGroupNameLeafLeafIp6},
 		{stringVal: "leaf_l3_peer_link_link_ips", intType: ResourceGroupNameLeafL3PeerLinkLinkIp4, stringType: resourceGroupNameLeafL3PeerLinkLinkIp4},
 		{stringVal: "ipv6_leaf_l3_peer_link_link_ips", intType: ResourceGroupNameLeafL3PeerLinkLinkIp6, stringType: resourceGroupNameLeafL3PeerLinkLinkIp6},
 		{stringVal: "mlag_domain_svi_subnets", intType: ResourceGroupNameMlagDomainIp4, stringType: resourceGroupNameMlagDomainSviIp4},

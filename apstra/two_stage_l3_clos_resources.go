@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -60,6 +60,7 @@ const (
 	ResourceGroupNameSpineLeafIp6
 	ResourceGroupNameAccessAccessIp4
 	ResourceGroupNameLeafLeafIp4
+	ResourceGroupNameLeafLeafIp6
 	ResourceGroupNameLeafL3PeerLinkLinkIp4
 	ResourceGroupNameLeafL3PeerLinkLinkIp6
 	ResourceGroupNameMlagDomainIp4
@@ -93,6 +94,7 @@ const (
 	resourceGroupNameSpineLeafIp4          = resourceGroupName("spine_leaf_link_ips")
 	resourceGroupNameSpineLeafIp6          = resourceGroupName("ipv6_spine_leaf_link_ips")
 	resourceGroupNameLeafLeafIp4           = resourceGroupName("leaf_leaf_link_ips")
+	resourceGroupNameLeafLeafIp6           = resourceGroupName("ipv6_leaf_leaf_link_ips")
 	resourceGroupNameLeafL3PeerLinkLinkIp4 = resourceGroupName("leaf_l3_peer_link_link_ips")
 	resourceGroupNameLeafL3PeerLinkLinkIp6 = resourceGroupName("ipv6_leaf_l3_peer_link_link_ips")
 	resourceGroupNameMlagDomainSviIp4      = resourceGroupName("mlag_domain_svi_subnets")
@@ -169,6 +171,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameLeafLeafIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameLeafLeafIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameLeafL3PeerLinkLinkIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameLeafL3PeerLinkLinkIp6:
@@ -255,6 +259,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameAccessAccessIp4
 	case ResourceGroupNameLeafLeafIp4:
 		return resourceGroupNameLeafLeafIp4
+	case ResourceGroupNameLeafLeafIp6:
+		return resourceGroupNameLeafLeafIp6
 	case ResourceGroupNameLeafL3PeerLinkLinkIp4:
 		return resourceGroupNameLeafL3PeerLinkLinkIp4
 	case ResourceGroupNameLeafL3PeerLinkLinkIp6:
@@ -328,6 +334,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameAccessAccessIp4), nil
 	case resourceGroupNameLeafLeafIp4:
 		return int(ResourceGroupNameLeafLeafIp4), nil
+	case resourceGroupNameLeafLeafIp6:
+		return int(ResourceGroupNameLeafLeafIp6), nil
 	case resourceGroupNameLeafL3PeerLinkLinkIp4:
 		return int(ResourceGroupNameLeafL3PeerLinkLinkIp4), nil
 	case resourceGroupNameLeafL3PeerLinkLinkIp6:
