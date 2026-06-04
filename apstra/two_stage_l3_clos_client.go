@@ -64,11 +64,12 @@ func (o BlueprintType) string() string {
 }
 
 type TwoStageL3ClosClient struct {
-	client        *Client
-	blueprintId   ObjectId
-	Mutex         Mutex
-	blueprintType BlueprintType
-	nodeIdsByType map[NodeType][]ObjectId
+	client                 *Client
+	blueprintId            ObjectId
+	Mutex                  Mutex
+	blueprintType          BlueprintType
+	nodeIdsByType          map[NodeType][]ObjectId
+	defaultSwitchingZoneID string
 }
 
 // Id returns the client's Blueprint ID

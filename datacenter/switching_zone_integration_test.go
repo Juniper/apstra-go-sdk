@@ -198,10 +198,60 @@ func TestSwitchingZone_GetDefaultSwitchingZone(t *testing.T) {
 
 			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
 
+			// The default Switching Zone ID will not be cached at this point
 			sz, err := bp.GetDefaultSwitchingZone(ctx)
 			require.NoError(t, err)
 			require.NotNil(t, sz.ID())
 			require.NotEmpty(t, *sz.ID())
+
+			// The default Switching Zone ID should be cached here
+			id, err := bp.DefaultSwitchingZoneID(ctx)
+			require.NoError(t, err)
+			require.NotEmpty(t, id)
+
+			require.Equal(t, id, *sz.ID())
+
+			// The default Switching Zone ID should be cached here
+			sz, err = bp.GetDefaultSwitchingZone(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, sz.ID())
+			require.NotEmpty(t, *sz.ID())
+
+			require.Equal(t, id, *sz.ID())
+		})
+	}
+}
+
+func TestSwitchingZone_DefaultSwitchingZoneID(t *testing.T) {
+	ctx := testutils.ContextWithTestID(context.Background(), t)
+	clients := testclient.GetTestClients(t, ctx)
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			if !compatibility.DatacenterSwitchingZoneOK.Check(client.APIVersion()) {
+				t.Skipf("skipping test due to compatibility constraint: %q", compatibility.DatacenterSwitchingZoneOK.String())
+			}
+
+			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+
+			// The default Switching Zone ID will not be cached at this point
+			id, err := bp.DefaultSwitchingZoneID(ctx)
+			require.NoError(t, err)
+			require.NotEmpty(t, id)
+
+			// The default Switching Zone ID should be cached here
+			sz, err := bp.GetDefaultSwitchingZone(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, sz.ID())
+			require.NotEmpty(t, *sz.ID())
+
+			require.Equal(t, id, *sz.ID())
+
+			// The default Switching Zone ID should be cached here
+			id, err = bp.DefaultSwitchingZoneID(ctx)
+			require.NoError(t, err)
+			require.NotEmpty(t, id)
+
+			require.Equal(t, id, *sz.ID())
 		})
 	}
 }

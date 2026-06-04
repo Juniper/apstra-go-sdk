@@ -12,10 +12,14 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
+	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
+
+const defaultSwitchingZoneIDLock = "default_switching_zone"
 
 func (c *TwoStageL3ClosClient) CreateSwitchingZone(ctx context.Context, v datacenter.SwitchingZone) (string, error) {
 	var response struct {
@@ -94,8 +98,68 @@ func (c *TwoStageL3ClosClient) GetSwitchingZoneByLabel(ctx context.Context, labe
 	return *result, nil
 }
 
+func (c *TwoStageL3ClosClient) DefaultSwitchingZoneID(ctx context.Context) (string, error) {
+	if !compatibility.DatacenterSwitchingZoneOK.Check(c.client.apiVersion) {
+		return "", errors.IncompatibleVersion(fmt.Sprintf(
+			"Switching Zones supported only with API versions %q, this is version %q",
+			compatibility.DatacenterSwitchingZoneOK, c.client.apiVersion,
+		))
+	}
+
+	c.client.lock(defaultSwitchingZoneIDLock)
+	defer c.client.unlock(defaultSwitchingZoneIDLock)
+
+	// If we know the default switching zone ID, return it.
+	if c.defaultSwitchingZoneID != "" {
+		return c.defaultSwitchingZoneID, nil
+	}
+
+	// Retrieve the default Switching Zone the hard way.
+	sz, err := c.getDefaultSwitchingZone(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed while fetching default Switching Zone ID: %w", err)
+	}
+
+	id := sz.ID()
+	if id == nil {
+		return "", errors.APIResponseInvalid("default Switching Zone ID returned nil ID")
+	}
+
+	c.defaultSwitchingZoneID = *id // Cache the default Switching Zone ID.
+
+	return *id, nil
+}
+
 func (c *TwoStageL3ClosClient) GetDefaultSwitchingZone(ctx context.Context) (datacenter.SwitchingZone, error) {
-	// collect all Switching Zones here without unpacking them
+	c.client.lock(defaultSwitchingZoneIDLock)
+	defer c.client.unlock(defaultSwitchingZoneIDLock)
+
+	// If we know the default Switching Zone ID, fetch it using the cached ID.
+	if c.defaultSwitchingZoneID != "" {
+		return c.GetSwitchingZone(ctx, c.defaultSwitchingZoneID)
+	}
+
+	// Retrieve the default Switching Zone the hard way.
+	sz, err := c.getDefaultSwitchingZone(ctx)
+	if err != nil {
+		return datacenter.SwitchingZone{}, fmt.Errorf("failed while fetching default Switching Zone: %w", err)
+	}
+
+	id := sz.ID()
+	if id == nil {
+		return datacenter.SwitchingZone{}, errors.APIResponseInvalid("default Switching Zone ID returned nil ID")
+	}
+
+	c.defaultSwitchingZoneID = *id // Cache the default Switching Zone ID.
+
+	return sz, nil
+}
+
+// getDefaultSwitchingZone fetches every Switching Zone looking for the one with
+//
+//	{ "impl_type": "default" }
+func (c *TwoStageL3ClosClient) getDefaultSwitchingZone(ctx context.Context) (datacenter.SwitchingZone, error) {
+	// Collect all Switching Zones here without unpacking them.
 	var response struct {
 		Items map[string]json.RawMessage `json:"items"`
 	}
@@ -114,7 +178,7 @@ func (c *TwoStageL3ClosClient) GetDefaultSwitchingZone(ctx context.Context) (dat
 		ImplType string `json:"impl_type"`
 	}
 
-	// loop over switching zones looking for the one (we expect) with impl_type == default
+	// Loop over switching zones looking for the one (we expect) with impl_type == default
 	var result *datacenter.SwitchingZone
 	for i, item := range response.Items {
 		if err = json.Unmarshal(item, &target); err != nil {

@@ -16,6 +16,12 @@ func (e IDAlreadySet) Error() string {
 	return string(e)
 }
 
+type IncompatibleVersion string
+
+func (e IncompatibleVersion) Error() string {
+	return string(e)
+}
+
 type Internal string
 
 func (e Internal) Error() string {
