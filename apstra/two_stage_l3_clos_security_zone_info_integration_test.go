@@ -104,7 +104,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 			szIds := make([]string, securityZoneCount)
 			securityZones := make([]SecurityZone, securityZoneCount)
 			VlanIds := make([]int, securityZoneCount) // dedicated vlan slice ensures no collisions
-			randomIntsN(VlanIds, vlanMax-2)
+			randomIntsN(VlanIds, 4092)
 
 			var as *enum.AddressingScheme
 			if compatibility.SecurityZoneAddressingSupported.Check(bp.client.apiVersion) {
@@ -117,7 +117,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 					Label:             randString(6, "hex"),
 					Type:              enum.SecurityZoneTypeEVPN,
 					VRFName:           randString(6, "hex"),
-					VLAN:              toPtr(VLAN(VlanIds[i])),
+					VLAN:              pointer.To(uint16(VlanIds[i])),
 					JunosEVPNIRBMode:  oneOf(&enum.JunosEVPNIRBModeAsymmetric, &enum.JunosEVPNIRBModeSymmetric),
 					AddressingSupport: as,
 				}

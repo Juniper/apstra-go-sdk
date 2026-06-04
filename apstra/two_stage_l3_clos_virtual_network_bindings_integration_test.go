@@ -15,6 +15,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -137,7 +138,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 					bindings[leafIds[j]] = &VnBinding{
 						AccessSwitchNodeIds: nil,
 						SystemId:            leafIds[j],
-						VlanId:              toPtr(VLAN(100*(count) + rand.Intn(100))),
+						VlanId:              pointer.To(uint16(100*(count) + rand.Intn(100))),
 					}
 				}
 
@@ -276,7 +277,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 			vnPrefix := randomPrefix(t, "10.0.0.0/8", 24)
 			vnBinding := VnBinding{
 				SystemId: fixedLeafId,
-				VlanId:   toPtr(VLAN(rand.Intn(89) + 11)),
+				VlanId:   pointer.To(uint16(rand.Intn(89) + 11)),
 			}
 			sviIp := SviIp{
 				SystemId: fixedLeafId,
@@ -313,7 +314,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 						requestBindings[leafId] = &VnBinding{
 							AccessSwitchNodeIds: nil,
 							SystemId:            leafIds[j],
-							VlanId:              toPtr(VLAN(100*(count) + rand.Intn(100))),
+							VlanId:              pointer.To(uint16(100*(count) + rand.Intn(100))),
 						}
 					} else {
 						requestBindings[leafId] = nil

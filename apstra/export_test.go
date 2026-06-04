@@ -12,13 +12,6 @@ import (
 	"time"
 )
 
-const (
-	VlanMin = vlanMin
-	VlanMax = vlanMax
-	VniMin  = vniMin
-	VniMax  = vniMax
-)
-
 type (
 	VersionsAosdiResponse  versionsAosdiResponse
 	VersionsApiResponse    versionsApiResponse

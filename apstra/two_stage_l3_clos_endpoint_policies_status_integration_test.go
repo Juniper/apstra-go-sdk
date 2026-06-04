@@ -71,7 +71,7 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 		return applicationPointIds
 	}
 
-	createCt := func(t *testing.T, ctx context.Context, bp *TwoStageL3ClosClient, vlan VLAN) EndpointPolicyStatus {
+	createCt := func(t *testing.T, ctx context.Context, bp *TwoStageL3ClosClient, vlan uint16) EndpointPolicyStatus {
 		t.Helper()
 
 		result := EndpointPolicyStatus{
@@ -151,7 +151,7 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	var vlan VLAN = 10
+	var vlan uint16 = 10
 
 	for clientName, client := range clients {
 		t.Run(clientName, func(t *testing.T) {
