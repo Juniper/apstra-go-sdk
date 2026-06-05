@@ -192,6 +192,9 @@ func TestSwitchingZone_GetDefaultSwitchingZone(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
+
 			if !compatibility.DatacenterSwitchingZoneOK.Check(client.APIVersion()) {
 				t.Skipf("skipping test due to compatibility constraint: %q", compatibility.DatacenterSwitchingZoneOK.String())
 			}
@@ -228,6 +231,9 @@ func TestSwitchingZone_DefaultSwitchingZoneID(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
+
 			if !compatibility.DatacenterSwitchingZoneOK.Check(client.APIVersion()) {
 				t.Skipf("skipping test due to compatibility constraint: %q", compatibility.DatacenterSwitchingZoneOK.String())
 			}

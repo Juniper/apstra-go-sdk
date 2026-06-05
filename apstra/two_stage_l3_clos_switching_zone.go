@@ -15,6 +15,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/errors"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
@@ -108,9 +109,7 @@ func (c *TwoStageL3ClosClient) DefaultSwitchingZoneID(ctx context.Context) (*str
 
 	// If we know the default Switching Zone ID, return it.
 	if c.defaultSwitchingZoneID != "" {
-		// make a copy rather than returning a pointer to our cached value to defend against modification by the caller
-		result := c.defaultSwitchingZoneID
-		return &result, nil
+		return pointer.ToCopy(c.defaultSwitchingZoneID), nil
 	}
 
 	// Retrieve the default Switching Zone the hard way.

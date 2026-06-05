@@ -7,3 +7,8 @@ package pointer
 func To[A any](a A) *A {
 	return &a
 }
+
+func ToCopy[A any](a A) *A {
+	_copy := a
+	return &_copy
+}
