@@ -98,12 +98,9 @@ func (c *TwoStageL3ClosClient) GetSwitchingZoneByLabel(ctx context.Context, labe
 	return *result, nil
 }
 
-func (c *TwoStageL3ClosClient) DefaultSwitchingZoneID(ctx context.Context) (string, error) {
+func (c *TwoStageL3ClosClient) DefaultSwitchingZoneID(ctx context.Context) (*string, error) {
 	if !compatibility.DatacenterSwitchingZoneOK.Check(c.client.apiVersion) {
-		return "", errors.IncompatibleVersion(fmt.Sprintf(
-			"Switching Zones supported only with API versions %q, this is version %q",
-			compatibility.DatacenterSwitchingZoneOK, c.client.apiVersion,
-		))
+		return nil, nil
 	}
 
 	c.client.lock(defaultSwitchingZoneIDLock)
@@ -111,23 +108,25 @@ func (c *TwoStageL3ClosClient) DefaultSwitchingZoneID(ctx context.Context) (stri
 
 	// If we know the default Switching Zone ID, return it.
 	if c.defaultSwitchingZoneID != "" {
-		return c.defaultSwitchingZoneID, nil
+		// make a copy rather than returning a pointer to our cached value to defend against modification by the caller
+		result := c.defaultSwitchingZoneID
+		return &result, nil
 	}
 
 	// Retrieve the default Switching Zone the hard way.
 	sz, err := c.getDefaultSwitchingZone(ctx)
 	if err != nil {
-		return "", fmt.Errorf("failed while fetching default Switching Zone ID: %w", err)
+		return nil, fmt.Errorf("failed while fetching default Switching Zone ID: %w", err)
 	}
 
 	id := sz.ID()
 	if id == nil {
-		return "", errors.APIResponseInvalid("default Switching Zone ID returned nil ID")
+		return nil, errors.APIResponseInvalid("default Switching Zone ID returned nil ID")
 	}
 
 	c.defaultSwitchingZoneID = *id // Cache the default Switching Zone ID.
 
-	return *id, nil
+	return id, nil
 }
 
 func (c *TwoStageL3ClosClient) GetDefaultSwitchingZone(ctx context.Context) (datacenter.SwitchingZone, error) {

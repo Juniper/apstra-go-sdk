@@ -207,9 +207,10 @@ func TestSwitchingZone_GetDefaultSwitchingZone(t *testing.T) {
 			// The default Switching Zone ID should be cached here
 			id, err := bp.DefaultSwitchingZoneID(ctx)
 			require.NoError(t, err)
+			require.NotNil(t, id)
 			require.NotEmpty(t, id)
 
-			require.Equal(t, id, *sz.ID())
+			require.Equal(t, *id, *sz.ID())
 
 			// The default Switching Zone ID should be cached here
 			sz, err = bp.GetDefaultSwitchingZone(ctx)
@@ -217,7 +218,7 @@ func TestSwitchingZone_GetDefaultSwitchingZone(t *testing.T) {
 			require.NotNil(t, sz.ID())
 			require.NotEmpty(t, *sz.ID())
 
-			require.Equal(t, id, *sz.ID())
+			require.Equal(t, *id, *sz.ID())
 		})
 	}
 }
@@ -236,6 +237,7 @@ func TestSwitchingZone_DefaultSwitchingZoneID(t *testing.T) {
 			// The default Switching Zone ID will not be cached at this point
 			id, err := bp.DefaultSwitchingZoneID(ctx)
 			require.NoError(t, err)
+			require.NotNil(t, id)
 			require.NotEmpty(t, id)
 
 			// The default Switching Zone ID should be cached here
@@ -244,14 +246,15 @@ func TestSwitchingZone_DefaultSwitchingZoneID(t *testing.T) {
 			require.NotNil(t, sz.ID())
 			require.NotEmpty(t, *sz.ID())
 
-			require.Equal(t, id, *sz.ID())
+			require.Equal(t, *id, *sz.ID())
 
 			// The default Switching Zone ID should be cached here
 			id, err = bp.DefaultSwitchingZoneID(ctx)
 			require.NoError(t, err)
+			require.NotNil(t, id)
 			require.NotEmpty(t, id)
 
-			require.Equal(t, id, *sz.ID())
+			require.Equal(t, *id, *sz.ID())
 		})
 	}
 }
