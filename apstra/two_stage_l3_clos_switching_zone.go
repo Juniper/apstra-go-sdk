@@ -109,7 +109,7 @@ func (c *TwoStageL3ClosClient) DefaultSwitchingZoneID(ctx context.Context) (stri
 	c.client.lock(defaultSwitchingZoneIDLock)
 	defer c.client.unlock(defaultSwitchingZoneIDLock)
 
-	// If we know the default switching zone ID, return it.
+	// If we know the default Switching Zone ID, return it.
 	if c.defaultSwitchingZoneID != "" {
 		return c.defaultSwitchingZoneID, nil
 	}
@@ -178,7 +178,7 @@ func (c *TwoStageL3ClosClient) getDefaultSwitchingZone(ctx context.Context) (dat
 		ImplType string `json:"impl_type"`
 	}
 
-	// Loop over switching zones looking for the one (we expect) with impl_type == default
+	// Loop over Switching Zones looking for the one (we expect) with impl_type == default
 	var result *datacenter.SwitchingZone
 	for i, item := range response.Items {
 		if err = json.Unmarshal(item, &target); err != nil {
