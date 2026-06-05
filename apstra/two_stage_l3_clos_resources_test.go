@@ -83,7 +83,7 @@ func TestSetGetResourceAllocation(t *testing.T) {
 
 func TestAllResourceGroupNames(t *testing.T) {
 	all := AllResourceGroupNames()
-	expected := 32
+	expected := 33
 	if len(all) != expected {
 		t.Fatalf("expected %d resource group names, got %d", expected, len(all))
 	}
