@@ -5,6 +5,11 @@
 package urls
 
 const (
+	DatacenterSecurityZones           = blueprintByID + pathDelim + "security-zones"
+	DatacenterSecurityZoneById        = DatacenterSecurityZones + pathDelim + "%s"
+	DatacenterSecurityZoneDHCPServers = DatacenterSecurityZoneById + pathDelim + "dhcp-servers"
+	DatacenterSecurityZoneLoopbacks   = DatacenterSecurityZoneById + pathDelim + "loopbacks"
+
 	DatacenterSwitchingZones    = blueprintByID + pathDelim + "switching-zones"
 	DatacenterSwitchingZoneByID = DatacenterSwitchingZones + pathDelim + "%s"
 )

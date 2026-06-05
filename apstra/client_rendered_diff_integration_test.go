@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
@@ -66,7 +67,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 
 				// create a security zone
 				szLabel := testutils.RandString(6, "hex")
-				szId, err := bp.CreateSecurityZone(ctx, apstra.SecurityZone{
+				szId, err := bp.CreateSecurityZone(ctx, datacenter.SecurityZone{
 					Label:   szLabel,
 					Type:    enum.SecurityZoneTypeEVPN,
 					VRFName: szLabel,

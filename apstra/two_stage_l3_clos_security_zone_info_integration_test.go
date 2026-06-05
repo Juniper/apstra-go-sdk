@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
@@ -25,7 +26,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 
 	securityZoneCount := rand.Intn(3) + 3
 
-	compareSzToSzInfo := func(t *testing.T, a *SecurityZone, b *TwoStageL3ClosSecurityZoneInfo) {
+	compareSzToSzInfo := func(t *testing.T, a *datacenter.SecurityZone, b *TwoStageL3ClosSecurityZoneInfo) {
 		t.Helper()
 
 		require.NotNil(t, a)
@@ -102,7 +103,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 			}
 
 			szIds := make([]string, securityZoneCount)
-			securityZones := make([]SecurityZone, securityZoneCount)
+			securityZones := make([]datacenter.SecurityZone, securityZoneCount)
 			VlanIds := make([]int, securityZoneCount) // dedicated vlan slice ensures no collisions
 			randomIntsN(VlanIds, 4092)
 
@@ -113,7 +114,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 
 			// create security zones
 			for i := range securityZoneCount {
-				securityZones[i] = SecurityZone{
+				securityZones[i] = datacenter.SecurityZone{
 					Label:             randString(6, "hex"),
 					Type:              enum.SecurityZoneTypeEVPN,
 					VRFName:           randString(6, "hex"),

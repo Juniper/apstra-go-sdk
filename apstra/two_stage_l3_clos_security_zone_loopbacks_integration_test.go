@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
@@ -116,7 +117,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			if compatibility.SecurityZoneAddressingSupported.Check(client.client.apiVersion) {
 				as = pointer.To(enum.AddressingSchemeIPv46)
 			}
-			rzID, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+			rzID, err := bpClient.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Label:             randString(6, "hex"),
 				Type:              enum.SecurityZoneTypeEVPN,
 				VRFName:           randString(6, "hex"),

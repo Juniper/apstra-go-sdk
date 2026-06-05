@@ -69,6 +69,7 @@ type TwoStageL3ClosClient struct {
 	Mutex                  Mutex
 	blueprintType          BlueprintType
 	nodeIdsByType          map[NodeType][]ObjectId
+	defaultSecurityZoneID  string
 	defaultSwitchingZoneID string
 }
 

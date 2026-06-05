@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
@@ -90,7 +91,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			}
 
 			vrf := randString(5, "hex")
-			szId, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+			szId, err := bpClient.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Label:   vrf,
 				Type:    enum.SecurityZoneTypeEVPN,
 				VRFName: vrf,
@@ -366,7 +367,7 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 				rzAddressing = &enum.AddressingSchemeIPv46
 			}
 
-			rzID, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+			rzID, err := bpClient.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Label:             randString(6, "hex"),
 				Type:              enum.SecurityZoneTypeEVPN,
 				VRFName:           randString(6, "hex"),

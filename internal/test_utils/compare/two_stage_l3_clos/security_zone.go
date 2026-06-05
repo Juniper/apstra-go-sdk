@@ -9,12 +9,12 @@ package comparedatacenter
 import (
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/test_message"
 	"github.com/stretchr/testify/require"
 )
 
-func SecurityZone(t testing.TB, req, resp apstra.SecurityZone, msg ...string) {
+func SecurityZone(t testing.TB, req, resp datacenter.SecurityZone, msg ...string) {
 	msg = testmessage.Add(msg, "Comparing Security Zone")
 
 	if req.ID() != nil {

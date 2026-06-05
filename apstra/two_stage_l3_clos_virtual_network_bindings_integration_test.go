@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
@@ -107,7 +108,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 			require.LessOrEqual(t, len(leafIds), 40, "test requires no more than 40 leaf switches")
 
 			rzLabel := randString(6, "hex")
-			rzId, err := bp.CreateSecurityZone(ctx, SecurityZone{
+			rzId, err := bp.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Label:   rzLabel,
 				Type:    enum.SecurityZoneTypeEVPN,
 				VRFName: rzLabel,
@@ -267,7 +268,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 			leafIds = leafIds[1:]
 
 			rzLabel := randString(6, "hex")
-			rzId, err := bp.CreateSecurityZone(ctx, SecurityZone{
+			rzId, err := bp.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Label:   rzLabel,
 				Type:    enum.SecurityZoneTypeEVPN,
 				VRFName: rzLabel,
