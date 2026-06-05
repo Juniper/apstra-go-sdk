@@ -109,7 +109,7 @@ func (c *TwoStageL3ClosClient) DefaultSwitchingZoneID(ctx context.Context) (*str
 
 	// If we know the default Switching Zone ID, return it.
 	if c.defaultSwitchingZoneID != "" {
-		return pointer.ToCopy(c.defaultSwitchingZoneID), nil
+		return pointer.ToCopyOf(c.defaultSwitchingZoneID), nil
 	}
 
 	// Retrieve the default Switching Zone the hard way.
