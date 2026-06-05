@@ -142,7 +142,7 @@ func (c *TwoStageL3ClosClient) DefaultSecurityZoneID(ctx context.Context) (*stri
 
 	// If we know the default Security Zone ID, return it.
 	if c.defaultSecurityZoneID != "" {
-		return pointer.ToCopy(c.defaultSecurityZoneID), nil
+		return pointer.ToCopyOf(c.defaultSecurityZoneID), nil
 	}
 
 	// Retrieve the default Security Zone.
