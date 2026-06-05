@@ -1625,6 +1625,37 @@ func (o *SviIpv6Mode) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*SwitchingZoneMACVRFServiceType)(nil)
+	_ json.Marshaler   = (*SwitchingZoneMACVRFServiceType)(nil)
+	_ json.Unmarshaler = (*SwitchingZoneMACVRFServiceType)(nil)
+)
+
+func (o SwitchingZoneMACVRFServiceType) String() string {
+	return o.Value
+}
+
+func (o *SwitchingZoneMACVRFServiceType) FromString(s string) error {
+	if SwitchingZoneMACVRFServiceTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o SwitchingZoneMACVRFServiceType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *SwitchingZoneMACVRFServiceType) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*SystemManagementLevel)(nil)
 	_ json.Marshaler   = (*SystemManagementLevel)(nil)
 	_ json.Unmarshaler = (*SystemManagementLevel)(nil)
@@ -2290,6 +2321,12 @@ var (
 		SviIpv6ModeEnabled,
 		SviIpv6ModeForced,
 		SviIpv6ModeLinkLocal,
+	)
+
+	_                               enum = new(SwitchingZoneMACVRFServiceType)
+	SwitchingZoneMACVRFServiceTypes      = oenum.New(
+		SwitchingZoneMACVRFServiceTypeVLANAware,
+		SwitchingZoneMACVRFServiceTypeVLANBundle,
 	)
 
 	_                      enum = new(SystemManagementLevel)
