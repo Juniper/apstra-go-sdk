@@ -127,7 +127,7 @@ type ConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	Label              string
 	SecurityZone       *ObjectId
 	Tagged             bool
-	Vlan               *VLAN
+	Vlan               *uint16
 	IPv4AddressingType CtPrimitiveIPv4AddressingType
 	IPv6AddressingType CtPrimitiveIPv6AddressingType
 	L3Mtu              *uint16
@@ -152,11 +152,8 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachLogicalLink) raw() (json.R
 		intfType = "untagged"
 	}
 
-	if o.Vlan != nil {
-		err := o.Vlan.validate()
-		if err != nil {
-			return nil, err
-		}
+	if o.Vlan != nil && (*o.Vlan < 1 || *o.Vlan > 4094) {
+		return nil, fmt.Errorf("invalid vlan id: %d", o.Vlan)
 	}
 
 	raw := rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
@@ -652,7 +649,7 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachMultipleVlan) polish(t *
 
 type rawConnectivityTemplatePrimitiveAttributesAttachLogicalLink struct {
 	InterfaceType      string                        `json:"interface_type"`
-	Vlan               *VLAN                         `json:"vlan_id"`
+	Vlan               *uint16                       `json:"vlan_id"`
 	Ipv4AddressingType ctPrimitiveIPv4AddressingType `json:"ipv4_addressing_type"`
 	Ipv6AddressingType ctPrimitiveIPv6AddressingType `json:"ipv6_addressing_type"`
 	SecurityZone       *ObjectId                     `json:"security_zone"`

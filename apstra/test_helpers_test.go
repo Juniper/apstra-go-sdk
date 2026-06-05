@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2025.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -66,7 +66,7 @@ func testRaResourceIpv6(ctx context.Context, t testing.TB, cidrBlock string, bit
 
 func testRaLocalVlanPool(ctx context.Context, t testing.TB, client *FreeformClient, ownerSystemId ObjectId, label string) ObjectId {
 	ranges := rand.Intn(4) + 1
-	ints, err := getRandInts(vlanMin+10, vlanMax, ranges*2)
+	ints, err := getRandInts(11, 4094, ranges*2)
 	require.NoError(t, err)
 	sort.Ints(ints)
 

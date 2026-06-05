@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
@@ -36,8 +37,8 @@ type SecurityZone struct {
 	VRFName           string                 `json:"vrf_name"`
 	RoutingPolicyID   string                 `json:"routing_policy_id,omitempty"`   // automatically assigned if not set
 	RouteTarget       *string                `json:"route_target,omitempty"`        // calculated only value
-	RTPolicy          *RTPolicy              `json:"rt_policy,omitempty"`           // can be null
-	VLAN              *VLAN                  `json:"vlan_id,omitempty"`             // can be null
+	RTPolicy          *datacenter.RTPolicy   `json:"rt_policy,omitempty"`           // can be null
+	VLAN              *uint16                `json:"vlan_id,omitempty"`             // can be null
 	VNI               *int                   `json:"vni_id,omitempty"`              // can be null
 	JunosEVPNIRBMode  *enum.JunosEVPNIRBMode `json:"junos_evpn_irb_mode,omitempty"` // can be null in POST, required in PUT AOS-58916
 	AddressingSupport *enum.AddressingScheme `json:"addressing_support,omitempty"`  // Apstra 6.1+ only

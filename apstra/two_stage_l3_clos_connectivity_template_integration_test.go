@@ -167,7 +167,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			vlan10 := VLAN(10)
+			vlan10 := uint16(10)
 			sixThousand := uint16(6000)
 
 			testCases := map[string]testCase{
@@ -369,7 +369,7 @@ func TestCtLayout(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		vlan := VLAN(11)
+		vlan := uint16(11)
 		ct := ConnectivityTemplate{
 			Label: randString(5, "hex"),
 			Subpolicies: []*ConnectivityTemplatePrimitive{

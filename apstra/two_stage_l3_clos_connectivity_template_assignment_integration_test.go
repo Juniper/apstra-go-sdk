@@ -14,6 +14,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -383,7 +384,7 @@ func TestSetDelApplicationPointConnectivityTemplates_Errors(t *testing.T) {
 							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
 								SecurityZone:       (*ObjectId)(&rzID),
 								Tagged:             true,
-								Vlan:               toPtr(VLAN(i + 101)),
+								Vlan:               pointer.To(uint16(i + 101)),
 								IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
 							},
 						},
@@ -621,7 +622,7 @@ func TestSetApplicationPointsConnectivityTemplates_Errors(t *testing.T) {
 							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
 								SecurityZone:       (*ObjectId)(zones[0].ID()),
 								Tagged:             true,
-								Vlan:               toPtr(VLAN(i + 101)),
+								Vlan:               pointer.To(uint16(i + 101)),
 								IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
 							},
 						},

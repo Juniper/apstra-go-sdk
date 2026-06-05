@@ -84,7 +84,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 				require.NoError(t, err)
 
 				// prep VN bindings
-				vlanId := apstra.VLAN(rand.IntN(apstra.VlanMax-2) + 2) // 2-4094
+				vlanId := uint16(rand.IntN(4093) + 2) // 2-4094
 				vnBindings := make([]apstra.VnBinding, len(leafIds))
 				for i, leafId := range leafIds {
 					vnBindings[i] = apstra.VnBinding{

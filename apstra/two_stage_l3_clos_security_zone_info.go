@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/netip"
 
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
@@ -74,12 +75,12 @@ type TwoStageL3ClosSecurityZoneInfo struct {
 	Label            string                 `json:"label"`
 	VrfName          string                 `json:"vrf_name"`
 	SecurityZoneType *enum.SecurityZoneType `json:"sz_type"`
-	VlanId           *VLAN                  `json:"vlan_id"`
+	VlanId           *uint16                `json:"vlan_id"`
 	RoutingPolicyId  *ObjectId              `json:"routing_policy_id"`
 	JunosEvpnIrbMode *enum.JunosEVPNIRBMode `json:"junos_evpn_irb_mode"`
 	RouteTarget      *string                `json:"route_target"`
 	VniId            *int                   `json:"vni_id"`
-	RtPolicy         *RTPolicy              `json:"rt_policy"`
+	RtPolicy         *datacenter.RTPolicy   `json:"rt_policy"`
 	Tags             []string               `json:"tags"`
 	MemberInterfaces []struct {
 		Loopbacks     []TwoStageL3ClosSecurityZoneInfoInterface `json:"loopbacks"`

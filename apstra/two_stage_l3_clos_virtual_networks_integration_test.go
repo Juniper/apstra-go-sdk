@@ -14,11 +14,12 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
 )
 
-func compareRtPolicy(t testing.TB, a, b *RTPolicy) {
+func compareRtPolicy(t testing.TB, a, b *datacenter.RTPolicy) {
 	t.Helper()
 
 	if (a != nil) != (b != nil) { // XOR
@@ -246,7 +247,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			}
 			compareVirtualNetworkData(t, &createData, getByName.Data, false)
 
-			newVlan := VLAN(100)
+			newVlan := uint16(100)
 			createData.ReservedVlanId = &newVlan
 			createData.Label = randString(10, "hex")
 			createData.L3Mtu = toPtr(1280 + (2 * rand.Intn(3969))) // 1280 - 9216 even numbers only

@@ -12,7 +12,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
 
 const (
@@ -229,7 +231,7 @@ func (o *SviIp) UnmarshalJSON(bytes []byte) error {
 type VnBinding struct {
 	AccessSwitchNodeIds []ObjectId `json:"access_switch_node_ids"`
 	SystemId            ObjectId   `json:"system_id"` // graphdb node id of a leaf (so far) switch
-	VlanId              *VLAN      `json:"vlan_id"`   // optional (auto-assign)
+	VlanId              *uint16    `json:"vlan_id"`   // optional (auto-assign)
 }
 
 var _ json.Unmarshaler = (*VirtualNetwork)(nil)
@@ -241,29 +243,29 @@ type VirtualNetwork struct {
 
 func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 	var raw struct {
-		Id                        ObjectId    `json:"id"`
-		Description               string      `json:"description"`
-		DhcpService               string      `json:"dhcp_service"`
-		Ipv4Enabled               bool        `json:"ipv4_enabled"`
-		Ipv4Subnet                string      `json:"ipv4_subnet"`
-		Ipv6Enabled               bool        `json:"ipv6_enabled"`
-		Ipv6Subnet                string      `json:"ipv6_subnet"`
-		L3Mtu                     *int        `json:"l3_mtu"`
-		Label                     string      `json:"label"`
-		ReservedVlanId            *VLAN       `json:"reserved_vlan_id"`
-		RouteTarget               string      `json:"route_target"`
-		RtPolicy                  *RTPolicy   `json:"rt_policy"`
-		SecurityZoneId            ObjectId    `json:"security_zone_id"`
-		SviIps                    []SviIp     `json:"svi_ips"`
-		Tags                      []string    `json:"tags"`
-		VirtualGatewayIpv4        string      `json:"virtual_gateway_ipv4"`
-		VirtualGatewayIpv6        string      `json:"virtual_gateway_ipv6"`
-		VirtualGatewayIpv4Enabled bool        `json:"virtual_gateway_ipv4_enabled"`
-		VirtualGatewayIpv6Enabled bool        `json:"virtual_gateway_ipv6_enabled"`
-		VnBindings                []VnBinding `json:"bound_to"`
-		VnId                      string      `json:"vn_id"`
-		VnType                    string      `json:"vn_type"`
-		VirtualMac                string      `json:"virtual_mac"`
+		Id                        ObjectId             `json:"id"`
+		Description               string               `json:"description"`
+		DhcpService               string               `json:"dhcp_service"`
+		Ipv4Enabled               bool                 `json:"ipv4_enabled"`
+		Ipv4Subnet                string               `json:"ipv4_subnet"`
+		Ipv6Enabled               bool                 `json:"ipv6_enabled"`
+		Ipv6Subnet                string               `json:"ipv6_subnet"`
+		L3Mtu                     *int                 `json:"l3_mtu"`
+		Label                     string               `json:"label"`
+		ReservedVlanId            *uint16              `json:"reserved_vlan_id"`
+		RouteTarget               string               `json:"route_target"`
+		RtPolicy                  *datacenter.RTPolicy `json:"rt_policy"`
+		SecurityZoneId            ObjectId             `json:"security_zone_id"`
+		SviIps                    []SviIp              `json:"svi_ips"`
+		Tags                      []string             `json:"tags"`
+		VirtualGatewayIpv4        string               `json:"virtual_gateway_ipv4"`
+		VirtualGatewayIpv6        string               `json:"virtual_gateway_ipv6"`
+		VirtualGatewayIpv4Enabled bool                 `json:"virtual_gateway_ipv4_enabled"`
+		VirtualGatewayIpv6Enabled bool                 `json:"virtual_gateway_ipv6_enabled"`
+		VnBindings                []VnBinding          `json:"bound_to"`
+		VnId                      string               `json:"vn_id"`
+		VnType                    string               `json:"vn_type"`
+		VirtualMac                string               `json:"virtual_mac"`
 	}
 
 	err := json.Unmarshal(bytes, &raw)
@@ -321,7 +323,7 @@ func (o *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 		if err != nil {
 			return fmt.Errorf("while parsing virtual network data vn_id %q - %w", raw.VnId, err)
 		}
-		o.Data.VnId = (*VNI)(toPtr(uint32(vnId)))
+		o.Data.VnId = pointer.To(uint32(vnId))
 	}
 
 	err = o.Data.VnType.FromString(raw.VnType)
@@ -347,52 +349,52 @@ var _ json.Marshaler = (*VirtualNetworkData)(nil)
 
 type VirtualNetworkData struct {
 	Description               string
-	DhcpService               DhcpServiceEnabled `json:"dhcp_service"`
-	Ipv4Enabled               bool               `json:"ipv4_enabled"`
-	Ipv4Subnet                *net.IPNet         `json:"ipv4_subnet,omitempty"`
-	Ipv6Enabled               bool               `json:"ipv6_enabled"`
-	Ipv6Subnet                *net.IPNet         `json:"ipv6_subnet,omitempty"`
-	L3Mtu                     *int               `json:"l3_mtu,omitempty"`
-	Label                     string             `json:"label"`
-	ReservedVlanId            *VLAN              `json:"reserved_vlan_id,omitempty"`
-	RouteTarget               string             `json:"route_target,omitempty"`
-	RtPolicy                  *RTPolicy          `json:"rt_policy"`
-	SecurityZoneId            ObjectId           `json:"security_zone_id,omitempty"`
-	SviIps                    []SviIp            `json:"svi_ips"`
-	Tags                      []string           `json:"tags"`
-	VirtualGatewayIpv4        net.IP             `json:"virtual_gateway_ipv4,omitempty"`
-	VirtualGatewayIpv6        net.IP             `json:"virtual_gateway_ipv6,omitempty"`
-	VirtualGatewayIpv4Enabled bool               `json:"virtual_gateway_ipv4_enabled"`
-	VirtualGatewayIpv6Enabled bool               `json:"virtual_gateway_ipv6_enabled"`
-	VnBindings                []VnBinding        `json:"bound_to"`
-	VnId                      *VNI               `json:"vn_id,omitempty"` // VNI as a string, null when unset
-	VnType                    enum.VnType        `json:"vn_type"`
-	VirtualMac                net.HardwareAddr   `json:"virtual_mac,omitempty"`
+	DhcpService               DhcpServiceEnabled   `json:"dhcp_service"`
+	Ipv4Enabled               bool                 `json:"ipv4_enabled"`
+	Ipv4Subnet                *net.IPNet           `json:"ipv4_subnet,omitempty"`
+	Ipv6Enabled               bool                 `json:"ipv6_enabled"`
+	Ipv6Subnet                *net.IPNet           `json:"ipv6_subnet,omitempty"`
+	L3Mtu                     *int                 `json:"l3_mtu,omitempty"`
+	Label                     string               `json:"label"`
+	ReservedVlanId            *uint16              `json:"reserved_vlan_id,omitempty"`
+	RouteTarget               string               `json:"route_target,omitempty"`
+	RtPolicy                  *datacenter.RTPolicy `json:"rt_policy"`
+	SecurityZoneId            ObjectId             `json:"security_zone_id,omitempty"`
+	SviIps                    []SviIp              `json:"svi_ips"`
+	Tags                      []string             `json:"tags"`
+	VirtualGatewayIpv4        net.IP               `json:"virtual_gateway_ipv4,omitempty"`
+	VirtualGatewayIpv6        net.IP               `json:"virtual_gateway_ipv6,omitempty"`
+	VirtualGatewayIpv4Enabled bool                 `json:"virtual_gateway_ipv4_enabled"`
+	VirtualGatewayIpv6Enabled bool                 `json:"virtual_gateway_ipv6_enabled"`
+	VnBindings                []VnBinding          `json:"bound_to"`
+	VnId                      *uint32              `json:"vn_id,omitempty"` // VNI as a string, null when unset
+	VnType                    enum.VnType          `json:"vn_type"`
+	VirtualMac                net.HardwareAddr     `json:"virtual_mac,omitempty"`
 }
 
 func (o VirtualNetworkData) MarshalJSON() ([]byte, error) {
 	raw := struct {
-		Description               string      `json:"description,omitempty"` // 5.0 and later only
-		DhcpService               string      `json:"dhcp_service"`
-		Ipv4Enabled               bool        `json:"ipv4_enabled"`
-		Ipv4Subnet                string      `json:"ipv4_subnet,omitempty"`
-		Ipv6Enabled               bool        `json:"ipv6_enabled"`
-		Ipv6Subnet                string      `json:"ipv6_subnet,omitempty"`
-		L3Mtu                     *int        `json:"l3_mtu,omitempty"`
-		Label                     string      `json:"label"`
-		ReservedVlanId            *VLAN       `json:"reserved_vlan_id,omitempty"`
-		RouteTarget               string      `json:"route_target,omitempty"`
-		RtPolicy                  *RTPolicy   `json:"rt_policy"`
-		SecurityZoneId            ObjectId    `json:"security_zone_id,omitempty"`
-		SviIps                    []SviIp     `json:"svi_ips"`
-		VirtualGatewayIpv4        string      `json:"virtual_gateway_ipv4,omitempty"`
-		VirtualGatewayIpv6        string      `json:"virtual_gateway_ipv6,omitempty"`
-		VirtualGatewayIpv4Enabled bool        `json:"virtual_gateway_ipv4_enabled"`
-		VirtualGatewayIpv6Enabled bool        `json:"virtual_gateway_ipv6_enabled"`
-		VnBindings                []VnBinding `json:"bound_to"`
-		VnId                      string      `json:"vn_id,omitempty"`
-		VnType                    string      `json:"vn_type"`
-		VirtualMac                string      `json:"virtual_mac,omitempty"`
+		Description               string               `json:"description,omitempty"` // 5.0 and later only
+		DhcpService               string               `json:"dhcp_service"`
+		Ipv4Enabled               bool                 `json:"ipv4_enabled"`
+		Ipv4Subnet                string               `json:"ipv4_subnet,omitempty"`
+		Ipv6Enabled               bool                 `json:"ipv6_enabled"`
+		Ipv6Subnet                string               `json:"ipv6_subnet,omitempty"`
+		L3Mtu                     *int                 `json:"l3_mtu,omitempty"`
+		Label                     string               `json:"label"`
+		ReservedVlanId            *uint16              `json:"reserved_vlan_id,omitempty"`
+		RouteTarget               string               `json:"route_target,omitempty"`
+		RtPolicy                  *datacenter.RTPolicy `json:"rt_policy"`
+		SecurityZoneId            ObjectId             `json:"security_zone_id,omitempty"`
+		SviIps                    []SviIp              `json:"svi_ips"`
+		VirtualGatewayIpv4        string               `json:"virtual_gateway_ipv4,omitempty"`
+		VirtualGatewayIpv6        string               `json:"virtual_gateway_ipv6,omitempty"`
+		VirtualGatewayIpv4Enabled bool                 `json:"virtual_gateway_ipv4_enabled"`
+		VirtualGatewayIpv6Enabled bool                 `json:"virtual_gateway_ipv6_enabled"`
+		VnBindings                []VnBinding          `json:"bound_to"`
+		VnId                      string               `json:"vn_id,omitempty"`
+		VnType                    string               `json:"vn_type"`
+		VirtualMac                string               `json:"virtual_mac,omitempty"`
 	}{
 		Description:               o.Description,
 		Ipv4Enabled:               o.Ipv4Enabled,

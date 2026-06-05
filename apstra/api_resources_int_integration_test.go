@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -125,7 +125,7 @@ func TestEmptyVniPool(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 
 	vniRangeCount := rand.Intn(5) + 2 // random number of VNI ranges to add to new pool
-	vniBeginEnds, err := testutils.GetRandInts(apstra.VniMin, apstra.VniMax, vniRangeCount*2)
+	vniBeginEnds, err := testutils.GetRandInts(4096, 16777214, vniRangeCount*2)
 	require.NoError(t, err)
 
 	sort.Ints(vniBeginEnds) // sort so that the VNI ranges will be ([0]...[1], [2]...[3], etc.)
