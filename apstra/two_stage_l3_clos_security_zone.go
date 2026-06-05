@@ -136,29 +136,31 @@ func (o TwoStageL3ClosClient) GetSecurityZoneByVRFName(ctx context.Context, vrfN
 	}
 }
 
-func (c *TwoStageL3ClosClient) DefaultSecurityZoneID(ctx context.Context) (string, error) {
+func (c *TwoStageL3ClosClient) DefaultSecurityZoneID(ctx context.Context) (*string, error) {
 	c.client.lock(defaultSecurityZoneIDLock)
 	defer c.client.unlock(defaultSecurityZoneIDLock)
 
 	// If we know the default Security Zone ID, return it.
 	if c.defaultSecurityZoneID != "" {
-		return c.defaultSecurityZoneID, nil
+		// make a copy rather than returning a pointer to our cached value to defend against modification by the caller
+		result := c.defaultSecurityZoneID
+		return &result, nil
 	}
 
 	// Retrieve the default Security Zone.
 	sz, err := c.GetSecurityZoneByVRFName(ctx, defaultSecurityZoneVRFName)
 	if err != nil {
-		return "", fmt.Errorf("failed while fetching default Routing Zone ID: %w", err)
+		return nil, fmt.Errorf("failed while fetching default Routing Zone ID: %w", err)
 	}
 
 	id := sz.ID()
 	if id == nil {
-		return "", errors.APIResponseInvalid("default Routing Zone ID returned nil ID")
+		return nil, errors.APIResponseInvalid("default Routing Zone ID returned nil ID")
 	}
 
-	c.defaultSecurityZoneID = *id // Cache the default Switching Zone ID.
+	c.defaultSecurityZoneID = *id // Cache the default Security Zone ID.
 
-	return *id, nil
+	return id, nil
 }
 
 func (c *TwoStageL3ClosClient) GetDefaultSecurityZone(ctx context.Context) (datacenter.SecurityZone, error) {
@@ -181,7 +183,7 @@ func (c *TwoStageL3ClosClient) GetDefaultSecurityZone(ctx context.Context) (data
 		return datacenter.SecurityZone{}, errors.APIResponseInvalid("default Security Zone ID returned nil ID")
 	}
 
-	c.defaultSwitchingZoneID = *id // Cache the default Switching Zone ID.
+	c.defaultSecurityZoneID = *id // Cache the default Security Zone ID.
 
 	return sz, nil
 }

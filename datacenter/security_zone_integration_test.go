@@ -369,9 +369,10 @@ func TestSecurityZone_GetDefaultSecurityZone(t *testing.T) {
 			// The default Security Zone ID should be cached here
 			id, err := bp.DefaultSecurityZoneID(ctx)
 			require.NoError(t, err)
+			require.NotNil(t, id)
 			require.NotEmpty(t, id)
 
-			require.Equal(t, id, *sz.ID())
+			require.Equal(t, *id, *sz.ID())
 
 			// The default Security Zone ID should be cached here
 			sz, err = bp.GetDefaultSecurityZone(ctx)
@@ -380,7 +381,7 @@ func TestSecurityZone_GetDefaultSecurityZone(t *testing.T) {
 			require.NotEmpty(t, *sz.ID())
 			require.Equal(t, "default", sz.VRFName)
 
-			require.Equal(t, id, *sz.ID())
+			require.Equal(t, *id, *sz.ID())
 		})
 	}
 }
@@ -390,11 +391,15 @@ func TestSecurityZone_DefaultSecurityZoneID(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
+
 			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
 
 			// The default Security Zone ID will not be cached at this point
 			id, err := bp.DefaultSecurityZoneID(ctx)
 			require.NoError(t, err)
+			require.NotNil(t, id)
 			require.NotEmpty(t, id)
 
 			// The default Security Zone ID should be cached here
@@ -404,14 +409,15 @@ func TestSecurityZone_DefaultSecurityZoneID(t *testing.T) {
 			require.NotEmpty(t, *sz.ID())
 			require.Equal(t, "default", sz.VRFName)
 
-			require.Equal(t, id, *sz.ID())
+			require.Equal(t, *id, *sz.ID())
 
 			// The default Security Zone ID should be cached here
 			id, err = bp.DefaultSecurityZoneID(ctx)
 			require.NoError(t, err)
+			require.NotNil(t, id)
 			require.NotEmpty(t, id)
 
-			require.Equal(t, id, *sz.ID())
+			require.Equal(t, *id, *sz.ID())
 		})
 	}
 }
