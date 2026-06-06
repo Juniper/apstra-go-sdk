@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
@@ -65,7 +66,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 			securityZoneIDs := make([]string, securityZoneCount)
 			for i := range securityZoneIDs {
 				vrfName := testutils.RandString(6, "hex")
-				id, err := bpClient.CreateSecurityZone(ctx, apstra.SecurityZone{
+				id, err := bpClient.CreateSecurityZone(ctx, datacenter.SecurityZone{
 					Label:   vrfName,
 					Type:    enum.SecurityZoneTypeEVPN,
 					VRFName: vrfName,

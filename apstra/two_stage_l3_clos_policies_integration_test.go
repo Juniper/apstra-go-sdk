@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
@@ -263,7 +264,7 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 
 			// create a security zone (VNs live here)
 			szName := randString(5, "hex")
-			szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
+			szId, err := bp.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Type:    enum.SecurityZoneTypeEVPN,
 				Label:   szName,
 				VRFName: szName,
@@ -388,7 +389,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 
 			// create a security zone (VNs live here)
 			szName := randString(5, "hex")
-			szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
+			szId, err := bp.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Type:    enum.SecurityZoneTypeEVPN,
 				Label:   szName,
 				VRFName: szName,

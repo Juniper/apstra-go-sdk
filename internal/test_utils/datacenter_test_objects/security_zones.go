@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/stretchr/testify/require"
@@ -21,7 +22,7 @@ func TestSecurityZoneA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3C
 
 	rs := testutils.RandString(6, "hex")
 
-	id, err := bp.CreateSecurityZone(ctx, apstra.SecurityZone{
+	id, err := bp.CreateSecurityZone(ctx, datacenter.SecurityZone{
 		Label:            rs,
 		Type:             enum.SecurityZoneTypeEVPN,
 		VRFName:          rs,

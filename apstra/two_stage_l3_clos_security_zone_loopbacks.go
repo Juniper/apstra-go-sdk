@@ -12,9 +12,8 @@ import (
 	"net/netip"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
-
-const apiUrlBlueprintSecurityZoneLoopbacksById = apiUrlBlueprintSecurityZoneById + apiUrlPathDelim + "loopbacks"
 
 var _ json.Marshaler = (*SecurityZoneLoopback)(nil)
 
@@ -129,7 +128,7 @@ func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szI
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintSecurityZoneLoopbacksById, o.blueprintId, szId),
+		urlStr:   fmt.Sprintf(urls.DatacenterSecurityZoneLoopbacks, o.blueprintId, szId),
 		apiInput: apiInput,
 	})
 	if err != nil {

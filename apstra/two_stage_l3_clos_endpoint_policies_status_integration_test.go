@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/stretchr/testify/require"
 )
@@ -88,7 +89,7 @@ func TestGetAllConnectivityTemplateStatus(t *testing.T) {
 		}
 
 		szLabel := randString(6, "hex")
-		szId, err := bp.CreateSecurityZone(ctx, SecurityZone{
+		szId, err := bp.CreateSecurityZone(ctx, datacenter.SecurityZone{
 			Label:             szLabel,
 			Type:              enum.SecurityZoneTypeEVPN,
 			VRFName:           szLabel,

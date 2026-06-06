@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
 
 // GetSecurityZoneDhcpServers returns []net.IP representing the DHCP relay
@@ -20,7 +22,7 @@ func (o TwoStageL3ClosClient) GetSecurityZoneDhcpServers(ctx context.Context, id
 	}{}
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintSecurityZoneByIdDhcpServers, o.blueprintId, id),
+		urlStr:      fmt.Sprintf(urls.DatacenterSecurityZoneDHCPServers, o.blueprintId, id),
 		apiResponse: response,
 	})
 	if err != nil {
@@ -51,7 +53,7 @@ func (o TwoStageL3ClosClient) SetSecurityZoneDhcpServers(ctx context.Context, id
 
 	return convertTtaeToAceWherePossible(o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodPut,
-		urlStr: fmt.Sprintf(apiUrlBlueprintSecurityZoneByIdDhcpServers, o.blueprintId, id),
+		urlStr: fmt.Sprintf(urls.DatacenterSecurityZoneDHCPServers, o.blueprintId, id),
 		apiInput: &struct {
 			Items []string `json:"items"`
 		}{

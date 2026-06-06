@@ -4,13 +4,15 @@
 
 //go:build integration && requiretestutils
 
-package apstra_test
+package datacenter_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
@@ -27,18 +29,18 @@ func TestCRUDSecurityZone(t *testing.T) {
 
 	type testCase struct {
 		versionConstraint *compatibility.Constraint
-		create            apstra.SecurityZone
-		update            *apstra.SecurityZone
+		create            datacenter.SecurityZone
+		update            *datacenter.SecurityZone
 	}
 
 	testCases := map[string]testCase{
 		"start_minimal_4.x+": {
-			create: apstra.SecurityZone{
+			create: datacenter.SecurityZone{
 				Label:   testutils.RandString(6, "hex"),
 				VRFName: testutils.RandString(6, "hex"),
 				Type:    enum.SecurityZoneTypeEVPN,
 			},
-			update: &apstra.SecurityZone{
+			update: &datacenter.SecurityZone{
 				Label:            testutils.RandString(8, "hex"),
 				Type:             enum.SecurityZoneTypeEVPN,
 				RoutingPolicyID:  "",
@@ -49,7 +51,7 @@ func TestCRUDSecurityZone(t *testing.T) {
 			},
 		},
 		"start_maximal_4.x+": {
-			create: apstra.SecurityZone{
+			create: datacenter.SecurityZone{
 				Label:            testutils.RandString(8, "hex"),
 				Type:             enum.SecurityZoneTypeEVPN,
 				RoutingPolicyID:  "",
@@ -59,19 +61,19 @@ func TestCRUDSecurityZone(t *testing.T) {
 				JunosEVPNIRBMode: pointer.To(enum.JunosEVPNIRBModeSymmetric),
 				VRFName:          testutils.RandString(6, "hex"),
 			},
-			update: &apstra.SecurityZone{
+			update: &datacenter.SecurityZone{
 				Label: testutils.RandString(6, "hex"),
 				Type:  enum.SecurityZoneTypeEVPN,
 			},
 		},
 		"start_minimal_5.x+": {
 			versionConstraint: &compatibility.SecurityZoneDescriptionSupported,
-			create: apstra.SecurityZone{
+			create: datacenter.SecurityZone{
 				Label:   testutils.RandString(6, "hex"),
 				VRFName: testutils.RandString(6, "hex"),
 				Type:    enum.SecurityZoneTypeEVPN,
 			},
-			update: &apstra.SecurityZone{
+			update: &datacenter.SecurityZone{
 				Description:      pointer.To(testutils.RandString(8, "hex")),
 				Label:            testutils.RandString(8, "hex"),
 				Type:             enum.SecurityZoneTypeEVPN,
@@ -84,7 +86,7 @@ func TestCRUDSecurityZone(t *testing.T) {
 		},
 		"start_maximal_5.x+": {
 			versionConstraint: &compatibility.SecurityZoneDescriptionSupported,
-			create: apstra.SecurityZone{
+			create: datacenter.SecurityZone{
 				Description:      pointer.To(testutils.RandString(8, "hex")),
 				Label:            testutils.RandString(8, "hex"),
 				Type:             enum.SecurityZoneTypeEVPN,
@@ -95,19 +97,19 @@ func TestCRUDSecurityZone(t *testing.T) {
 				JunosEVPNIRBMode: pointer.To(enum.JunosEVPNIRBModeSymmetric),
 				VRFName:          testutils.RandString(6, "hex"),
 			},
-			update: &apstra.SecurityZone{
+			update: &datacenter.SecurityZone{
 				Label: testutils.RandString(6, "hex"),
 				Type:  enum.SecurityZoneTypeEVPN,
 			},
 		},
 		"start_minimal_6.1+": {
 			versionConstraint: &compatibility.SecurityZoneAddressingSupported,
-			create: apstra.SecurityZone{
+			create: datacenter.SecurityZone{
 				Label:   testutils.RandString(6, "hex"),
 				VRFName: testutils.RandString(6, "hex"),
 				Type:    enum.SecurityZoneTypeEVPN,
 			},
-			update: &apstra.SecurityZone{
+			update: &datacenter.SecurityZone{
 				Description:       pointer.To(testutils.RandString(8, "hex")),
 				Label:             testutils.RandString(8, "hex"),
 				Type:              enum.SecurityZoneTypeEVPN,
@@ -122,7 +124,7 @@ func TestCRUDSecurityZone(t *testing.T) {
 		},
 		"start_maximmal_6.1+": {
 			versionConstraint: &compatibility.SecurityZoneAddressingSupported,
-			create: apstra.SecurityZone{
+			create: datacenter.SecurityZone{
 				Description:       pointer.To(testutils.RandString(8, "hex")),
 				Label:             testutils.RandString(8, "hex"),
 				VRFName:           testutils.RandString(6, "hex"),
@@ -135,21 +137,21 @@ func TestCRUDSecurityZone(t *testing.T) {
 				AddressingSupport: &enum.AddressingSchemeIPv46,
 				DisableIPv4:       pointer.To(false),
 			},
-			update: &apstra.SecurityZone{
+			update: &datacenter.SecurityZone{
 				Label: testutils.RandString(6, "hex"),
 				Type:  enum.SecurityZoneTypeEVPN,
 			},
 		},
 		"auto_reset_of_disable_ipv4_attribute_6.1+": {
 			versionConstraint: &compatibility.SecurityZoneAddressingSupported,
-			create: apstra.SecurityZone{
+			create: datacenter.SecurityZone{
 				Label:             testutils.RandString(6, "hex"),
 				VRFName:           testutils.RandString(6, "hex"),
 				Type:              enum.SecurityZoneTypeEVPN,
 				AddressingSupport: &enum.AddressingSchemeIPv6,
 				DisableIPv4:       pointer.To(true),
 			},
-			update: &apstra.SecurityZone{
+			update: &datacenter.SecurityZone{
 				Label:             testutils.RandString(6, "hex"),
 				Type:              enum.SecurityZoneTypeEVPN,
 				AddressingSupport: &enum.AddressingSchemeIPv4,
@@ -177,7 +179,7 @@ func TestCRUDSecurityZone(t *testing.T) {
 					// because we modify these values below
 					create := tCase.create
 					create.VRFName = create.Label
-					var update *apstra.SecurityZone
+					var update *datacenter.SecurityZone
 					if tCase.update != nil {
 						update = pointer.To(*tCase.update)
 						require.Empty(t, update.VRFName, "vrf name must not be set in test case 'update'")
@@ -186,7 +188,7 @@ func TestCRUDSecurityZone(t *testing.T) {
 
 					var id string
 					var err error
-					var obj apstra.SecurityZone
+					var obj datacenter.SecurityZone
 
 					// create the object
 					id, err = bpClient.CreateSecurityZone(ctx, create)
@@ -221,6 +223,12 @@ func TestCRUDSecurityZone(t *testing.T) {
 					require.NotNil(t, obj.ID())
 					require.Equal(t, id, *obj.ID())
 					comparedatacenter.SecurityZone(t, create, obj)
+
+					// retrieve the list of IDs (ours must be in there) and validate
+					ids, err := bpClient.ListSecurityZones(ctx)
+					require.NoError(t, err)
+					require.NotNil(t, ids)
+					require.Contains(t, ids, id)
 
 					if update != nil {
 						// update the object
@@ -289,6 +297,12 @@ func TestCRUDSecurityZone(t *testing.T) {
 					objPtr = slice.MustFindByID(objs, id)
 					require.Nil(t, objPtr)
 
+					// retrieve the list of IDs (ours must *not* be in there)
+					ids, err = bpClient.ListSecurityZones(ctx)
+					require.NoError(t, err)
+					require.NotNil(t, ids)
+					require.NotContains(t, ids, id)
+
 					// update the object
 					create.SetID(id)
 					require.NotNil(t, create.ID())
@@ -305,24 +319,6 @@ func TestCRUDSecurityZone(t *testing.T) {
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
 				})
 			}
-		})
-	}
-}
-
-func TestGetDefaultRoutingZone(t *testing.T) {
-	ctx := testutils.ContextWithTestID(t.Context(), t)
-
-	clients := testclient.GetTestClients(t, ctx)
-
-	for _, client := range clients {
-		t.Run(client.Name(), func(t *testing.T) {
-			t.Parallel()
-			ctx := testutils.ContextWithTestID(ctx, t)
-
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
-			sz, err := bpClient.GetSecurityZoneByVRFName(ctx, "default")
-			require.NoError(t, err)
-			require.Equal(t, "default", sz.VRFName)
 		})
 	}
 }
@@ -352,6 +348,76 @@ func TestSecurityZone_Tagging(t *testing.T) {
 			sz, err = bpClient.GetSecurityZone(ctx, *sz.ID())
 
 			require.ElementsMatch(t, desiredTags, sz.Tags)
+		})
+	}
+}
+
+func TestSecurityZone_GetDefaultSecurityZone(t *testing.T) {
+	ctx := testutils.ContextWithTestID(context.Background(), t)
+	clients := testclient.GetTestClients(t, ctx)
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+
+			// The default Security Zone ID will not be cached at this point
+			sz, err := bp.GetDefaultSecurityZone(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, sz.ID())
+			require.NotEmpty(t, *sz.ID())
+			require.Equal(t, "default", sz.VRFName)
+
+			// The default Security Zone ID should be cached here
+			id, err := bp.DefaultSecurityZoneID(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, id)
+			require.NotEmpty(t, id)
+
+			require.Equal(t, *id, *sz.ID())
+
+			// The default Security Zone ID should be cached here
+			sz, err = bp.GetDefaultSecurityZone(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, sz.ID())
+			require.NotEmpty(t, *sz.ID())
+			require.Equal(t, "default", sz.VRFName)
+
+			require.Equal(t, *id, *sz.ID())
+		})
+	}
+}
+
+func TestSecurityZone_DefaultSecurityZoneID(t *testing.T) {
+	ctx := testutils.ContextWithTestID(context.Background(), t)
+	clients := testclient.GetTestClients(t, ctx)
+	for _, client := range clients {
+		t.Run(client.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
+
+			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+
+			// The default Security Zone ID will not be cached at this point
+			id, err := bp.DefaultSecurityZoneID(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, id)
+			require.NotEmpty(t, id)
+
+			// The default Security Zone ID should be cached here
+			sz, err := bp.GetDefaultSecurityZone(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, sz.ID())
+			require.NotEmpty(t, *sz.ID())
+			require.Equal(t, "default", sz.VRFName)
+
+			require.Equal(t, *id, *sz.ID())
+
+			// The default Security Zone ID should be cached here
+			id, err = bp.DefaultSecurityZoneID(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, id)
+			require.NotEmpty(t, id)
+
+			require.Equal(t, *id, *sz.ID())
 		})
 	}
 }

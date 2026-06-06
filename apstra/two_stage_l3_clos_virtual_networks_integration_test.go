@@ -152,7 +152,7 @@ func TestCreateUpdateDeleteVirtualNetwork(t *testing.T) {
 			bpClient.SetType(BlueprintTypeStaging)
 
 			log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			zoneId, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+			zoneId, err := bpClient.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Type:    enum.SecurityZoneTypeEVPN,
 				VRFName: vrfName,
 				Label:   label,
@@ -338,7 +338,7 @@ func TestVirtualNetworkTags(t *testing.T) {
 			bpClient := testBlueprintC(ctx, t, client.client)
 
 			log.Printf("testing CreateSecurityZone() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			zoneId, err := bpClient.CreateSecurityZone(ctx, SecurityZone{
+			zoneId, err := bpClient.CreateSecurityZone(ctx, datacenter.SecurityZone{
 				Type:    enum.SecurityZoneTypeEVPN,
 				VRFName: vrfName,
 				Label:   label,
