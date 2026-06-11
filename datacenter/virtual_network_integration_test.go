@@ -285,6 +285,174 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 				SecurityZoneID: "nondefault",
 			},
 		},
+		"start_minimal_vlan_with_binding_same_security_zone_for_4x": {
+			create: datacenter.VirtualNetwork{
+				Bindings: []datacenter.VNBinding{{}},
+				// Description: testutils.RandString(6, "hex"), does not update with 4x
+				Label: testutils.RandString(6, "hex"),
+				Type:  enum.VnTypeVlan,
+			},
+			update: &datacenter.VirtualNetwork{
+				Bindings: []datacenter.VNBinding{
+					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
+				},
+				// Description: testutils.RandString(6, "hex"), does not update with 4x
+				DHCPService: true,
+				IPv4Enabled: true,
+				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
+				IPv6Enabled: true,
+				IPv6Subnet:  pointer.To(testutils.RandomPrefix(t, "3fff::/20", 64)),
+				L3MTU:       pointer.To(9002 + (rand.Intn(50) * 2)),
+				Label:       testutils.RandString(6, "hex"),
+				//ReservedVLAN: pointer.To(uint16(90 + rand.Intn(4000))),
+				//RTPolicy: pointer.To(datacenter.RTPolicy{
+				//	ImportRTs: testutils.RandomRouteTargets(t, 1, 3),
+				//	ExportRTs: testutils.RandomRouteTargets(t, 1, 3),
+				//}),
+				SVIIPs: []datacenter.SVIAddressing{
+					{
+						IPv4Mode: enum.IPv4SVIModeEnabled,
+						IPv6Mode: enum.IPv6SVIModeForced,
+					},
+				},
+				// Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
+				Type: enum.VnTypeVlan,
+				// VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
+				// VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
+				VirtualGatewayIPv4Enabled: true,
+				VirtualGatewayIPv6Enabled: true,
+				VNI:                       nil,
+				// VirtualMAC:                testutils.RandomHardwareAddr([]byte{2}, []byte{1}),
+			},
+		},
+		"start_maximal_vlan_with_binding_same_security_zone_for_4x": {
+			create: datacenter.VirtualNetwork{
+				Bindings: []datacenter.VNBinding{
+					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
+				},
+				// Description: testutils.RandString(6, "hex"), does not update with 4x
+				DHCPService: true,
+				IPv4Enabled: true,
+				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
+				IPv6Enabled: true,
+				IPv6Subnet:  pointer.To(testutils.RandomPrefix(t, "3fff::/20", 64)),
+				L3MTU:       pointer.To(9002 + (rand.Intn(50) * 2)),
+				Label:       testutils.RandString(6, "hex"),
+				//ReservedVLAN: pointer.To(uint16(90 + rand.Intn(4000))),
+				//RTPolicy: pointer.To(datacenter.RTPolicy{
+				//	ImportRTs: testutils.RandomRouteTargets(t, 1, 3),
+				//	ExportRTs: testutils.RandomRouteTargets(t, 1, 3),
+				//}),
+				SecurityZoneID: "nondefault",
+				SVIIPs: []datacenter.SVIAddressing{
+					{
+						IPv4Mode: enum.IPv4SVIModeEnabled,
+						IPv6Mode: enum.IPv6SVIModeForced,
+					},
+				},
+				// Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
+				Type: enum.VnTypeVlan,
+				// VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
+				// VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
+				VirtualGatewayIPv4Enabled: true,
+				VirtualGatewayIPv6Enabled: true,
+				VNI:                       nil,
+				// VirtualMAC:                testutils.RandomHardwareAddr([]byte{2}, []byte{1}),
+			},
+			update: &datacenter.VirtualNetwork{
+				Bindings: []datacenter.VNBinding{{}},
+				// Description: testutils.RandString(6, "hex"), does not update with 4x
+				Label:          testutils.RandString(6, "hex"),
+				SecurityZoneID: "nondefault",
+				Type:           enum.VnTypeVlan,
+			},
+		},
+		"start_minimal_vxlan_with_binding_same_security_zone_for_4x": {
+			create: datacenter.VirtualNetwork{
+				Bindings: []datacenter.VNBinding{{}},
+				// Description: testutils.RandString(6, "hex"), does not update with 4x
+				Label:          testutils.RandString(6, "hex"),
+				Type:           enum.VnTypeVxlan,
+				SecurityZoneID: "nondefault",
+			},
+			update: &datacenter.VirtualNetwork{
+				Bindings: []datacenter.VNBinding{
+					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
+					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
+				},
+				// Description: testutils.RandString(6, "hex"), does not update with 4x
+				DHCPService: true,
+				IPv4Enabled: true,
+				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "192.0.2.0/24", 28)),
+				IPv6Enabled: true,
+				IPv6Subnet:  pointer.To(testutils.RandomPrefix(t, "3fff::/20", 64)),
+				L3MTU:       pointer.To(9002 + (rand.Intn(50) * 2)),
+				Label:       testutils.RandString(6, "hex"),
+				// ReservedVLAN: pointer.To(uint16(90 + rand.Intn(4000))),
+				RTPolicy: pointer.To(datacenter.RTPolicy{
+					ImportRTs: testutils.RandomRouteTargets(t, 1, 3),
+					ExportRTs: testutils.RandomRouteTargets(t, 1, 3),
+				}),
+				SecurityZoneID: "nondefault",
+				SVIIPs: []datacenter.SVIAddressing{
+					{
+						IPv4Mode: enum.IPv4SVIModeEnabled,
+						IPv6Mode: enum.IPv6SVIModeForced,
+					},
+				},
+				// Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
+				Type:                      enum.VnTypeVxlan,
+				VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
+				VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
+				VirtualGatewayIPv4Enabled: true,
+				VirtualGatewayIPv6Enabled: true,
+				VNI:                       pointer.To(uint32(10000 + rand.Intn(1000))),
+				VirtualMAC:                testutils.RandomHardwareAddr([]byte{2}, []byte{1}),
+			},
+		},
+		"start_maximal_vxlan_with_binding_same_security_zone_for_4x": {
+			create: datacenter.VirtualNetwork{
+				Bindings: []datacenter.VNBinding{
+					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
+					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
+				},
+				// Description: testutils.RandString(6, "hex"), does not update with 4x
+				DHCPService:  true,
+				IPv4Enabled:  true,
+				IPv4Subnet:   pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
+				IPv6Enabled:  true,
+				IPv6Subnet:   pointer.To(testutils.RandomPrefix(t, "3fff::/20", 64)),
+				L3MTU:        pointer.To(9002 + (rand.Intn(50) * 2)),
+				Label:        testutils.RandString(6, "hex"),
+				ReservedVLAN: pointer.To(uint16(90 + rand.Intn(4000))),
+				RTPolicy: pointer.To(datacenter.RTPolicy{
+					ImportRTs: testutils.RandomRouteTargets(t, 1, 3),
+					ExportRTs: testutils.RandomRouteTargets(t, 1, 3),
+				}),
+				SecurityZoneID: "nondefault",
+				SVIIPs: []datacenter.SVIAddressing{
+					{
+						IPv4Mode: enum.IPv4SVIModeEnabled,
+						IPv6Mode: enum.IPv6SVIModeForced,
+					},
+				},
+				// Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
+				Type:                      enum.VnTypeVxlan,
+				VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
+				VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
+				VirtualGatewayIPv4Enabled: true,
+				VirtualGatewayIPv6Enabled: true,
+				VNI:                       pointer.To(uint32(10000 + rand.Intn(1000))),
+				VirtualMAC:                testutils.RandomHardwareAddr([]byte{2}, []byte{1}),
+			},
+			update: &datacenter.VirtualNetwork{
+				Bindings: []datacenter.VNBinding{{}},
+				// Description: testutils.RandString(6, "hex"), does not update with 4x
+				Label:          testutils.RandString(6, "hex"),
+				Type:           enum.VnTypeVxlan,
+				SecurityZoneID: "nondefault",
+			},
+		},
 		"clear_bindings_vlan": {
 			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
@@ -392,7 +560,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 					leafs = make([]string, len(leafsMap[clientName]))
 					copy(leafs, leafsMap[clientName])
 					rand.Shuffle(len(leafs), func(i, j int) { leafs[i], leafs[j] = leafs[j], leafs[i] })
-					for i := range len(tCase.create.Bindings) {
+					for i := range len(create.Bindings) {
 						leaf, ok := slice.Pop(&leafs)
 						require.True(t, ok, "test case requires more leafs than available in blueprint")
 						create.Bindings[i].SystemID = leaf
@@ -404,7 +572,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 								case create.VNI == nil && create.Bindings[0].VLAN != nil:
 									create.VNI = pointer.ToCopyOf(uint32(*create.Bindings[0].VLAN))
 								case create.VNI != nil && create.Bindings[0].VLAN != nil:
-									require.Equal(t, *create.VNI, *create.Bindings[0].VLAN, "test case VNI and binding VLAN must match when type is VLAN")
+									require.Equal(t, *create.VNI, *create.Bindings[0].VLAN, "create test case VNI and binding VLAN must match when type is VLAN")
 								}
 							}
 						}
@@ -463,7 +631,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 						leafs = make([]string, len(leafsMap[clientName]))
 						copy(leafs, leafsMap[clientName])
 						rand.Shuffle(len(leafs), func(i, j int) { leafs[i], leafs[j] = leafs[j], leafs[i] })
-						for i := range len(tCase.update.Bindings) {
+						for i := range len(update.Bindings) {
 							leaf, ok := slice.Pop(&leafs)
 							require.True(t, ok, "test case requires more leafs than available in blueprint")
 							update.Bindings[i].SystemID = leaf
@@ -475,7 +643,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 									case update.VNI == nil && update.Bindings[0].VLAN != nil:
 										update.VNI = pointer.ToCopyOf(uint32(*update.Bindings[0].VLAN))
 									case update.VNI != nil && update.Bindings[0].VLAN != nil:
-										require.Equal(t, *update.VNI, *update.Bindings[0].VLAN, "test case VNI and binding VLAN must match when type is VLAN")
+										require.Equal(t, *update.VNI, *update.Bindings[0].VLAN, "update test case VNI and binding VLAN must match when type is VLAN")
 									}
 								}
 							}
