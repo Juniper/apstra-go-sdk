@@ -12,10 +12,12 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
@@ -250,9 +252,12 @@ func TestBlueprintH(t testing.TB, ctx context.Context, client *apstra.Client) *a
 			SpineSuperspineLinks: pointer.To(apstra.AddressingSchemeIp46),
 			SpineLeafLinks:       pointer.To(apstra.AddressingSchemeIp46),
 		},
-		AddressingPolicy: &apstra.AddressingPolicy{
+	}
+
+	if compatibility.SecurityZoneAddressingSupported.Check(version.Must(version.NewVersion(client.ApiVersion()))) {
+		bpRequest.AddressingPolicy = &apstra.AddressingPolicy{
 			AddressingSupport: &enum.AddressingSchemeIPv46,
-		},
+		}
 	}
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &bpRequest)
