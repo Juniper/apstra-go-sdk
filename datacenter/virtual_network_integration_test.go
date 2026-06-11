@@ -364,7 +364,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 	for tName, tCase := range testCases {
 		t.Run(tName, func(t *testing.T) {
 			ctx := testutils.ContextWithTestID(ctx, t)
-			t.Parallel()
+			// t.Parallel() -- don't run test cases in parallel to avoid collisions between VLAN numbers, etc.
 
 			for clientName := range bpMap {
 				t.Run(clientName, func(t *testing.T) {
