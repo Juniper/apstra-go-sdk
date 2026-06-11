@@ -752,26 +752,26 @@ func testSecurityZone(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClien
 }
 
 // Deprecated: Use testutils.TestVirtualNetworkA
-func testVirtualNetwork(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClient, szId ObjectId) ObjectId {
+func testVirtualNetwork(t testing.TB, ctx context.Context, bp *TwoStageL3ClosClient, szId string) string {
 	t.Helper()
 
-	var vnBindings []VnBinding
+	var vnBindings []datacenter.VNBinding
 	nodeMap, err := bp.GetAllSystemNodeInfos(ctx)
 	require.NoError(t, err)
 
 	for _, node := range nodeMap {
 		if node.Role == SystemRoleLeaf {
-			vnBindings = append(vnBindings, VnBinding{SystemId: node.Id})
+			vnBindings = append(vnBindings, datacenter.VNBinding{SystemID: string(node.Id)})
 		}
 	}
 
-	id, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-		Ipv4Enabled:               true,
+	id, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
+		IPv4Enabled:               true,
 		Label:                     randString(6, "hex"),
-		SecurityZoneId:            szId,
-		VirtualGatewayIpv4Enabled: true,
-		VnBindings:                vnBindings,
-		VnType:                    enum.VnTypeVxlan,
+		SecurityZoneID:            szId,
+		VirtualGatewayIPv4Enabled: true,
+		Bindings:                  vnBindings,
+		Type:                      enum.VnTypeVxlan,
 	})
 	require.NoError(t, err)
 

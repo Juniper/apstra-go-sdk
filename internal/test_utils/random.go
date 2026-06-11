@@ -42,6 +42,14 @@ func RandString(n int, style string) string {
 	return string(b)
 }
 
+func RandomStrings(min, max, n int, style string) []string {
+	result := make([]string, rand.Intn(1+max-min)+min)
+	for i := range result {
+		result[i] = RandString(n, style)
+	}
+	return result
+}
+
 // SampleIndexes is intended to be used to select some sample items from a slice.
 // Pass it the size of the slice, and it returns a []int representing indexes (samples)
 // to be taken from the slice. The number of elements returned is controlled by an
@@ -328,6 +336,32 @@ func RandomHardwareAddr(set []byte, unset []byte) net.HardwareAddr {
 
 	for i := range min(len(unset), len(result)) {
 		result[i] = result[i] & ^unset[i]
+	}
+
+	return result
+}
+
+func RandomRouteTarget(t testing.TB) string {
+	// three syntactic styles for RTs
+	r := rand.Intn(3)
+	switch r {
+	case 0: // 16-bits:32-bits
+		return fmt.Sprintf("%d:%d", uint16(rand.Uint32()), rand.Uint32())
+	case 1: // 32-bits:16-bits
+		return fmt.Sprintf("%d:%d", rand.Uint32(), uint16(rand.Uint32()))
+	case 2: // IPv4:16-bits
+		return fmt.Sprintf("%s:%d", RandomHostIP(t, "192.0.2.0/24").Addr(), uint16(rand.Uint32()))
+	}
+
+	panic(nil)
+}
+
+func RandomRouteTargets(t testing.TB, min, max int) []string {
+	t.Helper()
+
+	result := make([]string, rand.Intn(max-min)+min)
+	for i := range result {
+		result[i] = RandomRouteTarget(t)
 	}
 
 	return result

@@ -12,3 +12,12 @@ func ToCopyOf[A any](a A) *A {
 	_copy := a
 	return &_copy
 }
+
+func ToCopyOfValue[A any](a *A) *A {
+	if a == nil {
+		return nil
+	}
+
+	_copy := *a
+	return &_copy
+}

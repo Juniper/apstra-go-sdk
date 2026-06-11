@@ -250,6 +250,9 @@ func TestBlueprintH(t testing.TB, ctx context.Context, client *apstra.Client) *a
 			SpineSuperspineLinks: pointer.To(apstra.AddressingSchemeIp46),
 			SpineLeafLinks:       pointer.To(apstra.AddressingSchemeIp46),
 		},
+		AddressingPolicy: &apstra.AddressingPolicy{
+			AddressingSupport: &enum.AddressingSchemeIPv46,
+		},
 	}
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &bpRequest)

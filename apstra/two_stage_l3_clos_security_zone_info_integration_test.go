@@ -79,11 +79,11 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 
 			// get all systems
 			var response struct {
-				Nodes map[ObjectId]struct {
-					Id       ObjectId `json:"id"`
-					Label    string   `json:"label"`
-					Hostname string   `json:"hostname"`
-					Role     string   `json:"role"`
+				Nodes map[string]struct {
+					Id       string `json:"id"`
+					Label    string `json:"label"`
+					Hostname string `json:"hostname"`
+					Role     string `json:"role"`
 					Ipv4Addr netip.Prefix
 					Ipv6Addr netip.Prefix
 				} `json:"nodes"`
@@ -91,7 +91,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 			err = bp.Client().GetNodes(ctx, bp.Id(), NodeTypeSystem, &response)
 			require.NoError(t, err)
 
-			var vnBindings []VnBinding // we'll use this binding slice when creating VNs later
+			var vnBindings []datacenter.VNBinding // we'll use this binding slice when creating VNs later
 
 			// whittle down the systems to just leaf switches and add a record to to vnBindings
 			for k, v := range response.Nodes {
@@ -99,7 +99,7 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 					delete(response.Nodes, k)
 					continue
 				}
-				vnBindings = append(vnBindings, VnBinding{SystemId: k})
+				vnBindings = append(vnBindings, datacenter.VNBinding{SystemID: k})
 			}
 
 			szIds := make([]string, securityZoneCount)
@@ -128,13 +128,13 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 				require.NoError(t, err)
 
 				// create a VN to activate the SZ is on leaf switches
-				_, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-					Ipv4Enabled:    true,
-					Ipv6Enabled:    true,
+				_, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
+					IPv4Enabled:    true,
+					IPv6Enabled:    true,
 					Label:          randString(6, "hex"),
-					SecurityZoneId: ObjectId(szIds[i]),
-					VnBindings:     vnBindings,
-					VnType:         enum.VnTypeVxlan,
+					SecurityZoneID: szIds[i],
+					Bindings:       vnBindings,
+					Type:           enum.VnTypeVxlan,
 				})
 				require.NoError(t, err)
 			}

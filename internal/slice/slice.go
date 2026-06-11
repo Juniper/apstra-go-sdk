@@ -83,3 +83,14 @@ func Uniq[T comparable](in []T) []T {
 func IsUniq[T comparable](in []T) bool {
 	return len(Uniq(in)) == len(in)
 }
+
+func Pop[T any](s *[]T) (T, bool) {
+	if s == nil || len(*s) == 0 {
+		var zero T
+		return zero, false
+	}
+	i := len(*s) - 1
+	v := (*s)[i]
+	*s = (*s)[:i]
+	return v, true
+}

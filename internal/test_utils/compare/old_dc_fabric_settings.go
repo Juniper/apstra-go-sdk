@@ -81,7 +81,7 @@ func FabricSettings(t testing.TB, set, get apstra.FabricSettings) {
 
 	if set.Ipv6Enabled != nil {
 		require.NotNil(t, get.Ipv6Enabled)
-		require.Equalf(t, *set.Ipv6Enabled, *get.Ipv6Enabled, "Ipv6Enabled: set %d get %d", *set.Ipv6Enabled, *get.Ipv6Enabled)
+		require.Equalf(t, *set.Ipv6Enabled, *get.Ipv6Enabled, "IPv6Enabled: set %d get %d", *set.Ipv6Enabled, *get.Ipv6Enabled)
 	}
 
 	if set.JunosEvpnDuplicateMacRecoveryTime != nil {

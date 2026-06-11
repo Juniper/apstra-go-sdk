@@ -12,4 +12,7 @@ const (
 
 	DatacenterSwitchingZones    = blueprintByID + pathDelim + "switching-zones"
 	DatacenterSwitchingZoneByID = DatacenterSwitchingZones + pathDelim + "%s"
+
+	DatacenterVirtualNetworks    = blueprintByID + pathDelim + "virtual-networks"
+	DatacenterVirtualNetworkByID = DatacenterVirtualNetworks + pathDelim + "%s"
 )

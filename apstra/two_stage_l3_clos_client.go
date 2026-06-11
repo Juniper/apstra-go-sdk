@@ -98,8 +98,6 @@ func (o *TwoStageL3ClosClient) SetType(bpt BlueprintType) {
 
 // urlWithParam is a helper function which uses the blueprintType element to
 // decorate a *URL with the required query parameter.
-//
-//lint:ignore U1000 keep for future use
 func (o *TwoStageL3ClosClient) urlWithParam(in string) (*url.URL, error) {
 	apstraUrl, err := url.Parse(in)
 	if err != nil {
@@ -234,60 +232,6 @@ func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRu
 // ClientErr with ErrNotFound is returned.
 func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
 	return o.deletePolicyRuleById(ctx, policyId, ruleId)
-}
-
-// CreateVirtualNetwork creates a new virtual network according to the supplied VirtualNetworkData
-func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, in *VirtualNetworkData) (ObjectId, error) {
-	if in.Tags != nil {
-		return "", ClientErr{
-			errType: ErrNotSupported,
-			err:     errors.New("tags must be nil when creating virtual network"),
-		}
-	}
-
-	return o.createVirtualNetwork(ctx, in)
-}
-
-// ListAllVirtualNetworkIds returns []ObjectId representing virtual networks configured in the blueprint
-func (o *TwoStageL3ClosClient) ListAllVirtualNetworkIds(ctx context.Context) ([]ObjectId, error) {
-	return o.listAllVirtualNetworkIds(ctx)
-}
-
-// GetVirtualNetwork returns *VirtualNetwork representing the given vnId
-func (o *TwoStageL3ClosClient) GetVirtualNetwork(ctx context.Context, vnId ObjectId) (*VirtualNetwork, error) {
-	return o.getVirtualNetwork(ctx, vnId)
-}
-
-// GetVirtualNetworkByName returns *VirtualNetwork representing the given VN name
-func (o *TwoStageL3ClosClient) GetVirtualNetworkByName(ctx context.Context, name string) (*VirtualNetwork, error) {
-	return o.getVirtualNetworkByName(ctx, name)
-}
-
-// GetAllVirtualNetworks return map[ObjectId]VirtualNetwork representing all
-// virtual networks configured in Apstra. NOTE: the underlying API call DOES NOT
-// RETURN the SVI information, so each map entry will have a nil slice at it's
-// Data.SviIps struct element.
-func (o *TwoStageL3ClosClient) GetAllVirtualNetworks(ctx context.Context) (map[ObjectId]VirtualNetwork, error) {
-	return o.getAllVirtualNetworks(ctx)
-}
-
-// UpdateVirtualNetwork updates the virtual network specified by ID using the
-// VirtualNetworkData and HTTP method PUT.
-func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, id ObjectId, in *VirtualNetworkData) error {
-	if in.Tags != nil {
-		return ClientErr{
-			errType: ErrNotSupported,
-			err:     errors.New("tags must be nil when updating virtual network"),
-		}
-	}
-
-	return o.updateVirtualNetwork(ctx, id, in)
-}
-
-// DeleteVirtualNetwork deletes the virtual network specified by id from the
-// blueprint.
-func (o *TwoStageL3ClosClient) DeleteVirtualNetwork(ctx context.Context, id ObjectId) error {
-	return o.deleteVirtualNetwork(ctx, id)
 }
 
 // GetNodes fetches the node of the specified type, unpacks the API response
@@ -734,8 +678,8 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 	}
 
 	if in.Ipv6Enabled != nil && !compatibility.FabricSettingsIPv6EnabledOK.Check(o.client.apiVersion) {
-		// Beginning with Apstra 6.1.0, Ipv6Enabled is no longer a fabric-wide setting and it must not be sent.
-		// Make a copy of the caller's struct and clear the Ipv6Enabled pointer.
+		// Beginning with Apstra 6.1.0, IPv6Enabled is no longer a fabric-wide setting and it must not be sent.
+		// Make a copy of the caller's struct and clear the IPv6Enabled pointer.
 		in = toPtr(*in)
 		in.Ipv6Enabled = nil
 	}

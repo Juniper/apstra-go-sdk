@@ -447,6 +447,68 @@ func (o *FeatureSwitch) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*IPv4SVIMode)(nil)
+	_ json.Marshaler   = (*IPv4SVIMode)(nil)
+	_ json.Unmarshaler = (*IPv4SVIMode)(nil)
+)
+
+func (o IPv4SVIMode) String() string {
+	return o.Value
+}
+
+func (o *IPv4SVIMode) FromString(s string) error {
+	if IPv4SVIModes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o IPv4SVIMode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *IPv4SVIMode) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*IPv6SVIMode)(nil)
+	_ json.Marshaler   = (*IPv6SVIMode)(nil)
+	_ json.Unmarshaler = (*IPv6SVIMode)(nil)
+)
+
+func (o IPv6SVIMode) String() string {
+	return o.Value
+}
+
+func (o *IPv6SVIMode) FromString(s string) error {
+	if IPv6SVIModes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o IPv6SVIMode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *IPv6SVIMode) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*IbaWidgetAggregationType)(nil)
 	_ json.Marshaler   = (*IbaWidgetAggregationType)(nil)
 	_ json.Unmarshaler = (*IbaWidgetAggregationType)(nil)
@@ -1563,68 +1625,6 @@ func (o *StorageSchemaPath) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
-	_ enum             = (*SviIpv4Mode)(nil)
-	_ json.Marshaler   = (*SviIpv4Mode)(nil)
-	_ json.Unmarshaler = (*SviIpv4Mode)(nil)
-)
-
-func (o SviIpv4Mode) String() string {
-	return o.Value
-}
-
-func (o *SviIpv4Mode) FromString(s string) error {
-	if SviIpv4Modes.Parse(s) == nil {
-		return newEnumParseError(o, s)
-	}
-	o.Value = s
-	return nil
-}
-
-func (o SviIpv4Mode) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.String())
-}
-
-func (o *SviIpv4Mode) UnmarshalJSON(bytes []byte) error {
-	var s string
-	err := json.Unmarshal(bytes, &s)
-	if err != nil {
-		return err
-	}
-	return o.FromString(s)
-}
-
-var (
-	_ enum             = (*SviIpv6Mode)(nil)
-	_ json.Marshaler   = (*SviIpv6Mode)(nil)
-	_ json.Unmarshaler = (*SviIpv6Mode)(nil)
-)
-
-func (o SviIpv6Mode) String() string {
-	return o.Value
-}
-
-func (o *SviIpv6Mode) FromString(s string) error {
-	if SviIpv6Modes.Parse(s) == nil {
-		return newEnumParseError(o, s)
-	}
-	o.Value = s
-	return nil
-}
-
-func (o SviIpv6Mode) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.String())
-}
-
-func (o *SviIpv6Mode) UnmarshalJSON(bytes []byte) error {
-	var s string
-	err := json.Unmarshal(bytes, &s)
-	if err != nil {
-		return err
-	}
-	return o.FromString(s)
-}
-
-var (
 	_ enum             = (*SwitchingZoneMACVRFServiceType)(nil)
 	_ json.Marshaler   = (*SwitchingZoneMACVRFServiceType)(nil)
 	_ json.Unmarshaler = (*SwitchingZoneMACVRFServiceType)(nil)
@@ -1984,6 +1984,21 @@ var (
 		FeatureSwitchEnabled,
 	)
 
+	_            enum = new(IPv4SVIMode)
+	IPv4SVIModes      = oenum.New(
+		IPv4SVIModeDisabled,
+		IPv4SVIModeEnabled,
+		IPv4SVIModeForced,
+	)
+
+	_            enum = new(IPv6SVIMode)
+	IPv6SVIModes      = oenum.New(
+		IPv6SVIModeDisabled,
+		IPv6SVIModeEnabled,
+		IPv6SVIModeForced,
+		IPv6SVIModeLinkLocal,
+	)
+
 	_                         enum = new(IbaWidgetAggregationType)
 	IbaWidgetAggregationTypes      = oenum.New(
 		IbaWidgetAggregationTypeAllOf,
@@ -2306,21 +2321,6 @@ var (
 		StorageSchemaPathRoute,
 		StorageSchemaPathRouteLookup,
 		StorageSchemaPathXcvr,
-	)
-
-	_            enum = new(SviIpv4Mode)
-	SviIpv4Modes      = oenum.New(
-		SviIpv4ModeDisabled,
-		SviIpv4ModeEnabled,
-		SviIpv4ModeForced,
-	)
-
-	_            enum = new(SviIpv6Mode)
-	SviIpv6Modes      = oenum.New(
-		SviIpv6ModeDisabled,
-		SviIpv6ModeEnabled,
-		SviIpv6ModeForced,
-		SviIpv6ModeLinkLocal,
 	)
 
 	_                               enum = new(SwitchingZoneMACVRFServiceType)

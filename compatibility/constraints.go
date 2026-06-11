@@ -76,6 +76,9 @@ var (
 	TemplateRequestRequiresAntiAffinityPolicy = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
 	}
+	VirtualNetworkAddressesInActiveGraphOnly = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra420)),
+	}
 	VirtualNetworkTags = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}

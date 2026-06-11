@@ -86,27 +86,26 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 
 				// prep VN bindings
 				vlanId := uint16(rand.IntN(4093) + 2) // 2-4094
-				vnBindings := make([]apstra.VnBinding, len(leafIds))
+				vnBindings := make([]datacenter.VNBinding, len(leafIds))
 				for i, leafId := range leafIds {
-					vnBindings[i] = apstra.VnBinding{
-						SystemId: leafId,
-						VlanId:   &vlanId,
+					vnBindings[i] = datacenter.VNBinding{
+						SystemID: string(leafId),
+						VLAN:     &vlanId,
 					}
 				}
 
 				// create a VN within the security zone
 				rip := testutils.RandomPrefix(t, "172.16.0.0/12", 24)
-				vnId, err := bp.CreateVirtualNetwork(ctx, &apstra.VirtualNetworkData{
-					VirtualGatewayIpv4Enabled: true,
-					Ipv4Enabled:               true,
-					Ipv4Subnet:                &rip,
+				vnId, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
+					VirtualGatewayIPv4Enabled: true,
+					IPv4Enabled:               true,
+					IPv4Subnet:                &rip,
 					Label:                     testutils.RandString(6, "hex"),
-					SecurityZoneId:            apstra.ObjectId(szId),
-					VnBindings:                vnBindings,
-					VnType:                    enum.VnTypeVxlan,
+					SecurityZoneID:            szId,
+					Bindings:                  vnBindings,
+					Type:                      enum.VnTypeVxlan,
 				})
 				require.NoError(t, err)
-				t.Log(vnId.String())
 
 				time.Sleep(time.Second) // ensure time for config diffs to render
 
