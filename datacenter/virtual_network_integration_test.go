@@ -23,6 +23,7 @@ import (
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	comparedatacenter "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/deepcopy"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
@@ -377,7 +378,12 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 						}
 					}
 
-					create, update := tCase.create, tCase.update // because we modify these values below
+					// deep copy because we modify these values below
+					var update *datacenter.VirtualNetwork
+					create := deepcopy.VirtualNetwork(tCase.create)
+					if tCase.update != nil {
+						update = pointer.To(deepcopy.VirtualNetwork(*tCase.update))
+					}
 
 					bp := bpMap[clientName]
 					var leafs []string
