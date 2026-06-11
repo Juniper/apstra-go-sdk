@@ -679,7 +679,7 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 
 	if in.Ipv6Enabled != nil && !compatibility.FabricSettingsIPv6EnabledOK.Check(o.client.apiVersion) {
 		// Beginning with Apstra 6.1.0, Ipv6Enabled is no longer a fabric-wide setting and it must not be sent.
-		// Make a copy of the caller's struct and clear the Itpv6Enabled pointer.
+		// Make a copy of the caller's struct and clear the Ipv6Enabled pointer.
 		in = toPtr(*in)
 		in.Ipv6Enabled = nil
 	}
