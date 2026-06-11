@@ -151,14 +151,14 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 						IPv6Mode: enum.IPv6SVIModeForced,
 					},
 				},
-				//Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
+				// Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
 				Type: enum.VnTypeVlan,
-				//VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
-				//VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
+				// VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
+				// VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
 				VirtualGatewayIPv4Enabled: true,
 				VirtualGatewayIPv6Enabled: true,
 				VNI:                       nil,
-				//VirtualMAC:                testutils.RandomHardwareAddr([]byte{2}, []byte{1}),
+				// VirtualMAC:                testutils.RandomHardwareAddr([]byte{2}, []byte{1}),
 			},
 		},
 		"start_maximal_vlan": {
@@ -186,14 +186,14 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 						IPv6Mode: enum.IPv6SVIModeForced,
 					},
 				},
-				//Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
+				// Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
 				Type: enum.VnTypeVlan,
-				//VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
-				//VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
+				// VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
+				// VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
 				VirtualGatewayIPv4Enabled: true,
 				VirtualGatewayIPv6Enabled: true,
 				VNI:                       nil,
-				//VirtualMAC:                testutils.RandomHardwareAddr([]byte{2}, []byte{1}),
+				// VirtualMAC:                testutils.RandomHardwareAddr([]byte{2}, []byte{1}),
 			},
 			update: &datacenter.VirtualNetwork{
 				Label: testutils.RandString(6, "hex"),
@@ -218,7 +218,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 				IPv6Subnet:  pointer.To(testutils.RandomPrefix(t, "3fff::/20", 64)),
 				L3MTU:       pointer.To(9002 + (rand.Intn(50) * 2)),
 				Label:       testutils.RandString(6, "hex"),
-				//ReservedVLAN: pointer.To(uint16(90 + rand.Intn(4000))),
+				// ReservedVLAN: pointer.To(uint16(90 + rand.Intn(4000))),
 				RTPolicy: pointer.To(datacenter.RTPolicy{
 					ImportRTs: testutils.RandomRouteTargets(t, 1, 3),
 					ExportRTs: testutils.RandomRouteTargets(t, 1, 3),
@@ -230,7 +230,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 						IPv6Mode: enum.IPv6SVIModeForced,
 					},
 				},
-				//Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
+				// Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
 				Type:                      enum.VnTypeVxlan,
 				VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
 				VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
@@ -263,7 +263,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 						IPv6Mode: enum.IPv6SVIModeForced,
 					},
 				},
-				//Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
+				// Tags:                      testutils.RandomStrings(3, 5, 6, "hex"),
 				Type:                      enum.VnTypeVxlan,
 				VirtualGatewayIPv4:        make(net.IP, 0), // auto filled based on subnet
 				VirtualGatewayIPv6:        make(net.IP, 0), // auto filled based on subnet
@@ -631,7 +631,6 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 					require.Error(t, err)
 					require.ErrorAs(t, err, &ace)
 					require.Equal(t, apstra.ErrNotfound, ace.Type())
-
 				})
 			}
 		})
