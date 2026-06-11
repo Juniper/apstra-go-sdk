@@ -40,7 +40,7 @@ func compareSVIAddressing(t testing.TB, a, b datacenter.SVIAddressing) {
 	}
 }
 
-func compareVnBindings(t testing.TB, a, b datacenter.VNBinding, strict bool) {
+func compareVNBindings(t testing.TB, a, b datacenter.VNBinding, strict bool) {
 	t.Helper()
 
 	if len(a.AccessSwitchNodeIDs) != 0 || len(b.AccessSwitchNodeIDs) != 0 { // nil and [] slices are equal for our purpose
@@ -108,7 +108,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 				t.Fatalf("binding %q from 'a' map not found in 'b' map", id)
 			}
 
-			compareVnBindings(t, *bindingA, *bindingB, true)
+			compareVNBindings(t, *bindingA, *bindingB, true)
 		}
 	}
 
@@ -119,13 +119,13 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 			t.Fatalf("svi count mismatch: %d vs %d", len(a), len(b))
 		}
 
-		for id, sviIpA := range a {
-			sviIpB, ok := b[id]
+		for id, sviAddressingA := range a {
+			sviAddressingB, ok := b[id]
 			if !ok {
 				t.Fatalf("svi %q from 'a' map not found in 'b' map", id)
 			}
 
-			compareSVIAddressing(t, *sviIpA, *sviIpB)
+			compareSVIAddressing(t, *sviAddressingA, *sviAddressingB)
 		}
 	}
 
@@ -264,7 +264,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 				t.Fatalf("binding %q from 'a' map not found in 'b' map", id)
 			}
 
-			compareVnBindings(t, *bindingA, *bindingB, true)
+			compareVNBindings(t, *bindingA, *bindingB, true)
 		}
 	}
 
@@ -275,13 +275,13 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 			t.Fatalf("svi count mismatch: %d vs %d", len(a), len(b))
 		}
 
-		for id, sviIpA := range a {
-			sviIpB, ok := b[id]
+		for id, sviAddressingA := range a {
+			sviAddressingB, ok := b[id]
 			if !ok {
 				t.Fatalf("svi %q from 'a' map not found in 'b' map", id)
 			}
 
-			compareSVIAddressing(t, *sviIpA, *sviIpB)
+			compareSVIAddressing(t, *sviAddressingA, *sviAddressingB)
 		}
 	}
 
