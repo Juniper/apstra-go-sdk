@@ -88,6 +88,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			},
 		},
 		"remove_binding_empty_slice": {
+			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
 				Label: testutils.RandString(6, "hex"),
 				Type:  enum.VnTypeVlan,
@@ -106,6 +107,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			},
 		},
 		"remove_binding_nil_slice": {
+			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
 				Label: testutils.RandString(6, "hex"),
 				Type:  enum.VnTypeVlan,
@@ -123,6 +125,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			},
 		},
 		"start_minimal_vlan": {
+			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
 				Label: testutils.RandString(6, "hex"),
 				Type:  enum.VnTypeVlan,
@@ -162,6 +165,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			},
 		},
 		"start_maximal_vlan": {
+			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
 				Bindings: []datacenter.VNBinding{
 					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
@@ -201,6 +205,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			},
 		},
 		"start_minimal_vxlan": {
+			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
 				Label:          testutils.RandString(6, "hex"),
 				Type:           enum.VnTypeVxlan,
@@ -241,6 +246,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			},
 		},
 		"start_maximal_vxlan": {
+			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
 				Bindings:     []datacenter.VNBinding{{}, {}},
 				Description:  testutils.RandString(6, "hex"),
@@ -279,6 +285,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			},
 		},
 		"clear_bindings_vlan": {
+			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
 				Label:          testutils.RandString(6, "hex"),
 				Type:           enum.VnTypeVlan,
@@ -294,6 +301,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			},
 		},
 		"clear_bindings_vxlan": {
+			constraints: []compatibility.Constraint{compatibility.EmptyVnBindingsOk},
 			create: datacenter.VirtualNetwork{
 				Label:          testutils.RandString(6, "hex"),
 				Type:           enum.VnTypeVxlan,
