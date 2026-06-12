@@ -165,7 +165,7 @@ func (o *TwoStageL3ClosClient) GetAllEVPNInterconnectGroups(ctx context.Context)
 	return response.Items, nil
 }
 
-func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroupByName(ctx context.Context, name string) (EVPNInterconnectGroup, error) {
+func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroupByLabel(ctx context.Context, name string) (EVPNInterconnectGroup, error) {
 	items, err := o.GetAllEVPNInterconnectGroups(ctx)
 	if err != nil {
 		return EVPNInterconnectGroup{}, fmt.Errorf("GetAllEVPNInterconnectGroups: %w", err)
