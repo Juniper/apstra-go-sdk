@@ -70,6 +70,9 @@ var (
 	SwitchSystemLinksSystemIDNotSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra610)),
 	}
+	SwitchingZoneSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
+	}
 	SystemManagerHasSkipInterfaceShutdownOnUpgrade = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
@@ -79,7 +82,13 @@ var (
 	VirtualNetworkAddressesInActiveGraphOnly = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra420)),
 	}
+	VirtualNetworkAPITags = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
+	}
 	VirtualNetworkTags = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
+	}
+	VirtualNetworkZoneIDsRequired = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
 	}
 )

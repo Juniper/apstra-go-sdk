@@ -122,19 +122,30 @@ func TestVirtualNetworkTags(t *testing.T) {
 			create.Tags = tags
 			create.Label = randString(6, "hex")
 
-			log.Printf("ensuring that CreateVirtualNetwork() with tags fails against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			var ace ClientErr
-			_, err = bpClient.CreateVirtualNetwork(ctx, create)
-			require.Error(t, err)
-			require.ErrorAs(t, err, &ace)
-			require.Equal(t, ErrNotSupported, ace.Type())
+			if compatibility.VirtualNetworkAPITags.Check(client.client.apiVersion) {
+				log.Printf("ensuring that CreateVirtualNetwork() with tags succeeds against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				id, err := bpClient.CreateVirtualNetwork(ctx, create)
+				require.NoError(t, err)
 
-			log.Printf("ensuring that UpdateVirtualNetwork() with tags fails against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			require.NoError(t, create.SetID(vnId))
-			err = bpClient.UpdateVirtualNetwork(ctx, create)
-			require.Error(t, err)
-			require.ErrorAs(t, err, &ace)
-			require.Equal(t, ErrNotSupported, ace.Type())
+				require.NoError(t, create.SetID(id))
+				log.Printf("ensuring that UpdateVirtualNetwork() with tags succeeds against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				err = bpClient.UpdateVirtualNetwork(ctx, create)
+				require.NoError(t, err)
+			} else {
+				log.Printf("ensuring that CreateVirtualNetwork() with tags fails against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				var ace ClientErr
+				_, err := bpClient.CreateVirtualNetwork(ctx, create)
+				require.Error(t, err)
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, ErrNotSupported, ace.Type())
+
+				log.Printf("ensuring that UpdateVirtualNetwork() with tags fails against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
+				require.NoError(t, create.SetID(vnId))
+				err = bpClient.UpdateVirtualNetwork(ctx, create)
+				require.Error(t, err)
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, ErrNotSupported, ace.Type())
+			}
 		})
 	}
 }
