@@ -681,20 +681,20 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 					case "nondefault":
 						create.SecurityZoneID = rzMap[clientName]
 					case "default":
-						szID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
+						zoneID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
 						require.NoError(t, err)
-						require.NotNil(t, szID)
-						create.SecurityZoneID = *szID
+						require.NotNil(t, zoneID)
+						create.SecurityZoneID = *zoneID
 					}
 					// set switching zone ID if necessary
 					switch create.SwitchingZoneID {
 					case "nondefault":
 						create.SwitchingZoneID = szMap[clientName]
 					case "default":
-						szID, err := bpMap[clientName].DefaultSwitchingZoneID(ctx)
+						zoneID, err := bpMap[clientName].DefaultSwitchingZoneID(ctx)
 						require.NoError(t, err)
-						require.NotNil(t, szID)
-						create.SwitchingZoneID = *szID
+						require.NotNil(t, zoneID)
+						create.SwitchingZoneID = *zoneID
 					}
 
 					if update != nil {
@@ -774,25 +774,15 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 								update.Bindings[i].VLAN = pointer.ToCopyOf(*update.ReservedVLAN)
 							}
 						}
-						// set the security zone ID if necessary
+						// set the routing zone ID if necessary
 						switch update.SecurityZoneID {
 						case "nondefault":
 							update.SecurityZoneID = rzMap[clientName]
 						case "default":
-							szID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
+							zoneID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
 							require.NoError(t, err)
-							require.NotNil(t, szID)
-							update.SecurityZoneID = *szID
-						}
-						// set the routing zone ID if necessary
-						switch create.SecurityZoneID {
-						case "nondefault":
-							create.SecurityZoneID = rzMap[clientName]
-						case "default":
-							szID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
-							require.NoError(t, err)
-							require.NotNil(t, szID)
-							create.SecurityZoneID = *szID
+							require.NotNil(t, zoneID)
+							update.SecurityZoneID = *zoneID
 						}
 						// set switching zone ID if necessary
 						switch update.SwitchingZoneID {
