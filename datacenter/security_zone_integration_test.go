@@ -17,7 +17,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/two_stage_l3_clos"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
@@ -197,7 +197,7 @@ func TestCRUDSecurityZone(t *testing.T) {
 					// retrieve the object by ID and validate
 					obj, err = bpClient.GetSecurityZone(ctx, id)
 					require.NoError(t, err)
-					comparedatacenter.SecurityZone(t, create, obj)
+					comparedatacenter.comparedatacenter.SecurityZone(t, create, obj)
 					require.NotNil(t, obj.ID())
 					require.Equal(t, id, *obj.ID())
 
