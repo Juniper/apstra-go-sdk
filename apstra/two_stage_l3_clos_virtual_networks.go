@@ -209,7 +209,7 @@ func (o *TwoStageL3ClosClient) GetVirtualNetworks(ctx context.Context) ([]datace
 }
 
 func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, vn datacenter.VirtualNetwork) (string, error) {
-	if vn.Tags != nil {
+	if vn.Tags != nil && !compatibility.VirtualNetworkAPITags.Check(o.client.apiVersion) {
 		return "", ClientErr{
 			errType: ErrNotSupported,
 			err:     fmt.Errorf("tags must be nil when creating virtual network with Apstra %s", o.client.ApiVersion()),
@@ -244,11 +244,33 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, vn data
 		return fmt.Errorf("id is required in %s", str.FuncName())
 	}
 
-	if vn.Tags != nil {
+	if vn.Tags != nil && !compatibility.VirtualNetworkAPITags.Check(o.client.apiVersion) {
 		return ClientErr{
 			errType: ErrNotSupported,
 			err:     fmt.Errorf("tags must be nil when updating virtual network with Apstra %s", o.client.ApiVersion()),
 		}
+	}
+
+	if vn.SecurityZoneID == "" && compatibility.VirtualNetworkZoneIDsRequired.Check(o.client.apiVersion) {
+		id, err := o.DefaultSecurityZoneID(ctx)
+		if err != nil {
+			return fmt.Errorf("determining default security zone ID: %w", err)
+		}
+		if id == nil {
+			return fmt.Errorf("got nil ID for default security zone")
+		}
+		vn.SecurityZoneID = *id
+	}
+
+	if vn.SwitchingZoneID == "" && compatibility.VirtualNetworkZoneIDsRequired.Check(o.client.apiVersion) {
+		id, err := o.DefaultSwitchingZoneID(ctx)
+		if err != nil {
+			return fmt.Errorf("determining default switching zone ID: %w", err)
+		}
+		if id == nil {
+			return fmt.Errorf("got nil ID for default switching zone")
+		}
+		vn.SwitchingZoneID = *id
 	}
 
 	if vn.Bindings == nil {

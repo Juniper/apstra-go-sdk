@@ -36,8 +36,9 @@ type VirtualNetwork struct {
 	Label                     string             `json:"label"`
 	ReservedVLAN              *uint16            `json:"reserved_vlan_id,omitempty"`
 	RTPolicy                  *RTPolicy          `json:"rt_policy"`
-	SecurityZoneID            string             `json:"security_zone_id,omitempty"`
 	SVIIPs                    []SVIAddressing    `json:"svi_ips"`
+	SecurityZoneID            string             `json:"security_zone_id,omitempty"`
+	SwitchingZoneID           string             `json:"switching_zone_id,omitempty"`
 	Tags                      []string           `json:"tags"`
 	Type                      enum.VnType        `json:"vn_type"`
 	VirtualGatewayIPv4        net.IP             `json:"-"`
@@ -114,8 +115,9 @@ func (vn *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 		Label                     string             `json:"label"`
 		ReservedVLAN              *uint16            `json:"reserved_vlan_id"`
 		RTPolicy                  *RTPolicy          `json:"rt_policy"`
-		SecurityZoneID            string             `json:"security_zone_id"`
 		SVIIPs                    []SVIAddressing    `json:"svi_ips"`
+		SecurityZoneID            string             `json:"security_zone_id"`
+		SwitchingZoneID           string             `json:"switching_zone_id"`
 		Tags                      []string           `json:"tags"`
 		VirtualGatewayIPv4        string             `json:"virtual_gateway_ipv4"`
 		VirtualGatewayIPv6        string             `json:"virtual_gateway_ipv6"`
@@ -152,8 +154,9 @@ func (vn *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 	vn.Label = raw.Label
 	vn.ReservedVLAN = raw.ReservedVLAN
 	vn.RTPolicy = raw.RTPolicy
-	vn.SecurityZoneID = raw.SecurityZoneID
 	vn.SVIIPs = raw.SVIIPs
+	vn.SecurityZoneID = raw.SecurityZoneID
+	vn.SwitchingZoneID = raw.SwitchingZoneID
 	vn.Tags = raw.Tags
 
 	vn.VirtualGatewayIPv4, err = parse.IPFromString(raw.VirtualGatewayIPv4)

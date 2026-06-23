@@ -49,6 +49,9 @@ func VirtualNetwork(t testing.TB, req, resp datacenter.VirtualNetwork, msg ...st
 	if req.SecurityZoneID != "" {
 		require.Equal(t, req.SecurityZoneID, resp.SecurityZoneID)
 	}
+	if req.SwitchingZoneID != "" {
+		require.Equal(t, req.SwitchingZoneID, resp.SwitchingZoneID)
+	}
 	require.Equal(t, req.Type, resp.Type)
 	require.Equal(t, req.VirtualGatewayIPv4.String(), resp.VirtualGatewayIPv4.String())
 	require.Equal(t, req.VirtualGatewayIPv6.String(), resp.VirtualGatewayIPv6.String())

@@ -39,10 +39,11 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 		update      *datacenter.VirtualNetwork
 	}
 
-	// Create maps keyed by clent name: blueprints, slices of leaf id, and non-default RZ
+	// Create maps keyed by clent name: blueprints, slices of leaf id, non-default RZ and SZ
 	bpMap := make(map[string]*apstra.TwoStageL3ClosClient, len(clients))
 	leafsMap := make(map[string][]string, len(clients))
 	rzMap := make(map[string]string, len(clients))
+	szMap := make(map[string]string, len(clients))
 	wg := new(sync.WaitGroup)
 	wg.Add(len(clients))
 	mu := new(sync.Mutex)
@@ -68,6 +69,14 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			})
 			require.NoError(t, err)
 			rzMap[client.Name()] = rzID
+
+			if compatibility.SwitchingZoneSupported.Check(version.Must(version.NewVersion(bpMap[client.Name()].Client().ApiVersion()))) {
+				szMap[client.Name()], err = bpMap[client.Name()].CreateSwitchingZone(ctx, datacenter.SwitchingZone{
+					MACVRFName:        pointer.To(testutils.RandString(6, "hex")),
+					MACVRFServiceType: pointer.To(enum.SwitchingZoneMACVRFServiceTypeVLANBundle),
+				})
+				require.NoError(t, err)
+			}
 
 			wg.Done()
 		}()
@@ -528,6 +537,58 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 				},
 			},
 		},
+		"add_tags": {
+			constraints: []compatibility.Constraint{compatibility.VirtualNetworkAPITags},
+			create: datacenter.VirtualNetwork{
+				Label: testutils.RandString(6, "hex"),
+				Type:  enum.VnTypeVlan,
+			},
+			update: &datacenter.VirtualNetwork{
+				Label: testutils.RandString(6, "hex"),
+				Type:  enum.VnTypeVlan,
+				Tags:  testutils.RandomStrings(3, 5, 6, "hex"),
+			},
+		},
+		"clear_tags": {
+			constraints: []compatibility.Constraint{compatibility.VirtualNetworkAPITags},
+			create: datacenter.VirtualNetwork{
+				Label: testutils.RandString(6, "hex"),
+				Type:  enum.VnTypeVlan,
+				Tags:  testutils.RandomStrings(3, 5, 6, "hex"),
+			},
+			update: &datacenter.VirtualNetwork{
+				Label: testutils.RandString(6, "hex"),
+				Type:  enum.VnTypeVlan,
+			},
+		},
+		"change_from_default_switching_zone": {
+			constraints: []compatibility.Constraint{compatibility.SwitchingZoneSupported},
+			create: datacenter.VirtualNetwork{
+				Label:           testutils.RandString(6, "hex"),
+				SecurityZoneID:  "nondefault",
+				SwitchingZoneID: "",
+				Type:            enum.VnTypeVxlan,
+			},
+			update: &datacenter.VirtualNetwork{
+				Label:           testutils.RandString(6, "hex"),
+				SecurityZoneID:  "nondefault",
+				SwitchingZoneID: "nondefault",
+				Type:            enum.VnTypeVxlan,
+			},
+		},
+		"change_to_default_switching_zone": {
+			constraints: []compatibility.Constraint{compatibility.SwitchingZoneSupported},
+			create: datacenter.VirtualNetwork{
+				Label:           testutils.RandString(6, "hex"),
+				SwitchingZoneID: "nondefault",
+				Type:            enum.VnTypeVlan,
+			},
+			update: &datacenter.VirtualNetwork{
+				Label:           testutils.RandString(6, "hex"),
+				SwitchingZoneID: "",
+				Type:            enum.VnTypeVlan,
+			},
+		},
 	}
 
 	for tName, tCase := range testCases {
@@ -615,15 +676,25 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 							create.Bindings[i].VLAN = pointer.ToCopyOf(*create.ReservedVLAN)
 						}
 					}
-					// set the security zone ID if necessary
+					// set the routing zone ID if necessary
 					switch create.SecurityZoneID {
 					case "nondefault":
 						create.SecurityZoneID = rzMap[clientName]
 					case "default":
-						szID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
+						zoneID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
 						require.NoError(t, err)
-						require.NotNil(t, szID)
-						create.SecurityZoneID = *szID
+						require.NotNil(t, zoneID)
+						create.SecurityZoneID = *zoneID
+					}
+					// set switching zone ID if necessary
+					switch create.SwitchingZoneID {
+					case "nondefault":
+						create.SwitchingZoneID = szMap[clientName]
+					case "default":
+						zoneID, err := bpMap[clientName].DefaultSwitchingZoneID(ctx)
+						require.NoError(t, err)
+						require.NotNil(t, zoneID)
+						create.SwitchingZoneID = *zoneID
 					}
 
 					if update != nil {
@@ -703,15 +774,25 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 								update.Bindings[i].VLAN = pointer.ToCopyOf(*update.ReservedVLAN)
 							}
 						}
-						// set the security zone ID if necessary
+						// set the routing zone ID if necessary
 						switch update.SecurityZoneID {
 						case "nondefault":
 							update.SecurityZoneID = rzMap[clientName]
 						case "default":
-							szID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
+							zoneID, err := bpMap[clientName].DefaultSecurityZoneID(ctx)
+							require.NoError(t, err)
+							require.NotNil(t, zoneID)
+							update.SecurityZoneID = *zoneID
+						}
+						// set switching zone ID if necessary
+						switch update.SwitchingZoneID {
+						case "nondefault":
+							update.SwitchingZoneID = szMap[clientName]
+						case "default":
+							szID, err := bpMap[clientName].DefaultSwitchingZoneID(ctx)
 							require.NoError(t, err)
 							require.NotNil(t, szID)
-							update.SecurityZoneID = *szID
+							update.SwitchingZoneID = *szID
 						}
 					}
 
