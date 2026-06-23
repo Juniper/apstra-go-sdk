@@ -140,6 +140,23 @@ var (
 	FeatureSwitchEnabled  = FeatureSwitch{Value: "enabled"}
 )
 
+type IPv4SVIMode oenum.Member[string]
+
+var (
+	IPv4SVIModeDisabled = IPv4SVIMode{Value: "disabled"}
+	IPv4SVIModeEnabled  = IPv4SVIMode{Value: "enabled"}
+	IPv4SVIModeForced   = IPv4SVIMode{Value: "forced"}
+)
+
+type IPv6SVIMode oenum.Member[string]
+
+var (
+	IPv6SVIModeDisabled  = IPv6SVIMode{Value: "disabled"}
+	IPv6SVIModeEnabled   = IPv6SVIMode{Value: "enabled"}
+	IPv6SVIModeForced    = IPv6SVIMode{Value: "forced"}
+	IPv6SVIModeLinkLocal = IPv6SVIMode{Value: "link_local"}
+)
+
 type IbaWidgetAggregationType oenum.Member[string]
 
 var (
@@ -499,23 +516,6 @@ var (
 	StorageSchemaPathRoute             = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.route"}
 	StorageSchemaPathRouteLookup       = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.route_lookup"}
 	StorageSchemaPathXcvr              = StorageSchemaPath{Value: "aos.sdk.telemetry.schemas.xcvr"}
-)
-
-type SviIpv4Mode oenum.Member[string]
-
-var (
-	SviIpv4ModeDisabled = SviIpv4Mode{Value: "disabled"}
-	SviIpv4ModeEnabled  = SviIpv4Mode{Value: "enabled"}
-	SviIpv4ModeForced   = SviIpv4Mode{Value: "forced"}
-)
-
-type SviIpv6Mode oenum.Member[string]
-
-var (
-	SviIpv6ModeDisabled  = SviIpv6Mode{Value: "disabled"}
-	SviIpv6ModeEnabled   = SviIpv6Mode{Value: "enabled"}
-	SviIpv6ModeForced    = SviIpv6Mode{Value: "forced"}
-	SviIpv6ModeLinkLocal = SviIpv6Mode{Value: "link_local"}
 )
 
 type SwitchingZoneMACVRFServiceType oenum.Member[string]

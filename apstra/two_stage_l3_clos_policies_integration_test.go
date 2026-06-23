@@ -257,9 +257,9 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 			}
 
 			// prep VN bindings
-			bindings := make([]VnBinding, len(leafIds))
+			bindings := make([]datacenter.VNBinding, len(leafIds))
 			for i, leafId := range leafIds {
-				bindings[i] = VnBinding{SystemId: leafId}
+				bindings[i] = datacenter.VNBinding{SystemID: string(leafId)}
 			}
 
 			// create a security zone (VNs live here)
@@ -274,14 +274,14 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 			}
 
 			// create a couple of virtual networks we'll use as policy rule endpoints
-			vnIds := make([]ObjectId, 2)
+			vnIds := make([]string, 2)
 			for i := range vnIds {
-				vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-					Ipv4Enabled:    true,
+				vnId, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
+					IPv4Enabled:    true,
 					Label:          "vn_" + strconv.Itoa(i),
-					SecurityZoneId: ObjectId(szId),
-					VnBindings:     bindings,
-					VnType:         enum.VnTypeVxlan,
+					SecurityZoneID: szId,
+					Bindings:       bindings,
+					Type:           enum.VnTypeVxlan,
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -299,8 +299,8 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 					Enabled:             randBool(),
 					Label:               randString(5, "hex"),
 					Description:         randString(5, "hex"),
-					SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
-					DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
+					SrcApplicationPoint: &PolicyApplicationPointData{Id: ObjectId(vnIds[0])},
+					DstApplicationPoint: &PolicyApplicationPointData{Id: ObjectId(vnIds[1])},
 					Rules:               nil,
 					Tags:                tags,
 				},
@@ -308,8 +308,8 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 					Enabled:             randBool(),
 					Label:               randString(5, "hex"),
 					Description:         randString(5, "hex"),
-					SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
-					DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
+					SrcApplicationPoint: &PolicyApplicationPointData{Id: ObjectId(vnIds[1])},
+					DstApplicationPoint: &PolicyApplicationPointData{Id: ObjectId(vnIds[0])},
 					Rules:               nil,
 					Tags:                tags,
 				},
@@ -382,9 +382,9 @@ func TestAddDeletePolicyRule(t *testing.T) {
 			}
 
 			// prep VN bindings
-			bindings := make([]VnBinding, len(leafIds))
+			bindings := make([]datacenter.VNBinding, len(leafIds))
 			for i, leafId := range leafIds {
-				bindings[i] = VnBinding{SystemId: leafId}
+				bindings[i] = datacenter.VNBinding{SystemID: string(leafId)}
 			}
 
 			// create a security zone (VNs live here)
@@ -399,14 +399,14 @@ func TestAddDeletePolicyRule(t *testing.T) {
 			}
 
 			// create a couple of virtual networks we'll use a policy rule endpoints
-			vnIds := make([]ObjectId, 2)
+			vnIds := make([]string, 2)
 			for i := range vnIds {
-				vnId, err := bp.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-					Ipv4Enabled:    true,
+				vnId, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
+					IPv4Enabled:    true,
 					Label:          "vn_" + strconv.Itoa(i),
-					SecurityZoneId: ObjectId(szId),
-					VnBindings:     bindings,
-					VnType:         enum.VnTypeVxlan,
+					SecurityZoneID: szId,
+					Bindings:       bindings,
+					Type:           enum.VnTypeVxlan,
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -418,8 +418,8 @@ func TestAddDeletePolicyRule(t *testing.T) {
 			policyId, err := bp.CreatePolicy(ctx, &PolicyData{
 				Enabled:             false,
 				Label:               randString(5, "hex"),
-				SrcApplicationPoint: &PolicyApplicationPointData{Id: vnIds[0]},
-				DstApplicationPoint: &PolicyApplicationPointData{Id: vnIds[1]},
+				SrcApplicationPoint: &PolicyApplicationPointData{Id: ObjectId(vnIds[0])},
+				DstApplicationPoint: &PolicyApplicationPointData{Id: ObjectId(vnIds[1])},
 			})
 			if err != nil {
 				t.Fatal(err)

@@ -78,10 +78,10 @@ func TestAssignClearCtToInterface(t *testing.T) {
 
 			// create assignments for the leaf switch nodes
 			assignments := make(SystemIdToInterfaceMapAssignment, len(leafIds))
-			bindings := make([]VnBinding, len(leafIds))
+			bindings := make([]datacenter.VNBinding, len(leafIds))
 			for i, leafId := range leafIds {
 				assignments[leafId.String()] = "Juniper_vQFX__AOS-7x10-Leaf"
-				bindings[i] = VnBinding{SystemId: leafId}
+				bindings[i] = datacenter.VNBinding{SystemID: string(leafId)}
 			}
 
 			log.Printf("testing SetInterfaceMapAssignments() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
@@ -100,16 +100,16 @@ func TestAssignClearCtToInterface(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			vnIds := make([]ObjectId, vnCount)
+			vnIds := make([]string, vnCount)
 			cts := make([]ConnectivityTemplate, vnCount)
 			ctIds := make([]ObjectId, vnCount)
 			for i := 0; i < vnCount; i++ {
 				log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-				vnIds[i], err = bpClient.CreateVirtualNetwork(ctx, &VirtualNetworkData{
+				vnIds[i], err = bpClient.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
 					Label:          randString(6, "hex"),
-					SecurityZoneId: ObjectId(szId),
-					VnBindings:     bindings,
-					VnType:         enum.VnTypeVxlan,
+					SecurityZoneID: szId,
+					Bindings:       bindings,
+					Type:           enum.VnTypeVxlan,
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -120,7 +120,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 					Subpolicies: []*ConnectivityTemplatePrimitive{{
 						Attributes: &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
 							Tagged:   true,
-							VnNodeId: &vnIds[i],
+							VnNodeId: (*ObjectId)(&vnIds[i]),
 						},
 					}},
 				}

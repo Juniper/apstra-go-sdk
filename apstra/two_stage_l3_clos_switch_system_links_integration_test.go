@@ -335,9 +335,9 @@ func TestDeleteSwitchSystemLinks_WithCtAssigned(t *testing.T) {
 
 			// create virtual networks
 			log.Printf("creating virtual networks in blueprint %q %s %s (%s)", bp.Id(), client.clientType, clientName, client.client.ApiVersion())
-			vnIds := make([]ObjectId, 3)
+			vnIds := make([]string, 3)
 			for i := range vnIds {
-				vnIds[i] = testVirtualNetwork(t, ctx, bp, ObjectId(szId))
+				vnIds[i] = testVirtualNetwork(t, ctx, bp, szId)
 			}
 
 			// create connectivity templates
@@ -352,7 +352,7 @@ func TestDeleteSwitchSystemLinks_WithCtAssigned(t *testing.T) {
 							Label: "",
 							Attributes: &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
 								Tagged:   true,
-								VnNodeId: &vnId,
+								VnNodeId: (*ObjectId)(&vnId),
 							},
 						},
 					},

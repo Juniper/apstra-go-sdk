@@ -129,21 +129,21 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			leafIDs, err := getSystemIdsByRole(ctx, bpClient, "leaf")
 			require.NoError(t, err)
 			require.Greater(t, len(leafIDs), 0)
-			bindings := make([]VnBinding, len(leafIDs))
+			bindings := make([]datacenter.VNBinding, len(leafIDs))
 			for i, leafID := range leafIDs {
-				bindings[i] = VnBinding{SystemId: leafID}
+				bindings[i] = datacenter.VNBinding{SystemID: string(leafID)}
 			}
 
 			// create a VN with IPv4 and IPv6 enabled so that the VRF is rendered on switches and loopbacks will be assigned
-			_, err = bpClient.CreateVirtualNetwork(ctx, &VirtualNetworkData{
-				Ipv4Enabled:               true,
-				VirtualGatewayIpv4Enabled: true,
-				Ipv6Enabled:               true,
-				VirtualGatewayIpv6Enabled: true,
+			_, err = bpClient.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
+				IPv4Enabled:               true,
+				VirtualGatewayIPv4Enabled: true,
+				IPv6Enabled:               true,
+				VirtualGatewayIPv6Enabled: true,
 				Label:                     randString(6, "hex"),
-				SecurityZoneId:            ObjectId(rzID),
-				VnBindings:                bindings,
-				VnType:                    enum.VnTypeVxlan,
+				SecurityZoneID:            rzID,
+				Bindings:                  bindings,
+				Type:                      enum.VnTypeVxlan,
 			})
 			require.NoError(t, err)
 
