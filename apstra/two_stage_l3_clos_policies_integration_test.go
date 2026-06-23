@@ -217,12 +217,12 @@ func comparePolicyData(a *PolicyData, aName string, b *PolicyData, bName string,
 		t.Fatalf("Policy Descriptions don't match: %s has %q, %s has %q", aName, a.Description, bName, b.Description)
 	}
 
-	if a.SrcApplicationPoint.Id != b.SrcApplicationPoint.Id {
-		t.Fatalf("Policy SrcApplicationPoints don't match: %s has %q, %s has %q", aName, a.SrcApplicationPoint.Id, bName, b.SrcApplicationPoint.Id)
+	if a.SrcApplicationPoint.ID != b.SrcApplicationPoint.ID {
+		t.Fatalf("Policy SrcApplicationPoints don't match: %s has %q, %s has %q", aName, a.SrcApplicationPoint.ID, bName, b.SrcApplicationPoint.ID)
 	}
 
-	if a.DstApplicationPoint.Id != b.DstApplicationPoint.Id {
-		t.Fatalf("Policy DstApplicationPoints don't match: %s has %q, %s has %q", aName, a.DstApplicationPoint.Id, bName, b.DstApplicationPoint.Id)
+	if a.DstApplicationPoint.ID != b.DstApplicationPoint.ID {
+		t.Fatalf("Policy DstApplicationPoints don't match: %s has %q, %s has %q", aName, a.DstApplicationPoint.ID, bName, b.DstApplicationPoint.ID)
 	}
 
 	compareSlicesAsSets(t, a.Tags, b.Tags, fmt.Sprintf("%s tags: %v, %s tags %v", aName, a.Tags, bName, b.Tags))
@@ -299,8 +299,8 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 					Enabled:             randBool(),
 					Label:               randString(5, "hex"),
 					Description:         randString(5, "hex"),
-					SrcApplicationPoint: &datacenter.PolicyApplicationPointData{Id: vnIds[0]},
-					DstApplicationPoint: &datacenter.PolicyApplicationPointData{Id: vnIds[1]},
+					SrcApplicationPoint: &datacenter.PolicyApplicationPointData{ID: vnIds[0]},
+					DstApplicationPoint: &datacenter.PolicyApplicationPointData{ID: vnIds[1]},
 					Rules:               nil,
 					Tags:                tags,
 				},
@@ -308,8 +308,8 @@ func TestCreateDatacenterPolicy(t *testing.T) {
 					Enabled:             randBool(),
 					Label:               randString(5, "hex"),
 					Description:         randString(5, "hex"),
-					SrcApplicationPoint: &datacenter.PolicyApplicationPointData{Id: vnIds[1]},
-					DstApplicationPoint: &datacenter.PolicyApplicationPointData{Id: vnIds[0]},
+					SrcApplicationPoint: &datacenter.PolicyApplicationPointData{ID: vnIds[1]},
+					DstApplicationPoint: &datacenter.PolicyApplicationPointData{ID: vnIds[0]},
 					Rules:               nil,
 					Tags:                tags,
 				},
@@ -418,8 +418,8 @@ func TestAddDeletePolicyRule(t *testing.T) {
 			policyId, err := bp.CreatePolicy(ctx, &PolicyData{
 				Enabled:             false,
 				Label:               randString(5, "hex"),
-				SrcApplicationPoint: &datacenter.PolicyApplicationPointData{Id: vnIds[0]},
-				DstApplicationPoint: &datacenter.PolicyApplicationPointData{Id: vnIds[1]},
+				SrcApplicationPoint: &datacenter.PolicyApplicationPointData{ID: vnIds[0]},
+				DstApplicationPoint: &datacenter.PolicyApplicationPointData{ID: vnIds[1]},
 			})
 			if err != nil {
 				t.Fatal(err)

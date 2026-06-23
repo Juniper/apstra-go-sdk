@@ -7,7 +7,7 @@ package datacenter
 import "github.com/Juniper/apstra-go-sdk/enum"
 
 type PolicyApplicationPointData struct {
-	Id    string                           `json:"id"`
+	ID    string                           `json:"id"`
 	Label string                           `json:"label"`
 	Type  *enum.PolicyApplicationPointType `json:"type"`
 }

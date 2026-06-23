@@ -35,10 +35,10 @@ type PolicyData struct {
 func (o PolicyData) request() *policyRequest {
 	var srcApplicationPoint, dstApplicationPoint ObjectId
 	if o.SrcApplicationPoint != nil {
-		srcApplicationPoint = ObjectId(o.SrcApplicationPoint.Id)
+		srcApplicationPoint = ObjectId(o.SrcApplicationPoint.ID)
 	}
 	if o.DstApplicationPoint != nil {
-		dstApplicationPoint = ObjectId(o.DstApplicationPoint.Id)
+		dstApplicationPoint = ObjectId(o.DstApplicationPoint.ID)
 	}
 
 	rules := make([]rawPolicyRule, len(o.Rules))
@@ -105,8 +105,8 @@ func (o rawPolicy) request() *policyRequest {
 		Enabled:             o.Enabled,
 		Label:               o.Label,
 		Description:         o.Description,
-		SrcApplicationPoint: ObjectId(o.SrcApplicationPoint.Id),
-		DstApplicationPoint: ObjectId(o.DstApplicationPoint.Id),
+		SrcApplicationPoint: ObjectId(o.SrcApplicationPoint.ID),
+		DstApplicationPoint: ObjectId(o.DstApplicationPoint.ID),
 		Rules:               o.Rules,
 		Tags:                o.Tags,
 	}
