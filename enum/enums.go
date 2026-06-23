@@ -383,11 +383,13 @@ var (
 type PolicyApplicationPointType oenum.Member[string]
 
 var (
-	PolicyApplicationPointTypeExternal       = PolicyApplicationPointType{Value: "external"}
-	PolicyApplicationPointTypeGroup          = PolicyApplicationPointType{Value: "group"}
-	PolicyApplicationPointTypeInternal       = PolicyApplicationPointType{Value: "internal"}
-	PolicyApplicationPointTypeSecurityZone   = PolicyApplicationPointType{Value: "security_zone"}
-	PolicyApplicationPointTypeVirtualNetwork = PolicyApplicationPointType{Value: "virtual_network"}
+	PolicyApplicationPointTypeExternal          = PolicyApplicationPointType{Value: "external"}
+	PolicyApplicationPointTypeExternalEndpoints = PolicyApplicationPointType{Value: "external_endpoints"}
+	PolicyApplicationPointTypeGroup             = PolicyApplicationPointType{Value: "group"}
+	PolicyApplicationPointTypeInternal          = PolicyApplicationPointType{Value: "internal"}
+	PolicyApplicationPointTypeInternalEndpoints = PolicyApplicationPointType{Value: "internal_endpoints"}
+	PolicyApplicationPointTypeSecurityZone      = PolicyApplicationPointType{Value: "security_zone"}
+	PolicyApplicationPointTypeVirtualNetwork    = PolicyApplicationPointType{Value: "virtual_network"}
 )
 
 type PolicyRuleAction oenum.Member[string]
