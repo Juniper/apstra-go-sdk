@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2024.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 )
 
 const (
@@ -21,22 +23,22 @@ type Policy struct {
 }
 
 type PolicyData struct {
-	Enabled             bool                        `json:"enabled"`
-	Label               string                      `json:"label"`
-	Description         string                      `json:"description"`
-	SrcApplicationPoint *PolicyApplicationPointData `json:"src_application_point"`
-	DstApplicationPoint *PolicyApplicationPointData `json:"dst_application_point"`
-	Rules               []PolicyRule                `json:"rules"`
-	Tags                []string                    `json:"tags"`
+	Enabled             bool                                   `json:"enabled"`
+	Label               string                                 `json:"label"`
+	Description         string                                 `json:"description"`
+	SrcApplicationPoint *datacenter.PolicyApplicationPointData `json:"src_application_point"`
+	DstApplicationPoint *datacenter.PolicyApplicationPointData `json:"dst_application_point"`
+	Rules               []PolicyRule                           `json:"rules"`
+	Tags                []string                               `json:"tags"`
 }
 
 func (o PolicyData) request() *policyRequest {
 	var srcApplicationPoint, dstApplicationPoint ObjectId
 	if o.SrcApplicationPoint != nil {
-		srcApplicationPoint = o.SrcApplicationPoint.Id
+		srcApplicationPoint = ObjectId(o.SrcApplicationPoint.ID)
 	}
 	if o.DstApplicationPoint != nil {
-		dstApplicationPoint = o.DstApplicationPoint.Id
+		dstApplicationPoint = ObjectId(o.DstApplicationPoint.ID)
 	}
 
 	rules := make([]rawPolicyRule, len(o.Rules))
@@ -65,14 +67,14 @@ type policyRequest struct {
 }
 
 type rawPolicy struct {
-	Enabled             bool                        `json:"enabled"`
-	Label               string                      `json:"label"`
-	Description         string                      `json:"description"`
-	SrcApplicationPoint *PolicyApplicationPointData `json:"src_application_point,omitempty"`
-	DstApplicationPoint *PolicyApplicationPointData `json:"dst_application_point,omitempty"`
-	Rules               []rawPolicyRule             `json:"rules"`
-	Tags                []string                    `json:"tags"`
-	Id                  ObjectId                    `json:"id"`
+	Enabled             bool                                   `json:"enabled"`
+	Label               string                                 `json:"label"`
+	Description         string                                 `json:"description"`
+	SrcApplicationPoint *datacenter.PolicyApplicationPointData `json:"src_application_point,omitempty"`
+	DstApplicationPoint *datacenter.PolicyApplicationPointData `json:"dst_application_point,omitempty"`
+	Rules               []rawPolicyRule                        `json:"rules"`
+	Tags                []string                               `json:"tags"`
+	Id                  ObjectId                               `json:"id"`
 }
 
 func (o rawPolicy) polish() (*Policy, error) {
@@ -103,17 +105,11 @@ func (o rawPolicy) request() *policyRequest {
 		Enabled:             o.Enabled,
 		Label:               o.Label,
 		Description:         o.Description,
-		SrcApplicationPoint: o.SrcApplicationPoint.Id,
-		DstApplicationPoint: o.DstApplicationPoint.Id,
+		SrcApplicationPoint: ObjectId(o.SrcApplicationPoint.ID),
+		DstApplicationPoint: ObjectId(o.DstApplicationPoint.ID),
 		Rules:               o.Rules,
 		Tags:                o.Tags,
 	}
-}
-
-type PolicyApplicationPointData struct {
-	Id    ObjectId `json:"id"`
-	Label string   `json:"label"`
-	Type  string   `json:"type"` // group, internal, external, security_zone, virtual_network
 }
 
 func (o *TwoStageL3ClosClient) getAllPolicies(ctx context.Context) ([]rawPolicy, error) {
