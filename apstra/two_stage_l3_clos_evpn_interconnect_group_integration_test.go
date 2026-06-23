@@ -259,7 +259,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 						comparedatacenter.EVPNInterconnectGroup(t, step.config, get)
 
 						require.NotNil(t, step.config.Label)
-						get, err = bpClient.GetEVPNInterconnectGroupByName(ctx, *step.config.Label)
+						get, err = bpClient.GetEVPNInterconnectGroupByLabel(ctx, *step.config.Label)
 						require.NoError(t, err)
 						require.NotNil(t, get.ID())
 						require.Equal(t, id, *get.ID())
@@ -305,7 +305,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 						require.Equal(t, apstra.ErrNotfound, ace.Type())
 
 						require.NotNil(t, evpnInterconnectGroup.Label)
-						_, err = bpClient.GetEVPNInterconnectGroupByName(ctx, *evpnInterconnectGroup.Label)
+						_, err = bpClient.GetEVPNInterconnectGroupByLabel(ctx, *evpnInterconnectGroup.Label)
 						require.Error(t, err)
 						require.ErrorAs(t, err, &ace)
 						require.Equal(t, apstra.ErrNotfound, ace.Type())
