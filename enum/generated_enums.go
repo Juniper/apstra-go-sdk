@@ -2203,8 +2203,10 @@ var (
 	_                           enum = new(PolicyApplicationPointType)
 	PolicyApplicationPointTypes      = oenum.New(
 		PolicyApplicationPointTypeExternal,
+		PolicyApplicationPointTypeExternalEndpoints,
 		PolicyApplicationPointTypeGroup,
 		PolicyApplicationPointTypeInternal,
+		PolicyApplicationPointTypeInternalEndpoints,
 		PolicyApplicationPointTypeSecurityZone,
 		PolicyApplicationPointTypeVirtualNetwork,
 	)
