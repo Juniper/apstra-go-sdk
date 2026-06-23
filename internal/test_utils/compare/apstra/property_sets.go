@@ -4,12 +4,13 @@
 
 //go:build requiretestutils
 
-package compare
+package compareapstra
 
 import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,5 +22,5 @@ func PropertySetData(t testing.TB, a, b apstra.PropertySetData) {
 	if len(a.Blueprints) > 0 {
 		require.Equal(t, a.Blueprints, b.Blueprints)
 	}
-	JSON(t, a.Values, b.Values)
+	compare.JSON(t, a.Values, b.Values)
 }

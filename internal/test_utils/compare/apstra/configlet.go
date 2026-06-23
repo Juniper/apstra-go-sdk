@@ -4,12 +4,13 @@
 
 //go:build requiretestutils
 
-package compare
+package compareapstra
 
 import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +20,7 @@ func ConfigletData(t testing.TB, a, b *apstra.ConfigletData) {
 	require.NotNil(t, a)
 	require.NotNil(t, b)
 	require.Equal(t, a.DisplayName, b.DisplayName)
-	SlicesAsSets(t, a.RefArchs, b.RefArchs, "while comparing configlet refarchs,")
+	compare.SlicesAsSets(t, a.RefArchs, b.RefArchs, "while comparing configlet refarchs,")
 	require.Equal(t, len(a.Generators), len(b.Generators))
 	for i := range a.Generators {
 		ConfigletGenerators(t, a.Generators[i], b.Generators[i])

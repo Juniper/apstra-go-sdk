@@ -13,7 +13,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
@@ -49,7 +49,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, ps.Data)
 
-			compare.PropertySetData(t, psData, *ps.Data)
+			compareapstra.PropertySetData(t, psData, *ps.Data)
 
 			psData.Label = testutils.RandString(10, "hex")
 			for i := 0; i < sampleCount; i++ {
@@ -65,7 +65,7 @@ func TestCreateGetUpdateGetDeletePropertySet(t *testing.T) {
 			ps, err = client.Client.GetPropertySet(ctx, id)
 			require.NoError(t, err)
 			require.NotNil(t, ps.Data)
-			compare.PropertySetData(t, psData, *ps.Data)
+			compareapstra.PropertySetData(t, psData, *ps.Data)
 
 			err = client.Client.DeletePropertySet(ctx, id)
 			require.NoError(t, err)

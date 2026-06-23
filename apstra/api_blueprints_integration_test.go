@@ -18,7 +18,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
@@ -535,7 +535,7 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 						fabricSettings, err := bpClient.GetFabricSettings(ctx)
 						require.NoError(t, err)
 
-						compare.FabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
+						compareapstra.FabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
 
 						if tCase.req.FabricSettings.SpineLeafLinks != nil || tCase.req.FabricSettings.SpineSuperspineLinks != nil {
 							spineLeaf, spineSuperspine := fetchFabricAddressingScheme(t, bpClient)
@@ -848,7 +848,7 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 						require.NoError(t, err)
 						require.NotNil(t, fabricSettings)
 
-						compare.FabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
+						compareapstra.FabricSettings(t, *tCase.req.FabricSettings, *fabricSettings)
 
 						if tCase.req.FabricSettings.SpineLeafLinks != nil || tCase.req.FabricSettings.SpineSuperspineLinks != nil {
 							spineLeaf, spineSuperspine := fetchFabricAddressingScheme(t, bpClient)
@@ -956,7 +956,7 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 					fabricSettings, err := bpClient.GetFabricSettings(ctx)
 					require.NoError(t, err)
 
-					compare.FabricSettings(t, tCase.fabricSettings, *fabricSettings)
+					compareapstra.FabricSettings(t, tCase.fabricSettings, *fabricSettings)
 
 					require.NoError(t, client.Client.DeleteBlueprint(ctx, id))
 				})

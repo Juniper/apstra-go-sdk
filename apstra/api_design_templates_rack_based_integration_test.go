@@ -14,7 +14,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
@@ -126,7 +126,7 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 		require.Equal(t, req.DhcpServiceIntent.Active, rbt.DhcpServiceIntent.Active)
 		if req.AntiAffinityPolicy != nil {
 			require.NotNilf(t, rbt.AntiAffinityPolicy, "rbt.AntiAffinityPolicy is nil")
-			compare.AntiAffinityPolicy(t, *req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
+			compareapstra.AntiAffinityPolicy(t, *req.AntiAffinityPolicy, *rbt.AntiAffinityPolicy)
 		}
 
 		require.Equal(t, req.AsnAllocationPolicy.SpineAsnScheme, rbt.AsnAllocationPolicy.SpineAsnScheme)

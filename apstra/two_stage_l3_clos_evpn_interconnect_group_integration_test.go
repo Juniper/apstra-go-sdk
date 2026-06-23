@@ -20,7 +20,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
-	comparedatacenter "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
+	compareapstra "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
@@ -238,7 +238,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 					require.NoError(t, err)
 					require.NotNil(t, get.ID())
 					require.Equal(t, id, *get.ID())
-					comparedatacenter.EVPNInterconnectGroup(t, config, get)
+					compareapstra.EVPNInterconnectGroup(t, config, get)
 
 					for i, step := range tCase.steps {
 						require.NoError(t, step.config.SetID(id))
@@ -256,14 +256,14 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 						require.NoError(t, err)
 						require.NotNil(t, get.ID())
 						require.Equal(t, id, *get.ID())
-						comparedatacenter.EVPNInterconnectGroup(t, step.config, get)
+						compareapstra.EVPNInterconnectGroup(t, step.config, get)
 
 						require.NotNil(t, step.config.Label)
 						get, err = bpClient.GetEVPNInterconnectGroupByLabel(ctx, *step.config.Label)
 						require.NoError(t, err)
 						require.NotNil(t, get.ID())
 						require.Equal(t, id, *get.ID())
-						comparedatacenter.EVPNInterconnectGroup(t, step.config, get)
+						compareapstra.EVPNInterconnectGroup(t, step.config, get)
 					}
 				})
 			}
