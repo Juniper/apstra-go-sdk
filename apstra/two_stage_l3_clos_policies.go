@@ -28,7 +28,7 @@ type PolicyData struct {
 	Description         string                                 `json:"description"`
 	SrcApplicationPoint *datacenter.PolicyApplicationPointData `json:"src_application_point"`
 	DstApplicationPoint *datacenter.PolicyApplicationPointData `json:"dst_application_point"`
-	Rules               []PolicyRule                           `json:"rules"`
+	Rules               []datacenter.PolicyRule                `json:"rules"`
 	Tags                []string                               `json:"tags"`
 }
 
@@ -41,29 +41,25 @@ func (o PolicyData) request() *policyRequest {
 		dstApplicationPoint = ObjectId(o.DstApplicationPoint.ID)
 	}
 
-	rules := make([]rawPolicyRule, len(o.Rules))
-	for i, rule := range o.Rules {
-		rules[i] = *rule.Data.raw()
-	}
 	return &policyRequest{
 		Enabled:             o.Enabled,
 		Label:               o.Label,
 		Description:         o.Description,
 		SrcApplicationPoint: srcApplicationPoint,
 		DstApplicationPoint: dstApplicationPoint,
-		Rules:               rules,
+		Rules:               o.Rules,
 		Tags:                o.Tags,
 	}
 }
 
 type policyRequest struct {
-	Enabled             bool            `json:"enabled"`
-	Label               string          `json:"label"`
-	Description         string          `json:"description"`
-	SrcApplicationPoint ObjectId        `json:"src_application_point,omitempty"`
-	DstApplicationPoint ObjectId        `json:"dst_application_point,omitempty"`
-	Rules               []rawPolicyRule `json:"rules"`
-	Tags                []string        `json:"tags"`
+	Enabled             bool                    `json:"enabled"`
+	Label               string                  `json:"label"`
+	Description         string                  `json:"description"`
+	SrcApplicationPoint ObjectId                `json:"src_application_point,omitempty"`
+	DstApplicationPoint ObjectId                `json:"dst_application_point,omitempty"`
+	Rules               []datacenter.PolicyRule `json:"rules"`
+	Tags                []string                `json:"tags"`
 }
 
 type rawPolicy struct {
@@ -72,20 +68,12 @@ type rawPolicy struct {
 	Description         string                                 `json:"description"`
 	SrcApplicationPoint *datacenter.PolicyApplicationPointData `json:"src_application_point,omitempty"`
 	DstApplicationPoint *datacenter.PolicyApplicationPointData `json:"dst_application_point,omitempty"`
-	Rules               []rawPolicyRule                        `json:"rules"`
+	Rules               []datacenter.PolicyRule                `json:"rules"`
 	Tags                []string                               `json:"tags"`
 	Id                  ObjectId                               `json:"id"`
 }
 
 func (o rawPolicy) polish() (*Policy, error) {
-	rules := make([]PolicyRule, len(o.Rules))
-	for i, raw := range o.Rules {
-		polished, err := raw.polish()
-		if err != nil {
-			return nil, err
-		}
-		rules[i] = *polished
-	}
 	return &Policy{
 		Id: o.Id,
 		Data: &PolicyData{
@@ -94,7 +82,7 @@ func (o rawPolicy) polish() (*Policy, error) {
 			Description:         o.Description,
 			SrcApplicationPoint: o.SrcApplicationPoint,
 			DstApplicationPoint: o.DstApplicationPoint,
-			Rules:               rules,
+			Rules:               o.Rules,
 			Tags:                o.Tags,
 		},
 	}, nil

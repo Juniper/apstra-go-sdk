@@ -46,54 +46,6 @@ func TestGetAllPolicies(t *testing.T) {
 	}
 }
 
-func comparePolicyRules(aName string, a PolicyRule, bName string, b PolicyRule, t *testing.T) {
-	if a.Id != b.Id {
-		t.Fatalf("Policy Rule IDs don't match: %s has %q, %s has %q", aName, a.Id, bName, b.Id)
-	}
-
-	aData := a.Data != nil
-	bData := b.Data != nil
-
-	if (aData || bData) && !(aData && bData) { // xor
-		t.Fatalf("Policy Rule data presence mismatch -- a: %t vs. b: %t", aData, bData)
-	}
-
-	if aData && bData {
-		comparePolicyRuleData(aName, a.Data, bName, b.Data, t)
-	}
-}
-
-func comparePolicyRuleData(aName string, a *PolicyRuleData, bName string, b *PolicyRuleData, t *testing.T) {
-	if a.Label != b.Label {
-		t.Fatalf("Policy Rule Labels don't match: %s has %q, %s has %q", aName, a.Label, bName, b.Label)
-	}
-
-	if a.Description != b.Description {
-		t.Fatalf("Policy Rule Descriptions don't match: %s has %q, %s has %q", aName, a.Description, bName, b.Description)
-	}
-
-	if a.Protocol != b.Protocol {
-		t.Fatalf("Policy Rule Protocols don't match: %s has %q, %s has %q", aName, a.Protocol, bName, b.Protocol)
-	}
-
-	if a.Action != b.Action {
-		t.Fatalf("Policy Rule Actions don't match: %s has %s, %s has %s", aName, a.Action, bName, b.Action)
-	}
-
-	comparedatacenter.PortRanges(t, a.SrcPort, b.SrcPort)
-	comparedatacenter.PortRanges(t, a.DstPort, b.DstPort)
-
-	aTcpStateQualifier := a.TcpStateQualifier != nil
-	bTcpStateQualifier := b.TcpStateQualifier != nil
-	if (aTcpStateQualifier || bTcpStateQualifier) && !(aTcpStateQualifier && bTcpStateQualifier) { // xor
-		t.Fatalf("TCP state qualifier presence mismatch -- a: %t vs. b: %t", aTcpStateQualifier, bTcpStateQualifier)
-	}
-
-	if aTcpStateQualifier && bTcpStateQualifier && (a.TcpStateQualifier.Value != b.TcpStateQualifier.Value) {
-		t.Fatalf("TCP state qualifier value mismatch -- a: %q vs. b: %q", a.TcpStateQualifier.Value, b.TcpStateQualifier.Value)
-	}
-}
-
 func comparePolicies(a *Policy, aName string, b *Policy, bName string, t *testing.T) {
 	if a.Id != b.Id {
 		t.Fatalf("Policy IDs don't match: %s has %q, %s has %q", aName, a.Id, bName, b.Id)
@@ -130,7 +82,7 @@ func comparePolicyData(a *PolicyData, aName string, b *PolicyData, bName string,
 	}
 
 	for i := 0; i < len(a.Rules); i++ {
-		comparePolicyRules(fmt.Sprintf("%s rule %d", aName, i), a.Rules[i], fmt.Sprintf("%s rule %d", bName, i), b.Rules[i], t)
+		comparedatacenter.PolicyRule(t, a.Rules[i], b.Rules[i], fmt.Sprintf("policy rule %d", i))
 	}
 }
 
@@ -313,7 +265,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 			}
 
 			// create a security policy
-			policyId, err := bp.CreatePolicy(ctx, &PolicyData{
+			policyID, err := bp.CreatePolicy(ctx, &PolicyData{
 				Enabled:             false,
 				Label:               randString(5, "hex"),
 				SrcApplicationPoint: &datacenter.PolicyApplicationPointData{ID: vnIds[0]},
@@ -323,7 +275,7 @@ func TestAddDeletePolicyRule(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			newRule := &PolicyRuleData{
+			newRule := datacenter.PolicyRule{
 				Label:             randString(5, "hex"),
 				Description:       randString(5, "hex"),
 				Protocol:          enum.PolicyRuleProtocolTcp,
@@ -333,19 +285,19 @@ func TestAddDeletePolicyRule(t *testing.T) {
 				TcpStateQualifier: &enum.TcpStateQualifierEstablished,
 			}
 
-			p, err := bp.getPolicy(ctx, policyId)
+			p, err := bp.getPolicy(ctx, policyID)
 			if err != nil {
 				t.Fatal(err)
 			}
 			ruleCount := len(p.Rules)
 
 			log.Printf("testing addPolicyRule() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			ruleId, err := bp.AddPolicyRule(ctx, newRule, 0, policyId)
+			ruleID, err := bp.AddPolicyRule(ctx, newRule, 0, string(policyID))
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			p, err = bp.getPolicy(ctx, policyId)
+			p, err = bp.getPolicy(ctx, policyID)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -354,12 +306,12 @@ func TestAddDeletePolicyRule(t *testing.T) {
 			}
 
 			log.Printf("testing deletePolicyRuleById() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			err = bp.deletePolicyRuleById(ctx, policyId, ruleId)
+			err = bp.DeletePolicyRuleById(ctx, string(policyID), ruleID)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			p, err = bp.getPolicy(ctx, policyId)
+			p, err = bp.getPolicy(ctx, policyID)
 			if err != nil {
 				t.Fatal(err)
 			}
