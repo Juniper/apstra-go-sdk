@@ -451,7 +451,8 @@ func TestPolicyAddDeleteRule(t *testing.T) {
 			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
 
 			pid, err := bp.CreatePolicy(ctx, datacenter.Policy{
-				Label: testutils.RandString(6, "hex"),
+				Label:         testutils.RandString(6, "hex"),
+				AddressFamily: &enum.PolicyAddressFamilyIPv4,
 				Rules: []datacenter.PolicyRule{
 					{
 						Label:    testutils.RandString(6, "hex"),
