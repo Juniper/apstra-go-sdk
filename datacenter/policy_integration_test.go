@@ -337,8 +337,6 @@ func TestPolicyAddDeleteRule(t *testing.T) {
 	ctx := testutils.ContextWithTestID(t.Context(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
-	//vnCount := 5
-
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
@@ -443,6 +441,5 @@ func TestPolicyAddDeleteRule(t *testing.T) {
 				}
 			})
 		})
-
 	}
 }
