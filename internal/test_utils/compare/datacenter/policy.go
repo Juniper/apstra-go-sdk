@@ -36,7 +36,7 @@ func Policy(t testing.TB, req, resp datacenter.Policy, msg ...string) {
 	}
 	require.Equal(t, len(req.Rules), len(resp.Rules), msg)
 	for i := range req.Rules {
-		PolicyRule(t, req.Rules[i], resp.Rules[i], testmessage.Add(msg, fmt.Sprintf("Comparing Policy Rule at index %d", i))...)
+		PolicyRule(t, req.Rules[i], resp.Rules[i], fmt.Sprintf("Comparing Policy Rule at index %d", i))
 	}
 	compare.SlicesAsSets(t, req.Tags, resp.Tags, "tags")
 }
