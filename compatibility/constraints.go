@@ -21,7 +21,7 @@ var (
 		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra612)),
 	}
 	DatacenterPolicyAddressFamilyRequired = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
+		constraints: version.MustConstraints(version.NewConstraint(">" + apstra612)),
 	}
 	DatacenterSwitchingZoneOK = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
