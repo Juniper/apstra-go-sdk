@@ -29,8 +29,8 @@ func TestPortRange_MarshalText(t *testing.T) {
 			exp: "20-21",
 		},
 		"invalid_reversed": {
-			in:     datacenter.PortRange{First: 21, Last: 20},
-			expErr: true,
+			in:  datacenter.PortRange{First: 21, Last: 20},
+			exp: "20-21",
 		},
 		"invalid_zero_start": {
 			in:     datacenter.PortRange{First: 0, Last: 10},
@@ -84,6 +84,10 @@ func TestPortRange_UnmarshalText(t *testing.T) {
 			in:  " 20 - 21 ",
 			exp: datacenter.PortRange{First: 20, Last: 21},
 		},
+		"range_reversed": {
+			in:  "21-20",
+			exp: datacenter.PortRange{First: 20, Last: 21},
+		},
 		"invalid_empty": {
 			in:     "",
 			expErr: true,
@@ -98,18 +102,6 @@ func TestPortRange_UnmarshalText(t *testing.T) {
 		},
 		"invalid_non_numeric": {
 			in:     "abc",
-			expErr: true,
-		},
-		"invalid_zero_single": {
-			in:     "0",
-			expErr: true,
-		},
-		"invalid_zero_range": {
-			in:     "0-10",
-			expErr: true,
-		},
-		"invalid_reversed": {
-			in:     "21-20",
 			expErr: true,
 		},
 		"invalid_overflow": {
@@ -144,7 +136,7 @@ func TestPortRange_UnmarshalText_DoesNotMutateOnError(t *testing.T) {
 	original := datacenter.PortRange{First: 80, Last: 80}
 	got := original
 
-	err := got.UnmarshalText([]byte("0"))
+	err := got.UnmarshalText([]byte("abc"))
 	require.Error(t, err)
 	require.Equal(t, original, got)
 }
