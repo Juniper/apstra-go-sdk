@@ -30,14 +30,14 @@ func TestCrudPolicy(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
-		versionConstraint *compatibility.Constraint
-		create            datacenter.Policy
-		update            *datacenter.Policy
+		versionConstraints []compatibility.Constraint
+		create             datacenter.Policy
+		update             *datacenter.Policy
 	}
 
 	testCases := map[string]testCase{
 		"start_minimal_src_rz_6.1_and_earlier": {
-			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyNotSupported,
+			versionConstraints: []compatibility.Constraint{compatibility.DatacenterPolicyAddressFamilyNotSupported},
 			create: datacenter.Policy{
 				Label: testutils.RandString(6, "hex"),
 			},
@@ -69,7 +69,7 @@ func TestCrudPolicy(t *testing.T) {
 			},
 		},
 		"start_maximal_dst_rz_6.1_and_earlier": {
-			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyNotSupported,
+			versionConstraints: []compatibility.Constraint{compatibility.DatacenterPolicyAddressFamilyNotSupported},
 			create: datacenter.Policy{
 				Enabled:             true,
 				Label:               testutils.RandString(6, "hex"),
@@ -101,7 +101,10 @@ func TestCrudPolicy(t *testing.T) {
 			},
 		},
 		"start_minimal_intra_rz_vns_6.1_and_earlier": {
-			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyNotSupported,
+			versionConstraints: []compatibility.Constraint{
+				compatibility.DatacenterPolicyAddressFamilyNotSupported,
+				compatibility.EmptyVnBindingsOk,
+			},
 			create: datacenter.Policy{
 				Label: testutils.RandString(6, "hex"),
 			},
@@ -134,7 +137,7 @@ func TestCrudPolicy(t *testing.T) {
 			},
 		},
 		"start_minimal_src_rz": {
-			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyRequired,
+			versionConstraints: []compatibility.Constraint{compatibility.DatacenterPolicyAddressFamilyRequired},
 			create: datacenter.Policy{
 				Label:         testutils.RandString(6, "hex"),
 				AddressFamily: pointer.To(testutils.OneOf(enum.PolicyAddressFamilyIPv4, enum.PolicyAddressFamilyIPv6, enum.PolicyAddressFamilyIPv4IPv6)),
@@ -168,7 +171,7 @@ func TestCrudPolicy(t *testing.T) {
 			},
 		},
 		"start_maximal_dst_rz": {
-			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyRequired,
+			versionConstraints: []compatibility.Constraint{compatibility.DatacenterPolicyAddressFamilyRequired},
 			create: datacenter.Policy{
 				Enabled:             true,
 				Label:               testutils.RandString(6, "hex"),
@@ -202,7 +205,7 @@ func TestCrudPolicy(t *testing.T) {
 			},
 		},
 		"start_minimal_intra_rz_vns": {
-			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyRequired,
+			versionConstraints: []compatibility.Constraint{compatibility.DatacenterPolicyAddressFamilyRequired},
 			create: datacenter.Policy{
 				Label:         testutils.RandString(6, "hex"),
 				AddressFamily: pointer.To(testutils.OneOf(enum.PolicyAddressFamilyIPv4, enum.PolicyAddressFamilyIPv6, enum.PolicyAddressFamilyIPv4IPv6)),
@@ -247,8 +250,8 @@ func TestCrudPolicy(t *testing.T) {
 			rzMutex := new(sync.Mutex)
 			vnMap := make(map[string]string)
 			vnMutex := new(sync.Mutex)
-			var applicationPointID func(ctx context.Context, bp *apstra.TwoStageL3ClosClient, s string) string
-			applicationPointID = func(ctx context.Context, bp *apstra.TwoStageL3ClosClient, s string) string {
+			var applicationPointID func(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient, s string) string
+			applicationPointID = func(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient, s string) string {
 				parts := strings.Split(s, ":")
 				switch parts[0] {
 				case "rz": // format is "rz:name"
@@ -274,7 +277,7 @@ func TestCrudPolicy(t *testing.T) {
 					if id, ok := vnMap[s]; ok {
 						return id
 					}
-					rzID := applicationPointID(ctx, bp, "rz:"+parts[1])
+					rzID := applicationPointID(t, ctx, bp, "rz:"+parts[1])
 					id, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
 						IPv4Enabled:    true,
 						Label:          testutils.RandString(6, "hex"),
@@ -297,9 +300,11 @@ func TestCrudPolicy(t *testing.T) {
 					t.Parallel()
 					ctx := testutils.ContextWithTestID(ctx, t)
 
-					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(client.APIVersion()) {
-						t.Skipf("skipping %q due to version constraints: %q. API version: %q",
-							tName, tCase.versionConstraint, client.Client.ApiVersion())
+					for _, constraint := range tCase.versionConstraints {
+						if !constraint.Check(client.APIVersion()) {
+							t.Skipf("skipping %q due to version constraints: %q. API version: %q",
+								tName, constraint, client.Client.ApiVersion())
+						}
 					}
 
 					// copy because we modify these values below
@@ -308,16 +313,16 @@ func TestCrudPolicy(t *testing.T) {
 
 					// create application point objects as necessary
 					if create.SrcApplicationPoint != nil {
-						create.SrcApplicationPoint = pointer.To(applicationPointID(ctx, bp, *create.SrcApplicationPoint))
+						create.SrcApplicationPoint = pointer.To(applicationPointID(t, ctx, bp, *create.SrcApplicationPoint))
 					}
 					if create.DstApplicationPoint != nil {
-						create.DstApplicationPoint = pointer.To(applicationPointID(ctx, bp, *create.DstApplicationPoint))
+						create.DstApplicationPoint = pointer.To(applicationPointID(t, ctx, bp, *create.DstApplicationPoint))
 					}
 					if update.SrcApplicationPoint != nil {
-						update.SrcApplicationPoint = pointer.To(applicationPointID(ctx, bp, *update.SrcApplicationPoint))
+						update.SrcApplicationPoint = pointer.To(applicationPointID(t, ctx, bp, *update.SrcApplicationPoint))
 					}
 					if update.DstApplicationPoint != nil {
-						update.DstApplicationPoint = pointer.To(applicationPointID(ctx, bp, *update.DstApplicationPoint))
+						update.DstApplicationPoint = pointer.To(applicationPointID(t, ctx, bp, *update.DstApplicationPoint))
 					}
 
 					var id string
