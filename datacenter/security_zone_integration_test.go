@@ -197,7 +197,7 @@ func TestCRUDSecurityZone(t *testing.T) {
 					// retrieve the object by ID and validate
 					obj, err = bpClient.GetSecurityZone(ctx, id)
 					require.NoError(t, err)
-					comparedatacenter.comparedatacenter.SecurityZone(t, create, obj)
+					comparedatacenter.SecurityZone(t, create, obj)
 					require.NotNil(t, obj.ID())
 					require.Equal(t, id, *obj.ID())
 

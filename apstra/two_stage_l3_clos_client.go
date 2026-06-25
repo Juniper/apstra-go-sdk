@@ -167,59 +167,6 @@ func (o *TwoStageL3ClosClient) SetInterfaceMapAssignments(ctx context.Context, a
 	return o.setInterfaceMapAssignments(ctx, assignments)
 }
 
-// GetAllPolicies returns []Policy representing all policies configured within the DC blueprint
-func (o *TwoStageL3ClosClient) GetAllPolicies(ctx context.Context) ([]Policy, error) {
-	policies, err := o.getAllPolicies(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]Policy, len(policies))
-	for i, raw := range policies {
-		polished, err := raw.polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *polished
-	}
-	return result, nil
-}
-
-// GetPolicy returns *Policy representing policy 'id' within the DC blueprint
-func (o *TwoStageL3ClosClient) GetPolicy(ctx context.Context, id ObjectId) (*Policy, error) {
-	raw, err := o.getPolicy(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return raw.polish()
-}
-
-// GetPolicyByLabel returns *Policy representing policy identified by 'label' within the DC blueprint
-func (o *TwoStageL3ClosClient) GetPolicyByLabel(ctx context.Context, label string) (*Policy, error) {
-	raw, err := o.getPolicyByLabel(ctx, label)
-	if err != nil {
-		return nil, err
-	}
-
-	return raw.polish()
-}
-
-// CreatePolicy creates a policy within the DC blueprint, returns its ID
-func (o *TwoStageL3ClosClient) CreatePolicy(ctx context.Context, data *PolicyData) (ObjectId, error) {
-	return o.createPolicy(ctx, data.request())
-}
-
-// DeletePolicy deletes policy 'id' within the DC blueprint
-func (o *TwoStageL3ClosClient) DeletePolicy(ctx context.Context, id ObjectId) error {
-	return o.deletePolicy(ctx, id)
-}
-
-// UpdatePolicy calls PUT to replace the configuration of policy 'id' within the DC blueprint
-func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, data *PolicyData) error {
-	return o.updatePolicy(ctx, id, data.request())
-}
-
 // GetNodes fetches the node of the specified type, unpacks the API response
 // into 'response'
 func (o *TwoStageL3ClosClient) GetNodes(ctx context.Context, nodeType NodeType, response interface{}) error {

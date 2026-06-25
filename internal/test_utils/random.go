@@ -366,3 +366,7 @@ func RandomRouteTargets(t testing.TB, min, max int) []string {
 
 	return result
 }
+
+func OneOf[A any](s ...A) A {
+	return s[rand.Intn(len(s))]
+}
