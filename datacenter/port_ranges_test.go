@@ -48,17 +48,17 @@ func TestPortRanges_MarshalText(t *testing.T) {
 			},
 			exp: "20-21,80,443",
 		},
+		"out_of_order": {
+			in: datacenter.PortRanges{
+				{First: 81, Last: 81},
+				{First: 80, Last: 80},
+			},
+			exp: "80,81",
+		},
 		"with_invalid_range": {
 			in: datacenter.PortRanges{
 				{First: 20, Last: 21},
 				{First: 0, Last: 10},
-			},
-			expErr: true,
-		},
-		"invalid_order": {
-			in: datacenter.PortRanges{
-				{First: 81, Last: 81},
-				{First: 80, Last: 80},
 			},
 			expErr: true,
 		},
@@ -154,8 +154,20 @@ func TestPortRanges_UnmarshalText(t *testing.T) {
 			in:     "80,,443",
 			expErr: true,
 		},
-		"invalid_nested_range": {
-			in:     "20-21,21-20",
+		"invalid_head_to_tail": {
+			in:     "20-21,21-22",
+			expErr: true,
+		},
+		"invalid_overlap": {
+			in:     "10-20,15-25",
+			expErr: true,
+		},
+		"invalid_a_contains_b": {
+			in:     "10-20,14-16",
+			expErr: true,
+		},
+		"invalid_b_contains_a": {
+			in:     "14-16,10-20",
 			expErr: true,
 		},
 		"invalid_non_numeric": {
@@ -195,7 +207,7 @@ func TestPortRanges_UnmarshalText_DoesNotMutateOnError(t *testing.T) {
 	result := make(datacenter.PortRanges, len(original))
 	copy(result, original)
 
-	err := result.UnmarshalText([]byte("20-21,0"))
+	err := result.UnmarshalText([]byte("abc"))
 	require.Error(t, err)
 	require.Equal(t, original, result)
 }
