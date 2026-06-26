@@ -220,20 +220,6 @@ func (o *TwoStageL3ClosClient) UpdatePolicy(ctx context.Context, id ObjectId, da
 	return o.updatePolicy(ctx, id, data.request())
 }
 
-// AddPolicyRule adds a policy rule at 'position' (bumping all other rules
-// down). Position 0 makes the new policy first on the list, 1 makes it second
-// on the list, etc... Use -1 for last on the list. The returned ObjectId
-// represents the new rule
-func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule *PolicyRuleData, position int, policyId ObjectId) (ObjectId, error) {
-	return o.addPolicyRule(ctx, rule.raw(), position, policyId)
-}
-
-// DeletePolicyRuleById deletes the given rule. If the rule doesn't exist, a
-// ClientErr with ErrNotFound is returned.
-func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyId ObjectId, ruleId ObjectId) error {
-	return o.deletePolicyRuleById(ctx, policyId, ruleId)
-}
-
 // GetNodes fetches the node of the specified type, unpacks the API response
 // into 'response'
 func (o *TwoStageL3ClosClient) GetNodes(ctx context.Context, nodeType NodeType, response interface{}) error {
