@@ -51,7 +51,7 @@ func TestSystemNodeInfo(t *testing.T) {
 		var bpClient *TwoStageL3ClosClient
 		if bpId != "" {
 			log.Printf("testing NewTwoStageL3ClosClient() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			bpClient, err = client.client.NewTwoStageL3ClosClient(ctx, bpIds[0])
+			bpClient, err = client.client.NewTwoStageL3ClosClient(ctx, bpId)
 			require.NoError(t, err)
 		} else {
 			bpClient = testBlueprintA(ctx, t, client.client)
