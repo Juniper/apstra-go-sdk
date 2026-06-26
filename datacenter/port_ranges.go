@@ -25,6 +25,7 @@ var (
 type PortRanges []PortRange
 
 func (prs PortRanges) MarshalText() ([]byte, error) {
+	prs.canonicalize()
 	err := prs.validate()
 	if err != nil {
 		return nil, err
@@ -77,11 +78,11 @@ func (prs *PortRanges) UnmarshalText(in []byte) error {
 		result = append(result, pr)
 	}
 
+	result.canonicalize()
 	err := result.validate()
 	if err != nil {
-		return fmt.Errorf("unmarshaling PortRanges %q: %w", string(in), err)
+		return err
 	}
-
 	*prs = result
 	return nil
 }
@@ -99,23 +100,30 @@ func (prs PortRanges) validate() error {
 		return nil
 	}
 
-	// validate the first entry
-	err := prs[0].validate()
+	// make a clone so that we don't modify the underlying array when we
+	// canonicalize it b/c we're supposed to be merely validating
+	clone := make(PortRanges, len(prs))
+	copy(clone, prs)
+
+	clone.canonicalize()
+
+	// validate the first entry in the clone
+	err := clone[0].validate()
 	if err != nil {
-		return fmt.Errorf("validating PortRange at index 0: %w", err)
+		return err
 	}
 
-	// validate and compare to the previous each entry following the first one
-	for i, pr := range prs[1:] {
+	// validate each remaining entry and compare to the previous one
+	for i, pr := range clone[1:] {
 		err = pr.validate()
 		if err != nil {
-			return fmt.Errorf("validating PortRange at index %d: %w", 1+i, err)
+			return err
 		}
 
-		previous := prs[i] // i is indexed off prs[1:], so prs[i] refers to the one before pr
+		previous := clone[i] // i is indexed off clone[1:], so clone[i] refers to the one before pr
 
 		if previous.Last >= pr.First {
-			return fmt.Errorf("PortRanges must be sorted and must not overlap")
+			return fmt.Errorf("ranges must must not overlap")
 		}
 	}
 

@@ -25,7 +25,6 @@ type PortRange struct {
 
 func (pr PortRange) MarshalText() ([]byte, error) {
 	pr.canonicalize()
-
 	err := pr.validate()
 	if err != nil {
 		return nil, err
@@ -72,9 +71,12 @@ func (pr *PortRange) UnmarshalText(in []byte) error {
 	}
 
 	result.canonicalize()
+	err := result.validate()
+	if err != nil {
+		return err
+	}
 
-	pr.First = result.First
-	pr.Last = result.Last
+	*pr = result
 	return nil
 }
 
