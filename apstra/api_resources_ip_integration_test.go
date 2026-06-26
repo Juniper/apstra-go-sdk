@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,7 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
@@ -108,12 +108,12 @@ func TestCreateGetDeleteIp4Pool(t *testing.T) {
 			pool, err := client.Client.GetIp4Pool(ctx, id)
 			require.NoError(t, err)
 			require.NotNil(t, pool)
-			compare.IpPool(t, req, *pool)
+			compareapstra.IpPool(t, req, *pool)
 
 			pool, err = client.Client.GetIp4PoolByName(ctx, req.DisplayName)
 			require.NoError(t, err)
 			require.NotNil(t, pool)
-			compare.IpPool(t, req, *pool)
+			compareapstra.IpPool(t, req, *pool)
 
 			err = client.Client.DeleteIp4Pool(ctx, id)
 			require.NoError(t, err)
@@ -229,12 +229,12 @@ func TestCreateGetDeleteIp6Pool(t *testing.T) {
 			pool, err := client.Client.GetIp6Pool(ctx, id)
 			require.NoError(t, err)
 			require.NotNil(t, pool)
-			compare.IpPool(t, req, *pool)
+			compareapstra.IpPool(t, req, *pool)
 
 			pool, err = client.Client.GetIp6PoolByName(ctx, req.DisplayName)
 			require.NoError(t, err)
 			require.NotNil(t, pool)
-			compare.IpPool(t, req, *pool)
+			compareapstra.IpPool(t, req, *pool)
 
 			err = client.Client.DeleteIp6Pool(ctx, id)
 			require.NoError(t, err)

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,101 +7,11 @@ package apstra
 import (
 	"context"
 	"fmt"
-	"math"
-	"sort"
-	"strconv"
-	"strings"
 	"time"
 
+	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 )
-
-const (
-	portAny       = "any"
-	portRangeSep  = "-"
-	portRangesSep = ","
-)
-
-type PortRange struct {
-	First uint16
-	Last  uint16
-}
-
-func (o PortRange) string() string {
-	switch {
-	case o.First == o.Last:
-		return strconv.Itoa(int(o.First))
-	case o.First < o.Last:
-		return strconv.Itoa(int(o.First)) + portRangeSep + strconv.Itoa(int(o.Last))
-	default:
-		return strconv.Itoa(int(o.Last)) + portRangeSep + strconv.Itoa(int(o.First))
-	}
-}
-
-type rawPortRanges string
-
-func (o rawPortRanges) parse() (PortRanges, error) {
-	if o == portAny {
-		return []PortRange{}, nil
-	}
-
-	rawRangeSlice := strings.Split(string(o), portRangesSep)
-	result := make([]PortRange, len(rawRangeSlice))
-	for i, raw := range rawRangeSlice {
-		var first, last uint64
-		var err error
-		portStrs := strings.Split(raw, portRangeSep)
-		switch len(portStrs) {
-		case 1:
-			first, err = strconv.ParseUint(raw, 10, 16)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing port range '%s' - %w", raw, err)
-			}
-			last = first
-		case 2:
-			first, err = strconv.ParseUint(portStrs[0], 10, 16)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing first element of port range '%s' - %w", raw, err)
-			}
-			last, err = strconv.ParseUint(portStrs[1], 10, 16)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing last element of port range '%s' - %w", raw, err)
-			}
-		default:
-			return nil, fmt.Errorf("cannot parse port range '%s'", raw)
-		}
-		if first > math.MaxUint16 || last > math.MaxUint16 {
-			return nil, fmt.Errorf("port spec '%s' falls outside of range %d-%d", raw, 0, math.MaxUint16)
-		}
-		result[i] = PortRange{
-			First: uint16(first),
-			Last:  uint16(last),
-		}
-	}
-	return result, nil
-}
-
-type PortRanges []PortRange
-
-func (o PortRanges) string() string {
-	if len(o) == 0 {
-		return portAny
-	}
-
-	sort.Slice(o, func(i, j int) bool {
-		if o[i].First < o[j].First {
-			return true
-		}
-		return false
-	})
-
-	sb := strings.Builder{}
-	sb.WriteString(o[0].string())
-	for _, pr := range o[1:] {
-		sb.WriteString(portRangesSep + pr.string())
-	}
-	return sb.String()
-}
 
 type PolicyRule struct {
 	Id   ObjectId
@@ -113,8 +23,8 @@ type PolicyRuleData struct {
 	Description       string
 	Protocol          enum.PolicyRuleProtocol
 	Action            enum.PolicyRuleAction
-	SrcPort           PortRanges
-	DstPort           PortRanges
+	SrcPort           datacenter.PortRanges
+	DstPort           datacenter.PortRanges
 	TcpStateQualifier *enum.TcpStateQualifier
 }
 
@@ -130,21 +40,21 @@ func (o PolicyRuleData) raw() *rawPolicyRule {
 		Description:       o.Description,
 		Protocol:          o.Protocol.Value,
 		Action:            o.Action.Value,
-		SrcPort:           rawPortRanges(o.SrcPort.string()),
-		DstPort:           rawPortRanges(o.DstPort.string()),
+		SrcPort:           o.SrcPort,
+		DstPort:           o.DstPort,
 		TcpStateQualifier: tcpStateQualifier,
 	}
 }
 
 type rawPolicyRule struct {
-	Id                ObjectId      `json:"id,omitempty"`
-	Label             string        `json:"label"`
-	Description       string        `json:"description"`
-	Protocol          string        `json:"protocol"`
-	Action            string        `json:"action"`
-	SrcPort           rawPortRanges `json:"src_port"`
-	DstPort           rawPortRanges `json:"dst_port"`
-	TcpStateQualifier *string       `json:"tcp_state_qualifier,omitempty"`
+	Id                ObjectId              `json:"id,omitempty"`
+	Label             string                `json:"label"`
+	Description       string                `json:"description"`
+	Protocol          string                `json:"protocol"`
+	Action            string                `json:"action"`
+	SrcPort           datacenter.PortRanges `json:"src_port"`
+	DstPort           datacenter.PortRanges `json:"dst_port"`
+	TcpStateQualifier *string               `json:"tcp_state_qualifier,omitempty"`
 }
 
 func (o rawPolicyRule) polish() (*PolicyRule, error) {
@@ -166,16 +76,6 @@ func (o rawPolicyRule) polish() (*PolicyRule, error) {
 		}
 	}
 
-	srcPort, err := o.SrcPort.parse()
-	if err != nil {
-		return nil, err
-	}
-
-	dstPort, err := o.DstPort.parse()
-	if err != nil {
-		return nil, err
-	}
-
 	return &PolicyRule{
 		Id: o.Id,
 		Data: &PolicyRuleData{
@@ -183,8 +83,8 @@ func (o rawPolicyRule) polish() (*PolicyRule, error) {
 			Description:       o.Description,
 			Protocol:          *protocol,
 			Action:            *action,
-			SrcPort:           srcPort,
-			DstPort:           dstPort,
+			SrcPort:           o.SrcPort,
+			DstPort:           o.DstPort,
 			TcpStateQualifier: tcpStateQualifier,
 		},
 	}, nil

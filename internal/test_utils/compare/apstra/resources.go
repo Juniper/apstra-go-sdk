@@ -1,16 +1,17 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build requiretestutils
 
-package compare
+package compareapstra
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +19,7 @@ func IntPool(t testing.TB, req apstra.IntPoolRequest, data apstra.IntPool) {
 	t.Helper()
 
 	require.NotNil(t, req.DisplayName, data.DisplayName)
-	SlicesAsSets(t, req.Tags, data.Tags, "tags mismatch")
+	compare.SlicesAsSets(t, req.Tags, data.Tags, "tags mismatch")
 	require.Equal(t, len(req.Ranges), len(data.Ranges))
 
 	requestedRanges := make([]string, len(req.Ranges))
@@ -40,7 +41,7 @@ func IpPool(t testing.TB, req apstra.NewIpPoolRequest, data apstra.IpPool) {
 	t.Helper()
 
 	require.Equal(t, req.DisplayName, data.DisplayName)
-	SlicesAsSets(t, req.Tags, data.Tags, "tags mismatch")
+	compare.SlicesAsSets(t, req.Tags, data.Tags, "tags mismatch")
 	require.Equal(t, len(req.Subnets), len(data.Subnets))
 	for i := range len(req.Subnets) {
 		require.Contains(t, req.Subnets, data.Subnets[i].Network.String())

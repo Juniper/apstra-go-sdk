@@ -4,7 +4,7 @@
 
 //go:build requiretestutils
 
-package comparedatacenter
+package compareapstra
 
 import (
 	"testing"

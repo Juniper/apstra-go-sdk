@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/parse"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
-	comparedatacenter "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
 	"github.com/stretchr/testify/require"
 )
 

@@ -16,87 +16,8 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
 )
-
-func TestPortRangeString(t *testing.T) {
-	var tests []struct {
-		data     PortRange
-		expected string
-	}
-	tests = append(tests, struct {
-		data     PortRange
-		expected string
-	}{data: PortRange{First: 10, Last: 10}, expected: "10"})
-
-	tests = append(tests, struct {
-		data     PortRange
-		expected string
-	}{data: PortRange{First: 10, Last: 20}, expected: "10-20"})
-
-	tests = append(tests, struct {
-		data     PortRange
-		expected string
-	}{data: PortRange{First: 20, Last: 10}, expected: "10-20"})
-
-	for _, test := range tests {
-		if test.expected != test.data.string() {
-			t.Fatalf("expected '%s', got '%s'", test.expected, test.data.string())
-		}
-	}
-}
-
-func portRangeSlicesMatch(a, b []PortRange) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := 0; i < len(a); i++ {
-		if a[i].First != b[i].First {
-			return false
-		}
-		if a[i].Last != b[i].Last {
-			return false
-		}
-	}
-
-	return true
-}
-
-func TestRawPortRangesParse(t *testing.T) {
-	var tests []struct {
-		data     rawPortRanges
-		expected []PortRange
-	}
-	tests = append(tests, struct {
-		data     rawPortRanges
-		expected []PortRange
-	}{data: "10", expected: []PortRange{{First: 10, Last: 10}}})
-
-	tests = append(tests, struct {
-		data     rawPortRanges
-		expected []PortRange
-	}{data: "10,11", expected: []PortRange{{First: 10, Last: 10}, {First: 11, Last: 11}}})
-
-	tests = append(tests, struct {
-		data     rawPortRanges
-		expected []PortRange
-	}{data: "12,11", expected: []PortRange{{First: 12, Last: 12}, {First: 11, Last: 11}}})
-
-	tests = append(tests, struct {
-		data     rawPortRanges
-		expected []PortRange
-	}{data: "10-11,12-13", expected: []PortRange{{First: 10, Last: 11}, {First: 12, Last: 13}}})
-
-	for i, test := range tests {
-		parsed, err := test.data.parse()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !portRangeSlicesMatch(parsed, test.expected) {
-			t.Fatalf("no match test index %d", i)
-		}
-	}
-}
 
 func TestGetAllPolicies(t *testing.T) {
 	ctx := context.Background()
@@ -122,16 +43,6 @@ func TestGetAllPolicies(t *testing.T) {
 			}
 			log.Printf("policy '%s'\t'%s'", p.Id, p.Label)
 		}
-	}
-}
-
-func comparePolicyPortRanges(a PortRange, aName string, b PortRange, bName string, t *testing.T) {
-	if a.First != b.First {
-		t.Fatalf("Policy Port Ranges 'first' field don't match: %s has %d, %s has %d", aName, a.First, bName, b.First)
-	}
-
-	if a.Last != b.Last {
-		t.Fatalf("Policy Port Ranges 'last' field don't match: %s has %d, %s has %d", aName, a.Last, bName, b.Last)
 	}
 }
 
@@ -169,21 +80,8 @@ func comparePolicyRuleData(aName string, a *PolicyRuleData, bName string, b *Pol
 		t.Fatalf("Policy Rule Actions don't match: %s has %s, %s has %s", aName, a.Action, bName, b.Action)
 	}
 
-	if len(a.SrcPort) != len(b.SrcPort) {
-		t.Fatalf("Policy Rule Src Port Ranges don't match %s has %d ranges, %s has %d ranges", aName, len(a.SrcPort), bName, b.SrcPort)
-	}
-
-	for i := 0; i < len(a.SrcPort); i++ {
-		comparePolicyPortRanges(a.SrcPort[i], fmt.Sprintf("%s rule %d SrcPort", aName, i), b.SrcPort[i], fmt.Sprintf("%s rule %d SrcPort", bName, i), t)
-	}
-
-	if len(a.DstPort) != len(b.DstPort) {
-		t.Fatalf("Policy Rule Dst Port Ranges don't match %s has %d ranges, %s has %d ranges", aName, len(a.DstPort), bName, b.DstPort)
-	}
-
-	for i := 0; i < len(a.DstPort); i++ {
-		comparePolicyPortRanges(a.DstPort[i], fmt.Sprintf("%s rule %d DstPort", aName, i), b.DstPort[i], fmt.Sprintf("%s rule %d DstPort", bName, i), t)
-	}
+	comparedatacenter.PortRanges(t, a.SrcPort, b.SrcPort)
+	comparedatacenter.PortRanges(t, a.DstPort, b.DstPort)
 
 	aTcpStateQualifier := a.TcpStateQualifier != nil
 	bTcpStateQualifier := b.TcpStateQualifier != nil
@@ -430,8 +328,8 @@ func TestAddDeletePolicyRule(t *testing.T) {
 				Description:       randString(5, "hex"),
 				Protocol:          enum.PolicyRuleProtocolTcp,
 				Action:            enum.PolicyRuleActionDenyLog,
-				SrcPort:           PortRanges{{5, 6}},
-				DstPort:           PortRanges{{7, 8}, {9, 10}},
+				SrcPort:           datacenter.PortRanges{{5, 6}},
+				DstPort:           datacenter.PortRanges{{7, 8}, {9, 10}},
 				TcpStateQualifier: &enum.TcpStateQualifierEstablished,
 			}
 

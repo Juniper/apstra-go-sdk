@@ -14,7 +14,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	comparedatacenter "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
 	"github.com/stretchr/testify/require"
 )
 

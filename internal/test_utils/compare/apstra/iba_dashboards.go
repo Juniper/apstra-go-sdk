@@ -1,10 +1,10 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build requiretestutils
 
-package compare
+package compareapstra
 
 import (
 	"testing"

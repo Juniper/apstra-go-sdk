@@ -21,7 +21,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/query"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	comparedatacenter "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/deepcopy"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"

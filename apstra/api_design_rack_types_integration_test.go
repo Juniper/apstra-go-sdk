@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
 )
@@ -145,7 +145,7 @@ func TestCreateGetRackDeleteRackType(t *testing.T) {
 
 					require.Equal(t, rt.Id, id)
 					require.NotNil(t, rt.Data)
-					compare.RackType(t, tCase, *rt.Data)
+					compareapstra.RackType(t, tCase, *rt.Data)
 
 					err = client.Client.DeleteRackType(ctx, id)
 					require.NoError(t, err)

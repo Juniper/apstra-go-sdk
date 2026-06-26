@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
@@ -119,10 +119,10 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 				priorValue := req1.UpdatedBy
 				req1.UpdatedBy = d1.Data.UpdatedBy // this wasn't part of the request
 
-				compare.Dashboards(t, req1, *d1.Data)
+				compareapstra.Dashboards(t, req1, *d1.Data)
 				req1.UpdatedBy = priorValue // restore prior value
 
-				compare.Dashboards(t, *d1.Data, *d2.Data)
+				compareapstra.Dashboards(t, *d1.Data, *d2.Data)
 			}
 			checkDashes()
 

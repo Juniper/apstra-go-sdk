@@ -14,7 +14,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	comparedatacenter "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/datacenter"
+	compareapstra "github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	"github.com/stretchr/testify/require"
 )
 
@@ -177,7 +177,7 @@ func TestEVPNInterconnectGroup_UnmarshalJSON(t *testing.T) {
 		t.Run(tName, func(t *testing.T) {
 			var result apstra.EVPNInterconnectGroup
 			require.NoError(t, json.Unmarshal([]byte(tCase.data), &result))
-			comparedatacenter.EVPNInterconnectGroup(t, tCase.exp, result)
+			compareapstra.EVPNInterconnectGroup(t, tCase.exp, result)
 		})
 	}
 }

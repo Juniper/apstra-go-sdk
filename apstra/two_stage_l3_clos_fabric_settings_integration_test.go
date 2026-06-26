@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2025.
+// Copyright (c) Juniper Networks, Inc., 2024-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,7 +16,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
@@ -191,7 +191,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 						require.NoError(t, err)
 						require.NotNil(t, get)
 						if set != nil {
-							compare.FabricSettings(t, *set, *get)
+							compareapstra.FabricSettings(t, *set, *get)
 						}
 					}
 				})
@@ -266,7 +266,7 @@ func TestFabricSettingsRoutesMaxDefaultVsZero(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					compare.FabricSettings(t, tCase.fabricSettings, *fs)
+					compareapstra.FabricSettings(t, tCase.fabricSettings, *fs)
 				})
 			}
 		})
@@ -314,7 +314,7 @@ func TestSetGetFabricSettingsV6(t *testing.T) {
 				fsGet, err := bpClient.GetFabricSettings(ctx)
 				require.NoError(t, err)
 
-				compare.FabricSettings(t, *fsSet, *fsGet)
+				compareapstra.FabricSettings(t, *fsSet, *fsGet)
 			})
 		})
 	}

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
@@ -113,12 +113,12 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 					configlet, err := client.Client.GetConfiglet(ctx, id)
 					require.NoError(t, err)
 					require.Equal(t, id, configlet.Id)
-					compare.ConfigletData(t, &tCase.steps[0].data, configlet.Data)
+					compareapstra.ConfigletData(t, &tCase.steps[0].data, configlet.Data)
 
 					configlet, err = client.Client.GetConfigletByName(ctx, tCase.steps[0].data.DisplayName)
 					require.NoError(t, err)
 					require.Equal(t, id, configlet.Id)
-					compare.ConfigletData(t, &tCase.steps[0].data, configlet.Data)
+					compareapstra.ConfigletData(t, &tCase.steps[0].data, configlet.Data)
 
 					configlets, err := client.Client.GetAllConfiglets(ctx)
 					require.NoError(t, err)
@@ -131,7 +131,7 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 					}
 					require.NotNil(t, configlet)
 					require.Equal(t, id, configlet.Id)
-					compare.ConfigletData(t, &tCase.steps[0].data, configlet.Data)
+					compareapstra.ConfigletData(t, &tCase.steps[0].data, configlet.Data)
 
 					for _, step := range tCase.steps {
 						err = client.Client.UpdateConfiglet(ctx, id, &step.data)
@@ -140,12 +140,12 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 						configlet, err = client.Client.GetConfiglet(ctx, id)
 						require.NoError(t, err)
 						require.Equal(t, id, configlet.Id)
-						compare.ConfigletData(t, &step.data, configlet.Data)
+						compareapstra.ConfigletData(t, &step.data, configlet.Data)
 
 						configlet, err = client.Client.GetConfigletByName(ctx, step.data.DisplayName)
 						require.NoError(t, err)
 						require.Equal(t, id, configlet.Id)
-						compare.ConfigletData(t, &step.data, configlet.Data)
+						compareapstra.ConfigletData(t, &step.data, configlet.Data)
 
 						configlets, err = client.Client.GetAllConfiglets(ctx)
 						require.NoError(t, err)
@@ -158,7 +158,7 @@ func TestCreateUpdateGetDeleteConfiglet(t *testing.T) {
 						}
 						require.NotNil(t, configlet)
 						require.Equal(t, id, configlet.Id)
-						compare.ConfigletData(t, &step.data, configlet.Data)
+						compareapstra.ConfigletData(t, &step.data, configlet.Data)
 					}
 
 					err = client.Client.DeleteConfiglet(ctx, id)
