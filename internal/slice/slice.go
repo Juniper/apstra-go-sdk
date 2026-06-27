@@ -94,3 +94,9 @@ func Pop[T any](s *[]T) (T, bool) {
 	*s = (*s)[:i]
 	return v, true
 }
+
+// ZeroOf returns a zero value of the type contained by the slice
+func ZeroOf[A any](_ []A) A {
+	var zero A
+	return zero
+}

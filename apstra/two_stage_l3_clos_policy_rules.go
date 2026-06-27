@@ -16,7 +16,7 @@ func (o *TwoStageL3ClosClient) getPolicyRuleIDByLabel(ctx context.Context, polic
 	start := time.Now()
 	for i := 0; i <= dcClientMaxRetries; i++ {
 		time.Sleep(dcClientRetryBackoff * time.Duration(i))
-		policy, err := o.getPolicy(ctx, ObjectId(policyID))
+		policy, err := o.GetPolicy(ctx, policyID)
 		if err != nil {
 			return "", err
 		}
@@ -43,7 +43,7 @@ func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule datacente
 	o.client.lock(lockId)
 	defer o.client.unlock(lockId)
 
-	policy, err := o.getPolicy(ctx, ObjectId(policyID))
+	policy, err := o.GetPolicy(ctx, policyID)
 	if err != nil {
 		return "", err
 	}
@@ -71,7 +71,7 @@ func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule datacente
 	}
 
 	// push the new policy
-	err = o.updatePolicy(ctx, ObjectId(policyID), policy.request())
+	err = o.UpdatePolicy(ctx, policy)
 	if err != nil {
 		return "", err
 	}
@@ -81,13 +81,13 @@ func (o *TwoStageL3ClosClient) AddPolicyRule(ctx context.Context, rule datacente
 
 // DeletePolicyRuleById deletes the given rule. If the rule doesn't exist, a
 // ClientErr with ErrNotFound is returned.
-func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyID string, ruleID string) error {
+func (o *TwoStageL3ClosClient) DeletePolicyRuleByID(ctx context.Context, policyID string, ruleID string) error {
 	// ensure exclusive access to the policy while we recalculate the rules
 	lockId := o.lockId(ObjectId(policyID))
 	o.client.lock(lockId)
 	defer o.client.unlock(lockId)
 
-	policy, err := o.getPolicy(ctx, ObjectId(policyID))
+	policy, err := o.GetPolicy(ctx, policyID)
 	if err != nil {
 		return err
 	}
@@ -112,5 +112,5 @@ func (o *TwoStageL3ClosClient) DeletePolicyRuleById(ctx context.Context, policyI
 	}
 
 	policy.Rules = append(policy.Rules[:ruleIdx], policy.Rules[ruleIdx+1:]...)
-	return o.updatePolicy(ctx, ObjectId(policyID), policy.request())
+	return o.UpdatePolicy(ctx, policy)
 }
