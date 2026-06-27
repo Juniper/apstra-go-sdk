@@ -34,6 +34,12 @@ func Policy(t testing.TB, req, resp datacenter.Policy, msg ...string) {
 		require.NotNil(t, resp.DstApplicationPoint, msg)
 		require.Equal(t, *req.DstApplicationPoint, *resp.DstApplicationPoint, msg)
 	}
+	if req.AddressFamily == nil {
+		require.Nil(t, resp.AddressFamily, msg)
+	} else {
+		require.NotNil(t, resp.AddressFamily, msg)
+		require.Equal(t, *req.AddressFamily, *resp.AddressFamily, msg)
+	}
 	require.Equal(t, len(req.Rules), len(resp.Rules), msg)
 	for i := range req.Rules {
 		PolicyRule(t, req.Rules[i], resp.Rules[i], fmt.Sprintf("Comparing Policy Rule at index %d", i))

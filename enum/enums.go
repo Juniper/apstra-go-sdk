@@ -380,6 +380,14 @@ var (
 	OverlayControlProtocolNone = OverlayControlProtocol{Value: ""}
 )
 
+type PolicyAddressFamily oenum.Member[string]
+
+var (
+	PolicyAddressFamilyIPv4     = PolicyAddressFamily{Value: "ipv4"}
+	PolicyAddressFamilyIPv6     = PolicyAddressFamily{Value: "ipv6"}
+	PolicyAddressFamilyIPv4IPv6 = PolicyAddressFamily{Value: "ipv4_ipv6"}
+)
+
 type PolicyApplicationPointType oenum.Member[string]
 
 var (

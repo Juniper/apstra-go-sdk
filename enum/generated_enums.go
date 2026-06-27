@@ -1191,6 +1191,37 @@ func (o *OverlayControlProtocol) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
+	_ enum             = (*PolicyAddressFamily)(nil)
+	_ json.Marshaler   = (*PolicyAddressFamily)(nil)
+	_ json.Unmarshaler = (*PolicyAddressFamily)(nil)
+)
+
+func (o PolicyAddressFamily) String() string {
+	return o.Value
+}
+
+func (o *PolicyAddressFamily) FromString(s string) error {
+	if PolicyAddressFamilies.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o PolicyAddressFamily) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *PolicyAddressFamily) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
 	_ enum             = (*PolicyApplicationPointType)(nil)
 	_ json.Marshaler   = (*PolicyApplicationPointType)(nil)
 	_ json.Unmarshaler = (*PolicyApplicationPointType)(nil)
@@ -2198,6 +2229,13 @@ var (
 	OverlayControlProtocols      = oenum.New(
 		OverlayControlProtocolEVPN,
 		OverlayControlProtocolNone,
+	)
+
+	_                     enum = new(PolicyAddressFamily)
+	PolicyAddressFamilies      = oenum.New(
+		PolicyAddressFamilyIPv4,
+		PolicyAddressFamilyIPv6,
+		PolicyAddressFamilyIPv4IPv6,
 	)
 
 	_                           enum = new(PolicyApplicationPointType)
