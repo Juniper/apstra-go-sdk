@@ -28,7 +28,7 @@ func TestPortRange_MarshalText(t *testing.T) {
 			in:  datacenter.PortRange{First: 20, Last: 21},
 			exp: "20-21",
 		},
-		"invalid_reversed": {
+		"range_reversed": {
 			in:  datacenter.PortRange{First: 21, Last: 20},
 			exp: "20-21",
 		},
@@ -106,6 +106,10 @@ func TestPortRange_UnmarshalText(t *testing.T) {
 		},
 		"invalid_overflow": {
 			in:     "65536",
+			expErr: true,
+		},
+		"invalid_negative": {
+			in:     "-1",
 			expErr: true,
 		},
 	}
