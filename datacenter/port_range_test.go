@@ -108,6 +108,18 @@ func TestPortRange_UnmarshalText(t *testing.T) {
 			in:     "65536",
 			expErr: true,
 		},
+		"invalid_zero": {
+			in:     "0",
+			expErr: true,
+		},
+		"invalid_begin_zero": {
+			in:     "0-10",
+			expErr: true,
+		},
+		"invalid_end_zero": {
+			in:     "10-0",
+			expErr: true,
+		},
 		"invalid_negative": {
 			in:     "-1",
 			expErr: true,
