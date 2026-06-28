@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
@@ -20,13 +21,14 @@ var (
 )
 
 type Policy struct {
-	Enabled             bool         `json:"enabled"`
-	Label               string       `json:"label"`
-	Description         string       `json:"description"`
-	SrcApplicationPoint *string      `json:"src_application_point"`
-	DstApplicationPoint *string      `json:"dst_application_point"`
-	Rules               []PolicyRule `json:"rules"`
-	Tags                []string     `json:"tags"`
+	Enabled             bool                      `json:"enabled"`
+	Label               string                    `json:"label"`
+	Description         string                    `json:"description"`
+	SrcApplicationPoint *string                   `json:"src_application_point"`
+	DstApplicationPoint *string                   `json:"dst_application_point"`
+	AddressFamily       *enum.PolicyAddressFamily `json:"ip_version,omitempty"`
+	Rules               []PolicyRule              `json:"rules"`
+	Tags                []string                  `json:"tags"`
 
 	id string
 }

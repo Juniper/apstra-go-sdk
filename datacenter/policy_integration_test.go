@@ -36,7 +36,8 @@ func TestCrudPolicy(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
-		"start_minimal_src_rz": {
+		"start_minimal_src_rz_6.1_and_earlier": {
+			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyNotSupported,
 			create: datacenter.Policy{
 				Label: testutils.RandString(6, "hex"),
 			},
@@ -67,7 +68,8 @@ func TestCrudPolicy(t *testing.T) {
 				Tags: testutils.RandomStrings(3, 6, 6, "hex"),
 			},
 		},
-		"start_maximal_dst_rz": {
+		"start_maximal_dst_rz_6.1_and_earlier": {
+			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyNotSupported,
 			create: datacenter.Policy{
 				Enabled:             true,
 				Label:               testutils.RandString(6, "hex"),
@@ -98,7 +100,8 @@ func TestCrudPolicy(t *testing.T) {
 				Label: testutils.RandString(6, "hex"),
 			},
 		},
-		"start_minimal_intra_rz_vns": {
+		"start_minimal_intra_rz_vns_6.1_and_earlier": {
+			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyNotSupported,
 			create: datacenter.Policy{
 				Label: testutils.RandString(6, "hex"),
 			},
@@ -106,6 +109,109 @@ func TestCrudPolicy(t *testing.T) {
 				Enabled:             true,
 				Label:               testutils.RandString(6, "hex"),
 				Description:         testutils.RandString(6, "hex"),
+				SrcApplicationPoint: pointer.To("vn:a:a1"),
+				DstApplicationPoint: pointer.To("vn:a:a2"),
+				Rules: []datacenter.PolicyRule{
+					{
+						Label:             testutils.RandString(6, "hex"),
+						Description:       testutils.RandString(6, "hex"),
+						Protocol:          enum.PolicyRuleProtocolTcp,
+						Action:            testutils.OneOf(enum.PolicyRuleActionDeny, enum.PolicyRuleActionDenyLog, enum.PolicyRuleActionPermit, enum.PolicyRuleActionPermitLog),
+						SrcPort:           dctestobj.RandomPortRanges(3),
+						DstPort:           dctestobj.RandomPortRanges(3),
+						TcpStateQualifier: testutils.OneOf(nil, pointer.To(enum.TcpStateQualifierEstablished)),
+					},
+					{
+						Label:       testutils.RandString(6, "hex"),
+						Description: testutils.RandString(6, "hex"),
+						Protocol:    enum.PolicyRuleProtocolUdp,
+						Action:      testutils.OneOf(enum.PolicyRuleActionDeny, enum.PolicyRuleActionDenyLog, enum.PolicyRuleActionPermit, enum.PolicyRuleActionPermitLog),
+						SrcPort:     dctestobj.RandomPortRanges(3),
+						DstPort:     dctestobj.RandomPortRanges(3),
+					},
+				},
+				Tags: testutils.RandomStrings(3, 6, 6, "hex"),
+			},
+		},
+		"start_minimal_src_rz": {
+			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyRequired,
+			create: datacenter.Policy{
+				Label:         testutils.RandString(6, "hex"),
+				AddressFamily: pointer.To(testutils.OneOf(enum.PolicyAddressFamilyIPv4, enum.PolicyAddressFamilyIPv6, enum.PolicyAddressFamilyIPv4IPv6)),
+			},
+			update: &datacenter.Policy{
+				Enabled:             true,
+				Label:               testutils.RandString(6, "hex"),
+				Description:         testutils.RandString(6, "hex"),
+				AddressFamily:       pointer.To(testutils.OneOf(enum.PolicyAddressFamilyIPv4, enum.PolicyAddressFamilyIPv6, enum.PolicyAddressFamilyIPv4IPv6)),
+				SrcApplicationPoint: pointer.To("rz:a"),
+				Rules: []datacenter.PolicyRule{
+					{
+						Label:             testutils.RandString(6, "hex"),
+						Description:       testutils.RandString(6, "hex"),
+						Protocol:          enum.PolicyRuleProtocolTcp,
+						Action:            testutils.OneOf(enum.PolicyRuleActionDeny, enum.PolicyRuleActionDenyLog, enum.PolicyRuleActionPermit, enum.PolicyRuleActionPermitLog),
+						SrcPort:           dctestobj.RandomPortRanges(3),
+						DstPort:           dctestobj.RandomPortRanges(3),
+						TcpStateQualifier: testutils.OneOf(nil, pointer.To(enum.TcpStateQualifierEstablished)),
+					},
+					{
+						Label:       testutils.RandString(6, "hex"),
+						Description: testutils.RandString(6, "hex"),
+						Protocol:    enum.PolicyRuleProtocolUdp,
+						Action:      testutils.OneOf(enum.PolicyRuleActionDeny, enum.PolicyRuleActionDenyLog, enum.PolicyRuleActionPermit, enum.PolicyRuleActionPermitLog),
+						SrcPort:     dctestobj.RandomPortRanges(3),
+						DstPort:     dctestobj.RandomPortRanges(3),
+					},
+				},
+				Tags: testutils.RandomStrings(3, 6, 6, "hex"),
+			},
+		},
+		"start_maximal_dst_rz": {
+			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyRequired,
+			create: datacenter.Policy{
+				Enabled:             true,
+				Label:               testutils.RandString(6, "hex"),
+				Description:         testutils.RandString(6, "hex"),
+				AddressFamily:       pointer.To(testutils.OneOf(enum.PolicyAddressFamilyIPv4, enum.PolicyAddressFamilyIPv6, enum.PolicyAddressFamilyIPv4IPv6)),
+				DstApplicationPoint: pointer.To("rz:b"),
+				Rules: []datacenter.PolicyRule{
+					{
+						Label:             testutils.RandString(6, "hex"),
+						Description:       testutils.RandString(6, "hex"),
+						Protocol:          enum.PolicyRuleProtocolTcp,
+						Action:            testutils.OneOf(enum.PolicyRuleActionDeny, enum.PolicyRuleActionDenyLog, enum.PolicyRuleActionPermit, enum.PolicyRuleActionPermitLog),
+						SrcPort:           dctestobj.RandomPortRanges(3),
+						DstPort:           dctestobj.RandomPortRanges(3),
+						TcpStateQualifier: testutils.OneOf(nil, pointer.To(enum.TcpStateQualifierEstablished)),
+					},
+					{
+						Label:       testutils.RandString(6, "hex"),
+						Description: testutils.RandString(6, "hex"),
+						Protocol:    enum.PolicyRuleProtocolUdp,
+						Action:      testutils.OneOf(enum.PolicyRuleActionDeny, enum.PolicyRuleActionDenyLog, enum.PolicyRuleActionPermit, enum.PolicyRuleActionPermitLog),
+						SrcPort:     dctestobj.RandomPortRanges(3),
+						DstPort:     dctestobj.RandomPortRanges(3),
+					},
+				},
+				Tags: testutils.RandomStrings(3, 6, 6, "hex"),
+			},
+			update: &datacenter.Policy{
+				Label:         testutils.RandString(6, "hex"),
+				AddressFamily: pointer.To(testutils.OneOf(enum.PolicyAddressFamilyIPv4, enum.PolicyAddressFamilyIPv6, enum.PolicyAddressFamilyIPv4IPv6)),
+			},
+		},
+		"start_minimal_intra_rz_vns": {
+			versionConstraint: &compatibility.DatacenterPolicyAddressFamilyRequired,
+			create: datacenter.Policy{
+				Label:         testutils.RandString(6, "hex"),
+				AddressFamily: pointer.To(testutils.OneOf(enum.PolicyAddressFamilyIPv4, enum.PolicyAddressFamilyIPv6, enum.PolicyAddressFamilyIPv4IPv6)),
+			},
+			update: &datacenter.Policy{
+				Enabled:             true,
+				Label:               testutils.RandString(6, "hex"),
+				Description:         testutils.RandString(6, "hex"),
+				AddressFamily:       pointer.To(testutils.OneOf(enum.PolicyAddressFamilyIPv4, enum.PolicyAddressFamilyIPv6, enum.PolicyAddressFamilyIPv4IPv6)),
 				SrcApplicationPoint: pointer.To("vn:a:a1"),
 				DstApplicationPoint: pointer.To("vn:a:a2"),
 				Rules: []datacenter.PolicyRule{
@@ -345,7 +451,8 @@ func TestPolicyAddDeleteRule(t *testing.T) {
 			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
 
 			pid, err := bp.CreatePolicy(ctx, datacenter.Policy{
-				Label: testutils.RandString(6, "hex"),
+				Label:         testutils.RandString(6, "hex"),
+				AddressFamily: &enum.PolicyAddressFamilyIPv4,
 				Rules: []datacenter.PolicyRule{
 					{
 						Label:    testutils.RandString(6, "hex"),
