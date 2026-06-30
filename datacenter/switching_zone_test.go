@@ -31,6 +31,12 @@ func TestSwitchingZone_ID_SetID(t *testing.T) {
 }
 
 func TestSwitchingZone_MarshalJSON(t *testing.T) {
+	newRT := func(t testing.TB, s string) *datacenter.RouteTarget {
+		var result datacenter.RouteTarget
+		require.NoError(t, result.UnmarshalText([]byte(s)))
+		return &result
+	}
+
 	type testCase struct {
 		d datacenter.SwitchingZone
 		e string
@@ -43,7 +49,7 @@ func TestSwitchingZone_MarshalJSON(t *testing.T) {
 				MACVRFDescription: pointer.To("description1"),
 				MACVRFName:        pointer.To("name1"),
 				MACVRFServiceType: pointer.To(enum.SwitchingZoneMACVRFServiceTypeVLANAware),
-				RouteTarget:       pointer.To("1:1"),
+				RouteTarget:       newRT(t, "1:1"),
 				Tags:              []string{"tag1", "tag2"},
 			},
 			e: `{
@@ -62,7 +68,7 @@ func TestSwitchingZone_MarshalJSON(t *testing.T) {
 				MACVRFDescription: pointer.To("description2"),
 				MACVRFName:        pointer.To("name2"),
 				MACVRFServiceType: pointer.To(enum.SwitchingZoneMACVRFServiceTypeVLANBundle),
-				RouteTarget:       pointer.To("2:2"),
+				RouteTarget:       newRT(t, "2:2"),
 				Tags:              []string{"tag3", "tag4"},
 			},
 			e: `{
@@ -88,6 +94,12 @@ func TestSwitchingZone_MarshalJSON(t *testing.T) {
 }
 
 func TestSwitchingZone_UnmarshalJSON(t *testing.T) {
+	newRT := func(t testing.TB, s string) *datacenter.RouteTarget {
+		var result datacenter.RouteTarget
+		require.NoError(t, result.UnmarshalText([]byte(s)))
+		return &result
+	}
+
 	type testCase struct {
 		d   string
 		e   datacenter.SwitchingZone
@@ -111,7 +123,7 @@ func TestSwitchingZone_UnmarshalJSON(t *testing.T) {
 				MACVRFDescription: pointer.To("description1"),
 				MACVRFName:        pointer.To("name1"),
 				MACVRFServiceType: pointer.To(enum.SwitchingZoneMACVRFServiceTypeVLANAware),
-				RouteTarget:       pointer.To("1:1"),
+				RouteTarget:       newRT(t, "1:1"),
 				Tags:              []string{"tag1", "tag2"},
 			},
 			eid: "abc",
@@ -132,7 +144,7 @@ func TestSwitchingZone_UnmarshalJSON(t *testing.T) {
 				MACVRFDescription: pointer.To("description2"),
 				MACVRFName:        pointer.To("name2"),
 				MACVRFServiceType: pointer.To(enum.SwitchingZoneMACVRFServiceTypeVLANBundle),
-				RouteTarget:       pointer.To("2:2"),
+				RouteTarget:       newRT(t, "2:2"),
 				Tags:              []string{"tag3", "tag4"},
 			},
 			eid: "def",
