@@ -28,6 +28,12 @@ func TestSwitchingZone_CRUD(t *testing.T) {
 	ctx := testutils.ContextWithTestID(context.Background(), t)
 	clients := testclient.GetTestClients(t, ctx)
 
+	newRT := func(t testing.TB, s string) *datacenter.RouteTarget {
+		var result datacenter.RouteTarget
+		require.NoError(t, result.UnmarshalText([]byte(s)))
+		return &result
+	}
+
 	type testCase struct {
 		constraints []compatibility.Constraint
 		create      datacenter.SwitchingZone
@@ -42,12 +48,14 @@ func TestSwitchingZone_CRUD(t *testing.T) {
 				MACVRFDescription: pointer.To(testutils.RandString(6, "hex")),
 				MACVRFName:        pointer.To(testutils.RandString(6, "hex")),
 				MACVRFServiceType: pointer.To(enum.SwitchingZoneMACVRFServiceTypeVLANAware),
-				RouteTarget:       pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)), Tags: nil,
+				RouteTarget:       newRT(t, fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
+				Tags:              nil,
 			},
 			update: datacenter.SwitchingZone{
 				Label:             pointer.To(testutils.RandString(6, "hex")),
 				MACVRFDescription: pointer.To(testutils.RandString(6, "hex")),
-				RouteTarget:       pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)), Tags: nil,
+				RouteTarget:       newRT(t, fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
+				Tags:              nil,
 			},
 		},
 		"vlan_bundle": {
@@ -57,12 +65,14 @@ func TestSwitchingZone_CRUD(t *testing.T) {
 				MACVRFDescription: pointer.To(testutils.RandString(6, "hex")),
 				MACVRFName:        pointer.To(testutils.RandString(6, "hex")),
 				MACVRFServiceType: pointer.To(enum.SwitchingZoneMACVRFServiceTypeVLANBundle),
-				RouteTarget:       pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)), Tags: nil,
+				RouteTarget:       newRT(t, fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
+				Tags:              nil,
 			},
 			update: datacenter.SwitchingZone{
 				Label:             pointer.To(testutils.RandString(6, "hex")),
 				MACVRFDescription: pointer.To(testutils.RandString(6, "hex")),
-				RouteTarget:       pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)), Tags: nil,
+				RouteTarget:       newRT(t, fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
+				Tags:              nil,
 			},
 		},
 	}
