@@ -23,6 +23,7 @@ const (
 	rtEncodingAS2Local4                      // RFC 4360 section 3, selected when parsing text where both parts are <= 65535
 	rtEncodingAS4Local2                      // RFC 5668 (4-octet AS specific extended community)
 	rtEncodingIPv4Local2                     // RFC 4360 section 4
+	rtEncodingNull                           // marshals to `null` - useful for clearing values from the API
 )
 
 var (
@@ -54,6 +55,8 @@ func (r RouteTarget) MarshalText() ([]byte, error) {
 		ip := net.IP(r.v[0:4])
 		v2 := uint64(binary.BigEndian.Uint16(r.v[4:6]))
 		return []byte(ip.String() + ":" + strconv.FormatUint(v2, 10)), nil
+	case rtEncodingNull:
+		return []byte("null"), nil
 	case rtEncodingUnknown:
 		return nil, errors.New("cannot marshal route target with unknown encoding")
 	default:
@@ -64,9 +67,16 @@ func (r RouteTarget) MarshalText() ([]byte, error) {
 // UnmarshalText parses text strings ([]byte) like "1:1", "65535:4294967295", "4294967295:65535" or "192.0.2.1:65535"
 // into the RouteTarget, storing their value and encoding type. Note that in the case of RT strings where both parts
 // are numerical values <= 65535, the rtEncodingAS2Local4 encoding is preferred.
+// The string "null" unmarshals into a RouteTarget with rtEncodingNull.
 func (r *RouteTarget) UnmarshalText(text []byte) error {
 	if r == nil {
 		return fmt.Errorf("cannot unmarshal into nil %T", r)
+	}
+
+	if string(text) == "null" {
+		r.e = rtEncodingNull
+		clear(r.v[:])
+		return nil
 	}
 
 	parts := strings.Split(string(text), ":")

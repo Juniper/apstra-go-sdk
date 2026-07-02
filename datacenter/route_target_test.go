@@ -55,6 +55,10 @@ func TestRouteTarget_MarshalText(t *testing.T) {
 			in:  mkIPv4(192, 0, 2, 1, 456),
 			exp: "192.0.2.1:456",
 		},
+		"null": {
+			in:  RouteTarget{e: rtEncodingNull},
+			exp: "null",
+		},
 		"unknown": {
 			in:     RouteTarget{},
 			expErr: true,
@@ -120,6 +124,14 @@ func TestRouteTarget_UnmarshalText(t *testing.T) {
 			in:  "1:1",
 			exp: RouteTarget{e: rtEncodingAS2Local4, v: mkAS2(1, 1)},
 		},
+		"null": {
+			in:  "null",
+			exp: RouteTarget{e: rtEncodingNull, v: mkAS2(0, 0)},
+		},
+		"empty": {
+			in:     "",
+			expErr: true,
+		},
 		"bad_format": {
 			in:     "1",
 			expErr: true,
@@ -167,6 +179,7 @@ func TestRouteTarget_RoundTrip(t *testing.T) {
 		"70000:321",
 		"192.0.2.1:456",
 		"1:1",
+		"null",
 	}
 
 	for _, in := range inputs {
