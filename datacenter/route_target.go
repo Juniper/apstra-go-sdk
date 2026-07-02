@@ -7,6 +7,7 @@ package datacenter
 import (
 	"encoding"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -29,6 +30,7 @@ const (
 var (
 	_ encoding.TextMarshaler   = (*RouteTarget)(nil)
 	_ encoding.TextUnmarshaler = (*RouteTarget)(nil)
+	_ json.Marshaler           = (*RouteTarget)(nil)
 )
 
 // RouteTarget represents the value outlined in RFC 4360 section 3 and section 4, and RFC 5668. The value is stored in
@@ -39,6 +41,20 @@ var (
 type RouteTarget struct {
 	e routeTargetEncoding
 	v [6]byte
+}
+
+// MarshalJSON implements json.Marshaler. It emits the JSON null keyword for
+// rtEncodingNull, and a quoted string for all other encoding types.
+func (r RouteTarget) MarshalJSON() ([]byte, error) {
+	if r.e == rtEncodingNull {
+		return []byte("null"), nil
+	}
+
+	b, err := r.MarshalText()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(string(b))
 }
 
 func (r RouteTarget) MarshalText() ([]byte, error) {
@@ -56,11 +72,11 @@ func (r RouteTarget) MarshalText() ([]byte, error) {
 		v2 := uint64(binary.BigEndian.Uint16(r.v[4:6]))
 		return []byte(ip.String() + ":" + strconv.FormatUint(v2, 10)), nil
 	case rtEncodingNull:
-		return []byte("null"), nil
+		return nil, errors.New("cannot marshal route target text with null encoding")
 	case rtEncodingUnknown:
-		return nil, errors.New("cannot marshal route target with unknown encoding")
+		return nil, errors.New("cannot marshal route target text with unknown encoding")
 	default:
-		return nil, fmt.Errorf("cannot marshal route target with unhandled encoding type %d", r.e)
+		return nil, fmt.Errorf("cannot marshal route target text with unhandled encoding type %d", r.e)
 	}
 }
 
