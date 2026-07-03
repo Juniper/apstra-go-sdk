@@ -117,6 +117,17 @@ func TestSwitchingZone_CRUD(t *testing.T) {
 						require.Equal(t, id, *idPtr)
 						comparedatacenter.SwitchingZone(t, create, obj)
 					}
+
+					// retrieve the object by MAC VRF name and validate
+					if create.MACVRFName != nil {
+						obj, err = bp.GetSwitchingZoneByMACVRFName(ctx, *create.MACVRFName)
+						require.NoError(t, err)
+						idPtr = obj.ID()
+						require.NotNil(t, idPtr)
+						require.Equal(t, id, *idPtr)
+						comparedatacenter.SwitchingZone(t, create, obj)
+					}
+
 					// retrieve the list of IDs - ours must be in there
 					ids, err := bp.ListSwitchingZones(ctx)
 					require.NoError(t, err)
@@ -164,6 +175,14 @@ func TestSwitchingZone_CRUD(t *testing.T) {
 					// get the object by label
 					if create.Label != nil {
 						_, err = bp.GetSwitchingZoneByLabel(ctx, *create.Label)
+						require.Error(t, err)
+						require.ErrorAs(t, err, &ace)
+						require.Equal(t, apstra.ErrNotfound, ace.Type())
+					}
+
+					// get the object by MAC VRF name
+					if create.MACVRFName != nil {
+						_, err = bp.GetSwitchingZoneByMACVRFName(ctx, *create.MACVRFName)
 						require.Error(t, err)
 						require.ErrorAs(t, err, &ace)
 						require.Equal(t, apstra.ErrNotfound, ace.Type())
