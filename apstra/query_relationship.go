@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2025.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,8 @@ import "fmt"
 
 const (
 	RelationshipTypeNone = RelationshipType(iota)
+	RelationshipTypeAttachedTaggedVLANs
+	RelationshipTypeAttachedUntaggedVLAN
 	RelationshipTypeComposedOf
 	RelationshipTypeComposedOfSystems
 	RelationshipTypeConstraint
@@ -38,6 +40,8 @@ const (
 	RelationshipTypeUnknown = "unknown node type %s"
 
 	relationshipTypeNone                  = relationshipType("")
+	relationshipTypeAttachedTaggedVLANs   = relationshipType("attached_tagged_vlans")
+	relationshipTypeAttachedUntaggedVLAN  = relationshipType("attached_untagged_vlan")
 	relationshipTypeComposedOf            = relationshipType("composed_of")
 	relationshipTypeComposedOfSystems     = relationshipType("composed_of_systems")
 	relationshipTypeConstraint            = relationshipType("constraint")
@@ -77,6 +81,10 @@ func (o RelationshipType) String() string {
 	switch o {
 	case RelationshipTypeNone:
 		return string(relationshipTypeNone)
+	case RelationshipTypeAttachedTaggedVLANs:
+		return string(relationshipTypeAttachedTaggedVLANs)
+	case RelationshipTypeAttachedUntaggedVLAN:
+		return string(relationshipTypeAttachedUntaggedVLAN)
 	case RelationshipTypeComposedOf:
 		return string(relationshipTypeComposedOf)
 	case RelationshipTypeComposedOfSystems:
