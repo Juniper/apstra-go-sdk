@@ -99,6 +99,36 @@ func (c *TwoStageL3ClosClient) GetSwitchingZoneByLabel(ctx context.Context, labe
 	return *result, nil
 }
 
+func (c *TwoStageL3ClosClient) GetSwitchingZoneByMACVRFName(ctx context.Context, macVRFName string) (datacenter.SwitchingZone, error) {
+	items, err := c.GetSwitchingZones(ctx)
+	if err != nil {
+		return datacenter.SwitchingZone{}, err
+	}
+
+	var result *datacenter.SwitchingZone
+	for _, item := range items {
+		if item.MACVRFName != nil && *item.MACVRFName == macVRFName {
+			if result == nil {
+				result = &item
+			} else {
+				return datacenter.SwitchingZone{}, ClientErr{
+					errType: ErrMultipleMatch,
+					err:     fmt.Errorf("found multiple Switching Zones with MAC VRF name %q", macVRFName),
+				}
+			}
+		}
+	}
+
+	if result == nil {
+		return datacenter.SwitchingZone{}, ClientErr{
+			errType: ErrNotfound,
+			err:     fmt.Errorf("no Switching Zone with MAC VRF name %q", macVRFName),
+		}
+	}
+
+	return *result, nil
+}
+
 func (c *TwoStageL3ClosClient) DefaultSwitchingZoneID(ctx context.Context) (*string, error) {
 	if !compatibility.DatacenterSwitchingZoneOK.Check(c.client.apiVersion) {
 		return nil, nil
