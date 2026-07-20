@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2025.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,6 +30,7 @@ const (
 	NodeTypeRoutingPolicy
 	NodeTypeRoutingZoneConstraint
 	NodeTypeSecurityZone
+	NodeTypeSwitchingZone
 	NodeTypeSecurityZoneInstance
 	NodeTypeSecurityZonePolicy
 	NodeTypeSystem
@@ -62,6 +63,7 @@ const (
 	nodeTypeRoutingPolicy          = nodeType("routing_policy")
 	nodeTypeRoutingZoneConstraint  = nodeType("routing_zone_constraint")
 	nodeTypeSecurityZone           = nodeType("security_zone")
+	nodeTypeSwitchingZone          = nodeType("switching_zone")
 	nodeTypeSecurityZoneInstance   = nodeType("sz_instance")
 	nodeTypeSecurityZonePolicy     = nodeType("security_zone_policy")
 	nodeTypeSystem                 = nodeType("system")
@@ -125,6 +127,8 @@ func (o NodeType) String() string {
 		return string(nodeTypeRoutingZoneConstraint)
 	case NodeTypeSecurityZone:
 		return string(nodeTypeSecurityZone)
+	case NodeTypeSwitchingZone:
+		return string(nodeTypeSwitchingZone)
 	case NodeTypeSecurityZoneInstance:
 		return string(nodeTypeSecurityZoneInstance)
 	case NodeTypeSecurityZonePolicy:
