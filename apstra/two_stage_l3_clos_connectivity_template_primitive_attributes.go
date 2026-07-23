@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
 
 // ConnectivityTemplatePrimitiveAttributes are the data structures which make the various
@@ -29,6 +31,7 @@ type ConnectivityTemplatePrimitiveAttributesAttachSingleVlan struct {
 	Label    string
 	Tagged   bool
 	VnNodeId *ObjectId
+	VLAN     *uint16
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) fromRawJson(in json.RawMessage) error {
@@ -42,16 +45,16 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) fromRawJson(in
 }
 
 func (o *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) raw() (json.RawMessage, error) {
-	var tagType string
-	if o.Tagged {
-		tagType = "vlan_tagged"
-	} else {
-		tagType = "untagged"
+	raw := rawConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
+		// TagType:  "", // handled below
+		VnNodeId: pointer.ToCopyOfValue(o.VnNodeId),
+		VLAN:     pointer.ToCopyOfValue(o.VLAN),
 	}
 
-	raw := rawConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
-		TagType:  tagType,
-		VnNodeId: o.VnNodeId,
+	if o.Tagged {
+		raw.TagType = "vlan_tagged"
+	} else {
+		raw.TagType = "untagged"
 	}
 
 	return json.Marshal(&raw)
@@ -616,21 +619,21 @@ func (o *ConnectivityTemplatePrimitiveAttributesAttachRoutingZoneConstraint) fro
 type rawConnectivityTemplatePrimitiveAttributesAttachSingleVlan struct {
 	VnNodeId *ObjectId `json:"vn_node_id"`
 	TagType  string    `json:"tag_type"`
+	VLAN     *uint16   `json:"vlan_id"`
 }
 
 func (o rawConnectivityTemplatePrimitiveAttributesAttachSingleVlan) polish(t *ConnectivityTemplatePrimitiveAttributesAttachSingleVlan) error {
-	var tagged bool
 	switch o.TagType {
 	case "vlan_tagged":
-		tagged = true
+		t.Tagged = true
 	case "untagged":
-		tagged = false
+		t.Tagged = false
 	default:
 		return fmt.Errorf("unexpected tag_type %q", o.TagType)
 	}
 
-	t.Tagged = tagged
-	t.VnNodeId = o.VnNodeId
+	t.VnNodeId = pointer.ToCopyOfValue(o.VnNodeId)
+	t.VLAN = pointer.ToCopyOfValue(o.VLAN)
 
 	return nil
 }
