@@ -282,20 +282,20 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 			if strings.HasSuffix(apstraUrl.Path, apiUrlUserLogin) {
 				return newTalkToApstraErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' - check username/password",
-						resp.StatusCode, apstraUrl))
+						resp.StatusCode, apstraUrl), o.apiVersion)
 			}
 
 			// Auth fail with "doNotLogin == true" is fatal for this transaction
 			if in.doNotLogin {
 				return newTalkToApstraErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' and doNotLogin is %t",
-						resp.StatusCode, apstraUrl, in.doNotLogin))
+						resp.StatusCode, apstraUrl, in.doNotLogin), o.apiVersion)
 			}
 
 			if _, ok := os.LookupEnv(envAosOpsEdgeId); ok {
 				return newTalkToApstraErr(req, requestBody, resp,
 					fmt.Sprintf("http %d at '%s' and %s has been set",
-						resp.StatusCode, apstraUrl, envAosOpsEdgeId))
+						resp.StatusCode, apstraUrl, envAosOpsEdgeId), o.apiVersion)
 			}
 
 			o.logStr(1, fmt.Sprintf("got http %d '%s' at '%s' attempting login", resp.StatusCode, resp.Status, apstraUrl.String()))
@@ -310,7 +310,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 			return o.talkToApstra(ctx, in)
 		} // HTTP 401
 
-		return newTalkToApstraErr(req, requestBody, resp, "")
+		return newTalkToApstraErr(req, requestBody, resp, "", o.apiVersion)
 	}
 
 	// noinspection GoUnhandledErrorResult
@@ -329,7 +329,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	var tIdR taskIdResponse
 	taskResponseFound, err := peekParseResponseBodyAsTaskId(resp, &tIdR)
 	if err != nil {
-		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("error peeking response body: %v", err))
+		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("error peeking response body: %v", err), o.apiVersion)
 	}
 
 	// no task ID response, so no polling tomfoolery required
@@ -358,7 +358,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 	case (bpId != "" && tIdR.BlueprintId != "") && (bpId != tIdR.BlueprintId):
 		return fmt.Errorf("blueprint Id in URL ('%s') and returned object body ('%s') don't match", bpId, tIdR.BlueprintId)
 	case bpId == "" && tIdR.BlueprintId == "":
-		return newTalkToApstraErr(req, requestBody, resp, "blueprint id not found in url nor in response body")
+		return newTalkToApstraErr(req, requestBody, resp, "blueprint id not found in url nor in response body", o.apiVersion)
 	case bpId == "":
 		bpId = tIdR.BlueprintId
 	}
@@ -410,6 +410,7 @@ func (o *Client) talkToApstra(ctx context.Context, in *talkToApstraIn) error {
 			Request:  request,
 			Response: response,
 			Msg:      string(dsMsg),
+			Version:  o.apiVersion,
 		}
 	}
 
