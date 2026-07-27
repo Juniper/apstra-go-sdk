@@ -635,6 +635,10 @@ func (o rawConnectivityTemplatePrimitiveAttributesAttachSingleVlan) polish(t *Co
 	t.VnNodeId = pointer.ToCopyOfValue(o.VnNodeId)
 	t.VLAN = pointer.ToCopyOfValue(o.VLAN)
 
+	if t.VLAN != nil && *t.VLAN == 0 {
+		t.VLAN = nil // API may return 0 when no override VLAN is specified - fix it
+	}
+
 	return nil
 }
 
