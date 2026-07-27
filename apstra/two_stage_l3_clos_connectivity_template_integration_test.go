@@ -17,7 +17,11 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/datacenter"
+	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/hashicorp/go-version"
+	"github.com/stretchr/testify/require"
 )
 
 func compareCts(t testing.TB, a, b *ConnectivityTemplate, info string) {
@@ -159,10 +163,33 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 			}
 
 			bpClient := testBlueprintA(ctx, t, client.client)
+			rzLabel := randString(6, "hex")
+			testRZ, err := bpClient.CreateSecurityZone(ctx, datacenter.SecurityZone{
+				Label:   rzLabel,
+				Type:    enum.SecurityZoneTypeEVPN,
+				VRFName: rzLabel,
+			})
+			require.NoError(t, err)
+
+			leafIDs, err := getSystemIdsByRole(ctx, bpClient, "leaf")
+			require.NoError(t, err)
+			require.Greater(t, len(leafIDs), 0)
+			bindings := make([]datacenter.VNBinding, 0, len(leafIDs))
+			for _, leafID := range leafIDs {
+				bindings = append(bindings, datacenter.VNBinding{SystemID: string(leafID)})
+			}
+
+			testVN, err := bpClient.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
+				Bindings:       bindings,
+				Label:          randString(6, "hex"),
+				Type:           enum.VnTypeVxlan,
+				SecurityZoneID: testRZ,
+			})
+			require.NoError(t, err)
 
 			apiVersion := version.Must(version.NewVersion(bpClient.client.apiVersion.String()))
 
-			sz, err := bpClient.GetSecurityZoneByVRFName(ctx, "default")
+			defaultRZ, err := bpClient.GetSecurityZoneByVRFName(ctx, "default")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -194,7 +221,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 						Subpolicies: []*ConnectivityTemplatePrimitive{
 							{
 								Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-									SecurityZone:       (*ObjectId)(sz.ID()),
+									SecurityZone:       (*ObjectId)(defaultRZ.ID()),
 									Tagged:             false,
 									IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
 									IPv6AddressingType: CtPrimitiveIPv6AddressingTypeLinkLocal,
@@ -202,7 +229,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 							},
 							{
 								Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-									SecurityZone:       (*ObjectId)(sz.ID()),
+									SecurityZone:       (*ObjectId)(defaultRZ.ID()),
 									Tagged:             true,
 									Vlan:               &vlan10,
 									IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
@@ -242,7 +269,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 						Subpolicies: []*ConnectivityTemplatePrimitive{
 							{
 								Attributes: &ConnectivityTemplatePrimitiveAttributesAttachLogicalLink{
-									SecurityZone:       (*ObjectId)(sz.ID()),
+									SecurityZone:       (*ObjectId)(defaultRZ.ID()),
 									Tagged:             false,
 									IPv4AddressingType: CtPrimitiveIPv4AddressingTypeNumbered,
 									IPv6AddressingType: CtPrimitiveIPv6AddressingTypeLinkLocal,
@@ -254,10 +281,29 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 					},
 					eStatus: CtPrimitiveStatusReady,
 				},
+				"vn_single_with_vlan_id": {
+					versionConstraint: version.MustConstraints(version.NewConstraint(">=6.2.0")),
+					ct: ConnectivityTemplate{
+						Label:       randString(5, "hex"),
+						Description: randString(10, "hex"),
+						Subpolicies: []*ConnectivityTemplatePrimitive{
+							{
+								Label: randString(6, "hex"),
+								Attributes: &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
+									Label:    randString(6, "hex"),
+									Tagged:   true,
+									VnNodeId: pointer.To(ObjectId(testVN)),
+									VLAN:     pointer.To(1000 + uint16(rand.Intn(1000))),
+								},
+							},
+						},
+						Tags: randomTags,
+					},
+					eStatus: CtPrimitiveStatusReady,
+				},
 			}
 
 			for tName, tCase := range testCases {
-				tName, tCase := tName, tCase
 				t.Run(tName, func(t *testing.T) {
 					if tCase.versionConstraint != nil && !tCase.versionConstraint.Check(apiVersion) {
 						t.Skipf("skipping test case %q because it cannot be run with Apstra %s", tName, apiVersion)
