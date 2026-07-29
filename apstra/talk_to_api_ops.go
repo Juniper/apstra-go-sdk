@@ -130,7 +130,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	if resp.StatusCode/100 != 2 {
 		req.URL = apstraUrl
 		req.URL.Host = "api-ops"
-		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("API-ops proxy response code: %d", resp.StatusCode))
+		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("API-ops proxy response code: %d", resp.StatusCode), o.apiVersion)
 	}
 
 	var proxyResponse struct {
@@ -147,7 +147,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	if proxyResponse.ErrorMsg != "" {
 		req.URL = apstraUrl
 		req.URL.Host = "api-ops"
-		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("API-ops proxy error message for transaction %s: %s", proxyResponse.Uid, proxyResponse.ErrorMsg))
+		return newTalkToApstraErr(req, requestBody, resp, fmt.Sprintf("API-ops proxy error message for transaction %s: %s", proxyResponse.Uid, proxyResponse.ErrorMsg), o.apiVersion)
 	}
 	// we'll check the proxied status code (the one from AOS) later, after we've assembled a stunt-double http response
 
@@ -225,7 +225,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	if innerResp.StatusCode/100 != 2 {
 		req.URL = apstraUrl
 		req.URL.Host = "api-ops"
-		return newTalkToApstraErr(req, msg.Body, innerResp, "")
+		return newTalkToApstraErr(req, msg.Body, innerResp, "", o.apiVersion)
 	}
 
 	// If the caller gave us an httpBodyWriter, copy the response body into it and return
@@ -243,7 +243,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	if err != nil {
 		req.URL = apstraUrl
 		req.URL.Host = "api-ops"
-		return newTalkToApstraErr(req, requestBody, innerResp, fmt.Sprintf("error peeking response body: %v", err))
+		return newTalkToApstraErr(req, requestBody, innerResp, fmt.Sprintf("error peeking response body: %v", err), o.apiVersion)
 	}
 
 	// no task ID response, so no polling tomfoolery required
@@ -274,7 +274,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 	case bpId == "" && tIdR.BlueprintId == "":
 		req.URL = apstraUrl
 		req.URL.Host = "api-ops"
-		return newTalkToApstraErr(req, requestBody, innerResp, "blueprint id not found in url nor in response body")
+		return newTalkToApstraErr(req, requestBody, innerResp, "blueprint id not found in url nor in response body", o.apiVersion)
 	case bpId == "":
 		bpId = tIdR.BlueprintId
 	}
@@ -326,6 +326,7 @@ func (o *Client) talkToApiOps(ctx context.Context, in *talkToApstraIn) error {
 			Request:  request,
 			Response: response,
 			Msg:      string(dsMsg),
+			Version:  o.apiVersion,
 		}
 	}
 

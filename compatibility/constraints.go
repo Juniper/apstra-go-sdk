@@ -56,6 +56,9 @@ var (
 	RoutingPolicyExportHasL3EdgeLinks = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
 	}
+	PolicyIDErrorHasNoQuotes = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint("<" + apstra620)),
+	}
 	SecurityZoneAddressingSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra610)),
 	}

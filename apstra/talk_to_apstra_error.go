@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,14 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/Juniper/apstra-go-sdk/compatibility"
+	"github.com/hashicorp/go-version"
+)
+
+var (
+	policyIDErrorRegex       = regexp.MustCompile(`^Endpoint policy with node id "(.*)" does not exist$`)
+	policyIDErrorRegexPre620 = regexp.MustCompile(`^Endpoint policy with node id (.*) does not exist$`)
 )
 
 // TalkToApstraErr implements error{} and carries around http.Request and
@@ -22,6 +30,7 @@ type TalkToApstraErr struct {
 	Request  *http.Request
 	Response *http.Response
 	Msg      string
+	Version  *version.Version
 }
 
 func (o TalkToApstraErr) Error() string {
@@ -94,8 +103,6 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 		Policy string `json:"policy"`
 	}
 
-	policyIdErrorRegex := regexp.MustCompile("^Endpoint policy with node id (.*) does not exist$")
-
 	// store collected indexes and ids in maps for de-dup reasons
 	invalidApIds := make(map[ObjectId]struct{})
 	invalidCTIds := make(map[ObjectId]struct{})
@@ -111,7 +118,12 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 				}
 			}
 
-			policyIdSubMatches := policyIdErrorRegex.FindStringSubmatch(rawPolicyStruct.Policy)
+			var policyIdSubMatches []string
+			if o.Version == nil || !compatibility.PolicyIDErrorHasNoQuotes.Check(o.Version) {
+				policyIdSubMatches = policyIDErrorRegex.FindStringSubmatch(rawPolicyStruct.Policy)
+			} else {
+				policyIdSubMatches = policyIDErrorRegexPre620.FindStringSubmatch(rawPolicyStruct.Policy) // legacy error message
+			}
 
 			switch {
 			case len(policyIdSubMatches) == 2:
@@ -149,7 +161,7 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 // be closed by a 'defer body.Close()' somewhere, so we'll replace that as well,
 // up to some reasonable limit (don't try to buffer gigabytes of data from the
 // webserver).
-func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string) TalkToApstraErr {
+func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, errMsg string, version *version.Version) TalkToApstraErr {
 	// don't include secret in error
 	req.Header.Del(apstraAuthHeader)
 
@@ -187,5 +199,6 @@ func newTalkToApstraErr(req *http.Request, reqBody []byte, resp *http.Response, 
 		Request:  req,
 		Response: resp,
 		Msg:      errMsg,
+		Version:  version,
 	}
 }
