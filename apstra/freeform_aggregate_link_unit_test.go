@@ -206,9 +206,9 @@ func TestFreeformAggregateLink_UnmarshalJSON(t *testing.T) {
               "member_link_ids": [ "link_id_1", "link_id_2", "link_id_3" ],
               "endpoints": [
                 {
-                  "id": "endpoint_group_0_endpoint_0_id",
                   "system": { "id": "server_id" },
                   "interface": {
+                    "id": "endpoint_group_0_endpoint_0_id",
                     "if_name": "bond0",
                     "port_channel_id": 1,
                     "lag_mode": "lacp_active",
@@ -219,9 +219,9 @@ func TestFreeformAggregateLink_UnmarshalJSON(t *testing.T) {
                   "endpoint_group": 0
                 },
                 {
-                  "id": "endpoint_group_1_endpoint_0_id",
                   "system": { "id": "switch_1_id" },
                   "interface": {
+                    "id": "endpoint_group_1_endpoint_0_id",
                     "if_name": "ae1",
                     "port_channel_id": 1,
                     "lag_mode": "lacp_active",
@@ -232,9 +232,9 @@ func TestFreeformAggregateLink_UnmarshalJSON(t *testing.T) {
                   "endpoint_group": 1
                 },
                 {
-                  "id": "endpoint_group_1_endpoint_1_id",
                   "system": { "id": "switch_2_id" },
                   "interface": {
+                    "id": "endpoint_group_1_endpoint_1_id",
                     "if_name": "ae1",
                     "port_channel_id": 1,
                     "lag_mode": "lacp_active",
