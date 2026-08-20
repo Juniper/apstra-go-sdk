@@ -118,3 +118,7 @@ func (o *FreeformAggregateLinkEndpoint) UnmarshalJSON(bytes []byte) error {
 
 	return nil
 }
+
+func NewFreeformAggregateLinkEndpoint(id string) FreeformAggregateLinkEndpoint {
+	return FreeformAggregateLinkEndpoint{id: id}
+}
