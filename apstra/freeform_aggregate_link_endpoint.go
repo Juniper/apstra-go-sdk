@@ -55,8 +55,8 @@ func (o FreeformAggregateLinkEndpoint) MarshalJSON() ([]byte, error) {
 		IfName        string        `json:"if_name,omitempty"`
 		PortChannelId int           `json:"port_channel_id"`
 		LagMode       enum.LAGMode  `json:"lag_mode"`
-		IPv4Addr      *netip.Prefix `json:"ipv4_addr,omitempty"`
-		IPv6Addr      *netip.Prefix `json:"ipv6_addr,omitempty"`
+		IPv4Addr      *netip.Prefix `json:"ipv4_addr"`
+		IPv6Addr      *netip.Prefix `json:"ipv6_addr"`
 		Tags          []string      `json:"tags"`
 	}
 
