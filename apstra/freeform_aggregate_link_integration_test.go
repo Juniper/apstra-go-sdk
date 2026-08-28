@@ -413,6 +413,14 @@ func TestCRUDFreeformAggregateLink(t *testing.T) {
 					require.Equal(t, id, *idPtr)
 					comparefreeform.AggregateLink(t, create, obj)
 
+					// confirm that IDs are set on nested elements
+					for _, epGroup := range obj.EndpointGroups {
+						require.NotNil(t, epGroup.ID())
+						for _, ep := range epGroup.Endpoints {
+							require.NotNil(t, ep.ID())
+						}
+					}
+
 					// retrieve the object by label and validate
 					if create.Label != nil {
 						obj, err = bp.GetAggregateLinkByLabel(ctx, *create.Label)

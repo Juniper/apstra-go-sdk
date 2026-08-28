@@ -51,11 +51,12 @@ func (o FreeformAggregateLinkEndpoint) MarshalJSON() ([]byte, error) {
 	}
 
 	type rawInterface struct {
+		ID            string        `json:"id,omitempty"`
 		IfName        string        `json:"if_name,omitempty"`
 		PortChannelId int           `json:"port_channel_id"`
 		LagMode       enum.LAGMode  `json:"lag_mode"`
-		IPv4Addr      *netip.Prefix `json:"ipv4_addr,omitempty"`
-		IPv6Addr      *netip.Prefix `json:"ipv6_addr,omitempty"`
+		IPv4Addr      *netip.Prefix `json:"ipv4_addr"`
+		IPv6Addr      *netip.Prefix `json:"ipv6_addr"`
 		Tags          []string      `json:"tags"`
 	}
 
@@ -66,6 +67,7 @@ func (o FreeformAggregateLinkEndpoint) MarshalJSON() ([]byte, error) {
 	}{
 		System: rawSystem{ID: o.SystemID},
 		Interface: rawInterface{
+			ID:            o.id,
 			IfName:        o.IfName,
 			PortChannelId: o.PortChannelID,
 			LagMode:       o.LAGMode,
@@ -85,16 +87,16 @@ func (o *FreeformAggregateLinkEndpoint) UnmarshalJSON(bytes []byte) error {
 	}
 
 	type rawInterface struct {
-		IfName        string        `json:"if_name,omitempty"`
+		ID            string        `json:"id"`
+		IfName        string        `json:"if_name"`
 		PortChannelId int           `json:"port_channel_id"`
 		LagMode       enum.LAGMode  `json:"lag_mode"`
-		IPv4Addr      *netip.Prefix `json:"ipv4_addr,omitempty"`
-		IPv6Addr      *netip.Prefix `json:"ipv6_addr,omitempty"`
+		IPv4Addr      *netip.Prefix `json:"ipv4_addr"`
+		IPv6Addr      *netip.Prefix `json:"ipv6_addr"`
 		Tags          []string      `json:"tags"`
 	}
 
 	var raw struct {
-		ID            string       `json:"id"`
 		System        rawSystem    `json:"system"`
 		Interface     rawInterface `json:"interface"`
 		EndpointGroup int          `json:"endpoint_group"`
@@ -104,7 +106,7 @@ func (o *FreeformAggregateLinkEndpoint) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 
-	o.id = raw.ID
+	o.id = raw.Interface.ID
 	o.endpointGroup = raw.EndpointGroup
 	o.SystemID = raw.System.ID
 	o.IfName = raw.Interface.IfName
