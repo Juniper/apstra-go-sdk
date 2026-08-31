@@ -114,7 +114,7 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 			if err != nil {
 				err = json.Unmarshal(p, &rawPolicyStruct.Policy) // maybe we got a string?
 				if err != nil {
-					return fmt.Errorf("parsing error at application point %d, policy %q: %w", apIdx, pKey, o) // don't wrap either err here
+					return fmt.Errorf("parsing error at application point %d, policy %d: %w", apIdx, pKey, o) // don't wrap either err here
 				}
 			}
 
@@ -134,7 +134,7 @@ func (o TalkToApstraErr) parseApiUrlBlueprintObjPolicyBatchApplyError() error {
 				}
 				invalidApIds[rawReq.ApplicationPoints[apIdx].Id] = struct{}{}
 			default:
-				return fmt.Errorf("cannot parse error at application point %d, policy %q: %w", apIdx, pKey, o)
+				return fmt.Errorf("cannot parse error at application point %d, policy %d: %w", apIdx, pKey, o)
 			}
 		}
 	}

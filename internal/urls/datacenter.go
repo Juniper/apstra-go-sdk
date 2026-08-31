@@ -18,4 +18,8 @@ const (
 
 	DatacenterVirtualNetworks    = blueprintByID + pathDelim + "virtual-networks"
 	DatacenterVirtualNetworkByID = DatacenterVirtualNetworks + pathDelim + "%s"
+
+	datacenterEvpnInterconnectGroupsPathComponent = "evpn_interconnect_groups"
+	DatacenterEvpnInterconnectGroups              = blueprintByID + pathDelim + datacenterEvpnInterconnectGroupsPathComponent
+	DatacenterEvpnInterconnectGroupByID           = DatacenterEvpnInterconnectGroups + pathDelim + "%s"
 )
