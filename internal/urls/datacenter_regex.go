@@ -6,6 +6,4 @@ const (
 	datacenterEvpnInterconnectGroupByIDRegexStr = blueprintByIDRegexStr + pathDelim + datacenterEvpnInterconnectGroupsPathComponent + pathDelim + "[^/]+$"
 )
 
-var (
-	DatacenterEvpnInterconnectGroupByIDRegex = regexp.MustCompile(datacenterEvpnInterconnectGroupByIDRegexStr)
-)
+var DatacenterEvpnInterconnectGroupByIDRegex = regexp.MustCompile(datacenterEvpnInterconnectGroupByIDRegexStr)
