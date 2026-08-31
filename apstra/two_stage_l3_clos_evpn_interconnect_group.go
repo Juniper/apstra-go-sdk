@@ -5,21 +5,20 @@
 package apstra
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 
-	"github.com/Juniper/apstra-go-sdk/errors"
+	aerrors "github.com/Juniper/apstra-go-sdk/errors"
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
-)
-
-const (
-	apiUrlBlueprintEvpnInterconnectGroups       = apiUrlBlueprintById + apiUrlPathDelim + "evpn_interconnect_groups"
-	apiUrlBlueprintEvpnInterconnectGroupsPrefix = apiUrlBlueprintEvpnInterconnectGroups + apiUrlPathDelim
-	apiUrlBlueprintEvpnInterconnectGroupById    = apiUrlBlueprintEvpnInterconnectGroupsPrefix + "%s"
+	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
 
 type InterconnectVirtualNetwork struct {
@@ -61,7 +60,7 @@ func (e EVPNInterconnectGroup) ID() *string {
 
 func (e *EVPNInterconnectGroup) SetID(id string) error {
 	if e.id != "" {
-		return errors.IDAlreadySet(fmt.Sprintf("id already has value %q", e.id))
+		return aerrors.IDAlreadySet(fmt.Sprintf("id already has value %q", e.id))
 	}
 
 	e.id = id
@@ -115,6 +114,106 @@ func (e *EVPNInterconnectGroup) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
+// parseErr handles error text like this:
+//
+//	{
+//	  "errors": {
+//	    "interconnect_security_zones": {
+//	      "ajksdfalkj": "EVPN Interconnect routing zone node ID \"ajksdfalkj\" does not exist",
+//	      "newxSuZde_5WSjOO_A": {
+//	        "routing_policy_id": "EVPN Interconnect routing policy \"ioeoruwpq\" does not exist"
+//	      }
+//	    }
+//	  }
+//	}
+//
+// It was written specifically to handle errors provoked by PUT or PATCH to the evpn_interconnect_groups
+// API endpoint, and specifically errors resulting from use of an invalid routing zone ID.
+func (e *EVPNInterconnectGroup) parseErr(err error) error {
+	var ttae TalkToApstraErr // We only handle TalkToApstraErr errors.
+	if !errors.As(err, &ttae) {
+		return err
+	}
+
+	// We only handle errors from the evpn_interconnect_groups API endpoint.
+	if !urls.DatacenterEvpnInterconnectGroupByIDRegex.MatchString(ttae.Request.URL.Path) {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	var target struct {
+		Errors struct {
+			InterconnectSecurityZones map[string]jsontext.Value `json:"interconnect_security_zones"`
+			Extra                     map[string]jsontext.Value `json:",embed"`
+		} `json:"errors"`
+	}
+
+	if fail := json.Unmarshal([]byte(ttae.Msg), &target); fail != nil {
+		return convertTtaeToAceWherePossible(err)
+	}
+
+	var result error
+
+	for zone, val := range target.Errors.InterconnectSecurityZones {
+		// Missing Routing Zone is communicated via a string value.
+		noSuchRZMsg, _ := json.Marshal(fmt.Sprintf("EVPN Interconnect routing zone node ID %q does not exist", zone))
+		if bytes.Equal(noSuchRZMsg, val) {
+			newErr := ClientErr{
+				errType: ErrNotfound,
+				err:     errors.New(val.String()),
+				detail:  NodeTypeSecurityZone,
+			}
+			if result == nil {
+				result = newErr
+			} else {
+				result = errors.Join(result, newErr)
+			}
+			continue
+		}
+
+		// Missing Routing Policy is communicated via a struct.
+		var target2 struct {
+			RoutingPolicyID *string `json:"routing_policy_id"`
+		}
+		if fail := json.Unmarshal(val, &target2); fail != nil {
+			// We have failed to unmarshal the error message, so we don't know what it is. Wrap it in an UnhandledApstraErr and continue.
+			newErr := aerrors.UnhandledApstraErr(fmt.Sprintf("interconnect_security_zones: %q: %q", zone, val.String()))
+			if result == nil {
+				result = newErr
+			} else {
+				result = errors.Join(result, aerrors.UnhandledApstraErr(fmt.Sprintf("interconnect_security_zones: %q: %q", zone, val.String())))
+			}
+			continue
+		}
+
+		if target2.RoutingPolicyID != nil {
+			// We have found a routing policy ID error.
+			if strings.HasSuffix(*target2.RoutingPolicyID, " does not exist") {
+				newErr := ClientErr{
+					errType: ErrNotfound,
+					err:     errors.New(val.String()),
+					detail:  NodeTypeRoutingPolicy,
+				}
+				if result == nil {
+					result = newErr
+				} else {
+					result = errors.Join(result, newErr)
+				}
+				continue
+			}
+
+			result = errors.Join(result, aerrors.UnhandledApstraErr(fmt.Sprintf("interconnect_security_zones: %q: %q", zone, val.String())))
+		}
+	}
+
+	// Handle any other errors that may have been returned by the API.
+	// We don't know what they are, so we just wrap them in an UnhandledApstraErr.
+	for k, v := range target.Errors.Extra {
+		result = errors.Join(result, aerrors.UnhandledApstraErr(fmt.Sprintf("%s: %s", k, v.String())))
+	}
+
+	return result
+}
+
 func (o *TwoStageL3ClosClient) CreateEVPNInterconnectGroup(ctx context.Context, in EVPNInterconnectGroup) (string, error) {
 	var response struct {
 		ID string `json:"id"`
@@ -122,7 +221,7 @@ func (o *TwoStageL3ClosClient) CreateEVPNInterconnectGroup(ctx context.Context, 
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodPost,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintEvpnInterconnectGroups, o.Id()),
+		urlStr:      fmt.Sprintf(urls.DatacenterEvpnInterconnectGroups, o.Id()),
 		apiInput:    in,
 		apiResponse: &response,
 	})
@@ -138,7 +237,7 @@ func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroup(ctx context.Context, id 
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintEvpnInterconnectGroupById, o.Id(), id),
+		urlStr:      fmt.Sprintf(urls.DatacenterEvpnInterconnectGroupByID, o.Id(), id),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -148,14 +247,14 @@ func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroup(ctx context.Context, id 
 	return response, nil
 }
 
-func (o *TwoStageL3ClosClient) GetAllEVPNInterconnectGroups(ctx context.Context) ([]EVPNInterconnectGroup, error) {
+func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroups(ctx context.Context) ([]EVPNInterconnectGroup, error) {
 	var response struct {
 		Items []EVPNInterconnectGroup `json:"evpn_interconnect_groups"`
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintEvpnInterconnectGroups, o.Id()),
+		urlStr:      fmt.Sprintf(urls.DatacenterEvpnInterconnectGroups, o.Id()),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -166,9 +265,9 @@ func (o *TwoStageL3ClosClient) GetAllEVPNInterconnectGroups(ctx context.Context)
 }
 
 func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroupByLabel(ctx context.Context, name string) (EVPNInterconnectGroup, error) {
-	items, err := o.GetAllEVPNInterconnectGroups(ctx)
+	items, err := o.GetEVPNInterconnectGroups(ctx)
 	if err != nil {
-		return EVPNInterconnectGroup{}, fmt.Errorf("GetAllEVPNInterconnectGroups: %w", err)
+		return EVPNInterconnectGroup{}, fmt.Errorf("GetEVPNInterconnectGroups: %w", err)
 	}
 
 	var evpnInterconnectGroup *EVPNInterconnectGroup
@@ -202,11 +301,11 @@ func (o *TwoStageL3ClosClient) UpdateEVPNInterconnectGroup(ctx context.Context, 
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintEvpnInterconnectGroupById, o.Id(), *v.ID()),
+		urlStr:   fmt.Sprintf(urls.DatacenterEvpnInterconnectGroupByID, o.Id(), *v.ID()),
 		apiInput: &v,
 	})
 	if err != nil {
-		return convertTtaeToAceWherePossible(err)
+		return v.parseErr(err)
 	}
 
 	return nil
@@ -215,7 +314,7 @@ func (o *TwoStageL3ClosClient) UpdateEVPNInterconnectGroup(ctx context.Context, 
 func (o *TwoStageL3ClosClient) DeleteEVPNInterconnectGroup(ctx context.Context, id string) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
-		urlStr: fmt.Sprintf(apiUrlBlueprintEvpnInterconnectGroupById, o.Id(), id),
+		urlStr: fmt.Sprintf(urls.DatacenterEvpnInterconnectGroupByID, o.Id(), id),
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)

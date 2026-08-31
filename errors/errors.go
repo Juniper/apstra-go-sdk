@@ -34,6 +34,12 @@ func (e NotFound) Error() string {
 	return string(e)
 }
 
+type UnhandledApstraErr string
+
+func (e UnhandledApstraErr) Error() string {
+	return string(e)
+}
+
 type WrongType string
 
 func (e WrongType) Error() string {
