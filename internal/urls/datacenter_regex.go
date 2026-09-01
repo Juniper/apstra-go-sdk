@@ -8,6 +8,8 @@ import "regexp"
 
 const (
 	datacenterEvpnInterconnectGroupByIDRegexStr = blueprintByIDRegexStr + pathDelim + datacenterEvpnInterconnectGroupsPathComponent + pathDelim + "[^/]+$"
+	datacenterEvpnInterconnectGroupsRegexStr    = blueprintByIDRegexStr + pathDelim + datacenterEvpnInterconnectGroupsPathComponent + "$"
 )
 
 var DatacenterEvpnInterconnectGroupByIDRegex = regexp.MustCompile(datacenterEvpnInterconnectGroupByIDRegexStr)
+var DatacenterEvpnInterconnectGroupsRegex = regexp.MustCompile(datacenterEvpnInterconnectGroupsRegexStr)
