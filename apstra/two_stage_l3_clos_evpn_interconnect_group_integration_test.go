@@ -335,7 +335,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 			var ace apstra.ClientErr
 			var err error
 
-			// Test Create with bogus Routing Zone ID
+			// Test Create with bogus Routing Zone ID.
 			t.Run("create_with_bogus_routing_zone", func(t *testing.T) {
 				ctx := testutils.ContextWithTestID(ctx, t)
 
@@ -358,7 +358,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 				require.Equal(t, bogusRZID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
 			})
 
-			// Test Create with bogus Routing Policy ID
+			// Test Create with bogus Routing Policy ID.
 			t.Run("create_with_bogus_routing_policy", func(t *testing.T) {
 				ctx := testutils.ContextWithTestID(ctx, t)
 
@@ -379,7 +379,6 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 				require.IsType(t, apstra.ErrNotFoundDetail{}, ace.Detail())
 				require.Equal(t, apstra.NodeTypeRoutingPolicy, ace.Detail().(apstra.ErrNotFoundDetail).Type)
 				require.Equal(t, bogusRPID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
-
 			})
 
 			// Create a valid Interconnect Group for use in Update tests
@@ -391,7 +390,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 			dci, err := bp.GetEVPNInterconnectGroup(ctx, dciID)
 			require.NoError(t, err)
 
-			// Test Update with bogus Routing Zone ID
+			// Test Update with bogus Routing Zone ID.
 			t.Run("update_with_bogus_routing_zone", func(t *testing.T) {
 				ctx := testutils.ContextWithTestID(ctx, t)
 
@@ -409,10 +408,9 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 				require.IsType(t, apstra.ErrNotFoundDetail{}, ace.Detail())
 				require.Equal(t, apstra.NodeTypeSecurityZone, ace.Detail().(apstra.ErrNotFoundDetail).Type)
 				require.Equal(t, bogusRZID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
-
 			})
 
-			// Test Update with bogus Routing Policy ID
+			// Test Update with bogus Routing Policy ID.
 			t.Run("update_with_bogus_routing_policy", func(t *testing.T) {
 				ctx := testutils.ContextWithTestID(ctx, t)
 
