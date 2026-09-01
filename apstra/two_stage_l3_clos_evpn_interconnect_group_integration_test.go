@@ -319,71 +319,118 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 func TestEvpnInterconnectGroupErrors(t *testing.T) {
 	ctx := context.Background()
 
+	bogusRZID := "bogus_rz"
+	bogusRPID := "bogus_rp"
+
 	clients := testclient.GetTestClients(t, ctx)
 	for _, c := range clients {
-		bp, err := c.Client.NewTwoStageL3ClosClient(ctx, "4ef73591-d23d-4f66-9ab2-16fbf156bfac")
-		require.NoError(t, err)
+		t.Run(c.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
 
-		vrf := testutils.RandString(6, "hex")
-		rzID, err := bp.CreateSecurityZone(ctx, datacenter.SecurityZone{
-			Label:   vrf,
-			Type:    enum.SecurityZoneTypeEVPN,
-			VRFName: vrf,
+			bp := dctestobj.TestBlueprintA(t, ctx, c.Client)
+			rzID := dctestobj.TestSecurityZoneA(t, ctx, bp)
+			rpID := dctestobj.TestRouringPolicyA(t, ctx, bp)
+
+			var ace apstra.ClientErr
+			var err error
+
+			// Test Create with bogus Routing Zone ID
+			t.Run("create_with_bogus_routing_zone", func(t *testing.T) {
+				ctx := testutils.ContextWithTestID(ctx, t)
+
+				_, err = bp.CreateEVPNInterconnectGroup(ctx, apstra.EVPNInterconnectGroup{
+					Label:       pointer.To("a" + testutils.RandString(6, "hex")),
+					RouteTarget: pointer.To(testutils.RandomRouteTarget(t)),
+					InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
+						bogusRZID: {
+							RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
+							RoutingPolicyId: pointer.To(string(rpID)),
+						},
+					},
+				})
+				require.Error(t, err)
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, ace.Type(), apstra.ErrNotfound)
+				require.NotNil(t, ace.Detail())
+				require.IsType(t, apstra.ErrNotFoundDetail{}, ace.Detail())
+				require.Equal(t, apstra.NodeTypeSecurityZone, ace.Detail().(apstra.ErrNotFoundDetail).Type)
+				require.Equal(t, bogusRZID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
+			})
+
+			// Test Create with bogus Routing Policy ID
+			t.Run("create_with_bogus_routing_policy", func(t *testing.T) {
+				ctx := testutils.ContextWithTestID(ctx, t)
+
+				_, err = bp.CreateEVPNInterconnectGroup(ctx, apstra.EVPNInterconnectGroup{
+					Label:       pointer.To("a" + testutils.RandString(6, "hex")),
+					RouteTarget: pointer.To(testutils.RandomRouteTarget(t)),
+					InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
+						rzID: {
+							RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
+							RoutingPolicyId: pointer.To(bogusRPID),
+						},
+					},
+				})
+				require.Error(t, err)
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, ace.Type(), apstra.ErrNotfound)
+				require.NotNil(t, ace.Detail())
+				require.IsType(t, apstra.ErrNotFoundDetail{}, ace.Detail())
+				require.Equal(t, apstra.NodeTypeRoutingPolicy, ace.Detail().(apstra.ErrNotFoundDetail).Type)
+				require.Equal(t, bogusRPID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
+
+			})
+
+			// Create a valid Interconnect Group for use in Update tests
+			dciID, err := bp.CreateEVPNInterconnectGroup(ctx, apstra.EVPNInterconnectGroup{
+				Label:       pointer.To("a" + testutils.RandString(6, "hex")),
+				RouteTarget: pointer.To(testutils.RandomRouteTarget(t)),
+			})
+			require.NoError(t, err)
+			dci, err := bp.GetEVPNInterconnectGroup(ctx, dciID)
+			require.NoError(t, err)
+
+			// Test Update with bogus Routing Zone ID
+			t.Run("update_with_bogus_routing_zone", func(t *testing.T) {
+				ctx := testutils.ContextWithTestID(ctx, t)
+
+				dci.InterconnectSecurityZones = map[string]apstra.InterconnectSecurityZone{
+					bogusRZID: {
+						RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
+						RoutingPolicyId: pointer.To(string(rpID)),
+					},
+				}
+				err = bp.UpdateEVPNInterconnectGroup(ctx, dci)
+				require.Error(t, err)
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, ace.Type(), apstra.ErrNotfound)
+				require.NotNil(t, ace.Detail())
+				require.IsType(t, apstra.ErrNotFoundDetail{}, ace.Detail())
+				require.Equal(t, apstra.NodeTypeSecurityZone, ace.Detail().(apstra.ErrNotFoundDetail).Type)
+				require.Equal(t, bogusRZID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
+
+			})
+
+			// Test Update with bogus Routing Policy ID
+			t.Run("update_with_bogus_routing_policy", func(t *testing.T) {
+				ctx := testutils.ContextWithTestID(ctx, t)
+
+				dci.InterconnectSecurityZones = map[string]apstra.InterconnectSecurityZone{
+					rzID: {
+						RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
+						RoutingPolicyId: pointer.To(bogusRPID),
+					},
+				}
+				err = bp.UpdateEVPNInterconnectGroup(ctx, dci)
+				require.Error(t, err)
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, ace.Type(), apstra.ErrNotfound)
+				require.NotNil(t, ace.Detail())
+				require.IsType(t, apstra.ErrNotFoundDetail{}, ace.Detail())
+				require.Equal(t, apstra.NodeTypeRoutingPolicy, ace.Detail().(apstra.ErrNotFoundDetail).Type)
+				require.Equal(t, bogusRPID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
+			})
 		})
-		require.NoError(t, err)
-
-		rpID, err := bp.CreateRoutingPolicy(ctx, &apstra.DcRoutingPolicyData{
-			Label:        testutils.RandString(6, "hex"),
-			PolicyType:   apstra.DcRoutingPolicyTypeUser,
-			ImportPolicy: apstra.DcRoutingPolicyImportPolicyAll,
-			ExportPolicy: apstra.DcRoutingExportPolicy{},
-		})
-		require.NoError(t, err)
-
-		dciID, err := bp.CreateEVPNInterconnectGroup(ctx, apstra.EVPNInterconnectGroup{
-			Label:       pointer.To("a" + testutils.RandString(6, "hex")),
-			RouteTarget: pointer.To(testutils.RandomRouteTarget(t)),
-		})
-		require.NoError(t, err)
-
-		var update apstra.EVPNInterconnectGroup
-		_ = update.SetID(dciID)
-
-		bogusSZID := "bogus_sz"
-		bogusRPID := "bogus_rp"
-
-		var ace apstra.ClientErr
-
-		// Test for bogus Routing Zone ID error
-		update.InterconnectSecurityZones = map[string]apstra.InterconnectSecurityZone{
-			bogusSZID: {
-				L3Enabled:       false,
-				RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
-				RoutingPolicyId: pointer.To(string(rpID)),
-			},
-		}
-		err = bp.UpdateEVPNInterconnectGroup(ctx, update)
-		require.Error(t, err)
-		require.ErrorAs(t, err, &ace)
-		require.Equal(t, ace.Type(), apstra.ErrNotfound)
-		require.NotNil(t, ace.Detail())
-		require.IsType(t, apstra.NodeTypeSecurityZone, ace.Detail())
-		require.Equal(t, apstra.NodeTypeSecurityZone, ace.Detail())
-
-		// Test for bogus Routing Policy ID error
-		update.InterconnectSecurityZones = map[string]apstra.InterconnectSecurityZone{
-			rzID: {
-				L3Enabled:       false,
-				RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
-				RoutingPolicyId: pointer.To(bogusRPID),
-			},
-		}
-		err = bp.UpdateEVPNInterconnectGroup(ctx, update)
-		require.Error(t, err)
-		require.ErrorAs(t, err, &ace)
-		require.Equal(t, ace.Type(), apstra.ErrNotfound)
-		require.NotNil(t, ace.Detail())
-		require.IsType(t, apstra.NodeTypeRoutingPolicy, ace.Detail())
-		require.Equal(t, apstra.NodeTypeRoutingPolicy, ace.Detail())
 	}
 }
