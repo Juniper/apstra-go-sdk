@@ -113,7 +113,7 @@ func (e *EVPNInterconnectGroup) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-// parseErr handles error payloads like this:
+// parseError handles error payloads like this:
 //
 //	{
 //	  "errors": {
@@ -131,7 +131,7 @@ func (e *EVPNInterconnectGroup) UnmarshalJSON(bytes []byte) error {
 // EVPNInterconnectGroup because that object contains the payload which was sent to the API
 // and rejected (?) by it. Rather than trying to tease a routing policy ID out of an
 // unstructured and variably-quoted error string, we use the ID which was sent to the API.
-func (e EVPNInterconnectGroup) parseErr(err error) error {
+func (e EVPNInterconnectGroup) parseError(err error) error {
 	var ttae TalkToApstraErr // We only handle TalkToApstraErr errors.
 	if !errors.As(err, &ttae) {
 		return err
@@ -214,7 +214,7 @@ func (o *TwoStageL3ClosClient) CreateEVPNInterconnectGroup(ctx context.Context, 
 		apiResponse: &response,
 	})
 	if err != nil {
-		return "", in.parseErr(err)
+		return "", in.parseError(err)
 	}
 
 	return response.ID, nil
@@ -293,7 +293,7 @@ func (o *TwoStageL3ClosClient) UpdateEVPNInterconnectGroup(ctx context.Context, 
 		apiInput: &in,
 	})
 	if err != nil {
-		return in.parseErr(err)
+		return in.parseError(err)
 	}
 
 	return nil
