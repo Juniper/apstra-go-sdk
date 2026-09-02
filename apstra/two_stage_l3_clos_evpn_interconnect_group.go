@@ -167,15 +167,15 @@ func (e EVPNInterconnectGroup) parseError(err error) error {
 				})
 				continue
 			}
-			result = errors.Join(result, aerrors.UnhandledApstraErr(fmt.Sprintf("interconnect_security_zones: %q: %s", zone, val.String())))
+			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String())})
 
 		case jsontext.KindBeginObject: // Missing Routing Policy is communicated via a object value.
 			var errObj struct {
 				RoutingPolicyID string `json:"routing_policy_id"`
 			}
 			if fail := json.Unmarshal(val, &errObj); fail != nil {
-				// We have failed to unmarshal the error object, so we don't know what it is. Wrap it in an UnhandledApstraErr and continue.
-				result = errors.Join(result, aerrors.UnhandledApstraErr(fmt.Sprintf("interconnect_security_zones: %q: %s", zone, val.String())))
+				// We have failed to unmarshal the error object, so we don't know what it is. Wrap it as an ErrUnknown and continue.
+				result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String())})
 				continue
 			}
 			if strings.Contains(errObj.RoutingPolicyID, "does not exist") && e.InterconnectSecurityZones[zone].RoutingPolicyId != nil {
@@ -186,17 +186,17 @@ func (e EVPNInterconnectGroup) parseError(err error) error {
 				})
 				continue
 			}
-			result = errors.Join(result, aerrors.UnhandledApstraErr(fmt.Sprintf("interconnect_security_zones: %q: %s", zone, val.String())))
+			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String())})
 
 		default: // Whatever this is, we don't handle it.
-			result = errors.Join(result, aerrors.UnhandledApstraErr(fmt.Sprintf("interconnect_security_zones: %q: %s", zone, val.String())))
+			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String())})
 		}
 	}
 
 	// Handle any other errors that may have been returned by the API.
-	// We don't know what they are, so we just wrap them in an UnhandledApstraErr.
+	// We don't know what they are, so we just wrap them as an ErrUnknown.
 	for k, v := range target.Errors.Extra {
-		result = errors.Join(result, aerrors.UnhandledApstraErr(fmt.Sprintf("%s: %s", k, v.String())))
+		result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("%s: %s", k, v.String())})
 	}
 
 	return result
