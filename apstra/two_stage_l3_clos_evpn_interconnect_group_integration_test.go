@@ -321,6 +321,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 
 	bogusRZID := "bogus_rz"
 	bogusRPID := "bogus_rp"
+	bogusIGID := "bogus_ig"
 
 	clients := testclient.GetTestClients(t, ctx)
 	for _, c := range clients {
@@ -334,6 +335,20 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 
 			var ace apstra.ClientErr
 			var err error
+
+			// Test Get with bogus group ID.
+			t.Run("get_with_bogus_group_id", func(t *testing.T) {
+				ctx := testutils.ContextWithTestID(ctx, t)
+
+				_, err := bp.GetEVPNInterconnectGroup(ctx, bogusIGID)
+				require.Error(t, err)
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, apstra.ErrNotfound, ace.Type())
+				require.NotNil(t, ace.Detail())
+				require.IsType(t, apstra.ErrNotFoundDetail{}, ace.Detail())
+				require.Equal(t, apstra.NodeTypeEvpnInterconnectGroup, ace.Detail().(apstra.ErrNotFoundDetail).Type)
+				require.Equal(t, bogusIGID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
+			})
 
 			// Test Create with bogus Routing Zone ID.
 			t.Run("create_with_bogus_routing_zone", func(t *testing.T) {

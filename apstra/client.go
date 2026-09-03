@@ -77,8 +77,9 @@ type ErrCtAssignmentFailedDetail struct {
 }
 
 type ErrNotFoundDetail struct {
-	ID   string
-	Type NodeType
+	ID    string
+	Label string
+	Type  NodeType
 }
 
 type ClientErr struct {

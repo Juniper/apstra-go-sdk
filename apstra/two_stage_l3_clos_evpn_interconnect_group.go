@@ -143,6 +143,15 @@ func (e EVPNInterconnectGroup) parseError(err error) error {
 		return convertTtaeToAceWherePossible(err)
 	}
 
+	if ttae.Response.StatusCode == http.StatusNotFound && e.id != "" &&
+		strings.Contains(ttae.Msg, "EVPN interconnect group") { // URL contains IDs of both BP and EVPN Interconnect Group. Bad value in either -> 404
+		return ClientErr{ //                                              -  Bad BP ID: '{"errors":"Resource not found"}'
+			errType: ErrNotfound, //                                      -  Bad IG ID: '{"errors":"EVPN interconnect group ID <id> does not exist"}'
+			err:     errors.New(ttae.Msg),
+			detail:  ErrNotFoundDetail{ID: e.id, Type: NodeTypeEvpnInterconnectGroup},
+		}
+	}
+
 	var target struct {
 		Errors struct {
 			InterconnectSecurityZones map[string]jsontext.Value `json:"interconnect_security_zones"`
@@ -202,7 +211,7 @@ func (e EVPNInterconnectGroup) parseError(err error) error {
 	return result
 }
 
-func (o *TwoStageL3ClosClient) CreateEVPNInterconnectGroup(ctx context.Context, in EVPNInterconnectGroup) (string, error) {
+func (o TwoStageL3ClosClient) CreateEVPNInterconnectGroup(ctx context.Context, in EVPNInterconnectGroup) (string, error) {
 	var response struct {
 		ID string `json:"id"`
 	}
@@ -220,7 +229,7 @@ func (o *TwoStageL3ClosClient) CreateEVPNInterconnectGroup(ctx context.Context, 
 	return response.ID, nil
 }
 
-func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroup(ctx context.Context, id string) (EVPNInterconnectGroup, error) {
+func (o TwoStageL3ClosClient) GetEVPNInterconnectGroup(ctx context.Context, id string) (EVPNInterconnectGroup, error) {
 	var response EVPNInterconnectGroup
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
@@ -229,13 +238,13 @@ func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroup(ctx context.Context, id 
 		apiResponse: &response,
 	})
 	if err != nil {
-		return EVPNInterconnectGroup{}, convertTtaeToAceWherePossible(err)
+		return EVPNInterconnectGroup{}, EVPNInterconnectGroup{id: id}.parseError(err)
 	}
 
 	return response, nil
 }
 
-func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroups(ctx context.Context) ([]EVPNInterconnectGroup, error) {
+func (o TwoStageL3ClosClient) GetEVPNInterconnectGroups(ctx context.Context) ([]EVPNInterconnectGroup, error) {
 	var response struct {
 		Items []EVPNInterconnectGroup `json:"evpn_interconnect_groups"`
 	}
@@ -252,7 +261,7 @@ func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroups(ctx context.Context) ([
 	return response.Items, nil
 }
 
-func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroupByLabel(ctx context.Context, name string) (EVPNInterconnectGroup, error) {
+func (o TwoStageL3ClosClient) GetEVPNInterconnectGroupByLabel(ctx context.Context, name string) (EVPNInterconnectGroup, error) {
 	items, err := o.GetEVPNInterconnectGroups(ctx)
 	if err != nil {
 		return EVPNInterconnectGroup{}, fmt.Errorf("GetEVPNInterconnectGroups: %w", err)
@@ -276,13 +285,17 @@ func (o *TwoStageL3ClosClient) GetEVPNInterconnectGroupByLabel(ctx context.Conte
 		return EVPNInterconnectGroup{}, ClientErr{
 			errType: ErrNotfound,
 			err:     fmt.Errorf("EVPN Interconnect Group with label %q not found", name),
+			detail: ErrNotFoundDetail{
+				Label: name,
+				Type:  NodeTypeEvpnInterconnectGroup,
+			},
 		}
 	}
 
 	return *evpnInterconnectGroup, nil
 }
 
-func (o *TwoStageL3ClosClient) UpdateEVPNInterconnectGroup(ctx context.Context, in EVPNInterconnectGroup) error {
+func (o TwoStageL3ClosClient) UpdateEVPNInterconnectGroup(ctx context.Context, in EVPNInterconnectGroup) error {
 	if in.ID() == nil {
 		return fmt.Errorf("id is required in %s", str.FuncName())
 	}
@@ -299,13 +312,13 @@ func (o *TwoStageL3ClosClient) UpdateEVPNInterconnectGroup(ctx context.Context, 
 	return nil
 }
 
-func (o *TwoStageL3ClosClient) DeleteEVPNInterconnectGroup(ctx context.Context, id string) error {
+func (o TwoStageL3ClosClient) DeleteEVPNInterconnectGroup(ctx context.Context, id string) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,
 		urlStr: fmt.Sprintf(urls.DatacenterEvpnInterconnectGroupByID, o.Id(), id),
 	})
 	if err != nil {
-		return convertTtaeToAceWherePossible(err)
+		return EVPNInterconnectGroup{id: id}.parseError(err)
 	}
 
 	return nil
