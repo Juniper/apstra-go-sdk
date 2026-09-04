@@ -154,8 +154,9 @@ func (e EVPNInterconnectGroup) parseError(err error) error {
 
 	var target struct {
 		Errors struct {
-			InterconnectSecurityZones map[string]jsontext.Value `json:"interconnect_security_zones"`
-			Extra                     map[string]jsontext.Value `json:",embed"`
+			InterconnectSecurityZones   map[string]jsontext.Value `json:"interconnect_security_zones"`
+			InterconnectVirtualNetworks map[string]jsontext.Value `json:"interconnect_virtual_networks"`
+			Extra                       map[string]jsontext.Value `json:",embed"`
 		} `json:"errors"`
 	}
 
@@ -165,44 +166,64 @@ func (e EVPNInterconnectGroup) parseError(err error) error {
 
 	var result error
 
-	for zone, val := range target.Errors.InterconnectSecurityZones {
-		switch val.Kind() {
+	// Parse errors related to Security Zones.
+	for k, v := range target.Errors.InterconnectSecurityZones {
+		switch v.Kind() {
 		case jsontext.KindString: // Missing Routing Zone is communicated via a string value.
-			if strings.Contains(val.String(), "does not exist") {
+			if strings.Contains(v.String(), "does not exist") {
 				result = errors.Join(result, ClientErr{
 					errType: ErrNotfound,
-					err:     fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String()),
-					detail:  ErrNotFoundDetail{ID: zone, Type: NodeTypeSecurityZone},
+					err:     fmt.Errorf("interconnect_security_zones: %q: %s", k, v.String()),
+					detail:  ErrNotFoundDetail{ID: k, Type: NodeTypeSecurityZone},
 				})
 				continue
 			}
-			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String())})
+			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", k, v.String())})
 
 		case jsontext.KindBeginObject: // Missing Routing Policy is communicated via a object value.
 			var errObj struct {
 				RoutingPolicyID string `json:"routing_policy_id"`
 			}
-			if fail := json.Unmarshal(val, &errObj); fail != nil {
+			if fail := json.Unmarshal(v, &errObj); fail != nil {
 				// We have failed to unmarshal the error object, so we don't know what it is. Wrap it as an ErrUnknown and continue.
-				result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String())})
+				result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", k, v.String())})
 				continue
 			}
-			if strings.Contains(errObj.RoutingPolicyID, "does not exist") && e.InterconnectSecurityZones[zone].RoutingPolicyId != nil {
+			if strings.Contains(errObj.RoutingPolicyID, "does not exist") && e.InterconnectSecurityZones[k].RoutingPolicyId != nil {
 				result = errors.Join(result, ClientErr{
 					errType: ErrNotfound,
-					err:     fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String()),
-					detail:  ErrNotFoundDetail{ID: *e.InterconnectSecurityZones[zone].RoutingPolicyId, Type: NodeTypeRoutingPolicy},
+					err:     fmt.Errorf("interconnect_security_zones: %q: %s", k, v.String()),
+					detail:  ErrNotFoundDetail{ID: *e.InterconnectSecurityZones[k].RoutingPolicyId, Type: NodeTypeRoutingPolicy},
 				})
 				continue
 			}
-			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String())})
+			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", k, v.String())})
 
 		default: // Whatever this is, we don't handle it.
-			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", zone, val.String())})
+			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", k, v.String())})
 		}
 	}
 
-	// Handle any other errors that may have been returned by the API.
+	// Parse errors related to Virtual Networks.
+	for k, v := range target.Errors.InterconnectVirtualNetworks {
+		switch v.Kind() {
+		case jsontext.KindString: // Missing Virtual Network is communicated via a string value.
+			if strings.Contains(v.String(), "does not exist") {
+				result = errors.Join(result, ClientErr{
+					errType: ErrNotfound,
+					err:     fmt.Errorf("interconnect_virtual_networks: %q: %s", k, v.String()),
+					detail:  ErrNotFoundDetail{ID: k, Type: NodeTypeVirtualNetwork},
+				})
+				continue
+			}
+			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_virtual_networks: %q: %s", k, v.String())})
+
+		default: // Whatever this is, we don't handle it.
+			result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_virtual_networks: %q: %s", k, v.String())})
+		}
+	}
+
+	// Any other errors that may have been returned by the API don't get parsed.
 	// We don't know what they are, so we just wrap them as an ErrUnknown.
 	for k, v := range target.Errors.Extra {
 		result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("%s: %s", k, v.String())})
