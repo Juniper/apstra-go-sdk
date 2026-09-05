@@ -38,12 +38,12 @@ func TestEVPNInterconnectGroup_MarshalJSON(t *testing.T) {
 					"a": {
 						L3Enabled:       true,
 						RouteTarget:     pointer.To("11:11"),
-						RoutingPolicyId: pointer.To("aa"),
+						RoutingPolicyID: pointer.To("aa"),
 					},
 					"b": {
 						L3Enabled:       false,
 						RouteTarget:     pointer.To("22:22"),
-						RoutingPolicyId: pointer.To("bb"),
+						RoutingPolicyID: pointer.To("bb"),
 					},
 				},
 				InterconnectVirtualNetworks: map[string]apstra.InterconnectVirtualNetwork{
@@ -100,6 +100,47 @@ func TestEVPNInterconnectGroup_MarshalJSON(t *testing.T) {
 	}
 }
 
+func TestInterconnectVirtualNetwork_MarshalJSON(t *testing.T) {
+	type testCase struct {
+		data apstra.InterconnectVirtualNetwork
+		exp  string
+	}
+
+	testCases := map[string]testCase{
+		"omit_translation_vni_when_nil": {
+			data: apstra.InterconnectVirtualNetwork{
+				L2Enabled: true,
+				L3Enabled: true,
+			},
+			exp: `{"l2":true,"l3":true}`,
+		},
+		"marshal_zero_translation_vni_as_null": {
+			data: apstra.InterconnectVirtualNetwork{
+				L2Enabled:      true,
+				L3Enabled:      true,
+				TranslationVNI: pointer.To(uint32(0)),
+			},
+			exp: `{"l2":true,"l3":true,"translation_vni":null}`,
+		},
+		"marshal_nonzero_translation_vni_as_number": {
+			data: apstra.InterconnectVirtualNetwork{
+				L2Enabled:      true,
+				L3Enabled:      true,
+				TranslationVNI: pointer.To(uint32(333)),
+			},
+			exp: `{"l2":true,"l3":true,"translation_vni":333}`,
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			result, err := json.Marshal(tCase.data)
+			require.NoError(t, err)
+			require.JSONEq(t, tCase.exp, string(result))
+		})
+	}
+}
+
 func TestEVPNInterconnectGroup_UnmarshalJSON(t *testing.T) {
 	type testCase struct {
 		data string
@@ -120,12 +161,12 @@ func TestEVPNInterconnectGroup_UnmarshalJSON(t *testing.T) {
 					"a": {
 						L3Enabled:       true,
 						RouteTarget:     pointer.To("11:11"),
-						RoutingPolicyId: pointer.To("aa"),
+						RoutingPolicyID: pointer.To("aa"),
 					},
 					"b": {
 						L3Enabled:       false,
 						RouteTarget:     pointer.To("22:22"),
-						RoutingPolicyId: pointer.To("bb"),
+						RoutingPolicyID: pointer.To("bb"),
 					},
 				},
 				InterconnectVirtualNetworks: map[string]apstra.InterconnectVirtualNetwork{

@@ -20,16 +20,37 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
 
+var _ json.Marshaler = (*InterconnectVirtualNetwork)(nil)
+
 type InterconnectVirtualNetwork struct {
 	L2Enabled      bool    `json:"l2"`
 	L3Enabled      bool    `json:"l3"`
 	TranslationVNI *uint32 `json:"translation_vni,omitempty"`
 }
 
+func (i InterconnectVirtualNetwork) MarshalJSON() ([]byte, error) {
+	type alias InterconnectVirtualNetwork
+
+	if i.TranslationVNI == nil {
+		return json.Marshal(alias(i))
+	}
+
+	if *i.TranslationVNI == 0 { // special case! Pointer to zero means we emit null
+		return json.Marshal(struct {
+			alias
+			TranslationVNI any `json:"translation_vni"` // no "omitempty", so we always emit null
+		}{
+			alias: alias(i),
+		})
+	}
+
+	return json.Marshal(alias(i))
+}
+
 type InterconnectSecurityZone struct {
 	L3Enabled       bool    `json:"enabled_for_l3"`
 	RouteTarget     *string `json:"interconnect_route_target"`
-	RoutingPolicyId *string `json:"routing_policy_id"`
+	RoutingPolicyID *string `json:"routing_policy_id"`
 }
 
 var (
@@ -189,11 +210,11 @@ func (e EVPNInterconnectGroup) parseError(err error) error {
 				result = errors.Join(result, ClientErr{errType: ErrUnknown, err: fmt.Errorf("interconnect_security_zones: %q: %s", k, v.String())})
 				continue
 			}
-			if strings.Contains(errObj.RoutingPolicyID, "does not exist") && e.InterconnectSecurityZones[k].RoutingPolicyId != nil {
+			if strings.Contains(errObj.RoutingPolicyID, "does not exist") && e.InterconnectSecurityZones[k].RoutingPolicyID != nil {
 				result = errors.Join(result, ClientErr{
 					errType: ErrNotfound,
 					err:     fmt.Errorf("interconnect_security_zones: %q: %s", k, v.String()),
-					detail:  ErrNotFoundDetail{ID: *e.InterconnectSecurityZones[k].RoutingPolicyId, Type: NodeTypeRoutingPolicy},
+					detail:  ErrNotFoundDetail{ID: *e.InterconnectSecurityZones[k].RoutingPolicyID, Type: NodeTypeRoutingPolicy},
 				})
 				continue
 			}

@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRouringPolicyA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient) string {
+func TestRoutingPolicyA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient) string {
 	id, err := bp.CreateRoutingPolicy(ctx, &apstra.DcRoutingPolicyData{
 		Label:        testutils.RandString(6, "hex"),
 		Description:  testutils.RandString(6, "hex"),

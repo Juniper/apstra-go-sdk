@@ -24,10 +24,10 @@ func InterconnectSecurityZone(t testing.TB, req, resp apstra.InterconnectSecurit
 		require.NotNil(t, resp.RouteTarget, msg)
 		require.Equal(t, *req.RouteTarget, *resp.RouteTarget, msg)
 	}
-	if req.RoutingPolicyId == nil {
-		require.Nil(t, resp.RoutingPolicyId, msg)
+	if req.RoutingPolicyID == nil {
+		require.Nil(t, resp.RoutingPolicyID, msg)
 	} else {
-		require.NotNil(t, resp.RoutingPolicyId, msg)
-		require.Equal(t, *req.RoutingPolicyId, *resp.RoutingPolicyId, msg)
+		require.NotNil(t, resp.RoutingPolicyID, msg)
+		require.Equal(t, *req.RoutingPolicyID, *resp.RoutingPolicyID, msg)
 	}
 }
