@@ -117,12 +117,12 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 								ESIMAC:      testutils.RandomHardwareAddr([]byte{*fs.EsiMacMsb}, []byte{^*fs.EsiMacMsb}), // match policy MAC MSB
 								InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
 									securityZoneIDs[0]: {
-										RoutingPolicyId: &routingPolicyIDs[0],
+										RoutingPolicyID: &routingPolicyIDs[0],
 										RouteTarget:     pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 										L3Enabled:       true,
 									},
 									securityZoneIDs[1]: {
-										RoutingPolicyId: &routingPolicyIDs[1],
+										RoutingPolicyID: &routingPolicyIDs[1],
 										RouteTarget:     pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 										L3Enabled:       false,
 									},
@@ -136,12 +136,12 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 								ESIMAC:      testutils.RandomHardwareAddr([]byte{*fs.EsiMacMsb}, []byte{^*fs.EsiMacMsb}), // match policy MAC MSB
 								InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
 									securityZoneIDs[2]: {
-										RoutingPolicyId: &routingPolicyIDs[2],
+										RoutingPolicyID: &routingPolicyIDs[2],
 										RouteTarget:     pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 										L3Enabled:       false,
 									},
 									securityZoneIDs[1]: {
-										RoutingPolicyId: &routingPolicyIDs[1],
+										RoutingPolicyID: &routingPolicyIDs[1],
 										RouteTarget:     pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 										L3Enabled:       true,
 									},
@@ -165,12 +165,12 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 								ESIMAC:      testutils.RandomHardwareAddr([]byte{*fs.EsiMacMsb}, []byte{^*fs.EsiMacMsb}), // match policy MAC MSB
 								InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
 									securityZoneIDs[0]: {
-										RoutingPolicyId: &routingPolicyIDs[0],
+										RoutingPolicyID: &routingPolicyIDs[0],
 										RouteTarget:     pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 										L3Enabled:       true,
 									},
 									securityZoneIDs[1]: {
-										RoutingPolicyId: &routingPolicyIDs[1],
+										RoutingPolicyID: &routingPolicyIDs[1],
 										RouteTarget:     pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 										L3Enabled:       false,
 									},
@@ -190,12 +190,12 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 								ESIMAC:      testutils.RandomHardwareAddr([]byte{*fs.EsiMacMsb}, []byte{^*fs.EsiMacMsb}), // match policy MAC MSB
 								InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
 									securityZoneIDs[0]: {
-										RoutingPolicyId: &routingPolicyIDs[0],
+										RoutingPolicyID: &routingPolicyIDs[0],
 										RouteTarget:     pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 										L3Enabled:       true,
 									},
 									securityZoneIDs[1]: {
-										RoutingPolicyId: &routingPolicyIDs[1],
+										RoutingPolicyID: &routingPolicyIDs[1],
 										RouteTarget:     pointer.To(fmt.Sprintf("%d:%d", rand.Intn(math.MaxUint16)+1, rand.Intn(math.MaxUint16)+1)),
 										L3Enabled:       false,
 									},
@@ -332,7 +332,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 
 			bp := dctestobj.TestBlueprintA(t, ctx, c.Client)
 			rzID := dctestobj.TestSecurityZoneA(t, ctx, bp)
-			rpID := dctestobj.TestRouringPolicyA(t, ctx, bp)
+			rpID := dctestobj.TestRoutingPolicyA(t, ctx, bp)
 			defaultRZ, err := bp.GetDefaultSecurityZone(ctx)
 			require.NoError(t, err)
 			require.NotNil(t, defaultRZ.ID())
@@ -417,7 +417,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 					InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
 						bogusRZID: {
 							RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
-							RoutingPolicyId: pointer.To(rpID),
+							RoutingPolicyID: pointer.To(rpID),
 						},
 					},
 				})
@@ -440,7 +440,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 					InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
 						*defaultRZ.ID(): {
 							RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
-							RoutingPolicyId: pointer.To(rpID),
+							RoutingPolicyID: pointer.To(rpID),
 						},
 					},
 				})
@@ -461,7 +461,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 					InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
 						rzID: {
 							RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
-							RoutingPolicyId: pointer.To(bogusRPID),
+							RoutingPolicyID: pointer.To(bogusRPID),
 						},
 					},
 				})
@@ -515,7 +515,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 				u.InterconnectSecurityZones = map[string]apstra.InterconnectSecurityZone{
 					bogusRZID: {
 						RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
-						RoutingPolicyId: pointer.To(rpID),
+						RoutingPolicyID: pointer.To(rpID),
 					},
 				}
 				err = bp.UpdateEVPNInterconnectGroup(ctx, u)
@@ -537,7 +537,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 				u.InterconnectSecurityZones = map[string]apstra.InterconnectSecurityZone{
 					*defaultRZ.ID(): {
 						RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
-						RoutingPolicyId: pointer.To(rpID),
+						RoutingPolicyID: pointer.To(rpID),
 					},
 				}
 
@@ -558,7 +558,7 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 				u.InterconnectSecurityZones = map[string]apstra.InterconnectSecurityZone{
 					rzID: {
 						RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
-						RoutingPolicyId: pointer.To(bogusRPID),
+						RoutingPolicyID: pointer.To(bogusRPID),
 					},
 				}
 				err = bp.UpdateEVPNInterconnectGroup(ctx, u)
@@ -570,6 +570,62 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 				require.Equal(t, apstra.NodeTypeRoutingPolicy, ace.Detail().(apstra.ErrNotFoundDetail).Type)
 				require.Equal(t, bogusRPID, ace.Detail().(apstra.ErrNotFoundDetail).ID)
 			})
+		})
+	}
+}
+
+func TestEvpnInterconnectGroupClearTranslationVNI(t *testing.T) {
+	ctx := context.Background()
+
+	clients := testclient.GetTestClients(t, ctx)
+	for _, c := range clients {
+		t.Run(c.Name(), func(t *testing.T) {
+			t.Parallel()
+			ctx := testutils.ContextWithTestID(ctx, t)
+
+			bp := dctestobj.TestBlueprintA(t, ctx, c.Client)
+			rzID := dctestobj.TestSecurityZoneA(t, ctx, bp)
+			vnID := dctestobj.TestVirtualNetworkA(t, ctx, bp, rzID)
+			rpID := dctestobj.TestRoutingPolicyA(t, ctx, bp)
+
+			// Create the DCI with a translation VNI.
+			dciID, err := bp.CreateEVPNInterconnectGroup(ctx, apstra.EVPNInterconnectGroup{
+				Label:       pointer.To(testutils.RandString(6, "hex")),
+				RouteTarget: pointer.To(testutils.RandomRouteTarget(t)),
+				InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
+					rzID: {
+						RouteTarget:     pointer.To(testutils.RandomRouteTarget(t)),
+						RoutingPolicyID: pointer.To(rpID),
+					},
+				},
+				InterconnectVirtualNetworks: map[string]apstra.InterconnectVirtualNetwork{
+					vnID: {
+						L2Enabled:      true,
+						L3Enabled:      true,
+						TranslationVNI: pointer.To(uint32(rand.Intn(4000) + 1)),
+					},
+				},
+			})
+			require.NoError(t, err)
+
+			// Clear the translation VNI
+			var update apstra.EVPNInterconnectGroup
+			_ = update.SetID(dciID)
+			update.InterconnectVirtualNetworks = map[string]apstra.InterconnectVirtualNetwork{
+				vnID: {
+					L2Enabled:      true,
+					L3Enabled:      true,
+					TranslationVNI: pointer.To(uint32(0)), // zero should clear the translation VNI
+				},
+			}
+			err = bp.UpdateEVPNInterconnectGroup(ctx, update)
+			require.NoError(t, err)
+
+			// Read back the DCI and verify that the translation VNI is cleared
+			dci, err := bp.GetEVPNInterconnectGroup(ctx, dciID)
+			require.NoError(t, err)
+			require.Contains(t, dci.InterconnectVirtualNetworks, vnID)
+			require.Nil(t, dci.InterconnectVirtualNetworks[vnID].TranslationVNI)
 		})
 	}
 }
