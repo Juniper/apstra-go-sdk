@@ -76,6 +76,12 @@ type ErrCtAssignmentFailedDetail struct {
 	InvalidConnectivityTemplateIds []ObjectId
 }
 
+type ErrNotFoundDetail struct {
+	ID    string
+	Label string
+	Type  NodeType
+}
+
 type ClientErr struct {
 	errType   int
 	err       error
