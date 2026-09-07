@@ -289,7 +289,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 					t.Run("delete_"+*evpnInterconnectGroup.ID(), func(t *testing.T) {
 						t.Parallel()
 
-						err = bpClient.DeleteEVPNInterconnectGroup(ctx, *evpnInterconnectGroup.ID())
+						err := bpClient.DeleteEVPNInterconnectGroup(ctx, *evpnInterconnectGroup.ID())
 						require.NoError(t, err)
 
 						var ace apstra.ClientErr
