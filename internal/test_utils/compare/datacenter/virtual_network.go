@@ -41,6 +41,12 @@ func VirtualNetwork(t testing.TB, req, resp datacenter.VirtualNetwork, msg ...st
 	if len(req.Bindings) > 0 {
 		require.Equal(t, req.DHCPService, resp.DHCPService) // only checked with bindings because this info is lost otherwise
 	}
+
+	if req.EncapsulateInnerVLAN != nil {
+		require.NotNil(t, resp.EncapsulateInnerVLAN)
+		require.Equal(t, *req.EncapsulateInnerVLAN, *resp.EncapsulateInnerVLAN)
+	}
+
 	require.Equal(t, req.IPv4Enabled, resp.IPv4Enabled)
 	require.Equal(t, req.IPv4Subnet.String(), resp.IPv4Subnet.String())
 	require.Equal(t, req.IPv6Enabled, resp.IPv6Enabled)
