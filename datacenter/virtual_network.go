@@ -28,6 +28,7 @@ type VirtualNetwork struct {
 	Bindings                  []VNBinding        `json:"bound_to"`
 	Description               string             `json:"description"`
 	DHCPService               DHCPServiceEnabled `json:"dhcp_service"`
+	EncapsulateInnerVLAN      *bool              `json:"encapsulate_inner_vlan,omitempty"`
 	IPv4Enabled               bool               `json:"ipv4_enabled"`
 	IPv4Subnet                *net.IPNet         `json:"-"`
 	IPv6Enabled               bool               `json:"ipv6_enabled"`
@@ -107,6 +108,7 @@ func (vn *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 		ID                        string             `json:"id"`
 		Description               string             `json:"description"`
 		DHCPService               DHCPServiceEnabled `json:"dhcp_service"`
+		EncapsulateInnerVLAN      *bool              `json:"encapsulate_inner_vlan"`
 		IPv4Enabled               bool               `json:"ipv4_enabled"`
 		IPv4Subnet                string             `json:"ipv4_subnet"`
 		IPv6Enabled               bool               `json:"ipv6_enabled"`
@@ -138,6 +140,7 @@ func (vn *VirtualNetwork) UnmarshalJSON(bytes []byte) error {
 
 	vn.Description = raw.Description
 	vn.DHCPService = raw.DHCPService
+	vn.EncapsulateInnerVLAN = raw.EncapsulateInnerVLAN
 	vn.IPv4Enabled = raw.IPv4Enabled
 	vn.IPv4Subnet, err = parse.IPNetFromString(raw.IPv4Subnet)
 	if err != nil {

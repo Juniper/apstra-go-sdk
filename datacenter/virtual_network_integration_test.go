@@ -84,6 +84,92 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 	wg.Wait()
 
 	testCases := map[string]testCase{
+		"encapsulate_inner_vlan_empty_to_true": {
+			constraints: []compatibility.Constraint{compatibility.VirtualNetworkEncapsulateInnerVLANOK},
+			create: datacenter.VirtualNetwork{
+				Label:          testutils.RandString(6, "hex"),
+				Type:           enum.VnTypeVxlan,
+				SecurityZoneID: "nondefault",
+			},
+			update: &datacenter.VirtualNetwork{
+				Label:                testutils.RandString(6, "hex"),
+				Type:                 enum.VnTypeVxlan,
+				SecurityZoneID:       "nondefault",
+				EncapsulateInnerVLAN: pointer.To(true),
+			},
+		},
+		"encapsulate_inner_vlan_empty_to_false": {
+			constraints: []compatibility.Constraint{compatibility.VirtualNetworkEncapsulateInnerVLANOK},
+			create: datacenter.VirtualNetwork{
+				Label:          testutils.RandString(6, "hex"),
+				Type:           enum.VnTypeVxlan,
+				SecurityZoneID: "nondefault",
+			},
+			update: &datacenter.VirtualNetwork{
+				Label:                testutils.RandString(6, "hex"),
+				Type:                 enum.VnTypeVxlan,
+				SecurityZoneID:       "nondefault",
+				EncapsulateInnerVLAN: pointer.To(false),
+			},
+		},
+		"encapsulate_inner_vlan_true_to_empty": {
+			constraints: []compatibility.Constraint{compatibility.VirtualNetworkEncapsulateInnerVLANOK},
+			create: datacenter.VirtualNetwork{
+				Label:                testutils.RandString(6, "hex"),
+				Type:                 enum.VnTypeVxlan,
+				SecurityZoneID:       "nondefault",
+				EncapsulateInnerVLAN: pointer.To(true),
+			},
+			update: &datacenter.VirtualNetwork{
+				Label:          testutils.RandString(6, "hex"),
+				Type:           enum.VnTypeVxlan,
+				SecurityZoneID: "nondefault",
+			},
+		},
+		"encapsulate_inner_vlan_false_to_empty": {
+			constraints: []compatibility.Constraint{compatibility.VirtualNetworkEncapsulateInnerVLANOK},
+			create: datacenter.VirtualNetwork{
+				Label:                testutils.RandString(6, "hex"),
+				Type:                 enum.VnTypeVxlan,
+				SecurityZoneID:       "nondefault",
+				EncapsulateInnerVLAN: pointer.To(true),
+			},
+			update: &datacenter.VirtualNetwork{
+				Label:          testutils.RandString(6, "hex"),
+				Type:           enum.VnTypeVxlan,
+				SecurityZoneID: "nondefault",
+			},
+		},
+		"encapsulate_inner_vlan_true_to_false": {
+			constraints: []compatibility.Constraint{compatibility.VirtualNetworkEncapsulateInnerVLANOK},
+			create: datacenter.VirtualNetwork{
+				Label:                testutils.RandString(6, "hex"),
+				Type:                 enum.VnTypeVxlan,
+				SecurityZoneID:       "nondefault",
+				EncapsulateInnerVLAN: pointer.To(true),
+			},
+			update: &datacenter.VirtualNetwork{
+				Label:                testutils.RandString(6, "hex"),
+				Type:                 enum.VnTypeVxlan,
+				SecurityZoneID:       "nondefault",
+				EncapsulateInnerVLAN: pointer.To(false),
+			},
+		},
+		"encapsulate_inner_vlan_false_to_true": {
+			constraints: []compatibility.Constraint{compatibility.VirtualNetworkEncapsulateInnerVLANOK},
+			create: datacenter.VirtualNetwork{
+				Label:                testutils.RandString(6, "hex"),
+				Type:                 enum.VnTypeVxlan,
+				SecurityZoneID:       "nondefault",
+				EncapsulateInnerVLAN: pointer.To(false),
+			},
+			update: &datacenter.VirtualNetwork{
+				Label:                testutils.RandString(6, "hex"),
+				Type:                 enum.VnTypeVxlan,
+				SecurityZoneID:       "nondefault",
+				EncapsulateInnerVLAN: pointer.To(true),
+			},
+		},
 		"simple": {
 			create: datacenter.VirtualNetwork{
 				Label: testutils.RandString(6, "hex"),

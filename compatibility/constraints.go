@@ -94,6 +94,9 @@ var (
 	VirtualNetworkAPITags = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
 	}
+	VirtualNetworkEncapsulateInnerVLANOK = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
+	}
 	VirtualNetworkTags = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
