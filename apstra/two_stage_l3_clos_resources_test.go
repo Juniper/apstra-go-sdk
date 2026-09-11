@@ -149,12 +149,14 @@ func TestTwoStageL3ClosResourceStrings(t *testing.T) {
 		{stringVal: "mlag_domain_svi_subnets", intType: ResourceGroupNameMlagDomainIp4, stringType: resourceGroupNameMlagDomainSviIp4},
 		{stringVal: "mlag_domain_svi_subnets_ipv6", intType: ResourceGroupNameMlagDomainIp6, stringType: resourceGroupNameMlagDomainSviIp6},
 		{stringVal: "vtep_ips", intType: ResourceGroupNameVtepIp4, stringType: resourceGroupNameVtepIp4},
+		{stringVal: "vtep_ips_ipv6", intType: ResourceGroupNameVtepIp6, stringType: resourceGroupNameVtepIp6},
 		{stringVal: "evpn_l3_vnis", intType: ResourceGroupNameEvpnL3Vni, stringType: resourceGroupNameEvpnL3Vni},
 		{stringVal: "virtual_network_svi_subnets", intType: ResourceGroupNameVirtualNetworkSviIpv4, stringType: resourceGroupNameVirtualNetworkSviIpv4},
 		{stringVal: "virtual_network_svi_subnets_ipv6", intType: ResourceGroupNameVirtualNetworkSviIpv6, stringType: resourceGroupNameVirtualNetworkSviIpv6},
 		{stringVal: "vxlan_vn_ids", intType: ResourceGroupNameVxlanVnIds, stringType: resourceGroupNameVxlanVnIds},
 		{stringVal: "to_generic_link_ips", intType: ResourceGroupNameToGenericLinkIpv4, stringType: resourceGroupNameToGenericLinkIpv4},
 		{stringVal: "ipv6_to_generic_link_ips", intType: ResourceGroupNameToGenericLinkIpv6, stringType: resourceGroupNameToGenericLinkIpv6},
+		{stringVal: "external_vn_local_vnis", intType: ResourceGroupNameExternalVNLocalVNIs, stringType: resourceGroupNameExternalVNLocalVNIs},
 	}
 
 	for i, td := range testData {

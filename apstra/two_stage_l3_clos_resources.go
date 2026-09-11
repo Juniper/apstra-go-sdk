@@ -68,12 +68,14 @@ const (
 	ResourceGroupNameMlagDomainIp4
 	ResourceGroupNameMlagDomainIp6
 	ResourceGroupNameVtepIp4
+	ResourceGroupNameVtepIp6
 	ResourceGroupNameEvpnL3Vni
 	ResourceGroupNameVirtualNetworkSviIpv4
 	ResourceGroupNameVirtualNetworkSviIpv6
 	ResourceGroupNameVxlanVnIds
 	ResourceGroupNameToGenericLinkIpv4
 	ResourceGroupNameToGenericLinkIpv6
+	ResourceGroupNameExternalVNLocalVNIs
 	ResourceGroupNameUnknown = "unknown group name %q"
 
 	resourceGroupNameNone                  = resourceGroupName("")
@@ -105,12 +107,14 @@ const (
 	resourceGroupNameAccessAccessIp4       = resourceGroupName("access_l3_peer_link_link_ips")
 	resourceGroupNameAccessAccessIp6       = resourceGroupName("ipv6_access_l3_peer_link_link_ips")
 	resourceGroupNameVtepIp4               = resourceGroupName("vtep_ips")
+	resourceGroupNameVtepIp6               = resourceGroupName("vtep_ips_ipv6")
 	resourceGroupNameEvpnL3Vni             = resourceGroupName("evpn_l3_vnis")
 	resourceGroupNameVirtualNetworkSviIpv4 = resourceGroupName("virtual_network_svi_subnets")
 	resourceGroupNameVirtualNetworkSviIpv6 = resourceGroupName("virtual_network_svi_subnets_ipv6")
 	resourceGroupNameVxlanVnIds            = resourceGroupName("vxlan_vn_ids")
 	resourceGroupNameToGenericLinkIpv4     = resourceGroupName("to_generic_link_ips")
 	resourceGroupNameToGenericLinkIpv6     = resourceGroupName("ipv6_to_generic_link_ips")
+	resourceGroupNameExternalVNLocalVNIs   = resourceGroupName("external_vn_local_vnis")
 	resourceGroupNameUnknown               = "group name %d unknown"
 )
 
@@ -195,6 +199,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameVtepIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameVtepIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameEvpnL3Vni:
 		return ResourceTypeVniPool
 	case ResourceGroupNameVirtualNetworkSviIpv4:
@@ -202,6 +208,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 	case ResourceGroupNameVirtualNetworkSviIpv6:
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameVxlanVnIds:
+		return ResourceTypeVniPool
+	case ResourceGroupNameExternalVNLocalVNIs:
 		return ResourceTypeVniPool
 	}
 	return ResourceTypeUnknown
@@ -283,6 +291,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameMlagDomainSviIp6
 	case ResourceGroupNameVtepIp4:
 		return resourceGroupNameVtepIp4
+	case ResourceGroupNameVtepIp6:
+		return resourceGroupNameVtepIp6
 	case ResourceGroupNameEvpnL3Vni:
 		return resourceGroupNameEvpnL3Vni
 	case ResourceGroupNameVirtualNetworkSviIpv4:
@@ -291,6 +301,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameVirtualNetworkSviIpv6
 	case ResourceGroupNameVxlanVnIds:
 		return resourceGroupNameVxlanVnIds
+	case ResourceGroupNameExternalVNLocalVNIs:
+		return resourceGroupNameExternalVNLocalVNIs
 	case ResourceGroupNameToGenericLinkIpv4:
 		return resourceGroupNameToGenericLinkIpv4
 	case ResourceGroupNameToGenericLinkIpv6:
@@ -362,6 +374,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameMlagDomainIp6), nil
 	case resourceGroupNameVtepIp4:
 		return int(ResourceGroupNameVtepIp4), nil
+	case resourceGroupNameVtepIp6:
+		return int(ResourceGroupNameVtepIp6), nil
 	case resourceGroupNameEvpnL3Vni:
 		return int(ResourceGroupNameEvpnL3Vni), nil
 	case resourceGroupNameVirtualNetworkSviIpv4:
@@ -370,6 +384,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameVirtualNetworkSviIpv6), nil
 	case resourceGroupNameVxlanVnIds:
 		return int(ResourceGroupNameVxlanVnIds), nil
+	case resourceGroupNameExternalVNLocalVNIs:
+		return int(ResourceGroupNameExternalVNLocalVNIs), nil
 	case resourceGroupNameToGenericLinkIpv4:
 		return int(ResourceGroupNameToGenericLinkIpv4), nil
 	case resourceGroupNameToGenericLinkIpv6:
