@@ -52,6 +52,7 @@ const (
 	ResourceGroupNameLeafIp4
 	ResourceGroupNameLeafIp6
 	ResourceGroupNameAccessIp4
+	ResourceGroupNameAccessIp6
 	ResourceGroupNameGenericIp4
 	ResourceGroupNameGenericIp6
 	ResourceGroupNameSuperspineSpineIp4
@@ -59,6 +60,7 @@ const (
 	ResourceGroupNameSpineLeafIp4
 	ResourceGroupNameSpineLeafIp6
 	ResourceGroupNameAccessAccessIp4
+	ResourceGroupNameAccessAccessIp6
 	ResourceGroupNameLeafLeafIp4
 	ResourceGroupNameLeafLeafIp6
 	ResourceGroupNameLeafL3PeerLinkLinkIp4
@@ -87,6 +89,7 @@ const (
 	resourceGroupNameLeafIp4               = resourceGroupName("leaf_loopback_ips")
 	resourceGroupNameLeafIp6               = resourceGroupName("leaf_loopback_ips_ipv6")
 	resourceGroupNameAccessIp4             = resourceGroupName("access_loopback_ips")
+	resourceGroupNameAccessIp6             = resourceGroupName("access_loopback_ips_ipv6")
 	resourceGroupNameGenericIp4            = resourceGroupName("generic_loopback_ips")
 	resourceGroupNameGenericIp6            = resourceGroupName("generic_loopback_ips_ipv6")
 	resourceGroupNameSuperspineSpineIp4    = resourceGroupName("spine_superspine_link_ips")
@@ -100,6 +103,7 @@ const (
 	resourceGroupNameMlagDomainSviIp4      = resourceGroupName("mlag_domain_svi_subnets")
 	resourceGroupNameMlagDomainSviIp6      = resourceGroupName("mlag_domain_svi_subnets_ipv6")
 	resourceGroupNameAccessAccessIp4       = resourceGroupName("access_l3_peer_link_link_ips")
+	resourceGroupNameAccessAccessIp6       = resourceGroupName("ipv6_access_l3_peer_link_link_ips")
 	resourceGroupNameVtepIp4               = resourceGroupName("vtep_ips")
 	resourceGroupNameEvpnL3Vni             = resourceGroupName("evpn_l3_vnis")
 	resourceGroupNameVirtualNetworkSviIpv4 = resourceGroupName("virtual_network_svi_subnets")
@@ -155,6 +159,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameAccessIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameAccessIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameGenericIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameGenericIp6:
@@ -169,6 +175,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameAccessAccessIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameAccessAccessIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameLeafLeafIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameLeafLeafIp6:
@@ -243,6 +251,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameLeafIp6
 	case ResourceGroupNameAccessIp4:
 		return resourceGroupNameAccessIp4
+	case ResourceGroupNameAccessIp6:
+		return resourceGroupNameAccessIp6
 	case ResourceGroupNameGenericIp4:
 		return resourceGroupNameGenericIp4
 	case ResourceGroupNameGenericIp6:
@@ -257,6 +267,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameSpineLeafIp6
 	case ResourceGroupNameAccessAccessIp4:
 		return resourceGroupNameAccessAccessIp4
+	case ResourceGroupNameAccessAccessIp6:
+		return resourceGroupNameAccessAccessIp6
 	case ResourceGroupNameLeafLeafIp4:
 		return resourceGroupNameLeafLeafIp4
 	case ResourceGroupNameLeafLeafIp6:
@@ -318,6 +330,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameLeafIp6), nil
 	case resourceGroupNameAccessIp4:
 		return int(ResourceGroupNameAccessIp4), nil
+	case resourceGroupNameAccessIp6:
+		return int(ResourceGroupNameAccessIp6), nil
 	case resourceGroupNameGenericIp4:
 		return int(ResourceGroupNameGenericIp4), nil
 	case resourceGroupNameGenericIp6:
@@ -332,6 +346,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameSpineLeafIp6), nil
 	case resourceGroupNameAccessAccessIp4:
 		return int(ResourceGroupNameAccessAccessIp4), nil
+	case resourceGroupNameAccessAccessIp6:
+		return int(ResourceGroupNameAccessAccessIp6), nil
 	case resourceGroupNameLeafLeafIp4:
 		return int(ResourceGroupNameLeafLeafIp4), nil
 	case resourceGroupNameLeafLeafIp6:
