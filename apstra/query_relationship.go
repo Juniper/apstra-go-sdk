@@ -4,7 +4,12 @@
 
 package apstra
 
-import "fmt"
+import (
+	"encoding"
+	"errors"
+	"fmt"
+	"strings"
+)
 
 const (
 	RelationshipTypeNone = RelationshipType(iota)
@@ -37,7 +42,6 @@ const (
 	RelationshipTypeRouteTargetPolicy
 	RelationshipTypeSecurityPolicy
 	RelationshipTypeTag
-	RelationshipTypeUnknown = "unknown node type %s"
 
 	relationshipTypeNone                  = relationshipType("")
 	relationshipTypeAttachedTaggedVLANs   = relationshipType("attached_tagged_vlans")
@@ -69,13 +73,51 @@ const (
 	relationshipTypeRouteTargetPolicy     = relationshipType("route_target_policy")
 	relationshipTypeSecurityPolicy        = relationshipType("security_policy")
 	relationshipTypeTag                   = relationshipType("tag")
-	relationshipTypeUnknown               = "unknown node type %d"
+	relationshipTypeUnknown               = "unknown relationship type"
+)
+
+var (
+	_ encoding.TextMarshaler   = (*RelationshipType)(nil)
+	_ encoding.TextUnmarshaler = (*RelationshipType)(nil)
 )
 
 type (
 	RelationshipType int
 	relationshipType string
 )
+
+func (o RelationshipType) MarshalText() (text []byte, err error) {
+	s := o.String()
+	if strings.HasPrefix(s, relationshipTypeUnknown) {
+		return nil, errors.New("cannot marshal: " + s)
+	}
+	return []byte(o.String()), nil
+}
+
+func (o *RelationshipType) UnmarshalText(text []byte) error {
+	return o.FromString(string(text))
+}
+
+func (o *RelationshipType) FromString(in string) error {
+	// Loop over every type starting at zero.
+	t := RelationshipType(0)
+	for {
+		s := t.String()
+
+		// Check if we've run off the end of the list of known types.
+		if strings.HasPrefix(s, relationshipTypeUnknown) {
+			return fmt.Errorf(relationshipTypeUnknown+" %q", in) // The input string is not valid.
+		}
+
+		// Check the input string against t's string representation.
+		if s == in {
+			*o = t // We found our guy.
+			return nil
+		}
+
+		t++ // Increment t and try again.
+	}
+}
 
 func (o RelationshipType) String() string {
 	switch o {
@@ -140,7 +182,7 @@ func (o RelationshipType) String() string {
 	case RelationshipTypeTag:
 		return string(relationshipTypeTag)
 	default:
-		return fmt.Sprintf(relationshipTypeUnknown, o)
+		return fmt.Sprintf(relationshipTypeUnknown+" %d", o)
 	}
 }
 
