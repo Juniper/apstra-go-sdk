@@ -507,7 +507,8 @@ func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
 	case o.ResourceGroup.SecurityZoneId != nil:
 		name = resourceGroupName(fmt.Sprintf(
 			resourceGroupNameWithOwner, resourceGroupOwnerecurityZone,
-			*o.ResourceGroup.SecurityZoneId, name))
+			*o.ResourceGroup.SecurityZoneId, name,
+		))
 	}
 
 	return &rawResourceGroupAllocation{
@@ -562,7 +563,8 @@ func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) 
 		if len(fields) != 2 {
 			return nil, fmt.Errorf(
 				"error processing resource group name %q, expected split on ',' to produce 2 results, got %d",
-				o.Name, len(fields))
+				o.Name, len(fields),
+			)
 		}
 		err = rga.ResourceGroup.Name.FromString(fields[1])
 		if err != nil {
