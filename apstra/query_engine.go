@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -211,6 +211,7 @@ type PathQuery struct {
 	optional      bool
 	rawResult     []byte
 	having        []QEHaving
+	ensureDiff    [][]string
 }
 
 func (o *PathQuery) getBlueprintType() BlueprintType {
@@ -230,6 +231,11 @@ func (o *PathQuery) Do(ctx context.Context, response interface{}) error {
 		return errors.New("cannot execute PathQuery when embedded client is nil")
 	}
 	return o.client.runQuery(ctx, o.blueprintId, o, response)
+}
+
+func (o *PathQuery) EnsureDifferent(s ...string) *PathQuery {
+	o.ensureDiff = append(o.ensureDiff, s)
+	return o
 }
 
 func (o *PathQuery) Having(q QEHaving) *PathQuery {
@@ -275,6 +281,10 @@ func (o *PathQuery) String() string {
 
 	for _, having := range o.having {
 		sb.WriteString(having.String())
+	}
+
+	for _, ed := range o.ensureDiff {
+		sb.WriteString(".ensure_different('" + strings.Join(ed, "','") + "')")
 	}
 
 	if o.optional {
