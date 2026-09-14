@@ -52,6 +52,7 @@ const (
 	ResourceGroupNameLeafIp4
 	ResourceGroupNameLeafIp6
 	ResourceGroupNameAccessIp4
+	ResourceGroupNameAccessIp6
 	ResourceGroupNameGenericIp4
 	ResourceGroupNameGenericIp6
 	ResourceGroupNameSuperspineSpineIp4
@@ -59,6 +60,7 @@ const (
 	ResourceGroupNameSpineLeafIp4
 	ResourceGroupNameSpineLeafIp6
 	ResourceGroupNameAccessAccessIp4
+	ResourceGroupNameAccessAccessIp6
 	ResourceGroupNameLeafLeafIp4
 	ResourceGroupNameLeafLeafIp6
 	ResourceGroupNameLeafL3PeerLinkLinkIp4
@@ -66,12 +68,14 @@ const (
 	ResourceGroupNameMlagDomainIp4
 	ResourceGroupNameMlagDomainIp6
 	ResourceGroupNameVtepIp4
+	ResourceGroupNameVtepIp6
 	ResourceGroupNameEvpnL3Vni
 	ResourceGroupNameVirtualNetworkSviIpv4
 	ResourceGroupNameVirtualNetworkSviIpv6
 	ResourceGroupNameVxlanVnIds
 	ResourceGroupNameToGenericLinkIpv4
 	ResourceGroupNameToGenericLinkIpv6
+	ResourceGroupNameExternalVNLocalVNIs
 	ResourceGroupNameUnknown = "unknown group name %q"
 
 	resourceGroupNameNone                  = resourceGroupName("")
@@ -87,6 +91,7 @@ const (
 	resourceGroupNameLeafIp4               = resourceGroupName("leaf_loopback_ips")
 	resourceGroupNameLeafIp6               = resourceGroupName("leaf_loopback_ips_ipv6")
 	resourceGroupNameAccessIp4             = resourceGroupName("access_loopback_ips")
+	resourceGroupNameAccessIp6             = resourceGroupName("access_loopback_ips_ipv6")
 	resourceGroupNameGenericIp4            = resourceGroupName("generic_loopback_ips")
 	resourceGroupNameGenericIp6            = resourceGroupName("generic_loopback_ips_ipv6")
 	resourceGroupNameSuperspineSpineIp4    = resourceGroupName("spine_superspine_link_ips")
@@ -100,13 +105,16 @@ const (
 	resourceGroupNameMlagDomainSviIp4      = resourceGroupName("mlag_domain_svi_subnets")
 	resourceGroupNameMlagDomainSviIp6      = resourceGroupName("mlag_domain_svi_subnets_ipv6")
 	resourceGroupNameAccessAccessIp4       = resourceGroupName("access_l3_peer_link_link_ips")
+	resourceGroupNameAccessAccessIp6       = resourceGroupName("ipv6_access_l3_peer_link_link_ips")
 	resourceGroupNameVtepIp4               = resourceGroupName("vtep_ips")
+	resourceGroupNameVtepIp6               = resourceGroupName("vtep_ips_ipv6")
 	resourceGroupNameEvpnL3Vni             = resourceGroupName("evpn_l3_vnis")
 	resourceGroupNameVirtualNetworkSviIpv4 = resourceGroupName("virtual_network_svi_subnets")
 	resourceGroupNameVirtualNetworkSviIpv6 = resourceGroupName("virtual_network_svi_subnets_ipv6")
 	resourceGroupNameVxlanVnIds            = resourceGroupName("vxlan_vn_ids")
 	resourceGroupNameToGenericLinkIpv4     = resourceGroupName("to_generic_link_ips")
 	resourceGroupNameToGenericLinkIpv6     = resourceGroupName("ipv6_to_generic_link_ips")
+	resourceGroupNameExternalVNLocalVNIs   = resourceGroupName("external_vn_local_vnis")
 	resourceGroupNameUnknown               = "group name %d unknown"
 )
 
@@ -155,6 +163,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameAccessIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameAccessIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameGenericIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameGenericIp6:
@@ -169,6 +179,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameAccessAccessIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameAccessAccessIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameLeafLeafIp4:
 		return ResourceTypeIp4Pool
 	case ResourceGroupNameLeafLeafIp6:
@@ -187,6 +199,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameVtepIp4:
 		return ResourceTypeIp4Pool
+	case ResourceGroupNameVtepIp6:
+		return ResourceTypeIp6Pool
 	case ResourceGroupNameEvpnL3Vni:
 		return ResourceTypeVniPool
 	case ResourceGroupNameVirtualNetworkSviIpv4:
@@ -194,6 +208,8 @@ func (o *ResourceGroupName) Type() ResourceType {
 	case ResourceGroupNameVirtualNetworkSviIpv6:
 		return ResourceTypeIp6Pool
 	case ResourceGroupNameVxlanVnIds:
+		return ResourceTypeVniPool
+	case ResourceGroupNameExternalVNLocalVNIs:
 		return ResourceTypeVniPool
 	}
 	return ResourceTypeUnknown
@@ -243,6 +259,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameLeafIp6
 	case ResourceGroupNameAccessIp4:
 		return resourceGroupNameAccessIp4
+	case ResourceGroupNameAccessIp6:
+		return resourceGroupNameAccessIp6
 	case ResourceGroupNameGenericIp4:
 		return resourceGroupNameGenericIp4
 	case ResourceGroupNameGenericIp6:
@@ -257,6 +275,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameSpineLeafIp6
 	case ResourceGroupNameAccessAccessIp4:
 		return resourceGroupNameAccessAccessIp4
+	case ResourceGroupNameAccessAccessIp6:
+		return resourceGroupNameAccessAccessIp6
 	case ResourceGroupNameLeafLeafIp4:
 		return resourceGroupNameLeafLeafIp4
 	case ResourceGroupNameLeafLeafIp6:
@@ -271,6 +291,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameMlagDomainSviIp6
 	case ResourceGroupNameVtepIp4:
 		return resourceGroupNameVtepIp4
+	case ResourceGroupNameVtepIp6:
+		return resourceGroupNameVtepIp6
 	case ResourceGroupNameEvpnL3Vni:
 		return resourceGroupNameEvpnL3Vni
 	case ResourceGroupNameVirtualNetworkSviIpv4:
@@ -279,6 +301,8 @@ func (o ResourceGroupName) raw() resourceGroupName {
 		return resourceGroupNameVirtualNetworkSviIpv6
 	case ResourceGroupNameVxlanVnIds:
 		return resourceGroupNameVxlanVnIds
+	case ResourceGroupNameExternalVNLocalVNIs:
+		return resourceGroupNameExternalVNLocalVNIs
 	case ResourceGroupNameToGenericLinkIpv4:
 		return resourceGroupNameToGenericLinkIpv4
 	case ResourceGroupNameToGenericLinkIpv6:
@@ -318,6 +342,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameLeafIp6), nil
 	case resourceGroupNameAccessIp4:
 		return int(ResourceGroupNameAccessIp4), nil
+	case resourceGroupNameAccessIp6:
+		return int(ResourceGroupNameAccessIp6), nil
 	case resourceGroupNameGenericIp4:
 		return int(ResourceGroupNameGenericIp4), nil
 	case resourceGroupNameGenericIp6:
@@ -332,6 +358,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameSpineLeafIp6), nil
 	case resourceGroupNameAccessAccessIp4:
 		return int(ResourceGroupNameAccessAccessIp4), nil
+	case resourceGroupNameAccessAccessIp6:
+		return int(ResourceGroupNameAccessAccessIp6), nil
 	case resourceGroupNameLeafLeafIp4:
 		return int(ResourceGroupNameLeafLeafIp4), nil
 	case resourceGroupNameLeafLeafIp6:
@@ -346,6 +374,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameMlagDomainIp6), nil
 	case resourceGroupNameVtepIp4:
 		return int(ResourceGroupNameVtepIp4), nil
+	case resourceGroupNameVtepIp6:
+		return int(ResourceGroupNameVtepIp6), nil
 	case resourceGroupNameEvpnL3Vni:
 		return int(ResourceGroupNameEvpnL3Vni), nil
 	case resourceGroupNameVirtualNetworkSviIpv4:
@@ -354,6 +384,8 @@ func (o resourceGroupName) parse() (int, error) {
 		return int(ResourceGroupNameVirtualNetworkSviIpv6), nil
 	case resourceGroupNameVxlanVnIds:
 		return int(ResourceGroupNameVxlanVnIds), nil
+	case resourceGroupNameExternalVNLocalVNIs:
+		return int(ResourceGroupNameExternalVNLocalVNIs), nil
 	case resourceGroupNameToGenericLinkIpv4:
 		return int(ResourceGroupNameToGenericLinkIpv4), nil
 	case resourceGroupNameToGenericLinkIpv6:
@@ -491,7 +523,8 @@ func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
 	case o.ResourceGroup.SecurityZoneId != nil:
 		name = resourceGroupName(fmt.Sprintf(
 			resourceGroupNameWithOwner, resourceGroupOwnerecurityZone,
-			*o.ResourceGroup.SecurityZoneId, name))
+			*o.ResourceGroup.SecurityZoneId, name,
+		))
 	}
 
 	return &rawResourceGroupAllocation{
@@ -546,7 +579,8 @@ func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) 
 		if len(fields) != 2 {
 			return nil, fmt.Errorf(
 				"error processing resource group name %q, expected split on ',' to produce 2 results, got %d",
-				o.Name, len(fields))
+				o.Name, len(fields),
+			)
 		}
 		err = rga.ResourceGroup.Name.FromString(fields[1])
 		if err != nil {
