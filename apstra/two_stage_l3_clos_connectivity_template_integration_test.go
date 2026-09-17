@@ -17,9 +17,11 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
@@ -564,5 +566,58 @@ func TestConnectivityTemplate404(t *testing.T) {
 				t.Fatal("error should have been something 404-ish")
 			}
 		}
+	}
+}
+
+func TestBug777(t *testing.T) {
+	ctx := context.Background()
+
+	clients, err := getTestClients(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for clientName, client := range clients {
+		t.Run(clientName, func(t *testing.T) {
+			ctx := testutils.ContextWithTestID(ctx, t)
+			t.Parallel()
+			if !compatibility.VirtualNetworkEncapsulateInnerVLANOK.Check(client.client.apiVersion) {
+				t.Skipf("skipping test against %s, (%s) because it does not support q-in-q features", clientName, client.client.apiVersion)
+			}
+
+			bp := testBlueprintA(ctx, t, client.client)
+			rzID := testSecurityZone(t, ctx, bp)
+			vnID := testVirtualNetwork(t, ctx, bp, rzID)
+
+			zero := uint16(0)
+			put := ConnectivityTemplate{
+				Label: randString(6, "hex"),
+				Subpolicies: []*ConnectivityTemplatePrimitive{
+					{
+						Attributes: &ConnectivityTemplatePrimitiveAttributesAttachSingleVlan{
+							Tagged:   false,
+							VnNodeId: pointer.To(ObjectId(vnID)),
+							VLAN:     pointer.To(zero),
+						},
+					},
+				},
+			}
+			require.NoError(t, put.SetIds())
+			require.NotNil(t, put.Id)
+			require.NoError(t, put.SetUserData())
+
+			err = bp.CreateConnectivityTemplate(ctx, &put)
+			require.NoError(t, err)
+
+			get, err := bp.GetConnectivityTemplate(ctx, *put.Id)
+			require.NoError(t, err)
+			require.NotNil(t, get)
+			require.Len(t, get.Subpolicies, 1)
+			p, ok := get.Subpolicies[0].Attributes.(*ConnectivityTemplatePrimitiveAttributesAttachSingleVlan)
+			require.True(t, ok)
+			require.NotNil(t, p)
+			require.NotNil(t, p.VLAN)
+			require.Equal(t, zero, *p.VLAN)
+		})
 	}
 }
