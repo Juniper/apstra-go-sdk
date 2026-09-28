@@ -105,10 +105,6 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
 
-			if !compatibility.SecurityZoneLoopbackApiSupported.Check(client.client.apiVersion) {
-				t.Skipf("skipping due to version constraint %q", compatibility.SecurityZoneLoopbackApiSupported)
-			}
-
 			// create a blueprint with IPv4 and IPv6 enabled
 			bpClient := testBlueprintH(ctx, t, client.client)
 

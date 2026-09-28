@@ -895,20 +895,12 @@ func (o *Client) CreateBlueprintFromTemplate(ctx context.Context, req *CreateBlu
 
 	var id ObjectId
 	var err error
-	switch {
-	case compatibility.EqApstra420.Check(o.apiVersion):
-		id, err = o.createBlueprintFromTemplate420(ctx, req.raw420())
-		if err != nil {
-			return id, fmt.Errorf("failed while creating new blueprint - %w", err)
-		}
-	default:
-		if !compatibility.SecurityZoneAddressingSupported.Check(o.apiVersion) && req.AddressingPolicy != nil {
-			return "", fmt.Errorf("addressing policy not supported with Apstra %s", o.apiVersion)
-		}
-		id, err = o.createBlueprintFromTemplate(ctx, req.raw())
-		if err != nil {
-			return id, fmt.Errorf("failed while creating new blueprint - %w", err)
-		}
+	if !compatibility.SecurityZoneAddressingSupported.Check(o.apiVersion) && req.AddressingPolicy != nil {
+		return "", fmt.Errorf("addressing policy not supported with Apstra %s", o.apiVersion)
+	}
+	id, err = o.createBlueprintFromTemplate(ctx, req.raw())
+	if err != nil {
+		return id, fmt.Errorf("failed while creating new blueprint - %w", err)
 	}
 
 	if req.SkipCablingReadinessCheck {
@@ -1648,9 +1640,6 @@ func (o *Client) SetSystemAgentManagerConfig(ctx context.Context, cfg *SystemAge
 	if compatibility.HasDeviceOsImageDownloadTimeout.Check(o.apiVersion) != (cfg.DeviceOsImageDownloadTimeout != nil) {
 		return fmt.Errorf("DeviceOsImageDownloadTimeout is required with apstra %s, and must not be used with other versions", compatibility.HasDeviceOsImageDownloadTimeout)
 	}
-	if !compatibility.SystemManagerHasSkipInterfaceShutdownOnUpgrade.Check(o.apiVersion) && cfg.SkipInterfaceShutdownOnUpgrade {
-		return fmt.Errorf("SkipInterfaceShutdownOnUpgrade may only be used with apstra %s", compatibility.SystemManagerHasSkipInterfaceShutdownOnUpgrade)
-	}
 
 	return o.setSystemAgentManagerConfig(ctx, cfg)
 }
@@ -1854,18 +1843,13 @@ func (o *Client) GetLastDeployedRevision(ctx context.Context, id ObjectId) (*Blu
 }
 
 func (o *Client) BlueprintOverlayControlProtocol(ctx context.Context, id ObjectId) (OverlayControlProtocol, error) {
-	nodeAttributes := []QEEAttribute{{"name", QEStringVal("node")}}
-	switch {
-	case compatibility.BpHasVirtualNetworkPolicyNode.Check(o.apiVersion):
-		nodeAttributes = append(nodeAttributes, NodeTypeVirtualNetworkPolicy.QEEAttribute())
-	default:
-		nodeAttributes = append(nodeAttributes, NodeTypeFabricPolicy.QEEAttribute())
-	}
-
 	query := new(PathQuery).
 		SetBlueprintId(id).
 		SetClient(o).
-		Node(nodeAttributes)
+		Node([]QEEAttribute{
+			{"name", QEStringVal("node")},
+			NodeTypeFabricPolicy.QEEAttribute(),
+		})
 
 	var queryResult struct {
 		Items []struct {

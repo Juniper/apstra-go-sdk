@@ -13,7 +13,6 @@ import (
 	"net"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
@@ -133,10 +132,6 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
 
-			if !compatibility.EmptyVnBindingsOk.Check(client.client.apiVersion) {
-				t.Skipf("test applies only to versions %q", compatibility.EmptyVnBindingsOk)
-			}
-
 			bp := testBlueprintC(ctx, t, client.client)
 
 			leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
@@ -176,7 +171,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 					bindings[leafIds[j]] = &datacenter.VNBinding{
 						AccessSwitchNodeIDs: nil,
 						SystemID:            string(leafIds[j]),
-						VLAN:                pointer.To(uint16(100*(count) + rand.Intn(100))),
+						VLAN:                pointer.To(uint16(100*count + rand.Intn(100))),
 					}
 				}
 
@@ -289,10 +284,6 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
 
-			if !compatibility.EmptyVnBindingsOk.Check(client.client.apiVersion) {
-				t.Skipf("test applies only to versions %q", compatibility.EmptyVnBindingsOk)
-			}
-
 			bp := testBlueprintC(ctx, t, client.client)
 
 			leafIds, err := getSystemIdsByRole(ctx, bp, "leaf")
@@ -352,7 +343,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 						requestBindings[leafId] = &datacenter.VNBinding{
 							AccessSwitchNodeIDs: nil,
 							SystemID:            string(leafIds[j]),
-							VLAN:                pointer.To(uint16(100*(count) + rand.Intn(100))),
+							VLAN:                pointer.To(uint16(100*count + rand.Intn(100))),
 						}
 					} else {
 						requestBindings[leafId] = nil

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2022-2025.
+// Copyright (c) Juniper Networks, Inc., 2022-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,6 @@
 package apstra_test
 
 import (
-	"log"
 	"math/rand/v2"
 	"testing"
 
@@ -44,13 +43,6 @@ func TestGetSetSystemAgentManagerConfiguration(t *testing.T) {
 
 			// set new config
 			err = client.Client.SetSystemAgentManagerConfig(ctx, testCfg)
-			if !compatibility.SystemManagerHasSkipInterfaceShutdownOnUpgrade.Check(client.APIVersion()) {
-				require.Error(t, err)
-				log.Printf("apstra %s refused to run with SkipInterfaceShutdownOnUpgrade set to %t", client.Client.ApiVersion(), testCfg.SkipInterfaceShutdownOnUpgrade)
-
-				testCfg.SkipInterfaceShutdownOnUpgrade = false
-				err = client.Client.SetSystemAgentManagerConfig(ctx, testCfg)
-			}
 			require.NoError(t, err)
 
 			// fetch new config
