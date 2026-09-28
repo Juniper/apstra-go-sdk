@@ -19,10 +19,8 @@ const (
 	apstra620 = "6.2.0"
 )
 
-var (
-	// Todo: find usages of these constraints, replace them with appropriately named compatibility.Constraints
-	LeApstra500 = version.MustConstraints(version.NewConstraint("<=" + apstra500))
-)
+// Todo: find usages of these constraints, replace them with appropriately named compatibility.Constraints
+var LeApstra500 = version.MustConstraints(version.NewConstraint("<=" + apstra500))
 
 // SupportedApiVersions returns []string with each element representing an Apstra version number like "4.2.0"
 func SupportedApiVersions() []string {

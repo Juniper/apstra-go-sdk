@@ -171,7 +171,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 					bindings[leafIds[j]] = &datacenter.VNBinding{
 						AccessSwitchNodeIDs: nil,
 						SystemID:            string(leafIds[j]),
-						VLAN:                pointer.To(uint16(100*(count) + rand.Intn(100))),
+						VLAN:                pointer.To(uint16(100*count + rand.Intn(100))),
 					}
 				}
 
@@ -343,7 +343,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 						requestBindings[leafId] = &datacenter.VNBinding{
 							AccessSwitchNodeIDs: nil,
 							SystemID:            string(leafIds[j]),
-							VLAN:                pointer.To(uint16(100*(count) + rand.Intn(100))),
+							VLAN:                pointer.To(uint16(100*count + rand.Intn(100))),
 						}
 					} else {
 						requestBindings[leafId] = nil
