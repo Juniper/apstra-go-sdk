@@ -493,17 +493,6 @@ func (o *Client) createBlueprintFromTemplate(ctx context.Context, req *rawCreate
 	return response.Id, convertTtaeToAceWherePossible(err)
 }
 
-func (o *Client) createBlueprintFromTemplate420(ctx context.Context, req *rawCreateBlueprintFromTemplateRequest420) (ObjectId, error) {
-	response := &postBlueprintsResponse{}
-	err := o.talkToApstra(ctx, &talkToApstraIn{
-		method:      http.MethodPost,
-		urlStr:      apiUrlBlueprints,
-		apiInput:    req,
-		apiResponse: response,
-	})
-	return response.Id, convertTtaeToAceWherePossible(err)
-}
-
 func (o *Client) deleteBlueprint(ctx context.Context, id ObjectId) error {
 	err := o.talkToApstra(ctx, &talkToApstraIn{
 		method: http.MethodDelete,

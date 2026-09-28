@@ -460,71 +460,43 @@ func (o *TwoStageL3ClosClient) CreateIbaProbeFromJson(ctx context.Context, probe
 
 // ListAllIbaPredefinedDashboardIds returns a list of Predefined IBA Dashboards in the blueprint
 func (o *TwoStageL3ClosClient) ListAllIbaPredefinedDashboardIds(ctx context.Context) ([]ObjectId, error) {
-	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
-		return nil, fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
-	}
 	return o.client.listAllIbaPredefinedDashboardIds(ctx, o.blueprintId)
 }
 
 // InstantiateIbaPredefinedDashboard instantiates a Predefined IBA Dashboard
 func (o *TwoStageL3ClosClient) InstantiateIbaPredefinedDashboard(ctx context.Context, dashboardId ObjectId, label string) (ObjectId, error) {
-	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
-		return "", fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
-	}
 	return o.client.instantiateIbaPredefinedDashboard(ctx, o.blueprintId, dashboardId, label)
 }
 
 // GetAllIbaDashboards returns a list of IBA Dashboards in the blueprint
 func (o *TwoStageL3ClosClient) GetAllIbaDashboards(ctx context.Context) ([]IbaDashboard, error) {
-	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
-		return nil, fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
-	}
 	return o.client.getAllIbaDashboards(ctx, o.blueprintId)
 }
 
 // GetIbaDashboard returns the IBA Dashboard that matches the ID
 func (o *TwoStageL3ClosClient) GetIbaDashboard(ctx context.Context, id ObjectId) (*IbaDashboard, error) {
-	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
-		return nil, fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
-	}
 	return o.client.getIbaDashboard(ctx, o.blueprintId, id)
 }
 
 // GetIbaDashboardByLabel returns the IBA Dashboard that matches the label.
 // It will return an error if more than one IBA dashboard matches the label.
 func (o *TwoStageL3ClosClient) GetIbaDashboardByLabel(ctx context.Context, label string) (*IbaDashboard, error) {
-	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
-		return nil, fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
-	}
-
 	return o.client.getIbaDashboardByLabel(ctx, o.blueprintId, label)
 }
 
 // CreateIbaDashboard creates an IBA Dashboard and returns the id of the created dashboard on success,
 // or a blank and error on failure
 func (o *TwoStageL3ClosClient) CreateIbaDashboard(ctx context.Context, data *IbaDashboardData) (ObjectId, error) {
-	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
-		return "", fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
-	}
-
 	return o.client.createIbaDashboard(ctx, o.blueprintId, data)
 }
 
 // UpdateIbaDashboard updates an IBA Dashboard and returns an error on failure
 func (o *TwoStageL3ClosClient) UpdateIbaDashboard(ctx context.Context, id ObjectId, data *IbaDashboardData) error {
-	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
-		return fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
-	}
-
 	return o.client.updateIbaDashboard(ctx, o.blueprintId, id, data)
 }
 
 // DeleteIbaDashboard deletes an IBA Dashboard and returns an error on failure
 func (o *TwoStageL3ClosClient) DeleteIbaDashboard(ctx context.Context, id ObjectId) error {
-	if !compatibility.IbaDashboardSupported.Check(o.client.apiVersion) {
-		return fmt.Errorf("this version of the SDK will not support IBA Dashboards with Asptra %s", o.client.apiVersion)
-	}
-
 	return o.client.deleteIbaDashboard(ctx, o.blueprintId, id)
 }
 
@@ -590,14 +562,7 @@ func (o *TwoStageL3ClosClient) RefreshNodeIdsByType(ctx context.Context, nt Node
 
 // GetFabricSettings gets the fabric settings
 func (o *TwoStageL3ClosClient) GetFabricSettings(ctx context.Context) (*FabricSettings, error) {
-	switch {
-	case compatibility.FabricSettingsApiOk.Check(o.client.apiVersion):
-		return o.getFabricSettings(ctx)
-	case compatibility.EqApstra420.Check(o.client.apiVersion):
-		return o.getFabricSettings420(ctx)
-	default:
-		return nil, fmt.Errorf("cannot invoke GetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
-	}
+	return o.getFabricSettings(ctx)
 }
 
 // SetFabricSettings sets the specified fabric settings
@@ -621,12 +586,5 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 		return fmt.Errorf("DefaultAnycastGWMAC permitted only with apstra %s", compatibility.FabricSettingsDefaultAnycastGWMacOK)
 	}
 
-	switch {
-	case compatibility.FabricSettingsApiOk.Check(o.client.apiVersion):
-		return o.setFabricSettings(ctx, in)
-	case compatibility.EqApstra420.Check(o.client.apiVersion):
-		return o.setFabricSettings420(ctx, in)
-	}
-
-	return fmt.Errorf("cannot invoke SetFabricSettings, not supported with Apstra version %q", o.client.apiVersion)
+	return o.setFabricSettings(ctx, in)
 }

@@ -17,7 +17,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/str"
 	"github.com/Juniper/apstra-go-sdk/internal/urls"
-	"github.com/hashicorp/go-version"
 )
 
 type (
@@ -151,10 +150,8 @@ func (o *TwoStageL3ClosClient) GetVirtualNetwork(ctx context.Context, id string)
 	}
 
 	vns := []datacenter.VirtualNetwork{response}
-	if compatibility.VirtualNetworkAddressesInActiveGraphOnly.Check(version.Must(version.NewVersion(o.client.ApiVersion()))) {
-		err = o.getVirtualNetworkAddressingFromActiveGraph(ctx, vns)
-	}
-	return vns[0], nil
+	err = o.getVirtualNetworkAddressingFromActiveGraph(ctx, vns)
+	return vns[0], err
 }
 
 func (o *TwoStageL3ClosClient) GetVirtualNetworkByLabel(ctx context.Context, label string) (datacenter.VirtualNetwork, error) {
@@ -202,9 +199,7 @@ func (o *TwoStageL3ClosClient) GetVirtualNetworks(ctx context.Context) ([]datace
 	}
 
 	vns := slices.Collect(maps.Values(response.VirtualNetworks))
-	if compatibility.VirtualNetworkAddressesInActiveGraphOnly.Check(version.Must(version.NewVersion(o.client.ApiVersion()))) {
-		err = o.getVirtualNetworkAddressingFromActiveGraph(ctx, vns)
-	}
+	err = o.getVirtualNetworkAddressingFromActiveGraph(ctx, vns)
 	return vns, err
 }
 

@@ -71,10 +71,6 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
 
-			if !compatibility.SecurityZoneLoopbackApiSupported.Check(client.client.apiVersion) {
-				t.Skip("Security zone loopback api not supported")
-			}
-
 			bp := testBlueprintH(ctx, t, client.client)
 
 			// get all systems

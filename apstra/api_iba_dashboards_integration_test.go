@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
@@ -26,10 +25,6 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
-
-			if !compatibility.IbaDashboardSupported.Check(client.APIVersion()) {
-				t.Skipf("skipping test due to unsupported API changes in %s", client.APIVersion())
-			}
 
 			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
 			widgetA, widgetB, widgetC := dctestobj.TestWidgetsABC(t, ctx, bpClient)

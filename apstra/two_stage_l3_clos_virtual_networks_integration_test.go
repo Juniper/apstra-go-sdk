@@ -32,10 +32,6 @@ func TestVirtualNetworkTags(t *testing.T) {
 
 	for clientName, client := range clients {
 		t.Run(client.name(), func(t *testing.T) {
-			if !compatibility.VirtualNetworkTags.Check(client.client.apiVersion) {
-				t.Skipf("skipping virtual network tag test with version %s", client.client.apiVersion)
-			}
-
 			t.Parallel()
 
 			bpClient := testBlueprintC(ctx, t, client.client)

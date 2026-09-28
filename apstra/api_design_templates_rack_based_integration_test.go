@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/apstra"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
@@ -161,31 +160,6 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			versionConstraints: compatibility.EqApstra420,
-			request: apstra.CreateRackBasedTemplateRequest{
-				DisplayName:          testutils.RandString(5, "hex"),
-				Spine:                &spines[0],
-				RackInfos:            rackInfos[0],
-				DhcpServiceIntent:    &apstra.DhcpServiceIntent{Active: true},
-				AntiAffinityPolicy:   &apstra.AntiAffinityPolicy{Algorithm: apstra.AlgorithmHeuristic}, // 4.2.0 only?
-				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeSingle},
-				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{},
-			},
-		},
-		{
-			versionConstraints: compatibility.EqApstra420,
-			request: apstra.CreateRackBasedTemplateRequest{
-				DisplayName:          testutils.RandString(5, "hex"),
-				Spine:                &spines[1],
-				RackInfos:            rackInfos[1],
-				DhcpServiceIntent:    &apstra.DhcpServiceIntent{Active: false},
-				AntiAffinityPolicy:   &apstra.AntiAffinityPolicy{Algorithm: apstra.AlgorithmHeuristic},
-				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeSingle},
-				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{},
-			},
-		},
-		{
-			versionConstraints: compatibility.GeApstra421,
 			request: apstra.CreateRackBasedTemplateRequest{
 				DisplayName:          testutils.RandString(5, "hex"),
 				Spine:                &spines[0],
@@ -204,7 +178,6 @@ func TestRackBasedTemplateMethods(t *testing.T) {
 				AsnAllocationPolicy:  &apstra.AsnAllocationPolicy{SpineAsnScheme: apstra.AsnAllocationSchemeSingle},
 				VirtualNetworkPolicy: &apstra.VirtualNetworkPolicy{},
 			},
-			versionConstraints: compatibility.GeApstra421,
 		},
 	}
 

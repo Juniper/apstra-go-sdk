@@ -13,7 +13,6 @@ import (
 	"net"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
@@ -132,10 +131,6 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 	for clientName, client := range clients {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
-
-			if !compatibility.EmptyVnBindingsOk.Check(client.client.apiVersion) {
-				t.Skipf("test applies only to versions %q", compatibility.EmptyVnBindingsOk)
-			}
 
 			bp := testBlueprintC(ctx, t, client.client)
 
@@ -288,10 +283,6 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 	for clientName, client := range clients {
 		t.Run(client.name(), func(t *testing.T) {
 			t.Parallel()
-
-			if !compatibility.EmptyVnBindingsOk.Check(client.client.apiVersion) {
-				t.Skipf("test applies only to versions %q", compatibility.EmptyVnBindingsOk)
-			}
 
 			bp := testBlueprintC(ctx, t, client.client)
 

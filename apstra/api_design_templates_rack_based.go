@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/speed"
 )
 
@@ -314,8 +313,6 @@ func (o *CreateRackBasedTemplateRequest) raw(ctx context.Context, client *Client
 	switch {
 	case o.Spine == nil:
 		return nil, errors.New("spine cannot be <nil> when creating a rack-based template")
-	case o.AntiAffinityPolicy == nil && compatibility.TemplateRequestRequiresAntiAffinityPolicy.Check(client.apiVersion):
-		return nil, fmt.Errorf("anti-affinity policy cannot be <nil> when creating a rack-based template with Apstra %s", compatibility.TemplateRequestRequiresAntiAffinityPolicy)
 	case o.AsnAllocationPolicy == nil:
 		return nil, errors.New("asn allocation policy cannot be <nil> when creating a rack-based template")
 	case o.VirtualNetworkPolicy == nil:

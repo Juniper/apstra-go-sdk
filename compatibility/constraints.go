@@ -11,12 +11,6 @@ import (
 )
 
 var (
-	BpHasFabricAddressingPolicyNode = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
-	}
-	BpHasVirtualNetworkPolicyNode = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
-	}
 	DatacenterPolicyAddressFamilyNotSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra612)),
 	}
@@ -25,15 +19,6 @@ var (
 	}
 	DatacenterSwitchingZoneOK = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
-	}
-	DeviceProfileHasRefdesignCapabilities = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
-	}
-	EmptyVnBindingsOk = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
-	}
-	FabricSettingsApiOk = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra421)),
 	}
 	FabricSettingsIPv6EnabledOK = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra610)),
@@ -44,32 +29,14 @@ var (
 	HasDeviceOsImageDownloadTimeout = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra510)),
 	}
-	IbaDashboardSupported = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
-	}
-	PatchNodeSupportsUnsafeArg = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
-	}
 	RailCollapsedSupport = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra600)),
-	}
-	RoutingPolicyExportHasL3EdgeLinks = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
 	}
 	PolicyIDErrorHasNoQuotes = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra620)),
 	}
 	SecurityZoneAddressingSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra610)),
-	}
-	SecurityZoneDescriptionSupported = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
-	}
-	SecurityZoneLoopbackApiSupported = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
-	}
-	SecurityZoneTaggingForbidden = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<" + apstra500)),
 	}
 	ServerVersionSupported = Constraint{
 		constraints:             version.MustConstraints(version.NewConstraint(strings.Join(SupportedApiVersions(), ","))),
@@ -82,23 +49,11 @@ var (
 	SwitchingZoneSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
 	}
-	SystemManagerHasSkipInterfaceShutdownOnUpgrade = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
-	}
-	TemplateRequestRequiresAntiAffinityPolicy = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint("<=" + apstra420)),
-	}
-	VirtualNetworkAddressesInActiveGraphOnly = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra420)),
-	}
 	VirtualNetworkAPITags = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
 	}
 	VirtualNetworkEncapsulateInnerVLANOK = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
-	}
-	VirtualNetworkTags = Constraint{
-		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra500)),
 	}
 	VirtualNetworkZoneIDsRequired = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),

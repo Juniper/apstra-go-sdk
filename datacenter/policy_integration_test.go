@@ -101,10 +101,7 @@ func TestCrudPolicy(t *testing.T) {
 			},
 		},
 		"start_minimal_intra_rz_vns_6.1_and_earlier": {
-			versionConstraints: []compatibility.Constraint{
-				compatibility.DatacenterPolicyAddressFamilyNotSupported,
-				compatibility.EmptyVnBindingsOk,
-			},
+			versionConstraints: []compatibility.Constraint{compatibility.DatacenterPolicyAddressFamilyNotSupported},
 			create: datacenter.Policy{
 				Label: testutils.RandString(6, "hex"),
 			},
