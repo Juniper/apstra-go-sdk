@@ -305,50 +305,50 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	// set leaf loopback pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeIp4Pool,
-			Name: apstra.ResourceGroupNameLeafIp4,
+			Type: enum.ResourceTypeIPv4,
+			Name: enum.ResourceGroupLeafIPv4,
 		},
-		PoolIds: []apstra.ObjectId{"Private-10_0_0_0-8"},
+		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
 	require.NoError(t, err)
 
 	// set leaf-leaf pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeIp4Pool,
-			Name: apstra.ResourceGroupNameLeafLeafIp4,
+			Type: enum.ResourceTypeIPv4,
+			Name: enum.ResourceGroupLeafLeafIPv4,
 		},
-		PoolIds: []apstra.ObjectId{"Private-10_0_0_0-8"},
+		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
 	require.NoError(t, err)
 
 	// set leaf ASN pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeAsnPool,
-			Name: apstra.ResourceGroupNameLeafAsn,
+			Type: enum.ResourceTypeASN,
+			Name: enum.ResourceGroupLeafASN,
 		},
-		PoolIds: []apstra.ObjectId{"Private-64512-65534"},
+		PoolIds: []string{"Private-64512-65534"},
 	})
 	require.NoError(t, err)
 
 	// set VN VNI pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeVniPool,
-			Name: apstra.ResourceGroupNameEvpnL3Vni,
+			Type: enum.ResourceTypeVNI,
+			Name: enum.ResourceGroupEVPNL3VNI,
 		},
-		PoolIds: []apstra.ObjectId{"Default-10000-20000"},
+		PoolIds: []string{"Default-10000-20000"},
 	})
 	require.NoError(t, err)
 
 	// set VN VNI pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeVniPool,
-			Name: apstra.ResourceGroupNameVxlanVnIds,
+			Type: enum.ResourceTypeVNI,
+			Name: enum.ResourceGroupVXLANVNI,
 		},
-		PoolIds: []apstra.ObjectId{"Default-10000-20000"},
+		PoolIds: []string{"Default-10000-20000"},
 	})
 	require.NoError(t, err)
 
