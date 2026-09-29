@@ -40,7 +40,7 @@ func TestCRUDAsnAllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: enum.ResourcePoolTypeAsn,
+			Type: enum.ResourceTypeASN,
 			PoolIds: []ObjectId{
 				testAsnPool(ctx, t, ffc.client),
 			},
@@ -94,7 +94,7 @@ func TestCRUDIntAllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: enum.ResourcePoolTypeInt,
+			Type: enum.ResourceTypeInt,
 			PoolIds: []ObjectId{
 				testIntPool(ctx, t, ffc.client),
 			},
@@ -148,7 +148,7 @@ func TestCRUDVniAllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: enum.ResourcePoolTypeVni,
+			Type: enum.ResourceTypeVNI,
 			PoolIds: []ObjectId{
 				testVniPool(ctx, t, ffc.client),
 			},
@@ -202,7 +202,7 @@ func TestCRUDIpv4AllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: enum.ResourcePoolTypeIpv4,
+			Type: enum.ResourceTypeIPv4,
 			PoolIds: []ObjectId{
 				testIpv4Pool(ctx, t, ffc.client),
 			},
@@ -256,7 +256,7 @@ func TestCRUDIpv6AllocGroup(t *testing.T) {
 
 		cfg := FreeformAllocGroupData{
 			Name: randString(6, "hex"),
-			Type: enum.ResourcePoolTypeIpv6,
+			Type: enum.ResourceTypeIPv6,
 			PoolIds: []ObjectId{
 				testIpv6Pool(ctx, t, ffc.client),
 			},

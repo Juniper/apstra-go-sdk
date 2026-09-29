@@ -467,15 +467,15 @@ var (
 	RenderedConfigTypeStaging  = RenderedConfigType{Value: "staging"}
 )
 
-type ResourcePoolType oenum.Member[string]
+type ResourceType oenum.Member[string] // .../aos/reference_design/extension/resource_allocation/__init__.py says:
 
 var (
-	ResourcePoolTypeAsn  = ResourcePoolType{Value: "asn"}
-	ResourcePoolTypeInt  = ResourcePoolType{Value: "integer"}
-	ResourcePoolTypeIpv4 = ResourcePoolType{Value: "ip"}
-	ResourcePoolTypeIpv6 = ResourcePoolType{Value: "ipv6"}
-	ResourcePoolTypeVlan = ResourcePoolType{Value: "vlan"}
-	ResourcePoolTypeVni  = ResourcePoolType{Value: "vni"}
+	ResourceTypeASN  = ResourceType{Value: "asn"}
+	ResourceTypeInt  = ResourceType{Value: "integer"}
+	ResourceTypeIPv4 = ResourceType{Value: "ip"}
+	ResourceTypeIPv6 = ResourceType{Value: "ipv6"}
+	ResourceTypeVLAN = ResourceType{Value: "vlan"}
+	ResourceTypeVNI  = ResourceType{Value: "vni"}
 )
 
 type RoutingZoneConstraintMode oenum.Member[string]

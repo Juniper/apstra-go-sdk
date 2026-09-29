@@ -17,6 +17,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
@@ -305,50 +306,50 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	// set leaf loopback pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeIp4Pool,
-			Name: apstra.ResourceGroupNameLeafIp4,
+			Type: enum.ResourceTypeIPv4,
+			Name: resourcegroup.LeafIPv4,
 		},
-		PoolIds: []apstra.ObjectId{"Private-10_0_0_0-8"},
+		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
 	require.NoError(t, err)
 
 	// set leaf-leaf pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeIp4Pool,
-			Name: apstra.ResourceGroupNameLeafLeafIp4,
+			Type: enum.ResourceTypeIPv4,
+			Name: resourcegroup.LeafLeafIPv4,
 		},
-		PoolIds: []apstra.ObjectId{"Private-10_0_0_0-8"},
+		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
 	require.NoError(t, err)
 
 	// set leaf ASN pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeAsnPool,
-			Name: apstra.ResourceGroupNameLeafAsn,
+			Type: enum.ResourceTypeASN,
+			Name: resourcegroup.LeafASN,
 		},
-		PoolIds: []apstra.ObjectId{"Private-64512-65534"},
+		PoolIds: []string{"Private-64512-65534"},
 	})
 	require.NoError(t, err)
 
 	// set VN VNI pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeVniPool,
-			Name: apstra.ResourceGroupNameEvpnL3Vni,
+			Type: enum.ResourceTypeVNI,
+			Name: resourcegroup.EVPNL3VNI,
 		},
-		PoolIds: []apstra.ObjectId{"Default-10000-20000"},
+		PoolIds: []string{"Default-10000-20000"},
 	})
 	require.NoError(t, err)
 
 	// set VN VNI pool
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
-			Type: apstra.ResourceTypeVniPool,
-			Name: apstra.ResourceGroupNameVxlanVnIds,
+			Type: enum.ResourceTypeVNI,
+			Name: resourcegroup.VXLANVNIDs,
 		},
-		PoolIds: []apstra.ObjectId{"Default-10000-20000"},
+		PoolIds: []string{"Default-10000-20000"},
 	})
 	require.NoError(t, err)
 
