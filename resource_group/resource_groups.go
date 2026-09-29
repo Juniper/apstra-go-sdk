@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2024-2026.
+// Copyright (c) Juniper Networks, Inc., 2026-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
