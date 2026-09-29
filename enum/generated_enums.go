@@ -1501,28 +1501,28 @@ func (o *RenderedConfigType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
-	_ enum             = (*ResourcePoolType)(nil)
-	_ json.Marshaler   = (*ResourcePoolType)(nil)
-	_ json.Unmarshaler = (*ResourcePoolType)(nil)
+	_ enum             = (*ResourceType)(nil)
+	_ json.Marshaler   = (*ResourceType)(nil)
+	_ json.Unmarshaler = (*ResourceType)(nil)
 )
 
-func (o ResourcePoolType) String() string {
+func (o ResourceType) String() string {
 	return o.Value
 }
 
-func (o *ResourcePoolType) FromString(s string) error {
-	if ResourcePoolTypes.Parse(s) == nil {
+func (o *ResourceType) FromString(s string) error {
+	if ResourceTypes.Parse(s) == nil {
 		return newEnumParseError(o, s)
 	}
 	o.Value = s
 	return nil
 }
 
-func (o ResourcePoolType) MarshalJSON() ([]byte, error) {
+func (o ResourceType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
-func (o *ResourcePoolType) UnmarshalJSON(bytes []byte) error {
+func (o *ResourceType) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -2308,14 +2308,14 @@ var (
 		RenderedConfigTypeStaging,
 	)
 
-	_                 enum = new(ResourcePoolType)
-	ResourcePoolTypes      = oenum.New(
-		ResourcePoolTypeAsn,
-		ResourcePoolTypeInt,
-		ResourcePoolTypeIpv4,
-		ResourcePoolTypeIpv6,
-		ResourcePoolTypeVlan,
-		ResourcePoolTypeVni,
+	_             enum = new(ResourceType)
+	ResourceTypes      = oenum.New(
+		ResourceTypeASN,
+		ResourceTypeInt,
+		ResourceTypeIPv4,
+		ResourceTypeIPv6,
+		ResourceTypeVLAN,
+		ResourceTypeVNI,
 	)
 
 	_                          enum = new(RoutingZoneConstraintMode)

@@ -22,6 +22,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -463,50 +464,50 @@ func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	// set leaf loopback pool
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
-			Type: ResourceTypeIp4Pool,
-			Name: ResourceGroupNameLeafIp4,
+			Type: enum.ResourceTypeIPv4,
+			Name: resourcegroup.LeafIPv4,
 		},
-		PoolIds: []ObjectId{"Private-10_0_0_0-8"},
+		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
 	require.NoError(t, err)
 
 	// set leaf-leaf pool
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
-			Type: ResourceTypeIp4Pool,
-			Name: ResourceGroupNameLeafLeafIp4,
+			Type: enum.ResourceTypeIPv4,
+			Name: resourcegroup.LeafLeafIPv4,
 		},
-		PoolIds: []ObjectId{"Private-10_0_0_0-8"},
+		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
 	require.NoError(t, err)
 
 	// set leaf ASN pool
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
-			Type: ResourceTypeAsnPool,
-			Name: ResourceGroupNameLeafAsn,
+			Type: enum.ResourceTypeASN,
+			Name: resourcegroup.LeafASN,
 		},
-		PoolIds: []ObjectId{"Private-64512-65534"},
+		PoolIds: []string{"Private-64512-65534"},
 	})
 	require.NoError(t, err)
 
 	// set VN VNI pool
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
-			Type: ResourceTypeVniPool,
-			Name: ResourceGroupNameEvpnL3Vni,
+			Type: enum.ResourceTypeVNI,
+			Name: resourcegroup.EVPNL3VNI,
 		},
-		PoolIds: []ObjectId{"Default-10000-20000"},
+		PoolIds: []string{"Default-10000-20000"},
 	})
 	require.NoError(t, err)
 
 	// set VN VNI pool
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
-			Type: ResourceTypeVniPool,
-			Name: ResourceGroupNameVxlanVnIds,
+			Type: enum.ResourceTypeVNI,
+			Name: resourcegroup.VXLANVNIDs,
 		},
-		PoolIds: []ObjectId{"Default-10000-20000"},
+		PoolIds: []string{"Default-10000-20000"},
 	})
 	require.NoError(t, err)
 
@@ -957,7 +958,7 @@ func testResourceGroup(ctx context.Context, t testing.TB, client *FreeformClient
 func testResourceGroupAsn(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
 	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
-		Type:    enum.ResourcePoolTypeAsn,
+		Type:    enum.ResourceTypeASN,
 		PoolIds: []ObjectId{testAsnPool(ctx, t, client.client)},
 	})
 	require.NoError(t, err)
@@ -968,7 +969,7 @@ func testResourceGroupAsn(ctx context.Context, t testing.TB, client *FreeformCli
 func testResourceGroupInt(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
 	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
-		Type:    enum.ResourcePoolTypeInt,
+		Type:    enum.ResourceTypeInt,
 		PoolIds: []ObjectId{testIntPool(ctx, t, client.client)},
 	})
 	require.NoError(t, err)
@@ -979,7 +980,7 @@ func testResourceGroupInt(ctx context.Context, t testing.TB, client *FreeformCli
 func testResourceGroupIpv4(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
 	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
-		Type:    enum.ResourcePoolTypeIpv4,
+		Type:    enum.ResourceTypeIPv4,
 		PoolIds: []ObjectId{testIpv4Pool(ctx, t, client.client)},
 	})
 	require.NoError(t, err)
@@ -990,7 +991,7 @@ func testResourceGroupIpv4(ctx context.Context, t testing.TB, client *FreeformCl
 func testResourceGroupIpv6(ctx context.Context, t testing.TB, client *FreeformClient) (id ObjectId) {
 	id, err := client.CreateAllocGroup(ctx, &FreeformAllocGroupData{
 		Name:    randString(6, "hex"),
-		Type:    enum.ResourcePoolTypeIpv6,
+		Type:    enum.ResourceTypeIPv6,
 		PoolIds: []ObjectId{testIpv6Pool(ctx, t, client.client)},
 	})
 	require.NoError(t, err)

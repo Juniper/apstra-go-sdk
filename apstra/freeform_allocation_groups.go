@@ -51,16 +51,16 @@ func (o *FreeformAllocGroup) UnmarshalJSON(bytes []byte) error {
 }
 
 type FreeformAllocGroupData struct {
-	Name    string                `json:"group_name"`
-	Type    enum.ResourcePoolType `json:"-"`
-	PoolIds []ObjectId            `json:"pool_ids"`
+	Name    string            `json:"group_name"`
+	Type    enum.ResourceType `json:"-"`
+	PoolIds []ObjectId        `json:"pool_ids"`
 }
 
 func (o *FreeformClient) CreateAllocGroup(ctx context.Context, in *FreeformAllocGroupData) (ObjectId, error) {
 	return o.createAllocGroup(ctx, in, in.Type)
 }
 
-func (o *FreeformClient) createAllocGroup(ctx context.Context, in *FreeformAllocGroupData, groupType enum.ResourcePoolType) (ObjectId, error) {
+func (o *FreeformClient) createAllocGroup(ctx context.Context, in *FreeformAllocGroupData, groupType enum.ResourceType) (ObjectId, error) {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPost,
 		urlStr:   fmt.Sprintf(apiUrlFfAllocGroupByType, o.blueprintId, groupType),
