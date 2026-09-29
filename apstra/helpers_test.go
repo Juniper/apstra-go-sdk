@@ -22,7 +22,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
-	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -465,7 +464,7 @@ func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
 			Type: enum.ResourceTypeIPv4,
-			Name: resourcegroup.LeafIPv4,
+			Name: enum.ResourceGroupLeafIPv4,
 		},
 		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
@@ -475,7 +474,7 @@ func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
 			Type: enum.ResourceTypeIPv4,
-			Name: resourcegroup.LeafLeafIPv4,
+			Name: enum.ResourceGroupLeafLeafIPv4,
 		},
 		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
@@ -485,7 +484,7 @@ func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
 			Type: enum.ResourceTypeASN,
-			Name: resourcegroup.LeafASN,
+			Name: enum.ResourceGroupLeafASN,
 		},
 		PoolIds: []string{"Private-64512-65534"},
 	})
@@ -495,7 +494,7 @@ func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
 			Type: enum.ResourceTypeVNI,
-			Name: resourcegroup.EVPNL3VNI,
+			Name: enum.ResourceGroupEVPNL3VNI,
 		},
 		PoolIds: []string{"Default-10000-20000"},
 	})
@@ -505,7 +504,7 @@ func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 		ResourceGroup: ResourceGroup{
 			Type: enum.ResourceTypeVNI,
-			Name: resourcegroup.VXLANVNIDs,
+			Name: enum.ResourceGroupVXLANVNI,
 		},
 		PoolIds: []string{"Default-10000-20000"},
 	})
