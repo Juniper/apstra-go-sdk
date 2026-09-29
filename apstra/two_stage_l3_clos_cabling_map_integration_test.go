@@ -18,7 +18,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 	"github.com/stretchr/testify/require"
 )
 
@@ -173,14 +172,14 @@ func TestPatchCablingMapLinks(t *testing.T) {
 
 			// Assign an IPv4 pool for spine-leaf links
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-				ResourceGroup: ResourceGroup{Type: enum.ResourceTypeIPv4, Name: resourcegroup.SpineLeafIPv4},
+				ResourceGroup: ResourceGroup{Type: enum.ResourceTypeIPv4, Name: enum.ResourceGroupSpineLeafIPv4},
 				PoolIds:       []string{"Private-10_0_0_0-8"},
 			})
 			require.NoError(t, err)
 
 			// Assign an IPv6 pool for spine-leaf links
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-				ResourceGroup: ResourceGroup{Type: enum.ResourceTypeIPv6, Name: resourcegroup.SpineLeafIPv6},
+				ResourceGroup: ResourceGroup{Type: enum.ResourceTypeIPv6, Name: enum.ResourceGroupSpineLeafIPv6},
 				PoolIds:       []string{"Private-fc01-a05-fab-48"},
 			})
 			require.NoError(t, err)

@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
-	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 )
 
 const (
@@ -25,7 +24,7 @@ const (
 
 type ResourceGroup struct {
 	Type           enum.ResourceType
-	Name           resourcegroup.ResourceGroup
+	Name           enum.ResourceGroup
 	SecurityZoneId *string
 }
 
@@ -122,14 +121,14 @@ func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) 
 				o.Name, len(fields),
 			)
 		}
-		err := rga.ResourceGroup.Name.UnmarshalText([]byte(fields[1]))
+		err := rga.ResourceGroup.Name.FromString(fields[1])
 		if err != nil {
 			return nil, err
 		}
 		szId := strings.TrimPrefix(fields[0], resourceGroupOwnerSecurityZone+":")
 		rga.ResourceGroup.SecurityZoneId = &szId
 	default:
-		err := rga.ResourceGroup.Name.UnmarshalText([]byte(o.Name))
+		err := rga.ResourceGroup.Name.FromString(o.Name)
 		if err != nil {
 			return nil, err
 		}

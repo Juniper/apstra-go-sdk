@@ -16,7 +16,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
-	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 	"github.com/stretchr/testify/require"
 )
 
@@ -149,7 +148,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 				ResourceGroup: ResourceGroup{
 					SecurityZoneId: &rzID,
 					Type:           enum.ResourceTypeIPv4,
-					Name:           resourcegroup.LeafIPv4,
+					Name:           enum.ResourceGroupLeafIPv4,
 				},
 				PoolIds: []string{ipV4PoolId},
 			})
@@ -160,7 +159,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 				ResourceGroup: ResourceGroup{
 					SecurityZoneId: &rzID,
 					Type:           enum.ResourceTypeIPv6,
-					Name:           resourcegroup.LeafIPv6,
+					Name:           enum.ResourceGroupLeafIPv6,
 				},
 				PoolIds: []string{ipV6PoolId},
 			})

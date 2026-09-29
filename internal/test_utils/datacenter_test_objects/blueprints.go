@@ -17,7 +17,6 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
-	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
@@ -307,7 +306,7 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
 			Type: enum.ResourceTypeIPv4,
-			Name: resourcegroup.LeafIPv4,
+			Name: enum.ResourceGroupLeafIPv4,
 		},
 		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
@@ -317,7 +316,7 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
 			Type: enum.ResourceTypeIPv4,
-			Name: resourcegroup.LeafLeafIPv4,
+			Name: enum.ResourceGroupLeafLeafIPv4,
 		},
 		PoolIds: []string{"Private-10_0_0_0-8"},
 	})
@@ -327,7 +326,7 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
 			Type: enum.ResourceTypeASN,
-			Name: resourcegroup.LeafASN,
+			Name: enum.ResourceGroupLeafASN,
 		},
 		PoolIds: []string{"Private-64512-65534"},
 	})
@@ -337,7 +336,7 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
 			Type: enum.ResourceTypeVNI,
-			Name: resourcegroup.EVPNL3VNI,
+			Name: enum.ResourceGroupEVPNL3VNI,
 		},
 		PoolIds: []string{"Default-10000-20000"},
 	})
@@ -347,7 +346,7 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	err = bpClient.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 		ResourceGroup: apstra.ResourceGroup{
 			Type: enum.ResourceTypeVNI,
-			Name: resourcegroup.VXLANVNIDs,
+			Name: enum.ResourceGroupVXLANVNI,
 		},
 		PoolIds: []string{"Default-10000-20000"},
 	})

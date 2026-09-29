@@ -16,7 +16,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
-	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 	"github.com/stretchr/testify/require"
 )
 
@@ -66,14 +65,14 @@ func TestSetGetResourceAllocation(t *testing.T) {
 				PoolIds: poolIds,
 				ResourceGroup: ResourceGroup{
 					Type: enum.ResourceTypeASN,
-					Name: resourcegroup.SpineASN,
+					Name: enum.ResourceGroupSpineASN,
 				},
 			}))
 
 			log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 			rga, err := bpClient.GetResourceAllocation(ctx, &ResourceGroup{
 				Type: enum.ResourceTypeASN,
-				Name: resourcegroup.SpineASN,
+				Name: enum.ResourceGroupSpineASN,
 			})
 			require.NoError(t, err)
 

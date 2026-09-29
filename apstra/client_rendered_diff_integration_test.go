@@ -21,7 +21,6 @@ import (
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
-	resourcegroup "github.com/Juniper/apstra-go-sdk/resource_group"
 	"github.com/stretchr/testify/require"
 )
 
@@ -78,7 +77,7 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 				err = bp.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
 					ResourceGroup: apstra.ResourceGroup{
 						Type:           enum.ResourceTypeIPv4,
-						Name:           resourcegroup.LeafIPv4,
+						Name:           enum.ResourceGroupLeafIPv4,
 						SecurityZoneId: &szId,
 					},
 					PoolIds: []string{"Private-10_0_0_0-8"},

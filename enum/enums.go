@@ -467,6 +467,47 @@ var (
 	RenderedConfigTypeStaging  = RenderedConfigType{Value: "staging"}
 )
 
+type ResourceGroup oenum.Member[string]
+
+var (
+	ResourceGroupAccessAccessIPv4       = ResourceGroup{Value: "access_l3_peer_link_link_ips"}
+	ResourceGroupAccessAccessIPv6       = ResourceGroup{Value: "ipv6_access_l3_peer_link_link_ips"}
+	ResourceGroupAccessASN              = ResourceGroup{Value: "access_asns"}
+	ResourceGroupAccessIPv4             = ResourceGroup{Value: "access_loopback_ips"}
+	ResourceGroupAccessIPv6             = ResourceGroup{Value: "access_loopback_ips_ipv6"}
+	ResourceGroupEVPNL3VNI              = ResourceGroup{Value: "evpn_l3_vnis"}
+	ResourceGroupExternalVNLocalVNI     = ResourceGroup{Value: "external_vn_local_vnis"}
+	ResourceGroupGenericASN             = ResourceGroup{Value: "generic_asns"}
+	ResourceGroupGenericIPv4            = ResourceGroup{Value: "generic_loopback_ips"}
+	ResourceGroupGenericIPv6            = ResourceGroup{Value: "generic_loopback_ips_ipv6"}
+	ResourceGroupLeafASN                = ResourceGroup{Value: "leaf_asns"}
+	ResourceGroupLeafIPv4               = ResourceGroup{Value: "leaf_loopback_ips"}
+	ResourceGroupLeafIPv6               = ResourceGroup{Value: "leaf_loopback_ips_ipv6"}
+	ResourceGroupLeafL3PeerLinkLinkIPv4 = ResourceGroup{Value: "leaf_l3_peer_link_link_ips"}
+	ResourceGroupLeafL3PeerLinkLinkIPv6 = ResourceGroup{Value: "ipv6_leaf_l3_peer_link_link_ips"}
+	ResourceGroupLeafLeafIPv4           = ResourceGroup{Value: "leaf_leaf_link_ips"}
+	ResourceGroupLeafLeafIPv6           = ResourceGroup{Value: "ipv6_leaf_leaf_link_ips"}
+	ResourceGroupMLAGDomainSVIIPv4      = ResourceGroup{Value: "mlag_domain_svi_subnets"}
+	ResourceGroupMLAGDomainSVIIPv6      = ResourceGroup{Value: "mlag_domain_svi_subnets_ipv6"}
+	ResourceGroupSpineASN               = ResourceGroup{Value: "spine_asns"}
+	ResourceGroupSpineIPv4              = ResourceGroup{Value: "spine_loopback_ips"}
+	ResourceGroupSpineIPv6              = ResourceGroup{Value: "spine_loopback_ips_ipv6"}
+	ResourceGroupSpineLeafIPv4          = ResourceGroup{Value: "spine_leaf_link_ips"}
+	ResourceGroupSpineLeafIPv6          = ResourceGroup{Value: "ipv6_spine_leaf_link_ips"}
+	ResourceGroupSuperspineASN          = ResourceGroup{Value: "superspine_asns"}
+	ResourceGroupSuperspineIPv4         = ResourceGroup{Value: "superspine_loopback_ips"}
+	ResourceGroupSuperspineIPv6         = ResourceGroup{Value: "superspine_loopback_ips_ipv6"}
+	ResourceGroupSuperspineSpineIPv4    = ResourceGroup{Value: "spine_superspine_link_ips"}
+	ResourceGroupSuperspineSpineIPv6    = ResourceGroup{Value: "ipv6_spine_superspine_link_ips"}
+	ResourceGroupToGenericLinkIPv4      = ResourceGroup{Value: "to_generic_link_ips"}
+	ResourceGroupToGenericLinkIPv6      = ResourceGroup{Value: "ipv6_to_generic_link_ips"}
+	ResourceGroupVirtualNetworkSviIPv4  = ResourceGroup{Value: "virtual_network_svi_subnets"}
+	ResourceGroupVirtualNetworkSviIPv6  = ResourceGroup{Value: "virtual_network_svi_subnets_ipv6"}
+	ResourceGroupVTEPIPv4               = ResourceGroup{Value: "vtep_ips"}
+	ResourceGroupVTEPIPv6               = ResourceGroup{Value: "vtep_ips_ipv6"}
+	ResourceGroupVXLANVNI               = ResourceGroup{Value: "vxlan_vn_ids"}
+)
+
 type ResourceType oenum.Member[string] // .../aos/reference_design/extension/resource_allocation/__init__.py says:
 
 var (
