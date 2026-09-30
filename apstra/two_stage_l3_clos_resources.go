@@ -15,7 +15,6 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
-	iresources "github.com/Juniper/apstra-go-sdk/internal/resources"
 )
 
 const (
@@ -115,7 +114,7 @@ func (o ResourceGroupAllocation) MarshalJSON() ([]byte, error) {
 		o.PoolIds = []string{}
 	}
 
-	groupType := iresources.GroupType(o.ResourceGroup.Name)
+	groupType := resourceGroupType(o.ResourceGroup.Name)
 	if groupType == nil {
 		return nil, fmt.Errorf("unable to determine resource type for resource group %q", o.ResourceGroup.Name)
 	}
@@ -149,7 +148,7 @@ func (o *TwoStageL3ClosClient) getResourceAllocations(ctx context.Context) ([]Re
 func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg ResourceGroup) (ResourceGroupAllocation, error) {
 	var response ResourceGroupAllocation
 
-	rgType := iresources.GroupType(rg.Name)
+	rgType := resourceGroupType(rg.Name)
 	if rgType == nil {
 		return response, fmt.Errorf("unable to determine resource type for resource group %q", rg.Name)
 	}
@@ -167,7 +166,7 @@ func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg Res
 }
 
 func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga ResourceGroupAllocation) error {
-	rgType := iresources.GroupType(rga.ResourceGroup.Name)
+	rgType := resourceGroupType(rga.ResourceGroup.Name)
 	if rgType == nil {
 		return fmt.Errorf("unable to determine resource type for resource group %q", rga.ResourceGroup.Name)
 	}
@@ -177,4 +176,19 @@ func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga Re
 		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, *rgType, rga.ResourceGroup.String()),
 		apiInput: rga,
 	})
+}
+
+func resourceGroupType(rg enum.ResourceGroup) *enum.ResourceType {
+	switch { // Order matters: IPv6 must be checked before IPv4
+	case strings.HasSuffix(rg.Value, "_asns"):
+		return &enum.ResourceTypeASN
+	case strings.HasPrefix(rg.Value, "ipv6_") || strings.HasSuffix(rg.Value, "_ipv6"):
+		return &enum.ResourceTypeIPv6
+	case strings.HasSuffix(rg.Value, "_ips") || strings.HasSuffix(rg.Value, "_subnets"):
+		return &enum.ResourceTypeIPv4
+	case strings.HasSuffix(rg.Value, "_vnis") || strings.HasSuffix(rg.Value, "_vn_ids"):
+		return &enum.ResourceTypeVNI
+	}
+
+	return nil
 }
