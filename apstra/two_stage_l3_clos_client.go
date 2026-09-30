@@ -115,36 +115,20 @@ func (o *TwoStageL3ClosClient) urlWithParam(in string) (*url.URL, error) {
 // GetResourceAllocations returns ResourceGroupAllocations representing
 // all allocations of resource pools to blueprint requirements
 func (o *TwoStageL3ClosClient) GetResourceAllocations(ctx context.Context) (ResourceGroupAllocations, error) {
-	rawRgaSlice, err := o.getAllResourceAllocations(ctx)
-	if err != nil {
-		return nil, err
-	}
-	result := make(ResourceGroupAllocations, len(rawRgaSlice))
-	for i, raw := range rawRgaSlice {
-		polished, err := raw.polish()
-		if err != nil {
-			return nil, err
-		}
-		result[i] = *polished
-	}
-	return result, nil
+	return o.getResourceAllocations(ctx)
 }
 
 // GetResourceAllocation takes a *ResourceGroup and returns a
 // *ResourceGroupAllocation with fields populated based on the Apstra API
 // response.
-func (o *TwoStageL3ClosClient) GetResourceAllocation(ctx context.Context, in *ResourceGroup) (*ResourceGroupAllocation, error) {
-	rga, err := o.getResourceAllocation(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	return rga.polish()
+func (o *TwoStageL3ClosClient) GetResourceAllocation(ctx context.Context, in ResourceGroup) (ResourceGroupAllocation, error) {
+	return o.getResourceAllocation(ctx, in)
 }
 
 // SetResourceAllocation sets the supplied resource allocation, overwriting any
 // prior allocations with the supplied info.
-func (o *TwoStageL3ClosClient) SetResourceAllocation(ctx context.Context, in *ResourceGroupAllocation) error {
-	return o.setResourceAllocation(ctx, in.raw())
+func (o *TwoStageL3ClosClient) SetResourceAllocation(ctx context.Context, in ResourceGroupAllocation) error {
+	return o.setResourceAllocation(ctx, in)
 }
 
 // GetInterfaceMapAssignments returns a SystemIdToInterfaceMapAssignment (a map

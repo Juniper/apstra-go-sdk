@@ -461,52 +461,37 @@ func testBlueprintI(ctx context.Context, t *testing.T, client *Client) *TwoStage
 	require.NoError(t, err)
 
 	// set leaf loopback pool
-	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-		ResourceGroup: ResourceGroup{
-			Type: enum.ResourceTypeIPv4,
-			Name: enum.ResourceGroupLeafIPv4,
-		},
-		PoolIds: []string{"Private-10_0_0_0-8"},
+	err = bpClient.SetResourceAllocation(ctx, ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{Name: enum.ResourceGroupLeafIPv4},
+		PoolIds:       []string{"Private-10_0_0_0-8"},
 	})
 	require.NoError(t, err)
 
 	// set leaf-leaf pool
-	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-		ResourceGroup: ResourceGroup{
-			Type: enum.ResourceTypeIPv4,
-			Name: enum.ResourceGroupLeafLeafIPv4,
-		},
-		PoolIds: []string{"Private-10_0_0_0-8"},
+	err = bpClient.SetResourceAllocation(ctx, ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{Name: enum.ResourceGroupLeafLeafIPv4},
+		PoolIds:       []string{"Private-10_0_0_0-8"},
 	})
 	require.NoError(t, err)
 
 	// set leaf ASN pool
-	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-		ResourceGroup: ResourceGroup{
-			Type: enum.ResourceTypeASN,
-			Name: enum.ResourceGroupLeafASN,
-		},
-		PoolIds: []string{"Private-64512-65534"},
+	err = bpClient.SetResourceAllocation(ctx, ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{Name: enum.ResourceGroupLeafASN},
+		PoolIds:       []string{"Private-64512-65534"},
 	})
 	require.NoError(t, err)
 
 	// set VN VNI pool
-	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-		ResourceGroup: ResourceGroup{
-			Type: enum.ResourceTypeVNI,
-			Name: enum.ResourceGroupEVPNL3VNI,
-		},
-		PoolIds: []string{"Default-10000-20000"},
+	err = bpClient.SetResourceAllocation(ctx, ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{Name: enum.ResourceGroupEVPNL3VNI},
+		PoolIds:       []string{"Default-10000-20000"},
 	})
 	require.NoError(t, err)
 
 	// set VN VNI pool
-	err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-		ResourceGroup: ResourceGroup{
-			Type: enum.ResourceTypeVNI,
-			Name: enum.ResourceGroupVXLANVNI,
-		},
-		PoolIds: []string{"Default-10000-20000"},
+	err = bpClient.SetResourceAllocation(ctx, ResourceGroupAllocation{
+		ResourceGroup: ResourceGroup{Name: enum.ResourceGroupVXLANVNI},
+		PoolIds:       []string{"Default-10000-20000"},
 	})
 	require.NoError(t, err)
 

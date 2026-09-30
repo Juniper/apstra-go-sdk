@@ -7,6 +7,9 @@
 package testutils_test
 
 import (
+	"fmt"
+	"net/netip"
+	"strings"
 	"testing"
 	"time"
 
@@ -130,6 +133,59 @@ func TestRandomHardwareAddr(t *testing.T) {
 			for i, unsetByte := range tCase.unset {
 				require.Equal(t, ^unsetByte, result[i]|^unsetByte)
 			}
+		})
+	}
+}
+
+func TestRandomPrefixes(t *testing.T) {
+	type testCase struct {
+		cidr  string
+		count int
+		bits  int
+	}
+
+	testCases := map[string]testCase{
+		"10.0.0.0/8_24_5": {
+			cidr:  "10.0.0.0/8",
+			bits:  24,
+			count: 5,
+		},
+		"192.0.2.0/24_26_3": {
+			cidr:  "192.0.2.0/24",
+			bits:  26,
+			count: 3,
+		},
+		"192.168.0.0/16_24_256": {
+			cidr:  "192.168.0.0/16",
+			bits:  24,
+			count: 256,
+		},
+		"3fff::/20_64_100": {
+			cidr:  "3fff::/20",
+			bits:  64,
+			count: 100,
+		},
+	}
+
+	for tName, tCase := range testCases {
+		t.Run(tName, func(t *testing.T) {
+			t.Parallel()
+
+			// parse the container block - we'll use it during validation
+			cidr, err := netip.ParsePrefix(tCase.cidr)
+			require.NoError(t, err)
+
+			got := testutils.RandomPrefixes(t, tCase.cidr, tCase.bits, tCase.count)
+			require.Equal(t, tCase.count, len(got))
+
+			sb := new(strings.Builder)
+			sb.WriteString(fmt.Sprintf("%s -> /%d, %d samples\n", tCase.cidr, tCase.bits, tCase.count))
+			for i, p := range got {
+				require.True(t, cidr.Contains(p.Addr()))
+				require.Equal(t, tCase.bits, p.Bits())
+				sb.WriteString(fmt.Sprintf("\t%d\t %s\n", i+1, p.String()))
+			}
+			t.Log(sb.String())
 		})
 	}
 }

@@ -74,11 +74,10 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 				})
 				require.NoError(t, err)
 
-				err = bp.SetResourceAllocation(ctx, &apstra.ResourceGroupAllocation{
+				err = bp.SetResourceAllocation(ctx, apstra.ResourceGroupAllocation{
 					ResourceGroup: apstra.ResourceGroup{
-						Type:           enum.ResourceTypeIPv4,
 						Name:           enum.ResourceGroupLeafIPv4,
-						SecurityZoneId: &szId,
+						SecurityZoneID: &szId,
 					},
 					PoolIds: []string{"Private-10_0_0_0-8"},
 				})
