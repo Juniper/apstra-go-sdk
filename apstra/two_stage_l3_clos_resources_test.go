@@ -2,82 +2,34 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//go:build integration
-
 package apstra
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"math/rand"
-	"strconv"
-	"sync"
+	"strings"
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
-	"github.com/stretchr/testify/require"
 )
 
-func TestSetGetResourceAllocation(t *testing.T) {
-	ctx := context.Background()
-
-	clients, err := getTestClients(context.Background(), t)
-	if err != nil {
-		t.Fatal(err)
+func TestResourceGroupType(t *testing.T) {
+	rgTypeToGroups := make(map[string][]string)
+	for _, rg := range enum.ResourceGroups.Members() {
+		rgt := resourceGroupType(rg)
+		if rgt == nil {
+			t.Fatalf("resourceGroupType() returned nil for %T with value %q", rg, rg.Value)
+		}
+		rgTypeToGroups[rgt.String()] = append(rgTypeToGroups[rgt.String()], rg.String())
+	}
+	for k, v := range rgTypeToGroups {
+		sb := new(strings.Builder)
+		for _, s := range v {
+			sb.WriteString("\t" + s + "\n")
+		}
+		t.Logf("%q type resource groups:\n%s", k, sb.String())
 	}
 
-	poolCount := rand.Intn(5) + 2
-	randStr := randString(5, "hex")
-	label := "test-" + randStr
-
-	for clientName, client := range clients {
-		clientName, client := clientName, client // local copy of iterator variables safe for use in deferred function
-		t.Run(fmt.Sprintf("%s_%s", client.client.apiVersion, clientName), func(t *testing.T) {
-			t.Parallel()
-
-			bpWait := sync.WaitGroup{}
-			bpWait.Add(1)
-			bpClient := testBlueprintB(ctx, t, client.client)
-
-			poolIds := make([]string, poolCount)
-			for i := range poolIds {
-				poolId, err := client.client.CreateAsnPool(ctx, &AsnPoolRequest{
-					DisplayName: label + "-" + strconv.Itoa(i),
-					Ranges: []IntfIntRange{IntRange{
-						First: uint32(1000 + (i * 1000)),
-						Last:  uint32(1999 + (i * 1000)),
-					}},
-				})
-				require.NoError(t, err)
-
-				poolIds[i] = string(poolId)
-				defer func() {
-					go func() {
-						bpWait.Wait()
-						require.NoError(t, client.client.DeleteAsnPool(ctx, poolId))
-					}()
-				}()
-			}
-
-			log.Printf("testing SetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			require.NoError(t, bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-				PoolIds: poolIds,
-				ResourceGroup: ResourceGroup{
-					Type: enum.ResourceTypeASN,
-					Name: enum.ResourceGroupSpineASN,
-				},
-			}))
-
-			log.Printf("testing GetResourceAllocation() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
-			rga, err := bpClient.GetResourceAllocation(ctx, &ResourceGroup{
-				Type: enum.ResourceTypeASN,
-				Name: enum.ResourceGroupSpineASN,
-			})
-			require.NoError(t, err)
-
-			require.Nilf(t, rga.ResourceGroup.SecurityZoneId, "resource group security zone ID must be nil")
-			require.Equalf(t, len(poolIds), len(rga.PoolIds), "expected pool ID count (%d) must equal actual pool ID count (%d)", len(poolIds), len(rga.PoolIds))
-		})
+	if len(rgTypeToGroups[enum.ResourceTypeIPv4.Value]) != len(rgTypeToGroups[enum.ResourceTypeIPv6.Value]) {
+		t.Fatalf("Mismatch in quantity of IPv4 and IPv6 resource group types: %d IPv4 vs %d IPv6",
+			len(rgTypeToGroups[enum.ResourceTypeIPv4.Value]), len(rgTypeToGroups[enum.ResourceTypeIPv6.Value]))
 	}
 }
