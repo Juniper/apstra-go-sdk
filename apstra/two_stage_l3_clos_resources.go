@@ -5,12 +5,17 @@
 package apstra
 
 import (
+	"bytes"
 	"context"
+	"encoding"
+	"encoding/json/v2"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	iresources "github.com/Juniper/apstra-go-sdk/internal/resources"
 )
 
 const (
@@ -22,124 +27,117 @@ const (
 	resourceGroupOwnerSecurityZone = "sz"
 )
 
+var (
+	_ encoding.TextMarshaler   = (*ResourceGroup)(nil)
+	_ encoding.TextUnmarshaler = (*ResourceGroup)(nil)
+)
+
 type ResourceGroup struct {
-	Type           enum.ResourceType
 	Name           enum.ResourceGroup
-	SecurityZoneId *string
+	SecurityZoneID *string
+}
+
+func (o ResourceGroup) String() string {
+	s, _ := o.MarshalText() // cannot error
+	return string(s)
+}
+
+// MarshalText returns a string representation of the resource group, which may be either a
+// simple string (e.g. "leaf_loopback_ips") or a string prefixed with the owner type and id
+// (e.g. "sz:ISKtui8i80vl0ljsdJQ,leaf_loopback_ips"), depending on whether the resource
+// group belongs directly to a blueprint or to an object within the blueprint.
+func (o ResourceGroup) MarshalText() (text []byte, err error) {
+	// 'name' here can need a value like "leaf_loopback_ips" or
+	// "sz:ISKtui8i80vl0ljsdJQ,leaf_loopback_ips"
+	switch { // only one case (so far?)
+	case o.SecurityZoneID != nil:
+		return []byte(fmt.Sprintf(resourceGroupNameWithOwner, resourceGroupOwnerSecurityZone, *o.SecurityZoneID, o.Name)), nil
+	}
+
+	return []byte(o.Name.String()), nil
+}
+
+func (o *ResourceGroup) UnmarshalText(b []byte) error {
+	switch {
+	case bytes.HasPrefix(b, []byte(resourceGroupOwnerSecurityZone+":")):
+		fields := bytes.Split(b, []byte(","))
+		if len(fields) != 2 {
+			return fmt.Errorf("parsing resource group name %q: expected split on ',' to produce 2 results, got %d", string(b), len(fields))
+		}
+
+		err := o.Name.FromString(string(fields[1]))
+		if err != nil {
+			return fmt.Errorf("parsing resource group name %q: %w", string(b), err)
+		}
+		o.SecurityZoneID = pointer.To(strings.TrimPrefix(string(fields[0]), resourceGroupOwnerSecurityZone+":"))
+	default:
+		err := o.Name.FromString(string(b))
+		if err != nil {
+			return fmt.Errorf("parsing resource group name %q: %w", string(b), err)
+		}
+		o.SecurityZoneID = nil
+	}
+
+	return nil
 }
 
 type ResourceGroupAllocations []ResourceGroupAllocation
 
 // Get returns the ResourceGroupAllocation for the requested ResourceGroup, or nil
 // if no matching ResourceGroupAllocation exists in this ResourceGroupAllocations
-func (o ResourceGroupAllocations) Get(requested *ResourceGroup) *ResourceGroupAllocation {
+func (o ResourceGroupAllocations) Get(requested ResourceGroup) ResourceGroupAllocation {
+	result := ResourceGroupAllocation{ResourceGroup: requested}
+
 	for _, rg := range o {
-		if rg.ResourceGroup.Type != requested.Type {
-			continue
-		}
 		if rg.ResourceGroup.Name != requested.Name {
 			continue
 		}
-		if (rg.ResourceGroup.SecurityZoneId != nil && requested.SecurityZoneId != nil) &&
-			*rg.ResourceGroup.SecurityZoneId != *requested.SecurityZoneId {
+		if (rg.ResourceGroup.SecurityZoneID != nil && requested.SecurityZoneID != nil) &&
+			*rg.ResourceGroup.SecurityZoneID != *requested.SecurityZoneID {
 			continue
 		}
-		return &rg
+		result.PoolIds = append(result.PoolIds, rg.PoolIds...)
 	}
-	return nil
+
+	return result
 }
+
+var _ json.Marshaler = (*ResourceGroupAllocation)(nil)
 
 type ResourceGroupAllocation struct {
-	ResourceGroup ResourceGroup
-	PoolIds       []string `json:"pool_ids"`
+	ResourceGroup ResourceGroup `json:"name"`
+	PoolIds       []string      `json:"pool_ids"`
 }
 
-func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
-	var poolIds []string
+func (o ResourceGroupAllocation) MarshalJSON() ([]byte, error) {
+	// Send empty pool_ids rather than null.
 	if o.PoolIds == nil {
-		poolIds = make([]string, 0)
-	} else {
-		poolIds = o.PoolIds
+		o.PoolIds = []string{}
 	}
 
-	// 'name' here can need a value like "leaf_loopback_ips" or
-	// "sz:ISKtui8i80vl0ljsdJQ,leaf_loopback_ips", depending on whether the
-	// resource group belongs to a blueprint or to a child object within a
-	// blueprint.
-	name := o.ResourceGroup.Name.String()
-	if o.ResourceGroup.SecurityZoneId != nil {
-		name = fmt.Sprintf(resourceGroupNameWithOwner, resourceGroupOwnerSecurityZone, *o.ResourceGroup.SecurityZoneId, name)
+	groupType := iresources.GroupType(o.ResourceGroup.Name)
+	if groupType == nil {
+		return nil, fmt.Errorf("unable to determine resource type for resource group %q", o.ResourceGroup.Name)
 	}
 
-	return &rawResourceGroupAllocation{
-		Type:    o.ResourceGroup.Type,
-		Name:    name,
-		PoolIds: poolIds,
-	}
+	type Alias ResourceGroupAllocation // Does not implement json.Marshaler, so no infinite recursion.
+
+	return json.Marshal(struct {
+		Alias
+		Type *enum.ResourceType `json:"type"`
+	}{
+		Alias: Alias(o),
+		Type:  groupType,
+	})
 }
 
 func (o *ResourceGroupAllocation) IsEmpty() bool {
 	return len(o.PoolIds) == 0
 }
 
-type rawResourceGroupAllocation struct {
-	Type    enum.ResourceType `json:"type,omitempty"`
-	Name    string            `json:"name,omitempty"`
-	PoolIds []string          `json:"pool_ids"`
-}
-
-// polish leans on some apstra code which determines whether a resource group
-// name indicates that it's owned by a child object within a blueprint (security
-// zone may be the only case of this):
-//
-//	def parse_resource_group_name(resource_group_name):
-//	   """ Parse passed resource_group_name and return namedtuple with
-//	       sz_id and pure resource_group_name.
-//	   """
-//	   sz_id = None
-//	   if resource_group_name.startswith('sz:'):
-//	       fields = resource_group_name.split(',', 1)
-//	       if len(fields) != 2:
-//	           return None
-//	       sz, resource_group_name = fields
-//	       sz_id = sz[len('sz:'):]
-//	   return ParsedResourceGroupName(sz_id=sz_id, rg_name=resource_group_name)
-func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) {
-	rga := &ResourceGroupAllocation{
-		PoolIds: o.PoolIds,
-		ResourceGroup: ResourceGroup{
-			Type: o.Type,
-		},
-	}
-
-	switch {
-	case strings.HasPrefix(o.Name, resourceGroupOwnerSecurityZone+":"):
-		fields := strings.Split(o.Name, ",")
-		if len(fields) != 2 {
-			return nil, fmt.Errorf(
-				"error processing resource group name %q, expected split on ',' to produce 2 results, got %d",
-				o.Name, len(fields),
-			)
-		}
-		err := rga.ResourceGroup.Name.FromString(fields[1])
-		if err != nil {
-			return nil, err
-		}
-		szId := strings.TrimPrefix(fields[0], resourceGroupOwnerSecurityZone+":")
-		rga.ResourceGroup.SecurityZoneId = &szId
-	default:
-		err := rga.ResourceGroup.Name.FromString(o.Name)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return rga, nil
-}
-
-func (o *TwoStageL3ClosClient) getAllResourceAllocations(ctx context.Context) ([]rawResourceGroupAllocation, error) {
+func (o *TwoStageL3ClosClient) getResourceAllocations(ctx context.Context) ([]ResourceGroupAllocation, error) {
 	response := &struct {
-		Items []rawResourceGroupAllocation `json:"items"`
+		Items []ResourceGroupAllocation `json:"items"`
 	}{}
 	return response.Items, o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
@@ -148,26 +146,35 @@ func (o *TwoStageL3ClosClient) getAllResourceAllocations(ctx context.Context) ([
 	})
 }
 
-func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg *ResourceGroup) (*rawResourceGroupAllocation, error) {
-	rga := ResourceGroupAllocation{
-		ResourceGroup: *rg,
+func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg ResourceGroup) (ResourceGroupAllocation, error) {
+	var response ResourceGroupAllocation
+
+	rgType := iresources.GroupType(rg.Name)
+	if rgType == nil {
+		return response, fmt.Errorf("unable to determine resource type for resource group %q", rg.Name)
 	}
-	response := rga.raw()
+
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, response.Type, response.Name),
-		apiResponse: response,
+		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, *rgType, rg),
+		apiResponse: &response,
 	})
 	if err != nil {
-		return nil, convertTtaeToAceWherePossible(err)
+		return response, convertTtaeToAceWherePossible(err)
 	}
+
 	return response, nil
 }
 
-func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga *rawResourceGroupAllocation) error {
+func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga ResourceGroupAllocation) error {
+	rgType := iresources.GroupType(rga.ResourceGroup.Name)
+	if rgType == nil {
+		return fmt.Errorf("unable to determine resource type for resource group %q", rga.ResourceGroup.Name)
+	}
+
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, rga.Type, rga.Name),
+		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, *rgType, rga.ResourceGroup.String()),
 		apiInput: rga,
 	})
 }
