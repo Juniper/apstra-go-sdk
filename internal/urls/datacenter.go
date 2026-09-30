@@ -8,6 +8,9 @@ const (
 	DatacenterPolicies   = blueprintByID + pathDelim + "policies"
 	DatacenterPolicyByID = DatacenterPolicies + pathDelim + "%s"
 
+	DatacenterResourceGroups           = blueprintByID + pathDelim + "resource_groups"
+	DatacenterResourceGroupsByTypeName = DatacenterResourceGroups + pathDelim + "%s" + pathDelim + "%s"
+
 	DatacenterSecurityZones           = blueprintByID + pathDelim + "security-zones"
 	DatacenterSecurityZoneById        = DatacenterSecurityZones + pathDelim + "%s"
 	DatacenterSecurityZoneDHCPServers = DatacenterSecurityZoneById + pathDelim + "dhcp-servers"

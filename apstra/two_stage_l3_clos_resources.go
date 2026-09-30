@@ -15,15 +15,12 @@ import (
 
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
 
 const (
-	apiUrlBlueprintResourceGroups        = apiUrlBlueprintById + apiUrlPathDelim + "resource_groups"
-	apiUrlResourceGroupsPrefix           = apiUrlBlueprintResourceGroups + apiUrlPathDelim
-	apiUrlBlueprintResourceGroupTypeName = apiUrlResourceGroupsPrefix + "%s" + apiUrlPathDelim + "%s"
-
-	resourceGroupNameWithOwner     = "%s:%s,%s"
-	resourceGroupOwnerSecurityZone = "sz"
+	resourceGroupNameWithOwner          = "%s%s,%s"
+	resourceGroupOwnerRoutingZonePrefix = "sz:"
 )
 
 var (
@@ -50,7 +47,7 @@ func (o ResourceGroup) MarshalText() (text []byte, err error) {
 	// "sz:ISKtui8i80vl0ljsdJQ,leaf_loopback_ips"
 	switch { // only one case (so far?)
 	case o.SecurityZoneID != nil:
-		return []byte(fmt.Sprintf(resourceGroupNameWithOwner, resourceGroupOwnerSecurityZone, *o.SecurityZoneID, o.Name)), nil
+		return []byte(fmt.Sprintf(resourceGroupNameWithOwner, resourceGroupOwnerRoutingZonePrefix, *o.SecurityZoneID, o.Name)), nil
 	}
 
 	return []byte(o.Name.String()), nil
@@ -58,7 +55,7 @@ func (o ResourceGroup) MarshalText() (text []byte, err error) {
 
 func (o *ResourceGroup) UnmarshalText(b []byte) error {
 	switch {
-	case bytes.HasPrefix(b, []byte(resourceGroupOwnerSecurityZone+":")):
+	case bytes.HasPrefix(b, []byte(resourceGroupOwnerRoutingZonePrefix)):
 		fields := bytes.Split(b, []byte(","))
 		if len(fields) != 2 {
 			return fmt.Errorf("parsing resource group name %q: expected split on ',' to produce 2 results, got %d", string(b), len(fields))
@@ -68,7 +65,7 @@ func (o *ResourceGroup) UnmarshalText(b []byte) error {
 		if err != nil {
 			return fmt.Errorf("parsing resource group name %q: %w", string(b), err)
 		}
-		o.SecurityZoneID = pointer.To(strings.TrimPrefix(string(fields[0]), resourceGroupOwnerSecurityZone+":"))
+		o.SecurityZoneID = pointer.To(strings.TrimPrefix(string(fields[0]), resourceGroupOwnerRoutingZonePrefix))
 	default:
 		err := o.Name.FromString(string(b))
 		if err != nil {
@@ -140,7 +137,7 @@ func (o *TwoStageL3ClosClient) getResourceAllocations(ctx context.Context) ([]Re
 	}{}
 	return response.Items, o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroups, o.blueprintId),
+		urlStr:      fmt.Sprintf(urls.DatacenterResourceGroups, o.blueprintId),
 		apiResponse: response,
 	})
 }
@@ -155,7 +152,7 @@ func (o *TwoStageL3ClosClient) getResourceAllocation(ctx context.Context, rg Res
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:      http.MethodGet,
-		urlStr:      fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, *rgType, rg),
+		urlStr:      fmt.Sprintf(urls.DatacenterResourceGroupsByTypeName, o.blueprintId, *rgType, rg),
 		apiResponse: &response,
 	})
 	if err != nil {
@@ -173,7 +170,7 @@ func (o *TwoStageL3ClosClient) setResourceAllocation(ctx context.Context, rga Re
 
 	return o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPut,
-		urlStr:   fmt.Sprintf(apiUrlBlueprintResourceGroupTypeName, o.blueprintId, *rgType, rga.ResourceGroup.String()),
+		urlStr:   fmt.Sprintf(urls.DatacenterResourceGroupsByTypeName, o.blueprintId, *rgType, rga.ResourceGroup.String()),
 		apiInput: rga,
 	})
 }
