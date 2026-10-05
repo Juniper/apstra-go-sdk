@@ -67,7 +67,6 @@ func TestCRUDSecurityZone(t *testing.T) {
 			},
 		},
 		"start_minimal_5.x+": {
-			versionConstraint: &compatibility.SecurityZoneDescriptionSupported,
 			create: datacenter.SecurityZone{
 				Label:   testutils.RandString(6, "hex"),
 				VRFName: testutils.RandString(6, "hex"),
@@ -85,7 +84,6 @@ func TestCRUDSecurityZone(t *testing.T) {
 			},
 		},
 		"start_maximal_5.x+": {
-			versionConstraint: &compatibility.SecurityZoneDescriptionSupported,
 			create: datacenter.SecurityZone{
 				Description:      pointer.To(testutils.RandString(8, "hex")),
 				Label:            testutils.RandString(8, "hex"),
@@ -330,10 +328,6 @@ func TestSecurityZone_Tagging(t *testing.T) {
 
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
-			if compatibility.SecurityZoneTaggingForbidden.Check(client.APIVersion()) {
-				t.Skipf("skipping test due to API version constraints: tagging of security zones is forbidden in Apstra %s", client.APIVersion())
-			}
-
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 

@@ -11,7 +11,6 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	oenum "github.com/orsinium-labs/enum"
 )
@@ -261,79 +260,6 @@ func (o *TwoStageL3ClosClient) getFabricSettings(ctx context.Context) (*FabricSe
 	return &response, nil
 }
 
-// getFabricSettings420 does the same job as setFabricSettings, but for Apstra 4.2.0, which collects
-// the parameters in rawFabricSettings from 3 different places
-func (o *TwoStageL3ClosClient) getFabricSettings420(ctx context.Context) (*FabricSettings, error) {
-	fabricAddressingPolicy, err := o.GetFabricAddressingPolicy(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	virtualNetworkPolicy, err := o.getVirtualNetworkPolicy420(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	optimiseFootprint, err := o.getSzFootprintOptimization420(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var antiAffinityPolicy *AntiAffinityPolicy
-	if rawAAP, err := o.getAntiAffinityPolicy(ctx); err != nil {
-		return nil, fmt.Errorf("getting AntiAffinityPolicy: %w", err)
-	} else {
-		if antiAffinityPolicy, err = rawAAP.polish(); err != nil {
-			return nil, fmt.Errorf("polishing AntiAffinityPolicy: %w", err)
-		}
-	}
-
-	var junosEvpnRoutingInstanceVlanAware *enum.FeatureSwitch
-	if virtualNetworkPolicy.JunosEvpnRoutingInstanceType != nil {
-		parsed := junosEvpnRoutingInstanceTypes.Parse(*virtualNetworkPolicy.JunosEvpnRoutingInstanceType)
-		if parsed == nil {
-			return nil, fmt.Errorf("cannot parse junos_evpn_routing_instance_type value %q", *virtualNetworkPolicy.JunosEvpnRoutingInstanceType)
-		}
-
-		if *parsed == junosEvpnRoutingInstanceTypeDefault {
-			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchDisabled
-		} else {
-			junosEvpnRoutingInstanceVlanAware = &enum.FeatureSwitchEnabled
-		}
-	} else {
-		junosEvpnRoutingInstanceVlanAware = nil
-	}
-
-	var ocp *OverlayControlProtocol
-	if virtualNetworkPolicy.OverlayControlProtocol != nil {
-		ocp := new(OverlayControlProtocol)
-		if err := ocp.FromString(*virtualNetworkPolicy.OverlayControlProtocol); err != nil {
-			return nil, fmt.Errorf("parsing overlay_control_protocol %q: %w", *virtualNetworkPolicy.OverlayControlProtocol, err)
-		}
-	}
-
-	return &FabricSettings{
-		AntiAffinityPolicy:                    antiAffinityPolicy,
-		DefaultSviL3Mtu:                       virtualNetworkPolicy.DefaultSviL3Mtu,
-		EsiMacMsb:                             fabricAddressingPolicy.EsiMacMsb,
-		EvpnGenerateType5HostRoutes:           featureSwitchEnumFromStringPtr(virtualNetworkPolicy.EvpnGenerateType5HostRoutes),
-		ExternalRouterMtu:                     virtualNetworkPolicy.ExternalRouterMtu,
-		FabricL3Mtu:                           fabricAddressingPolicy.FabricL3Mtu,
-		Ipv6Enabled:                           fabricAddressingPolicy.Ipv6Enabled,
-		JunosEvpnDuplicateMacRecoveryTime:     virtualNetworkPolicy.JunosEvpnDuplicateMacRecoveryTime,
-		JunosEvpnMaxNexthopAndInterfaceNumber: featureSwitchEnumFromStringPtr(virtualNetworkPolicy.JunosEvpnMaxNexthopAndInterfaceNumber),
-		JunosEvpnRoutingInstanceVlanAware:     junosEvpnRoutingInstanceVlanAware,
-		JunosExOverlayEcmp:                    featureSwitchEnumFromStringPtr(virtualNetworkPolicy.JunosExOverlayEcmp),
-		JunosGracefulRestart:                  featureSwitchEnumFromStringPtr(virtualNetworkPolicy.JunosGracefulRestart),
-		MaxEvpnRoutes:                         virtualNetworkPolicy.MaxEvpnRoutes,
-		MaxExternalRoutes:                     virtualNetworkPolicy.MaxExternalRoutes,
-		MaxFabricRoutes:                       virtualNetworkPolicy.MaxFabricRoutes,
-		MaxMlagRoutes:                         virtualNetworkPolicy.MaxMlagRoutes,
-		OptimiseSzFootprint:                   &optimiseFootprint,
-		OverlayControlProtocol:                ocp,
-	}, nil
-}
-
 func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *FabricSettings) error {
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
 		method:   http.MethodPatch,
@@ -342,95 +268,6 @@ func (o *TwoStageL3ClosClient) setFabricSettings(ctx context.Context, in *Fabric
 	})
 	if err != nil {
 		return convertTtaeToAceWherePossible(err)
-	}
-
-	return nil
-}
-
-// setFabricSettings420 does the same job as setFabricSettings, but for Apstra 4.2.0, which controls
-// the parameters in rawFabricSettings in 3 different places
-func (o *TwoStageL3ClosClient) setFabricSettings420(ctx context.Context, in *FabricSettings) error {
-	err := o.SetFabricAddressingPolicy(ctx, &TwoStageL3ClosFabricAddressingPolicy{
-		Ipv6Enabled: in.Ipv6Enabled,
-		EsiMacMsb:   in.EsiMacMsb,
-		FabricL3Mtu: in.FabricL3Mtu,
-	})
-	if err != nil {
-		return err
-	}
-
-	err = o.setVirtualNetworkPolicy420(ctx, in)
-	if err != nil {
-		return err
-	}
-
-	err = o.setSzFootprintOptimization420(ctx, in.OptimiseSzFootprint)
-	if err != nil {
-		return err
-	}
-
-	err = o.setAntiAffinityPolicy(ctx, in.AntiAffinityPolicy.raw())
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *TwoStageL3ClosClient) getSzFootprintOptimization420(ctx context.Context) (enum.FeatureSwitch, error) {
-	if !compatibility.EqApstra420.Check(o.client.apiVersion) {
-		return enum.FeatureSwitch{}, fmt.Errorf("getSzFootprintOptimization420() must not be invoked with apstra %s", o.client.apiVersion)
-	}
-
-	securityZonePolicyNodeIds, err := o.NodeIdsByType(ctx, NodeTypeSecurityZonePolicy)
-	if err != nil {
-		return enum.FeatureSwitch{}, err
-	}
-	if len(securityZonePolicyNodeIds) != 1 {
-		return enum.FeatureSwitch{}, fmt.Errorf("expected 1 %s, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
-	}
-
-	var node struct {
-		FootprintOptimise string `json:"footprint_optimise"`
-	}
-
-	err = o.client.GetNode(ctx, o.blueprintId, securityZonePolicyNodeIds[0], &node)
-	if err != nil {
-		return enum.FeatureSwitch{}, err
-	}
-
-	var result enum.FeatureSwitch
-	if err := result.FromString(node.FootprintOptimise); err != nil {
-		return enum.FeatureSwitch{}, fmt.Errorf("parsing footprint_optimise: %w", err)
-	}
-
-	return result, nil
-}
-
-func (o *TwoStageL3ClosClient) setSzFootprintOptimization420(ctx context.Context, in *enum.FeatureSwitch) error {
-	if in == nil {
-		return nil
-	}
-
-	securityZonePolicyNodeIds, err := o.NodeIdsByType(ctx, NodeTypeSecurityZonePolicy)
-	if err != nil {
-		return err
-	}
-	if len(securityZonePolicyNodeIds) != 1 {
-		return fmt.Errorf("expected 1 %s node, got %d", NodeTypeSecurityZonePolicy.String(), len(securityZonePolicyNodeIds))
-	}
-
-	err = o.client.talkToApstra(ctx, &talkToApstraIn{
-		method: http.MethodPatch,
-		urlStr: fmt.Sprintf(apiUrlBlueprintNodeById, o.blueprintId, securityZonePolicyNodeIds[0]),
-		apiInput: &struct {
-			FootprintOptimise string `json:"footprint_optimise"`
-		}{
-			FootprintOptimise: in.String(),
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("failed to patch %s node - %w", NodeTypeSecurityZonePolicy.String(), convertTtaeToAceWherePossible(err))
 	}
 
 	return nil

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2025.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,7 +15,6 @@ import (
 	"net"
 	"testing"
 
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/stretchr/testify/require"
 )
 
@@ -340,7 +339,7 @@ func TestRoutingPolicies(t *testing.T) {
 				StaticRoutes:         true,
 				Loopbacks:            true,
 				SpineSuperspineLinks: true,
-				L3EdgeServerLinks:    compatibility.RoutingPolicyExportHasL3EdgeLinks.Check(bpClient.client.apiVersion),
+				L3EdgeServerLinks:    false,
 				SpineLeafLinks:       true,
 				L2EdgeSubnets:        true,
 			}

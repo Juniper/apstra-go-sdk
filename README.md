@@ -2,7 +2,7 @@
 
 This project aims to be a simple-to-consume client library for Apstra.
 
-Currently supports Apstra 4.2.0 - 6.2.0. Specific versions enumerated
+Currently supports Apstra 5.0.0 - 6.2.0. Specific versions enumerated
 [here](compatibility/compatibility.go#L33-L49). It will complain when
 asked to connect to unsupported versions of Apstra.
 

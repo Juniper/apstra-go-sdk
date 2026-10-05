@@ -148,19 +148,15 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 				// change name to newName
 				req := metadataNode{Label: newName}
 				var resp metadataNode
-				if compatibility.PatchNodeSupportsUnsafeArg.Check(client.APIVersion()) {
-					var ace apstra.ClientErr
-					err := bpClient.PatchNode(ctx, nodeA.Id, req, &resp)
-					require.Error(t, err)
-					require.ErrorAs(t, err, &ace)
-					require.Equal(t, ace.Type(), apstra.ErrUnsafePatchProhibited)
 
-					log.Printf("Apstra %s complained that this patch attempt is unsafe. Good!", client.Client.ApiVersion())
+				var ace apstra.ClientErr
+				err := bpClient.PatchNode(ctx, nodeA.Id, req, &resp)
+				require.Error(t, err)
+				require.ErrorAs(t, err, &ace)
+				require.Equal(t, ace.Type(), apstra.ErrUnsafePatchProhibited)
+				log.Printf("Apstra %s complained that this patch attempt is unsafe. Good!", client.Client.ApiVersion())
+				require.NoError(t, bpClient.PatchNodeUnsafe(ctx, nodeA.Id, req, &resp))
 
-					require.NoError(t, bpClient.PatchNodeUnsafe(ctx, nodeA.Id, req, &resp))
-				} else {
-					require.NoError(t, bpClient.PatchNode(ctx, nodeA.Id, req, &resp))
-				}
 				if resp.Label != newName {
 					t.Fatalf("expected new blueprint name %q, got %q", newName, resp.Label)
 				}
@@ -468,17 +464,10 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 		query := new(apstra.PathQuery).
 			SetClient(client.Client()).
 			SetBlueprintId(client.Id())
-		if compatibility.BpHasFabricAddressingPolicyNode.Check(version.Must(version.NewVersion(client.Client().ApiVersion()))) {
-			query.Node([]apstra.QEEAttribute{
-				apstra.NodeTypeFabricAddressingPolicy.QEEAttribute(),
-				{Key: "name", Value: apstra.QEStringVal("node")},
-			})
-		} else {
-			query.Node([]apstra.QEEAttribute{
-				apstra.NodeTypeFabricPolicy.QEEAttribute(),
-				{Key: "name", Value: apstra.QEStringVal("node")},
-			})
-		}
+		query.Node([]apstra.QEEAttribute{
+			apstra.NodeTypeFabricPolicy.QEEAttribute(),
+			{Key: "name", Value: apstra.QEStringVal("node")},
+		})
 
 		var queryResponse struct {
 			Items []struct {
@@ -515,18 +504,6 @@ func TestCreateDeleteEvpnBlueprint(t *testing.T) {
 
 					id, err := client.Client.CreateBlueprintFromTemplate(ctx, &tCase.req)
 					require.NoError(t, err)
-
-					if !compatibility.FabricSettingsApiOk.Check(client.APIVersion()) && tCase.req.FabricSettings != nil {
-						// 4.2.0 cannot set fabric settings when creating blueprint, so we have to do it afterward
-						bp, err := client.Client.NewTwoStageL3ClosClient(ctx, id)
-						require.NoError(t, err)
-
-						// spine/leaf and spine/superspine addressing cannot be set, so we clear these
-						fs := tCase.req.FabricSettings
-						fs.SpineLeafLinks = nil
-						fs.SpineSuperspineLinks = nil
-						require.NoError(t, bp.SetFabricSettings(ctx, fs))
-					}
 
 					bpClient, err := client.Client.NewTwoStageL3ClosClient(ctx, id)
 					require.NoError(t, err)
@@ -783,17 +760,10 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 		query := new(apstra.PathQuery).
 			SetClient(client.Client()).
 			SetBlueprintId(client.Id())
-		if compatibility.BpHasFabricAddressingPolicyNode.Check(version.Must(version.NewVersion(client.Client().ApiVersion()))) {
-			query.Node([]apstra.QEEAttribute{
-				apstra.NodeTypeFabricAddressingPolicy.QEEAttribute(),
-				{Key: "name", Value: apstra.QEStringVal("node")},
-			})
-		} else {
-			query.Node([]apstra.QEEAttribute{
-				apstra.NodeTypeFabricPolicy.QEEAttribute(),
-				{Key: "name", Value: apstra.QEStringVal("node")},
-			})
-		}
+		query.Node([]apstra.QEEAttribute{
+			apstra.NodeTypeFabricPolicy.QEEAttribute(),
+			{Key: "name", Value: apstra.QEStringVal("node")},
+		})
 
 		var queryResponse struct {
 			Items []struct {
@@ -833,15 +803,6 @@ func TestCreateDeleteIpFabricBlueprint(t *testing.T) {
 
 					bpClient, err := client.Client.NewTwoStageL3ClosClient(ctx, id)
 					require.NoError(t, err)
-
-					// 4.2.0 cannot set fabric settings when creating blueprint, so we have to do it afterward
-					if !compatibility.FabricSettingsApiOk.Check(client.APIVersion()) && tCase.req.FabricSettings != nil {
-						// spine/leaf and spine/superspine addressing cannot be set, so we clear these
-						fs := tCase.req.FabricSettings
-						fs.SpineLeafLinks = nil
-						fs.SpineSuperspineLinks = nil
-						require.NoError(t, bpClient.SetFabricSettings(ctx, fs))
-					}
 
 					if tCase.req.FabricSettings != nil {
 						fabricSettings, err := bpClient.GetFabricSettings(ctx)
@@ -933,10 +894,6 @@ func TestCreateDeleteBlueprintWithRoutingLimits(t *testing.T) {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
-
-			if !compatibility.GeApstra421.Check(client.APIVersion()) {
-				t.Skipf("skipping Apstra %s client due to version constraint", client.Client.ApiVersion())
-			}
 
 			for _, tCase := range testCases {
 				client := client

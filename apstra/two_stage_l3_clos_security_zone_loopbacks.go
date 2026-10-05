@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/netip"
 
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
 
@@ -107,12 +106,6 @@ func (o SecurityZoneLoopback) MarshalJSON() ([]byte, error) {
 // elements will not be rendered to JSON and would be ignored by the API. See the SecurityZoneLoopback for an
 // explanation of how to set and clear addresses (Go nil vs. JSON null, etc...)
 func (o *TwoStageL3ClosClient) SetSecurityZoneLoopbacks(ctx context.Context, szId string, loopbacks map[string]SecurityZoneLoopback) error {
-	if !compatibility.SecurityZoneLoopbackApiSupported.Check(o.client.apiVersion) {
-		return fmt.Errorf("SetSecurityZoneLoopbacks requires Apstra version %s, have version %s",
-			compatibility.SecurityZoneLoopbackApiSupported, o.client.apiVersion,
-		)
-	}
-
 	var apiInput struct {
 		Loopbacks map[string]json.RawMessage `json:"loopbacks"`
 	}

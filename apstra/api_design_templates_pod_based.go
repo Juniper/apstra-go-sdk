@@ -12,8 +12,6 @@ import (
 	"net/http"
 	"sort"
 	"time"
-
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 )
 
 var _ Template = &TemplatePodBased{}
@@ -328,11 +326,8 @@ func (o *CreatePodBasedTemplateRequest) raw(ctx context.Context, client *Client)
 		return templatesRackBased[i].DisplayName < templatesRackBased[j].DisplayName
 	})
 
-	switch {
-	case o.Superspine == nil:
+	if o.Superspine == nil {
 		return nil, errors.New("super spine cannot be <nil> when creating a pod-based template")
-	case o.AntiAffinityPolicy == nil && compatibility.TemplateRequestRequiresAntiAffinityPolicy.Check(client.apiVersion):
-		return nil, fmt.Errorf("anti-affinity policy cannot be <nil> when creating a pod-based template with Apstra %s", compatibility.TemplateRequestRequiresAntiAffinityPolicy)
 	}
 
 	var err error

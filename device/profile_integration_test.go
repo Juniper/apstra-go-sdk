@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/device"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
@@ -20,7 +19,6 @@ import (
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	"github.com/Juniper/apstra-go-sdk/internal/test_utils/compare/device"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
-	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
 
@@ -166,12 +164,6 @@ func TestProfile_CRUD(t *testing.T) {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
 					ctx := testutils.ContextWithTestID(ctx, t)
-
-					// remove features not supported by earlier API versions
-					if !compatibility.DeviceProfileHasRefdesignCapabilities.Check(version.Must(version.NewVersion(client.Client.ApiVersion()))) {
-						create.ReferenceDesignCapabilities = nil
-						update.ReferenceDesignCapabilities = nil
-					}
 
 					var id string
 					var err error
