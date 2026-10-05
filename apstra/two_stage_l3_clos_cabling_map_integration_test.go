@@ -172,15 +172,15 @@ func TestPatchCablingMapLinks(t *testing.T) {
 
 			// Assign an IPv4 pool for spine-leaf links
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-				ResourceGroup: ResourceGroup{Type: ResourceTypeIp4Pool, Name: ResourceGroupNameSpineLeafIp4},
-				PoolIds:       []ObjectId{"Private-10_0_0_0-8"},
+				ResourceGroup: ResourceGroup{Type: enum.ResourceTypeIPv4, Name: enum.ResourceGroupSpineLeafIPv4},
+				PoolIds:       []string{"Private-10_0_0_0-8"},
 			})
 			require.NoError(t, err)
 
 			// Assign an IPv6 pool for spine-leaf links
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
-				ResourceGroup: ResourceGroup{Type: ResourceTypeIp6Pool, Name: ResourceGroupNameSpineLeafIp6},
-				PoolIds:       []ObjectId{"Private-fc01-a05-fab-48"},
+				ResourceGroup: ResourceGroup{Type: enum.ResourceTypeIPv6, Name: enum.ResourceGroupSpineLeafIPv6},
+				PoolIds:       []string{"Private-fc01-a05-fab-48"},
 			})
 			require.NoError(t, err)
 

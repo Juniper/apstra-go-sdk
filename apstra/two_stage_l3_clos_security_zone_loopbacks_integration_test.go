@@ -27,10 +27,10 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 		return &p
 	}
 
-	ipV4PoolId := ObjectId("Private-10_0_0_0-8")
+	ipV4PoolId := "Private-10_0_0_0-8"
 	ipv4PoolPrefix := netip.MustParsePrefix("10.0.0.0/8")
 
-	ipV6PoolId := ObjectId("Private-fc01-a05-fab-48")
+	ipV6PoolId := "Private-fc01-a05-fab-48"
 	ipv6PoolPrefix := netip.MustParsePrefix("fc01:a05:fab::/48")
 
 	type testCase struct {
@@ -146,22 +146,22 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			// assign an IPv4 pool to leaf loopbacks so that we can "remove" (cause it to revert to a pool address) a loopback IPv4 address
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 				ResourceGroup: ResourceGroup{
-					SecurityZoneId: (*ObjectId)(&rzID),
-					Type:           ResourceTypeIp4Pool,
-					Name:           ResourceGroupNameLeafIp4,
+					SecurityZoneId: &rzID,
+					Type:           enum.ResourceTypeIPv4,
+					Name:           enum.ResourceGroupLeafIPv4,
 				},
-				PoolIds: []ObjectId{ipV4PoolId},
+				PoolIds: []string{ipV4PoolId},
 			})
 			require.NoError(t, err)
 
 			// assign an IPv6 pool to leaf loopbacks so that we can "remove" (cause it to revert to a pool) address a loopback IPv6 address
 			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
 				ResourceGroup: ResourceGroup{
-					SecurityZoneId: (*ObjectId)(&rzID),
-					Type:           ResourceTypeIp6Pool,
-					Name:           ResourceGroupNameLeafIp6,
+					SecurityZoneId: &rzID,
+					Type:           enum.ResourceTypeIPv6,
+					Name:           enum.ResourceGroupLeafIPv6,
 				},
-				PoolIds: []ObjectId{ipV6PoolId},
+				PoolIds: []string{ipV6PoolId},
 			})
 			require.NoError(t, err)
 
@@ -224,7 +224,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 							ipv4PoolPrefix, actualByIfId.IPv4Addr)
 						require.Truef(t, ipv4PoolPrefix.Contains(actualMap[loopbackNodeId].IPv4Addr.Addr()),
 							"we sent <invalid>, so actual (by map) ipv4 address should fall within the pool prefix %s, got %s",
-							ipv4PoolPrefix, actualMap[loopbackNodeId])
+							ipv4PoolPrefix, actualMap[loopbackNodeId].IPv4Addr)
 						require.Truef(t, ipv4PoolPrefix.Contains(actualBySysId.IPv4Addr.Addr()),
 							"we sent <invalid>, so actual (by sys id) ipv4 address should fall within the pool prefix %s, got %s",
 							ipv4PoolPrefix, actualBySysId.IPv4Addr)
@@ -254,7 +254,7 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 							ipv6PoolPrefix, actualByIfId.IPv6Addr)
 						require.Truef(t, ipv6PoolPrefix.Contains(actualMap[loopbackNodeId].IPv6Addr.Addr()),
 							"we sent <invalid>, so actual (by map) ipv6 address should fall within the pool prefix %s, got %s",
-							ipv6PoolPrefix, actualMap[loopbackNodeId])
+							ipv6PoolPrefix, actualMap[loopbackNodeId].IPv6Addr)
 						require.Truef(t, ipv6PoolPrefix.Contains(actualBySysId.IPv6Addr.Addr()),
 							"we sent <invalid>, so actual (by sys d) ipv6 address should fall within the pool prefix %s, got %s",
 							ipv6PoolPrefix, actualBySysId.IPv6Addr)

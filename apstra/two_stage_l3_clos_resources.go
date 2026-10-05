@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/Juniper/apstra-go-sdk/enum"
 )
 
 const (
@@ -16,468 +18,14 @@ const (
 	apiUrlResourceGroupsPrefix           = apiUrlBlueprintResourceGroups + apiUrlPathDelim
 	apiUrlBlueprintResourceGroupTypeName = apiUrlResourceGroupsPrefix + "%s" + apiUrlPathDelim + "%s"
 
-	resourceGroupNameWithOwner    = "%s:%s,%s"
-	resourceGroupOwnerecurityZone = "sz"
+	resourceGroupNameWithOwner     = "%s:%s,%s"
+	resourceGroupOwnerSecurityZone = "sz"
 )
-
-const (
-	ResourceTypeNone = ResourceType(iota)
-	ResourceTypeAsnPool
-	ResourceTypeIp4Pool
-	ResourceTypeIp6Pool
-	ResourceTypeVniPool
-	ResourceTypeUnknown
-
-	// .../aos/reference_design/extension/resource_allocation/__init__.py says:
-	// RESOURCE_TYPES = ['ip', 'ipv6', 'asn', 'vlan', 'vni']
-	resourceTypeNone    = resourceType("")
-	resourceTypeAsnPool = resourceType("asn")
-	resourceTypeIp4Pool = resourceType("ip")
-	resourceTypeIp6Pool = resourceType("ipv6")
-	resourceTypeVniPool = resourceType("vni")
-	resourceTypeUnknown = "resource type %d unknown"
-)
-
-const (
-	ResourceGroupNameNone = ResourceGroupName(iota)
-	ResourceGroupNameSuperspineAsn
-	ResourceGroupNameSpineAsn
-	ResourceGroupNameLeafAsn
-	ResourceGroupNameAccessAsn
-	ResourceGroupNameGenericAsn
-	ResourceGroupNameSuperspineIp4
-	ResourceGroupNameSuperspineIp6
-	ResourceGroupNameSpineIp4
-	ResourceGroupNameSpineIp6
-	ResourceGroupNameLeafIp4
-	ResourceGroupNameLeafIp6
-	ResourceGroupNameAccessIp4
-	ResourceGroupNameAccessIp6
-	ResourceGroupNameGenericIp4
-	ResourceGroupNameGenericIp6
-	ResourceGroupNameSuperspineSpineIp4
-	ResourceGroupNameSuperspineSpineIp6
-	ResourceGroupNameSpineLeafIp4
-	ResourceGroupNameSpineLeafIp6
-	ResourceGroupNameAccessAccessIp4
-	ResourceGroupNameAccessAccessIp6
-	ResourceGroupNameLeafLeafIp4
-	ResourceGroupNameLeafLeafIp6
-	ResourceGroupNameLeafL3PeerLinkLinkIp4
-	ResourceGroupNameLeafL3PeerLinkLinkIp6
-	ResourceGroupNameMlagDomainIp4
-	ResourceGroupNameMlagDomainIp6
-	ResourceGroupNameVtepIp4
-	ResourceGroupNameVtepIp6
-	ResourceGroupNameEvpnL3Vni
-	ResourceGroupNameVirtualNetworkSviIpv4
-	ResourceGroupNameVirtualNetworkSviIpv6
-	ResourceGroupNameVxlanVnIds
-	ResourceGroupNameToGenericLinkIpv4
-	ResourceGroupNameToGenericLinkIpv6
-	ResourceGroupNameExternalVNLocalVNIs
-	ResourceGroupNameUnknown = "unknown group name %q"
-
-	resourceGroupNameNone                  = resourceGroupName("")
-	resourceGroupNameSuperspineAsn         = resourceGroupName("superspine_asns")
-	resourceGroupNameSpineAsn              = resourceGroupName("spine_asns")
-	resourceGroupNameLeafAsn               = resourceGroupName("leaf_asns")
-	resourceGroupNameAccessAsn             = resourceGroupName("access_asns")
-	resourceGroupNameGenericAsn            = resourceGroupName("generic_asns")
-	resourceGroupNameSuperspineIp4         = resourceGroupName("superspine_loopback_ips")
-	resourceGroupNameSuperspineIp6         = resourceGroupName("superspine_loopback_ips_ipv6")
-	resourceGroupNameSpineIp4              = resourceGroupName("spine_loopback_ips")
-	resourceGroupNameSpineIp6              = resourceGroupName("spine_loopback_ips_ipv6")
-	resourceGroupNameLeafIp4               = resourceGroupName("leaf_loopback_ips")
-	resourceGroupNameLeafIp6               = resourceGroupName("leaf_loopback_ips_ipv6")
-	resourceGroupNameAccessIp4             = resourceGroupName("access_loopback_ips")
-	resourceGroupNameAccessIp6             = resourceGroupName("access_loopback_ips_ipv6")
-	resourceGroupNameGenericIp4            = resourceGroupName("generic_loopback_ips")
-	resourceGroupNameGenericIp6            = resourceGroupName("generic_loopback_ips_ipv6")
-	resourceGroupNameSuperspineSpineIp4    = resourceGroupName("spine_superspine_link_ips")
-	resourceGroupNameSuperspineSpineIp6    = resourceGroupName("ipv6_spine_superspine_link_ips")
-	resourceGroupNameSpineLeafIp4          = resourceGroupName("spine_leaf_link_ips")
-	resourceGroupNameSpineLeafIp6          = resourceGroupName("ipv6_spine_leaf_link_ips")
-	resourceGroupNameLeafLeafIp4           = resourceGroupName("leaf_leaf_link_ips")
-	resourceGroupNameLeafLeafIp6           = resourceGroupName("ipv6_leaf_leaf_link_ips")
-	resourceGroupNameLeafL3PeerLinkLinkIp4 = resourceGroupName("leaf_l3_peer_link_link_ips")
-	resourceGroupNameLeafL3PeerLinkLinkIp6 = resourceGroupName("ipv6_leaf_l3_peer_link_link_ips")
-	resourceGroupNameMlagDomainSviIp4      = resourceGroupName("mlag_domain_svi_subnets")
-	resourceGroupNameMlagDomainSviIp6      = resourceGroupName("mlag_domain_svi_subnets_ipv6")
-	resourceGroupNameAccessAccessIp4       = resourceGroupName("access_l3_peer_link_link_ips")
-	resourceGroupNameAccessAccessIp6       = resourceGroupName("ipv6_access_l3_peer_link_link_ips")
-	resourceGroupNameVtepIp4               = resourceGroupName("vtep_ips")
-	resourceGroupNameVtepIp6               = resourceGroupName("vtep_ips_ipv6")
-	resourceGroupNameEvpnL3Vni             = resourceGroupName("evpn_l3_vnis")
-	resourceGroupNameVirtualNetworkSviIpv4 = resourceGroupName("virtual_network_svi_subnets")
-	resourceGroupNameVirtualNetworkSviIpv6 = resourceGroupName("virtual_network_svi_subnets_ipv6")
-	resourceGroupNameVxlanVnIds            = resourceGroupName("vxlan_vn_ids")
-	resourceGroupNameToGenericLinkIpv4     = resourceGroupName("to_generic_link_ips")
-	resourceGroupNameToGenericLinkIpv6     = resourceGroupName("ipv6_to_generic_link_ips")
-	resourceGroupNameExternalVNLocalVNIs   = resourceGroupName("external_vn_local_vnis")
-	resourceGroupNameUnknown               = "group name %d unknown"
-)
-
-type ResourceGroupName int
-
-func (o ResourceGroupName) String() string {
-	return string(o.raw())
-}
-
-func (o ResourceGroupName) Int() int {
-	return int(o)
-}
-
-func (o *ResourceGroupName) FromString(in string) error {
-	i, err := resourceGroupName(in).parse()
-	if err != nil {
-		return err
-	}
-	*o = ResourceGroupName(i)
-	return nil
-}
-
-func (o *ResourceGroupName) Type() ResourceType {
-	switch *o {
-	case ResourceGroupNameSuperspineAsn:
-		return ResourceTypeAsnPool
-	case ResourceGroupNameSpineAsn:
-		return ResourceTypeAsnPool
-	case ResourceGroupNameLeafAsn:
-		return ResourceTypeAsnPool
-	case ResourceGroupNameAccessAsn:
-		return ResourceTypeAsnPool
-	case ResourceGroupNameGenericAsn:
-		return ResourceTypeAsnPool
-	case ResourceGroupNameSuperspineIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameSuperspineIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameSpineIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameSpineIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameLeafIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameLeafIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameAccessIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameAccessIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameGenericIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameGenericIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameSuperspineSpineIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameSuperspineSpineIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameSpineLeafIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameSpineLeafIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameAccessAccessIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameAccessAccessIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameLeafLeafIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameLeafLeafIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameLeafL3PeerLinkLinkIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameLeafL3PeerLinkLinkIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameMlagDomainIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameMlagDomainIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameToGenericLinkIpv4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameToGenericLinkIpv6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameVtepIp4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameVtepIp6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameEvpnL3Vni:
-		return ResourceTypeVniPool
-	case ResourceGroupNameVirtualNetworkSviIpv4:
-		return ResourceTypeIp4Pool
-	case ResourceGroupNameVirtualNetworkSviIpv6:
-		return ResourceTypeIp6Pool
-	case ResourceGroupNameVxlanVnIds:
-		return ResourceTypeVniPool
-	case ResourceGroupNameExternalVNLocalVNIs:
-		return ResourceTypeVniPool
-	}
-	return ResourceTypeUnknown
-}
-
-// AllResourceGroupNames returns the []ResourceGroupName representing
-// all supported ResourceGroupName
-func AllResourceGroupNames() []ResourceGroupName {
-	i := 0
-	var result []ResourceGroupName
-	for {
-		var rgn ResourceGroupName
-		err := rgn.FromString(ResourceGroupName(i).String())
-		if err != nil {
-			return result[:i]
-		}
-		result = append(result, rgn)
-		i++
-	}
-}
-
-func (o ResourceGroupName) raw() resourceGroupName {
-	switch o {
-	case ResourceGroupNameNone:
-		return resourceGroupNameNone
-	case ResourceGroupNameSuperspineAsn:
-		return resourceGroupNameSuperspineAsn
-	case ResourceGroupNameSpineAsn:
-		return resourceGroupNameSpineAsn
-	case ResourceGroupNameLeafAsn:
-		return resourceGroupNameLeafAsn
-	case ResourceGroupNameAccessAsn:
-		return resourceGroupNameAccessAsn
-	case ResourceGroupNameGenericAsn:
-		return resourceGroupNameGenericAsn
-	case ResourceGroupNameSuperspineIp4:
-		return resourceGroupNameSuperspineIp4
-	case ResourceGroupNameSuperspineIp6:
-		return resourceGroupNameSuperspineIp6
-	case ResourceGroupNameSpineIp4:
-		return resourceGroupNameSpineIp4
-	case ResourceGroupNameSpineIp6:
-		return resourceGroupNameSpineIp6
-	case ResourceGroupNameLeafIp4:
-		return resourceGroupNameLeafIp4
-	case ResourceGroupNameLeafIp6:
-		return resourceGroupNameLeafIp6
-	case ResourceGroupNameAccessIp4:
-		return resourceGroupNameAccessIp4
-	case ResourceGroupNameAccessIp6:
-		return resourceGroupNameAccessIp6
-	case ResourceGroupNameGenericIp4:
-		return resourceGroupNameGenericIp4
-	case ResourceGroupNameGenericIp6:
-		return resourceGroupNameGenericIp6
-	case ResourceGroupNameSuperspineSpineIp4:
-		return resourceGroupNameSuperspineSpineIp4
-	case ResourceGroupNameSuperspineSpineIp6:
-		return resourceGroupNameSuperspineSpineIp6
-	case ResourceGroupNameSpineLeafIp4:
-		return resourceGroupNameSpineLeafIp4
-	case ResourceGroupNameSpineLeafIp6:
-		return resourceGroupNameSpineLeafIp6
-	case ResourceGroupNameAccessAccessIp4:
-		return resourceGroupNameAccessAccessIp4
-	case ResourceGroupNameAccessAccessIp6:
-		return resourceGroupNameAccessAccessIp6
-	case ResourceGroupNameLeafLeafIp4:
-		return resourceGroupNameLeafLeafIp4
-	case ResourceGroupNameLeafLeafIp6:
-		return resourceGroupNameLeafLeafIp6
-	case ResourceGroupNameLeafL3PeerLinkLinkIp4:
-		return resourceGroupNameLeafL3PeerLinkLinkIp4
-	case ResourceGroupNameLeafL3PeerLinkLinkIp6:
-		return resourceGroupNameLeafL3PeerLinkLinkIp6
-	case ResourceGroupNameMlagDomainIp4:
-		return resourceGroupNameMlagDomainSviIp4
-	case ResourceGroupNameMlagDomainIp6:
-		return resourceGroupNameMlagDomainSviIp6
-	case ResourceGroupNameVtepIp4:
-		return resourceGroupNameVtepIp4
-	case ResourceGroupNameVtepIp6:
-		return resourceGroupNameVtepIp6
-	case ResourceGroupNameEvpnL3Vni:
-		return resourceGroupNameEvpnL3Vni
-	case ResourceGroupNameVirtualNetworkSviIpv4:
-		return resourceGroupNameVirtualNetworkSviIpv4
-	case ResourceGroupNameVirtualNetworkSviIpv6:
-		return resourceGroupNameVirtualNetworkSviIpv6
-	case ResourceGroupNameVxlanVnIds:
-		return resourceGroupNameVxlanVnIds
-	case ResourceGroupNameExternalVNLocalVNIs:
-		return resourceGroupNameExternalVNLocalVNIs
-	case ResourceGroupNameToGenericLinkIpv4:
-		return resourceGroupNameToGenericLinkIpv4
-	case ResourceGroupNameToGenericLinkIpv6:
-		return resourceGroupNameToGenericLinkIpv6
-	default:
-		return resourceGroupName(fmt.Sprintf(resourceGroupNameUnknown, o))
-	}
-}
-
-type resourceGroupName string
-
-func (o resourceGroupName) parse() (int, error) {
-	switch o {
-	case resourceGroupNameNone:
-		return int(ResourceGroupNameNone), nil
-	case resourceGroupNameSuperspineAsn:
-		return int(ResourceGroupNameSuperspineAsn), nil
-	case resourceGroupNameSpineAsn:
-		return int(ResourceGroupNameSpineAsn), nil
-	case resourceGroupNameLeafAsn:
-		return int(ResourceGroupNameLeafAsn), nil
-	case resourceGroupNameAccessAsn:
-		return int(ResourceGroupNameAccessAsn), nil
-	case resourceGroupNameGenericAsn:
-		return int(ResourceGroupNameGenericAsn), nil
-	case resourceGroupNameSuperspineIp4:
-		return int(ResourceGroupNameSuperspineIp4), nil
-	case resourceGroupNameSuperspineIp6:
-		return int(ResourceGroupNameSuperspineIp6), nil
-	case resourceGroupNameSpineIp4:
-		return int(ResourceGroupNameSpineIp4), nil
-	case resourceGroupNameSpineIp6:
-		return int(ResourceGroupNameSpineIp6), nil
-	case resourceGroupNameLeafIp4:
-		return int(ResourceGroupNameLeafIp4), nil
-	case resourceGroupNameLeafIp6:
-		return int(ResourceGroupNameLeafIp6), nil
-	case resourceGroupNameAccessIp4:
-		return int(ResourceGroupNameAccessIp4), nil
-	case resourceGroupNameAccessIp6:
-		return int(ResourceGroupNameAccessIp6), nil
-	case resourceGroupNameGenericIp4:
-		return int(ResourceGroupNameGenericIp4), nil
-	case resourceGroupNameGenericIp6:
-		return int(ResourceGroupNameGenericIp6), nil
-	case resourceGroupNameSuperspineSpineIp4:
-		return int(ResourceGroupNameSuperspineSpineIp4), nil
-	case resourceGroupNameSuperspineSpineIp6:
-		return int(ResourceGroupNameSuperspineSpineIp6), nil
-	case resourceGroupNameSpineLeafIp4:
-		return int(ResourceGroupNameSpineLeafIp4), nil
-	case resourceGroupNameSpineLeafIp6:
-		return int(ResourceGroupNameSpineLeafIp6), nil
-	case resourceGroupNameAccessAccessIp4:
-		return int(ResourceGroupNameAccessAccessIp4), nil
-	case resourceGroupNameAccessAccessIp6:
-		return int(ResourceGroupNameAccessAccessIp6), nil
-	case resourceGroupNameLeafLeafIp4:
-		return int(ResourceGroupNameLeafLeafIp4), nil
-	case resourceGroupNameLeafLeafIp6:
-		return int(ResourceGroupNameLeafLeafIp6), nil
-	case resourceGroupNameLeafL3PeerLinkLinkIp4:
-		return int(ResourceGroupNameLeafL3PeerLinkLinkIp4), nil
-	case resourceGroupNameLeafL3PeerLinkLinkIp6:
-		return int(ResourceGroupNameLeafL3PeerLinkLinkIp6), nil
-	case resourceGroupNameMlagDomainSviIp4:
-		return int(ResourceGroupNameMlagDomainIp4), nil
-	case resourceGroupNameMlagDomainSviIp6:
-		return int(ResourceGroupNameMlagDomainIp6), nil
-	case resourceGroupNameVtepIp4:
-		return int(ResourceGroupNameVtepIp4), nil
-	case resourceGroupNameVtepIp6:
-		return int(ResourceGroupNameVtepIp6), nil
-	case resourceGroupNameEvpnL3Vni:
-		return int(ResourceGroupNameEvpnL3Vni), nil
-	case resourceGroupNameVirtualNetworkSviIpv4:
-		return int(ResourceGroupNameVirtualNetworkSviIpv4), nil
-	case resourceGroupNameVirtualNetworkSviIpv6:
-		return int(ResourceGroupNameVirtualNetworkSviIpv6), nil
-	case resourceGroupNameVxlanVnIds:
-		return int(ResourceGroupNameVxlanVnIds), nil
-	case resourceGroupNameExternalVNLocalVNIs:
-		return int(ResourceGroupNameExternalVNLocalVNIs), nil
-	case resourceGroupNameToGenericLinkIpv4:
-		return int(ResourceGroupNameToGenericLinkIpv4), nil
-	case resourceGroupNameToGenericLinkIpv6:
-		return int(ResourceGroupNameToGenericLinkIpv6), nil
-	default:
-		return 0, fmt.Errorf(ResourceGroupNameUnknown, o)
-	}
-}
-
-func (o resourceGroupName) string() string {
-	return string(o)
-}
-
-type ResourceType int
-
-func (o ResourceType) String() string {
-	return string(o.raw())
-}
-
-func (o ResourceType) Int() int {
-	return int(o)
-}
-
-func (o ResourceType) raw() resourceType {
-	switch o {
-	case ResourceTypeNone:
-		return resourceTypeNone
-	case ResourceTypeAsnPool:
-		return resourceTypeAsnPool
-	case ResourceTypeIp4Pool:
-		return resourceTypeIp4Pool
-	case ResourceTypeIp6Pool:
-		return resourceTypeIp6Pool
-	case ResourceTypeVniPool:
-		return resourceTypeVniPool
-	default:
-		return resourceType(fmt.Sprintf(resourceTypeUnknown, o))
-	}
-}
-
-func (o *ResourceType) FromString(in string) error {
-	i, err := resourceType(in).parse()
-	if err != nil {
-		return err
-	}
-	*o = ResourceType(i)
-	return nil
-}
-
-// AllResourceTypes returns the []ResourceType representing
-// all supported ResourceType
-func AllResourceTypes() []ResourceType {
-	i := 0
-	var result []ResourceType
-	for {
-		var rt ResourceType
-		err := rt.FromString(ResourceType(i).String())
-		if err != nil {
-			return result[:i]
-		}
-		result = append(result, rt)
-		i++
-	}
-}
-
-type resourceType string
-
-func (o resourceType) string() string {
-	return string(o)
-}
-
-func (o resourceType) parse() (int, error) {
-	switch o {
-	case resourceTypeNone:
-		return int(ResourceTypeNone), nil
-	case resourceTypeAsnPool:
-		return int(ResourceTypeAsnPool), nil
-	case resourceTypeIp4Pool:
-		return int(ResourceTypeIp4Pool), nil
-	case resourceTypeIp6Pool:
-		return int(ResourceTypeIp6Pool), nil
-	case resourceTypeVniPool:
-		return int(ResourceTypeVniPool), nil
-	default:
-		return int(ResourceTypeUnknown), fmt.Errorf("unknown resource type '%s'", o)
-	}
-}
 
 type ResourceGroup struct {
-	Type           ResourceType
-	Name           ResourceGroupName
-	SecurityZoneId *ObjectId
+	Type           enum.ResourceType
+	Name           enum.ResourceGroup
+	SecurityZoneId *string
 }
 
 type ResourceGroupAllocations []ResourceGroupAllocation
@@ -503,13 +51,13 @@ func (o ResourceGroupAllocations) Get(requested *ResourceGroup) *ResourceGroupAl
 
 type ResourceGroupAllocation struct {
 	ResourceGroup ResourceGroup
-	PoolIds       []ObjectId `json:"pool_ids"`
+	PoolIds       []string `json:"pool_ids"`
 }
 
 func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
-	var poolIds []ObjectId
+	var poolIds []string
 	if o.PoolIds == nil {
-		poolIds = make([]ObjectId, 0)
+		poolIds = make([]string, 0)
 	} else {
 		poolIds = o.PoolIds
 	}
@@ -518,17 +66,13 @@ func (o *ResourceGroupAllocation) raw() *rawResourceGroupAllocation {
 	// "sz:ISKtui8i80vl0ljsdJQ,leaf_loopback_ips", depending on whether the
 	// resource group belongs to a blueprint or to a child object within a
 	// blueprint.
-	name := o.ResourceGroup.Name.raw()
-	switch {
-	case o.ResourceGroup.SecurityZoneId != nil:
-		name = resourceGroupName(fmt.Sprintf(
-			resourceGroupNameWithOwner, resourceGroupOwnerecurityZone,
-			*o.ResourceGroup.SecurityZoneId, name,
-		))
+	name := o.ResourceGroup.Name.String()
+	if o.ResourceGroup.SecurityZoneId != nil {
+		name = fmt.Sprintf(resourceGroupNameWithOwner, resourceGroupOwnerSecurityZone, *o.ResourceGroup.SecurityZoneId, name)
 	}
 
 	return &rawResourceGroupAllocation{
-		Type:    o.ResourceGroup.Type.raw(),
+		Type:    o.ResourceGroup.Type,
 		Name:    name,
 		PoolIds: poolIds,
 	}
@@ -539,9 +83,9 @@ func (o *ResourceGroupAllocation) IsEmpty() bool {
 }
 
 type rawResourceGroupAllocation struct {
-	Type    resourceType      `json:"type,omitempty"`
-	Name    resourceGroupName `json:"name,omitempty"`
-	PoolIds []ObjectId        `json:"pool_ids"`
+	Type    enum.ResourceType `json:"type,omitempty"`
+	Name    string            `json:"name,omitempty"`
+	PoolIds []string          `json:"pool_ids"`
 }
 
 // polish leans on some apstra code which determines whether a resource group
@@ -561,39 +105,33 @@ type rawResourceGroupAllocation struct {
 //	       sz_id = sz[len('sz:'):]
 //	   return ParsedResourceGroupName(sz_id=sz_id, rg_name=resource_group_name)
 func (o *rawResourceGroupAllocation) polish() (*ResourceGroupAllocation, error) {
-	t, err := o.Type.parse()
-	if err != nil {
-		return nil, err
-	}
-
 	rga := &ResourceGroupAllocation{
 		PoolIds: o.PoolIds,
 		ResourceGroup: ResourceGroup{
-			Type: ResourceType(t),
+			Type: o.Type,
 		},
 	}
 
 	switch {
-	case strings.HasPrefix(string(o.Name), resourceGroupOwnerecurityZone+":"):
-		fields := strings.Split(string(o.Name), ",")
+	case strings.HasPrefix(o.Name, resourceGroupOwnerSecurityZone+":"):
+		fields := strings.Split(o.Name, ",")
 		if len(fields) != 2 {
 			return nil, fmt.Errorf(
 				"error processing resource group name %q, expected split on ',' to produce 2 results, got %d",
 				o.Name, len(fields),
 			)
 		}
-		err = rga.ResourceGroup.Name.FromString(fields[1])
+		err := rga.ResourceGroup.Name.FromString(fields[1])
 		if err != nil {
 			return nil, err
 		}
-		szId := ObjectId(strings.TrimPrefix(fields[0], resourceGroupOwnerecurityZone+":"))
+		szId := strings.TrimPrefix(fields[0], resourceGroupOwnerSecurityZone+":")
 		rga.ResourceGroup.SecurityZoneId = &szId
 	default:
-		name, err := o.Name.parse()
+		err := rga.ResourceGroup.Name.FromString(o.Name)
 		if err != nil {
 			return nil, err
 		}
-		rga.ResourceGroup.Name = ResourceGroupName(name)
 	}
 
 	return rga, nil

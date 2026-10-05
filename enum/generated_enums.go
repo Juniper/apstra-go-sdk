@@ -1501,28 +1501,59 @@ func (o *RenderedConfigType) UnmarshalJSON(bytes []byte) error {
 }
 
 var (
-	_ enum             = (*ResourcePoolType)(nil)
-	_ json.Marshaler   = (*ResourcePoolType)(nil)
-	_ json.Unmarshaler = (*ResourcePoolType)(nil)
+	_ enum             = (*ResourceGroup)(nil)
+	_ json.Marshaler   = (*ResourceGroup)(nil)
+	_ json.Unmarshaler = (*ResourceGroup)(nil)
 )
 
-func (o ResourcePoolType) String() string {
+func (o ResourceGroup) String() string {
 	return o.Value
 }
 
-func (o *ResourcePoolType) FromString(s string) error {
-	if ResourcePoolTypes.Parse(s) == nil {
+func (o *ResourceGroup) FromString(s string) error {
+	if ResourceGroups.Parse(s) == nil {
 		return newEnumParseError(o, s)
 	}
 	o.Value = s
 	return nil
 }
 
-func (o ResourcePoolType) MarshalJSON() ([]byte, error) {
+func (o ResourceGroup) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.String())
 }
 
-func (o *ResourcePoolType) UnmarshalJSON(bytes []byte) error {
+func (o *ResourceGroup) UnmarshalJSON(bytes []byte) error {
+	var s string
+	err := json.Unmarshal(bytes, &s)
+	if err != nil {
+		return err
+	}
+	return o.FromString(s)
+}
+
+var (
+	_ enum             = (*ResourceType)(nil)
+	_ json.Marshaler   = (*ResourceType)(nil)
+	_ json.Unmarshaler = (*ResourceType)(nil)
+)
+
+func (o ResourceType) String() string {
+	return o.Value
+}
+
+func (o *ResourceType) FromString(s string) error {
+	if ResourceTypes.Parse(s) == nil {
+		return newEnumParseError(o, s)
+	}
+	o.Value = s
+	return nil
+}
+
+func (o ResourceType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.String())
+}
+
+func (o *ResourceType) UnmarshalJSON(bytes []byte) error {
 	var s string
 	err := json.Unmarshal(bytes, &s)
 	if err != nil {
@@ -2308,14 +2339,54 @@ var (
 		RenderedConfigTypeStaging,
 	)
 
-	_                 enum = new(ResourcePoolType)
-	ResourcePoolTypes      = oenum.New(
-		ResourcePoolTypeAsn,
-		ResourcePoolTypeInt,
-		ResourcePoolTypeIpv4,
-		ResourcePoolTypeIpv6,
-		ResourcePoolTypeVlan,
-		ResourcePoolTypeVni,
+	_              enum = new(ResourceGroup)
+	ResourceGroups      = oenum.New(
+		ResourceGroupAccessAccessIPv4,
+		ResourceGroupAccessAccessIPv6,
+		ResourceGroupAccessASN,
+		ResourceGroupAccessIPv4,
+		ResourceGroupAccessIPv6,
+		ResourceGroupEVPNL3VNI,
+		ResourceGroupExternalVNLocalVNI,
+		ResourceGroupGenericASN,
+		ResourceGroupGenericIPv4,
+		ResourceGroupGenericIPv6,
+		ResourceGroupLeafASN,
+		ResourceGroupLeafIPv4,
+		ResourceGroupLeafIPv6,
+		ResourceGroupLeafL3PeerLinkLinkIPv4,
+		ResourceGroupLeafL3PeerLinkLinkIPv6,
+		ResourceGroupLeafLeafIPv4,
+		ResourceGroupLeafLeafIPv6,
+		ResourceGroupMLAGDomainSVIIPv4,
+		ResourceGroupMLAGDomainSVIIPv6,
+		ResourceGroupSpineASN,
+		ResourceGroupSpineIPv4,
+		ResourceGroupSpineIPv6,
+		ResourceGroupSpineLeafIPv4,
+		ResourceGroupSpineLeafIPv6,
+		ResourceGroupSuperspineASN,
+		ResourceGroupSuperspineIPv4,
+		ResourceGroupSuperspineIPv6,
+		ResourceGroupSuperspineSpineIPv4,
+		ResourceGroupSuperspineSpineIPv6,
+		ResourceGroupToGenericLinkIPv4,
+		ResourceGroupToGenericLinkIPv6,
+		ResourceGroupVirtualNetworkSviIPv4,
+		ResourceGroupVirtualNetworkSviIPv6,
+		ResourceGroupVTEPIPv4,
+		ResourceGroupVTEPIPv6,
+		ResourceGroupVXLANVNI,
+	)
+
+	_             enum = new(ResourceType)
+	ResourceTypes      = oenum.New(
+		ResourceTypeASN,
+		ResourceTypeInt,
+		ResourceTypeIPv4,
+		ResourceTypeIPv6,
+		ResourceTypeVLAN,
+		ResourceTypeVNI,
 	)
 
 	_                          enum = new(RoutingZoneConstraintMode)
