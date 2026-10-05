@@ -144,10 +144,9 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			require.NoError(t, err)
 
 			// assign an IPv4 pool to leaf loopbacks so that we can "remove" (cause it to revert to a pool address) a loopback IPv4 address
-			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
+			err = bpClient.SetResourceAllocation(ctx, ResourceGroupAllocation{
 				ResourceGroup: ResourceGroup{
-					SecurityZoneId: &rzID,
-					Type:           enum.ResourceTypeIPv4,
+					SecurityZoneID: &rzID,
 					Name:           enum.ResourceGroupLeafIPv4,
 				},
 				PoolIds: []string{ipV4PoolId},
@@ -155,10 +154,9 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 			require.NoError(t, err)
 
 			// assign an IPv6 pool to leaf loopbacks so that we can "remove" (cause it to revert to a pool) address a loopback IPv6 address
-			err = bpClient.SetResourceAllocation(ctx, &ResourceGroupAllocation{
+			err = bpClient.SetResourceAllocation(ctx, ResourceGroupAllocation{
 				ResourceGroup: ResourceGroup{
-					SecurityZoneId: &rzID,
-					Type:           enum.ResourceTypeIPv6,
+					SecurityZoneID: &rzID,
 					Name:           enum.ResourceGroupLeafIPv6,
 				},
 				PoolIds: []string{ipV6PoolId},

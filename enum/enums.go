@@ -487,8 +487,8 @@ var (
 	ResourceGroupLeafL3PeerLinkLinkIPv6 = ResourceGroup{Value: "ipv6_leaf_l3_peer_link_link_ips"}
 	ResourceGroupLeafLeafIPv4           = ResourceGroup{Value: "leaf_leaf_link_ips"}
 	ResourceGroupLeafLeafIPv6           = ResourceGroup{Value: "ipv6_leaf_leaf_link_ips"}
-	ResourceGroupMLAGDomainSVIIPv4      = ResourceGroup{Value: "mlag_domain_svi_subnets"}
-	ResourceGroupMLAGDomainSVIIPv6      = ResourceGroup{Value: "mlag_domain_svi_subnets_ipv6"}
+	ResourceGroupMLAGDomainIPv4         = ResourceGroup{Value: "mlag_domain_svi_subnets"}
+	ResourceGroupMLAGDomainIPv6         = ResourceGroup{Value: "mlag_domain_svi_subnets_ipv6"}
 	ResourceGroupSpineASN               = ResourceGroup{Value: "spine_asns"}
 	ResourceGroupSpineIPv4              = ResourceGroup{Value: "spine_loopback_ips"}
 	ResourceGroupSpineIPv6              = ResourceGroup{Value: "spine_loopback_ips_ipv6"}
@@ -501,8 +501,8 @@ var (
 	ResourceGroupSuperspineSpineIPv6    = ResourceGroup{Value: "ipv6_spine_superspine_link_ips"}
 	ResourceGroupToGenericLinkIPv4      = ResourceGroup{Value: "to_generic_link_ips"}
 	ResourceGroupToGenericLinkIPv6      = ResourceGroup{Value: "ipv6_to_generic_link_ips"}
-	ResourceGroupVirtualNetworkSviIPv4  = ResourceGroup{Value: "virtual_network_svi_subnets"}
-	ResourceGroupVirtualNetworkSviIPv6  = ResourceGroup{Value: "virtual_network_svi_subnets_ipv6"}
+	ResourceGroupVirtualNetworkIPv4     = ResourceGroup{Value: "virtual_network_svi_subnets"}
+	ResourceGroupVirtualNetworkIPv6     = ResourceGroup{Value: "virtual_network_svi_subnets_ipv6"}
 	ResourceGroupVTEPIPv4               = ResourceGroup{Value: "vtep_ips"}
 	ResourceGroupVTEPIPv6               = ResourceGroup{Value: "vtep_ips_ipv6"}
 	ResourceGroupVXLANVNI               = ResourceGroup{Value: "vxlan_vn_ids"}
