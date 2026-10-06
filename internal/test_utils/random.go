@@ -25,22 +25,22 @@ import (
 const envSampleSize = "APSTRA_TEST_SAMPLE_MAX"
 
 func RandString(n int, style string) string {
-	alphaLetters := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
-	b64Letters := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
-	hexLetters := []rune("0123456789abcdef")
-	var letters []rune
+	alphaChars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+	b64Chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
+	hexChars := []rune("0123456789abcdef")
+	var charset []rune
 	b := make([]rune, n)
 	switch style {
 	case "alpha":
-		letters = alphaLetters
+		charset = alphaChars
 	case "hex":
-		letters = hexLetters
+		charset = hexChars
 	case "b64":
-		letters = b64Letters
+		charset = b64Chars
 	}
 
 	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
 }
