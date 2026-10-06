@@ -25,11 +25,14 @@ import (
 const envSampleSize = "APSTRA_TEST_SAMPLE_MAX"
 
 func RandString(n int, style string) string {
+	alphaLetters := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 	b64Letters := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
 	hexLetters := []rune("0123456789abcdef")
 	var letters []rune
 	b := make([]rune, n)
 	switch style {
+	case "alpha":
+		letters = alphaLetters
 	case "hex":
 		letters = hexLetters
 	case "b64":
