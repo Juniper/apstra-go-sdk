@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	CtxKeyTestUUID = "Test-UUID"
-	CtxKeyTestID   = "Test-ID"
+	CtxKeyTestUUID        = "Test-UUID"
+	CtxKeyTestID          = "Test-ID"
+	DefaultCleanupTimeout = 30 * time.Second
 )
 
 // ContextWithTestID produces contexts with the following values:

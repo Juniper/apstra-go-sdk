@@ -17,6 +17,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/Juniper/apstra-go-sdk/internal/test_utils/design_test_objects"
 	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/require"
 )
@@ -194,7 +195,7 @@ func TestBlueprintE(t testing.TB, ctx context.Context, client *apstra.Client) *a
 }
 
 func TestBlueprintF(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
-	templateId := TestTemplateA(t, ctx, client)
+	templateId := designtestobj.TemplateA(t, ctx, client)
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
 		RefDesign:  enum.RefDesignDatacenter,
@@ -215,7 +216,7 @@ func TestBlueprintF(t testing.TB, ctx context.Context, client *apstra.Client) *a
 func TestBlueprintG(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
-	templateId := TestTemplateB(t, ctx, client)
+	templateId := designtestobj.TemplateB(t, ctx, client)
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
 		RefDesign:  enum.RefDesignDatacenter,
@@ -345,6 +346,29 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 		Description: "initial commit in test: " + t.Name(),
 		Version:     bpStatus.Version,
 	})
+	require.NoError(t, err)
+
+	return bpClient
+}
+
+func TestBlueprintJ(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+	t.Helper()
+
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
+		RefDesign:                 enum.RefDesignDatacenter,
+		Label:                     testutils.RandString(6, "hex"),
+		TemplateId:                apstra.ObjectId(designtestobj.TemplateC(t, ctx, client)),
+		AddressingPolicy:          &apstra.AddressingPolicy{
+			AddressingSupport: &enum.AddressingSchemeIPv46,
+		},
+		SkipCablingReadinessCheck: false,
+	})
+	require.NoError(t, err)
+	testutils.CleanupWithFreshContext(t, testutils.DefaultCleanupTimeout, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
 	require.NoError(t, err)
 
 	return bpClient
