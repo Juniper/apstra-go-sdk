@@ -1,4 +1,10 @@
-package redundancycache_test
+// Copyright (c) Juniper Networks, Inc., 2026-2026.
+// All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+//go:build integration
+
+package apstra_test
 
 import (
 	"context"
@@ -7,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
-	cache "github.com/Juniper/apstra-go-sdk/internal/datacenter_system_redundancy_cache"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
 	testclient "github.com/Juniper/apstra-go-sdk/internal/test_utils/test_client"
 	"github.com/stretchr/testify/require"
@@ -23,7 +28,6 @@ func TestLookup(t *testing.T) {
 			t.Parallel()
 
 			bp := dctestobj.TestBlueprintJ(t, ctx, client.Client)
-			bpID := string(bp.Id())
 
 			// Values based on TestBlueprintJ()
 			expectedGroupCount := 3   // 1 leaf pair, 2 access pair
@@ -31,28 +35,28 @@ func TestLookup(t *testing.T) {
 
 			t.Run("lookup_systems_using_bogus_group_id", func(t *testing.T) {
 				// Begin by clearing the cache.
-				cache.Drop(bpID)
+				bp.DropSysRedundancyCache()
 
-				systems, err := cache.LookupSystems(ctx, bp, "bogus-group-id")
+				systems, err := bp.GetSystemsByRedundancyGroup(ctx, "bogus-group-id")
 				require.Error(t, err, "expected error for bogus group ID, but got none")
-				require.ErrorContains(t, err, cache.GroupNotFoundError)
+				require.ErrorContains(t, err, apstra.GroupNotFoundInRedundancyCacheError)
 				require.Empty(t, systems[0], "expected first member of bogus redundant system pair to have empty ID")
 				require.Empty(t, systems[1], "expected second member of bogus redundant system pair to have empty ID")
-				require.Equal(t, expectedGroupCount, cache.CountGroups(bpID))   // expectedGroupCount groups in the per-bp cache
-				require.Equal(t, expectedSwitchCount, cache.CountSystems(bpID)) // expectedSwitchCount systems in the per-bp cache
+				require.Equal(t, expectedGroupCount, bp.CountGroups())   // expectedGroupCount groups in the per-bp cache
+				require.Equal(t, expectedSwitchCount, bp.CountSystems()) // expectedSwitchCount systems in the per-bp cache
 			})
 
 			t.Run("lookup_group_using_bogus_system_id", func(t *testing.T) {
 				// Begin by clearing the cache.
-				cache.Drop(bpID)
+				bp.DropSysRedundancyCache()
 
-				group, peer, err := cache.LookupGroup(ctx, bp, "bogus-system-id")
+				group, peer, err := bp.GetRedundancyGroupBySystem(ctx, "bogus-system-id")
 				require.Nilf(t, group, "expected nil group for bogus system id")
 				require.Nilf(t, peer, "expected nil group for bogus system id")
 				require.Error(t, err, "expected error for bogus system ID, but got none")
-				require.ErrorContains(t, err, cache.SystemNotFoundError)
-				require.Equal(t, expectedGroupCount, cache.CountGroups(bpID))   // expectedGroupCount groups in the per-bp cache
-				require.Equal(t, expectedSwitchCount, cache.CountSystems(bpID)) // expectedSwitchCount systems in the per-bp cache
+				require.ErrorContains(t, err, apstra.SystemNotFoundInRedundancyCacheError)
+				require.Equal(t, expectedGroupCount, bp.CountGroups())   // expectedGroupCount groups in the per-bp cache
+				require.Equal(t, expectedSwitchCount, bp.CountSystems()) // expectedSwitchCount systems in the per-bp cache
 			})
 
 			// Function which returns system IDs of switch nodes.
@@ -116,23 +120,23 @@ func TestLookup(t *testing.T) {
 			t.Run("lookup_all_groups", func(t *testing.T) {
 				ranAllGroups = true
 				// Begin by clearing the cache.
-				cache.Drop(bpID)
+				bp.DropSysRedundancyCache()
 
 				groupCount := 0
 				for _, groupID := range groupIDs(t, ctx, bp) {
 					groupCount++
 					groupIDSet[groupID] = struct{}{}
-					systemIDs, err := cache.LookupSystems(ctx, bp, groupID)
+					systemIDs, err := bp.GetSystemsByRedundancyGroup(ctx, groupID)
 					require.NoError(t, err)
 					require.NotEmpty(t, systemIDs[0])
 					require.NotEmpty(t, systemIDs[1])
-					nodeType, err := cache.LookupNodeType(ctx, bp, systemIDs[0])
+					nodeType, err := bp.GetBindingNodeType(ctx, systemIDs[0])
 					require.NoError(t, err)
 					require.Equal(t, apstra.NodeTypeSystem, nodeType)
-					nodeType, err = cache.LookupNodeType(ctx, bp, systemIDs[1])
+					nodeType, err = bp.GetBindingNodeType(ctx, systemIDs[1])
 					require.NoError(t, err)
 					require.Equal(t, apstra.NodeTypeSystem, nodeType)
-					nodeType, err = cache.LookupNodeType(ctx, bp, groupID)
+					nodeType, err = bp.GetBindingNodeType(ctx, groupID)
 					require.NoError(t, err)
 					require.Equal(t, apstra.NodeTypeRedundancyGroup, nodeType)
 					systemIDSet[systemIDs[0]] = struct{}{}
@@ -144,12 +148,12 @@ func TestLookup(t *testing.T) {
 			t.Run("lookup_all_systems", func(t *testing.T) {
 				ranAllSystems = true
 				// Begin by clearing the cache.
-				cache.Drop(bpID)
+				bp.DropSysRedundancyCache()
 
 				redundantSystemCount := 0
 				for _, systemID := range switchIDs(t, ctx, bp) {
 					systemIDSet[systemID] = struct{}{}
-					group, peer, err := cache.LookupGroup(ctx, bp, systemID)
+					group, peer, err := bp.GetRedundancyGroupBySystem(ctx, systemID)
 					require.NoError(t, err)
 					if group == nil {
 						require.Nil(t, peer)
@@ -158,10 +162,10 @@ func TestLookup(t *testing.T) {
 						require.NotEqual(t, systemID, *peer)
 						groupIDSet[*group] = struct{}{}
 						redundantSystemCount++
-						nodeType, err := cache.LookupNodeType(ctx, bp, *group)
+						nodeType, err := bp.GetBindingNodeType(ctx, *group)
 						require.NoError(t, err)
 						require.Equal(t, apstra.NodeTypeRedundancyGroup, nodeType)
-						nodeType, err = cache.LookupNodeType(ctx, bp, *peer)
+						nodeType, err = bp.GetBindingNodeType(ctx, *peer)
 						require.NoError(t, err)
 						require.Equal(t, apstra.NodeTypeSystem, nodeType)
 					}
@@ -173,13 +177,13 @@ func TestLookup(t *testing.T) {
 			if ranAllGroups && ranAllSystems {
 				require.Equal(t, expectedGroupCount, len(groupIDSet))
 				require.Equal(t, expectedSwitchCount, len(systemIDSet))
-				require.Equal(t, expectedGroupCount, cache.CountGroups(bpID))
-				require.Equal(t, expectedSwitchCount, cache.CountSystems(bpID))
+				require.Equal(t, expectedGroupCount, bp.CountGroups())
+				require.Equal(t, expectedSwitchCount, bp.CountSystems())
 			}
 
 			t.Run("concurrent_access", func(t *testing.T) {
 				// Begin by clearing the cache.
-				cache.Drop(bpID)
+				bp.DropSysRedundancyCache()
 
 				// Discover inputs independently of which other subtests ran.
 				systemIDSlice := switchIDs(t, ctx, bp)
@@ -197,37 +201,37 @@ func TestLookup(t *testing.T) {
 
 						switch {
 						case i%7 == 0: // Lookup using bogus system ID every 7th request.
-							group, peer, err := cache.LookupGroup(ctx, bp, fmt.Sprintf("bogus_system_%03d", i))
+							group, peer, err := bp.GetRedundancyGroupBySystem(ctx, fmt.Sprintf("bogus_system_%03d", i))
 							require.Nil(t, group)
 							require.Nil(t, peer)
 							require.Error(t, err)
-							require.ErrorContains(t, err, cache.SystemNotFoundError)
+							require.ErrorContains(t, err, apstra.SystemNotFoundInRedundancyCacheError)
 						case i%6 == 0: // Lookup using bogus group ID every 6th request.
-							systems, err := cache.LookupSystems(ctx, bp, fmt.Sprintf("bogus_group_%03d", i))
+							systems, err := bp.GetSystemsByRedundancyGroup(ctx, fmt.Sprintf("bogus_group_%03d", i))
 							require.Error(t, err)
-							require.ErrorContains(t, err, cache.GroupNotFoundError)
+							require.ErrorContains(t, err, apstra.GroupNotFoundInRedundancyCacheError)
 							require.Empty(t, systems[0])
 							require.Empty(t, systems[1])
 						case i%2 == 0: // Valid lookup in both directions (by system and by group, if any) on even numbers not divisible by 6 or 7.
 							testSys := systemIDSlice[i%len(systemIDSlice)]
-							group, peer, err := cache.LookupGroup(ctx, bp, testSys)
+							group, peer, err := bp.GetRedundancyGroupBySystem(ctx, testSys)
 							require.NoError(t, err)
 							if group == nil {
 								require.Nil(t, peer)
 							} else { // We got a group ID. Run it the other way.
 								require.NotNil(t, peer)
 								require.NotEqual(t, testSys, *peer)
-								systems, err := cache.LookupSystems(ctx, bp, *group)
+								systems, err := bp.GetSystemsByRedundancyGroup(ctx, *group)
 								require.NoError(t, err)
 								require.Contains(t, systems, testSys)
 								require.Contains(t, systems, *peer)
-								nodeType, err := cache.LookupNodeType(ctx, bp, *group)
+								nodeType, err := bp.GetBindingNodeType(ctx, *group)
 								require.NoError(t, err)
 								require.Equal(t, apstra.NodeTypeRedundancyGroup, nodeType)
-								nodeType, err = cache.LookupNodeType(ctx, bp, *peer)
+								nodeType, err = bp.GetBindingNodeType(ctx, *peer)
 								require.NoError(t, err)
 								require.Equal(t, apstra.NodeTypeSystem, nodeType)
-								group2, peer2, err := cache.LookupGroup(ctx, bp, *peer)
+								group2, peer2, err := bp.GetRedundancyGroupBySystem(ctx, *peer)
 								require.NoError(t, err)
 								require.NotNil(t, group2)
 								require.NotNil(t, peer2)
@@ -236,10 +240,10 @@ func TestLookup(t *testing.T) {
 							}
 						case i%2 == 1: // Valid system lookup on odd numbers not divisible by 6 or 7.
 							testGrp := groupIDSlice[i%len(groupIDSlice)]
-							systems, err := cache.LookupSystems(ctx, bp, testGrp)
+							systems, err := bp.GetSystemsByRedundancyGroup(ctx, testGrp)
 							require.NoError(t, err)
 							for _, system := range systems { // look up the group associated with each returned sys ID
-								group, peer, err := cache.LookupGroup(ctx, bp, system)
+								group, peer, err := bp.GetRedundancyGroupBySystem(ctx, system)
 								require.NoError(t, err)
 								require.NotNil(t, group)
 								require.NotNil(t, peer)
