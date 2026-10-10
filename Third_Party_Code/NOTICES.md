@@ -580,8 +580,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## google.golang.org/protobuf
 
 * Name: google.golang.org/protobuf
-* Version: v1.33.0
-* License: [BSD-3-Clause](https://github.com/protocolbuffers/protobuf-go/blob/v1.33.0/LICENSE)
+* Version: v1.36.11
+* License: [BSD-3-Clause](https://github.com/protocolbuffers/protobuf-go/blob/v1.36.11/LICENSE)
 
 ```
 Copyright (c) 2018 The Go Authors. All rights reserved.
