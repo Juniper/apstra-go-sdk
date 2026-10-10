@@ -102,8 +102,6 @@ func TemplateC(t testing.TB, ctx context.Context, client *apstra.Client) string 
 			{Count: 1, RackType: rackTypeB},
 		},
 		ASNAllocationPolicy: &policy.ASNAllocation{SpineASNScheme: enum.ASNAllocationSchemeDistinct},
-		//Capability:           nil,
-		//DHCPServiceIntent:    policy.DHCPServiceIntent{},
 		Spine: design.Spine{
 			Count:         1,
 			LogicalDevice: rackTypeB.LeafSwitches[0].LogicalDevice,

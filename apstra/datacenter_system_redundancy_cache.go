@@ -197,30 +197,32 @@ func getSystemToGroup(ctx context.Context, bp *TwoStageL3ClosClient) (map[string
 	query := new(MatchQuery).
 		SetBlueprintId(bp.Id()).
 		SetClient(bp.Client()).
-		Match(new(PathQuery).
-			Node([]QEEAttribute{
-				NodeTypeSystem.QEEAttribute(),
-				// We filter on system_type='switch' to reduce the cache size. Generic Systems are also "systems"
-				// in the DC refdesign graph, but there's lots of them and they're not interesting to us.
-				// But not all switches can be part of a redundancy group. DC refdesign has a validation called
-				// RG_SUPPORTS_LEAF_ACCESS which ensures that only those with role=is_in(['leaf', 'access']) can
-				// be part of a redundancy group, so we *could* disregard spines and superspines as well.
-				// We're not doing that because the count of spines and superspines will be low/insignificant
-				// and this simplifies the error diagnostic returned by the lookup functions in case of an unknown
-				// system ID. Rather than saying "no such switch of type leaf or access with that ID" (we won't
-				// know which type we're looking for), we can return "no switch with that ID" because we'll have
-				// cache entries for all switches, regardless of their role.
-				{Key: "system_type", Value: QEStringVal(SystemTypeSwitch.String())},
-				{Key: "name", Value: QEStringVal("n_sys")},
-			}),
+		Match(
+			new(PathQuery).
+				Node([]QEEAttribute{
+					NodeTypeSystem.QEEAttribute(),
+					// We filter on system_type='switch' to reduce the cache size. Generic Systems are also "systems"
+					// in the DC refdesign graph, but there's lots of them and they're not interesting to us.
+					// But not all switches can be part of a redundancy group. DC refdesign has a validation called
+					// RG_SUPPORTS_LEAF_ACCESS which ensures that only those with role=is_in(['leaf', 'access']) can
+					// be part of a redundancy group, so we *could* disregard spines and superspines as well.
+					// We're not doing that because the count of spines and superspines will be low/insignificant
+					// and this simplifies the error diagnostic returned by the lookup functions in case of an unknown
+					// system ID. Rather than saying "no such switch of type leaf or access with that ID" (we won't
+					// know which type we're looking for), we can return "no switch with that ID" because we'll have
+					// cache entries for all switches, regardless of their role.
+					{Key: "system_type", Value: QEStringVal(SystemTypeSwitch.String())},
+					{Key: "name", Value: QEStringVal("n_sys")},
+				}),
 		).
-		Optional(new(PathQuery).
-			Node([]QEEAttribute{{Key: "name", Value: QEStringVal("n_sys")}}).
-			Out([]QEEAttribute{RelationshipTypePartOfRedundancyGroup.QEEAttribute()}).
-			Node([]QEEAttribute{
-				NodeTypeRedundancyGroup.QEEAttribute(),
-				{Key: "name", Value: QEStringVal("n_grp")},
-			}),
+		Optional(
+			new(PathQuery).
+				Node([]QEEAttribute{{Key: "name", Value: QEStringVal("n_sys")}}).
+				Out([]QEEAttribute{RelationshipTypePartOfRedundancyGroup.QEEAttribute()}).
+				Node([]QEEAttribute{
+					NodeTypeRedundancyGroup.QEEAttribute(),
+					{Key: "name", Value: QEStringVal("n_grp")},
+				}),
 		)
 
 	// target collects only the system ID and group ID (if any) for each system in the blueprint. The group
