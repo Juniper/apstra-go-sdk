@@ -13,13 +13,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
 
-const (
-	idNotFoundInRedundancyCacheError     = "ID not found in cache"
-	groupNotFoundInRedundancyCacheError  = "group not found in cache"
-	systemNotFoundInRedundancyCacheError = "system not found in cache"
-)
-
-func newCache() *sysRedundancyCache {
+func newSysRedundancyCache() *sysRedundancyCache {
 	return &sysRedundancyCache{
 		mu:             new(sync.RWMutex),
 		groupToSystems: make(map[string][2]string),
@@ -85,7 +79,11 @@ func (c *sysRedundancyCache) lookupGroup(ctx context.Context, systemID string, b
 	}
 
 	// Probably a bogus system ID.
-	return nil, nil, errors.New(systemNotFoundInRedundancyCacheError + ": " + systemID)
+	return nil, nil, ClientErr{
+		errType: ErrSystemNotFoundInCache,
+		err:     errors.New("system not found in cache: " + systemID),
+		detail:  systemID,
+	}
 }
 
 // lookupNodeType expects either the ID of a system node with system_type == switch,
@@ -129,7 +127,11 @@ func (c *sysRedundancyCache) lookupNodeType(ctx context.Context, nodeID string, 
 		return t, nil
 	}
 
-	return NodeTypeNone, errors.New(idNotFoundInRedundancyCacheError + ": " + nodeID)
+	return NodeTypeNone, ClientErr{
+		errType: ErrNodeTypeUnknown,
+		err:     errors.New("node not found in cache: " + nodeID),
+		detail:  nodeID,
+	}
 }
 
 // lookupSystems returns a pair of System IDs representing the given redundancy group ID in the given Blueprint.
@@ -166,7 +168,11 @@ func (c *sysRedundancyCache) lookupSystems(ctx context.Context, groupID string, 
 	}
 
 	// Probably a bogus group ID.
-	return [2]string{}, errors.New(groupNotFoundInRedundancyCacheError + ": " + groupID)
+	return [2]string{}, ClientErr{
+		errType: ErrGroupNotFoundInCache,
+		err:     errors.New("group not found in cache: " + groupID),
+		detail:  groupID,
+	}
 }
 
 // refresh queries the blueprint for all switches and their redundancy groups,
