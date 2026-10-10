@@ -111,7 +111,7 @@ func TestCRUDFreeformAggregateLink(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(context.Background(), t)
 
-			bp := fftestobj.TestBlueprintA(t, ctx, client.Client)
+			bp := fftestobj.BlueprintA(t, ctx, client.Client)
 			require.NotNil(t, bp)
 
 			e1, i1, i2, l1, l2 := create2i1e(t, ctx, *bp)

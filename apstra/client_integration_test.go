@@ -137,8 +137,8 @@ func TestGetBlueprintOverlayControlProtocol(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{bpFunc: dctestobj.TestBlueprintA, expectedOcp: apstra.OverlayControlProtocolEvpn},
-		{bpFunc: dctestobj.TestBlueprintB, expectedOcp: apstra.OverlayControlProtocolNone},
+		{bpFunc: dctestobj.BlueprintA, expectedOcp: apstra.OverlayControlProtocolEvpn},
+		{bpFunc: dctestobj.BlueprintB, expectedOcp: apstra.OverlayControlProtocolNone},
 	}
 
 	for _, client := range clients {

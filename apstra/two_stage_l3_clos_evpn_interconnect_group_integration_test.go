@@ -54,7 +54,7 @@ func TestEvpnInterconnectGroup(t *testing.T) {
 			ctx := testutils.ContextWithTestID(ctx, t)
 
 			t.Logf("Creating blueprint")
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 			fs, err := bpClient.GetFabricSettings(ctx)
 			require.NoError(t, err)
 
@@ -330,9 +330,9 @@ func TestEvpnInterconnectGroupErrors(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bp := dctestobj.TestBlueprintA(t, ctx, c.Client)
-			rzID := dctestobj.TestSecurityZoneA(t, ctx, bp)
-			rpID := dctestobj.TestRoutingPolicyA(t, ctx, bp)
+			bp := dctestobj.BlueprintA(t, ctx, c.Client)
+			rzID := dctestobj.SecurityZoneA(t, ctx, bp)
+			rpID := dctestobj.RoutingPolicyA(t, ctx, bp)
 			defaultRZ, err := bp.GetDefaultSecurityZone(ctx)
 			require.NoError(t, err)
 			require.NotNil(t, defaultRZ.ID())
@@ -583,10 +583,10 @@ func TestEvpnInterconnectGroupClearTranslationVNI(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bp := dctestobj.TestBlueprintA(t, ctx, c.Client)
-			rzID := dctestobj.TestSecurityZoneA(t, ctx, bp)
-			vnID := dctestobj.TestVirtualNetworkA(t, ctx, bp, rzID)
-			rpID := dctestobj.TestRoutingPolicyA(t, ctx, bp)
+			bp := dctestobj.BlueprintA(t, ctx, c.Client)
+			rzID := dctestobj.SecurityZoneA(t, ctx, bp)
+			vnID := dctestobj.VirtualNetworkA(t, ctx, bp, rzID)
+			rpID := dctestobj.RoutingPolicyA(t, ctx, bp)
 
 			// Create the DCI with a translation VNI.
 			dciID, err := bp.CreateEVPNInterconnectGroup(ctx, apstra.EVPNInterconnectGroup{

@@ -30,9 +30,9 @@ func TestLookup(t *testing.T) {
 		t.Run(client.Name(), func(t *testing.T) {
 			t.Parallel()
 
-			bp := dctestobj.TestBlueprintJ(t, ctx, client.Client)
+			bp := dctestobj.BlueprintJ(t, ctx, client.Client)
 
-			// Values based on TestBlueprintJ()
+			// Values based on dctestobj.BlueprintJ()
 			expectedGroupCount := 3   // 1 leaf pair, 2 access pair
 			expectedSwitchCount := 10 // 1 spine, 2 leaf, 7 access
 
