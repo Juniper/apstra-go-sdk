@@ -4,7 +4,7 @@
 
 //go:build integration && requiretestutils
 
-package dctestobj
+package designtestobj
 
 import (
 	"context"
@@ -12,14 +12,17 @@ import (
 	"time"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/design"
+	"github.com/Juniper/apstra-go-sdk/enum"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
+	"github.com/Juniper/apstra-go-sdk/policy"
 	"github.com/stretchr/testify/require"
 )
 
-func TestTemplateA(t testing.TB, ctx context.Context, client *apstra.Client) apstra.ObjectId {
+func TemplateA(t testing.TB, ctx context.Context, client *apstra.Client) apstra.ObjectId {
 	t.Helper()
 
-	rackId := TestRackA(t, ctx, client)
+	rackId := RackTypeA(t, ctx, client)
 
 	request := apstra.CreateRackBasedTemplateRequest{
 		DisplayName: testutils.RandString(5, "hex"),
@@ -51,7 +54,7 @@ func TestTemplateA(t testing.TB, ctx context.Context, client *apstra.Client) aps
 	return id
 }
 
-func TestTemplateB(t testing.TB, ctx context.Context, client *apstra.Client) apstra.ObjectId {
+func TemplateB(t testing.TB, ctx context.Context, client *apstra.Client) apstra.ObjectId {
 	t.Helper()
 
 	rbt, err := client.GetRackBasedTemplate(ctx, "L2_Virtual")
@@ -80,6 +83,38 @@ func TestTemplateB(t testing.TB, ctx context.Context, client *apstra.Client) aps
 	require.NoError(t, err)
 	testutils.CleanupWithFreshContext(t, 10*time.Second, func(ctx context.Context) error {
 		return client.DeleteTemplate(ctx, id)
+	})
+
+	return id
+}
+
+// TemplateC returns the ID of a rack-based template with a single rack produced by
+// the RackTypeB() function.
+func TemplateC(t testing.TB, ctx context.Context, client *apstra.Client) string {
+	t.Helper()
+
+	rackTypeB, err := client.GetRackType2(ctx, RackTypeB(t, ctx, client))
+	require.NoError(t, err)
+
+	request := design.TemplateRackBased{
+		Label: testutils.RandString(6, "hex"),
+		Racks: []design.RackTypeWithCount{
+			{Count: 1, RackType: rackTypeB},
+		},
+		ASNAllocationPolicy: &policy.ASNAllocation{SpineASNScheme: enum.ASNAllocationSchemeDistinct},
+		//Capability:           nil,
+		//DHCPServiceIntent:    policy.DHCPServiceIntent{},
+		Spine: design.Spine{
+			Count:         1,
+			LogicalDevice: rackTypeB.LeafSwitches[0].LogicalDevice,
+		},
+		VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
+	}
+
+	id, err := client.CreateTemplate2(ctx, &request)
+	require.NoError(t, err)
+	testutils.CleanupWithFreshContext(t, testutils.DefaultCleanupTimeout, func(ctx context.Context) error {
+		return client.DeleteTemplate2(ctx, id)
 	})
 
 	return id
