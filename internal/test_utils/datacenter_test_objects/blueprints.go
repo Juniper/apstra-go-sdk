@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBlueprintA(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintA(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
@@ -41,7 +41,7 @@ func TestBlueprintA(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-func TestBlueprintB(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintB(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
@@ -61,7 +61,7 @@ func TestBlueprintB(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-func TestBlueprintC(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintC(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
@@ -80,7 +80,7 @@ func TestBlueprintC(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-func TestBlueprintD(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintD(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
@@ -125,7 +125,7 @@ func TestBlueprintD(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-func TestBlueprintE(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintE(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
 		RefDesign:  enum.RefDesignDatacenter,
 		Label:      testutils.RandString(5, "hex"),
@@ -194,7 +194,7 @@ func TestBlueprintE(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-func TestBlueprintF(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintF(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	templateId := designtestobj.TemplateA(t, ctx, client)
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
@@ -213,7 +213,7 @@ func TestBlueprintF(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-func TestBlueprintG(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintG(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
 	templateId := designtestobj.TemplateB(t, ctx, client)
@@ -240,9 +240,9 @@ func TestBlueprintG(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-// TestBlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient.
+// BlueprintH creates a test blueprint using client and returns a *TwoStageL3ClosClient.
 // The blueprint will use a dual-stack fabric and have ipv6 enabled.
-func TestBlueprintH(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintH(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
 	bpRequest := apstra.CreateBlueprintFromTemplateRequest{
@@ -276,8 +276,8 @@ func TestBlueprintH(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-// TestBlueprintI returns a collapsed fabric which has been committed and has no build errors
-func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+// BlueprintI returns a collapsed fabric which has been committed and has no build errors
+func BlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
@@ -351,7 +351,7 @@ func TestBlueprintI(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	return bpClient
 }
 
-func TestBlueprintJ(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+func BlueprintJ(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{

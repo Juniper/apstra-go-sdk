@@ -52,7 +52,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 			mu.Lock()
 			defer mu.Unlock()
 
-			bpMap[client.Name()] = dctestobj.TestBlueprintH(t, ctx, client.Client)
+			bpMap[client.Name()] = dctestobj.BlueprintH(t, ctx, client.Client)
 			leafIds, err := query.SystemIdsByRole(ctx, bpMap[client.Name()], "leaf")
 			require.NoError(t, err)
 

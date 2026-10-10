@@ -162,7 +162,7 @@ func TestCRUDSecurityZone(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			for tName, tCase := range testCases {
 				t.Run(tName, func(t *testing.T) {
@@ -331,7 +331,7 @@ func TestSecurityZone_Tagging(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 			sz, err := bpClient.GetSecurityZoneByVRFName(ctx, "default")
 			require.NoError(t, err)
 			require.NotNil(t, sz.ID())
@@ -351,7 +351,7 @@ func TestSecurityZone_GetDefaultSecurityZone(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 	for _, client := range clients {
 		t.Run(client.Name(), func(t *testing.T) {
-			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bp := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			// The default Security Zone ID will not be cached at this point
 			sz, err := bp.GetDefaultSecurityZone(ctx)
@@ -388,7 +388,7 @@ func TestSecurityZone_DefaultSecurityZoneID(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bp := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			// The default Security Zone ID will not be cached at this point
 			id, err := bp.DefaultSecurityZoneID(ctx)

@@ -162,7 +162,7 @@ func TestSetGetFabricSettings(t *testing.T) {
 	for i, client := range clients {
 		go func() {
 			defer bpwg.Done()
-			bpClients[i] = dctestobj.TestBlueprintC(t, ctx, client.Client)
+			bpClients[i] = dctestobj.BlueprintC(t, ctx, client.Client)
 		}()
 	}
 	bpwg.Wait()
@@ -245,7 +245,7 @@ func TestFabricSettingsRoutesMaxDefaultVsZero(t *testing.T) {
 			ctx := testutils.ContextWithTestID(ctx, t)
 			t.Parallel()
 
-			bpClient := dctestobj.TestBlueprintC(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintC(t, ctx, client.Client)
 
 			for _, tCase := range testCases {
 				t.Run(tCase.name, func(t *testing.T) {
@@ -286,7 +286,7 @@ func TestSetGetFabricSettingsV6(t *testing.T) {
 				t.Skipf("skipping test with Apstra %s", client.APIVersion())
 			}
 
-			bpClient := dctestobj.TestBlueprintC(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintC(t, ctx, client.Client)
 
 			t.Run("enable_and_check_ipv6", func(t *testing.T) {
 				fsSet := &apstra.FabricSettings{

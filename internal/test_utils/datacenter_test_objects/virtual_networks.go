@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestVirtualNetworkA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient, szId string) string {
+func VirtualNetworkA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient, szId string) string {
 	t.Helper()
 
 	leafIds, err := query.SystemIdsByRole(ctx, bp, "leaf")

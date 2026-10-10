@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2025.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,7 +26,7 @@ func TestGetBlueprintAnomalies(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintB(t, ctx, client.Client)
 
 			anomalies, err := client.Client.GetBlueprintAnomalies(ctx, bpClient.Id())
 			require.NoError(t, err)
@@ -46,7 +46,7 @@ func TestGetBlueprintNodeAnomalyCounts(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintB(t, ctx, client.Client)
 
 			anomalies, err := client.Client.GetBlueprintNodeAnomalyCounts(ctx, bpClient.Id())
 			require.NoError(t, err)
@@ -66,7 +66,7 @@ func TestGetBlueprintServiceAnomalyCounts(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintB(t, ctx, client.Client)
 
 			anomalies, err := client.Client.GetBlueprintServiceAnomalyCounts(ctx, bpClient.Id())
 			require.NoError(t, err)

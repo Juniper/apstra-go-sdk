@@ -290,7 +290,7 @@ func TestCrudPolicy(t *testing.T) {
 				return ""
 			}
 
-			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bp := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			for tName, tCase := range testCases {
 				t.Run(tName, func(t *testing.T) {
@@ -450,7 +450,7 @@ func TestPolicyAddDeleteRule(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bp := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			pid, err := bp.CreatePolicy(ctx, datacenter.Policy{
 				Label:         testutils.RandString(6, "hex"),

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2023-2025.
+// Copyright (c) Juniper Networks, Inc., 2023-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -38,7 +38,7 @@ func TestIbaPredefinedProbes(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 			pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 			require.NoError(t, err)
 

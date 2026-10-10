@@ -115,7 +115,7 @@ func TestGetPatchGetPatchNode(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			type metadataNode struct {
 				Tags         interface{}     `json:"tags,omitempty"`
@@ -182,7 +182,7 @@ func TestGetDcNodes(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintB(t, ctx, client.Client)
 
 			type node struct {
 				Id         apstra.ObjectId `json:"id"`
@@ -216,7 +216,7 @@ func TestPatchNodes(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintB(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintB(t, ctx, client.Client)
 
 			type node struct {
 				Id         apstra.ObjectId `json:"id"`

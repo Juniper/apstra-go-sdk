@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSecurityZoneA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient) string {
+func SecurityZoneA(t testing.TB, ctx context.Context, bp *apstra.TwoStageL3ClosClient) string {
 	t.Helper()
 
 	rs := testutils.RandString(6, "hex")
