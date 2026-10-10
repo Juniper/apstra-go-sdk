@@ -4,11 +4,6 @@
 
 package apstra
 
-const (
-	GroupNotFoundInRedundancyCacheError  = groupNotFoundInRedundancyCacheError
-	SystemNotFoundInRedundancyCacheError = systemNotFoundInRedundancyCacheError
-)
-
 func (o *TwoStageL3ClosClient) DropSysRedundancyCache() {
 	o.sysRedundancyCache.mu.Lock()
 	o.sysRedundancyCache.systemToGroup = make(map[string]*string)
