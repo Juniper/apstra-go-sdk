@@ -37,9 +37,9 @@ func TestSetGetResourceAllocation(t *testing.T) {
 			bpWait := new(sync.WaitGroup)
 			bpWait.Add(1)
 			go func() {
-				bp = dctestobj.TestBlueprintA(t, ctx, client.Client)
-				rzID = dctestobj.TestSecurityZoneA(t, ctx, bp)
-				dctestobj.TestVirtualNetworkA(t, ctx, bp, rzID) // Create the RZ to force the need for per-RZ resource allocation
+				bp = dctestobj.BlueprintA(t, ctx, client.Client)
+				rzID = dctestobj.SecurityZoneA(t, ctx, bp)
+				dctestobj.VirtualNetworkA(t, ctx, bp, rzID) // Create the RZ to force the need for per-RZ resource allocation
 				bpWait.Done()
 			}()
 

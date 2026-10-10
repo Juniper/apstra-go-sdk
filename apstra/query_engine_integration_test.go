@@ -27,7 +27,7 @@ func TestParsingQueryInfo(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			// the type of info we expect the query to return (a slice of these)
 			var qResponse struct {
@@ -82,7 +82,7 @@ func TestRawQueryWithBlueprint(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			query := new(apstra.RawQuery).
 				SetBlueprintType(apstra.BlueprintTypeStaging).

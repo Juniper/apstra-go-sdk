@@ -38,7 +38,7 @@ func TestIbaPredefinedProbes(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 			pdps, err := bpClient.GetAllIbaPredefinedProbes(ctx)
 			require.NoError(t, err)
 
