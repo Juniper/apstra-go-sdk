@@ -16,8 +16,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestBlueprintA is an empty FreeForm blueprint
-func TestBlueprintA(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.FreeformClient {
+// BlueprintA is an empty FreeForm blueprint
+func BlueprintA(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.FreeformClient {
 	t.Helper()
 
 	bpId, err := client.CreateFreeformBlueprint(ctx, testutils.RandString(6, "hex"))
