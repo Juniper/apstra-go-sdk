@@ -28,7 +28,7 @@ func TestGetNodeRenderedConfig(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bp := dctestobj.TestBlueprintI(t, ctx, client.Client)
+			bp := dctestobj.BlueprintI(t, ctx, client.Client)
 			leafIds, err := query.SystemIdsByRole(ctx, bp, "leaf")
 			require.NoError(t, err)
 
