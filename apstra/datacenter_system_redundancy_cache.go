@@ -2,7 +2,7 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package redundancycache
+package apstra
 
 import (
 	"context"
@@ -10,50 +10,24 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 )
 
 const (
-	SystemNotFoundError = "system not found in cache"
-	GroupNotFoundError  = "group not found in cache"
-	NotFoundError       = "ID not found in cache"
+	idNotFoundInRedundancyCacheError     = "ID not found in cache"
+	groupNotFoundInRedundancyCacheError  = "group not found in cache"
+	systemNotFoundInRedundancyCacheError = "system not found in cache"
 )
 
-func newCache(bp *apstra.TwoStageL3ClosClient) *cache {
-	return &cache{
-		bp:             bp,
+func newCache() *sysRedundancyCache {
+	return &sysRedundancyCache{
 		mu:             new(sync.RWMutex),
 		groupToSystems: make(map[string][2]string),
 		systemToGroup:  make(map[string]*string),
 	}
 }
 
-func getCache(bp *apstra.TwoStageL3ClosClient) *cache {
-	bpID := bp.Id().String()
-
-	mainMutex.RLock()
-	if c, ok := bpToCache[bpID]; ok {
-		mainMutex.RUnlock()
-		return c
-	}
-	mainMutex.RUnlock()
-
-	mainMutex.Lock()
-	defer mainMutex.Unlock()
-
-	// Another goroutine may have created the cache while we waited.
-	if c, ok := bpToCache[bpID]; ok {
-		return c
-	}
-
-	c := newCache(bp)
-	bpToCache[bpID] = c
-	return c
-}
-
-type cache struct {
-	bp             *apstra.TwoStageL3ClosClient
+type sysRedundancyCache struct {
 	mu             *sync.RWMutex        // protects both maps below
 	groupToSystems map[string][2]string // map of redundancy group ID to system ID pair
 	systemToGroup  map[string]*string   // map of system ID to redundancy group ID (nil if not part of a group)
@@ -65,7 +39,7 @@ type cache struct {
 // - System exists and is part of a redundancy group     : returns non-nil pointers to the RG ID and the peer system ID and nil error
 // - System exists and is not part of a redundancy group : returns nil, nil, nil
 // - System does not exist, or failure during lookup     : returns nil, nil, error
-func (c *cache) lookupGroup(ctx context.Context, systemID string) (*string, *string, error) {
+func (c *sysRedundancyCache) lookupGroup(ctx context.Context, systemID string, bp *TwoStageL3ClosClient) (*string, *string, error) {
 	getPeer := func(groupID *string) *string {
 		if groupID == nil {
 			return nil
@@ -100,7 +74,7 @@ func (c *cache) lookupGroup(ctx context.Context, systemID string) (*string, *str
 	}
 
 	// Nope. Refresh the cache.
-	err := c.refresh(ctx)
+	err := c.refresh(ctx, bp)
 	if err != nil {
 		return nil, nil, fmt.Errorf("refreshing cache: %w", err)
 	}
@@ -111,25 +85,25 @@ func (c *cache) lookupGroup(ctx context.Context, systemID string) (*string, *str
 	}
 
 	// Probably a bogus system ID.
-	return nil, nil, errors.New(SystemNotFoundError + ": " + systemID)
+	return nil, nil, errors.New(systemNotFoundInRedundancyCacheError + ": " + systemID)
 }
 
 // lookupNodeType expects either the ID of a system node with system_type == switch,
-// or the ID of a redundancy group node. It returns the type from cache, updating the
-// system redundancy cache if required.
-func (c *cache) lookupNodeType(ctx context.Context, nodeID string) (apstra.NodeType, error) {
-	typeFromCache := func() apstra.NodeType {
+// or the ID of a redundancy group node. It returns the type from sysRedundancyCache, updating the
+// system redundancy sysRedundancyCache if required.
+func (c *sysRedundancyCache) lookupNodeType(ctx context.Context, nodeID string, bp *TwoStageL3ClosClient) (NodeType, error) {
+	typeFromCache := func() NodeType {
 		if _, ok := c.groupToSystems[nodeID]; ok {
-			return apstra.NodeTypeRedundancyGroup
+			return NodeTypeRedundancyGroup
 		}
 		if _, ok := c.systemToGroup[nodeID]; ok {
-			return apstra.NodeTypeSystem
+			return NodeTypeSystem
 		}
-		return apstra.NodeTypeNone
+		return NodeTypeNone
 	}
 
 	c.mu.RLock() // lock for read
-	if t := typeFromCache(); t != apstra.NodeTypeNone {
+	if t := typeFromCache(); t != NodeTypeNone {
 		c.mu.RUnlock()
 		return t, nil
 	}
@@ -140,22 +114,22 @@ func (c *cache) lookupNodeType(ctx context.Context, nodeID string) (apstra.NodeT
 	defer c.mu.Unlock() // Release the lock for write on return.
 
 	// Check the cache one more time after acquiring the write lock, in case another thread refreshed it while we were waiting.
-	if t := typeFromCache(); t != apstra.NodeTypeNone {
+	if t := typeFromCache(); t != NodeTypeNone {
 		return t, nil
 	}
 
 	// Another cache miss - refresh the cache.
-	err := c.refresh(ctx)
+	err := c.refresh(ctx, bp)
 	if err != nil {
-		return apstra.NodeTypeNone, fmt.Errorf("refreshing cache: %w", err)
+		return NodeTypeNone, fmt.Errorf("refreshing cache: %w", err)
 	}
 
 	// Now that we've refreshed the cache, check it one last time.
-	if t := typeFromCache(); t != apstra.NodeTypeNone {
+	if t := typeFromCache(); t != NodeTypeNone {
 		return t, nil
 	}
 
-	return apstra.NodeTypeNone, errors.New(NotFoundError + ": " + nodeID)
+	return NodeTypeNone, errors.New(idNotFoundInRedundancyCacheError + ": " + nodeID)
 }
 
 // lookupSystems returns a pair of System IDs representing the given redundancy group ID in the given Blueprint.
@@ -163,7 +137,7 @@ func (c *cache) lookupNodeType(ctx context.Context, nodeID string) (apstra.NodeT
 // Possible results:
 // - Redundancy Group exists                                 : returns the member system IDs, nil
 // - Redundancy Group does not exist or failure during lookup: returns a zero-value array, error
-func (c *cache) lookupSystems(ctx context.Context, groupID string) ([2]string, error) {
+func (c *sysRedundancyCache) lookupSystems(ctx context.Context, groupID string, bp *TwoStageL3ClosClient) ([2]string, error) {
 	c.mu.RLock() // lock for read
 	if sysIDs, ok := c.groupToSystems[groupID]; ok {
 		c.mu.RUnlock()     // Release the lock for read.
@@ -181,7 +155,7 @@ func (c *cache) lookupSystems(ctx context.Context, groupID string) ([2]string, e
 	}
 
 	// Nope. Refresh the cache.
-	err := c.refresh(ctx)
+	err := c.refresh(ctx, bp)
 	if err != nil {
 		return [2]string{}, fmt.Errorf("refreshing cache: %w", err)
 	}
@@ -192,19 +166,19 @@ func (c *cache) lookupSystems(ctx context.Context, groupID string) ([2]string, e
 	}
 
 	// Probably a bogus group ID.
-	return [2]string{}, errors.New(GroupNotFoundError + ": " + groupID)
+	return [2]string{}, errors.New(groupNotFoundInRedundancyCacheError + ": " + groupID)
 }
 
 // refresh queries the blueprint for all switches and their redundancy groups,
 // if any, and updates the redundancy group membership maps.
-// The caller must hold the write lock for the cache when calling this function.
-func (c *cache) refresh(ctx context.Context) error {
-	systemToGroup, err := getSystemToGroup(ctx, c.bp)
+// The caller must hold the write lock for the sysRedundancyCache when calling this function.
+func (c *sysRedundancyCache) refresh(ctx context.Context, bp *TwoStageL3ClosClient) error {
+	systemToGroup, err := getSystemToGroup(ctx, bp)
 	if err != nil {
 		return fmt.Errorf("refreshing system redundancy group cache: %w", err)
 	}
 
-	groupToSystems, err := buildGroupToSystemsMap(systemToGroup, c.bp)
+	groupToSystems, err := buildGroupToSystemsMap(systemToGroup, bp)
 	if err != nil {
 		return fmt.Errorf("building redundancy group to systems cache: %w", err)
 	}
@@ -219,13 +193,13 @@ func (c *cache) refresh(ctx context.Context) error {
 // pointers to the redundancy group associated with the system. If the system is not a member
 // of a redundancy group, the value will be a nil pointer so that we clearly know the system
 // is known and is *not* a member of a group (cached negative result).
-func getSystemToGroup(ctx context.Context, bp *apstra.TwoStageL3ClosClient) (map[string]*string, error) {
-	query := new(apstra.MatchQuery).
+func getSystemToGroup(ctx context.Context, bp *TwoStageL3ClosClient) (map[string]*string, error) {
+	query := new(MatchQuery).
 		SetBlueprintId(bp.Id()).
 		SetClient(bp.Client()).
-		Match(new(apstra.PathQuery).
-			Node([]apstra.QEEAttribute{
-				apstra.NodeTypeSystem.QEEAttribute(),
+		Match(new(PathQuery).
+			Node([]QEEAttribute{
+				NodeTypeSystem.QEEAttribute(),
 				// We filter on system_type='switch' to reduce the cache size. Generic Systems are also "systems"
 				// in the DC refdesign graph, but there's lots of them and they're not interesting to us.
 				// But not all switches can be part of a redundancy group. DC refdesign has a validation called
@@ -236,16 +210,16 @@ func getSystemToGroup(ctx context.Context, bp *apstra.TwoStageL3ClosClient) (map
 				// system ID. Rather than saying "no such switch of type leaf or access with that ID" (we won't
 				// know which type we're looking for), we can return "no switch with that ID" because we'll have
 				// cache entries for all switches, regardless of their role.
-				{Key: "system_type", Value: apstra.QEStringVal(apstra.SystemTypeSwitch.String())},
-				{Key: "name", Value: apstra.QEStringVal("n_sys")},
+				{Key: "system_type", Value: QEStringVal(SystemTypeSwitch.String())},
+				{Key: "name", Value: QEStringVal("n_sys")},
 			}),
 		).
-		Optional(new(apstra.PathQuery).
-			Node([]apstra.QEEAttribute{{Key: "name", Value: apstra.QEStringVal("n_sys")}}).
-			Out([]apstra.QEEAttribute{apstra.RelationshipTypePartOfRedundancyGroup.QEEAttribute()}).
-			Node([]apstra.QEEAttribute{
-				apstra.NodeTypeRedundancyGroup.QEEAttribute(),
-				{Key: "name", Value: apstra.QEStringVal("n_grp")},
+		Optional(new(PathQuery).
+			Node([]QEEAttribute{{Key: "name", Value: QEStringVal("n_sys")}}).
+			Out([]QEEAttribute{RelationshipTypePartOfRedundancyGroup.QEEAttribute()}).
+			Node([]QEEAttribute{
+				NodeTypeRedundancyGroup.QEEAttribute(),
+				{Key: "name", Value: QEStringVal("n_grp")},
 			}),
 		)
 
@@ -278,7 +252,7 @@ func getSystemToGroup(ctx context.Context, bp *apstra.TwoStageL3ClosClient) (map
 }
 
 // buildGroupToSystemsMap takes a SystemToGroup map and reverses to facilitate lookup by group ID.
-func buildGroupToSystemsMap(systemToGroup map[string]*string, bp *apstra.TwoStageL3ClosClient) (map[string][2]string, error) {
+func buildGroupToSystemsMap(systemToGroup map[string]*string, bp *TwoStageL3ClosClient) (map[string][2]string, error) {
 	// groupToSystems is a temporary slice that collects system IDs for each redundancy group ID.
 	// The value associated with each redundancy group ID is a slice of system IDs.
 	groupToSystems := make(map[string][]string)
@@ -297,7 +271,7 @@ func buildGroupToSystemsMap(systemToGroup map[string]*string, bp *apstra.TwoStag
 	result := make(map[string][2]string)
 	for rgID, sysIDs := range groupToSystems {
 		if len(sysIDs) != 2 {
-			return nil, fmt.Errorf("%s %q in Blueprint %q does not have exactly 2 members", apstra.NodeTypeRedundancyGroup, rgID, bp.Id())
+			return nil, fmt.Errorf("%s %q in Blueprint %q does not have exactly 2 members", NodeTypeRedundancyGroup, rgID, bp.Id())
 		}
 
 		// Convert the slice of system IDs to an [2]string system ID pair.

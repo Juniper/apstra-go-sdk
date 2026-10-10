@@ -71,6 +71,7 @@ type TwoStageL3ClosClient struct {
 	nodeIdsByType          map[NodeType][]ObjectId
 	defaultSecurityZoneID  string
 	defaultSwitchingZoneID string
+	sysRedundancyCache     *sysRedundancyCache
 }
 
 // Id returns the client's Blueprint ID
@@ -571,4 +572,33 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 	}
 
 	return o.setFabricSettings(ctx, in)
+}
+
+// GetRedundancyGroupBySystem returns the Redundancy Group ID and the peer system ID for the given switch system ID in the given Blueprint, if any.
+//
+// Possible results:
+// - System exists and is part of a redundancy group     : returns non-nil pointers to the RG ID and the peer system ID and nil error
+// - System exists and is not part of a redundancy group : returns nil, nil, nil
+// - System does not exist, or failure during lookup     : returns nil, nil, error
+func (o *TwoStageL3ClosClient) GetRedundancyGroupBySystem(ctx context.Context, systemID string) (*string, *string, error) {
+	return o.sysRedundancyCache.lookupGroup(ctx, systemID, o)
+}
+
+// GetSystemsByRedundancyGroup returns an unordered pair of System IDs representing members of the given redundancy group ID in the given Blueprint.
+//
+// Possible results:
+// - Redundancy Group exists                                 : returns the member system IDs, nil
+// - Redundancy Group does not exist or failure during lookup: returns a zero-value array, error
+func (o *TwoStageL3ClosClient) GetSystemsByRedundancyGroup(ctx context.Context, groupID string) ([2]string, error) {
+	return o.sysRedundancyCache.lookupSystems(ctx, groupID, o)
+}
+
+// GetBindingNodeType expects either the ID of a system node with system_type == switch,
+// or the ID of a redundancy group node. These are the IDs returned in the bound_to data
+// returned by GET at the virtual-networks API where we can't quite tell if the binding
+// is a single leaf switch node ID or a redundancy group node ID. It returns the type
+// based on the contents of the system redundancy cache. The cache will be updated the
+// if required. If the node ID is not found, an error is returned.
+func (o *TwoStageL3ClosClient) GetBindingNodeType(ctx context.Context, nodeID string) (NodeType, error) {
+	return o.sysRedundancyCache.lookupNodeType(ctx, nodeID, o)
 }
