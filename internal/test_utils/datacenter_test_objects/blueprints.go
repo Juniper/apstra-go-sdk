@@ -355,10 +355,10 @@ func TestBlueprintJ(t testing.TB, ctx context.Context, client *apstra.Client) *a
 	t.Helper()
 
 	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
-		RefDesign:                 enum.RefDesignDatacenter,
-		Label:                     testutils.RandString(6, "hex"),
-		TemplateId:                apstra.ObjectId(designtestobj.TemplateC(t, ctx, client)),
-		AddressingPolicy:          &apstra.AddressingPolicy{
+		RefDesign:  enum.RefDesignDatacenter,
+		Label:      testutils.RandString(6, "hex"),
+		TemplateId: apstra.ObjectId(designtestobj.TemplateC(t, ctx, client)),
+		AddressingPolicy: &apstra.AddressingPolicy{
 			AddressingSupport: &enum.AddressingSchemeIPv46,
 		},
 		SkipCablingReadinessCheck: false,
