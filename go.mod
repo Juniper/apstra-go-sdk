@@ -15,7 +15,7 @@ require (
 	github.com/orsinium-labs/enum v1.5.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/tools v0.48.0
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/protobuf v1.36.11
 	mvdan.cc/gofumpt v0.10.0
 )
 

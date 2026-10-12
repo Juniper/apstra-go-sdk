@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	CtxKeyTestUUID = "Test-UUID"
-	CtxKeyTestID   = "Test-ID"
+	CtxKeyTestUUID        = "Test-UUID"
+	CtxKeyTestID          = "Test-ID"
+	DefaultCleanupTimeout = 30 * time.Second
 )
 
 // ContextWithTestID produces contexts with the following values:
