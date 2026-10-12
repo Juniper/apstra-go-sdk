@@ -590,7 +590,7 @@ func TestEvpnInterconnectGroupClearTranslationVNI(t *testing.T) {
 
 			// Create the DCI with a translation VNI.
 			dciID, err := bp.CreateEVPNInterconnectGroup(ctx, apstra.EVPNInterconnectGroup{
-				Label:       pointer.To(testutils.RandString(6, "hex")),
+				Label:       pointer.To(testutils.RandString(6, "alpha")),
 				RouteTarget: pointer.To(testutils.RandomRouteTarget(t)),
 				InterconnectSecurityZones: map[string]apstra.InterconnectSecurityZone{
 					rzID: {
