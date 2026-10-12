@@ -26,7 +26,7 @@ func TestGetSetSecurityZoneDHCPServers(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			sz, err := bpClient.GetSecurityZoneByVRFName(ctx, "default")
 			require.NoError(t, err)
