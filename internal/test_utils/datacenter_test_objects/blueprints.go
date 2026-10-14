@@ -373,3 +373,26 @@ func BlueprintJ(t testing.TB, ctx context.Context, client *apstra.Client) *apstr
 
 	return bpClient
 }
+
+func BlueprintK(t testing.TB, ctx context.Context, client *apstra.Client) *apstra.TwoStageL3ClosClient {
+	t.Helper()
+
+	bpId, err := client.CreateBlueprintFromTemplate(ctx, &apstra.CreateBlueprintFromTemplateRequest{
+		RefDesign:  enum.RefDesignDatacenter,
+		Label:      testutils.RandString(6, "hex"),
+		TemplateId: apstra.ObjectId(designtestobj.TemplateD(t, ctx, client)),
+		AddressingPolicy: &apstra.AddressingPolicy{
+			AddressingSupport: &enum.AddressingSchemeIPv46,
+		},
+		SkipCablingReadinessCheck: false,
+	})
+	require.NoError(t, err)
+	testutils.CleanupWithFreshContext(t, testutils.DefaultCleanupTimeout, func(ctx context.Context) error {
+		return client.DeleteBlueprint(ctx, bpId)
+	})
+
+	bpClient, err := client.NewTwoStageL3ClosClient(ctx, bpId)
+	require.NoError(t, err)
+
+	return bpClient
+}

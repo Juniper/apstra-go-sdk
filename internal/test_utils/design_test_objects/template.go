@@ -117,3 +117,33 @@ func TemplateC(t testing.TB, ctx context.Context, client *apstra.Client) string 
 
 	return id
 }
+
+// TemplateD returns the ID of a rack-based template with a two racks produced by
+// the RackTypeB() function.
+func TemplateD(t testing.TB, ctx context.Context, client *apstra.Client) string {
+	t.Helper()
+
+	rackTypeB, err := client.GetRackType2(ctx, RackTypeB(t, ctx, client))
+	require.NoError(t, err)
+
+	request := design.TemplateRackBased{
+		Label: testutils.RandString(6, "hex"),
+		Racks: []design.RackTypeWithCount{
+			{Count: 2, RackType: rackTypeB},
+		},
+		ASNAllocationPolicy: &policy.ASNAllocation{SpineASNScheme: enum.ASNAllocationSchemeDistinct},
+		Spine: design.Spine{
+			Count:         1,
+			LogicalDevice: rackTypeB.LeafSwitches[0].LogicalDevice,
+		},
+		VirtualNetworkPolicy: &policy.VirtualNetwork{OverlayControlProtocol: enum.OverlayControlProtocolEVPN},
+	}
+
+	id, err := client.CreateTemplate2(ctx, &request)
+	require.NoError(t, err)
+	testutils.CleanupWithFreshContext(t, testutils.DefaultCleanupTimeout, func(ctx context.Context) error {
+		return client.DeleteTemplate2(ctx, id)
+	})
+
+	return id
+}
