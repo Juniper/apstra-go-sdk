@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,9 +16,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestWidgetsABC instantiates two predefined probes and creates widgets from them,
+// WidgetsABC instantiates two predefined probes and creates widgets from them,
 // returning the widget Object Id and the IbaWidget object used for creation
-func TestWidgetsABC(t testing.TB, ctx context.Context, bpClient *apstra.TwoStageL3ClosClient) (apstra.IbaWidget, apstra.IbaWidget, apstra.IbaWidget) {
+func WidgetsABC(t testing.TB, ctx context.Context, bpClient *apstra.TwoStageL3ClosClient) (apstra.IbaWidget, apstra.IbaWidget, apstra.IbaWidget) {
 	t.Helper()
 
 	probeAId, err := bpClient.InstantiateIbaPredefinedProbe(ctx, &apstra.IbaPredefinedProbeRequest{
