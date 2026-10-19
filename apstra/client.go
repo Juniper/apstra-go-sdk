@@ -34,6 +34,9 @@ const (
 	ErrCompatibility
 	ErrConflict
 	ErrExists
+	ErrGroupNotFoundInCache
+	ErrSystemNotFoundInCache
+	ErrNodeTypeUnknown
 	ErrInUse
 	ErrMultipleMatch
 	ErrNotfound
@@ -232,9 +235,10 @@ func (o *Client) NewTwoStageL3ClosClient(ctx context.Context, blueprintId Object
 	}
 
 	result := &TwoStageL3ClosClient{
-		client:        o,
-		blueprintId:   blueprintId,
-		nodeIdsByType: make(map[NodeType][]ObjectId),
+		client:             o,
+		blueprintId:        blueprintId,
+		nodeIdsByType:      make(map[NodeType][]ObjectId),
+		sysRedundancyCache: newSysRedundancyCache(),
 	}
 	result.Mutex = &TwoStageL3ClosMutex{client: result}
 
