@@ -102,7 +102,7 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		}
 
 		if k != v.SystemID {
-			return fmt.Errorf("entry at VNBindings[%s] has system ID (%s)", k, v.SystemID)
+			return fmt.Errorf("entry at Bindings[%s] has system ID (%s)", k, v.SystemID)
 		}
 	}
 
@@ -112,7 +112,7 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		}
 
 		if k != v.SystemID {
-			return fmt.Errorf("entry at SviIps[%s] has system ID (%s)", k, v.SystemID)
+			return fmt.Errorf("entry at SVIAddressing[%s] has system ID (%s)", k, v.SystemID)
 		}
 
 		// Discover the Leaf Redudnancy Group ID, if any.
