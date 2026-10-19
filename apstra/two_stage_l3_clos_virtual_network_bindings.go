@@ -49,7 +49,7 @@ func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context
 		if k != v.SystemID {
 			return fmt.Errorf("siMap[%s] has system ID (%s)", k, v.SystemID) // map key should match payload
 		}
-		groupID, _, err := o.GetRedundancyGroupBySystem(ctx, string(k))
+		groupID, _, err := o.GetRedundancyGroupBySystem(ctx, k)
 		if err != nil {
 			return fmt.Errorf("getting group info for system ID %q: %w", k, err)
 		}
@@ -101,7 +101,7 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 			continue
 		}
 
-		if string(k) != v.SystemID {
+		if k != v.SystemID {
 			return fmt.Errorf("entry at VNBindings[%s] has system ID (%s)", k, v.SystemID)
 		}
 	}
