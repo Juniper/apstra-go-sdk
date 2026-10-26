@@ -93,7 +93,7 @@ func TestSwitchingZone_CRUD(t *testing.T) {
 
 					create, update := tCase.create, tCase.update // because we modify these values below
 
-					bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+					bp := dctestobj.BlueprintA(t, ctx, client.Client)
 
 					// create the object
 					id, err := bp.CreateSwitchingZone(ctx, create)
@@ -228,7 +228,7 @@ func TestSwitchingZone_GetDefaultSwitchingZone(t *testing.T) {
 				t.Skipf("skipping test due to compatibility constraint: %q", compatibility.DatacenterSwitchingZoneOK.String())
 			}
 
-			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bp := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			// The default Switching Zone ID will not be cached at this point
 			sz, err := bp.GetDefaultSwitchingZone(ctx)
@@ -267,7 +267,7 @@ func TestSwitchingZone_DefaultSwitchingZoneID(t *testing.T) {
 				t.Skipf("skipping test due to compatibility constraint: %q", compatibility.DatacenterSwitchingZoneOK.String())
 			}
 
-			bp := dctestobj.TestBlueprintA(t, ctx, client.Client)
+			bp := dctestobj.BlueprintA(t, ctx, client.Client)
 
 			// The default Switching Zone ID will not be cached at this point
 			id, err := bp.DefaultSwitchingZoneID(ctx)

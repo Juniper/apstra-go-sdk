@@ -26,8 +26,8 @@ func TestCreateReadUpdateDeleteIbaDashboards(t *testing.T) {
 			t.Parallel()
 			ctx := testutils.ContextWithTestID(ctx, t)
 
-			bpClient := dctestobj.TestBlueprintA(t, ctx, client.Client)
-			widgetA, widgetB, widgetC := dctestobj.TestWidgetsABC(t, ctx, bpClient)
+			bpClient := dctestobj.BlueprintA(t, ctx, client.Client)
+			widgetA, widgetB, widgetC := dctestobj.WidgetsABC(t, ctx, bpClient)
 
 			predefinedDashboardIds, err := bpClient.ListAllIbaPredefinedDashboardIds(ctx)
 			require.NoError(t, err)
