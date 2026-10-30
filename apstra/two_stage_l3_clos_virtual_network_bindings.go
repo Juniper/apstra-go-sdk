@@ -7,12 +7,30 @@ package apstra
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/http"
+	"slices"
 
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/internal/urls"
 )
 
+// VirtualNetworkBindingsRequest is the input to SetVirtualNetworkLeafBindings and
+// UpdateVirtualNetworkLeafBindings. Both Bindings and SVIAddressing maps are keyed
+// by their respective SystemID values. Their map key and SystemID must match.
+//
+// Maps, rather than slices, are used for this payload to provide a mechanism which
+// signals removal in UpdateVirtualNetworkLeafBindings().
+//
+// Nil map values are not permitted by SetVirtualNetworkLeafBindings().
+//
+// Note that Bindings map entries for members of a leaf switch redundancy group must
+// refer to the group ID, not either of the individual switch system IDs. Both the
+// map key and the value's SystemID must use the redundancy group ID for members of
+// a leaf switch pair.
+//
+// The entries in the SVIAddressing map always refer to individual switch IDs, even
+// for members of a redundancy group.
 type VirtualNetworkBindingsRequest struct {
 	VirtualNetworkID   string
 	Bindings           map[string]*datacenter.VNBinding
@@ -20,51 +38,74 @@ type VirtualNetworkBindingsRequest struct {
 	DHCPServiceEnabled *datacenter.DHCPServiceEnabled
 }
 
-// SetVirtualNetworkLeafBindings replaces the current set of SVI and
-// Binding info on the Virtual Network identified by vnId.
+// SetVirtualNetworkLeafBindings replaces the current set of SVI and Binding info on
+// the Virtual Network identified by vnId. Bindings and SVIAddresssing maps must never
+// contain nil entries, and for both maps, the map key must match the SystemID in the
+// map value. For members of a leaf switch redundancy group, the Bindings map key and
+// value's SystemID must be the redundancy group ID, not either of the switch system
+// IDs representing group members.
 func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context, req VirtualNetworkBindingsRequest) error {
-	var i int
+	// Set of system IDs which are being (re)bound - used to validate SVIAddresing data
+	systemsToBind := make(map[string]struct{})
 
-	// turn the supplied map into a slice for the API, with some sanity checking along the way
-	i = 0
-	boundTo := make([]datacenter.VNBinding, len(req.Bindings))
+	// Validate each Bindings map entry and collect the system IDs for which SVIAddressing data is permitted.
 	for k, v := range req.Bindings {
 		if v == nil {
-			return fmt.Errorf("vbMap[%s] is nil", k) // map entries should not be nil
+			return fmt.Errorf("binding request for target %q is invalid - value required, got nil", k)
 		}
 		if k != v.SystemID {
-			return fmt.Errorf("vbMap[%s] has system ID (%s)", k, v.SystemID) // map key should match payload
+			return fmt.Errorf("binding request for target %q is invalid - key/SystemID mismatch - expected %q, got %q", k, k, v.SystemID)
 		}
-		boundTo[i] = *v
-		i++
+		keyNodeType, err := o.GetBindingNodeType(ctx, k)
+		if err != nil {
+			return fmt.Errorf("getting binding node type for %s: %w", k, err)
+		}
+
+		switch keyNodeType {
+		case NodeTypeSystem:
+			groupID, peerID, err := o.GetRedundancyGroupBySystem(ctx, k)
+			if err != nil {
+				return fmt.Errorf("getting redundancy group for system %s: %w", k, err)
+			}
+			if groupID != nil || peerID != nil {
+				return fmt.Errorf("binding request for system %q is invalid - found redundancy group info - use group ID instead", k)
+			}
+			systemsToBind[k] = struct{}{} // stash system ID for subsequent validation of SVIAddressing data
+		case NodeTypeRedundancyGroup:
+			systems, err := o.GetSystemsByRedundancyGroup(ctx, k)
+			if err != nil {
+				return fmt.Errorf("getting group members for group ID %q: %w", k, err)
+			}
+			systemsToBind[systems[0]] = struct{}{} // stash system ID for subsequent validation of SVIAddressing data
+			systemsToBind[systems[1]] = struct{}{} // stash system ID for subsequent validation of SVIAddressing data
+		default: // womp
+			return fmt.Errorf("unhandled node type %q for %q", keyNodeType, k)
+		}
 	}
 
-	// turn the supplied map into a slice for the API, with some sanity checking along the way
-	i = 0
-	sviIps := make([]datacenter.SVIAddressing, len(req.SVIAddressing))
+	// Validate each SVIAddressing map entry.
 	for k, v := range req.SVIAddressing {
 		if v == nil {
-			return fmt.Errorf("siMap[%s] is nil", k) // map entries should not be nil
+			return fmt.Errorf("addressing request for leaf %q in VN %q is invalid - value required, got nil", k, req.VirtualNetworkID)
 		}
 		if k != v.SystemID {
-			return fmt.Errorf("siMap[%s] has system ID (%s)", k, v.SystemID) // map key should match payload
+			return fmt.Errorf("addressing request for leaf %q in VN %q is invalid - key/SystemID mismatch - expected %q, got %q", k, req.VirtualNetworkID, k, v.SystemID)
 		}
-		groupID, _, err := o.GetRedundancyGroupBySystem(ctx, k)
-		if err != nil {
-			return fmt.Errorf("getting group info for system ID %q: %w", k, err)
+		if _, ok := systemsToBind[k]; !ok {
+			return fmt.Errorf("addressing request for leaf %q in VN %q is invalid - the request neglects to bind that leaf to the VN", k, req.VirtualNetworkID)
 		}
+	}
 
-		// Check that SVI info represents an active VN binding.
-		var systemBound, groupBound bool
-		_, systemBound = req.Bindings[k]
-		if groupID != nil {
-			_, groupBound = req.Bindings[*groupID]
-		}
-		if !systemBound && !groupBound {
-			return fmt.Errorf("SVI requested for system %[1]s but %[1]s not among bound leaf IDs", k)
-		}
-		sviIps[i] = *v
-		i++
+	// Make sure we send empty bindings slice ([] vs. null) if the caller has supplied a nil or empty map.
+	bindings := slices.Collect(maps.Values(req.Bindings))
+	if bindings == nil {
+		bindings = make([]*datacenter.VNBinding, 0)
+	}
+
+	// Make sure we send empty SVIAddressing slice ([] vs. null) if the caller has supplied a nil or empty map.
+	sviIPs := slices.Collect(maps.Values(req.SVIAddressing))
+	if sviIPs == nil {
+		sviIPs = make([]*datacenter.SVIAddressing, 0)
 	}
 
 	o.client.lock(o.blueprintId.String() + "_" + req.VirtualNetworkID)
@@ -74,12 +115,12 @@ func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context
 		method: http.MethodPatch,
 		urlStr: fmt.Sprintf(urls.DatacenterVirtualNetworkByID, o.blueprintId, req.VirtualNetworkID),
 		apiInput: struct {
-			SviIps             []datacenter.SVIAddressing     `json:"svi_ips"`
-			BoundTo            []datacenter.VNBinding         `json:"bound_to"`
+			SviIps             []*datacenter.SVIAddressing    `json:"svi_ips"`
+			BoundTo            []*datacenter.VNBinding        `json:"bound_to"`
 			DhcpServiceEnabled *datacenter.DHCPServiceEnabled `json:"dhcp_service,omitempty"`
 		}{
-			SviIps:             sviIps,
-			BoundTo:            boundTo,
+			SviIps:             sviIPs,
+			BoundTo:            bindings,
 			DhcpServiceEnabled: req.DHCPServiceEnabled,
 		},
 	})
@@ -95,44 +136,117 @@ func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context
 // The current set of SVI and Binding info is fetched, the supplied data is
 // merged, and then the combined set is sent back to the API. Binding and SVI
 // configuration can be removed using a nil map entry.
+//
+// Note that Bindings map entries for members of a leaf switch redundancy group must
+// refer to the group ID, not either of the individual switch system IDs. Both the
+// map key and the value's SystemID must use the redundancy group ID for members of
+// a leaf switch pair.
+//
+// The entries in the SVIAddressing map always refer to individual switch IDs, even
+// for members of a redundancy group.
 func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Context, req VirtualNetworkBindingsRequest) error {
+	// todo: Consider relaxing the requirement that every entry in the SVIAddressing map
+	//  must be represented (either by group ID or by system ID) in the Bindings map. A
+	//  caller may want to update SVIAddressing for a leaf switch which is already bound.
+
+	// Set of system IDs which are being explicitly (re)bound
+	systemsToBind := make(map[string]struct{})
+
+	// Set of system IDs which are being explicitly unbound
+	systemsToUnbind := make(map[string]struct{})
+
+	// Set of group IDs which are being explicitly (re)bound
+	groupsToBind := make(map[string]struct{})
+
+	// Set of group IDs which are being explicitly unbound
+	groupsToUnbind := make(map[string]struct{})
+
 	for k, v := range req.Bindings {
+		// Ensure key matches payload for non-nil entries. Nil entries are unbind requests and have no payload.
+		if v != nil && k != v.SystemID {
+			return fmt.Errorf("binding request for system %q is invalid - key/SystemID mismatch - expected %q, got %q", k, k, v.SystemID)
+		}
+
+		// To record per-system binding/unbinding, we need to know whether
+		// the caller has supplied a system ID or a redundancy group ID.
+		keyNodeType, err := o.GetBindingNodeType(ctx, k)
+		if err != nil {
+			return fmt.Errorf("getting binding node type for %s: %w", k, err)
+		}
+
+		if keyNodeType == NodeTypeSystem {
+			groupID, peerID, err := o.GetRedundancyGroupBySystem(ctx, k)
+			if err != nil {
+				return fmt.Errorf("getting group info for system ID %q: %w", k, err)
+			}
+			if groupID != nil || peerID != nil {
+				return fmt.Errorf("binding request for system %q is invalid - found redundancy group info - use group ID instead", k)
+			}
+		}
+
 		if v == nil {
+			// this is an unbind request. Record the system ID(s) for subsequent removal of SVIAddressing.
+
+			switch keyNodeType {
+			case NodeTypeSystem:
+				systemsToUnbind[k] = struct{}{} // Caller is un-binding a leaf. Record the system ID for subsequent removal of SVIAddressing.
+			case NodeTypeRedundancyGroup:
+				groupsToUnbind[k] = struct{}{} // Record the group ID for subsequent removal.
+
+				// Caller is unbinding a leaf pair. Get the IDs of the two leaf
+				// systems in the pair so we can remove any SVIAddressing for them.
+				systems, err := o.GetSystemsByRedundancyGroup(ctx, k)
+				if err != nil {
+					return fmt.Errorf("getting group members for group ID %q: %w", k, err)
+				}
+				systemsToUnbind[systems[0]] = struct{}{} // Record the first system ID for subsequent removal of SVIAddressing.
+				systemsToUnbind[systems[1]] = struct{}{} // Record the second system ID for subsequent removal of SVIAddressing.
+			default: // womp
+				return fmt.Errorf("unhandled node type %q for %q", keyNodeType, k)
+			}
+
+			// Un-bind request have no value to process, so we can skip the rest of the loop and move on to the next map entry.
 			continue
 		}
 
-		if k != v.SystemID {
-			return fmt.Errorf("entry at Bindings[%s] has system ID (%s)", k, v.SystemID)
+		// This is a non-nil entry, so the caller is requesting a (re)binding.
+
+		switch keyNodeType {
+		case NodeTypeSystem:
+			systemsToBind[k] = struct{}{} // Record the system ID in the set of systems which are being (re)bound to the VN.
+		case NodeTypeRedundancyGroup:
+			// Caller is binding a leaf pair. Retrieve the system IDs associated with the pair.
+			systems, err := o.GetSystemsByRedundancyGroup(ctx, k)
+			if err != nil {
+				return fmt.Errorf("getting group members for group ID %q: %w", k, err)
+			}
+
+			// Record the group and system IDs to their respective sets.
+			groupsToBind[k] = struct{}{}           // Record the group ID in the set of groups which are being (re)bound to the VN.
+			systemsToBind[systems[0]] = struct{}{} // Record the first system ID in the set of systems which are being (re)bound to the VN.
+			systemsToBind[systems[1]] = struct{}{} // Record the second system ID in the set of systems which are being (re)bound to the VN.
+		default: // womp
+			return fmt.Errorf("unhandled node type %q for %q", keyNodeType, k)
 		}
 	}
 
 	for k, v := range req.SVIAddressing {
 		if v == nil {
-			continue
+			continue // nil signals removal. We don't need to check the map key against the map value.
 		}
 
-		if k != v.SystemID {
-			return fmt.Errorf("entry at SVIAddressing[%s] has system ID (%s)", k, v.SystemID)
+		if k != v.SystemID { // Map key must match the map value's system ID.
+			return fmt.Errorf("addressing entry for leaf %q is invalid - key/SystemID mismatch - expected %q, got %q", k, k, v.SystemID)
 		}
 
-		// Discover the Leaf Redudnancy Group ID, if any.
-		groupID, _, err := o.GetRedundancyGroupBySystem(ctx, k)
-		if err != nil {
-			return fmt.Errorf("getting group info for system ID %q: %w", k, err)
+		// Check that the caller isn't trying to set SVIAddressing for a system for which they've neglected to request a binding.
+		if _, ok := systemsToBind[k]; !ok {
+			return fmt.Errorf("addressing requested for system %q in VN %q but the request neglects to bind that leaf to the VN", k, req.VirtualNetworkID)
 		}
 
-		// Discover whether the request is trying to bind or unbind the Leaf Switch and/or the its Redundancy Group.
-		var systemBound, systemToBeUnbound, groupBound, groupToBeUnbound bool
-		var val interface{}
-		val, systemBound = req.Bindings[k]
-		systemToBeUnbound = val == nil
-		if groupID != nil {
-			val, groupBound = req.Bindings[*groupID]
-			groupToBeUnbound = val == nil
-		}
-
-		if (!systemBound && !groupBound) || systemToBeUnbound || groupToBeUnbound {
-			return fmt.Errorf("SVI requested for system %[1]s but %[1]s not among bound leaf IDs, or is being removed", k)
+		// Check that the caller isn't trying to set SVIAddressing for a system which is being unbound in the same request.
+		if _, ok := systemsToUnbind[k]; ok {
+			return fmt.Errorf("addressing requested for system %q in VN %q but the request un-binds that leaf from the VN", k, req.VirtualNetworkID)
 		}
 	}
 
@@ -145,35 +259,72 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		return fmt.Errorf("update VN binding info failed to fetch current bindings - %w", err)
 	}
 
-	// drop any current binding which appears in the caller's binding map
-	for i := len(vn.Bindings) - 1; i >= 0; i-- { // loop backward over current VN bindings
-		if _, ok := req.Bindings[vn.Bindings[i].SystemID]; ok {
-			// current VN passed by caller; delete it; we'll use caller's data instead
-			vn.Bindings[i] = vn.Bindings[len(vn.Bindings)-1] // copy last to index i
-			vn.Bindings = vn.Bindings[:len(vn.Bindings)-1]   // trim last from slice
+	// Convert current Bindings into a map keyed by binding target ID for easier merging with
+	// caller-supplied data. The API returns group IDs for members of a redundancy group, we we
+	// expect this map to be keyed appropriately by either group ID (for groups) or by system ID
+	// (for individual leaf switches). The resulting map should be fully compatible with the
+	// validated caller request map.
+	bindingMap := make(map[string]datacenter.VNBinding, len(vn.Bindings))
+	for _, binding := range vn.Bindings {
+		bindingMap[binding.SystemID] = binding
+	}
+
+	// Convert the current SVIAddressing into a map keyed by system ID for easier merging
+	// with caller-supplied data. The API returns system IDs for each SVIAddressing entry,
+	// so the resulting map should be fully compatible with the validated caller request map.
+	sviAddressingMap := make(map[string]datacenter.SVIAddressing, len(vn.SVIIPs))
+	for _, sviAddressing := range vn.SVIIPs {
+		sviAddressingMap[sviAddressing.SystemID] = sviAddressing
+	}
+
+	// Drop any current bindings for systems or groups which the caller has mentioned, whether
+	// binding or unbinding. The caller's request takes precedence over the current state of the VN.
+	for k := range bindingMap {
+		if _, ok := systemsToBind[k]; ok {
+			delete(bindingMap, k)
+			continue
+		}
+		if _, ok := groupsToBind[k]; ok {
+			delete(bindingMap, k)
+			continue
+		}
+		if _, ok := systemsToUnbind[k]; ok {
+			delete(bindingMap, k)
+			continue
+		}
+		if _, ok := groupsToUnbind[k]; ok {
+			delete(bindingMap, k)
+			continue // end of function - keeping this for consistency with the checks above
 		}
 	}
 
-	// drop any current SVI IP referencing a binding mentioned in the caller's binding map
-	for i := len(vn.SVIIPs) - 1; i >= 0; i-- { // loop backward over current SVI IP info
-		if _, ok := req.Bindings[vn.SVIIPs[i].SystemID]; ok {
-			// current SVI IP info relates to VN passed by caller; delete it; we'll use caller's data instead
-			vn.SVIIPs[i] = vn.SVIIPs[len(vn.SVIIPs)-1] // copy last to index i
-			vn.SVIIPs = vn.SVIIPs[:len(vn.SVIIPs)-1]   // trim last from slice
+	// Drop any current SVIAddressing for systems which the caller has either:
+	//  - requested that the system be unbound from the VN (nil Bindings map entry)
+	//  - mentioned in the SVIAddressing request map (nil or non-nil).
+	for k := range sviAddressingMap {
+		if _, ok := systemsToUnbind[k]; ok {
+			delete(sviAddressingMap, k)
+			continue
+		}
+		if _, ok := req.SVIAddressing[k]; ok {
+			delete(sviAddressingMap, k)
+			continue
 		}
 	}
 
-	// copy non-nil (non-delete) bindings from the caller's map to the binding slice we'll send back
+	// Merge the caller's non-nil bindings with the surviving bindings retrieved from the API.
+	bindingSlice := slices.Collect(maps.Values(bindingMap))
 	for _, binding := range req.Bindings {
 		if binding != nil {
-			vn.Bindings = append(vn.Bindings, *binding)
+			bindingSlice = append(bindingSlice, *binding)
 		}
 	}
 
-	// copy non-nil (non-delete) SVI IPs from the caller's map to the binding slice we'll send back
-	for _, sviIp := range req.SVIAddressing {
-		if sviIp != nil {
-			vn.SVIIPs = append(vn.SVIIPs, *sviIp)
+	// Merge the caller's non-nil SVIAddressing with the surviving SVIAddressing retrieved from the API.
+	sviAddressingSlice := slices.Collect(maps.Values(sviAddressingMap))
+	for _, sviAddressing := range req.SVIAddressing {
+		if sviAddressing != nil {
+			sviAddressingSlice = append(sviAddressingSlice, *sviAddressing)
 		}
 	}
 
@@ -185,8 +336,8 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 			BoundTo            []datacenter.VNBinding         `json:"bound_to"`
 			DhcpServiceEnabled *datacenter.DHCPServiceEnabled `json:"dhcp_service,omitempty"`
 		}{
-			SviIps:             vn.SVIIPs,
-			BoundTo:            vn.Bindings,
+			SviIps:             sviAddressingSlice,
+			BoundTo:            bindingSlice,
 			DhcpServiceEnabled: req.DHCPServiceEnabled,
 		},
 	})
