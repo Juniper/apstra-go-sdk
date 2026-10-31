@@ -64,12 +64,12 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	bindingSliceToMap := func(t testing.TB, in []datacenter.VNBinding) map[ObjectId]*datacenter.VNBinding {
+	bindingSliceToMap := func(t testing.TB, in []datacenter.VNBinding) map[string]*datacenter.VNBinding {
 		t.Helper()
 
-		result := make(map[ObjectId]*datacenter.VNBinding, len(in))
+		result := make(map[string]*datacenter.VNBinding, len(in))
 		for _, binding := range in {
-			result[ObjectId(binding.SystemID)] = &binding
+			result[binding.SystemID] = &binding
 		}
 
 		if len(in) != len(result) {
@@ -79,12 +79,12 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 		return result
 	}
 
-	sviSliceToMap := func(t testing.TB, in []datacenter.SVIAddressing) map[ObjectId]*datacenter.SVIAddressing {
+	sviSliceToMap := func(t testing.TB, in []datacenter.SVIAddressing) map[string]*datacenter.SVIAddressing {
 		t.Helper()
 
-		result := make(map[ObjectId]*datacenter.SVIAddressing, len(in))
+		result := make(map[string]*datacenter.SVIAddressing, len(in))
 		for _, sviIp := range in {
-			result[ObjectId(sviIp.SystemID)] = &sviIp
+			result[sviIp.SystemID] = &sviIp
 		}
 
 		if len(in) != len(result) {
@@ -94,7 +94,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 		return result
 	}
 
-	compareBindingsMaps := func(t testing.TB, a, b map[ObjectId]*datacenter.VNBinding) {
+	compareBindingsMaps := func(t testing.TB, a, b map[string]*datacenter.VNBinding) {
 		t.Helper()
 
 		if len(a) != len(b) {
@@ -111,7 +111,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 		}
 	}
 
-	compareSviMaps := func(t testing.TB, a, b map[ObjectId]*datacenter.SVIAddressing) {
+	compareSviMaps := func(t testing.TB, a, b map[string]*datacenter.SVIAddressing) {
 		t.Helper()
 
 		if len(a) != len(b) {
@@ -166,23 +166,23 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 			}
 
 			for _, count := range testLeafCounts {
-				bindings := make(map[ObjectId]*datacenter.VNBinding, count)
+				bindings := make(map[string]*datacenter.VNBinding, count)
 				for j := range count {
-					bindings[leafIds[j]] = &datacenter.VNBinding{
+					bindings[string(leafIds[j])] = &datacenter.VNBinding{
 						AccessSwitchNodeIDs: nil,
 						SystemID:            string(leafIds[j]),
 						VLAN:                pointer.To(uint16(100*count + rand.Intn(100))),
 					}
 				}
 
-				sviIps := make(map[ObjectId]*datacenter.SVIAddressing, count)
+				sviIps := make(map[string]*datacenter.SVIAddressing, count)
 				lastOctets := make([]int, count)
 				randomIntsN(lastOctets, 253) // 253 possible values while avoiding .0, .1 and .255
 				for j := range count {
 					_, ipNet, err := net.ParseCIDR(vnPrefix.String())
 					require.NoError(t, err)
 					ipNet.IP[3] = byte(lastOctets[j] + 2) // add 2 to to avoid .0 and .1
-					sviIps[leafIds[j]] = &datacenter.SVIAddressing{
+					sviIps[string(leafIds[j])] = &datacenter.SVIAddressing{
 						SystemID: string(leafIds[j]),
 						IPv4Addr: ipNet,
 						IPv4Mode: oneOf(enum.IPv4SVIModeForced, enum.IPv4SVIModeEnabled),
@@ -192,10 +192,10 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 
 				log.Printf("testing SetVirtualNetworkLeafBindings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 				err = bp.SetVirtualNetworkLeafBindings(ctx, VirtualNetworkBindingsRequest{
-					VnId:               ObjectId(vnId),
-					VnBindings:         bindings,
-					SviIps:             sviIps,
-					DhcpServiceEnabled: toPtr(datacenter.DHCPServiceEnabled(false)),
+					VirtualNetworkID:   vnId,
+					Bindings:           bindings,
+					SVIAddressing:      sviIps,
+					DHCPServiceEnabled: toPtr(datacenter.DHCPServiceEnabled(false)),
 				})
 				require.NoError(t, err)
 
@@ -216,12 +216,12 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	bindingSliceToMap := func(t testing.TB, in []datacenter.VNBinding) map[ObjectId]*datacenter.VNBinding {
+	bindingSliceToMap := func(t testing.TB, in []datacenter.VNBinding) map[string]*datacenter.VNBinding {
 		t.Helper()
 
-		result := make(map[ObjectId]*datacenter.VNBinding, len(in))
+		result := make(map[string]*datacenter.VNBinding, len(in))
 		for _, binding := range in {
-			result[ObjectId(binding.SystemID)] = &binding
+			result[binding.SystemID] = &binding
 		}
 
 		if len(in) != len(result) {
@@ -231,12 +231,12 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 		return result
 	}
 
-	sviSliceToMap := func(t testing.TB, in []datacenter.SVIAddressing) map[ObjectId]*datacenter.SVIAddressing {
+	sviSliceToMap := func(t testing.TB, in []datacenter.SVIAddressing) map[string]*datacenter.SVIAddressing {
 		t.Helper()
 
-		result := make(map[ObjectId]*datacenter.SVIAddressing, len(in))
+		result := make(map[string]*datacenter.SVIAddressing, len(in))
 		for _, sviIp := range in {
-			result[ObjectId(sviIp.SystemID)] = &sviIp
+			result[sviIp.SystemID] = &sviIp
 		}
 
 		if len(in) != len(result) {
@@ -246,7 +246,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 		return result
 	}
 
-	compareBindingsMaps := func(t testing.TB, a, b map[ObjectId]*datacenter.VNBinding) {
+	compareBindingsMaps := func(t testing.TB, a, b map[string]*datacenter.VNBinding) {
 		t.Helper()
 
 		if len(a) != len(b) {
@@ -263,7 +263,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 		}
 	}
 
-	compareSviMaps := func(t testing.TB, a, b map[ObjectId]*datacenter.SVIAddressing) {
+	compareSviMaps := func(t testing.TB, a, b map[string]*datacenter.SVIAddressing) {
 		t.Helper()
 
 		if len(a) != len(b) {
@@ -292,7 +292,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 			require.LessOrEqual(t, len(leafIds), 40, "test requires no more than 40 leaf switches")
 
 			// drop the first leaf from the slice, since we'll put a fixed binding and IP on it
-			fixedLeafId := leafIds[0]
+			fixedLeafId := string(leafIds[0])
 			leafIds = leafIds[1:]
 
 			rzLabel := randString(6, "hex")
@@ -337,20 +337,20 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 			}
 
 			for _, count := range testLeafCounts {
-				requestBindings := make(map[ObjectId]*datacenter.VNBinding, len(leafIds))
+				requestBindings := make(map[string]*datacenter.VNBinding, len(leafIds))
 				for j, leafId := range leafIds {
 					if j < count {
-						requestBindings[leafId] = &datacenter.VNBinding{
+						requestBindings[string(leafId)] = &datacenter.VNBinding{
 							AccessSwitchNodeIDs: nil,
 							SystemID:            string(leafIds[j]),
 							VLAN:                pointer.To(uint16(100*count + rand.Intn(100))),
 						}
 					} else {
-						requestBindings[leafId] = nil
+						requestBindings[string(leafId)] = nil
 					}
 				}
 
-				requestSviIps := make(map[ObjectId]*datacenter.SVIAddressing, count)
+				requestSviIps := make(map[string]*datacenter.SVIAddressing, count)
 				lastOctets := make([]int, count)
 				randomIntsN(lastOctets, 253) // 253 possible values while avoiding .0, .1 and .255
 				for j, leafId := range leafIds {
@@ -358,23 +358,23 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 						_, ipNet, err := net.ParseCIDR(vnPrefix.String())
 						require.NoError(t, err)
 						ipNet.IP[3] = byte(lastOctets[j] + 2) // add 2 to to avoid .0 and .1
-						requestSviIps[leafId] = &datacenter.SVIAddressing{
+						requestSviIps[string(leafId)] = &datacenter.SVIAddressing{
 							SystemID: string(leafIds[j]),
 							IPv4Addr: ipNet,
 							IPv4Mode: oneOf(enum.IPv4SVIModeForced, enum.IPv4SVIModeEnabled),
 							IPv6Mode: enum.IPv6SVIModeDisabled,
 						}
 					} else {
-						requestSviIps[leafId] = nil
+						requestSviIps[string(leafId)] = nil
 					}
 				}
 
 				log.Printf("testing UpdateVirtualNetworkLeafBindings() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 				err = bp.UpdateVirtualNetworkLeafBindings(ctx, VirtualNetworkBindingsRequest{
-					VnId:               ObjectId(vnId),
-					VnBindings:         requestBindings,
-					SviIps:             requestSviIps,
-					DhcpServiceEnabled: toPtr(datacenter.DHCPServiceEnabled(false)),
+					VirtualNetworkID:   vnId,
+					Bindings:           requestBindings,
+					SVIAddressing:      requestSviIps,
+					DHCPServiceEnabled: toPtr(datacenter.DHCPServiceEnabled(false)),
 				})
 				require.NoError(t, err)
 
