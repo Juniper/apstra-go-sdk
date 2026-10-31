@@ -31,6 +31,18 @@ import (
 //
 // The entries in the SVIAddressing map always refer to individual switch IDs, even
 // for members of a redundancy group.
+//
+// The DHCPServiceEnabled field is part of this struct because of pre-6.2.0 behavior.
+// In early versions of Apstra, the DHCP service was stored on a per-device basis
+// even though the API exposes it as a per-VN setting. Internally, all devices would
+// have the same value for a given VN. This approach became a problem with release
+// 5.0.0, when VNs were allowed to exist without any leaf bindings. No leaf binding
+// meant that there was no device context to keep track of the setting, so it would
+// be lost (revert to disabled) whenever a VN was unbound from all leaf switches.
+// The graph schema was updated int 6.2.0 to store the DHCP service setting directly
+// on the VN node. Users of 6.1.x who want the setting enabled need to set it as a
+// part of binding the first leaf switch to the VN. We expect to drop this field from
+// the request struct in a future release, once 6.1.x is no longer supported.
 type VirtualNetworkBindingsRequest struct {
 	VirtualNetworkID   string
 	Bindings           map[string]*datacenter.VNBinding
@@ -146,8 +158,10 @@ func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context
 // for members of a redundancy group.
 func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Context, req VirtualNetworkBindingsRequest) error {
 	// todo: Consider relaxing the requirement that every entry in the SVIAddressing map
-	//  must be represented (either by group ID or by system ID) in the Bindings map. A
-	//  caller may want to update SVIAddressing for a leaf switch which is already bound.
+	//  must be represented (either by group ID or by system ID) in the Bindings map.
+	//  Doing so would allow a caller to update SVIAddressing for a pre-bound leaf switch
+	//  without tinkering with the binding (requires knowledge of group membership, VLAN,
+	//  and access switches).
 
 	// Set of system IDs which are being explicitly (re)bound
 	systemsToBind := make(map[string]struct{})
