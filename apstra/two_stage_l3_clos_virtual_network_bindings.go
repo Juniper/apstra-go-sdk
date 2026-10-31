@@ -49,8 +49,18 @@ func (o *TwoStageL3ClosClient) SetVirtualNetworkLeafBindings(ctx context.Context
 		if k != ObjectId(v.SystemID) {
 			return fmt.Errorf("siMap[%s] has system ID (%s)", k, v.SystemID) // map key should match payload
 		}
-		if _, ok := req.VnBindings[k]; !ok {
-			// this is the big one - check that SVI info represents an active VN binding
+		groupID, _, err := o.GetRedundancyGroupBySystem(ctx, string(k))
+		if err != nil {
+			return fmt.Errorf("getting group info for system ID %q: %w", k, err)
+		}
+
+		// Check that SVI info represents an active VN binding.
+		var systemBound, groupBound bool
+		_, systemBound = req.VnBindings[k]
+		if groupID != nil {
+			_, groupBound = req.VnBindings[ObjectId(*groupID)]
+		}
+		if !systemBound && !groupBound {
 			return fmt.Errorf("SVI requested for system %[1]s but %[1]s not among bound leaf IDs", k)
 		}
 		sviIps[i] = *v
@@ -92,7 +102,7 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		}
 
 		if string(k) != v.SystemID {
-			return fmt.Errorf("vbMap[%s] has system ID (%s)", k, v.SystemID)
+			return fmt.Errorf("entry at VNBindings[%s] has system ID (%s)", k, v.SystemID)
 		}
 	}
 
@@ -102,9 +112,26 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetworkLeafBindings(ctx context.Cont
 		}
 
 		if k != ObjectId(v.SystemID) {
-			return fmt.Errorf("siMap[%s] has system ID (%s)", k, v.SystemID)
+			return fmt.Errorf("entry at SviIps[%s] has system ID (%s)", k, v.SystemID)
 		}
-		if binding := req.VnBindings[k]; binding == nil {
+
+		// Discover the Leaf Redudnancy Group ID, if any.
+		groupID, _, err := o.GetRedundancyGroupBySystem(ctx, string(k))
+		if err != nil {
+			return fmt.Errorf("getting group info for system ID %q: %w", k, err)
+		}
+
+		// Discover whether the request is trying to bind or unbind the Leaf Switch and/or the its Redundancy Group.
+		var systemBound, systemToBeUnbound, groupBound, groupToBeUnbound bool
+		var val interface{}
+		val, systemBound = req.VnBindings[k]
+		systemToBeUnbound = val == nil
+		if groupID != nil {
+			val, groupBound = req.VnBindings[ObjectId(*groupID)]
+			groupToBeUnbound = val == nil
+		}
+
+		if (!systemBound && !groupBound) || systemToBeUnbound || groupToBeUnbound {
 			return fmt.Errorf("SVI requested for system %[1]s but %[1]s not among bound leaf IDs, or is being removed", k)
 		}
 	}
