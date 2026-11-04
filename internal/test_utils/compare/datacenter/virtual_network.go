@@ -63,20 +63,25 @@ func VirtualNetwork(t testing.TB, req, resp datacenter.VirtualNetwork, msg ...st
 	require.Equal(t, req.VirtualGatewayIPv6.String(), resp.VirtualGatewayIPv6.String())
 	require.Equal(t, req.VirtualGatewayIPv4Enabled, resp.VirtualGatewayIPv4Enabled)
 	require.Equal(t, req.VirtualGatewayIPv6Enabled, resp.VirtualGatewayIPv6Enabled)
-	require.Equal(t, req.VirtualMAC, resp.VirtualMAC)
+	if req.VirtualMAC != nil {
+		require.Equal(t, req.VirtualMAC, resp.VirtualMAC)
+	}
 
 	require.NotNil(t, resp.L3MTU)
 	if req.L3MTU != nil {
 		require.Equal(t, req.L3MTU, resp.L3MTU)
 	}
 
-	if req.ReservedVLAN != nil || resp.ReservedVLAN != nil {
-		require.NotNil(t, req.ReservedVLAN)
-		require.NotNil(t, resp.ReservedVLAN)
-		require.Equal(t, req.ReservedVLAN, resp.ReservedVLAN)
+	if req.ReservedVLAN != nil {
+		if *req.ReservedVLAN == 0 { // zero is a special case, it clears the reserved value
+			require.Nil(t, resp.ReservedVLAN)
+		} else {
+			require.NotNil(t, resp.ReservedVLAN)
+			require.Equal(t, req.ReservedVLAN, resp.ReservedVLAN)
+		}
 	}
 
-	if req.RTPolicy != nil || resp.RTPolicy != nil {
+	if req.RTPolicy != nil {
 		require.NotNil(t, req.RTPolicy)
 		require.NotNil(t, resp.RTPolicy)
 		RTPolicy(t, *req.RTPolicy, *resp.RTPolicy)
