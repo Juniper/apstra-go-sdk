@@ -15,6 +15,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/internal"
 	"github.com/Juniper/apstra-go-sdk/internal/parse"
 	"github.com/Juniper/apstra-go-sdk/internal/pointer"
+	"github.com/Juniper/apstra-go-sdk/internal/str"
 )
 
 var (
@@ -30,24 +31,24 @@ type VirtualNetwork struct {
 	DHCPService               DHCPServiceEnabled `json:"dhcp_service"`
 	EncapsulateInnerVLAN      *bool              `json:"encapsulate_inner_vlan,omitempty"`
 	IPv4Enabled               bool               `json:"ipv4_enabled"`
-	IPv4Subnet                *net.IPNet         `json:"-"`
+	IPv4Subnet                *net.IPNet         `json:"-"` // pointer to zero value sends null to the API
 	IPv6Enabled               bool               `json:"ipv6_enabled"`
-	IPv6Subnet                *net.IPNet         `json:"-"`
+	IPv6Subnet                *net.IPNet         `json:"-"` // pointer to zero value sends null to the API
 	L3MTU                     *int               `json:"l3_mtu,omitempty"`
 	Label                     string             `json:"label"`
-	ReservedVLAN              *uint16            `json:"reserved_vlan_id,omitempty"`
+	ReservedVLAN              *uint16            `json:"-"` // pointer to zero value sends null to the API
 	RTPolicy                  *RTPolicy          `json:"rt_policy"`
 	SVIIPs                    []SVIAddressing    `json:"svi_ips"`
 	SecurityZoneID            string             `json:"security_zone_id,omitempty"`
 	SwitchingZoneID           string             `json:"switching_zone_id,omitempty"`
 	Tags                      []string           `json:"tags"`
 	Type                      enum.VnType        `json:"vn_type"`
-	VirtualGatewayIPv4        net.IP             `json:"-"`
-	VirtualGatewayIPv6        net.IP             `json:"-"`
+	VirtualGatewayIPv4        net.IP             `json:"-"` // empty slice sends null to the API
+	VirtualGatewayIPv6        net.IP             `json:"-"` // empty slice sends null to the API
 	VirtualGatewayIPv4Enabled bool               `json:"virtual_gateway_ipv4_enabled"`
 	VirtualGatewayIPv6Enabled bool               `json:"virtual_gateway_ipv6_enabled"`
 	VNI                       *uint32            `json:"vn_id,omitempty,string"` // VNI as a string, null when unset
-	VirtualMAC                net.HardwareAddr   `json:"-"`
+	VirtualMAC                net.HardwareAddr   `json:"-"`                      // empty slice sends null to the API
 
 	id string
 }
@@ -70,33 +71,86 @@ func (vn *VirtualNetwork) SetID(id string) error {
 }
 
 func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
-	var ipv4Subnet, ipv6Subnet, virtualGatewayIPv4, virtualGatewayIPv6, virtualMAC string
-	if vn.IPv4Subnet != nil && vn.IPv4Subnet.IP != nil { // todo: handle zero/removal of existing IP address value
-		ipv4Subnet = vn.IPv4Subnet.String()
+	if !vn.IPv4Enabled && vn.IPv4Subnet != nil {
+		return nil, fmt.Errorf("marshaling virtual network: IPv4 is disabled but IPv4 subnet is set to %q", vn.IPv4Subnet.String())
 	}
-	if vn.IPv6Subnet != nil && vn.IPv6Subnet.IP != nil { // todo: handle zero/removal of existing IP address value
-		ipv6Subnet = vn.IPv6Subnet.String()
+	if !vn.IPv4Enabled && vn.VirtualGatewayIPv4 != nil {
+		return nil, fmt.Errorf("marshaling virtual network: IPv4 is disabled but virtual gateway IPv4 is set to %q", vn.VirtualGatewayIPv4.String())
 	}
-	if len(vn.VirtualGatewayIPv4.To4()) == net.IPv4len { // todo: handle zero/removal o fexisting IP address value
-		virtualGatewayIPv4 = vn.VirtualGatewayIPv4.String()
+	if !vn.IPv6Enabled && vn.IPv6Subnet != nil {
+		return nil, fmt.Errorf("marshaling virtual network: IPv6 is disabled but IPv6 subnet is set to %q", vn.IPv6Subnet.String())
 	}
-	if len(vn.VirtualGatewayIPv6) == net.IPv6len { // todo: handle zero/removal o fexisting IP address value
-		virtualGatewayIPv6 = vn.VirtualGatewayIPv6.String()
+	if !vn.IPv6Enabled && vn.VirtualGatewayIPv6 != nil {
+		return nil, fmt.Errorf("marshaling virtual network: IPv6 is disabled but virtual gateway IPv6 is set to %q", vn.VirtualGatewayIPv6.String())
 	}
-	virtualMAC = vn.VirtualMAC.String()
+
+	var ipv4Subnet, ipv6Subnet, reservedVLAN, virtualGatewayIPv4, virtualGatewayIPv6, virtualMAC json.RawMessage
+	if vn.IPv4Subnet != nil { // a value was provided, so we're going to do *something*
+		if vn.IPv4Subnet.IP == nil {
+			ipv4Subnet = json.RawMessage("null") // explicit removal via 'null' when subnet exists but has no address
+		} else {
+			ipv4Subnet = str.QuoteJSONString(vn.IPv4Subnet.String()) // send the provided value
+		}
+	}
+	if vn.VirtualGatewayIPv4 != nil { // a value was provided, so we're going to do *something*
+		if len(vn.VirtualGatewayIPv4) == net.IPv4len {
+			virtualGatewayIPv4 = str.QuoteJSONString(vn.VirtualGatewayIPv4.String()) // send the provided value
+		} else {
+			virtualGatewayIPv4 = json.RawMessage("null") // explicit removal via 'null'
+		}
+	}
+	if vn.IPv6Subnet != nil { // a value was provided, so we're going to do *something*
+		if vn.IPv6Subnet.IP == nil {
+			ipv6Subnet = json.RawMessage("null") // explicit removal via 'null' when subnet exists but has no address
+		} else {
+			ipv6Subnet = str.QuoteJSONString(vn.IPv6Subnet.String()) // send the provided value
+		}
+	}
+	if vn.ReservedVLAN != nil { // a value was provided, so we're going to do *something*
+		if *vn.ReservedVLAN == 0 {
+			reservedVLAN = json.RawMessage("null") // explicit removal via 'null'
+		} else {
+			reservedVLAN = json.RawMessage(strconv.Itoa(int(*vn.ReservedVLAN))) // send the provided value
+		}
+	}
+	if vn.VirtualGatewayIPv6 != nil { // a value was provided, so we're going to do *something*
+		if len(vn.VirtualGatewayIPv6) == net.IPv6len {
+			virtualGatewayIPv6 = str.QuoteJSONString(vn.VirtualGatewayIPv6.String()) // send the provided value
+		} else {
+			virtualGatewayIPv6 = json.RawMessage("null") // explicit removal via 'null'
+		}
+	}
+	if vn.VirtualMAC != nil { // a value was provided, so we're going to do *something*
+		if len(vn.VirtualMAC) == 0 {
+			virtualMAC = json.RawMessage("null") // explicit removal via 'null' when MAC address exists but is empty
+		} else {
+			virtualMAC = str.QuoteJSONString(vn.VirtualMAC.String()) // send the provided value
+		}
+	}
+
+	if !vn.IPv4Enabled {
+		ipv4Subnet = json.RawMessage("null")         // ipv4Subnet must be cleared when IPv4 is disabled
+		virtualGatewayIPv4 = json.RawMessage("null") // virtualGatewayIPv4 must be cleared when IPv4 is disabled
+	}
+	if !vn.IPv6Enabled {
+		ipv6Subnet = json.RawMessage("null")         // ipv6Subnet must be cleared when IPv6 is disabled
+		virtualGatewayIPv6 = json.RawMessage("null") // virtualGatewayIPv6 must be cleared when IPv6 is disabled
+	}
 
 	type virtualNetwork VirtualNetwork
 	return json.Marshal(struct {
 		virtualNetwork
-		IPv4Subnet         string `json:"ipv4_subnet,omitempty"`
-		IPv6Subnet         string `json:"ipv6_subnet,omitempty"`
-		VirtualGatewayIPv4 string `json:"virtual_gateway_ipv4,omitempty"`
-		VirtualGatewayIPv6 string `json:"virtual_gateway_ipv6,omitempty"`
-		VirtualMAC         string `json:"virtual_mac,omitempty"`
+		IPv4Subnet         json.RawMessage `json:"ipv4_subnet,omitempty"`
+		IPv6Subnet         json.RawMessage `json:"ipv6_subnet,omitempty"`
+		ReservedVLAN       json.RawMessage `json:"reserved_vlan_id,omitempty"`
+		VirtualGatewayIPv4 json.RawMessage `json:"virtual_gateway_ipv4,omitempty"`
+		VirtualGatewayIPv6 json.RawMessage `json:"virtual_gateway_ipv6,omitempty"`
+		VirtualMAC         json.RawMessage `json:"virtual_mac,omitempty"`
 	}{
 		virtualNetwork:     virtualNetwork(vn),
 		IPv4Subnet:         ipv4Subnet,
 		IPv6Subnet:         ipv6Subnet,
+		ReservedVLAN:       reservedVLAN,
 		VirtualGatewayIPv4: virtualGatewayIPv4,
 		VirtualGatewayIPv6: virtualGatewayIPv6,
 		VirtualMAC:         virtualMAC,

@@ -235,6 +235,14 @@ func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, vn data
 }
 
 func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, vn datacenter.VirtualNetwork) error {
+	return o.modifyVirtualNetwork(ctx, vn, http.MethodPut)
+}
+
+func (o *TwoStageL3ClosClient) PatchVirtualNetwork(ctx context.Context, vn datacenter.VirtualNetwork) error {
+	return o.modifyVirtualNetwork(ctx, vn, http.MethodPatch)
+}
+
+func (o *TwoStageL3ClosClient) modifyVirtualNetwork(ctx context.Context, vn datacenter.VirtualNetwork, method string) error {
 	if vn.ID() == nil {
 		return fmt.Errorf("id is required in %s", str.FuncName())
 	}
@@ -273,7 +281,7 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, vn data
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPut,
+		method:   method,
 		urlStr:   fmt.Sprintf(urls.DatacenterVirtualNetworkByID, o.blueprintId, *vn.ID()),
 		apiInput: vn,
 	})
