@@ -17,6 +17,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/apstra"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/Juniper/apstra-go-sdk/internal/query"
 	testutils "github.com/Juniper/apstra-go-sdk/internal/test_utils"
 	dctestobj "github.com/Juniper/apstra-go-sdk/internal/test_utils/datacenter_test_objects"
@@ -96,10 +97,10 @@ func TestGetNodeRenderedDiff(t *testing.T) {
 				// create a VN within the security zone
 				rip := testutils.RandomPrefix(t, "172.16.0.0/12", 24)
 				vnId, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
-					VirtualGatewayIPv4Enabled: true,
-					IPv4Enabled:               true,
+					VirtualGatewayIPv4Enabled: pointer.To(true),
+					IPv4Enabled:               pointer.To(true),
 					IPv4Subnet:                &rip,
-					Label:                     testutils.RandString(6, "hex"),
+					Label:                     pointer.To(testutils.RandString(6, "hex")),
 					SecurityZoneID:            szId,
 					Bindings:                  vnBindings,
 					Type:                      enum.VnTypeVxlan,

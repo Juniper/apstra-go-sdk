@@ -227,7 +227,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 				Bindings: []datacenter.VNBinding{
 					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
 				},
-				Description: testutils.RandString(6, "hex"),
+				Description: pointer.To(testutils.RandString(6, "hex")),
 				DHCPService: true,
 				IPv4Enabled: true,
 				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
@@ -262,7 +262,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 				Bindings: []datacenter.VNBinding{
 					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
 				},
-				Description: testutils.RandString(6, "hex"),
+				Description: pointer.To(testutils.RandString(6, "hex")),
 				DHCPService: true,
 				IPv4Enabled: true,
 				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
@@ -306,7 +306,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 				Bindings: []datacenter.VNBinding{
 					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
 				},
-				Description: testutils.RandString(6, "hex"),
+				Description: pointer.To(testutils.RandString(6, "hex")),
 				DHCPService: true,
 				IPv4Enabled: true,
 				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "192.0.2.0/24", 28)),
@@ -339,7 +339,7 @@ func TestVirtualNetwork_CRUD(t *testing.T) {
 		"start_maximal_vxlan": {
 			create: datacenter.VirtualNetwork{
 				Bindings:     []datacenter.VNBinding{{}, {}},
-				Description:  testutils.RandString(6, "hex"),
+				Description:  pointer.To(testutils.RandString(6, "hex")),
 				DHCPService:  true,
 				IPv4Enabled:  true,
 				IPv4Subnet:   pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
@@ -1177,7 +1177,7 @@ func TestVirtualNetwork_CRPD(t *testing.T) {
 				Bindings: []datacenter.VNBinding{
 					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
 				},
-				Description: testutils.RandString(6, "hex"),
+				Description: pointer.To(testutils.RandString(6, "hex")),
 				DHCPService: true,
 				IPv4Enabled: true,
 				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
@@ -1212,7 +1212,7 @@ func TestVirtualNetwork_CRPD(t *testing.T) {
 				Bindings: []datacenter.VNBinding{
 					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
 				},
-				Description: testutils.RandString(6, "hex"),
+				Description: pointer.To(testutils.RandString(6, "hex")),
 				DHCPService: true,
 				IPv4Enabled: true,
 				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
@@ -1256,7 +1256,7 @@ func TestVirtualNetwork_CRPD(t *testing.T) {
 				Bindings: []datacenter.VNBinding{
 					{VLAN: pointer.To(uint16(90 + rand.Intn(4000)))},
 				},
-				Description: testutils.RandString(6, "hex"),
+				Description: pointer.To(testutils.RandString(6, "hex")),
 				DHCPService: true,
 				IPv4Enabled: true,
 				IPv4Subnet:  pointer.To(testutils.RandomPrefix(t, "192.0.2.0/24", 28)),
@@ -1289,7 +1289,7 @@ func TestVirtualNetwork_CRPD(t *testing.T) {
 		"start_maximal_vxlan": {
 			create: datacenter.VirtualNetwork{
 				Bindings:     []datacenter.VNBinding{{}, {}},
-				Description:  testutils.RandString(6, "hex"),
+				Description:  pointer.To(testutils.RandString(6, "hex")),
 				DHCPService:  true,
 				IPv4Enabled:  true,
 				IPv4Subnet:   pointer.To(testutils.RandomPrefix(t, "10.0.0.0/8", 23)),
