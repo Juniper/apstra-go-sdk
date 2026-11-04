@@ -125,9 +125,9 @@ func TestTwoStageL3ClosClient_GetSecurityZoneInfo(t *testing.T) {
 
 				// create a VN to activate the SZ is on leaf switches
 				_, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
-					IPv4Enabled:    true,
-					IPv6Enabled:    true,
-					Label:          randString(6, "hex"),
+					IPv4Enabled:    pointer.To(true),
+					IPv6Enabled:    pointer.To(true),
+					Label:          pointer.To(randString(6, "hex")),
 					SecurityZoneID: szIds[i],
 					Bindings:       vnBindings,
 					Type:           enum.VnTypeVxlan,

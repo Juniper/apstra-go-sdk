@@ -132,11 +132,11 @@ func TestTwoStageL3ClosClient_SetSecurityZoneLoopbacks(t *testing.T) {
 
 			// create a VN with IPv4 and IPv6 enabled so that the VRF is rendered on switches and loopbacks will be assigned
 			_, err = bpClient.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
-				IPv4Enabled:               true,
-				VirtualGatewayIPv4Enabled: true,
-				IPv6Enabled:               true,
-				VirtualGatewayIPv6Enabled: true,
-				Label:                     randString(6, "hex"),
+				IPv4Enabled:               pointer.To(true),
+				VirtualGatewayIPv4Enabled: pointer.To(true),
+				IPv6Enabled:               pointer.To(true),
+				VirtualGatewayIPv6Enabled: pointer.To(true),
+				Label:                     pointer.To(randString(6, "hex")),
 				SecurityZoneID:            rzID,
 				Bindings:                  bindings,
 				Type:                      enum.VnTypeVxlan,
