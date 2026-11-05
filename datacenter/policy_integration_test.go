@@ -276,8 +276,8 @@ func TestCrudPolicy(t *testing.T) {
 					}
 					rzID := applicationPointID(t, ctx, bp, "rz:"+parts[1])
 					id, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
-						IPv4Enabled:    true,
-						Label:          testutils.RandString(6, "hex"),
+						IPv4Enabled:    pointer.To(true),
+						Label:          pointer.To(testutils.RandString(6, "hex")),
 						SecurityZoneID: rzID,
 						Type:           enum.VnTypeVxlan,
 					})

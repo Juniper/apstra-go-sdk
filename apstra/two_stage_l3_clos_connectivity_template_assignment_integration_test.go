@@ -106,7 +106,7 @@ func TestAssignClearCtToInterface(t *testing.T) {
 			for i := 0; i < vnCount; i++ {
 				log.Printf("testing CreateVirtualNetwork() against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
 				vnIds[i], err = bpClient.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
-					Label:          randString(6, "hex"),
+					Label:          pointer.To(randString(6, "hex")),
 					SecurityZoneID: szId,
 					Bindings:       bindings,
 					Type:           enum.VnTypeVxlan,

@@ -183,7 +183,7 @@ func TestCreateGetUpdateDeleteCT(t *testing.T) {
 
 			testVN, err := bpClient.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
 				Bindings:       bindings,
-				Label:          randString(6, "hex"),
+				Label:          pointer.To(randString(6, "hex")),
 				Type:           enum.VnTypeVxlan,
 				SecurityZoneID: testRZ,
 			})

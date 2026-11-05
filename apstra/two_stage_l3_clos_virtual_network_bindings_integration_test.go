@@ -149,9 +149,9 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 
 			vnPrefix := randomPrefix(t, "10.0.0.0/8", 24)
 			vnId, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
-				IPv4Enabled:    true,
+				IPv4Enabled:    pointer.To(true),
 				IPv4Subnet:     &vnPrefix,
-				Label:          randString(6, "hex"),
+				Label:          pointer.To(randString(6, "hex")),
 				SecurityZoneID: rzId,
 				Type:           enum.VnTypeVxlan,
 			})
@@ -318,9 +318,9 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 				IPv6Mode: enum.IPv6SVIModeDisabled,
 			}
 			vnId, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
-				IPv4Enabled:    true,
+				IPv4Enabled:    pointer.To(true),
 				IPv4Subnet:     &vnPrefix,
-				Label:          randString(6, "hex"),
+				Label:          pointer.To(randString(6, "hex")),
 				SecurityZoneID: rzId,
 				Type:           enum.VnTypeVxlan,
 				Bindings:       []datacenter.VNBinding{vnBinding},

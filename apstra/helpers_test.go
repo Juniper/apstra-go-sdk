@@ -22,6 +22,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -751,10 +752,10 @@ func testVirtualNetwork(t testing.TB, ctx context.Context, bp *TwoStageL3ClosCli
 	}
 
 	id, err := bp.CreateVirtualNetwork(ctx, datacenter.VirtualNetwork{
-		IPv4Enabled:               true,
-		Label:                     randString(6, "hex"),
+		IPv4Enabled:               pointer.To(true),
+		Label:                     pointer.To(randString(6, "hex")),
 		SecurityZoneID:            szId,
-		VirtualGatewayIPv4Enabled: true,
+		VirtualGatewayIPv4Enabled: pointer.To(true),
 		Bindings:                  vnBindings,
 		Type:                      enum.VnTypeVxlan,
 	})
