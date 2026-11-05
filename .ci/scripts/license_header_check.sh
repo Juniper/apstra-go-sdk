@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) Juniper Networks, Inc., 2024-2025.
+# Copyright (c) Juniper Networks, Inc., 2024-2026.
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -55,7 +55,7 @@ do
     else
       first_year="$line"
     fi
-  done <<< "$( (git log --follow --pretty=format:"%ad" --date=format:'%Y' "$file"; echo) | sed -n '1p;$p' )"
+  done <<< "$( (git log --follow --pretty=format:"%ad" --date=format:'%Y' "$file"; echo) | sort -rn | sed -n '1p;$p' )"
 
   # assume current year for both values if git log didn't find anything (new file)
   [ -z "$first_year" ] && first_year=$(date '+%Y')
