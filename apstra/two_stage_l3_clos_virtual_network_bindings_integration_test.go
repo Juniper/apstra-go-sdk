@@ -177,7 +177,7 @@ func TestSetVirtualNetworkLeafBindings(t *testing.T) {
 
 				sviIps := make(map[string]*datacenter.SVIAddressing, count)
 				lastOctets := make([]int, count)
-				randomIntsN(lastOctets, 253) // 253 possible values while avoiding .0, .1 and .255
+				randomUniqIntsN(lastOctets, 253) // 253 possible values while avoiding .0, .1 and .255
 				for j := range count {
 					_, ipNet, err := net.ParseCIDR(vnPrefix.String())
 					require.NoError(t, err)
@@ -352,7 +352,7 @@ func TestUpdateVirtualNetworkLeafBindings(t *testing.T) {
 
 				requestSviIps := make(map[string]*datacenter.SVIAddressing, count)
 				lastOctets := make([]int, count)
-				randomIntsN(lastOctets, 253) // 253 possible values while avoiding .0, .1 and .255
+				randomUniqIntsN(lastOctets, 253) // 253 possible values while avoiding .0, .1 and .255
 				for j, leafId := range leafIds {
 					if j < count {
 						_, ipNet, err := net.ParseCIDR(vnPrefix.String())
