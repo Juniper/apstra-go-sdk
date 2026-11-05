@@ -42,7 +42,7 @@ type VirtualNetwork struct {
 	SecurityZoneID            string              `json:"security_zone_id,omitempty"`
 	SwitchingZoneID           string              `json:"switching_zone_id,omitempty"`
 	Tags                      []string            `json:"tags,omitzero"`
-	Type                      enum.VnType         `json:"vn_type,omitempty"`
+	Type                      enum.VnType         `json:"vn_type,omitzero"`
 	VirtualGatewayIPv4        net.IP              `json:"-"` // empty slice sends null to the API
 	VirtualGatewayIPv6        net.IP              `json:"-"` // empty slice sends null to the API
 	VirtualGatewayIPv4Enabled *bool               `json:"virtual_gateway_ipv4_enabled,omitempty"`

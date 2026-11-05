@@ -45,6 +45,10 @@ func TestVirtualNetworkData_MarshalJson(t *testing.T) {
 	}
 
 	testCases := map[string]testCase{
+		"empty": {
+			d: datacenter.VirtualNetwork{},
+			e: `{}`,
+		},
 		"full_detail_vlan": {
 			d: datacenter.VirtualNetwork{
 				Description:    pointer.To("My Virtual Network"),
