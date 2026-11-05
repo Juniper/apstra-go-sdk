@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) Juniper Networks, Inc., 2024-2025.
+# Copyright (c) Juniper Networks, Inc., 2024-2026.
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -44,22 +44,24 @@ do
   # shellcheck disable=SC2059
   printf "checking %s...  " "$file"
 
-  # determine the year the file was introduced and the year it was most recently modified
-  first_year=""
-  recent_year=""
-  while read -r line
-  do
-    if [ -z "$recent_year" ]
-    then
-      recent_year="$line"
-    else
-      first_year="$line"
-    fi
-  done <<< "$( (git log --follow --pretty=format:"%ad" --date=format:'%Y' "$file"; echo) | sed -n '1p;$p' )"
 
-  # assume current year for both values if git log didn't find anything (new file)
-  [ -z "$first_year" ] && first_year=$(date '+%Y')
-  [ -z "$recent_year" ] && recent_year=$(date '+%Y')
+
+  # Determine the year the file was introduced and the year it was most recently modified.
+  #
+  # Note that Git 2.56 changed how `git log --follow` tracks renames across merges. The
+  # same repository history can therefore yield a different introduction year than earlier
+  # Git versions, even with the default rename similarity threshold unchanged. We accept
+  # the lineage inferred by the Git version running this check. Files headers previously
+  # validated with an earlier Git release may need their headers updated to reflect the
+  # Git's current understanding of the file's history.
+  years=$(git log --follow --format='%ad' --date=format:'%Y' -- "$file" | sort -n)
+  if [ -n "$years" ]; then
+    first_year=$(sed -n '1p' <<< "$years")
+    recent_year=$(sed -n '$p' <<< "$years")
+  else
+    first_year=$(date '+%Y')
+    recent_year="$first_year"
+  fi
 
   # shellcheck disable=SC2059
   copyright_line=$(printf "${copyright_template}" "$first_year" "$recent_year")
