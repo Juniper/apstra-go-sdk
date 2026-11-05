@@ -89,8 +89,8 @@ func netIpToNetIpAddr(t *testing.T, ip net.IP) netip.Addr {
 	return result
 }
 
-// randomIntsN fills the supplied slice with non-negative pseudo-random values in the half-open interval [0,n)
-func randomIntsN(s []int, n int) {
+// randomUniqIntsN fills the supplied slice with unique, non-negative pseudo-random values in the half-open interval [0,n)
+func randomUniqIntsN(s []int, n int) {
 	l := len(s)
 	m := make(map[int]struct{}, l)
 	for len(m) < l {
