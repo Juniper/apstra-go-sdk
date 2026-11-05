@@ -37,9 +37,13 @@ func VirtualNetwork(t testing.TB, req, resp datacenter.VirtualNetwork, msg ...st
 		VNBinding(t, reqVNBindings[leafID], respVNBindings[leafID], fmt.Sprintf("VN Binding for leaf %q", leafID))
 	}
 
-	require.Equal(t, req.Description, resp.Description)
-	if len(req.Bindings) > 0 {
-		require.Equal(t, req.DHCPService, resp.DHCPService) // only checked with bindings because this info is lost otherwise
+	if req.Description != nil {
+		require.NotNil(t, resp.Description)
+		require.Equal(t, *req.Description, *resp.Description)
+	}
+	if req.DHCPService != nil && len(req.Bindings) > 0 {
+		require.NotNil(t, resp.DHCPService)
+		require.Equal(t, *req.DHCPService, *resp.DHCPService) // only checked with bindings because this info is lost otherwise with releases prior to 6.2.0
 	}
 
 	if req.EncapsulateInnerVLAN != nil {
@@ -47,23 +51,55 @@ func VirtualNetwork(t testing.TB, req, resp datacenter.VirtualNetwork, msg ...st
 		require.Equal(t, *req.EncapsulateInnerVLAN, *resp.EncapsulateInnerVLAN)
 	}
 
-	require.Equal(t, req.IPv4Enabled, resp.IPv4Enabled)
-	require.Equal(t, req.IPv4Subnet.String(), resp.IPv4Subnet.String())
-	require.Equal(t, req.IPv6Enabled, resp.IPv6Enabled)
-	require.Equal(t, req.IPv6Subnet.String(), resp.IPv6Subnet.String())
-	require.Equal(t, req.Label, resp.Label)
+	require.NotNil(t, resp.IPv4Enabled)
+	if req.IPv4Enabled != nil {
+		require.Equal(t, *req.IPv4Enabled, *resp.IPv4Enabled)
+	}
+	if req.IPv4Subnet != nil {
+		require.NotNil(t, resp.IPv4Subnet)
+		require.Equal(t, req.IPv4Subnet.String(), resp.IPv4Subnet.String())
+	}
+
+	require.NotNil(t, resp.IPv6Enabled)
+	if req.IPv6Enabled != nil {
+		require.Equal(t, *req.IPv6Enabled, *resp.IPv6Enabled)
+	}
+	if req.IPv6Subnet != nil {
+		require.NotNil(t, resp.IPv6Subnet)
+		require.Equal(t, req.IPv6Subnet.String(), resp.IPv6Subnet.String())
+	}
+
+	require.NotNil(t, req.Label)
+	require.NotNil(t, resp.Label)
+	require.Equal(t, *req.Label, *resp.Label)
+
 	if req.SecurityZoneID != "" {
 		require.Equal(t, req.SecurityZoneID, resp.SecurityZoneID)
 	}
 	if req.SwitchingZoneID != "" {
 		require.Equal(t, req.SwitchingZoneID, resp.SwitchingZoneID)
 	}
-	require.Equal(t, req.Type, resp.Type)
-	require.Equal(t, req.VirtualGatewayIPv4.String(), resp.VirtualGatewayIPv4.String())
-	require.Equal(t, req.VirtualGatewayIPv6.String(), resp.VirtualGatewayIPv6.String())
-	require.Equal(t, req.VirtualGatewayIPv4Enabled, resp.VirtualGatewayIPv4Enabled)
-	require.Equal(t, req.VirtualGatewayIPv6Enabled, resp.VirtualGatewayIPv6Enabled)
+	if req.Type.Value != "" {
+		require.Equal(t, req.Type, resp.Type)
+	}
+	if req.VirtualGatewayIPv4 != nil {
+		require.NotNil(t, resp.VirtualGatewayIPv4)
+		require.Equal(t, req.VirtualGatewayIPv4.String(), resp.VirtualGatewayIPv4.String())
+	}
+	if req.VirtualGatewayIPv6 != nil {
+		require.NotNil(t, resp.VirtualGatewayIPv6)
+		require.Equal(t, req.VirtualGatewayIPv6.String(), resp.VirtualGatewayIPv6.String())
+	}
+	require.NotNil(t, resp.VirtualGatewayIPv4Enabled)
+	if req.VirtualGatewayIPv4 != nil {
+		require.Equal(t, *req.VirtualGatewayIPv4Enabled, *resp.VirtualGatewayIPv4Enabled)
+	}
+	require.NotNil(t, resp.VirtualGatewayIPv6Enabled)
+	if req.VirtualGatewayIPv6 != nil {
+		require.Equal(t, *req.VirtualGatewayIPv6Enabled, *resp.VirtualGatewayIPv6Enabled)
+	}
 	if req.VirtualMAC != nil {
+		require.NotNil(t, resp.VirtualMAC)
 		require.Equal(t, req.VirtualMAC, resp.VirtualMAC)
 	}
 
@@ -81,7 +117,7 @@ func VirtualNetwork(t testing.TB, req, resp datacenter.VirtualNetwork, msg ...st
 		}
 	}
 
-	if req.RTPolicy != nil {
+	if req.RTPolicy != nil && (req.RTPolicy.ExportRTs != nil || req.RTPolicy.ImportRTs != nil) {
 		require.NotNil(t, req.RTPolicy)
 		require.NotNil(t, resp.RTPolicy)
 		RTPolicy(t, *req.RTPolicy, *resp.RTPolicy)
