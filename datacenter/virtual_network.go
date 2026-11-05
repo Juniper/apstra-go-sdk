@@ -34,7 +34,7 @@ type VirtualNetwork struct {
 	IPv4Subnet                *net.IPNet          `json:"-"` // pointer to zero value sends null to the API
 	IPv6Enabled               *bool               `json:"ipv6_enabled,omitempty"`
 	IPv6Subnet                *net.IPNet          `json:"-"` // pointer to zero value sends null to the API
-	L3MTU                     *int                `json:"l3_mtu,omitempty"`
+	L3MTU                     *int                `json:"-"` // pointer to zero value sends null to the API
 	Label                     *string             `json:"label,omitempty"`
 	ReservedVLAN              *uint16             `json:"-"` // pointer to zero value sends null to the API
 	RTPolicy                  *RTPolicy           `json:"-"` // pointer to a zero-value RTPolicy will send null to the API
@@ -84,7 +84,7 @@ func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("marshaling virtual network: IPv6 is disabled but virtual gateway IPv6 is set to %q", vn.VirtualGatewayIPv6.String())
 	}
 
-	var description, ipv4Subnet, ipv6Subnet, reservedVLAN, rtPolicy, virtualGatewayIPv4, virtualGatewayIPv6, virtualMAC json.RawMessage
+	var description, ipv4Subnet, ipv6Subnet, l3MTU, reservedVLAN, rtPolicy, virtualGatewayIPv4, virtualGatewayIPv6, virtualMAC json.RawMessage
 	if vn.Description != nil {
 		if *vn.Description == "" {
 			description = json.RawMessage("null") // explicit removal via 'null' when description exists but is empty
@@ -97,6 +97,13 @@ func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
 			ipv4Subnet = json.RawMessage("null") // explicit removal via nil, empty or unspecified subnet IP; send null
 		} else {
 			ipv4Subnet = str.QuoteJSONString(vn.IPv4Subnet.String()) // send the provided value
+		}
+	}
+	if vn.L3MTU != nil { // a value was provided, so we'll send *something*
+		if *vn.L3MTU == 0 {
+			l3MTU = json.RawMessage("null") // explicit removal via pointer to zero value; send null
+		} else {
+			l3MTU = json.RawMessage(strconv.Itoa(*vn.L3MTU))
 		}
 	}
 	if vn.RTPolicy != nil { // a value was provided, so we'll send *something*
@@ -164,6 +171,7 @@ func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
 		Description        json.RawMessage `json:"description,omitempty"`
 		IPv4Subnet         json.RawMessage `json:"ipv4_subnet,omitempty"`
 		IPv6Subnet         json.RawMessage `json:"ipv6_subnet,omitempty"`
+		L3MTU              json.RawMessage `json:"l3_mtu,omitempty"`
 		ReservedVLAN       json.RawMessage `json:"reserved_vlan_id,omitempty"`
 		RTPolicy           json.RawMessage `json:"rt_policy,omitempty"`
 		VirtualGatewayIPv4 json.RawMessage `json:"virtual_gateway_ipv4,omitempty"`
@@ -174,6 +182,7 @@ func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
 		virtualNetwork:     virtualNetwork(vn),
 		IPv4Subnet:         ipv4Subnet,
 		IPv6Subnet:         ipv6Subnet,
+		L3MTU:              l3MTU,
 		ReservedVLAN:       reservedVLAN,
 		RTPolicy:           rtPolicy,
 		VirtualGatewayIPv4: virtualGatewayIPv4,
