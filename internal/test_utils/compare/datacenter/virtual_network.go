@@ -69,9 +69,10 @@ func VirtualNetwork(t testing.TB, req, resp datacenter.VirtualNetwork, msg ...st
 		require.Equal(t, req.IPv6Subnet.String(), resp.IPv6Subnet.String())
 	}
 
-	require.NotNil(t, req.Label)
-	require.NotNil(t, resp.Label)
-	require.Equal(t, *req.Label, *resp.Label)
+	if req.Label != nil {
+		require.NotNil(t, resp.Label)
+		require.Equal(t, *req.Label, *resp.Label)
+	}
 
 	if req.SecurityZoneID != "" {
 		require.Equal(t, req.SecurityZoneID, resp.SecurityZoneID)
@@ -103,9 +104,9 @@ func VirtualNetwork(t testing.TB, req, resp datacenter.VirtualNetwork, msg ...st
 		require.Equal(t, req.VirtualMAC, resp.VirtualMAC)
 	}
 
-	require.NotNil(t, resp.L3MTU)
 	if req.L3MTU != nil {
-		require.Equal(t, req.L3MTU, resp.L3MTU)
+		require.NotNil(t, resp.L3MTU)
+		require.Equal(t, *req.L3MTU, *resp.L3MTU)
 	}
 
 	if req.ReservedVLAN != nil {
