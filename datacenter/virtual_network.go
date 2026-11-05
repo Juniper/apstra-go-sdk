@@ -26,7 +26,7 @@ var (
 )
 
 type VirtualNetwork struct {
-	Bindings                  []VNBinding         `json:"bound_to,omitempty"`
+	Bindings                  []VNBinding         `json:"bound_to,omitzero"`
 	Description               *string             `json:"description,omitempty"` // pointer to empty string sends null to the API
 	DHCPService               *DHCPServiceEnabled `json:"dhcp_service,omitempty"`
 	EncapsulateInnerVLAN      *bool               `json:"encapsulate_inner_vlan,omitempty"`
@@ -37,11 +37,11 @@ type VirtualNetwork struct {
 	L3MTU                     *int                `json:"l3_mtu,omitempty"`
 	Label                     *string             `json:"label,omitempty"`
 	ReservedVLAN              *uint16             `json:"-"` // pointer to zero value sends null to the API
-	RTPolicy                  *RTPolicy           `json:"rt_policy,omitempty"`
-	SVIIPs                    []SVIAddressing     `json:"svi_ips,omitempty"`
+	RTPolicy                  *RTPolicy           `json:"-"` // pointer to a zero-value RTPolicy will send null to the API
+	SVIIPs                    []SVIAddressing     `json:"svi_ips,omitzero"`
 	SecurityZoneID            string              `json:"security_zone_id,omitempty"`
 	SwitchingZoneID           string              `json:"switching_zone_id,omitempty"`
-	Tags                      []string            `json:"tags,omitempty"`
+	Tags                      []string            `json:"tags,omitzero"`
 	Type                      enum.VnType         `json:"vn_type,omitempty"`
 	VirtualGatewayIPv4        net.IP              `json:"-"` // empty slice sends null to the API
 	VirtualGatewayIPv6        net.IP              `json:"-"` // empty slice sends null to the API
@@ -84,7 +84,7 @@ func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("marshaling virtual network: IPv6 is disabled but virtual gateway IPv6 is set to %q", vn.VirtualGatewayIPv6.String())
 	}
 
-	var description, ipv4Subnet, ipv6Subnet, reservedVLAN, virtualGatewayIPv4, virtualGatewayIPv6, virtualMAC json.RawMessage
+	var description, ipv4Subnet, ipv6Subnet, reservedVLAN, rtPolicy, virtualGatewayIPv4, virtualGatewayIPv6, virtualMAC json.RawMessage
 	if vn.Description != nil {
 		if *vn.Description == "" {
 			description = json.RawMessage("null") // explicit removal via 'null' when description exists but is empty
@@ -92,42 +92,53 @@ func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
 			description = str.QuoteJSONString(*vn.Description) // send the provided value
 		}
 	}
-	if vn.IPv4Subnet != nil { // a value was provided, so we're going to do *something*
-		if vn.IPv4Subnet.IP == nil {
-			ipv4Subnet = json.RawMessage("null") // explicit removal via 'null' when subnet exists but has no address
+	if vn.IPv4Subnet != nil { // a value was provided, so we'll send *something*
+		if vn.IPv4Subnet.IP.IsUnspecified() || len(vn.IPv4Subnet.IP) == 0 {
+			ipv4Subnet = json.RawMessage("null") // explicit removal via nil, empty or unspecified subnet IP; send null
 		} else {
 			ipv4Subnet = str.QuoteJSONString(vn.IPv4Subnet.String()) // send the provided value
 		}
 	}
-	if vn.VirtualGatewayIPv4 != nil { // a value was provided, so we're going to do *something*
-		if len(vn.VirtualGatewayIPv4) == net.IPv4len {
-			virtualGatewayIPv4 = str.QuoteJSONString(vn.VirtualGatewayIPv4.String()) // send the provided value
+	if vn.RTPolicy != nil { // a value was provided, so we'll send *something*
+		if vn.RTPolicy.ExportRTs == nil || vn.RTPolicy.ImportRTs == nil {
+			rtPolicy = json.RawMessage("null") // zero value RTPolicy; send null to the API
 		} else {
-			virtualGatewayIPv4 = json.RawMessage("null") // explicit removal via 'null'
+			var err error
+			rtPolicy, err = json.Marshal(vn.RTPolicy) // marshal the RTPolicy to JSON and send the provided value
+			if err != nil {
+				return nil, fmt.Errorf("marshaling virtual network: marshaling RTPolicy: %w", err)
+			}
 		}
 	}
-	if vn.IPv6Subnet != nil { // a value was provided, so we're going to do *something*
-		if vn.IPv6Subnet.IP == nil {
-			ipv6Subnet = json.RawMessage("null") // explicit removal via 'null' when subnet exists but has no address
+	if vn.VirtualGatewayIPv4 != nil { // a value was provided, so we'll send *something*
+		if vn.VirtualGatewayIPv4.IsUnspecified() || len(vn.VirtualGatewayIPv4) == 0 {
+			virtualGatewayIPv4 = json.RawMessage("null") // explicit removal via nil, empty or unspecified virtual gateway IP; send null
+		} else {
+			virtualGatewayIPv4 = str.QuoteJSONString(vn.VirtualGatewayIPv4.String()) // send the provided value
+		}
+	}
+	if vn.IPv6Subnet != nil { // a value was provided, so we'll send *something*
+		if vn.IPv6Subnet.IP.IsUnspecified() || len(vn.IPv6Subnet.IP) == 0 {
+			ipv6Subnet = json.RawMessage("null") // explicit removal via nil, empty or unspecified subnet IP; send null
 		} else {
 			ipv6Subnet = str.QuoteJSONString(vn.IPv6Subnet.String()) // send the provided value
 		}
 	}
-	if vn.ReservedVLAN != nil { // a value was provided, so we're going to do *something*
+	if vn.VirtualGatewayIPv6 != nil { // a value was provided, so we'll send *something*
+		if vn.VirtualGatewayIPv6.IsUnspecified() || len(vn.VirtualGatewayIPv6) == 0 {
+			virtualGatewayIPv6 = json.RawMessage("null") // explicit removal via nil, empty or unspecified virtual gateway IP; send null
+		} else {
+			virtualGatewayIPv6 = str.QuoteJSONString(vn.VirtualGatewayIPv6.String()) // send the provided value
+		}
+	}
+	if vn.ReservedVLAN != nil { // a value was provided, so we'll send *something*
 		if *vn.ReservedVLAN == 0 {
 			reservedVLAN = json.RawMessage("null") // explicit removal via 'null'
 		} else {
 			reservedVLAN = json.RawMessage(strconv.Itoa(int(*vn.ReservedVLAN))) // send the provided value
 		}
 	}
-	if vn.VirtualGatewayIPv6 != nil { // a value was provided, so we're going to do *something*
-		if len(vn.VirtualGatewayIPv6) == net.IPv6len {
-			virtualGatewayIPv6 = str.QuoteJSONString(vn.VirtualGatewayIPv6.String()) // send the provided value
-		} else {
-			virtualGatewayIPv6 = json.RawMessage("null") // explicit removal via 'null'
-		}
-	}
-	if vn.VirtualMAC != nil { // a value was provided, so we're going to do *something*
+	if vn.VirtualMAC != nil { // a value was provided, so we'll send *something*
 		if len(vn.VirtualMAC) == 0 {
 			virtualMAC = json.RawMessage("null") // explicit removal via 'null' when MAC address exists but is empty
 		} else {
@@ -154,6 +165,7 @@ func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
 		IPv4Subnet         json.RawMessage `json:"ipv4_subnet,omitempty"`
 		IPv6Subnet         json.RawMessage `json:"ipv6_subnet,omitempty"`
 		ReservedVLAN       json.RawMessage `json:"reserved_vlan_id,omitempty"`
+		RTPolicy           json.RawMessage `json:"rt_policy,omitempty"`
 		VirtualGatewayIPv4 json.RawMessage `json:"virtual_gateway_ipv4,omitempty"`
 		VirtualGatewayIPv6 json.RawMessage `json:"virtual_gateway_ipv6,omitempty"`
 		VirtualMAC         json.RawMessage `json:"virtual_mac,omitempty"`
@@ -163,6 +175,7 @@ func (vn VirtualNetwork) MarshalJSON() ([]byte, error) {
 		IPv4Subnet:         ipv4Subnet,
 		IPv6Subnet:         ipv6Subnet,
 		ReservedVLAN:       reservedVLAN,
+		RTPolicy:           rtPolicy,
 		VirtualGatewayIPv4: virtualGatewayIPv4,
 		VirtualGatewayIPv6: virtualGatewayIPv6,
 		VirtualMAC:         virtualMAC,
