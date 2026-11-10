@@ -37,10 +37,10 @@ var (
 	speedValue400  = speedValue{Value: 400}
 	speedValue800  = speedValue{Value: 800}
 	speedValue1600 = speedValue{Value: 1600}
-	speedValues    = oenum.New(speedValue0, speedValue1, speedValue2,
-		speedValue5, speedValue10, speedValue25, speedValue40, speedValue50,
-		speedValue100, speedValue150, speedValue200, speedValue400, speedValue800,
-		speedValue1600,
+	speedValues    = oenum.New(
+		speedValue0, speedValue1, speedValue2, speedValue5, speedValue10,
+		speedValue25, speedValue40, speedValue50, speedValue100, speedValue150,
+		speedValue200, speedValue400, speedValue800, speedValue1600,
 	)
 )
 
