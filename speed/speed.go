@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,22 +23,24 @@ const (
 type speedValue oenum.Member[int]
 
 var (
-	speedValue0   = speedValue{Value: 0}
-	speedValue1   = speedValue{Value: 1}
-	speedValue2   = speedValue{Value: 2}
-	speedValue5   = speedValue{Value: 5}
-	speedValue10  = speedValue{Value: 10}
-	speedValue25  = speedValue{Value: 25}
-	speedValue40  = speedValue{Value: 40}
-	speedValue50  = speedValue{Value: 50}
-	speedValue100 = speedValue{Value: 100}
-	speedValue150 = speedValue{Value: 150}
-	speedValue200 = speedValue{Value: 200}
-	speedValue400 = speedValue{Value: 400}
-	speedValue800 = speedValue{Value: 800}
-	speedValues   = oenum.New(speedValue0, speedValue1, speedValue2,
-		speedValue5, speedValue10, speedValue25, speedValue40, speedValue50,
-		speedValue100, speedValue150, speedValue200, speedValue400, speedValue800,
+	speedValue0    = speedValue{Value: 0}
+	speedValue1    = speedValue{Value: 1}
+	speedValue2    = speedValue{Value: 2}
+	speedValue5    = speedValue{Value: 5}
+	speedValue10   = speedValue{Value: 10}
+	speedValue25   = speedValue{Value: 25}
+	speedValue40   = speedValue{Value: 40}
+	speedValue50   = speedValue{Value: 50}
+	speedValue100  = speedValue{Value: 100}
+	speedValue150  = speedValue{Value: 150}
+	speedValue200  = speedValue{Value: 200}
+	speedValue400  = speedValue{Value: 400}
+	speedValue800  = speedValue{Value: 800}
+	speedValue1600 = speedValue{Value: 1600}
+	speedValues    = oenum.New(
+		speedValue0, speedValue1, speedValue2, speedValue5, speedValue10,
+		speedValue25, speedValue40, speedValue50, speedValue100, speedValue150,
+		speedValue200, speedValue400, speedValue800, speedValue1600,
 	)
 )
 
