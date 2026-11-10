@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/apstra-go-sdk/apstra"
+	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/design"
 	"github.com/Juniper/apstra-go-sdk/enum"
 	"github.com/Juniper/apstra-go-sdk/internal/slice"
@@ -22,6 +23,57 @@ import (
 )
 
 var testLogicalDevices = map[string]design.LogicalDevice{
+	"10m_to_800g": {
+		Label: testutils.RandString(6, "hex"),
+		Panels: []design.LogicalDevicePanel{
+			{
+				PanelLayout: design.LogicalDevicePanelLayout{
+					RowCount:    1,
+					ColumnCount: 11,
+				},
+				PortGroups: []design.LogicalDevicePanelPortGroup{
+					{Count: 1, Speed: "10M", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "100M", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "1G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "25G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "40G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "50G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "100G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "200G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "400G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "800G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+				},
+				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
+			},
+		},
+	},
+	"10m_to_1600g": {
+		Label: testutils.RandString(6, "hex"),
+		Panels: []design.LogicalDevicePanel{
+			{
+				PanelLayout: design.LogicalDevicePanelLayout{
+					RowCount:    1,
+					ColumnCount: 12,
+				},
+				PortGroups: []design.LogicalDevicePanelPortGroup{
+					{Count: 1, Speed: "10M", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "100M", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "1G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "10G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "25G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "40G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "50G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "100G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "200G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "400G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "800G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+					{Count: 1, Speed: "1600G", Roles: design.LogicalDevicePortRoles{enum.PortRoleLeaf, enum.PortRoleSuperspine}},
+				},
+				PortIndexing: enum.DesignLogicalDevicePanelPortIndexingLRTB,
+			},
+		},
+	},
 	"spine_32x400": {
 		Label: testutils.RandString(6, "hex"),
 		Panels: []design.LogicalDevicePanel{
@@ -100,14 +152,24 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 	clients := testclient.GetTestClients(t, ctx)
 
 	type testCase struct {
-		create design.LogicalDevice
-		update design.LogicalDevice
+		apiConstraints []compatibility.Constraint
+		create         design.LogicalDevice
+		update         design.LogicalDevice
 	}
 
 	testCases := map[string]testCase{
 		"spine_to_leaf": {
 			create: testLogicalDevices["spine_32x400"],
 			update: testLogicalDevices["leaf_48x25_4x400"],
+		},
+		"10m_to_800g_to_spine": {
+			create: testLogicalDevices["10m_to_800g"],
+			update: testLogicalDevices["spine_32x400"],
+		},
+		"10m_to_1600g_to_spine": {
+			apiConstraints: []compatibility.Constraint{compatibility.Speed1600GSupported},
+			create:         testLogicalDevices["10m_to_1600g"],
+			update:         testLogicalDevices["spine_32x400"],
 		},
 	}
 
@@ -119,6 +181,13 @@ func TestLogicalDevice_CRUD(t *testing.T) {
 			for _, client := range clients {
 				t.Run(client.Name(), func(t *testing.T) {
 					t.Parallel()
+
+					for _, constraint := range tCase.apiConstraints {
+						if !constraint.Check(client.APIVersion()) {
+							t.Skipf("skipping test becuase API version %s does not meet constraint %s", client.APIVersion(), constraint.String())
+						}
+					}
+
 					ctx := testutils.ContextWithTestID(ctx, t)
 
 					create, update := tCase.create, tCase.update // because we modify these values below
