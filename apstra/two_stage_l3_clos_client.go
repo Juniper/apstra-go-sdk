@@ -577,9 +577,9 @@ func (o *TwoStageL3ClosClient) SetFabricSettings(ctx context.Context, in *Fabric
 // GetRedundancyGroupBySystem returns the Redundancy Group ID and the peer system ID for the given switch system ID in the given Blueprint, if any.
 //
 // Possible results:
-// - System exists and is part of a redundancy group     : returns non-nil pointers to the RG ID and the peer system ID and nil error
-// - System exists and is not part of a redundancy group : returns nil, nil, nil
-// - System does not exist, or failure during lookup     : returns nil, nil, error
+//   - System exists and is part of a redundancy group     : returns non-nil pointers to the RG ID and the peer system ID and nil error\n
+//   - System exists and is not part of a redundancy group : returns nil, nil, nil
+//   - System does not exist, or failure during lookup     : returns nil, nil, error
 func (o *TwoStageL3ClosClient) GetRedundancyGroupBySystem(ctx context.Context, systemID string) (*string, *string, error) {
 	return o.sysRedundancyCache.lookupGroup(ctx, systemID, o)
 }
@@ -587,8 +587,8 @@ func (o *TwoStageL3ClosClient) GetRedundancyGroupBySystem(ctx context.Context, s
 // GetSystemsByRedundancyGroup returns an unordered pair of System IDs representing members of the given redundancy group ID in the given Blueprint.
 //
 // Possible results:
-// - Redundancy Group exists                                 : returns the member system IDs, nil
-// - Redundancy Group does not exist or failure during lookup: returns a zero-value array, error
+//   - Redundancy Group exists                                 : returns the member system IDs, nil
+//   - Redundancy Group does not exist or failure during lookup: returns a zero-value array, error
 func (o *TwoStageL3ClosClient) GetSystemsByRedundancyGroup(ctx context.Context, groupID string) ([2]string, error) {
 	return o.sysRedundancyCache.lookupSystems(ctx, groupID, o)
 }

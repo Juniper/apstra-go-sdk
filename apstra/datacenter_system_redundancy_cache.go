@@ -30,9 +30,9 @@ type sysRedundancyCache struct {
 // lookupGroup returns the Redundancy Group ID and the peer system ID for the given switch system ID in the given Blueprint, if any.
 //
 // Possible results:
-// - System exists and is part of a redundancy group     : returns non-nil pointers to the RG ID and the peer system ID and nil error
-// - System exists and is not part of a redundancy group : returns nil, nil, nil
-// - System does not exist, or failure during lookup     : returns nil, nil, error
+//   - System exists and is part of a redundancy group     : returns non-nil pointers to the RG ID and the peer system ID and nil error
+//   - System exists and is not part of a redundancy group : returns nil, nil, nil
+//   - System does not exist, or failure during lookup     : returns nil, nil, error
 func (c *sysRedundancyCache) lookupGroup(ctx context.Context, systemID string, bp *TwoStageL3ClosClient) (*string, *string, error) {
 	getPeer := func(groupID *string) *string {
 		if groupID == nil {
@@ -137,8 +137,8 @@ func (c *sysRedundancyCache) lookupNodeType(ctx context.Context, nodeID string, 
 // lookupSystems returns a pair of System IDs representing the given redundancy group ID in the given Blueprint.
 //
 // Possible results:
-// - Redundancy Group exists                                 : returns the member system IDs, nil
-// - Redundancy Group does not exist or failure during lookup: returns a zero-value array, error
+//   - Redundancy Group exists                                 : returns the member system IDs, nil
+//   - Redundancy Group does not exist or failure during lookup: returns a zero-value array, error
 func (c *sysRedundancyCache) lookupSystems(ctx context.Context, groupID string, bp *TwoStageL3ClosClient) ([2]string, error) {
 	c.mu.RLock() // lock for read
 	if sysIDs, ok := c.groupToSystems[groupID]; ok {
