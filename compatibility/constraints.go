@@ -43,6 +43,9 @@ var (
 		considerPreReleaseLabel: true,
 		permitAny:               true,
 	}
+	Speed1600GSupported = Constraint{
+		constraints: version.MustConstraints(version.NewConstraint(">=" + apstra620)),
+	}
 	SwitchSystemLinksSystemIDNotSupported = Constraint{
 		constraints: version.MustConstraints(version.NewConstraint("<" + apstra610)),
 	}

@@ -1,4 +1,4 @@
-// Copyright (c) Juniper Networks, Inc., 2025-2025.
+// Copyright (c) Juniper Networks, Inc., 2025-2026.
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,6 +26,10 @@ func TestSpeed_Bps(t *testing.T) {
 		"10G": {
 			ss: []speed.Speed{"10000000000", "10g", " 10 g ", "10gbps", " 10 gbps ", "10gb/s", " 10 gb/s ", "10g", " 10 G ", "10Gbps", " 10 Gbps ", "10Gb/s", " 10 Gb/s "},
 			e:  10_000_000_000,
+		},
+		"1600G": {
+			ss: []speed.Speed{"1600000000000", "1600g", " 1600 g ", "1600gbps", " 1600 gbps ", "1600gb/s", " 1600 gb/s ", "1600g", " 1600 G ", "1600Gbps", " 1600 Gbps ", "1600Gb/s", " 1600 Gb/s "},
+			e:  1600_000_000_000,
 		},
 	}
 
@@ -603,6 +607,46 @@ func TestSpeed_MarshalJSON(t *testing.T) {
 				"799999999999",
 				"800001M",
 				"799999M",
+			},
+			expectError: true,
+		},
+		"1600G": {
+			values: []speed.Speed{
+				"1600000000000",
+				" 1600000000000 ",
+				"1600G",
+				"1600g",
+				"1600000M",
+				"1600000m",
+				" 1600000 M ",
+				" 1600000 m ",
+				" 1600 G ",
+				" 1600 g ",
+				"1600000Mbps",
+				"1600000mbps",
+				"1600Gbps",
+				"1600gbps",
+				" 1600000 Mbps ",
+				" 1600000 mbps ",
+				" 1600 Gbps ",
+				" 1600 gbps ",
+				"1600000Mb/s",
+				"1600000mb/s",
+				"1600Gb/s",
+				"1600gb/s",
+				" 1600000 Mb/s ",
+				" 1600000 mb/s ",
+				" 1600 Gb/s ",
+				" 1600 gb/s ",
+			},
+			expected: `{"unit":"G","value":1600}`,
+		},
+		"1600G_error": {
+			values: []speed.Speed{
+				"1600000000001",
+				"1599999999999",
+				"1600001M",
+				"1599999M",
 			},
 			expectError: true,
 		},
