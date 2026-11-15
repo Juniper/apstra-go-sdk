@@ -162,7 +162,7 @@ func (o *TwoStageL3ClosClient) GetVirtualNetworkByLabel(ctx context.Context, lab
 
 	var result *datacenter.VirtualNetwork
 	for _, vn := range vns {
-		if vn.Label == label {
+		if vn.Label != nil && *vn.Label == label {
 			if result == nil {
 				result = &vn
 			} else {
@@ -235,6 +235,14 @@ func (o *TwoStageL3ClosClient) CreateVirtualNetwork(ctx context.Context, vn data
 }
 
 func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, vn datacenter.VirtualNetwork) error {
+	return o.modifyVirtualNetwork(ctx, vn, http.MethodPut)
+}
+
+func (o *TwoStageL3ClosClient) PatchVirtualNetwork(ctx context.Context, vn datacenter.VirtualNetwork) error {
+	return o.modifyVirtualNetwork(ctx, vn, http.MethodPatch)
+}
+
+func (o *TwoStageL3ClosClient) modifyVirtualNetwork(ctx context.Context, vn datacenter.VirtualNetwork, method string) error {
 	if vn.ID() == nil {
 		return fmt.Errorf("id is required in %s", str.FuncName())
 	}
@@ -273,7 +281,7 @@ func (o *TwoStageL3ClosClient) UpdateVirtualNetwork(ctx context.Context, vn data
 	}
 
 	err := o.client.talkToApstra(ctx, &talkToApstraIn{
-		method:   http.MethodPut,
+		method:   method,
 		urlStr:   fmt.Sprintf(urls.DatacenterVirtualNetworkByID, o.blueprintId, *vn.ID()),
 		apiInput: vn,
 	})
@@ -310,11 +318,10 @@ func (o *TwoStageL3ClosClient) getVirtualNetworkAddressingFromActiveGraph(ctx co
 
 		// The condition we're fixing only happens with zero bindings AND
 		// a nil subnet or gateway value where one could reasonably be populated.
-		if len(vn.Bindings) == 0 &&
-			(vn.IPv4Enabled && vn.IPv4Subnet == nil ||
-				vn.IPv6Enabled && vn.IPv6Subnet == nil ||
-				vn.VirtualGatewayIPv4Enabled && vn.VirtualGatewayIPv4 == nil ||
-				vn.VirtualGatewayIPv6Enabled && vn.VirtualGatewayIPv6 == nil) {
+		if len(vn.Bindings) == 0 && ((vn.IPv4Enabled != nil && *vn.IPv4Enabled && vn.IPv4Subnet == nil) ||
+			(vn.IPv6Enabled != nil && *vn.IPv6Enabled && vn.IPv6Subnet == nil) ||
+			(vn.VirtualGatewayIPv4Enabled != nil && *vn.VirtualGatewayIPv4Enabled && vn.VirtualGatewayIPv4 == nil) ||
+			(vn.VirtualGatewayIPv6Enabled != nil && *vn.VirtualGatewayIPv6Enabled && vn.VirtualGatewayIPv6 == nil)) {
 			ids = append(ids, *vn.ID())
 		}
 	}

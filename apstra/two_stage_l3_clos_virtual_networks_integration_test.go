@@ -15,6 +15,7 @@ import (
 	"github.com/Juniper/apstra-go-sdk/compatibility"
 	"github.com/Juniper/apstra-go-sdk/datacenter"
 	"github.com/Juniper/apstra-go-sdk/enum"
+	"github.com/Juniper/apstra-go-sdk/internal/pointer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -74,10 +75,10 @@ func TestVirtualNetworkTags(t *testing.T) {
 			}
 
 			create := datacenter.VirtualNetwork{
-				IPv4Enabled:               true,
-				Label:                     label,
+				IPv4Enabled:               pointer.To(true),
+				Label:                     &label,
 				SecurityZoneID:            zoneId,
-				VirtualGatewayIPv4Enabled: true,
+				VirtualGatewayIPv4Enabled: pointer.To(true),
 				Bindings:                  vnBindings[:1],
 				Type:                      enum.VnTypeVxlan,
 			}
@@ -116,7 +117,7 @@ func TestVirtualNetworkTags(t *testing.T) {
 			require.Equal(t, 0, len(vn.Tags))
 
 			create.Tags = tags
-			create.Label = randString(6, "hex")
+			create.Label = pointer.To(randString(6, "hex"))
 
 			if compatibility.VirtualNetworkAPITags.Check(client.client.apiVersion) {
 				log.Printf("ensuring that CreateVirtualNetwork() with tags succeeds against %s %s (%s)", client.clientType, clientName, client.client.ApiVersion())
